@@ -1,3 +1,14 @@
+# Ignore all
+*
+
+# Unignore all with extensions
+!*.*
+
+# Unignore all dirs
+!*/
+
+### Above combination will ignore all files without extension ###
+
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
@@ -13,6 +24,9 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+coverage.*
+*.coverprofile
+profile.cov
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
@@ -23,3 +37,7 @@ go.work.sum
 
 # env file
 .env
+
+# Editor/IDE
+# .idea/
+.vscode/
