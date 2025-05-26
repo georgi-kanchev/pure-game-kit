@@ -20,5 +20,7 @@ TODO:
 [ ] collision
     - idea: explore using png mask as collision map overlapped on the usual atlas
 [ ] ui
+    - simplify inputbox, list & other complicated blocks
+    - block rename?
 [ ] audio
 [ ] LAN
