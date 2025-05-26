@@ -1,4 +1,4 @@
-module pure
+module pure-tile-kit
 
 go 1.24.3
 

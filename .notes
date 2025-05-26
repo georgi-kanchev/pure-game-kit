@@ -1,0 +1,24 @@
+[2025-05-26] [1]
+[√] project setup
+[√] git
+[√] window
+
+
+
+
+
+
+
+TODO:
+
+[ ] utility
+[ ] tilemap
+[ ] rendering
+[ ] execution flow, wait, stop, resume
+[ ] lua scripts
+[ ] input
+[ ] collision
+    - idea: explore using png mask as collision map overlapped on the usual atlas
+[ ] ui
+[ ] audio
+[ ] LAN
