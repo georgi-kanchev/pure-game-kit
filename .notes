@@ -5,32 +5,32 @@
 
 [27-05-2025] [2]
 [1] utility
-    [1] numbers
-    [1] point
-    [1] color
+- [1] numbers
+- [1] point
+- [1] color
 
 // = = = = = = =
 
 TODO:
-[ ] bugfix window maximize broke
-[ ] utility
-    [1] numbers
-    [1] point
-    [1] color
-    [ ] angle in numbers
-    [ ] text
-    [ ] time?
-    [ ] collections?
-[ ] tilemap
-[ ] rendering
-[ ] execution flow, wait, stop, resume
-[ ] lua scripts
-[ ] input
-[ ] collision
-    - idea: explore using png mask as collision map overlapped on the usual atlas
-[ ] ui
-    - simplify inputbox, list & other complicated blocks
-    - block rename?
-[ ] audio
-[ ] LAN
-[ ] storage
+bugfix window maximize broke
+utility
+- numbers noise left
+- point
+- color
+- angle in numbers
+- text
+- time?
+- collections?
+tilemap
+rendering
+execution flow, wait, stop, resume
+lua scripts
+input
+collision
+- idea: explore using png mask as collision map overlapped on the usual atlas
+ui
+- simplify inputbox, list & other complicated blocks
+- block rename?
+audio
+LAN
+storage
