@@ -1,17 +1,22 @@
-[2025-05-26] [1]
+[26-05-2025] [1]
 [√] project setup
 [√] git
 [√] window
 
+[27-05-2025] [2]
+[1] utility
+    [1] numbers
+    [1] point
+    [1] color
 
-
-
-
-
+// = = = = = = =
 
 TODO:
-
 [ ] utility
+    [ ] angle in numbers
+    [ ] text
+    [ ] time?
+    [ ] collections?
 [ ] tilemap
 [ ] rendering
 [ ] execution flow, wait, stop, resume
@@ -24,3 +29,4 @@ TODO:
     - block rename?
 [ ] audio
 [ ] LAN
+[ ] storage
