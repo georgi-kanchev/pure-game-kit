@@ -12,7 +12,11 @@
 // = = = = = = =
 
 TODO:
+[ ] bugfix window maximize broke
 [ ] utility
+    [1] numbers
+    [1] point
+    [1] color
     [ ] angle in numbers
     [ ] text
     [ ] time?
