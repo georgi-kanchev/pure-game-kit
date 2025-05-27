@@ -7,9 +7,14 @@ import (
 )
 
 func main() {
+	window.Color.R = 40
+
 	for window.KeepOpen() {
-		if rl.IsKeyPressed(rl.KeyA) {
-			window.Recreate()
+		if rl.IsKeyPressed(rl.KeyQ) {
+			window.SetState(window.StateFullscreen)
+		}
+		if rl.IsKeyPressed(rl.KeyW) {
+			window.SetState(window.StateWindowed)
 		}
 	}
 }

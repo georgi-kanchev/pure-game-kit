@@ -4,33 +4,42 @@
 [√] window
 
 [27-05-2025] [2]
+[√] bugfix window maximize broke
 [1] utility
-- [1] numbers
-- [1] point
-- [1] color
+	[√] numbers
+	[√] angle
+	[√] color
+[1]	motion
+	[√] spline, bezier curves
+	[√] easings
+[1] geometry
+	[√] point, cell, area, chunk, line
 
 // = = = = = = =
 
 TODO:
-bugfix window maximize broke
+motion
+	animation struct & methods
+	number
+	point
 utility
-- numbers noise left
-- point
-- color
-- angle in numbers
-- text
-- time?
-- collections?
-tilemap
+	time
+	text
+	collections
+geometry
+	collision
+
 rendering
+tilemap
+input
 execution flow, wait, stop, resume
 lua scripts
-input
-collision
-- idea: explore using png mask as collision map overlapped on the usual atlas
+	idea: explore using png mask as collision map overlapped on the usual atlas
 ui
-- simplify inputbox, list & other complicated blocks
-- block rename?
+	simplify inputbox, list & other complicated blocks
+	block rename?
 audio
 LAN
 storage
+events
+	idea: look into giving pointer to any value to notify subscribers it changed?

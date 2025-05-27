@@ -4,12 +4,19 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type State byte
+
+const (
+	StateWindowed State = iota
+	StateWindowedBorderless
+	StateFullscreen
+	StateFullscreenBorderless
+	StateMaximized
+	StateMinimized
+)
+
 var Title = ""
 var Color = struct{ R, G, B byte }{0, 0, 0}
-var IsMaximized = false
-var IsMinimized = false
-var IsFullscreen = false
-var IsBorderless = false
 var IsVerticallySynchronized = false
 var IsAntialiased = false
 var TargetFrameRate byte = 60
@@ -40,17 +47,89 @@ func Close() {
 }
 
 func MoveToMonitor(monitor byte) {
-	if IsMaximized {
+	var wasMax = rl.IsWindowMaximized()
+	if wasMax {
 		rl.RestoreWindow()
 	}
+
 	rl.SetWindowMonitor(int(monitor))
-	if IsMaximized {
+
+	if wasMax {
 		rl.MaximizeWindow()
 	}
 }
 
 func IsFocused() bool {
 	return rl.IsWindowFocused()
+}
+
+func SetState(state State) {
+	var currentState = GetState()
+	if currentState == state {
+		return
+	}
+
+	if state == StateMinimized {
+		rl.MinimizeWindow()
+		return
+	}
+
+	if state == StateFullscreen {
+		rl.RestoreWindow()
+
+		if currentState == StateFullscreenBorderless || currentState == StateWindowedBorderless {
+			rl.ToggleBorderlessWindowed()
+		}
+
+		var m = rl.GetCurrentMonitor()
+		var w = rl.GetMonitorWidth(m)
+		var h = rl.GetMonitorHeight(m)
+		rl.SetWindowSize(w, h)
+		rl.ToggleFullscreen()
+		return
+	}
+
+	// restore to windowed
+	if currentState == StateFullscreen {
+		rl.ToggleFullscreen()
+	}
+	if currentState == StateFullscreenBorderless || currentState == StateWindowedBorderless {
+		rl.ToggleBorderlessWindowed()
+	}
+	rl.RestoreWindow()
+
+	// after resotre
+	if state == StateFullscreenBorderless || state == StateWindowedBorderless {
+		rl.ToggleBorderlessWindowed()
+	}
+	if state == StateFullscreenBorderless || state == StateMaximized {
+		rl.MaximizeWindow()
+	}
+
+}
+func GetState() State {
+	var fs = rl.IsWindowFullscreen()
+	var bor = rl.IsWindowState(rl.FlagBorderlessWindowedMode)
+	var max = rl.IsWindowMaximized()
+	var min = rl.IsWindowMinimized()
+
+	if min {
+		return StateMinimized
+	}
+	if fs && !bor && !max {
+		return StateFullscreen
+	}
+	if !fs && bor && max {
+		return StateFullscreenBorderless
+	}
+	if !fs && bor && !max {
+		return StateWindowedBorderless
+	}
+	if !fs && !bor && max {
+		return StateMaximized
+	}
+
+	return StateWindowed
 }
 
 // region private
@@ -84,34 +163,6 @@ func tryCreate() {
 }
 
 func tryUpdateProperties() {
-	if !IsBorderless && IsFullscreen != rl.IsWindowFullscreen() {
-		rl.ToggleFullscreen()
-	}
-
-	if IsBorderless != rl.IsWindowState(rl.FlagBorderlessWindowedMode) {
-		rl.ToggleBorderlessWindowed()
-
-		if IsFullscreen && !IsMaximized {
-			IsMaximized = true // borderless fullscreen
-		}
-	}
-
-	if IsMaximized != rl.IsWindowMaximized() {
-		if IsMaximized {
-			rl.MaximizeWindow()
-		} else {
-			rl.RestoreWindow()
-		}
-	}
-
-	if IsMinimized != rl.IsWindowMinimized() {
-		if IsMinimized {
-			rl.MinimizeWindow()
-		} else {
-			rl.RestoreWindow()
-		}
-	}
-
 	if Title != currTitle {
 		currTitle = Title
 		rl.SetWindowTitle(Title)
