@@ -48,7 +48,7 @@ func Rotate(angle, target, speed float32) float32 {
 	}
 	return wrap(angle-checkedSpeed, 360)
 }
-func Face(angle, target, unit float32) float32 {
+func Face(angle, target, progress float32) float32 {
 	angle = wrap(angle, 360)
 	target = wrap(target, 360)
 
@@ -59,7 +59,7 @@ func Face(angle, target, unit float32) float32 {
 		diff -= 360
 	}
 
-	interpolated := angle + diff*unit
+	interpolated := angle + diff*progress
 	return wrap(interpolated, 360)
 }
 func Distance(angle, target float32) float32 {
@@ -128,10 +128,12 @@ func ToDirection(angle float32) (x, y float32) {
 	return
 }
 
-// copied from utility/number
-func wrap(number, target float32) float32 {
+// region private
+func wrap(number, target float32) float32 { // copied from utility/number
 	if target == 0 {
 		return 0
 	}
 	return float32(math.Mod(math.Mod(float64(number), float64(target))+float64(target), float64(target)))
 }
+
+// endregion

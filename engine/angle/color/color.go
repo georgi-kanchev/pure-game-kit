@@ -6,31 +6,31 @@ type Color struct {
 	R, G, B, A byte
 }
 
-func (color Color) ToDark(unit float32) Color {
-	r := byte(mapF(unit, 0, 1, float32(color.R), 0))
-	g := byte(mapF(unit, 0, 1, float32(color.G), 0))
-	b := byte(mapF(unit, 0, 1, float32(color.B), 0))
+func (color Color) ToDark(progress float32) Color {
+	r := byte(mapF(progress, 0, 1, float32(color.R), 0))
+	g := byte(mapF(progress, 0, 1, float32(color.G), 0))
+	b := byte(mapF(progress, 0, 1, float32(color.B), 0))
 	return Color{r, g, b, color.A}
 }
-func (color Color) ToColor(target Color, unit float32) Color {
-	r := byte(mapF(unit, 0, 1, float32(color.R), float32(target.R)))
-	g := byte(mapF(unit, 0, 1, float32(color.G), float32(target.G)))
-	b := byte(mapF(unit, 0, 1, float32(color.B), float32(target.B)))
-	a := byte(mapF(unit, 0, 1, float32(color.A), float32(target.A)))
+func (color Color) ToColor(target Color, progress float32) Color {
+	r := byte(mapF(progress, 0, 1, float32(color.R), float32(target.R)))
+	g := byte(mapF(progress, 0, 1, float32(color.G), float32(target.G)))
+	b := byte(mapF(progress, 0, 1, float32(color.B), float32(target.B)))
+	a := byte(mapF(progress, 0, 1, float32(color.A), float32(target.A)))
 	return Color{r, g, b, a}
 }
-func (color Color) ToBright(unit float32) Color {
-	r := byte(mapF(unit, 0, 1, float32(color.R), 255))
-	g := byte(mapF(unit, 0, 1, float32(color.G), 255))
-	b := byte(mapF(unit, 0, 1, float32(color.B), 255))
+func (color Color) ToBright(progress float32) Color {
+	r := byte(mapF(progress, 0, 1, float32(color.R), 255))
+	g := byte(mapF(progress, 0, 1, float32(color.G), 255))
+	b := byte(mapF(progress, 0, 1, float32(color.B), 255))
 	return Color{r, g, b, color.A}
 }
-func (color Color) ToTransparent(unit float32) Color {
-	a := byte(mapF(unit, 0, 1, float32(color.A), 0))
+func (color Color) ToTransparent(progress float32) Color {
+	a := byte(mapF(progress, 0, 1, float32(color.A), 0))
 	return Color{color.R, color.G, color.B, a}
 }
-func (color Color) ToOpaque(unit float32) Color {
-	a := byte(mapF(unit, 0, 1, float32(color.A), 255))
+func (color Color) ToOpaque(progress float32) Color {
+	a := byte(mapF(progress, 0, 1, float32(color.A), 255))
 	return Color{color.R, color.G, color.B, a}
 }
 func (color Color) ToOpposite() Color {
@@ -110,8 +110,8 @@ func Azure() Color {
 	return RGB(0, 127, 255)
 }
 
-// private
-func mapF(number float32, fromA, fromB, toA, toB float32) float32 {
+// region private
+func mapF(number float32, fromA, fromB, toA, toB float32) float32 { // copied from utility/number
 	if math.Abs(float64(fromB-fromA)) < 0.001 {
 		return (toA + toB) / 2
 	}
@@ -122,7 +122,7 @@ func mapF(number float32, fromA, fromB, toA, toB float32) float32 {
 	return value
 }
 
-func random(a, b, seed float32) float32 {
+func random(a, b, seed float32) float32 { // copied from utility/number
 	if a == b {
 		return a
 	}
@@ -139,3 +139,5 @@ func randomByteRange(min, max byte) byte {
 	val := random(float32(min), float32(max)+1, float32(math.NaN())) // max+1 to include max
 	return byte(val)
 }
+
+// endregion

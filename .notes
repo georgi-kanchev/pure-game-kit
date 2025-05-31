@@ -15,20 +15,23 @@
 [1] geometry
 	[√] point, cell, area, chunk, line
 
+[30-05-2025] [3]
+[2] motion
+	[√] animation struct & methods
+	[1] tween chaining (number, point etc)
+
 // = = = = = = =
 
 TODO:
 motion
-	animation struct & methods
-	number
-	point
+	tween (number, point etc)
 utility
 	time
 	text
 	collections
 geometry
+	shape
 	collision
-
 rendering
 tilemap
 input
