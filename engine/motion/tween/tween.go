@@ -71,6 +71,13 @@ func (chain *Chain) GoTo(targets []float32, duration float32, easing func(progre
 
 	return chain
 }
+func (chain *Chain) GoBack() *Chain {
+	if len(chain.tweens) > 0 {
+		var lastTween = chain.last()
+		chain.GoTo(lastTween.from, lastTween.duration, lastTween.easing)
+	}
+	return chain
+}
 func (chain *Chain) Wait(delay float32) *Chain {
 	if len(chain.tweens) > 0 {
 		var lastTween = chain.last()
@@ -136,8 +143,10 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 
 	chain.elapsed += deltaTime
 
+	var tweenDone = chain.elapsed > tween.duration
+
 	for i := range tween.current {
-		if chain.elapsed > tween.duration {
+		if tweenDone {
 			tween.current[i] = tween.to[i]
 			continue
 		}
@@ -151,7 +160,7 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 		tween.current[i] = mapFloat(ease, 0, 1, tween.from[i], tween.to[i])
 	}
 
-	if chain.elapsed > tween.duration {
+	if tweenDone {
 		tween.repeatsLeft--
 		chain.elapsed = 0
 		chain.currIndex++
@@ -163,7 +172,9 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 		tween.whileGoing(chain.elapsed/tween.duration, tween.current)
 	}
 
-	if chain.currIndex >= int32(len(chain.tweens)) {
+	var chainDone = chain.currIndex >= int32(len(chain.tweens))
+
+	if chainDone {
 		if chain.tweens[0].repeatsLeft > 0 {
 			chain.currIndex = 0
 			chain.elapsed = 0
