@@ -10,7 +10,7 @@ type Sequence[T any] struct {
 	time float32
 }
 
-func (sequence *Sequence[T]) Update(deltaTime float32) (*T, int32) {
+func (sequence *Sequence[T]) Update(deltaTime float32) (item *T, index int32) {
 	if !sequence.IsPlaying {
 		return &sequence.Items[0], 0
 	}
@@ -30,6 +30,6 @@ func (sequence *Sequence[T]) Update(deltaTime float32) (*T, int32) {
 		progress = 0
 	}
 
-	var index = int32(math.Min(progress*count, count-1))
-	return &sequence.Items[index], index
+	var i = int32(math.Min(progress*count, count-1))
+	return &sequence.Items[i], i
 }

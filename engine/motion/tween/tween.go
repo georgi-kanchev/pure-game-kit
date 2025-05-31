@@ -14,8 +14,10 @@ type Chain struct {
 type tween struct {
 	duration             float32
 	from, to, current    []float32
-	easing               func(float32) float32
+	easing               func(progress float32) float32
 	repeats, repeatsLeft int32
+	whenThere            func()
+	whileGoing           func(progress float32, current []float32)
 }
 
 func From(items []float32) *Chain {
@@ -43,18 +45,18 @@ func From(items []float32) *Chain {
 
 	return newChain
 }
-func (chain *Chain) To(targets []float32, duration float32, easing func(float32) float32) *Chain {
+func (chain *Chain) GoTo(targets []float32, duration float32, easing func(progress float32) float32) *Chain {
 	if len(chain.tweens) == 0 {
 		return chain
 	}
 
-	var valuePrev = chain.tweens[len(chain.tweens)-1]
-	var copyFrom = make([]float32, len(valuePrev.to))
+	var lastTween = chain.last()
+	var copyFrom = make([]float32, len(lastTween.to))
 	var copyTo = make([]float32, len(targets))
-	var copyCurr = make([]float32, len(valuePrev.to))
-	copy(copyFrom, valuePrev.to)
+	var copyCurr = make([]float32, len(lastTween.to))
+	copy(copyFrom, lastTween.to)
 	copy(copyTo, targets)
-	copy(copyCurr, valuePrev.to)
+	copy(copyCurr, lastTween.to)
 
 	var newTween = tween{
 		duration:    duration,
@@ -69,10 +71,30 @@ func (chain *Chain) To(targets []float32, duration float32, easing func(float32)
 
 	return chain
 }
+func (chain *Chain) Wait(delay float32) *Chain {
+	if len(chain.tweens) > 0 {
+		var lastTween = chain.last()
+		chain.GoTo(lastTween.to, delay, nil)
+	}
+	return chain
+}
 func (chain *Chain) Repeat(times int32) *Chain {
 	for i := len(chain.tweens) - 1; i >= 0; i-- {
 		chain.tweens[i].repeatsLeft += times
 		chain.tweens[i].repeats += times
+	}
+	return chain
+}
+
+func (chain *Chain) CallWhenDone(function func()) *Chain {
+	if len(chain.tweens) > 0 {
+		chain.last().whenThere = function
+	}
+	return chain
+}
+func (chain *Chain) CallWhileDoing(function func(progress float32, current []float32)) *Chain {
+	if len(chain.tweens) > 0 {
+		chain.last().whileGoing = function
 	}
 	return chain
 }
@@ -83,26 +105,26 @@ func (chain *Chain) Restart() {
 	chain.playing = true
 
 	for i := range chain.tweens {
+		var tween = &chain.tweens[i]
 		if i == 0 {
-			copy(chain.tweens[i].current, chain.tweens[i].from)
+			copy(tween.current, tween.from)
 			continue
 		}
 
-		chain.tweens[i].repeatsLeft = chain.tweens[i].repeats
-		copy(chain.tweens[i].current, chain.tweens[i-1].to)
+		tween.repeatsLeft = tween.repeats
+		copy(tween.current, chain.tweens[i-1].to)
 
 	}
 }
 func (chain *Chain) Pause(paused bool) {
 	chain.playing = !paused
 }
-
 func (chain *Chain) Update(deltaTime float32) []float32 {
 	if len(chain.tweens) == 0 {
 		return []float32{}
 	}
 
-	var tween = &chain.tweens[chain.currIndex]
+	var tween = chain.current()
 
 	if !chain.playing {
 		return tween.current
@@ -119,13 +141,26 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 			tween.current[i] = tween.to[i]
 			continue
 		}
-		var ease = tween.easing(chain.elapsed / tween.duration)
+		var progress = chain.elapsed / tween.duration
+		var ease float32 = progress
+
+		if tween.easing != nil {
+			ease = tween.easing(progress)
+		}
+
 		tween.current[i] = mapFloat(ease, 0, 1, tween.from[i], tween.to[i])
 	}
+
 	if chain.elapsed > tween.duration {
 		tween.repeatsLeft--
 		chain.elapsed = 0
 		chain.currIndex++
+
+		if tween.whenThere != nil {
+			tween.whenThere()
+		}
+	} else if tween.whileGoing != nil {
+		tween.whileGoing(chain.elapsed/tween.duration, tween.current)
 	}
 
 	if chain.currIndex >= int32(len(chain.tweens)) {
@@ -138,7 +173,7 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 		chain.playing = false
 		chain.currIndex--
 		chain.elapsed = chain.tweens[chain.currIndex].duration
-	} else if chain.tweens[chain.currIndex].repeatsLeft < tween.repeatsLeft {
+	} else if chain.current().repeatsLeft < tween.repeatsLeft {
 		chain.currIndex = 0
 		chain.elapsed = 0
 		return tween.current
@@ -148,6 +183,13 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 }
 
 // region private
+
+func (chain *Chain) last() *tween {
+	return &chain.tweens[len(chain.tweens)-1]
+}
+func (chain *Chain) current() *tween {
+	return &chain.tweens[chain.currIndex]
+}
 
 func mapFloat(number float32, fromA, fromB, toA, toB float32) float32 { // copied from utility/number
 	if math.Abs(float64(fromB-fromA)) < 0.001 {

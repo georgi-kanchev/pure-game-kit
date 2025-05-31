@@ -62,15 +62,7 @@ func Face(angle, target, progress float32) float32 {
 	interpolated := angle + diff*progress
 	return wrap(interpolated, 360)
 }
-func Distance(angle, target float32) float32 {
-	diff := wrap(target-angle, 360)
-	if diff < -180 {
-		diff += 360
-	} else if diff >= 180 {
-		diff -= 360
-	}
-	return float32(math.Abs(float64(diff)))
-}
+
 func IsBehind(angle, target float32) bool {
 	diff := wrap(angle-target, 360)
 	switch {
@@ -91,6 +83,16 @@ func IsWithin(angle, lower, upper float32) bool {
 		return false
 	}
 	return Distance(angle, lower) < 180 && Distance(angle, upper) < 180
+}
+
+func Distance(angle, target float32) float32 {
+	diff := wrap(target-angle, 360)
+	if diff < -180 {
+		diff += 360
+	} else if diff >= 180 {
+		diff -= 360
+	}
+	return float32(math.Abs(float64(diff)))
 }
 func Limit(angle, lower, upper float32) float32 {
 	if !IsWithin(angle, lower, upper) {
@@ -114,6 +116,7 @@ func Reflect(angle, surfaceAngle float32) float32 {
 func Reverse(angle float32) float32 {
 	return wrap(angle-180, 360)
 }
+
 func BetweenPoints(x, y, targetX, targetY float32) float32 {
 	dx := targetX - x
 	dy := targetY - y
@@ -121,6 +124,7 @@ func BetweenPoints(x, y, targetX, targetY float32) float32 {
 	angleDeg := float32(angleRad * 180 / math.Pi)
 	return wrap(angleDeg, 360)
 }
+
 func ToDirection(angle float32) (x, y float32) {
 	radians := float64(angle) * math.Pi / 180
 	x = float32(math.Cos(radians))

@@ -20,11 +20,20 @@ func main() {
 		IsPlaying:      true,
 	}
 
-	var chain = tween.From([]float32{400, 200}).
-		To([]float32{120, 120}, 1, curves.EaseBounceOut).
-		To([]float32{400, 500}, 1, curves.EaseBackOut).
-		To([]float32{400, 900}, 1, curves.EaseElasticOut).
-		Repeat(3)
+	var chain = tween.From([]float32{400, 200})
+	chain.
+		CallWhenDone(func() { println("start") }).
+		GoTo([]float32{120, 120}, 3, curves.EaseBounceOut).
+		CallWhenDone(func() { println("first") }).
+		Wait(1).
+		GoTo([]float32{400, 500}, 3, curves.EaseBackOut).
+		CallWhileDoing(func(progress float32, current []float32) {
+			fmt.Printf("progress: %v\n", progress)
+		}).
+		CallWhenDone(func() { println("second") }).
+		Wait(1).
+		GoTo([]float32{400, 900}, 3, curves.EaseElasticOut).
+		CallWhenDone(func() { println("end") })
 
 	for window.KeepOpen() {
 		if rl.IsKeyPressed(rl.KeyA) {
@@ -42,7 +51,7 @@ func main() {
 		var result = fmt.Sprintf("%v: %v (%v %%)", index, *frame, progress*100)
 		rl.DrawText(result, 0, 100, 64, rl.White)
 
-		var value = chain.Update(rl.GetFrameTime())
-		rl.DrawRectangle(int32(value[0]), int32(value[1]), 100, 100, rl.Red)
+		var current = chain.Update(rl.GetFrameTime())
+		rl.DrawRectangle(int32(current[0]), int32(current[1]), 100, 100, rl.Red)
 	}
 }
