@@ -1,4 +1,4 @@
-package motion
+package animation
 
 import "math"
 
@@ -10,7 +10,7 @@ type Sequence[T any] struct {
 	time float32
 }
 
-func (sequence *Sequence[T]) Update(deltaTime float32) (item *T, index int32) {
+func (sequence *Sequence[T]) Advance(deltaTime float32) (item *T, index int32) {
 	if !sequence.IsPlaying {
 		return &sequence.Items[0], 0
 	}

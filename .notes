@@ -23,15 +23,19 @@
 [31-05-2025] [Sat] [4]
 	[√] motion
 		[√] tween chaining (number, point etc)
+	[2] utility
+		[√] random
+		[√] time
+		[√] text
+		[1] collections
 
 // = = = = = = =
 
 TODO:
 utility
-	time
-	text
 	collections
 geometry
+	point (distance)
 	shape
 	collision
 rendering

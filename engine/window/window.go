@@ -7,12 +7,12 @@ import (
 type State byte
 
 const (
-	StateWindowed State = iota
-	StateWindowedBorderless
-	StateFullscreen
-	StateFullscreenBorderless
-	StateMaximized
-	StateMinimized
+	Windowed State = iota
+	WindowedBorderless
+	Fullscreen
+	FullscreenBorderless
+	Maximized
+	Minimized
 )
 
 var Title = ""
@@ -69,15 +69,15 @@ func SetState(state State) {
 		return
 	}
 
-	if state == StateMinimized {
+	if state == Minimized {
 		rl.MinimizeWindow()
 		return
 	}
 
-	if state == StateFullscreen {
+	if state == Fullscreen {
 		rl.RestoreWindow()
 
-		if currentState == StateFullscreenBorderless || currentState == StateWindowedBorderless {
+		if currentState == FullscreenBorderless || currentState == WindowedBorderless {
 			rl.ToggleBorderlessWindowed()
 		}
 
@@ -90,19 +90,19 @@ func SetState(state State) {
 	}
 
 	// restore to windowed
-	if currentState == StateFullscreen {
+	if currentState == Fullscreen {
 		rl.ToggleFullscreen()
 	}
-	if currentState == StateFullscreenBorderless || currentState == StateWindowedBorderless {
+	if currentState == FullscreenBorderless || currentState == WindowedBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
 	rl.RestoreWindow()
 
 	// after resotre
-	if state == StateFullscreenBorderless || state == StateWindowedBorderless {
+	if state == FullscreenBorderless || state == WindowedBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
-	if state == StateFullscreenBorderless || state == StateMaximized {
+	if state == FullscreenBorderless || state == Maximized {
 		rl.MaximizeWindow()
 	}
 
@@ -114,22 +114,22 @@ func GetState() State {
 	var min = rl.IsWindowMinimized()
 
 	if min {
-		return StateMinimized
+		return Minimized
 	}
 	if fs && !bor && !max {
-		return StateFullscreen
+		return Fullscreen
 	}
 	if !fs && bor && max {
-		return StateFullscreenBorderless
+		return FullscreenBorderless
 	}
 	if !fs && bor && !max {
-		return StateWindowedBorderless
+		return WindowedBorderless
 	}
 	if !fs && !bor && max {
-		return StateMaximized
+		return Maximized
 	}
 
-	return StateWindowed
+	return Windowed
 }
 
 // region private

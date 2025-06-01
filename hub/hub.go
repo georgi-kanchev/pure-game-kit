@@ -1,10 +1,12 @@
 package main
 
 import (
-	"pure-tile-kit/engine/window"
+	"pure-kit/engine/utility/time"
+	"pure-kit/engine/window"
 )
 
 func main() {
 	for window.KeepOpen() {
+		time.Update()
 	}
 }

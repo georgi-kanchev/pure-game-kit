@@ -1,4 +1,4 @@
-package motion
+package curves
 
 import (
 	"math"
@@ -64,86 +64,36 @@ func TraceSpline(progress float32, curvePoints [][2]float32) (x, y float32) {
 	return t0, t1
 }
 
-func EaseLinear(progress float32) float32 {
-	return easings.LinearNone(progress, 0, 1, 1)
-}
+func EaseLinear(progress float32) float32 { return easings.LinearNone(progress, 0, 1, 1) }
 
-func EaseSineIn(progress float32) float32 {
-	return easings.SineIn(progress, 0, 1, 1)
-}
-func EaseSineOut(progress float32) float32 {
-	return easings.SineOut(progress, 0, 1, 1)
-}
-func EaseSineInOut(progress float32) float32 {
-	return easings.SineInOut(progress, 0, 1, 1)
-}
+func EaseSineIn(progress float32) float32    { return easings.SineIn(progress, 0, 1, 1) }
+func EaseSineOut(progress float32) float32   { return easings.SineOut(progress, 0, 1, 1) }
+func EaseSineInOut(progress float32) float32 { return easings.SineInOut(progress, 0, 1, 1) }
 
-func EaseCircIn(progress float32) float32 {
-	return easings.CircIn(progress, 0, 1, 1)
-}
-func EaseCircOut(progress float32) float32 {
-	return easings.CircOut(progress, 0, 1, 1)
-}
-func EaseCircInOut(progress float32) float32 {
-	return easings.CircInOut(progress, 0, 1, 1)
-}
+func EaseCircIn(progress float32) float32    { return easings.CircIn(progress, 0, 1, 1) }
+func EaseCircOut(progress float32) float32   { return easings.CircOut(progress, 0, 1, 1) }
+func EaseCircInOut(progress float32) float32 { return easings.CircInOut(progress, 0, 1, 1) }
 
-func EaseCubicIn(progress float32) float32 {
-	return easings.CubicIn(progress, 0, 1, 1)
-}
-func EaseCubicOut(progress float32) float32 {
-	return easings.CubicOut(progress, 0, 1, 1)
-}
-func EaseCubicInOut(progress float32) float32 {
-	return easings.CubicInOut(progress, 0, 1, 1)
-}
+func EaseCubicIn(progress float32) float32    { return easings.CubicIn(progress, 0, 1, 1) }
+func EaseCubicOut(progress float32) float32   { return easings.CubicOut(progress, 0, 1, 1) }
+func EaseCubicInOut(progress float32) float32 { return easings.CubicInOut(progress, 0, 1, 1) }
 
-func EaseQuadIn(progress float32) float32 {
-	return easings.QuadIn(progress, 0, 1, 1)
-}
-func EaseQuadOut(progress float32) float32 {
-	return easings.QuadOut(progress, 0, 1, 1)
-}
-func EaseQuadInOut(progress float32) float32 {
-	return easings.QuadInOut(progress, 0, 1, 1)
-}
+func EaseQuadIn(progress float32) float32    { return easings.QuadIn(progress, 0, 1, 1) }
+func EaseQuadOut(progress float32) float32   { return easings.QuadOut(progress, 0, 1, 1) }
+func EaseQuadInOut(progress float32) float32 { return easings.QuadInOut(progress, 0, 1, 1) }
 
-func EaseExpoIn(progress float32) float32 {
-	return easings.ExpoIn(progress, 0, 1, 1)
-}
-func EaseExpoOut(progress float32) float32 {
-	return easings.ExpoOut(progress, 0, 1, 1)
-}
-func EaseExpoInOut(progress float32) float32 {
-	return easings.ExpoInOut(progress, 0, 1, 1)
-}
+func EaseExpoIn(progress float32) float32    { return easings.ExpoIn(progress, 0, 1, 1) }
+func EaseExpoOut(progress float32) float32   { return easings.ExpoOut(progress, 0, 1, 1) }
+func EaseExpoInOut(progress float32) float32 { return easings.ExpoInOut(progress, 0, 1, 1) }
 
-func EaseBackIn(progress float32) float32 {
-	return easings.BackIn(progress, 0, 1, 1)
-}
-func EaseBackOut(progress float32) float32 {
-	return easings.BackOut(progress, 0, 1, 1)
-}
-func EaseBackInOut(progress float32) float32 {
-	return easings.BackInOut(progress, 0, 1, 1)
-}
+func EaseBackIn(progress float32) float32    { return easings.BackIn(progress, 0, 1, 1) }
+func EaseBackOut(progress float32) float32   { return easings.BackOut(progress, 0, 1, 1) }
+func EaseBackInOut(progress float32) float32 { return easings.BackInOut(progress, 0, 1, 1) }
 
-func EaseBounceIn(progress float32) float32 {
-	return easings.BounceIn(progress, 0, 1, 1)
-}
-func EaseBounceOut(progress float32) float32 {
-	return easings.BounceOut(progress, 0, 1, 1)
-}
-func EaseBounceInOut(progress float32) float32 {
-	return easings.BounceInOut(progress, 0, 1, 1)
-}
+func EaseBounceIn(progress float32) float32    { return easings.BounceIn(progress, 0, 1, 1) }
+func EaseBounceOut(progress float32) float32   { return easings.BounceOut(progress, 0, 1, 1) }
+func EaseBounceInOut(progress float32) float32 { return easings.BounceInOut(progress, 0, 1, 1) }
 
-func EaseElasticIn(progress float32) float32 {
-	return easings.ElasticIn(progress, 0, 1, 1)
-}
-func EaseElasticOut(progress float32) float32 {
-	return easings.ElasticOut(progress, 0, 1, 1)
-}
-func EaseElasticInOut(progress float32) float32 {
-	return easings.ElasticInOut(progress, 0, 1, 1)
-}
+func EaseElasticIn(progress float32) float32    { return easings.ElasticIn(progress, 0, 1, 1) }
+func EaseElasticOut(progress float32) float32   { return easings.ElasticOut(progress, 0, 1, 1) }
+func EaseElasticInOut(progress float32) float32 { return easings.ElasticInOut(progress, 0, 1, 1) }

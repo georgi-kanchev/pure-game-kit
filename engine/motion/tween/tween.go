@@ -1,7 +1,7 @@
-package motion
+package tween
 
 import (
-	"math"
+	"pure-kit/engine/utility/number"
 )
 
 type Chain struct {
@@ -123,10 +123,8 @@ func (chain *Chain) Restart() {
 
 	}
 }
-func (chain *Chain) Pause(paused bool) {
-	chain.playing = !paused
-}
-func (chain *Chain) Update(deltaTime float32) []float32 {
+func (chain *Chain) Pause(paused bool) { chain.playing = !paused }
+func (chain *Chain) Advance(deltaTime float32) []float32 {
 	if len(chain.tweens) == 0 {
 		return []float32{}
 	}
@@ -157,7 +155,7 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 			ease = tween.easing(progress)
 		}
 
-		tween.current[i] = mapFloat(ease, 0, 1, tween.from[i], tween.to[i])
+		tween.current[i] = number.Map(ease, 0, 1, tween.from[i], tween.to[i])
 	}
 
 	if tweenDone {
@@ -195,22 +193,7 @@ func (chain *Chain) Update(deltaTime float32) []float32 {
 
 // region private
 
-func (chain *Chain) last() *tween {
-	return &chain.tweens[len(chain.tweens)-1]
-}
-func (chain *Chain) current() *tween {
-	return &chain.tweens[chain.currIndex]
-}
-
-func mapFloat(number float32, fromA, fromB, toA, toB float32) float32 { // copied from utility/number
-	if math.Abs(float64(fromB-fromA)) < 0.001 {
-		return (toA + toB) / 2
-	}
-	value := ((number-fromA)/(fromB-fromA))*(toB-toA) + toA
-	if math.IsNaN(float64(value)) || math.IsInf(float64(value), 0) {
-		return toA
-	}
-	return value
-}
+func (chain *Chain) last() *tween    { return &chain.tweens[len(chain.tweens)-1] }
+func (chain *Chain) current() *tween { return &chain.tweens[chain.currIndex] }
 
 // endregion
