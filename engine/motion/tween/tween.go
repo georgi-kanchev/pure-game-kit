@@ -6,7 +6,7 @@ import (
 
 type Chain struct {
 	tweens    []tween
-	currIndex int32
+	currIndex int
 	elapsed   float32
 	playing   bool
 }
@@ -15,7 +15,7 @@ type tween struct {
 	duration             float32
 	from, to, current    []float32
 	easing               func(progress float32) float32
-	repeats, repeatsLeft int32
+	repeats, repeatsLeft int
 	whenThere            func()
 	whileGoing           func(progress float32, current []float32)
 }
@@ -78,14 +78,14 @@ func (chain *Chain) GoBack() *Chain {
 	}
 	return chain
 }
-func (chain *Chain) Wait(delay float32) *Chain {
+func (chain *Chain) Wait(seconds float32) *Chain {
 	if len(chain.tweens) > 0 {
 		var lastTween = chain.last()
-		chain.GoTo(lastTween.to, delay, nil)
+		chain.GoTo(lastTween.to, seconds, nil)
 	}
 	return chain
 }
-func (chain *Chain) Repeat(times int32) *Chain {
+func (chain *Chain) Repeat(times int) *Chain {
 	for i := len(chain.tweens) - 1; i >= 0; i-- {
 		chain.tweens[i].repeatsLeft += times
 		chain.tweens[i].repeats += times
@@ -170,7 +170,7 @@ func (chain *Chain) Advance(deltaTime float32) []float32 {
 		tween.whileGoing(chain.elapsed/tween.duration, tween.current)
 	}
 
-	var chainDone = chain.currIndex >= int32(len(chain.tweens))
+	var chainDone = chain.currIndex >= int(len(chain.tweens))
 
 	if chainDone {
 		if chain.tweens[0].repeatsLeft > 0 {

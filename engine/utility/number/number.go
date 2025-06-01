@@ -5,6 +5,8 @@ import (
 	"math"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/constraints"
 )
 
 func Limit(number, a, b float32) float32 {
@@ -13,8 +15,8 @@ func Limit(number, a, b float32) float32 {
 	}
 	return float32(math.Max(float64(a), math.Min(float64(number), float64(b))))
 }
-func LimitInt(number, a, b int32) int32 {
-	return int32(Limit(float32(number), float32(a), float32(b)))
+func LimitInt(number, a, b int) int {
+	return int(Limit(float32(number), float32(a), float32(b)))
 }
 
 func WrapRange(number, a, b float32) float32 {
@@ -27,8 +29,8 @@ func WrapRange(number, a, b float32) float32 {
 	}
 	return float32(math.Mod(math.Mod(float64(number-a), float64(d))+float64(d), float64(d))) + a
 }
-func WrapRangeInt(number, a, b int32) int32 {
-	return int32(WrapRange(float32(number), float32(a), float32(b)))
+func WrapRangeInt(number, a, b int) int {
+	return int(WrapRange(float32(number), float32(a), float32(b)))
 }
 
 func Wrap(number, target float32) float32 {
@@ -37,7 +39,7 @@ func Wrap(number, target float32) float32 {
 	}
 	return float32(math.Mod(math.Mod(float64(number), float64(target))+float64(target), float64(target)))
 }
-func WrapInt(number, target int32) int32 {
+func WrapInt(number, target int) int {
 	if target == 0 {
 		return 0
 	}
@@ -66,8 +68,8 @@ func Map(number float32, fromA, fromB, toA, toB float32) float32 {
 	}
 	return value
 }
-func MapInt(number int32, fromA, fromB, toA, toB int32) int32 {
-	return int32(Map(float32(number), float32(fromA), float32(fromB), float32(toA), float32(toB)))
+func MapInt(number int, fromA, fromB, toA, toB int) int {
+	return int(Map(float32(number), float32(fromA), float32(fromB), float32(toA), float32(toB)))
 }
 
 func PadZeros(number float32, amountOfZeros int) string {
@@ -87,7 +89,7 @@ func PadZerosInt(number int, amountOfZeros int) string {
 	return fmt.Sprintf("%0*d", amountOfZeros, number)
 }
 
-func Distribute(amount int32, a, b float32) []float32 {
+func Distribute(amount int, a, b float32) []float32 {
 	if amount <= 0 {
 		return []float32{}
 	}
@@ -125,7 +127,7 @@ func IsBetween(number float32, a, b float32, includeA, includeB bool) bool {
 	}
 	return l && u
 }
-func IsBetweenInt(number int32, a, b int32, includeA, includeB bool) bool {
+func IsBetweenInt(number int, a, b int, includeA, includeB bool) bool {
 	if a > b {
 		a, b = b, a
 	}
@@ -143,14 +145,19 @@ func IsBetweenInt(number int32, a, b int32, includeA, includeB bool) bool {
 func IsWithin(number, target, distance float32) bool {
 	return IsBetween(number, target-distance, target+distance, true, true)
 }
-func IsWithinInt(number, target, distance int32) bool {
+func IsWithinInt(number, target, distance int) bool {
 	return IsBetweenInt(number, target-distance, target+distance, true, true)
 }
 
-func IsNaN(number float32) bool { return math.IsNaN(float64(number)) }
-func NaN() float32              { return float32(math.NaN()) }
+func Average[T constraints.Integer | constraints.Float](numbers []T) float64 {
+	var sum float64
+	for _, n := range numbers {
+		sum += float64(n)
+	}
+	return sum / float64(len(numbers))
+}
 
-func Indexes2DToIndex1D(x, y, width, height int32) int32 {
+func Indexes2DToIndex1D(x, y, width, height int) int {
 	result := x*width + y
 	max := width * height
 	if result < 0 {
@@ -160,7 +167,7 @@ func Indexes2DToIndex1D(x, y, width, height int32) int32 {
 	}
 	return result
 }
-func Index1DToIndexes2D(index, width, height int32) (int32, int32) {
+func Index1DToIndexes2D(index, width, height int) (int, int) {
 	max := width * height
 	if index < 0 {
 		index = 0
@@ -171,3 +178,6 @@ func Index1DToIndexes2D(index, width, height int32) (int32, int32) {
 	y := index / width
 	return x, y
 }
+
+func IsNaN(number float32) bool { return math.IsNaN(float64(number)) }
+func NaN() float32              { return float32(math.NaN()) }

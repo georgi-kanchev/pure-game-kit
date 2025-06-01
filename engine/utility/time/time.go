@@ -20,9 +20,7 @@ const (
 
 type Conversion int
 
-const deltaMax float64 = 0.1
-
-var Clock, prevClock, Delta, DeltaRaw, FrameRate, FrameRateAverage float64
+var Clock, Delta, DeltaRaw, FrameRate, FrameRateAverage float64
 var FrameCount uint64
 var Runtime float64
 
@@ -63,6 +61,10 @@ func SecondsFromDays(days float64) float64                 { return days * 86400
 func SecondsFromWeeks(weeks float64) float64               { return weeks * 604800 }
 
 // region private
+
+const deltaMax float64 = 0.1
+
+var prevClock float64
 
 func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amPm bool) string {
 	var parts []string

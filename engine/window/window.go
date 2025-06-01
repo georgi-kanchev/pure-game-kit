@@ -1,14 +1,16 @@
 package window
 
 import (
+	"pure-kit/engine/utility/time"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type State byte
 
 const (
-	Windowed State = iota
-	WindowedBorderless
+	Floating State = iota
+	FloatingBorderless
 	Fullscreen
 	FullscreenBorderless
 	Maximized
@@ -38,6 +40,9 @@ func KeepOpen() bool {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.NewColor(Color.R, Color.G, Color.B, 255))
 	rl.DrawFPS(0, 0)
+
+	time.Update()
+
 	return !rl.WindowShouldClose()
 }
 func Close() {
@@ -63,8 +68,8 @@ func IsFocused() bool {
 	return rl.IsWindowFocused()
 }
 
-func SetState(state State) {
-	var currentState = GetState()
+func ApplyState(state State) {
+	var currentState = CurrentState()
 	if currentState == state {
 		return
 	}
@@ -77,7 +82,7 @@ func SetState(state State) {
 	if state == Fullscreen {
 		rl.RestoreWindow()
 
-		if currentState == FullscreenBorderless || currentState == WindowedBorderless {
+		if currentState == FullscreenBorderless || currentState == FloatingBorderless {
 			rl.ToggleBorderlessWindowed()
 		}
 
@@ -93,13 +98,13 @@ func SetState(state State) {
 	if currentState == Fullscreen {
 		rl.ToggleFullscreen()
 	}
-	if currentState == FullscreenBorderless || currentState == WindowedBorderless {
+	if currentState == FullscreenBorderless || currentState == FloatingBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
 	rl.RestoreWindow()
 
 	// after resotre
-	if state == FullscreenBorderless || state == WindowedBorderless {
+	if state == FullscreenBorderless || state == FloatingBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
 	if state == FullscreenBorderless || state == Maximized {
@@ -107,7 +112,7 @@ func SetState(state State) {
 	}
 
 }
-func GetState() State {
+func CurrentState() State {
 	var fs = rl.IsWindowFullscreen()
 	var bor = rl.IsWindowState(rl.FlagBorderlessWindowedMode)
 	var max = rl.IsWindowMaximized()
@@ -123,13 +128,13 @@ func GetState() State {
 		return FullscreenBorderless
 	}
 	if !fs && bor && !max {
-		return WindowedBorderless
+		return FloatingBorderless
 	}
 	if !fs && !bor && max {
 		return Maximized
 	}
 
-	return Windowed
+	return Floating
 }
 
 // region private

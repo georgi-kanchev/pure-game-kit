@@ -82,7 +82,7 @@ func Random() Color {
 // region private
 
 func randomByteRange(min, max byte) byte {
-	return byte(random.Random(float32(min), float32(max)+1, float32(math.NaN())))
+	return byte(random.Range(float32(min), float32(max)+1, float32(math.NaN())))
 }
 
 // endregion

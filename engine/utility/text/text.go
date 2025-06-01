@@ -138,6 +138,11 @@ func Calculate(mathExpression string) float64 {
 	return values[len(values)-1]
 }
 
+func IsNumber(text string) bool {
+	_, err := strconv.ParseFloat(text, 64)
+	return err == nil
+}
+
 func PadLeftAndRight(text string, length int, padStr string) string {
 	textLen := utf8.RuneCountInString(text)
 	spaces := length - textLen
@@ -172,7 +177,7 @@ func Reveal(text string, progress float32) string {
 	return string([]rune(text)[cutoff:])
 }
 
-func Fit(text string, maxLength int32) string {
+func Fit(text string, maxLength int) string {
 	if maxLength == 0 {
 		return ""
 	}

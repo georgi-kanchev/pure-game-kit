@@ -6,14 +6,14 @@ import (
 )
 
 func Seed(keys []float32) float32 {
-	var ints = make([]int32, len(keys))
+	var ints = make([]int, len(keys))
 	for i := range ints {
 		ints[i] = floatToIntSeed(keys[i])
 	}
 	return float32(SeedInts(ints))
 }
-func SeedInts(keys []int32) int32 {
-	hashSeed := func(seed uint64, a int32) uint64 {
+func SeedInts(keys []int) int {
+	hashSeed := func(seed uint64, a int) uint64 {
 		seed ^= uint64(a)
 		seed = (seed ^ (seed >> 16)) * 2246822519
 		seed = (seed ^ (seed >> 13)) * 3266489917
@@ -25,10 +25,10 @@ func SeedInts(keys []int32) int32 {
 	for _, p := range keys {
 		seed = hashSeed(seed, p)
 	}
-	return int32(seed)
+	return int(seed)
 }
 
-func Random(a, b, seed float32) float32 {
+func Range(a, b, seed float32) float32 {
 	if a == b {
 		return a
 	}
@@ -36,22 +36,49 @@ func Random(a, b, seed float32) float32 {
 		a, b = b, a
 	}
 	diff := b - a
-	intSeed := int32(seed * 2147483647)
+	intSeed := int(seed * 2147483647)
 	intSeed = (1103515245*intSeed + 12345) % 2147483647
 	normalized := float32(intSeed) / 2147483647.0
 	return a + normalized*diff
 }
-func RandomInt(a, b int32, seed float32) int32 {
-	return int32(Random(float32(a), float32(b), seed))
+func RangeInt(a, b int, seed float32) int {
+	return int(Range(float32(a), float32(b), seed))
 }
 
-func HasChance(percent, seed float32) bool {
+func HasChance(percent float32) bool {
+	return HasChanceSeeded(percent, float32(math.NaN()))
+}
+func HasChanceSeeded(percent, seed float32) bool {
 	if percent <= 0 {
 		return false
 	}
 	percent = float32(math.Min(100, float64(percent)))
-	n := Random(0, 100, seed)
+	n := Range(0, 100, seed)
 	return n <= percent
+}
+
+func Shuffle[T any](items []T) {
+	ShuffleSeeded(items, float32(math.NaN()))
+}
+func ShuffleSeeded[T any](items []T, seed float32) {
+	for i := len(items) - 1; i > 0; i-- {
+		j := RangeInt(0, i, seed)
+		items[i], items[j] = items[j], items[i]
+	}
+}
+
+func ChooseMultiple[T any](items []T, count int) []T {
+	return chooseMultipleInternal(items, count, float32(math.NaN()))
+}
+func ChooseMultipleSeeded[T any](items []T, count int, seed float32) []T {
+	return chooseMultipleInternal(items, count, seed)
+}
+
+func ChooseOne[T any](items []T) *T {
+	return singlePointer(chooseMultipleInternal(items, 1, float32(math.NaN())))
+}
+func ChooseOneSeeded[T any](items []T, seed float32) *T {
+	return singlePointer(chooseMultipleInternal(items, 1, seed))
 }
 
 func NoisePerlin(x, y, scale, seed float32) float32 {
@@ -73,8 +100,8 @@ func NoisePerlin(x, y, scale, seed float32) float32 {
 	}
 
 	// Dot product between gradient and distance
-	dot := func(ix, iy int32, x, y float32) float32 {
-		hash := SeedInts([]int32{intSeed, ix, iy})
+	dot := func(ix, iy int, x, y float32) float32 {
+		hash := SeedInts([]int{intSeed, ix, iy})
 		g := gradients[hash%8]
 		dx := x - float32(ix)
 		dy := y - float32(iy)
@@ -85,8 +112,8 @@ func NoisePerlin(x, y, scale, seed float32) float32 {
 	x *= scale
 	y *= scale
 
-	x0 := int32(math.Floor(float64(x)))
-	y0 := int32(math.Floor(float64(y)))
+	x0 := int(math.Floor(float64(x)))
+	y0 := int(math.Floor(float64(y)))
 	x1 := x0 + 1
 	y1 := y0 + 1
 
@@ -120,9 +147,9 @@ func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
 	}
 
 	// Permutation table (generated using Random and Seed)
-	getPerm := func(i, j int32) int {
-		subSeed := SeedInts([]int32{intSeed, i, j})
-		r := Random(0, 255, float32(subSeed))
+	getPerm := func(i, j int) int {
+		subSeed := SeedInts([]int{intSeed, i, j})
+		r := Range(0, 255, float32(subSeed))
 		return int(r) & 255
 	}
 
@@ -135,8 +162,8 @@ func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
 	xf := x + s
 	yf := y + s
 
-	xi := int32(math.Floor(float64(xf)))
-	yi := int32(math.Floor(float64(yf)))
+	xi := int(math.Floor(float64(xf)))
+	yi := int(math.Floor(float64(yf)))
 
 	t := float32(xi+yi) * float32(squish2D)
 	X0 := float32(xi) - t
@@ -145,7 +172,7 @@ func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
 	y0 := y - Y0
 
 	var x1, y1 float32
-	var i1, j1 int32
+	var i1, j1 int
 	if x0 > y0 {
 		i1, j1 = 1, 0
 	} else {
@@ -157,7 +184,7 @@ func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
 	x2 := x0 - 1 + 2*float32(squish2D)
 	y2 := y0 - 1 + 2*float32(squish2D)
 
-	contrib := func(dx, dy float32, i, j int32) float32 {
+	contrib := func(dx, dy float32, i, j int) float32 {
 		attsq := 2 - dx*dx - dy*dy
 		if attsq > 0 {
 			pi := getPerm(i, j) % 8
@@ -181,20 +208,20 @@ func NoiseWorley(x, y, scale, seed float32) float32 {
 	x *= scale
 	y *= scale
 
-	xi := int32(math.Floor(float64(x)))
-	yi := int32(math.Floor(float64(y)))
+	xi := int(math.Floor(float64(x)))
+	yi := int(math.Floor(float64(y)))
 
 	minDist := float32(math.MaxFloat32)
 
 	// Check neighboring cells (3x3 grid)
-	for dy := int32(-1); dy <= 1; dy++ {
-		for dx := int32(-1); dx <= 1; dx++ {
+	for dy := int(-1); dy <= 1; dy++ {
+		for dx := int(-1); dx <= 1; dx++ {
 			ix := xi + dx
 			iy := yi + dy
 
-			cellSeed := SeedInts([]int32{instSeed, ix, iy})
-			fx := Random(0, 1, float32(cellSeed))
-			fy := Random(0, 1, float32(cellSeed+1))
+			cellSeed := SeedInts([]int{instSeed, ix, iy})
+			fx := Range(0, 1, float32(cellSeed))
+			fy := Range(0, 1, float32(cellSeed+1))
 
 			cx := float32(ix) + fx
 			cy := float32(iy) + fy
@@ -219,21 +246,21 @@ func NoiseVoronoi(x, y, scale, seed float32) float32 {
 	x *= scale
 	y *= scale
 
-	xi := int32(math.Floor(float64(x)))
-	yi := int32(math.Floor(float64(y)))
+	xi := int(math.Floor(float64(x)))
+	yi := int(math.Floor(float64(y)))
 
 	minDist := float32(math.MaxFloat32)
-	var closestFeature [2]int32
+	var closestFeature [2]int
 
 	// Search 3x3 neighborhood
-	for dy := int32(-1); dy <= 1; dy++ {
-		for dx := int32(-1); dx <= 1; dx++ {
+	for dy := int(-1); dy <= 1; dy++ {
+		for dx := int(-1); dx <= 1; dx++ {
 			ix := xi + dx
 			iy := yi + dy
 
-			cellSeed := SeedInts([]int32{intSeed, ix, iy})
-			fx := Random(0, 1, float32(cellSeed))
-			fy := Random(0, 1, float32(cellSeed+1))
+			cellSeed := SeedInts([]int{intSeed, ix, iy})
+			fx := Range(0, 1, float32(cellSeed))
+			fy := Range(0, 1, float32(cellSeed+1))
 
 			cx := float32(ix) + fx
 			cy := float32(iy) + fy
@@ -244,14 +271,14 @@ func NoiseVoronoi(x, y, scale, seed float32) float32 {
 
 			if dist < minDist {
 				minDist = dist
-				closestFeature = [2]int32{ix, iy}
+				closestFeature = [2]int{ix, iy}
 			}
 		}
 	}
 
 	// Create a stable ID for the region based on its grid coords
-	regionID := SeedInts([]int32{floatToIntSeed(seed), closestFeature[0], closestFeature[1]})
-	regionVal := Random(0, 1, float32(regionID))
+	regionID := SeedInts([]int{floatToIntSeed(seed), closestFeature[0], closestFeature[1]})
+	regionVal := Range(0, 1, float32(regionID))
 
 	return regionVal
 }
@@ -270,23 +297,23 @@ func NoiseValue(x, y, scale, seed float32) float32 {
 	x *= scale
 	y *= scale
 
-	xi := int32(math.Floor(float64(x)))
-	yi := int32(math.Floor(float64(y)))
+	xi := int(math.Floor(float64(x)))
+	yi := int(math.Floor(float64(y)))
 
 	xf := x - float32(xi)
 	yf := y - float32(yi)
 
 	// Generate seeds for corners using your Seed function
-	seed00 := SeedInts([]int32{intSeed, xi, yi})
-	seed10 := SeedInts([]int32{intSeed, xi + 1, yi})
-	seed01 := SeedInts([]int32{intSeed, xi, yi + 1})
-	seed11 := SeedInts([]int32{intSeed, xi + 1, yi + 1})
+	seed00 := SeedInts([]int{intSeed, xi, yi})
+	seed10 := SeedInts([]int{intSeed, xi + 1, yi})
+	seed01 := SeedInts([]int{intSeed, xi, yi + 1})
+	seed11 := SeedInts([]int{intSeed, xi + 1, yi + 1})
 
 	// Get random values from your Random function
-	v00 := Random(0, 1, float32(seed00))
-	v10 := Random(0, 1, float32(seed10))
-	v01 := Random(0, 1, float32(seed01))
-	v11 := Random(0, 1, float32(seed11))
+	v00 := Range(0, 1, float32(seed00))
+	v10 := Range(0, 1, float32(seed10))
+	v01 := Range(0, 1, float32(seed01))
+	v11 := Range(0, 1, float32(seed11))
 
 	// Smooth interpolation weights
 	u := smoothstep(xf)
@@ -313,8 +340,8 @@ func NoiseValueCubic(x, y, scale, seed float32) float32 {
 	x *= scale
 	y *= scale
 
-	xi := int32(math.Floor(float64(x)))
-	yi := int32(math.Floor(float64(y)))
+	xi := int(math.Floor(float64(x)))
+	yi := int(math.Floor(float64(y)))
 
 	xf := x - float32(xi)
 	yf := y - float32(yi)
@@ -323,8 +350,8 @@ func NoiseValueCubic(x, y, scale, seed float32) float32 {
 	var vals [4][4]float32
 	for gy := -1; gy <= 2; gy++ {
 		for gx := -1; gx <= 2; gx++ {
-			cellSeed := SeedInts([]int32{intSeed, xi + int32(gx), yi + int32(gy)})
-			vals[gx+1][gy+1] = Random(0, 1, float32(cellSeed))
+			cellSeed := SeedInts([]int{intSeed, xi + int(gx), yi + int(gy)})
+			vals[gx+1][gy+1] = Range(0, 1, float32(cellSeed))
 		}
 	}
 
@@ -350,15 +377,41 @@ func NoiseValueCubic(x, y, scale, seed float32) float32 {
 
 // region private
 
-func floatToIntSeed(seed float32) int32 {
-	var intSeed int32 = 0
+func floatToIntSeed(seed float32) int {
+	var intSeed int = 0
 	if math.IsNaN(float64(seed)) {
-		intSeed = int32(time.Now().UnixNano())
+		intSeed = int(time.Now().UnixNano())
 	} else {
-		intSeed = int32(math.Float32bits(seed))
+		intSeed = int(math.Float32bits(seed))
+	}
+	return intSeed
+}
+
+func chooseMultipleInternal[T any](items []T, count int, seed float32) []T {
+	if len(items) == 0 || count <= 0 {
+		return []T{}
 	}
 
-	return intSeed
+	clone := make([]T, len(items))
+	copy(clone, items)
+
+	for i := len(clone) - 1; i > 0; i-- {
+		j := RangeInt(0, i, seed)
+		clone[i], clone[j] = clone[j], clone[i]
+	}
+
+	if count > len(clone) {
+		count = len(clone)
+	}
+
+	return clone[:count]
+}
+
+func singlePointer[T any](items []T) *T {
+	if len(items) == 0 {
+		return nil
+	}
+	return &items[0]
 }
 
 // endregion

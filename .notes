@@ -29,11 +29,13 @@
 		[√] text
 		[1] collections
 
+[01-06-2025] [Sun] [5]
+	[√] utility
+		[√] collections
+
 // = = = = = = =
 
 TODO:
-utility
-	collections
 geometry
 	point (distance)
 	shape
@@ -41,6 +43,7 @@ geometry
 rendering
 tilemap
 input
+global events
 execution flow, wait, stop, resume
 lua scripts
 	idea: explore using png mask as collision map overlapped on the usual atlas
