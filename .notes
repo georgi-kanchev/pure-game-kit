@@ -32,18 +32,22 @@
 [01-06-2025] [Sun] [5]
 	[√] utility
 		[√] collections
+[02-06-2025] [Mon] [6]
+	[√] color changes to make it uint
+	[1] rendering
+		[√] renderdoc debug draw calls
+		[1] cameras
 
 // = = = = = = =
 
 TODO:
+tilemap
 geometry
 	point (distance)
 	shape
 	collision
-rendering
-tilemap
 input
-global events
+global events?
 execution flow, wait, stop, resume
 lua scripts
 	idea: explore using png mask as collision map overlapped on the usual atlas
