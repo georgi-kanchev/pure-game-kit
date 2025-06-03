@@ -46,6 +46,10 @@ func KeepOpen() bool {
 	return !rl.WindowShouldClose()
 }
 func Close() {
+	if !rl.IsWindowReady() {
+		return
+	}
+
 	IsOpen = false
 	terminate = true
 	rl.CloseWindow()
@@ -62,10 +66,6 @@ func MoveToMonitor(monitor byte) {
 	if wasMax {
 		rl.MaximizeWindow()
 	}
-}
-
-func IsFocused() bool {
-	return rl.IsWindowFocused()
 }
 
 func ApplyState(state State) {
@@ -135,6 +135,13 @@ func CurrentState() State {
 	}
 
 	return Floating
+}
+
+func IsFocused() bool {
+	return rl.IsWindowFocused()
+}
+func Size() (width, height int) {
+	return rl.GetScreenWidth(), rl.GetScreenHeight()
 }
 
 // region private
