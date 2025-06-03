@@ -38,9 +38,10 @@
 		[√] renderdoc debug draw calls
 		[1] cameras
 
-[03-06-2025] [Tue] []7
+[03-06-2025] [Tue] [7]
 	[2] rendering
-		[2] cameras
+		[√] cameras
+		[1] types of drawing
 
 // = = = = = = =
 
