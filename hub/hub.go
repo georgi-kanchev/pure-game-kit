@@ -5,8 +5,6 @@ import (
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
@@ -21,9 +19,6 @@ func main() {
 		cam.SetScreenArea(w/2, h/2, w/2, h/2)
 		cam.DrawColor(color.Darken(color.Gray, 0.5))
 		cam.DrawRectangle(0, 0, 200, 200, color.Red)
-
-		var mx, my = cam.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
-		cam.DrawLine(mx, my, -100, -200, 10, color.Orange)
 
 		var x, y = cam.CornerUpperRight(-200, 200)
 		cam.DrawRectangle(x, y, 100, 100, color.Blue)

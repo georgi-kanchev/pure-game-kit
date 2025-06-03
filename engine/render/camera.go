@@ -110,6 +110,15 @@ func (camera *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 	rl.DrawLineEx(rl.Vector2{X: ax, Y: ay}, rl.Vector2{X: bx, Y: by}, thickness, rl.GetColor(color))
 	camera.stop()
 }
+func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float32) {
+	camera.start()
+	for i := 1; i < len(points); i++ {
+		rl.DrawLineEx(
+			rl.Vector2{X: points[i-1][0], Y: points[i-1][1]},
+			rl.Vector2{X: points[i][0], Y: points[i][1]}, thickness, rl.GetColor(color))
+	}
+	camera.stop()
+}
 func (camera *Camera) DrawRectangle(x, y, width, height float32, color uint) {
 	camera.start()
 	rl.DrawRectangle(int32(x), int32(y), int32(width), int32(height), rl.GetColor(color))

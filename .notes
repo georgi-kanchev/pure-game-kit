@@ -42,25 +42,30 @@
 	[2] rendering
 		[√] cameras
 		[1] types of drawing
-
+	[1] loading assets
 // = = = = = = =
 
 TODO:
 tilemap
+	tiled loading
 geometry
 	point (distance)
 	shape
 	collision
+	png maps/atlases
 input
 global events?
 execution flow, wait, stop, resume
 lua scripts
 	idea: explore using png mask as collision map overlapped on the usual atlas
-ui
+gui
 	simplify inputbox, list & other complicated blocks
 	block rename?
+	merge instant + layout
+	rendering
+	default assets + replacing them
 audio
 LAN
-storage
+data/storage
 events
 	idea: look into giving pointer to any value to notify subscribers it changed?
