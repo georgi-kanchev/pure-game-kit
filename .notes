@@ -43,9 +43,20 @@
 		[√] cameras
 		[1] types of drawing
 	[1] loading assets
+
+[04-06-2025] [Wed] [8]
+	[2] data
+		[√] files
+		[√] folders
+		[2] loading assets
 // = = = = = = =
 
 TODO:
+[3] rendering
+	[2] types of drawing
+[3] data
+	[3] loading assets
+		
 tilemap
 	tiled loading
 geometry
