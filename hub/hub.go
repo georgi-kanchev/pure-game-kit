@@ -1,6 +1,7 @@
 package main
 
 import (
+	"pure-kit/engine/data/assets"
 	"pure-kit/engine/render"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/time"
@@ -12,6 +13,8 @@ func main() {
 	var angle float32 = 0.0
 
 	window.IsAntialiased = true
+
+	assets.LoadTextures("rocks-1.png")
 
 	for window.KeepOpen() {
 		var w, h = window.Size()

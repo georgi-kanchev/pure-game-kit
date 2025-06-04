@@ -5,8 +5,6 @@ import (
 	"math"
 	"strconv"
 	"strings"
-
-	"golang.org/x/exp/constraints"
 )
 
 func Limit(number, a, b float32) float32 {
@@ -149,12 +147,19 @@ func IsWithinInt(number, target, distance int) bool {
 	return IsBetweenInt(number, target-distance, target+distance, true, true)
 }
 
-func Average[T constraints.Integer | constraints.Float](numbers []T) float64 {
-	var sum float64
+func Average(numbers ...float32) float32 {
+	var sum float32
 	for _, n := range numbers {
-		sum += float64(n)
+		sum += float32(n)
 	}
-	return sum / float64(len(numbers))
+	return sum / float32(len(numbers))
+}
+func AverageInt(numbers ...int) int {
+	var sum int
+	for _, n := range numbers {
+		sum += int(n)
+	}
+	return sum / len(numbers)
 }
 
 func Indexes2DToIndex1D(x, y, width, height int) int {
@@ -177,6 +182,19 @@ func Index1DToIndexes2D(index, width, height int) (int, int) {
 	x := index % width
 	y := index / width
 	return x, y
+}
+
+func ByteSizeToText(byteSize int64) string {
+	const unit = 1024
+	if byteSize < unit {
+		return fmt.Sprintf("%d B", byteSize)
+	}
+	div, exp := int64(unit), 0
+	for n := byteSize / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %cB", float64(byteSize)/float64(div), "KMGTPE"[exp])
 }
 
 func IsNaN(number float32) bool { return math.IsNaN(float64(number)) }
