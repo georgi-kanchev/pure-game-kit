@@ -1,37 +1,31 @@
 package main
 
 import (
-	"pure-kit/engine/data/assets"
+	texture "pure-kit/engine/data/assets"
 	"pure-kit/engine/render"
 	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
 )
 
 func main() {
-	var cam = render.Camera{Angle: 45, Zoom: 1}
-	var angle float32 = 0.0
+	var cam = render.NewCamera()
+	cam.Zoom = 8
 
 	window.IsAntialiased = true
 
-	assets.LoadTextures("rocks-1.png")
+	var node = render.NewNode("flipped", nil)
+	node.OriginX, node.OriginY = 0, 0
+	texture.LoadTexturesFromFiles("hell.png")
+	texture.LoadAtlasFromTexture("hell", 32, 32, 0)
+
+	texture.LoadCellFromAtlas("hell", "flipped", 6, 1, -1, 1)
 
 	for window.KeepOpen() {
 		var w, h = window.Size()
 
-		cam.SetScreenArea(w/2, h/2, w/2, h/2)
-		cam.DrawColor(color.Darken(color.Gray, 0.5))
-		cam.DrawRectangle(0, 0, 200, 200, color.Red)
-
-		var x, y = cam.CornerUpperRight(-200, 200)
-		cam.DrawRectangle(x, y, 100, 100, color.Blue)
-
-		angle += float32(time.Delta) * 10
-		cam.Angle = angle
-		cam.SetScreenArea(0, 0, w/2, h/2)
+		cam.SetScreenArea(0, 0, w, h)
 		cam.DrawColor(color.Darken(color.Gray, 0.75))
-		cam.DrawGrid(1, 20, color.Gray)
-		cam.DrawRectangle(100, 200, 200, 200, color.Green)
-		cam.DrawFrame(10, color.Magenta)
+		cam.DrawGrid(1, 32, color.Gray)
+		cam.DrawNode(&node)
 	}
 }

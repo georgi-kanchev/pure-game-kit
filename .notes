@@ -1,82 +1,94 @@
 [26-05-2025] [Mon] [1]
-	[√] project setup
-	[√] git
-	[√] window
+[√] project setup
+[√] git
+[√] window
 
 [27-05-2025] [Tue] [2]
-	[√] bugfix window maximize broke
-	[1] utility
-		[√] numbers
-		[√] angle
-		[√] color
-	[1]	motion
-		[√] spline, bezier curves
-		[√] easings
-	[1] geometry
-		[√] point, cell, area, chunk, line
+[√] bugfix window maximize broke
+[ ] utility
+	[√] numbers
+	[√] angle
+	[√] color
+[ ]	motion
+	[√] spline, bezier curves
+	[√] easings
+[ ] geometry
+	[√] point, cell, area, chunk, line
 
 [30-05-2025] [Fri] [3]
-	[2] motion
-		[√] animation struct & methods
-		[1] tween chaining (number, point etc)
+[ ] motion
+	[√] animation struct & methods
+	[ ] tween chaining (number, point etc)
 
 [31-05-2025] [Sat] [4]
-	[√] motion
-		[√] tween chaining (number, point etc)
-	[2] utility
-		[√] random
-		[√] time
-		[√] text
-		[1] collections
+[√] motion
+	[√] tween chaining (number, point etc)
+[ ] utility
+	[√] random
+	[√] time
+	[√] text
+	[1] collections
 
 [01-06-2025] [Sun] [5]
-	[√] utility
-		[√] collections
+[√] utility
+	[√] collections
+
 [02-06-2025] [Mon] [6]
-	[√] color changes to make it uint
-	[1] rendering
-		[√] renderdoc debug draw calls
-		[1] cameras
+[√] color changes to make it uint
+[ ] rendering
+	[√] renderdoc debug draw calls
+	[ ] cameras
 
 [03-06-2025] [Tue] [7]
-	[2] rendering
-		[√] cameras
-		[1] types of drawing
-	[1] loading assets
+[ ] rendering
+	[√] cameras
+	[ ] types of drawing
+[ ] loading assets
 
 [04-06-2025] [Wed] [8]
-	[2] data
-		[√] files
-		[√] folders
-		[2] loading assets
+[ ] data
+	[√] files
+	[√] folders
+	[ ] loading assets (textures)
+
+[06-06-2025] [Fri] [9]
+[ ] data
+	[√] loading textures/area/atlas/cells
+[ ] rendering
+	[√] node transform/parent
+	[√] drawing transformed textured nodes
+
+
 // = = = = = = =
 
 TODO:
-[3] rendering
-	[2] types of drawing
-[3] data
-	[3] loading assets
-		
+drawing tilemaps
 tilemap
 	tiled loading
 geometry
 	point (distance)
 	shape
 	collision
-	png maps/atlases
+	png maps/atlases, as assets?
 input
-global events?
-execution flow, wait, stop, resume
-lua scripts
-	idea: explore using png mask as collision map overlapped on the usual atlas
+data fonts
 gui
 	simplify inputbox, list & other complicated blocks
 	block rename?
 	merge instant + layout
 	rendering
 	default assets + replacing them
+data sounds, music, playlists	
 audio
-LAN
 data/storage
+execution flow, wait, stop, resume
+lua scripts
+LAN
+
+// = = = =
+
 events
+	global?
 	idea: look into giving pointer to any value to notify subscribers it changed?
+
+consistent error handling
