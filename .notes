@@ -5,59 +5,53 @@
 
 [27-05-2025] [Tue] [2]
 [√] bugfix window maximize broke
-[ ] utility
-	[√] numbers
-	[√] angle
-	[√] color
-[ ]	motion
-	[√] spline, bezier curves
-	[√] easings
-[ ] geometry
-	[√] point, cell, area, chunk, line
+[√] utility - numbers
+[√] utility - angle
+[√] utility - color
+[√] motion - spline, bezier curves
+[√] motion - easings
+[√] geometry - point, cell, area, chunk, line
 
 [30-05-2025] [Fri] [3]
-[ ] motion
-	[√] animation struct & methods
-	[ ] tween chaining (number, point etc)
+[√] motion - animation struct & methods
+[x] motion - tween chaining (number, point etc)
 
 [31-05-2025] [Sat] [4]
-[√] motion
-	[√] tween chaining (number, point etc)
-[ ] utility
-	[√] random
-	[√] time
-	[√] text
-	[1] collections
+[√] motion - tween chaining (number, point etc)
+[√] utility - random
+[√] utility - time
+[√] utility - text
+[x] utility - collections
 
 [01-06-2025] [Sun] [5]
-[√] utility
-	[√] collections
+[√] utility - collections
 
 [02-06-2025] [Mon] [6]
-[√] color changes to make it uint
-[ ] rendering
-	[√] renderdoc debug draw calls
-	[ ] cameras
+[√] color - changes to make it uint
+[√] rendering - enderdoc debug draw calls
+[x] rendering - ameras
 
 [03-06-2025] [Tue] [7]
-[ ] rendering
-	[√] cameras
-	[ ] types of drawing
-[ ] loading assets
+[√] rendering - cameras
+[x] rendering - types of drawing
+[x] data - loading assets
 
 [04-06-2025] [Wed] [8]
-[ ] data
-	[√] files
-	[√] folders
-	[ ] loading assets (textures)
+[√] data - files
+[√] data - folders
+[x] data - loading assets (textures)
 
 [06-06-2025] [Fri] [9]
-[ ] data
-	[√] loading textures/area/atlas/cells
-[ ] rendering
-	[√] node transform/parent
-	[√] drawing transformed textured nodes
+[√] data - loading textures/area/atlas/cells
+[√] rendering - node transform/parent
+[√] rendering - drawing transformed textured nodes
 
+[10-06-2025] [Tue] [10]
+[√] is - funcs Once + Just Changed tracker of values
+[√] random - range bugfix
+[√] window - starts with title as executable name
+[x] tilemap - started
+[x] render - rendering tilemaps started
 
 // = = = = = = =
 

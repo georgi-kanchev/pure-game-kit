@@ -56,7 +56,7 @@ func LoadAtlasFromTexture(textureId string, cellWidth, cellHeight, cellGap int) 
 		internal.Atlases[textureId] = atlas
 	}
 }
-func LoadCellsFromAtlas(atlasId string, startCellX, startCellY int, cellIds ...string) {
+func LoadTilesFromAtlas(atlasId string, startCellX, startCellY int, tileIds ...string) {
 	var atlas, has = internal.Atlases[atlasId]
 
 	if !has {
@@ -69,22 +69,22 @@ func LoadCellsFromAtlas(atlasId string, startCellX, startCellY int, cellIds ...s
 
 	for i := startCellY; i < tileCountY; i++ {
 		for j := startCellX; j < tileCountX; j++ {
-			if index >= len(cellIds) {
+			if index >= len(tileIds) {
 				return
 			}
 
 			var texRect = internal.AtlasRect{Atlas: &atlas, CellX: float32(j), CellY: float32(i), CountX: 1, CountY: 1}
-			internal.AtlasRects[cellIds[index]] = texRect
+			internal.AtlasRects[tileIds[index]] = texRect
 			index++
 		}
 	}
 }
-func LoadCellFromAtlas(atlasId, cellId string, cellX, cellY, countX, countY float32) {
+func LoadTileFromAtlas(atlasId, tileId string, cellX, cellY, countX, countY float32) {
 	var atlas, has = internal.Atlases[atlasId]
 
 	if has {
 		var texRect = internal.AtlasRect{Atlas: &atlas, CellX: cellX, CellY: cellY, CountX: countX, CountY: countY}
-		internal.AtlasRects[cellId] = texRect
+		internal.AtlasRects[tileId] = texRect
 	}
 }
 

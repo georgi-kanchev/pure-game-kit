@@ -1,7 +1,10 @@
 package window
 
 import (
+	"path/filepath"
+	"pure-kit/engine/data/file"
 	"pure-kit/engine/utility/time"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -17,8 +20,8 @@ const (
 	Minimized
 )
 
-var Title = ""
-var Color = struct{ R, G, B byte }{0, 0, 0}
+var Title = strings.TrimSuffix(filepath.Base(file.PathOfExecutable()), filepath.Ext(file.PathOfExecutable()))
+var Color uint = 0
 var IsVerticallySynchronized = false
 var IsAntialiased = false
 var TargetFrameRate byte = 60
@@ -38,7 +41,7 @@ func KeepOpen() bool {
 
 	rl.EndDrawing()
 	rl.BeginDrawing()
-	rl.ClearBackground(rl.NewColor(Color.R, Color.G, Color.B, 255))
+	rl.ClearBackground(rl.GetColor(Color))
 	rl.DrawFPS(0, 0)
 
 	time.Update()
@@ -164,7 +167,7 @@ func tryCreate() {
 
 	rl.SetConfigFlags(flags)
 	rl.SetTraceLogLevel(rl.LogNone)
-	rl.InitWindow(1280, 720, "")
+	rl.InitWindow(1280, 720, Title)
 	rl.SetExitKey(rl.KeyNull)
 	rl.MaximizeWindow()
 	rl.SetTargetFPS(60)

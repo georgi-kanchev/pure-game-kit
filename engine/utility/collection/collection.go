@@ -361,3 +361,11 @@ func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) strin
 	}
 	return sb.String()
 }
+
+func ToPointers[T any](collection []T) []*T {
+	out := make([]*T, len(collection))
+	for i := range collection {
+		out[i] = &collection[i]
+	}
+	return out
+}

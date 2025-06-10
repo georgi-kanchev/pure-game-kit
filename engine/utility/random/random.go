@@ -35,9 +35,15 @@ func Range(a, b, seed float32) float32 {
 	if a > b {
 		a, b = b, a
 	}
+
+	if seed != seed { // seed is NaN
+		seed = float32(time.Now().UnixNano()%1e9) / 1e9 // value in [0,1)
+	}
+
 	diff := b - a
 	intSeed := int(seed * 2147483647)
 	intSeed = (1103515245*intSeed + 12345) % 2147483647
+
 	normalized := float32(intSeed) / 2147483647.0
 	return a + normalized*diff
 }

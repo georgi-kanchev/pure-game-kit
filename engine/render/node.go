@@ -7,10 +7,26 @@ import (
 
 type Node struct {
 	X, Y, Angle, ScaleX, ScaleY float32
-	OriginX, OriginY            float32
+	PivotX, PivotY              float32
 	RepeatX, RepeatY            float32
 	AssetID                     string
 	Parent                      *Node
+}
+
+func NewNode(assetId string, parent *Node) Node {
+	return Node{AssetID: assetId, Parent: parent,
+		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5}
+}
+
+func NewNodesTileMap(tiles map[[2]int]string, parent *Node) []Node {
+	var result = []Node{}
+	for k, v := range tiles {
+		var node = NewNode(v, parent)
+		node.X = float32(k[0] * 32)
+		node.Y = float32(k[1] * 32)
+		result = append(result, node)
+	}
+	return result
 }
 
 func (node *Node) Size() (width, height float32) {
@@ -29,19 +45,13 @@ func (node *Node) Size() (width, height float32) {
 	var atlas = texRect.Atlas
 	return float32(atlas.CellWidth) * texRect.CountX, float32(atlas.CellHeight) * texRect.CountY
 }
-
-func NewNode(assetId string, parent *Node) Node {
-	return Node{AssetID: assetId, Parent: parent,
-		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, OriginX: 0.5, OriginY: 0.5}
-}
-
 func (node *Node) Global() (x, y, angle, scaleX, scaleY float32) {
 	// Get texture size for origin offset
 	var texWidth, texHeight = node.Size()
 
 	// Step 1: Local origin offset, in local space
-	originPixelX := node.OriginX * float32(texWidth)
-	originPixelY := node.OriginY * float32(texHeight)
+	originPixelX := node.PivotX * float32(texWidth)
+	originPixelY := node.PivotY * float32(texHeight)
 	offsetX := -originPixelX * node.ScaleX
 	offsetY := -originPixelY * node.ScaleY
 

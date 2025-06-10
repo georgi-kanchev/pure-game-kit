@@ -44,3 +44,26 @@ func All[T comparable](value T, values ...T) bool {
 func Flagged[T constraints.Integer](value, flag T) bool {
 	return value&flag == flag
 }
+
+func JustChanged[T comparable](pointer *T) bool {
+	var current = *pointer
+
+	var prev, has = justChangedValues[pointer]
+	if !has || prev != current {
+		justChangedValues[pointer] = current
+		return true
+	}
+
+	return false
+}
+func Once(key any, condition bool) bool {
+	prev := justTrueStates[key]
+	justTrueStates[key] = condition
+	return !prev && condition
+}
+
+// region private
+var justChangedValues = make(map[any]any)
+var justTrueStates = make(map[any]bool)
+
+// endregion

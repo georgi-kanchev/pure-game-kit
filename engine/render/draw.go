@@ -117,29 +117,31 @@ func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
 	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
 	camera.stop()
 }
-func (camera *Camera) DrawNode(node *Node) {
+func (camera *Camera) DrawNodes(nodes ...*Node) {
 	camera.start()
-	var texture, fullTexture = internal.Textures[node.AssetID]
-	var texX, texY float32 = 0.0, 0.0
-	var repX, repY = node.RepeatX, node.RepeatY
-	var x, y, ang, scX, scY = node.Global()
+	for _, node := range nodes {
+		var texture, fullTexture = internal.Textures[node.AssetID]
+		var texX, texY float32 = 0.0, 0.0
+		var repX, repY = node.RepeatX, node.RepeatY
+		var x, y, ang, scX, scY = node.Global()
 
-	if !fullTexture {
-		var rect, has = internal.AtlasRects[node.AssetID]
-		var atlas = rect.Atlas
+		if !fullTexture {
+			var rect, has = internal.AtlasRects[node.AssetID]
+			var atlas = rect.Atlas
 
-		if !has {
-			return
+			if !has {
+				continue
+			}
+
+			texture = atlas.Texture
+			texX, texY = rect.CellX*float32(atlas.CellWidth), rect.CellY*float32(atlas.CellHeight)
 		}
 
-		texture = atlas.Texture
-		texX, texY = rect.CellX*float32(atlas.CellWidth), rect.CellY*float32(atlas.CellHeight)
+		var texW, texH = node.Size()
+		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW) * repX, Height: float32(texH) * repY}
+		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(texW) * scX, Height: float32(texH) * scY}
+
+		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.White)
 	}
-
-	var texW, texH = node.Size()
-	var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW) * repX, Height: float32(texH) * repY}
-	var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(texW) * scX, Height: float32(texH) * scY}
-
-	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.White)
 	camera.stop()
 }
