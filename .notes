@@ -54,21 +54,19 @@
 [x] render - rendering tilemaps started
 
 [11-06-2025] [Wed] [11]
-[x] data - started default assets
-[x] storage - added compression, started storage
-[x] utility/text - added toBase64 & fromBase64
+[√] data - added default assets & way to load them from base64
+[√] storage - added compression, started storage
+[√] utility/text - added toBase64 & fromBase64
+
 
 // = = = = = = =
 
 TODO:
+data - split default assets into rects
+drawing 9-slice
 drawing tilemaps
 tilemap
 	tiled loading
-geometry
-	point (distance)
-	shape
-	collision
-	png maps/atlases, as assets?
 input
 data fonts
 gui
@@ -76,18 +74,23 @@ gui
 	block rename?
 	merge instant + layout
 	rendering
-	default assets + replacing them
-data sounds, music, playlists	
+	using default assets + replacing them
+geometry
+	point (distance)
+	shape
+	collision
+	png maps/atlases, as assets?
+
+// = = = =
+
+data sounds, music, playlists
 audio
 data/storage
 execution flow, wait, stop, resume
 lua scripts
 LAN
-
-// = = = =
-
 events
 	global?
 	idea: look into giving pointer to any value to notify subscribers it changed?
 
-consistent error handling
+consistent error handling + logging, console & file
