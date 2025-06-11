@@ -11,19 +11,19 @@ type Node struct {
 	RepeatX, RepeatY            float32
 	AssetID                     string
 	Parent                      *Node
+	Tint                        uint
 }
 
 func NewNode(assetId string, parent *Node) Node {
 	return Node{AssetID: assetId, Parent: parent,
-		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5}
+		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5, Tint: math.MaxUint32}
 }
-
-func NewNodesTileMap(tiles map[[2]int]string, parent *Node) []Node {
+func NewNodesGrid(tiles map[[2]int]string, cellWidth, cellHeight int, parent *Node) []Node {
 	var result = []Node{}
 	for k, v := range tiles {
 		var node = NewNode(v, parent)
-		node.X = float32(k[0] * 32)
-		node.Y = float32(k[1] * 32)
+		node.X = float32(k[0] * cellWidth)
+		node.Y = float32(k[1] * cellHeight)
 		result = append(result, node)
 	}
 	return result

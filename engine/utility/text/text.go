@@ -1,6 +1,7 @@
 package text
 
 import (
+	"encoding/base64"
 	"math"
 	"strconv"
 	"strings"
@@ -202,6 +203,17 @@ func Fit(text string, maxLength int) string {
 	}
 
 	return text
+}
+
+func ToBase64(text string) string {
+	return base64.StdEncoding.EncodeToString([]byte(text))
+}
+func FromBase64(textBase64 string) string {
+	decodedBytes, err := base64.StdEncoding.DecodeString(textBase64)
+	if err != nil {
+		return ""
+	}
+	return string(decodedBytes)
 }
 
 // region private

@@ -141,7 +141,7 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW) * repX, Height: float32(texH) * repY}
 		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(texW) * scX, Height: float32(texH) * scY}
 
-		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.White)
+		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(node.Tint))
 	}
 	camera.stop()
 }
