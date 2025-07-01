@@ -66,12 +66,12 @@
 [√] data - default ui sounds
 [√] internal update
 [√] time - moved update to internal, restructure, renamed to seconds
+[√] data - default icons done & default patterns done
 
 // = = = = = = =
 
 TODO:
-data - default icons
-data - split default assets into rects
+data - split default assets into rects & tiles
 tweens are way too complicated to work with - think of something else
 drawing 9-slice
 drawing tilemaps

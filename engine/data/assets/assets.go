@@ -11,13 +11,35 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func PlaySound(soundId string) {
-	var sound, has = internal.Sounds[soundId]
-	if has {
-		rl.PlaySound(*sound)
+func LoadSoundsFromFiles(filePaths ...string) []string {
+	if !rl.IsWindowReady() {
+		window.Recreate()
 	}
-}
 
+	if !rl.IsAudioDeviceReady() {
+		rl.InitAudioDevice()
+	}
+
+	var result = []string{}
+	for _, path := range filePaths {
+		var absolutePath = filepath.Join(folder.PathOfExecutable(), path)
+		path = strings.ReplaceAll(path, file.Extension(path), "")
+		var _, has = internal.Sounds[path]
+
+		if has || !file.Exists(absolutePath) {
+			continue
+		}
+
+		var sound = rl.LoadSound(absolutePath)
+
+		if sound.FrameCount != 0 {
+			internal.Sounds[path] = &sound
+			result = append(result, path)
+		}
+	}
+
+	return result
+}
 func LoadTexturesFromFiles(filePaths ...string) []string {
 	if !rl.IsWindowReady() {
 		window.Recreate()
