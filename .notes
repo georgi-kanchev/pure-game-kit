@@ -58,6 +58,9 @@
 [√] storage - added compression, started storage
 [√] utility/text - added toBase64 & fromBase64
 
+[30-06-2025] [Mon] [12]
+[√] data - embed default assets into base64
+[x] data - started default icons
 
 // = = = = = = =
 

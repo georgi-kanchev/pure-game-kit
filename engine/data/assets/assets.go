@@ -73,7 +73,8 @@ func LoadTilesFromAtlas(atlasId string, startCellX, startCellY int, tileIds ...s
 				return
 			}
 
-			var texRect = internal.AtlasRect{Atlas: &atlas, CellX: float32(j), CellY: float32(i), CountX: 1, CountY: 1}
+			var texRect = internal.AtlasRect{
+				Atlas: &atlas, CellX: float32(j), CellY: float32(i), CountX: 1, CountY: 1}
 			internal.AtlasRects[tileIds[index]] = texRect
 			index++
 		}

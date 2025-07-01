@@ -12,6 +12,7 @@ type Atlas struct {
 }
 
 var Textures = make(map[string]*rl.Texture2D)
-var TileMaps = make(map[string][]string)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
+
+var TileMaps = make(map[string][]string)
