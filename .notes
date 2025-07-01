@@ -62,10 +62,17 @@
 [√] data - embed default assets into base64
 [x] data - started default icons
 
+[01-07-2025] [Tue] [13]
+[√] data - default ui sounds
+[√] internal update
+[√] time - moved update to internal, restructure, renamed to seconds
+
 // = = = = = = =
 
 TODO:
+data - default icons
 data - split default assets into rects
+tweens are way too complicated to work with - think of something else
 drawing 9-slice
 drawing tilemaps
 tilemap
@@ -86,8 +93,7 @@ geometry
 
 // = = = =
 
-data sounds, music, playlists
-audio
+audio - sounds, music, playlists
 data/storage
 execution flow, wait, stop, resume
 lua scripts

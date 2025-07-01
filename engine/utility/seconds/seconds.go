@@ -1,14 +1,14 @@
-package time
+package seconds
 
 import (
 	"fmt"
-	"math"
+	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"strings"
 	"time"
 )
 
-type Unit int
+type Unit byte
 
 const (
 	Day Unit = 1 << iota
@@ -20,25 +20,6 @@ const (
 
 type Conversion int
 
-var Clock, Delta, DeltaRaw, FrameRate, FrameRateAverage float64
-var FrameCount uint64
-var Runtime float64
-
-func Update() {
-	var now = time.Now()
-	var midnight = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	var secondsSinceMidnight = now.Sub(midnight).Seconds()
-
-	Clock = secondsSinceMidnight
-	DeltaRaw = Clock - prevClock
-	Delta = math.Min(DeltaRaw, deltaMax)
-	Runtime += Delta
-	FrameRate = 1.0 / Delta
-	FrameRateAverage = float64(FrameCount) / Runtime
-	FrameCount++
-	prevClock = Clock
-}
-
 func AsClock24(seconds float64, divider string, units Unit) string {
 	ts := time.Duration(seconds * float64(time.Second))
 	return formatTimeParts(ts, divider, units, false, false)
@@ -48,23 +29,31 @@ func AsClock12(seconds float64, divider string, units Unit, AM_PM bool) string {
 	return formatTimeParts(ts, divider, units, true, AM_PM)
 }
 
-func SecondsToMilliseconds(seconds float64) float64 { return seconds * 1000 }
-func SecondsToMinutes(secodns float64) float64      { return secodns / 60 }
-func SecondsToHours(seconds float64) float64        { return seconds / 3600 }
-func SecondsToDays(seconds float64) float64         { return seconds / 86400 }
-func SecondsToWeeks(seconds float64) float64        { return seconds / 604800 }
+func GetClock() float64                { return internal.Clock }
+func GetDelta() float64                { return internal.Delta }
+func GetFrameRate() float64            { return internal.FrameRate }
+func GetFrameRateAverage() float64     { return internal.FrameRateAverage }
+func GetFrameCount() uint64            { return internal.FrameCount }
+func GetRuntime() float64              { return internal.Runtime }
+func GetRealDelta() float64            { return internal.RealDelta }
+func GetRealFrameRate() float64        { return internal.RealFrameRate }
+func GetRealFrameRateAverage() float64 { return internal.RealFrameRateAverage }
+func GetRealFrameCount() uint64        { return internal.RealFrameCount }
+func GetRealRuntime() float64          { return internal.RealRuntime }
 
-func SecondsFromMilliseconds(milliseconds float64) float64 { return milliseconds / 1000 }
-func SecondsFromMinutes(minutes float64) float64           { return minutes * 60 }
-func SecondsFromHours(hours float64) float64               { return hours * 3600 }
-func SecondsFromDays(days float64) float64                 { return days * 86400 }
-func SecondsFromWeeks(weeks float64) float64               { return weeks * 604800 }
+func ToMilliseconds(seconds float64) float64 { return seconds * 1000 }
+func ToMinutes(secodns float64) float64      { return secodns / 60 }
+func ToHours(seconds float64) float64        { return seconds / 3600 }
+func ToDays(seconds float64) float64         { return seconds / 86400 }
+func ToWeeks(seconds float64) float64        { return seconds / 604800 }
+
+func FromMilliseconds(milliseconds float64) float64 { return milliseconds / 1000 }
+func FromMinutes(minutes float64) float64           { return minutes * 60 }
+func FromHours(hours float64) float64               { return hours * 3600 }
+func FromDays(days float64) float64                 { return days * 86400 }
+func FromWeeks(weeks float64) float64               { return weeks * 604800 }
 
 // region private
-
-const deltaMax float64 = 0.1
-
-var prevClock float64
 
 func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amPm bool) string {
 	var parts []string

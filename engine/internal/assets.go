@@ -1,6 +1,8 @@
 package internal
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 type AtlasRect struct {
 	CellX, CellY, CountX, CountY float32
@@ -16,3 +18,6 @@ var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
 
 var TileMaps = make(map[string][]string)
+
+var Sounds = make(map[string]*rl.Sound)
+var Music = make(map[string]*rl.Music)

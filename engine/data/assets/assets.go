@@ -11,6 +11,13 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+func PlaySound(soundId string) {
+	var sound, has = internal.Sounds[soundId]
+	if has {
+		rl.PlaySound(*sound)
+	}
+}
+
 func LoadTexturesFromFiles(filePaths ...string) []string {
 	if !rl.IsWindowReady() {
 		window.Recreate()
@@ -107,5 +114,16 @@ func UnloadTextures(textureIds ...string) {
 		}
 
 		rl.UnloadTexture(*tex)
+	}
+}
+
+func UnloadSounds(soundIds ...string) {
+	for _, v := range soundIds {
+		var sound, has = internal.Sounds[v]
+
+		if has {
+			delete(internal.Sounds, v)
+			rl.UnloadSound(*sound)
+		}
 	}
 }

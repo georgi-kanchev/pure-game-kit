@@ -3,7 +3,7 @@ package window
 import (
 	"path/filepath"
 	"pure-kit/engine/data/file"
-	"pure-kit/engine/utility/time"
+	"pure-kit/engine/internal"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -44,7 +44,7 @@ func KeepOpen() bool {
 	rl.ClearBackground(rl.GetColor(Color))
 	rl.DrawFPS(0, 0)
 
-	time.Update()
+	internal.Update()
 
 	return !rl.WindowShouldClose()
 }

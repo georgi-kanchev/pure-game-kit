@@ -10,6 +10,13 @@ type Sequence[T any] struct {
 	time float32
 }
 
+func NewSequence[T any](itemsPerSecond float32, items ...T) Sequence[T] {
+	return Sequence[T]{Items: items, ItemsPerSecond: itemsPerSecond}
+}
+func NewSequenceLoop[T any](itemsPerSecond float32, items ...T) Sequence[T] {
+	return Sequence[T]{Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: true}
+}
+
 func (sequence *Sequence[T]) Advance(deltaTime float32) (item *T, index int) {
 	if !sequence.IsPlaying {
 		return &sequence.Items[0], 0
