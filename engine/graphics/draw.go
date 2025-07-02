@@ -23,15 +23,14 @@ func (camera *Camera) DrawFrame(size int, color uint) {
 	rl.DrawRectangle(int32(x), int32(y), int32(size), int32(h), rl.GetColor(color))        // left
 }
 func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
-	camera.start()
+	camera.begin()
 
-	// Get all 4 world-space corners of the screen
-	ulx, uly := camera.CornerUpperLeft(0, 0)
-	urx, ury := camera.CornerUpperRight(0, 0)
-	llx, lly := camera.CornerLowerLeft(0, 0)
-	lrx, lry := camera.CornerLowerRight(0, 0)
+	var sx, sy, sw, sh = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
+	ulx, uly := camera.PointFromScreen(sx, sy)
+	urx, ury := camera.PointFromScreen(sx+sw, sy)
+	lrx, lry := camera.PointFromScreen(sx+sw, sy+sh)
+	llx, lly := camera.PointFromScreen(sx, sy+sh)
 
-	// Compute axis-aligned bounding box (AABB) from the rotated corners
 	xs := []float32{ulx, urx, llx, lrx}
 	ys := []float32{uly, ury, lly, lry}
 
@@ -53,13 +52,12 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 		}
 	}
 
-	// Snap bounds to grid spacing
 	left := float32(math.Floor(float64(minX/spacing))) * spacing
 	right := float32(math.Ceil(float64(maxX/spacing))) * spacing
 	top := float32(math.Floor(float64(minY/spacing))) * spacing
 	bottom := float32(math.Ceil(float64(maxY/spacing))) * spacing
 
-	// Draw vertical lines
+	// vertical
 	for x := left; x <= right; x += spacing {
 		var myThickness = thickness
 		if float32(math.Mod(float64(x), float64(spacing)*10)) == 0 {
@@ -69,7 +67,7 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 		camera.DrawLine(x, top, x, bottom, myThickness, color)
 	}
 
-	// Draw horizontal lines
+	// horizontal
 	for y := top; y <= bottom; y += spacing {
 		var myThickness = thickness
 		if float32(math.Mod(float64(y), float64(spacing)*10)) == 0 {
@@ -79,46 +77,46 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 		camera.DrawLine(left, y, right, y, myThickness, color)
 	}
 
-	// Draw X axis
+	// x
 	if top <= 0 && bottom >= 0 {
 		camera.DrawLine(left, 0, right, 0, thickness*3, color)
 	}
 
-	// Draw Y axis
+	// y
 	if left <= 0 && right >= 0 {
 		camera.DrawLine(0, top, 0, bottom, thickness*3, color)
 	}
 
-	camera.stop()
+	camera.end()
 }
 
 func (camera *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
-	camera.start()
+	camera.begin()
 	rl.DrawLineEx(rl.Vector2{X: ax, Y: ay}, rl.Vector2{X: bx, Y: by}, thickness, rl.GetColor(color))
-	camera.stop()
+	camera.end()
 }
 func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float32) {
-	camera.start()
+	camera.begin()
 	for i := 1; i < len(points); i++ {
 		rl.DrawLineEx(
 			rl.Vector2{X: points[i-1][0], Y: points[i-1][1]},
 			rl.Vector2{X: points[i][0], Y: points[i][1]}, thickness, rl.GetColor(color))
 	}
-	camera.stop()
+	camera.end()
 }
 func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
-	camera.start()
+	camera.begin()
 	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
 	rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(color))
-	camera.stop()
+	camera.end()
 }
 func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
-	camera.start()
+	camera.begin()
 	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
-	camera.stop()
+	camera.end()
 }
 func (camera *Camera) DrawNodes(nodes ...*Node) {
-	camera.start()
+	camera.begin()
 	for _, node := range nodes {
 		if node == nil {
 			continue
@@ -148,5 +146,5 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 
 		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(node.Tint))
 	}
-	camera.stop()
+	camera.end()
 }

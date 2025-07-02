@@ -22,7 +22,7 @@ const (
 
 var Title = strings.TrimSuffix(filepath.Base(file.PathOfExecutable()), filepath.Ext(file.PathOfExecutable()))
 var Color uint = 0
-var IsVerticallySynchronized = false
+var IsVSynced = false
 var IsAntialiased = false
 var TargetFrameRate byte = 60
 var IsOpen = false
@@ -39,10 +39,10 @@ func KeepOpen() bool {
 	tryCreate()
 	tryUpdateProperties()
 
+	rl.DrawFPS(0, 0)
 	rl.EndDrawing()
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.GetColor(Color))
-	rl.DrawFPS(0, 0)
 
 	internal.Update()
 
@@ -158,7 +158,7 @@ func tryCreate() {
 	}
 
 	var flags uint32 = rl.FlagWindowResizable
-	if IsVerticallySynchronized {
+	if IsVSynced {
 		flags |= rl.FlagVsyncHint
 	}
 	if IsAntialiased {

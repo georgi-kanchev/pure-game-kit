@@ -72,6 +72,7 @@
 [√] revisited each script to align with standard
 [√] data - assets restructure
 [√] data - split default retro atlas into tiles
+[√] graphics - cam pivots helping with drawing on cam edges
 
 // = = = = = = =
 

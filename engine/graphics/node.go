@@ -17,13 +17,13 @@ func NewNode(assetId string) Node {
 	return Node{AssetID: assetId,
 		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5, Tint: math.MaxUint32}
 }
-func NewNodesGrid(tiles map[[2]int]string, cellWidth, cellHeight int, parent *Node) []Node {
+func NewNodesGrid(tiles map[[2]float32]string, cellWidth, cellHeight int, parent *Node) []Node {
 	var result = []Node{}
 	for k, v := range tiles {
 		var node = NewNode(v)
 		node.Parent = parent
-		node.X = float32(k[0] * cellWidth)
-		node.Y = float32(k[1] * cellHeight)
+		node.X = float32(k[0] * float32(cellWidth))
+		node.Y = float32(k[1] * float32(cellHeight))
 		result = append(result, node)
 	}
 	return result

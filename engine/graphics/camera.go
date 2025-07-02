@@ -8,13 +8,12 @@ import (
 )
 
 type Camera struct {
-	ScreenX, ScreenY          int
-	ScreenWidth, ScreenHeight int
-	X, Y, Angle, Zoom         float32
+	ScreenX, ScreenY, ScreenWidth, ScreenHeight int
+	X, Y, Angle, Zoom, PivotX, PivotY           float32
 }
 
 func NewCamera(zoom float32) Camera {
-	var cam = Camera{Zoom: zoom}
+	var cam = Camera{Zoom: zoom, PivotX: 0.5, PivotY: 0.5}
 	cam.SetScreenAreaToWindow()
 	return cam
 }
@@ -37,11 +36,15 @@ func (camera *Camera) SetScreenAreaToWindow() {
 	camera.ScreenHeight = h
 }
 
+func (camera *Camera) Size() (width, height float32) {
+	camera.update()
+	return float32(camera.ScreenWidth) / camera.Zoom, float32(camera.ScreenHeight) / camera.Zoom
+}
 func (camera *Camera) MousePosition() (x, y float32) {
 	return camera.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
 }
 func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
-	camera.start()
+	camera.begin()
 
 	var sx = float32(screenX)
 	var sy = float32(screenY)
@@ -62,11 +65,11 @@ func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	rotX += rlCam.Target.X
 	rotY += rlCam.Target.Y
 
-	camera.stop()
+	camera.end()
 	return rotX, rotY
 }
 func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
-	camera.start()
+	camera.begin()
 
 	x -= rlCam.Target.X
 	y -= rlCam.Target.Y
@@ -83,7 +86,7 @@ func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 	rotX += rlCam.Offset.X
 	rotY += rlCam.Offset.Y
 
-	camera.stop()
+	camera.end()
 	return int(rotX), int(rotY)
 }
 func (camera *Camera) PointFromCamera(otherCamera *Camera, otherX, otherY float32) (myX, myY float32) {
@@ -94,51 +97,18 @@ func (camera *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (othe
 	return otherCamera.PointFromCamera(camera, myX, myY)
 }
 
-func (camera *Camera) Size() (width, height float32) {
-	camera.update()
-	return float32(camera.ScreenWidth) / camera.Zoom, float32(camera.ScreenHeight) / camera.Zoom
-}
-func (camera *Camera) CornerUpperLeft(offsetX, offsetY float32) (x, y float32) {
-	camera.update()
-
-	var sx, sy, z = camera.ScreenX, camera.ScreenY, camera.Zoom
-	x, y = camera.PointFromScreen(sx+int(offsetX*z), sy+int(offsetY*z))
-	return x, y
-}
-func (camera *Camera) CornerUpperRight(offsetX, offsetY float32) (x, y float32) {
-	camera.update()
-
-	var sx, sy, z = camera.ScreenX + camera.ScreenWidth, camera.ScreenY, camera.Zoom
-	x, y = camera.PointFromScreen(sx+int(offsetX*z), sy+int(offsetY*z))
-	return x, y
-}
-func (camera *Camera) CornerLowerLeft(offsetX, offsetY float32) (x, y float32) {
-	camera.update()
-
-	var sx, sy, z = camera.ScreenX, camera.ScreenY + camera.ScreenHeight, camera.Zoom
-	x, y = camera.PointFromScreen(sx+int(offsetX*z), sy+int(offsetY*z))
-	return x, y
-}
-func (camera *Camera) CornerLowerRight(offsetX, offsetY float32) (x, y float32) {
-	camera.update()
-
-	var sx, sy, z = camera.ScreenX + camera.ScreenWidth, camera.ScreenY + camera.ScreenHeight, camera.Zoom
-	x, y = camera.PointFromScreen(sx+int(offsetX*z), sy+int(offsetY*z))
-	return x, y
-}
-
 // region private
 
 var rlCam = rl.Camera2D{}
 
 // call before draw to update camera but use screen space instead of camera space
 func (camera *Camera) update() {
-	camera.start()
-	camera.stop()
+	camera.begin()
+	camera.end()
 }
 
 // call before draw to update camera and use camera space
-func (camera *Camera) start() {
+func (camera *Camera) begin() {
 	if !rl.IsWindowReady() {
 		window.Recreate()
 	}
@@ -147,8 +117,8 @@ func (camera *Camera) start() {
 	rlCam.Target.Y = camera.Y
 	rlCam.Rotation = camera.Angle
 	rlCam.Zoom = camera.Zoom
-	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)/2
-	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)/2
+	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*camera.PivotX
+	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*camera.PivotY
 	rl.BeginMode2D(rlCam)
 	rl.BeginScissorMode(
 		int32(camera.ScreenX), int32(camera.ScreenY),
@@ -156,7 +126,7 @@ func (camera *Camera) start() {
 }
 
 // call after draw to get back to using screen space
-func (camera *Camera) stop() {
+func (camera *Camera) end() {
 	rl.EndScissorMode()
 	rl.EndMode2D()
 }
