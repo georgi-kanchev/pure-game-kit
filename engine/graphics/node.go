@@ -1,4 +1,4 @@
-package render
+package graphics
 
 import (
 	"math"
@@ -6,22 +6,22 @@ import (
 )
 
 type Node struct {
-	X, Y, Angle, ScaleX, ScaleY float32
-	PivotX, PivotY              float32
-	RepeatX, RepeatY            float32
-	AssetID                     string
-	Parent                      *Node
-	Tint                        uint
+	X, Y, Angle, ScaleX, ScaleY      float32
+	PivotX, PivotY, RepeatX, RepeatY float32
+	AssetID                          string
+	Parent                           *Node
+	Tint                             uint
 }
 
-func NewNode(assetId string, parent *Node) Node {
-	return Node{AssetID: assetId, Parent: parent,
+func NewNode(assetId string) Node {
+	return Node{AssetID: assetId,
 		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5, Tint: math.MaxUint32}
 }
 func NewNodesGrid(tiles map[[2]int]string, cellWidth, cellHeight int, parent *Node) []Node {
 	var result = []Node{}
 	for k, v := range tiles {
-		var node = NewNode(v, parent)
+		var node = NewNode(v)
+		node.Parent = parent
 		node.X = float32(k[0] * cellWidth)
 		node.Y = float32(k[1] * cellHeight)
 		result = append(result, node)

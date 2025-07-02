@@ -1,4 +1,4 @@
-package render
+package graphics
 
 import (
 	"math"
@@ -13,8 +13,10 @@ type Camera struct {
 	X, Y, Angle, Zoom         float32
 }
 
-func NewCamera() Camera {
-	return Camera{Zoom: 1}
+func NewCamera(zoom float32) Camera {
+	var cam = Camera{Zoom: zoom}
+	cam.SetScreenAreaToWindow()
+	return cam
 }
 
 func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight int) {
@@ -22,6 +24,17 @@ func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight 
 	camera.ScreenY = screenY
 	camera.ScreenWidth = screenWidth
 	camera.ScreenHeight = screenHeight
+}
+func (camera *Camera) SetScreenAreaToWindow() {
+	if !rl.IsWindowReady() {
+		window.Recreate()
+	}
+
+	var w, h = window.Size()
+	camera.ScreenX = 0
+	camera.ScreenY = 0
+	camera.ScreenWidth = w
+	camera.ScreenHeight = h
 }
 
 func (camera *Camera) MousePosition() (x, y float32) {

@@ -1,4 +1,4 @@
-package render
+package graphics
 
 import (
 	"math"
@@ -120,6 +120,10 @@ func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
 func (camera *Camera) DrawNodes(nodes ...*Node) {
 	camera.start()
 	for _, node := range nodes {
+		if node == nil {
+			continue
+		}
+
 		var texture, fullTexture = internal.Textures[node.AssetID]
 		var texX, texY float32 = 0.0, 0.0
 		var repX, repY = node.RepeatX, node.RepeatY
@@ -134,7 +138,8 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 			}
 
 			texture = atlas.Texture
-			texX, texY = rect.CellX*float32(atlas.CellWidth), rect.CellY*float32(atlas.CellHeight)
+			texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
+			texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
 		}
 
 		var texW, texH = node.Size()

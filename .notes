@@ -68,6 +68,11 @@
 [√] time - moved update to internal, restructure, renamed to seconds
 [√] data - default icons done & default patterns done
 
+[02-07-2025] [Wed] [14]
+[√] revisited each script to align with standard
+[√] data - assets restructure
+[√] data - split default retro atlas into tiles
+
 // = = = = = = =
 
 TODO:
