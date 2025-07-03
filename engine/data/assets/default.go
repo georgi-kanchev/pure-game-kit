@@ -54,18 +54,18 @@ func loadSound(id, b64 string) string {
 	return id
 }
 
+//	func printSoundBase64(soundPath string) {
+//		var raw, _ = os.ReadFile(soundPath)
+//		var compressed = storage.Compress(raw)
+//		var b64 = base64.StdEncoding.EncodeToString(compressed)
+//		print(b64)
+//	}
 // func printImageBase64(imgPath string) {
 // 	var img = rl.LoadImage(imgPath)
 // 	var bytes = rl.ExportImageToMemory(*img, ".png")
 // 	var compressed = storage.Compress(bytes)
 // 	var b64 = base64.StdEncoding.EncodeToString(compressed)
 
-// 	print(b64)
-// }
-// func printSoundBase64(soundPath string) {
-// 	var raw, _ = os.ReadFile(soundPath)
-// 	var compressed = storage.Compress(raw)
-// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
 // 	print(b64)
 // }
 // func Main() {

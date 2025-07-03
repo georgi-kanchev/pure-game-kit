@@ -21,3 +21,20 @@ var TileMaps = make(map[string][]string)
 
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
+
+func AssetSize(assetId string) (width, height int) {
+	var texture, fullTexture = Textures[assetId]
+	width, height = 0, 0
+
+	if fullTexture {
+		return int(texture.Width), int(texture.Height)
+	}
+
+	var texRect, has = AtlasRects[assetId]
+	if !has {
+		return
+	}
+
+	var atlas = texRect.Atlas
+	return atlas.CellWidth * int(texRect.CountX), atlas.CellHeight * int(texRect.CountY)
+}

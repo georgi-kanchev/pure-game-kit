@@ -122,13 +122,13 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 			continue
 		}
 
-		var texture, fullTexture = internal.Textures[node.AssetID]
+		var texture, fullTexture = internal.Textures[node.AssetId]
 		var texX, texY float32 = 0.0, 0.0
 		var repX, repY = node.RepeatX, node.RepeatY
-		var x, y, ang, scX, scY = node.Global()
+		var x, y, ang, scX, scY = node.ToGlobal()
 
 		if !fullTexture {
-			var rect, has = internal.AtlasRects[node.AssetID]
+			var rect, has = internal.AtlasRects[node.AssetId]
 			var atlas = rect.Atlas
 
 			if !has {

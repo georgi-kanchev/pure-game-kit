@@ -9,20 +9,31 @@ import (
 )
 
 func main() {
-	var cam = graphics.NewCamera(8)
-	var textMap = map[[2]float32]string{
-		{0, 0}: "#H", {1, 0}: "#e", {2, 0}: "#l", {3, 0}: "#l", {4, 0}: "#o", {4.7, 0}: "#,",
-		{6, 0}: "#W", {7, 0}: "#o", {8, 0}: "#r", {9, 0}: "#l", {10, 0}: "#d", {11, 0}: "#!", {13, 0}: "#face-sad",
+	var cam = graphics.NewCamera(7)
+	var parent = graphics.NewNode("")
+	var tilemap = make(map[[2]float32]string, 26*21)
+	var _, ids = assets.LoadDefaultAtlasRetro()
+	var index = 0
+
+	parent.X, parent.Y = -20.5, -20.5
+	cam.X, cam.Y = 100, 100
+
+	for i := range 21 {
+		for j := range 26 {
+			tilemap[[2]float32{float32(j), float32(i)}] = ids[index]
+			index++
+		}
 	}
-
-	assets.LoadDefaultAtlasRetro()
-
-	var textSymbols = collection.ToPointers(graphics.NewNodesGrid(textMap, 9, 9, nil))
-
+	parent.Angle = 45
+	var nodemap = collection.ToPointers(graphics.NewNodesGrid(tilemap, 9, 9, &parent))
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		cam.DrawGrid(1, 32, color.Darken(color.Gray, 0.5))
-		cam.DrawNodes(textSymbols...)
+		cam.DrawGrid(1, 9, color.Darken(color.Gray, 0.5))
+		cam.DrawNodes(nodemap...)
+		cam.DrawNodes(&parent)
+
+		var child = nodemap[5]
+		child.X, child.Y = parent.MousePosition(&cam)
 	}
 }

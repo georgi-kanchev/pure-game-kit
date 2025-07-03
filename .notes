@@ -74,6 +74,11 @@
 [√] data - split default retro atlas into tiles
 [√] graphics - cam pivots helping with drawing on cam edges
 
+[03-07-2025] [Thu] [15]
+[√] data - split retro fixes, all should be correct now
+[√] graphics - added & simplified node API for local/global (and mouse position)
+[√] window - set icon from assets (texture/texture area/atlas tile etc)
+
 // = = = = = = =
 
 TODO:

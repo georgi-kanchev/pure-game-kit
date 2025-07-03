@@ -8,13 +8,13 @@ import (
 type Node struct {
 	X, Y, Angle, ScaleX, ScaleY      float32
 	PivotX, PivotY, RepeatX, RepeatY float32
-	AssetID                          string
+	AssetId                          string
 	Parent                           *Node
 	Tint                             uint
 }
 
 func NewNode(assetId string) Node {
-	return Node{AssetID: assetId,
+	return Node{AssetId: assetId,
 		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5, Tint: math.MaxUint32}
 }
 func NewNodesGrid(tiles map[[2]float32]string, cellWidth, cellHeight int, parent *Node) []Node {
@@ -29,68 +29,85 @@ func NewNodesGrid(tiles map[[2]float32]string, cellWidth, cellHeight int, parent
 	return result
 }
 
-func (node *Node) Size() (width, height float32) {
-	var texture, fullTexture = internal.Textures[node.AssetID]
-	width, height = 0, 0
-
-	if fullTexture {
-		return float32(texture.Width), float32(texture.Height)
-	}
-
-	var texRect, has = internal.AtlasRects[node.AssetID]
-	if !has {
-		return
-	}
-
-	var atlas = texRect.Atlas
-	return float32(atlas.CellWidth) * texRect.CountX, float32(atlas.CellHeight) * texRect.CountY
+func (node *Node) MousePosition(camera *Camera) (x, y float32) {
+	x, y = camera.MousePosition()
+	x, y, _, _, _ = node.FromGlobal(x, y, 0, 1, 1)
+	return x, y
 }
-func (node *Node) Global() (x, y, angle, scaleX, scaleY float32) {
-	// Get texture size for origin offset
+func (node *Node) Size() (width, height float32) {
+	var w, h = internal.AssetSize(node.AssetId)
+	return float32(w), float32(h)
+}
+func (node *Node) ToGlobal() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	var texWidth, texHeight = node.Size()
 
-	// Step 1: Local origin offset, in local space
 	originPixelX := node.PivotX * float32(texWidth)
 	originPixelY := node.PivotY * float32(texHeight)
 	offsetX := -originPixelX * node.ScaleX
 	offsetY := -originPixelY * node.ScaleY
 
-	// Step 2: Rotate origin offset by *local* rotation
 	localRad := node.Angle * (math.Pi / 180)
 	sinL, cosL := float32(math.Sin(float64(localRad))), float32(math.Cos(float64(localRad)))
 	originOffsetX := offsetX*cosL - offsetY*sinL
 	originOffsetY := offsetX*sinL + offsetY*cosL
 
-	// Step 3: Local position, adjusted by origin
 	localX := node.X + originOffsetX
 	localY := node.Y + originOffsetY
 
 	if node.Parent == nil {
-		// Parent has no influence over the origin math
 		return localX, localY, node.Angle, node.ScaleX, node.ScaleY
 	}
 
 	localX -= offsetX
 	localY -= offsetY
 
-	// Step 4: Get parent's global transform
-	px, py, pr, psx, psy := node.Parent.Global()
+	px, py, pr, psx, psy := node.Parent.ToGlobal()
 
-	// Step 5: Apply parent scale to this node’s position
 	localX *= psx
 	localY *= psy
 
-	// Step 6: Rotate local position by parent rotation
 	parentRad := pr * (math.Pi / 180)
 	sinP, cosP := float32(math.Sin(float64(parentRad))), float32(math.Cos(float64(parentRad)))
 	worldX := localX*cosP - localY*sinP + px
 	worldY := localX*sinP + localY*cosP + py
 
-	// Final transform
-	x = worldX
-	y = worldY
-	angle = pr + node.Angle
-	scaleX = psx * node.ScaleX
-	scaleY = psy * node.ScaleY
+	gX = worldX
+	gY = worldY
+	gAngle = pr + node.Angle
+	gScaleX = psx * node.ScaleX
+	gScaleY = psy * node.ScaleY
+	return
+}
+func (node *Node) FromGlobal(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
+	if node.Parent != nil {
+		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.FromGlobal(gX, gY, gAngle, gScaleX, gScaleY)
+	}
+
+	texWidth, texHeight := node.Size()
+	pivotOffsetX := node.PivotX * texWidth * node.ScaleX
+	pivotOffsetY := node.PivotY * texHeight * node.ScaleY
+
+	angleRad := -node.Angle * (math.Pi / 180)
+	sin, cos := float32(math.Sin(float64(angleRad))), float32(math.Cos(float64(angleRad)))
+
+	dx := gX - node.X
+	dy := gY - node.Y
+
+	localX := dx*cos - dy*sin
+	localY := dx*sin + dy*cos
+
+	if node.ScaleX != 0 {
+		localX /= node.ScaleX
+	}
+	if node.ScaleY != 0 {
+		localY /= node.ScaleY
+	}
+
+	x = localX + pivotOffsetX
+	y = localY + pivotOffsetY
+
+	angle = gAngle - node.Angle
+	scaleX = gScaleX / node.ScaleX
+	scaleY = gScaleY / node.ScaleY
 	return
 }

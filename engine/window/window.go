@@ -147,6 +147,30 @@ func Size() (width, height int) {
 	return rl.GetScreenWidth(), rl.GetScreenHeight()
 }
 
+func SetIcon(assetId string) {
+	var texture, fullTexture = internal.Textures[assetId]
+	var texX, texY float32 = 0.0, 0.0
+
+	if !fullTexture {
+		var rect, has = internal.AtlasRects[assetId]
+		if !has {
+			return
+		}
+
+		var atlas = rect.Atlas
+		texture = atlas.Texture
+		texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
+		texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
+	}
+
+	var texW, texH = internal.AssetSize(assetId)
+	var rect = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
+	var imgPtr = rl.LoadImageFromTexture(*texture)
+
+	rl.ImageCrop(imgPtr, rect)
+	rl.SetWindowIcon(*imgPtr)
+}
+
 // region private
 var terminate = false
 var currTitle = ""
