@@ -79,6 +79,10 @@
 [√] graphics - added & simplified node API for local/global (and mouse position)
 [√] window - set icon from assets (texture/texture area/atlas tile etc)
 
+[04-07-2025] [Fri] [16]
+[√] data - separated into files textures/sounds/scenes
+[√] data - started scenes parsing map + collisions + objects from Tiled
+
 // = = = = = = =
 
 TODO:
