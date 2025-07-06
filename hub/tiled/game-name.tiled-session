@@ -1,0 +1,53 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "map.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "atlas.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 3
+        },
+        "map.tmx": {
+            "expandedGroupLayers": [
+                6
+            ],
+            "scale": 5.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 97.99999999999999,
+                "y": 143.54545454545456
+            }
+        },
+        "map.tmx#atlas": {
+            "scaleInDock": 1.5
+        },
+        "map.tmx#objects": {
+            "scaleInDock": 3
+        }
+    },
+    "last.imagePath": "C:/Users/PC/Desktop/tiled",
+    "last.objectTypesPath": "C:/Users/PC/Desktop/tiled/structure.xml",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 20,
+    "openFiles": [
+        "map.tmx"
+    ],
+    "project": "game-name.tiled-project",
+    "property.type": "Class1",
+    "recentFiles": [
+        "map.tmx",
+        "atlas.tsx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}

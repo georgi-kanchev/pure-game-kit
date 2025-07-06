@@ -1,0 +1,90 @@
+{
+    "automappingRulesFile": "",
+    "commands": [
+    ],
+    "compatibilityVersion": 1100,
+    "extensionsPath": "extensions",
+    "folders": [
+        "."
+    ],
+    "properties": [
+    ],
+    "propertyTypes": [
+        {
+            "color": "#ffa40003",
+            "drawFill": true,
+            "id": 1,
+            "members": [
+                {
+                    "name": "classssss",
+                    "propertyType": "Class1",
+                    "type": "class",
+                    "value": {
+                    }
+                },
+                {
+                    "name": "ratata",
+                    "propertyType": "hmmmm",
+                    "type": "string",
+                    "value": "faaa"
+                },
+                {
+                    "name": "test",
+                    "type": "float",
+                    "value": 0
+                }
+            ],
+            "name": "structure",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        },
+        {
+            "id": 2,
+            "name": "hmmmm",
+            "storageType": "string",
+            "type": "enum",
+            "values": [
+                "faaa",
+                "srr",
+                "hi",
+                "ho"
+            ],
+            "valuesAsFlags": false
+        },
+        {
+            "color": "#ffa0a0a4",
+            "drawFill": true,
+            "id": 3,
+            "members": [
+                {
+                    "name": "ffff",
+                    "type": "int",
+                    "value": 1
+                }
+            ],
+            "name": "Class1",
+            "type": "class",
+            "useAs": [
+                "property",
+                "map",
+                "layer",
+                "object",
+                "tile",
+                "tileset",
+                "wangcolor",
+                "wangset",
+                "project"
+            ]
+        }
+    ]
+}
