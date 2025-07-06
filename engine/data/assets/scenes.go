@@ -1,4 +1,31 @@
 package assets
 
-func LoadScenes(tmxFilePaths ...string) {
+import (
+	"encoding/xml"
+	"os"
+	"path/filepath"
+	"pure-kit/engine/internal"
+	"strings"
+)
+
+func LoadScenes(tmxFilePaths ...string) []string {
+	var resultIds = []string{}
+	for _, path := range tmxFilePaths {
+		file, err := os.Open(path)
+		if err != nil {
+			continue
+		}
+		defer file.Close()
+
+		var scene internal.Scene
+		var error = xml.NewDecoder(file).Decode(&scene)
+		if error != nil {
+			continue
+		}
+
+		var name = filepath.Base(path)
+		name = strings.TrimSuffix(name, filepath.Ext(name))
+		resultIds = append(resultIds, name)
+	}
+	return resultIds
 }

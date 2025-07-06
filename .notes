@@ -81,7 +81,10 @@
 
 [04-07-2025] [Fri] [16]
 [√] data - separated into files textures/sounds/scenes
-[√] data - started scenes parsing map + collisions + objects from Tiled
+[x] data - started scenes parsing map + collisions + objects from Tiled
+
+[06-07-2025] [Sun] [17]
+[x] data - progress on parsing Tiled scenes
 
 // = = = = = = =
 
