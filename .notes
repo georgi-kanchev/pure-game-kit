@@ -86,6 +86,12 @@
 [06-07-2025] [Sun] [17]
 [x] data - progress on parsing Tiled scenes
 
+[08-07-2025] [Tue] [18]
+[√] data - finished parsing Tiled scenes (something may have been missed)
+[x] scene - started using the parsed Tiled data
+[x] scene - unloading of Tiled data, textures, atlases & atlas tiles (map data & objs left?)
+[√] data - more unloading
+
 // = = = = = = =
 
 TODO:

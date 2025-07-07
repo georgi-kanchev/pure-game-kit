@@ -129,13 +129,21 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 
 		if !fullTexture {
 			var rect, has = internal.AtlasRects[node.AssetId]
-			var atlas = rect.Atlas
-
 			if !has {
 				continue
 			}
 
-			texture = atlas.Texture
+			var atlas, has2 = internal.Atlases[rect.AtlasId]
+			if !has2 {
+				continue
+			}
+
+			var tex, has3 = internal.Textures[atlas.TextureId]
+			if !has3 {
+				continue
+			}
+
+			texture = tex
 			texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
 			texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
 		}

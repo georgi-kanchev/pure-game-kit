@@ -6,17 +6,17 @@ import (
 
 type AtlasRect struct {
 	CellX, CellY, CountX, CountY float32
-	Atlas                        *Atlas
+	AtlasId                      string
 }
 type Atlas struct {
-	Texture                    *rl.Texture2D
+	TextureId                  string
 	CellWidth, CellHeight, Gap int
 }
 
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
-var Scenes = make(map[string]Scene)
+var TiledData = make(map[string]TiledMap)
 
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
@@ -34,6 +34,6 @@ func AssetSize(assetId string) (width, height int) {
 		return
 	}
 
-	var atlas = texRect.Atlas
+	var atlas = Atlases[texRect.AtlasId]
 	return atlas.CellWidth * int(texRect.CountX), atlas.CellHeight * int(texRect.CountY)
 }

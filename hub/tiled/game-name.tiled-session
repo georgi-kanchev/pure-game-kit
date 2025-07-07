@@ -26,10 +26,11 @@
             "scaleInDock": 1.5
         },
         "map.tmx#objects": {
-            "scaleInDock": 3
+            "scaleInDock": 3,
+            "scaleInEditor": 4
         }
     },
-    "last.imagePath": "C:/Users/PC/Desktop/tiled",
+    "last.imagePath": "/home/gojur/code/pure-kit/hub/tiled",
     "last.objectTypesPath": "C:/Users/PC/Desktop/tiled/structure.xml",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
@@ -39,13 +40,15 @@
         "map.tmx"
     ],
     "project": "game-name.tiled-project",
-    "property.type": "Class1",
+    "property.type": "int",
     "recentFiles": [
         "map.tmx",
         "atlas.tsx"
     ],
     "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",
+    "tileset.margin": 1,
+    "tileset.spacing": 1,
     "tileset.tileSize": {
         "height": 16,
         "width": 16

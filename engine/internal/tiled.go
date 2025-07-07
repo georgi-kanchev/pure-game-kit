@@ -4,7 +4,8 @@ import (
 	"encoding/xml"
 )
 
-type Scene struct {
+type TiledMap struct {
+	Directory       string
 	XMLName         xml.Name       `xml:"map"`
 	Version         string         `xml:"version,attr"`
 	TiledVersion    string         `xml:"tiledversion,attr"`
@@ -20,6 +21,7 @@ type Scene struct {
 	Infinite        bool           `xml:"infinite,attr"`
 	NextLayerID     int            `xml:"nextlayerid,attr"`
 	NextObjectID    int            `xml:"nextobjectid,attr"`
+	OutputChunkSize ChunkSize      `xml:"editorsettings>chunksize"`
 	BackgroundColor string         `xml:"backgroundcolor,attr"`
 	Tilesets        []Tileset      `xml:"tileset"`
 	Groups          []LayerGroup   `xml:"group"`
@@ -29,13 +31,49 @@ type Scene struct {
 }
 
 type Tileset struct {
-	FirstGID   int    `xml:"firstgid,attr"`
-	Name       string `xml:"name,attr"`
-	TileWidth  int    `xml:"tilewidth,attr"`
-	TileHeight int    `xml:"tileheight,attr"`
-	TileCount  int    `xml:"tilecount,attr"`
-	Columns    int    `xml:"columns,attr"`
-	Image      Image  `xml:"image"`
+	Identity
+	FirstGID        int             `xml:"firstgid,attr"`
+	TileWidth       int             `xml:"tilewidth,attr"`
+	TileHeight      int             `xml:"tileheight,attr"`
+	TileCount       int             `xml:"tilecount,attr"`
+	Columns         int             `xml:"columns,attr"`
+	Spacing         int             `xml:"spacing,attr"`
+	Margin          int             `xml:"margin,attr"`
+	ObjectAlignment string          `xml:"objectalignment,attr"`
+	TileRenderSize  string          `xml:"tilerendersize,attr"`
+	BackgroundColor string          `xml:"backgroundcolor,attr"`
+	FillMode        string          `xml:"fillmode,attr"`
+	TileOffset      TileOffset      `xml:"tileoffset"`
+	Grid            Grid            `xml:"grid"`
+	Transformations Transformations `xml:"transformations"`
+	PerTileData     []TilesetTile   `xml:"tile"`
+	Image           Image           `xml:"image"`
+	Properties      []Property      `xml:"properties>property"`
+}
+
+type TilesetTile struct {
+	Id             string         `xml:"id,attr"`
+	TilesCollision []LayerObjects `xml:"objectgroup"`
+}
+type ChunkSize struct {
+	Width  int `xml:"width,attr"`
+	Height int `xml:"height,attr"`
+}
+
+type TileOffset struct {
+	X int `xml:"x,attr"`
+	Y int `xml:"y,attr"`
+}
+type Grid struct {
+	Orientation string `xml:"orientation,attr"`
+	Width       int    `xml:"width,attr"`
+	Height      int    `xml:"height,attr"`
+}
+type Transformations struct {
+	FlipH                    bool `xml:"hflip,attr"`
+	FlipV                    bool `xml:"vflip,attr"`
+	Rotate                   bool `xml:"rotate,attr"`
+	PreferUntransformedTiles bool `xml:"preferuntransformed,attr"`
 }
 
 type Image struct {
@@ -81,7 +119,12 @@ type LayerGroup struct {
 
 type LayerTiles struct {
 	Layer
-	Tiles string `xml:"data"`
+	Data Data `xml:"data"`
+}
+
+type Data struct {
+	Encoding string `xml:"encoding,attr"`
+	Tiles    string `xml:",chardata"`
 }
 
 type LayerObjects struct {
@@ -106,7 +149,11 @@ type Object struct {
 	Rotation   float64    `xml:"rotation,attr"`
 	Visible    string     `xml:"visible,attr"`
 	Text       Text       `xml:"text"`
+	Polygon    Polygon    `xml:"polygon"`
 	Properties []Property `xml:"properties>property"`
+}
+type Polygon struct {
+	Points string `xml:"points,attr"`
 }
 
 type Text struct {
@@ -115,8 +162,22 @@ type Text struct {
 	WordWrap   bool   `xml:"wrap,attr"`
 	Italic     bool   `xml:"italic,attr"`
 	Bold       bool   `xml:"bold,attr"`
+	Underline  bool   `xml:"underline,attr"`
+	Strikeout  bool   `xml:"strikeout,attr"`
 	Color      string `xml:"color,attr"`
 	AlignX     string `xml:"halign,attr"`
 	AlignY     string `xml:"valign,attr"`
 	Value      string `xml:",chardata"`
+}
+
+func LoadTextureAtlas(textureId, atlasId string, cellWidth, cellHeight, cellGap int) string {
+	var _, has = Textures[textureId]
+
+	if has {
+		var atlas = Atlas{TextureId: textureId, CellWidth: cellWidth, CellHeight: cellHeight, Gap: cellGap}
+		Atlases[atlasId] = atlas
+		return atlasId
+	}
+
+	return ""
 }

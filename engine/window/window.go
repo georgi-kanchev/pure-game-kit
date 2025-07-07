@@ -157,8 +157,17 @@ func SetIcon(assetId string) {
 			return
 		}
 
-		var atlas = rect.Atlas
-		texture = atlas.Texture
+		var atlas, has2 = internal.Atlases[rect.AtlasId]
+		if !has2 {
+			return
+		}
+
+		var tex, has3 = internal.Textures[atlas.TextureId]
+		if !has3 {
+			return
+		}
+
+		texture = tex
 		texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
 		texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
 	}
