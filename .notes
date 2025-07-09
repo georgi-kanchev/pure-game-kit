@@ -88,9 +88,14 @@
 
 [08-07-2025] [Tue] [18]
 [√] data - finished parsing Tiled scenes (something may have been missed)
+[√] data - more unloading
 [x] scene - started using the parsed Tiled data
 [x] scene - unloading of Tiled data, textures, atlases & atlas tiles (map data & objs left?)
-[√] data - more unloading
+
+[09-07-2025] [Wed] [19]
+[√] file restructure
+[√] camera - isHovered & dragAndZoom funcs
+[x] examples - started & outline
 
 // = = = = = = =
 
