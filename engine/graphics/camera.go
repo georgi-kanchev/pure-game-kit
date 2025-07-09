@@ -18,6 +18,28 @@ func NewCamera(zoom float32) Camera {
 	return cam
 }
 
+func (camera *Camera) DragAndZoom() {
+	var delta = rl.GetMouseDelta()
+	var scroll = rl.GetMouseWheelMove()
+
+	if rl.IsMouseButtonDown(rl.MouseButtonMiddle) {
+		camera.X -= delta.X / camera.Zoom
+		camera.Y -= delta.Y / camera.Zoom
+	}
+	if scroll > 0 {
+		camera.Zoom *= 1.05
+	} else if scroll < 0 {
+		camera.Zoom *= 0.95
+	}
+}
+func (camera *Camera) IsHovered() bool {
+	var mousePos = rl.GetMousePosition()
+	return mousePos.X > float32(camera.ScreenX) &&
+		mousePos.Y > float32(camera.ScreenY) &&
+		mousePos.X < float32(camera.ScreenX+camera.ScreenWidth) &&
+		mousePos.Y < float32(camera.ScreenY+camera.ScreenHeight)
+}
+
 func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight int) {
 	camera.ScreenX = screenX
 	camera.ScreenY = screenY

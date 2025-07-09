@@ -1,0 +1,4 @@
+package example
+
+func Animations() {
+}
