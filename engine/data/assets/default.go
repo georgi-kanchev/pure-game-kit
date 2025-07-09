@@ -4,16 +4,10 @@ import (
 	"encoding/base64"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/storage"
-	"pure-kit/engine/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func tryCreateWindow() {
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
-}
 func loadTexture(id, b64 string) string {
 	tryCreateWindow()
 
@@ -33,10 +27,7 @@ func loadTexture(id, b64 string) string {
 }
 func loadSound(id, b64 string) string {
 	tryCreateWindow()
-
-	if !rl.IsAudioDeviceReady() {
-		rl.InitAudioDevice()
-	}
+	tryInitAudio()
 
 	var _, has = internal.Sounds[id]
 	if has {

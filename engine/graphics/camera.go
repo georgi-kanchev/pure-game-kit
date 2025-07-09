@@ -25,9 +25,7 @@ func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight 
 	camera.ScreenHeight = screenHeight
 }
 func (camera *Camera) SetScreenAreaToWindow() {
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
+	tryRecreateWindow()
 
 	var w, h = window.Size()
 	camera.ScreenX = 0
@@ -109,9 +107,7 @@ func (camera *Camera) update() {
 
 // call before draw to update camera and use camera space
 func (camera *Camera) begin() {
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
+	tryRecreateWindow()
 
 	rlCam.Target.X = camera.X
 	rlCam.Target.Y = camera.Y
@@ -129,6 +125,12 @@ func (camera *Camera) begin() {
 func (camera *Camera) end() {
 	rl.EndScissorMode()
 	rl.EndMode2D()
+}
+
+func tryRecreateWindow() {
+	if !rl.IsWindowReady() {
+		window.Recreate()
+	}
 }
 
 // endregion

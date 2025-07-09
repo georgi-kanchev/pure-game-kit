@@ -5,20 +5,14 @@ import (
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/data/folder"
 	"pure-kit/engine/internal"
-	"pure-kit/engine/window"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func LoadSounds(filePaths ...string) []string {
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
-
-	if !rl.IsAudioDeviceReady() {
-		rl.InitAudioDevice()
-	}
+	tryCreateWindow()
+	tryInitAudio()
 
 	var result = []string{}
 	for _, path := range filePaths {

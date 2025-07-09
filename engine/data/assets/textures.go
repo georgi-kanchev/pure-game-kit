@@ -5,16 +5,13 @@ import (
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/data/folder"
 	"pure-kit/engine/internal"
-	"pure-kit/engine/window"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func LoadTextures(filePaths ...string) []string {
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
+	tryCreateWindow()
 
 	var result = []string{}
 	for _, path := range filePaths {
