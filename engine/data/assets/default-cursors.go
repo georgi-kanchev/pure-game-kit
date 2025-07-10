@@ -1,8 +1,36 @@
 package assets
 
 func LoadDefaultAtlasCursors() (atlasId string, tileIds []string) {
-	var id = loadTexture("^", cursors)
-	var tiles = []string{}
+	const symbol = "^"
+	var tex = loadTexture(symbol, cursors)
+	var id = LoadTextureAtlas(tex, 32, 32, 0)
+	var ids = []string{
+		"pointer1", "pointer2", "pointer3", "pointer4", "pointer5", "pointer6", "pointer7", "pointer8",
+		"pointer9", "pointer10", "pointer11", "pointer12", "pointer13", "pointer14", "pointer15", "pointer16",
+		"pointer17", "pointer18", "pointer19",
+		"hand1", "hand2", "hand3", "hand4", "hand5", "hand6", "hand7", "hand8", "hand9", "hand10",
+		"hand11", "hand12", "hand13", "hand14", "hand15", "hand16", "hand17", "hand18", "hand19",
+		"clock1", "clock2", "clock3", "clock4", "clock5", "clock6", "clock7", "clock8",
+		"hourglass1", "hourglass2", "hourglass3", "hourglass4", "spinner1", "spinner2", "lock1", "lock2",
+		"arrow1", "arrow2", "", "x1", "x2", "disabled1", "disabled2", "door1", "door2", "door3", "door4",
+		"eye1", "eye2", "eye3", "eye4", "zoom", "zoom+", "zoom-", "zoom=", "arrow3", "arrow4", "",
+		"refresh1", "refresh2", "refresh3", "refresh4", "bubble1", "bubble2", "bubble3", "bubble4",
+		"pointer1-open", "pointer1-menu", "pointer1-gears", "pointer1+", "?", "!", "pointer1?", "pointer1!",
+		"pointer7?", "pointer7!", "", "art-pencil", "art-pen", "art-bucket", "art-eraser", "art-pick",
+		"art-brush1", "art-brush2", "water-can", "art-spray", "art-wand", "art-wrench",
+		"crosshair1", "crosshair2", "crosshair3", "crosshair4", "crosshair5", "crosshair6", "crosshair7", "",
+		"move1", "move2", "stairs1", "stairs2", "stairs3", "item-axe1", "item-axe2", "item-bomb", "item-bow",
+		"item-hammer1", "item-hammer2", "item-pickaxe", "item-spade", "item-sword1", "item-sword2", "item-flashlight",
+		"input1", "input2", "input3", "move1", "move2", "resize1", "resize2", "move3", "move4", "resize3", "resize4",
+		"move5", "move6", "resize5", "resize6", "move7", "move8", "resize7", "resize8", "split1", "split2", "split3",
+	}
+
+	for i := range ids {
+		if ids[i] != "" {
+			ids[i] = symbol + ids[i]
+		}
+	}
+	var tiles = LoadTextureAtlasTiles(id, 0, 0, ids...)
 	return id, tiles
 }
 

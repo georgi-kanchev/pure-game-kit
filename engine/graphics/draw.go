@@ -3,6 +3,7 @@ package graphics
 import (
 	"math"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -13,14 +14,14 @@ func (camera *Camera) DrawColor(color uint) {
 	var x, y, w, h = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
 	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(h), rl.GetColor(color))
 }
-func (camera *Camera) DrawFrame(size int, color uint) {
+func (camera *Camera) DrawScreenFrame(thickness int, color uint) {
 	camera.update()
 
 	var x, y, w, h = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
-	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(size), rl.GetColor(color))        // upper
-	rl.DrawRectangle(int32(x+w-size), int32(y), int32(size), int32(h), rl.GetColor(color)) // right
-	rl.DrawRectangle(int32(x), int32(y+h-size), int32(w), int32(size), rl.GetColor(color)) // lower
-	rl.DrawRectangle(int32(x), int32(y), int32(size), int32(h), rl.GetColor(color))        // left
+	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(thickness), rl.GetColor(color))             // upper
+	rl.DrawRectangle(int32(x+w-thickness), int32(y), int32(thickness), int32(h), rl.GetColor(color)) // right
+	rl.DrawRectangle(int32(x), int32(y+h-thickness), int32(w), int32(thickness), rl.GetColor(color)) // lower
+	rl.DrawRectangle(int32(x), int32(y), int32(thickness), int32(h), rl.GetColor(color))             // left
 }
 func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 	camera.begin()
@@ -113,6 +114,37 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color ui
 func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
 	camera.begin()
 	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
+	camera.end()
+}
+func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, color uint) {
+	if thickness == 0 {
+		return
+	}
+
+	var c = rl.GetColor(color)
+	var o = rl.Vector2{X: 0, Y: 0}
+
+	camera.begin()
+	if thickness < 0 {
+		thickness *= -1
+		var trx, try = point.MoveAt(x, y, angle, width-thickness)
+		var brx, bry = point.MoveAt(x, y, angle+90, height-thickness)
+		rl.DrawRectanglePro(rl.Rectangle{X: x, Y: y, Width: width, Height: thickness}, o, angle, c)
+		rl.DrawRectanglePro(rl.Rectangle{X: trx, Y: try, Width: thickness, Height: height}, o, angle, c)
+		rl.DrawRectanglePro(rl.Rectangle{X: brx, Y: bry, Width: width, Height: thickness}, o, angle, c)
+		rl.DrawRectanglePro(rl.Rectangle{X: x, Y: y, Width: thickness, Height: height}, o, angle, c)
+		return
+	}
+
+	var x1, y1 = point.MoveAt(x, y, angle-90, thickness)
+	var tlx, tly = point.MoveAt(x1, y1, angle-180, thickness)
+	var trx, try = point.MoveAt(x1, y1, angle, width)
+	var blx, bly = point.MoveAt(tlx, tly, angle+90, height+thickness)
+	rl.DrawRectanglePro(rl.Rectangle{X: tlx, Y: tly, Width: width + thickness*2, Height: thickness}, o, angle, c)
+	rl.DrawRectanglePro(rl.Rectangle{X: trx, Y: try, Width: thickness, Height: height + thickness*2}, o, angle, c)
+	rl.DrawRectanglePro(rl.Rectangle{X: blx, Y: bly, Width: width + thickness*2, Height: thickness}, o, angle, c)
+	rl.DrawRectanglePro(rl.Rectangle{X: tlx, Y: tly, Width: thickness, Height: height + thickness*2}, o, angle, c)
+
 	camera.end()
 }
 func (camera *Camera) DrawNodes(nodes ...*Node) {

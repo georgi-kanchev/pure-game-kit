@@ -29,7 +29,7 @@
 [02-06-2025] [Mon] [6]
 [√] color - changes to make it uint
 [√] rendering - enderdoc debug draw calls
-[x] rendering - ameras
+[x] rendering - cameras
 
 [03-06-2025] [Tue] [7]
 [√] rendering - cameras
@@ -95,17 +95,20 @@
 [09-07-2025] [Wed] [19]
 [√] file restructure
 [√] camera - isHovered & dragAndZoom funcs
-[x] examples - started & outline
+[√] camera - drawing frames
+[√] node - fixed to global not affecting scale + isHovered
+[√] data - split default assets into rects & tiles
+[√] data - updated some default graphics
+[√] utility - ported everything (except storage not for there)
+[x] examples - started & outlined
 
 // = = = = = = =
 
 TODO:
-data - split default assets into rects & tiles
+tiled loading
 tweens are way too complicated to work with - think of something else
 drawing 9-slice
 drawing tilemaps
-tilemap
-	tiled loading
 input
 data fonts
 gui

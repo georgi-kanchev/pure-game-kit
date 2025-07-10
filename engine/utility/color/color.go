@@ -7,22 +7,22 @@ import (
 )
 
 var (
-	Transparent = RGBA(0, 0, 0, 0)   // R[0] 	G[0] 	B[0] 	A[0]
-	Black       = RGB(0, 0, 0)       // R[0] 	G[0] 	B[0] 	A[255]
-	Gray        = RGB(127, 127, 127) // R[127] 	G[127] 	B[127] 	A[255]
-	White       = RGB(255, 255, 255) // R[255] 	G[255] 	B[255] 	A[255]
-	Red         = RGB(255, 0, 0)     // R[255] 	G[0] 	B[0] 	A[255]
-	Green       = RGB(0, 255, 0)     // R[0] 	G[255] 	B[0] 	A[255]
-	Blue        = RGB(0, 0, 255)     // R[0] 	G[0] 	B[255] 	A[255]
-	Pink        = RGB(255, 105, 180) // R[255] 	G[105] 	B[108] 	A[255]
-	Magenta     = RGB(255, 0, 255)   // R[255] 	G[0] 	B[255] 	A[255]
-	Violet      = RGB(143, 0, 255)   // R[143] 	G[0] 	B[255] 	A[255]
-	Purple      = RGB(75, 0, 130)    // R[75] 	G[0] 	B[130] 	A[255]
-	Yellow      = RGB(255, 255, 0)   // R[255] 	G[255] 	B[0] 	A[255]
-	Orange      = RGB(255, 127, 80)  // R[255] 	G[127] 	B[80] 	A[255]
-	Brown       = RGB(150, 105, 25)  // R[150] 	G[105] 	B[25] 	A[255]
-	Cyan        = RGB(0, 255, 255)   // R[0] 	G[255] 	B[255] 	A[255]
-	Azure       = RGB(0, 127, 255)   // R[0] 	G[127] 	B[255] 	A[255]
+	Transparent = RGBA(0, 0, 0, 0)   // 0, 0, 0, 0 (RGBA)
+	Black       = RGB(0, 0, 0)       // 0, 0, 0, 255 (RGBA)
+	Gray        = RGB(127, 127, 127) // 127, 127, 127, 255 (RGBA)
+	White       = RGB(255, 255, 255) // 255, 255, 255, 255 (RGBA)
+	Red         = RGB(255, 0, 0)     // 255, 0, 0, 255 (RGBA)
+	Green       = RGB(0, 255, 0)     // 0, 255, 0, 255 (RGBA)
+	Blue        = RGB(0, 0, 255)     // 0, 0, 255, 255 (RGBA)
+	Pink        = RGB(255, 105, 180) // 255, 105, 108, 255 (RGBA)
+	Magenta     = RGB(255, 0, 255)   // 255, 0, 255, 255 (RGBA)
+	Violet      = RGB(143, 0, 255)   // 143, 0, 255, 255 (RGBA)
+	Purple      = RGB(75, 0, 130)    // 75, 0, 130, 255 (RGBA)
+	Yellow      = RGB(255, 255, 0)   // 255, 255, 0, 255 (RGBA)
+	Orange      = RGB(255, 127, 80)  // 255, 127, 80, 255 (RGBA)
+	Brown       = RGB(150, 105, 25)  // 150, 105, 25, 255 (RGBA)
+	Cyan        = RGB(0, 255, 255)   // 0, 255, 255, 255 (RGBA)
+	Azure       = RGB(0, 127, 255)   // 0, 127, 255, 255 (RGBA)
 )
 
 func Channels(color uint) (r, g, b, a byte) { return colorToRGBA(color) }

@@ -23,21 +23,14 @@ func (camera *Camera) DragAndZoom() {
 	var scroll = rl.GetMouseWheelMove()
 
 	if rl.IsMouseButtonDown(rl.MouseButtonMiddle) {
-		camera.X -= delta.X / camera.Zoom
-		camera.Y -= delta.Y / camera.Zoom
+		camera.X -= float32(delta.X) / camera.Zoom
+		camera.Y -= float32(delta.Y) / camera.Zoom
 	}
 	if scroll > 0 {
 		camera.Zoom *= 1.05
 	} else if scroll < 0 {
 		camera.Zoom *= 0.95
 	}
-}
-func (camera *Camera) IsHovered() bool {
-	var mousePos = rl.GetMousePosition()
-	return mousePos.X > float32(camera.ScreenX) &&
-		mousePos.Y > float32(camera.ScreenY) &&
-		mousePos.X < float32(camera.ScreenX+camera.ScreenWidth) &&
-		mousePos.Y < float32(camera.ScreenY+camera.ScreenHeight)
 }
 
 func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight int) {
@@ -56,6 +49,13 @@ func (camera *Camera) SetScreenAreaToWindow() {
 	camera.ScreenHeight = h
 }
 
+func (camera *Camera) IsHovered() bool {
+	var mousePos = rl.GetMousePosition()
+	return float32(mousePos.X) > float32(camera.ScreenX) &&
+		float32(mousePos.Y) > float32(camera.ScreenY) &&
+		float32(mousePos.X) < float32(camera.ScreenX+camera.ScreenWidth) &&
+		float32(mousePos.Y) < float32(camera.ScreenY+camera.ScreenHeight)
+}
 func (camera *Camera) Size() (width, height float32) {
 	camera.update()
 	return float32(camera.ScreenWidth) / camera.Zoom, float32(camera.ScreenHeight) / camera.Zoom
@@ -69,8 +69,8 @@ func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	var sx = float32(screenX)
 	var sy = float32(screenY)
 
-	sx -= rlCam.Offset.X
-	sy -= rlCam.Offset.Y
+	sx -= float32(rlCam.Offset.X)
+	sy -= float32(rlCam.Offset.Y)
 
 	var angle = -rlCam.Rotation * rl.Deg2rad
 	var cos = float32(math.Cos(float64(angle)))
@@ -79,11 +79,11 @@ func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	var rotX = sx*cos - sy*sin
 	var rotY = sx*sin + sy*cos
 
-	rotX /= rlCam.Zoom
-	rotY /= rlCam.Zoom
+	rotX /= float32(rlCam.Zoom)
+	rotY /= float32(rlCam.Zoom)
 
-	rotX += rlCam.Target.X
-	rotY += rlCam.Target.Y
+	rotX += float32(rlCam.Target.X)
+	rotY += float32(rlCam.Target.Y)
 
 	camera.end()
 	return rotX, rotY
@@ -91,11 +91,11 @@ func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 	camera.begin()
 
-	x -= rlCam.Target.X
-	y -= rlCam.Target.Y
+	x -= float32(rlCam.Target.X)
+	y -= float32(rlCam.Target.Y)
 
-	x *= rlCam.Zoom
-	y *= rlCam.Zoom
+	x *= float32(rlCam.Zoom)
+	y *= float32(rlCam.Zoom)
 
 	var angle = rlCam.Rotation * rl.Deg2rad
 	var cos = float32(math.Cos(float64(angle)))
@@ -103,8 +103,8 @@ func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 	var rotX = x*cos - y*sin
 	var rotY = x*sin + y*cos
 
-	rotX += rlCam.Offset.X
-	rotY += rlCam.Offset.Y
+	rotX += float32(rlCam.Offset.X)
+	rotY += float32(rlCam.Offset.Y)
 
 	camera.end()
 	return int(rotX), int(rotY)
@@ -131,12 +131,12 @@ func (camera *Camera) update() {
 func (camera *Camera) begin() {
 	tryRecreateWindow()
 
-	rlCam.Target.X = camera.X
-	rlCam.Target.Y = camera.Y
-	rlCam.Rotation = camera.Angle
-	rlCam.Zoom = camera.Zoom
-	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*camera.PivotX
-	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*camera.PivotY
+	rlCam.Target.X = float32(camera.X)
+	rlCam.Target.Y = float32(camera.Y)
+	rlCam.Rotation = float32(camera.Angle)
+	rlCam.Zoom = float32(camera.Zoom)
+	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*float32(camera.PivotX)
+	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*float32(camera.PivotY)
 	rl.BeginMode2D(rlCam)
 	rl.BeginScissorMode(
 		int32(camera.ScreenX), int32(camera.ScreenY),

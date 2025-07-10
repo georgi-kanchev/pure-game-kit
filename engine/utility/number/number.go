@@ -194,7 +194,7 @@ func ByteSizeToText(byteSize int64) string {
 		div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.1f %cB", float64(byteSize)/float64(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%.1f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }
 
 func IsNaN(number float32) bool { return math.IsNaN(float64(number)) }

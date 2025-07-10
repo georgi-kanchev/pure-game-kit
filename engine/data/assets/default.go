@@ -60,5 +60,5 @@ func loadSound(id, b64 string) string {
 // 	print(b64)
 // }
 // func Main() {
-// 	printImageBase64("default-retro.png")
+// 	printImageBase64("default-ui.png")
 // }

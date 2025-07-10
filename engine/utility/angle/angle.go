@@ -126,9 +126,12 @@ func BetweenPoints(x, y, targetX, targetY float32) float32 {
 	return number.Wrap(angleDeg, 360)
 }
 
-func ToDirection(angle float32) (x, y float32) {
-	radians := float64(angle) * math.Pi / 180
-	x = float32(math.Cos(radians))
-	y = float32(math.Sin(radians))
+func ToDirection(angle float32) (dirX, dirY float32) {
+	radians := float32(angle) * math.Pi / 180
+	dirX = float32(math.Cos(float64(radians)))
+	dirY = float32(math.Sin(float64(radians)))
 	return
+}
+func FromDirection(dirX, dirY float32) float32 {
+	return float32(math.Atan2(float64(dirY), float64(dirX)) * 180 / math.Pi)
 }

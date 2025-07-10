@@ -18,6 +18,11 @@ func NewNode(assetId string) Node {
 		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5, Tint: math.MaxUint32}
 }
 
+func (node *Node) IsHovered(camera *Camera) bool {
+	mx, my := node.MousePosition(camera)
+	w, h := node.Size()
+	return mx >= 0 && my >= 0 && mx < w && my < h
+}
 func (node *Node) MousePosition(camera *Camera) (x, y float32) {
 	x, y = camera.MousePosition()
 	x, y, _, _, _ = node.FromGlobal(x, y, 0, 1, 1)
@@ -72,25 +77,29 @@ func (node *Node) FromGlobal(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, an
 		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.FromGlobal(gX, gY, gAngle, gScaleX, gScaleY)
 	}
 
-	texWidth, texHeight := node.Size()
-	pivotOffsetX := node.PivotX * texWidth * node.ScaleX
-	pivotOffsetY := node.PivotY * texHeight * node.ScaleY
-
-	angleRad := -node.Angle * (math.Pi / 180)
-	sin, cos := float32(math.Sin(float64(angleRad))), float32(math.Cos(float64(angleRad)))
-
+	// Undo translation
 	dx := gX - node.X
 	dy := gY - node.Y
+
+	// Undo rotation
+	angleRad := -node.Angle * (math.Pi / 180)
+	sin, cos := float32(math.Sin(float64(angleRad))), float32(math.Cos(float64(angleRad)))
 
 	localX := dx*cos - dy*sin
 	localY := dx*sin + dy*cos
 
+	// Undo scale
 	if node.ScaleX != 0 {
 		localX /= node.ScaleX
 	}
 	if node.ScaleY != 0 {
 		localY /= node.ScaleY
 	}
+
+	// Undo pivot (in local space)
+	texWidth, texHeight := node.Size()
+	pivotOffsetX := node.PivotX * texWidth
+	pivotOffsetY := node.PivotY * texHeight
 
 	x = localX + pivotOffsetX
 	y = localY + pivotOffsetY
