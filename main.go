@@ -3,5 +3,5 @@ package main
 import example "pure-kit/examples"
 
 func main() {
-	example.DefaultGraphics()
+	example.DefaultRetro()
 }

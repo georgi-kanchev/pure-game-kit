@@ -18,21 +18,12 @@ func NewNode(assetId string) Node {
 		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5, Tint: math.MaxUint32}
 }
 
-func (node *Node) IsHovered(camera *Camera) bool {
-	mx, my := node.MousePosition(camera)
-	w, h := node.Size()
-	return mx >= 0 && my >= 0 && mx < w && my < h
-}
-func (node *Node) MousePosition(camera *Camera) (x, y float32) {
-	x, y = camera.MousePosition()
-	x, y, _, _, _ = node.FromGlobal(x, y, 0, 1, 1)
-	return x, y
-}
 func (node *Node) Size() (width, height float32) {
 	var w, h = internal.AssetSize(node.AssetId)
 	return float32(w), float32(h)
 }
-func (node *Node) ToGlobal() (gX, gY, gAngle, gScaleX, gScaleY float32) {
+
+func (node *Node) ToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	var texWidth, texHeight = node.Size()
 
 	originPixelX := node.PivotX * float32(texWidth)
@@ -55,7 +46,7 @@ func (node *Node) ToGlobal() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	localX -= offsetX
 	localY -= offsetY
 
-	px, py, pr, psx, psy := node.Parent.ToGlobal()
+	px, py, pr, psx, psy := node.Parent.ToCamera()
 
 	localX *= psx
 	localY *= psy
@@ -72,9 +63,9 @@ func (node *Node) ToGlobal() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	gScaleY = psy * node.ScaleY
 	return
 }
-func (node *Node) FromGlobal(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
+func (node *Node) FromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
 	if node.Parent != nil {
-		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.FromGlobal(gX, gY, gAngle, gScaleX, gScaleY)
+		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.FromCamera(gX, gY, gAngle, gScaleX, gScaleY)
 	}
 
 	// Undo translation
@@ -108,4 +99,91 @@ func (node *Node) FromGlobal(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, an
 	scaleX = gScaleX / node.ScaleX
 	scaleY = gScaleY / node.ScaleY
 	return
+}
+func (node *Node) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
+	// Start with local point (x, y) in local node space.
+	// Adjust for pivot:
+	texWidth, texHeight := node.Size()
+	originPixelX := node.PivotX * float32(texWidth)
+	originPixelY := node.PivotY * float32(texHeight)
+
+	// Local offset relative to the pivot.
+	localX := (x - originPixelX) * node.ScaleX
+	localY := (y - originPixelY) * node.ScaleY
+
+	// Rotate local point by node's angle.
+	localRad := node.Angle * (math.Pi / 180)
+	sinL, cosL := float32(math.Sin(float64(localRad))), float32(math.Cos(float64(localRad)))
+	rotX := localX*cosL - localY*sinL
+	rotY := localX*sinL + localY*cosL
+
+	// Translate by node position.
+	worldX := rotX + node.X
+	worldY := rotY + node.Y
+
+	// Recurse up the parent chain.
+	if node.Parent != nil {
+		parentX, parentY := node.Parent.PointToCamera(camera, worldX, worldY)
+		return parentX, parentY
+	}
+
+	// If no parent, this is the camera position.
+	return worldX, worldY
+}
+func (node *Node) PointFromCamera(camera *Camera, cX, cY float32) (x, y float32) {
+	x, y, _, _, _ = node.FromCamera(cX, cY, 0, 1, 1)
+	return x, y
+}
+
+func (node *Node) MousePosition(camera *Camera) (x, y float32) {
+	x, y = camera.MousePosition()
+	return node.PointFromCamera(camera, x, y)
+}
+func (node *Node) IsHovered(camera *Camera) bool {
+	mx, my := node.MousePosition(camera)
+	w, h := node.Size()
+	return mx >= 0 && my >= 0 && mx < w && my < h
+}
+
+func (node *Node) Fit(camera *Camera) {
+	var x, y = camera.PointFromScreen(
+		camera.ScreenX+camera.ScreenWidth/2,
+		camera.ScreenY+camera.ScreenHeight/2,
+	)
+	var w, h = node.Size()
+	var cw, ch = camera.Size()
+	var scale = min(cw/w, ch/h)
+
+	node.X = x - (0.5-node.PivotX)*w*scale
+	node.Y = y - (0.5-node.PivotY)*h*scale
+	node.ScaleX, node.ScaleY = scale, scale
+	node.Angle = 0
+}
+func (node *Node) Fill(camera *Camera) {
+	var x, y = camera.PointFromScreen(
+		camera.ScreenX+camera.ScreenWidth/2,
+		camera.ScreenY+camera.ScreenHeight/2,
+	)
+	var w, h = node.Size()
+	var cw, ch = camera.Size()
+	var scale = max(cw/w, ch/h)
+
+	node.X = x - (0.5-node.PivotX)*w*scale
+	node.Y = y - (0.5-node.PivotY)*h*scale
+	node.ScaleX, node.ScaleY = scale, scale
+	node.Angle = 0
+}
+func (node *Node) Stretch(camera *Camera) {
+	var x, y = camera.PointFromScreen(
+		camera.ScreenX+camera.ScreenWidth/2,
+		camera.ScreenY+camera.ScreenHeight/2,
+	)
+	var w, h = node.Size()
+	var cw, ch = camera.Size()
+	var scaleX, scaleY = cw / w, ch / h
+
+	node.X = x - (0.5-node.PivotX)*w*scaleX
+	node.Y = y - (0.5-node.PivotY)*h*scaleY
+	node.ScaleX, node.ScaleY = scaleX, scaleY
+	node.Angle = 0
 }

@@ -102,6 +102,11 @@
 [√] utility - ported everything (except storage not for there)
 [x] examples - started & outlined
 
+[13-07-2025] [Sun] [20]
+[√] node - fill, fit, stretch on camera
+[√] node - added PointToCamera & PointFromCamera funcs, neighbors ToCamera & FromCamera
+[√] examples - retro almost done, needs text rendering
+
 // = = = = = = =
 
 TODO:

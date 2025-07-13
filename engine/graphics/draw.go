@@ -157,7 +157,7 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 		var texture, fullTexture = internal.Textures[node.AssetId]
 		var texX, texY float32 = 0.0, 0.0
 		var repX, repY = node.RepeatX, node.RepeatY
-		var x, y, ang, scX, scY = node.ToGlobal()
+		var x, y, ang, scX, scY = node.ToCamera()
 
 		if !fullTexture {
 			var rect, has = internal.AtlasRects[node.AssetId]
@@ -187,4 +187,8 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(node.Tint))
 	}
 	camera.end()
+}
+
+func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
+
 }
