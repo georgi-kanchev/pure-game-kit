@@ -1,120 +1,3 @@
-[26-05-2025] [Mon] [1]
-[√] project setup
-[√] git
-[√] window
-
-[27-05-2025] [Tue] [2]
-[√] bugfix window maximize broke
-[√] utility - numbers
-[√] utility - angle
-[√] utility - color
-[√] motion - spline, bezier curves
-[√] motion - easings
-[√] geometry - point, cell, area, chunk, line
-
-[30-05-2025] [Fri] [3]
-[√] motion - animation struct & methods
-[x] motion - tween chaining (number, point etc)
-
-[31-05-2025] [Sat] [4]
-[√] motion - tween chaining (number, point etc)
-[√] utility - random
-[√] utility - time
-[√] utility - text
-[x] utility - collections
-
-[01-06-2025] [Sun] [5]
-[√] utility - collections
-
-[02-06-2025] [Mon] [6]
-[√] color - changes to make it uint
-[√] rendering - enderdoc debug draw calls
-[x] rendering - cameras
-
-[03-06-2025] [Tue] [7]
-[√] rendering - cameras
-[x] rendering - types of drawing
-[x] data - loading assets
-
-[04-06-2025] [Wed] [8]
-[√] data - files
-[√] data - folders
-[x] data - loading assets (textures)
-
-[06-06-2025] [Fri] [9]
-[√] data - loading textures/area/atlas/cells
-[√] rendering - node transform/parent
-[√] rendering - drawing transformed textured nodes
-
-[10-06-2025] [Tue] [10]
-[√] is - funcs Once + Just Changed tracker of values
-[√] random - range bugfix
-[√] window - starts with title as executable name
-[x] tilemap - started
-[x] render - rendering tilemaps started
-
-[11-06-2025] [Wed] [11]
-[√] data - added default assets & way to load them from base64
-[√] storage - added compression, started storage
-[√] utility/text - added toBase64 & fromBase64
-
-[30-06-2025] [Mon] [12]
-[√] data - embed default assets into base64
-[x] data - started default icons
-
-[01-07-2025] [Tue] [13]
-[√] data - default ui sounds
-[√] internal update
-[√] time - moved update to internal, restructure, renamed to seconds
-[√] data - default icons done & default patterns done
-
-[02-07-2025] [Wed] [14]
-[√] revisited each script to align with standard
-[√] data - assets restructure
-[√] data - split default retro atlas into tiles
-[√] graphics - cam pivots helping with drawing on cam edges
-
-[03-07-2025] [Thu] [15]
-[√] data - split retro fixes, all should be correct now
-[√] graphics - added & simplified node API for local/global (and mouse position)
-[√] window - set icon from assets (texture/texture area/atlas tile etc)
-
-[04-07-2025] [Fri] [16]
-[√] data - separated into files textures/sounds/scenes
-[x] data - started scenes parsing map + collisions + objects from Tiled
-
-[06-07-2025] [Sun] [17]
-[x] data - progress on parsing Tiled scenes
-
-[08-07-2025] [Tue] [18]
-[√] data - finished parsing Tiled scenes (something may have been missed)
-[√] data - more unloading
-[x] scene - started using the parsed Tiled data
-[x] scene - unloading of Tiled data, textures, atlases & atlas tiles (map data & objs left?)
-
-[09-07-2025] [Wed] [19]
-[√] file restructure
-[√] camera - isHovered & dragAndZoom funcs
-[√] camera - drawing frames
-[√] node - fixed to global not affecting scale + isHovered
-[√] data - split default assets into rects & tiles
-[√] data - updated some default graphics
-[√] utility - ported everything (except storage not for there)
-[x] examples - started & outlined
-
-[13-07-2025] [Sun] [20]
-[√] node - fill, fit, stretch on camera
-[√] node - added PointToCamera & PointFromCamera funcs, neighbors ToCamera & FromCamera
-[√] examples - retro almost done, needs text rendering
-
-[14-07-2025] [Mon] [21]
-[√] data - loading specific symbols from font ttf
-[√] camera - drawing texts with loaded fonts
-[√] examples - finished retro
-[√] tweaks & fixes
-
-// = = = = = = =
-
 TODO:
 tiled loading
 tweens are way too complicated to work with - think of something else
@@ -134,8 +17,8 @@ geometry
 	collision
 	png maps/atlases, as assets?
 
-// = = = =
-
+// = = = = = = =
+TODO LONGTERM:
 audio - sounds, music, playlists
 data/storage
 execution flow, wait, stop, resume
@@ -146,3 +29,120 @@ events
 	idea: look into giving pointer to any value to notify subscribers it changed?
 
 consistent error handling + logging, console & file
+
+// = = = = = = =
+DONE:
+[21] [Mon] [14-07-2025]
+[√] data - loading specific symbols from font ttf
+[√] camera - drawing texts with loaded fonts
+[√] examples - finished retro
+[√] tweaks & fixes
+
+[20] [Sun] [13-07-2025]
+[√] node - fill, fit, stretch on camera
+[√] node - added PointToCamera & PointFromCamera funcs, neighbors ToCamera & FromCamera
+[√] examples - retro almost done, needs text rendering
+
+[19] [Wed] [09-07-2025]
+[√] file restructure
+[√] camera - isHovered & dragAndZoom funcs
+[√] camera - drawing frames
+[√] node - fixed to global not affecting scale + isHovered
+[√] data - split default assets into rects & tiles
+[√] data - updated some default graphics
+[√] utility - ported everything (except storage not for there)
+[x] examples - started & outlined
+
+[18] [Tue] [08-07-2025]
+[√] data - finished parsing Tiled scenes (something may have been missed)
+[√] data - more unloading
+[x] scene - started using the parsed Tiled data
+[x] scene - unloading of Tiled data, textures, atlases & atlas tiles (map data & objs left?)
+
+[17] [Sun] [06-07-2025]
+[x] data - progress on parsing Tiled scenes
+
+[16] [Fri] [04-07-2025]
+[√] data - separated into files textures/sounds/scenes
+[x] data - started scenes parsing map + collisions + objects from Tiled
+
+[15] [Thu] [03-07-2025]
+[√] data - split retro fixes, all should be correct now
+[√] graphics - added & simplified node API for local/global (and mouse position)
+[√] window - set icon from assets (texture/texture area/atlas tile etc)
+
+[14] [Wed] [02-07-2025]
+[√] revisited each script to align with standard
+[√] data - assets restructure
+[√] data - split default retro atlas into tiles
+[√] graphics - cam pivots helping with drawing on cam edges
+
+[13] [Tue] [01-07-2025]
+[√] data - default ui sounds
+[√] internal update
+[√] time - moved update to internal, restructure, renamed to seconds
+[√] data - default icons done & default patterns done
+
+[12] [Mon] [30-06-2025]
+[√] data - embed default assets into base64
+[x] data - started default icons
+
+[11] [Wed] [11-06-2025]
+[√] data - added default assets & way to load them from base64
+[√] storage - added compression, started storage
+[√] utility/text - added toBase64 & fromBase64
+
+[10] [Tue] [10-06-2025]
+[√] is - funcs Once + Just Changed tracker of values
+[√] random - range bugfix
+[√] window - starts with title as executable name
+[x] tilemap - started
+[x] render - rendering tilemaps started
+
+[9] [Fri] [06-06-2025]
+[√] data - loading textures/area/atlas/cells
+[√] rendering - node transform/parent
+[√] rendering - drawing transformed textured nodes
+
+[8] [Wed] [04-06-2025]
+[√] data - files
+[√] data - folders
+[x] data - loading assets (textures)
+
+[7] [Tue] [03-06-2025]
+[√] rendering - cameras
+[x] rendering - types of drawing
+[x] data - loading assets
+
+[6] [Mon] [02-06-2025]
+[√] color - changes to make it uint
+[√] rendering - enderdoc debug draw calls
+[x] rendering - cameras
+
+[5] [Sun] [01-06-2025]
+[√] utility - collections
+
+[4] [Sat] [31-05-2025]
+[√] motion - tween chaining (number, point etc)
+[√] utility - random
+[√] utility - time
+[√] utility - text
+[x] utility - collections
+
+[3] [Fri] [30-05-2025]
+[√] motion - animation struct & methods
+[x] motion - tween chaining (number, point etc)
+
+[2] [Tue] [27-05-2025]
+[√] bugfix window maximize broke
+[√] utility - numbers
+[√] utility - angle
+[√] utility - color
+[√] motion - spline, bezier curves
+[√] motion - easings
+[√] geometry - point, cell, area, chunk, line
+
+[1] [Mon] [26-05-2025]
+[√] project setup
+[√] git
+[√] window
