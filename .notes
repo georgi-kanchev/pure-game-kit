@@ -19,6 +19,7 @@ geometry
 
 // = = = = = = =
 TODO LONGTERM:
+tileset text rendering when passing atlas id
 audio - sounds, music, playlists
 data/storage
 execution flow, wait, stop, resume
@@ -32,6 +33,10 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[22] [Tue] [15-07-2025]
+[√] data - migrated fonts to SDF, now they're crisp as FUKK
+[√] graphics - drawing the new fonts + thickness & smoothness values for outline/shadow
+
 [21] [Mon] [14-07-2025]
 [√] data - loading specific symbols from font ttf
 [√] camera - drawing texts with loaded fonts

@@ -21,6 +21,7 @@ var TiledData = make(map[string]TiledMap)
 var Fonts = make(map[string]*rl.Font)
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
+var ShaderText = rl.Shader{}
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]

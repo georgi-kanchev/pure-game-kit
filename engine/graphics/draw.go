@@ -3,6 +3,7 @@ package graphics
 import (
 	"math"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -186,15 +187,23 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 	}
 	camera.end()
 }
-func (camera *Camera) DrawText(assetId, text string, x, y, height, spacing float32, color uint) {
+func (camera *Camera) DrawText(assetId, text string, x, y, height, spacing, smoothness, thickness float32, color uint) {
 	camera.begin()
 	var font, hasFont = internal.Fonts[assetId]
 	var _, hasAtlas = internal.Atlases[assetId]
 	var c = rl.GetColor(color)
 	var pos = rl.Vector2{X: x, Y: y}
 
+	thickness = number.Limit(thickness, 0, 0.999)
+	smoothness *= 20
+
 	if hasFont {
+		var sh = internal.ShaderText
+		rl.BeginShaderMode(sh)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), []float32{smoothness}, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), []float32{thickness}, rl.ShaderUniformFloat)
 		rl.DrawTextPro(*font, text, pos, rl.Vector2{}, 0, height, spacing, c)
+		rl.EndShaderMode()
 	} else if hasAtlas {
 	} else {
 		rl.DrawTextPro(rl.GetFontDefault(), text, pos, rl.Vector2{}, 0, height, spacing, c)

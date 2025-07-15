@@ -3,60 +3,61 @@ package assets
 import (
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
+	"unsafe"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const SymbolsLatin = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const SymbolsLatinExtra = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßŒŠŽŁŃŚŹŻĆČĐŐŰ" +
+const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const latinPlus = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßŒŠŽŁŃŚŹŻĆČĐŐŰ" +
 	"àáâãäåæçèéêëìíîïñòóôõöøùúûüýþßœšžłńśźżćčđőű" + "áéíóúüñãõçâêôÁÉÍÓÚÜÑÃÕÇÂÊÔ" + "ßẞ" + "øØåÅ" + "þÞðÐ" + "œŒ"
-const SymbolsDigits = "0123456789"
-const SymbolsPunctuation = " \t\n.,;:!¡¿\"'()[]{}<>-/\\@#$€£%^&*_+=|~`…•™§©®°" + "–—‑′″‰ˆ˜“”‘’"
-const SymbolsGreek = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ" + "αβγδεζηθικλμνξοπρστυφχψω" + "ς"
-const SymbolsCyrillic = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ" + "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" + "ҐЄІЇґєії"
-const SymbolsGeorgian = "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
-const SymbolsArmenian = "ԱԲԳԴԵԶԷԸԹԺԻԼԽԾԿՀՁՂՃՄՅՆՇՈՉՊՋՌՍՎՏՐՑՒՓՔՕՖ" + "աբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ"
-const SymbolsCurrencies = "$€£₴₽₲₵₡₢₣₤₥₦₧₨₩₪₫₭₮₯₰₱₲₳₴₸₺₼₽¢"
-const SymbolsExtra = "ºª«»¶±×÷=≠<>≤≥∞∑∏√∫∆∂∇≈≡∈∉∪∩∧∨¬⇒⇔∀∃⊂⊆∅←↑→↓↔↕♠♥♦♣☺☹"
-const symbolsDefault = SymbolsPunctuation + SymbolsDigits + SymbolsLatin
+const digits = "0123456789"
+const punctuation = " \t\n.,;:!¡¿\"'()[]{}<>-/\\@#$€£%^&*_+=|~`…•™§©®°" + "–—‑′″‰ˆ˜“”‘’"
+const greek = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ" + "αβγδεζηθικλμνξοπρστυφχψω" + "ς"
+const cyrillic = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ" + "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" + "ҐЄІЇґєії"
+const georgian = "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
+const armenian = "ԱԲԳԴԵԶԷԸԹԺԻԼԽԾԿՀՁՂՃՄՅՆՇՈՉՊՋՌՍՎՏՐՑՒՓՔՕՖ" + "աբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ"
+const currencies = "$€£₴₽₲₵₡₢₣₤₥₦₧₨₩₪₫₭₮₯₰₱₲₳₴₸₺₼₽¢"
+const extra = "ºª«»¶±×÷=≠<>≤≥∞∑∏√∫∆∂∇≈≡∈∉∪∩∧∨¬⇒⇔∀∃⊂⊆∅←↑→↓↔↕♠♥♦♣☺☹"
+const all = punctuation + extra + currencies + digits + latin + latinPlus + cyrillic + greek + georgian + armenian
 
 func LoadFonts(size int, filePaths ...string) []string {
+	tryCreateWindow()
 	var result = []string{}
+
+	if internal.ShaderText.ID == 0 {
+		internal.ShaderText = rl.LoadShaderFromMemory("", frag)
+	}
+
 	for _, path := range filePaths {
-		var id = LoadFontSymbols(size, path, symbolsDefault)
-		if id != "" {
-			result = append(result, id)
+		var id, absolutePath = getIdPath(path)
+		var _, has = internal.Fonts[id]
+
+		if has || !file.Exists(absolutePath) {
+			continue
 		}
+
+		var bytes = file.LoadBytes(path)
+		var characters = uniqueRunes(all)
+		var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
+		var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(characters)), Chars: &glyphs[0]}
+		var atlas = rl.GenImageFontAtlas(
+			unsafe.Slice(font.Chars, font.CharsCount),
+			unsafe.Slice(&font.Recs, font.CharsCount),
+			int32(size), 0, 1,
+		)
+		font.Texture = rl.LoadTextureFromImage(&atlas)
+		rl.UnloadImage(&atlas)
+		rl.SetTextureFilter(font.Texture, rl.FilterBilinear)
+
+		if font.BaseSize == 0 {
+			continue
+		}
+
+		result = append(result, id)
+		internal.Fonts[id] = &font
 	}
 	return result
-}
-func LoadFontSymbols(size int, filePath string, symbols ...string) string {
-	tryCreateWindow()
-
-	var id, absolutePath = getIdPath(filePath)
-	var _, has = internal.Fonts[id]
-
-	if has || !file.Exists(absolutePath) {
-		return ""
-	}
-
-	var allSymbols = "?" // it's good to have ? as first character in any case to account for missing symbols
-	for _, s := range symbols {
-		allSymbols += s
-	}
-
-	if len(symbols) == 0 {
-		allSymbols += SymbolsPunctuation + SymbolsExtra + SymbolsCurrencies + SymbolsDigits + SymbolsLatin +
-			SymbolsLatinExtra + SymbolsCyrillic + SymbolsGreek + SymbolsGeorgian + SymbolsArmenian
-	}
-
-	var font = rl.LoadFontEx(absolutePath, int32(size), uniqueRunes(allSymbols))
-	if font.BaseSize == 0 {
-		return ""
-	}
-
-	internal.Fonts[id] = &font
-	return id
 }
 
 func UnloadFonts(fontIds ...string) {
@@ -71,6 +72,27 @@ func UnloadFonts(fontIds ...string) {
 }
 
 // #region private
+
+const frag = `#version 330
+
+in vec2 fragTexCoord;
+in vec4 fragColor;
+
+uniform sampler2D texture0;
+uniform float smoothness;
+uniform float thickness;
+
+out vec4 finalColor;
+
+void main()
+{
+    float distance = texture(texture0, fragTexCoord).a - (1.0 - thickness);
+    float baseSmooth = smoothness * length(vec2(dFdx(distance), dFdy(distance)));
+    float alpha = smoothstep(-baseSmooth, baseSmooth, distance);
+    vec4 fill = vec4(fragColor.rgb, fragColor.a * alpha);
+    
+    finalColor = fill;
+}`
 
 func uniqueRunes(str string) []rune {
 	var seen = make(map[rune]bool)

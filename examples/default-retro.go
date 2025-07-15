@@ -34,7 +34,7 @@ func DefaultRetro() {
 
 		var info = text.New("id: ", tileIds[index], "\ncoords: ", imx, ", ", imy, "\nindex: ", index)
 		camera.DrawFrame(mmx, mmy, 8*node.ScaleX, 8*node.ScaleY, 0, 6, color.Cyan)
-		camera.DrawText("", info, 5, 5, 80, 10, color.Black)
-		camera.DrawText("", info, 0, 0, 80, 10, color.Cyan)
+		camera.DrawText("", info, 5, 5, 80, 10, 0, 0.5, color.Black)
+		camera.DrawText("", info, 0, 0, 80, 10, 0, 0.5, color.Cyan)
 	}
 }
