@@ -7,7 +7,7 @@ import (
 
 const deltaMax float64 = 0.1
 
-var prevClock float64 = 0.0
+var prevClock float64
 
 var Clock, Delta, FrameRate, FrameRateAverage, Runtime float64
 var RealDelta, RealFrameRate, RealFrameRateAverage, RealRuntime float64
@@ -33,7 +33,7 @@ func Update() {
 	Runtime += Delta
 	FrameRate = 1.0 / Delta
 	FrameRateAverage = float64(FrameCount) / Runtime
-	if RealDelta < Delta {
+	if RealDelta < deltaMax {
 		FrameCount++
 	}
 

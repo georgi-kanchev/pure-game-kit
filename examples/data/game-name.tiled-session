@@ -18,11 +18,11 @@
             "expandedGroupLayers": [
                 6
             ],
-            "scale": 16,
+            "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 26.46875,
-                "y": 11.6875
+                "x": 126.83333333333334,
+                "y": 142.66666666666669
             }
         },
         "map.tmx#atlas": {

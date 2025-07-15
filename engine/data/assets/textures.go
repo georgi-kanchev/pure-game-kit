@@ -1,11 +1,8 @@
 package assets
 
 import (
-	"path/filepath"
 	"pure-kit/engine/data/file"
-	"pure-kit/engine/data/folder"
 	"pure-kit/engine/internal"
-	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -15,9 +12,8 @@ func LoadTextures(filePaths ...string) []string {
 
 	var result = []string{}
 	for _, path := range filePaths {
-		var absolutePath = filepath.Join(folder.PathOfExecutable(), path)
-		path = strings.ReplaceAll(path, file.Extension(path), "")
-		var tex, has = internal.Textures[path]
+		var id, absolutePath = getIdPath(path)
+		var tex, has = internal.Textures[id]
 
 		if !file.Exists(absolutePath) {
 			continue
@@ -30,8 +26,8 @@ func LoadTextures(filePaths ...string) []string {
 		var texture = rl.LoadTexture(absolutePath)
 
 		if texture.Width != 0 {
-			internal.Textures[path] = &texture
-			result = append(result, path)
+			internal.Textures[id] = &texture
+			result = append(result, id)
 		}
 	}
 

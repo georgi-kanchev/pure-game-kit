@@ -2,6 +2,7 @@ package text
 
 import (
 	"encoding/base64"
+	"fmt"
 	"math"
 	"strconv"
 	"strings"
@@ -176,6 +177,14 @@ func Reveal(text string, progress float32) string {
 	cutoff := int(math.Round(float64(progress) * float64(textLen)))
 
 	return string([]rune(text)[cutoff:])
+}
+
+func New(elements ...any) string {
+	var result string
+	for _, e := range elements {
+		result += fmt.Sprint(e)
+	}
+	return result
 }
 
 func Fit(text string, maxLength int) string {

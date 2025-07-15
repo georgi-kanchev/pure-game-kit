@@ -1,7 +1,11 @@
 package assets
 
 import (
+	"path/filepath"
+	"pure-kit/engine/data/file"
+	"pure-kit/engine/data/folder"
 	"pure-kit/engine/window"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -15,4 +19,10 @@ func tryInitAudio() {
 	if !rl.IsAudioDeviceReady() {
 		rl.InitAudioDevice()
 	}
+}
+
+func getIdPath(path string) (id, absolutePath string) {
+	absolutePath = filepath.Join(folder.PathOfExecutable(), path)
+	id = strings.ReplaceAll(path, file.Extension(path), "")
+	return
 }

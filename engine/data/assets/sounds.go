@@ -1,11 +1,8 @@
 package assets
 
 import (
-	"path/filepath"
 	"pure-kit/engine/data/file"
-	"pure-kit/engine/data/folder"
 	"pure-kit/engine/internal"
-	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -16,9 +13,8 @@ func LoadSounds(filePaths ...string) []string {
 
 	var result = []string{}
 	for _, path := range filePaths {
-		var absolutePath = filepath.Join(folder.PathOfExecutable(), path)
-		path = strings.ReplaceAll(path, file.Extension(path), "")
-		var _, has = internal.Sounds[path]
+		var id, absolutePath = getIdPath(path)
+		var _, has = internal.Sounds[id]
 
 		if has || !file.Exists(absolutePath) {
 			continue
@@ -27,8 +23,8 @@ func LoadSounds(filePaths ...string) []string {
 		var sound = rl.LoadSound(absolutePath)
 
 		if sound.FrameCount != 0 {
-			internal.Sounds[path] = &sound
-			result = append(result, path)
+			internal.Sounds[id] = &sound
+			result = append(result, id)
 		}
 	}
 

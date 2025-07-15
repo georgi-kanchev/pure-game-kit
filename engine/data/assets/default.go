@@ -16,8 +16,8 @@ func loadTexture(id, b64 string) string {
 		UnloadTextures(id)
 	}
 
-	var imgData, _ = base64.StdEncoding.DecodeString(b64)
-	var decompressed = storage.Decompress(imgData)
+	var raw, _ = base64.StdEncoding.DecodeString(b64)
+	var decompressed = storage.Decompress(raw)
 	var image = rl.LoadImageFromMemory(".png", decompressed, int32(len(decompressed)))
 	var tex = rl.LoadTextureFromImage(image)
 
@@ -36,7 +36,6 @@ func loadSound(id, b64 string) string {
 
 	var raw, _ = base64.StdEncoding.DecodeString(b64)
 	var decompressed = storage.Decompress(raw)
-
 	var wave = rl.LoadWaveFromMemory(".mp3", decompressed, int32(len(decompressed)))
 	var sound = rl.LoadSoundFromWave(wave)
 	internal.Sounds[id] = &sound

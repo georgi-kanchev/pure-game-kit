@@ -18,22 +18,28 @@ var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
 var TiledData = make(map[string]TiledMap)
 
+var Fonts = make(map[string]*rl.Font)
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 
 func AssetSize(assetId string) (width, height int) {
-	var texture, fullTexture = Textures[assetId]
+	var texture, hasTexture = Textures[assetId]
 	width, height = 0, 0
 
-	if fullTexture {
+	if hasTexture {
 		return int(texture.Width), int(texture.Height)
 	}
 
-	var texRect, has = AtlasRects[assetId]
-	if !has {
-		return
+	var rect, hasArea = AtlasRects[assetId]
+	if hasArea {
+		var atlas = Atlases[rect.AtlasId]
+		return atlas.CellWidth * int(rect.CountX), atlas.CellHeight * int(rect.CountY)
 	}
 
-	var atlas = Atlases[texRect.AtlasId]
-	return atlas.CellWidth * int(texRect.CountX), atlas.CellHeight * int(texRect.CountY)
+	var font, hasFont = Fonts[assetId]
+	if hasFont {
+		return int(font.Texture.Width), int(font.Texture.Height)
+	}
+
+	return
 }

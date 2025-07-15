@@ -135,8 +135,8 @@
     </properties>
    </object>
    <object id="8" x="255" y="265" width="29" height="14"/>
-   <object id="34" x="55" y="110" width="86" height="74">
-    <text fontfamily="Sans Serif" pixelsize="20" wrap="1" color="#ffffff" underline="1" strikeout="1" halign="center" valign="center">The Structure</text>
+   <object id="34" x="11" y="32" width="140" height="63">
+    <text fontfamily="Jupiteroid" wrap="1" color="#ffffff" bold="1" halign="center" valign="center">The uppercase and lowercase forms of the 24 letters are: </text>
    </object>
    <object id="35" x="256" y="176">
     <polygon points="0,0 16,16 0,16"/>

@@ -107,6 +107,12 @@
 [√] node - added PointToCamera & PointFromCamera funcs, neighbors ToCamera & FromCamera
 [√] examples - retro almost done, needs text rendering
 
+[14-07-2025] [Mon] [21]
+[√] data - loading specific symbols from font ttf
+[√] camera - drawing texts with loaded fonts
+[√] examples - finished retro
+[√] tweaks & fixes
+
 // = = = = = = =
 
 TODO:

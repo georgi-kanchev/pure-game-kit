@@ -154,30 +154,28 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 			continue
 		}
 
-		var texture, fullTexture = internal.Textures[node.AssetId]
+		var texture, hasTexture = internal.Textures[node.AssetId]
 		var texX, texY float32 = 0.0, 0.0
 		var repX, repY = node.RepeatX, node.RepeatY
 		var x, y, ang, scX, scY = node.ToCamera()
 
-		if !fullTexture {
-			var rect, has = internal.AtlasRects[node.AssetId]
-			if !has {
-				continue
+		if !hasTexture {
+			var rect, hasArea = internal.AtlasRects[node.AssetId]
+			if hasArea {
+				var atlas, _ = internal.Atlases[rect.AtlasId]
+				var tex, _ = internal.Textures[atlas.TextureId]
+
+				texture = tex
+				texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
+				texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
+			} else {
+				var font, hasFont = internal.Fonts[node.AssetId]
+				if !hasFont {
+					continue
+				}
+				texture = &font.Texture
 			}
 
-			var atlas, has2 = internal.Atlases[rect.AtlasId]
-			if !has2 {
-				continue
-			}
-
-			var tex, has3 = internal.Textures[atlas.TextureId]
-			if !has3 {
-				continue
-			}
-
-			texture = tex
-			texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
-			texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
 		}
 
 		var texW, texH = node.Size()
@@ -188,7 +186,22 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 	}
 	camera.end()
 }
+func (camera *Camera) DrawText(assetId, text string, x, y, height, spacing float32, color uint) {
+	camera.begin()
+	var font, hasFont = internal.Fonts[assetId]
+	var _, hasAtlas = internal.Atlases[assetId]
+	var c = rl.GetColor(color)
+	var pos = rl.Vector2{X: x, Y: y}
 
+	if hasFont {
+		rl.DrawTextPro(*font, text, pos, rl.Vector2{}, 0, height, spacing, c)
+	} else if hasAtlas {
+	} else {
+		rl.DrawTextPro(rl.GetFontDefault(), text, pos, rl.Vector2{}, 0, height, spacing, c)
+	}
+
+	camera.end()
+}
 func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 
 }
