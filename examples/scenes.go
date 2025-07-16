@@ -11,7 +11,7 @@ import (
 
 func Scenes() {
 	var cam = graphics.NewCamera(7)
-	var parent = graphics.NewNode("map#1objects[1,0]")
+	var parent = graphics.NewSprite("map#1objects[1,0]")
 	var data = assets.LoadTiledData("data/map.tmx")[0]
 	var scene = scene.New(data)
 

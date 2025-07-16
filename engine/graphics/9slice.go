@@ -1,14 +1,14 @@
 package graphics
 
 type NineSlice struct {
-	Node
-	Slices [9]Node
+	Sprite
+	Slices [9]Sprite
 }
 
 func NewNineSlice(assetIds [9]string) NineSlice {
-	var result = NineSlice{Node: NewNode("")}
+	var result = NineSlice{Sprite: NewSprite("")}
 	for i := range 9 {
-		result.Slices[i] = NewNode(assetIds[i])
+		result.Slices[i] = NewSprite(assetIds[i])
 	}
 	return result
 }

@@ -9,14 +9,21 @@ import (
 
 func Texts() {
 	var cam = graphics.NewCamera(3)
-	var f = assets.LoadFonts(24, "font.ttf")[0]
-	var node = graphics.NewNode("font")
+	var f = assets.LoadFonts(32, "font.ttf")[0]
+	var textBox = graphics.NewTextBox(f, 0, 0, "test: ", 145, " hello: ", 851.32, "...")
+	// textBox.FontId = ""
+	// textBox.ValueScale = 5
+
+	var shadow = textBox
+	shadow.Thickness = 0.8
+	shadow.Color = color.Black
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawText(f, "кирилица", -400, -300, 1000, 0, 0.4, 0.7, color.Red)
-		cam.DrawText(f, "кирилица", -400, -300, 1000, 0, 0, 0.5, color.White)
+		cam.DrawGrid(1, 32, color.Darken(color.Gray, 0.5))
 
-		cam.DrawNodes(&node)
+		var x, y, w, h = textBox.Rectangle()
+		cam.DrawRectangle(x, y, w, h, textBox.Angle, color.Red)
+		cam.DrawTextBoxes(&shadow, &textBox)
 	}
 }

@@ -33,6 +33,9 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[23] [Thu] [17-07-2025]
+[x] graphics - text boxes
+
 [22] [Tue] [15-07-2025]
 [√] data - migrated fonts to SDF, now they're crisp as FUKK
 [√] graphics - drawing the new fonts + thickness & smoothness values for outline/shadow

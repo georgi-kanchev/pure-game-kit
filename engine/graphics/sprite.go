@@ -5,25 +5,29 @@ import (
 	"pure-kit/engine/internal"
 )
 
-type Node struct {
+type Sprite struct {
 	X, Y, Angle, ScaleX, ScaleY      float32
 	PivotX, PivotY, RepeatX, RepeatY float32
 	AssetId                          string
-	Parent                           *Node
+	Parent                           *Sprite
 	Tint                             uint
 }
 
-func NewNode(assetId string) Node {
-	return Node{AssetId: assetId,
+func NewSprite(assetId string) Sprite {
+	return Sprite{AssetId: assetId,
 		ScaleX: 1, ScaleY: 1, RepeatX: 1, RepeatY: 1, PivotX: 0.5, PivotY: 0.5, Tint: math.MaxUint32}
 }
 
-func (node *Node) Size() (width, height float32) {
+func (node *Sprite) Size() (width, height float32) {
 	var w, h = internal.AssetSize(node.AssetId)
 	return float32(w), float32(h)
 }
+func (node *Sprite) Resize(width, height float32) {
+	var w, h = internal.AssetSize(node.AssetId)
+	node.ScaleX, node.ScaleY = width/float32(w), height/float32(h)
+}
 
-func (node *Node) ToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
+func (node *Sprite) ToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	var texWidth, texHeight = node.Size()
 
 	originPixelX := node.PivotX * float32(texWidth)
@@ -63,7 +67,7 @@ func (node *Node) ToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	gScaleY = psy * node.ScaleY
 	return
 }
-func (node *Node) FromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
+func (node *Sprite) FromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
 	if node.Parent != nil {
 		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.FromCamera(gX, gY, gAngle, gScaleX, gScaleY)
 	}
@@ -100,7 +104,7 @@ func (node *Node) FromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, an
 	scaleY = gScaleY / node.ScaleY
 	return
 }
-func (node *Node) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
+func (node *Sprite) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
 	// Start with local point (x, y) in local node space.
 	// Adjust for pivot:
 	texWidth, texHeight := node.Size()
@@ -130,22 +134,22 @@ func (node *Node) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
 	// If no parent, this is the camera position.
 	return worldX, worldY
 }
-func (node *Node) PointFromCamera(camera *Camera, cX, cY float32) (x, y float32) {
+func (node *Sprite) PointFromCamera(camera *Camera, cX, cY float32) (x, y float32) {
 	x, y, _, _, _ = node.FromCamera(cX, cY, 0, 1, 1)
 	return x, y
 }
 
-func (node *Node) MousePosition(camera *Camera) (x, y float32) {
+func (node *Sprite) MousePosition(camera *Camera) (x, y float32) {
 	x, y = camera.MousePosition()
 	return node.PointFromCamera(camera, x, y)
 }
-func (node *Node) IsHovered(camera *Camera) bool {
+func (node *Sprite) IsHovered(camera *Camera) bool {
 	mx, my := node.MousePosition(camera)
 	w, h := node.Size()
 	return mx >= 0 && my >= 0 && mx < w && my < h
 }
 
-func (node *Node) Fit(camera *Camera) {
+func (node *Sprite) Fit(camera *Camera) {
 	var x, y = camera.PointFromScreen(
 		camera.ScreenX+camera.ScreenWidth/2,
 		camera.ScreenY+camera.ScreenHeight/2,
@@ -159,7 +163,7 @@ func (node *Node) Fit(camera *Camera) {
 	node.ScaleX, node.ScaleY = scale, scale
 	node.Angle = 0
 }
-func (node *Node) Fill(camera *Camera) {
+func (node *Sprite) Fill(camera *Camera) {
 	var x, y = camera.PointFromScreen(
 		camera.ScreenX+camera.ScreenWidth/2,
 		camera.ScreenY+camera.ScreenHeight/2,
@@ -173,7 +177,7 @@ func (node *Node) Fill(camera *Camera) {
 	node.ScaleX, node.ScaleY = scale, scale
 	node.Angle = 0
 }
-func (node *Node) Stretch(camera *Camera) {
+func (node *Sprite) Stretch(camera *Camera) {
 	var x, y = camera.PointFromScreen(
 		camera.ScreenX+camera.ScreenWidth/2,
 		camera.ScreenY+camera.ScreenHeight/2,

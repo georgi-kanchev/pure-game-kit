@@ -12,7 +12,10 @@ import (
 func DefaultRetro() {
 	var camera = graphics.NewCamera(1)
 	var assetId, tileIds = assets.LoadDefaultAtlasRetro()
-	var node = graphics.NewNode(assetId)
+	var node = graphics.NewSprite(assetId)
+
+	var textBox = graphics.NewTextBox("", 5, 5, "")
+	textBox.ValueScale, textBox.GapSymbols, textBox.Color = 10, 0.5, color.Cyan
 
 	for window.KeepOpen() {
 		camera.SetScreenAreaToWindow()
@@ -34,7 +37,8 @@ func DefaultRetro() {
 
 		var info = text.New("id: ", tileIds[index], "\ncoords: ", imx, ", ", imy, "\nindex: ", index)
 		camera.DrawFrame(mmx, mmy, 8*node.ScaleX, 8*node.ScaleY, 0, 6, color.Cyan)
-		camera.DrawText("", info, 5, 5, 80, 10, 0, 0.5, color.Black)
-		camera.DrawText("", info, 0, 0, 80, 10, 0, 0.5, color.Cyan)
+
+		textBox.Value = info
+		camera.DrawTextBoxes(&textBox)
 	}
 }

@@ -148,7 +148,7 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 
 	camera.end()
 }
-func (camera *Camera) DrawNodes(nodes ...*Node) {
+func (camera *Camera) DrawNodes(nodes ...*Sprite) {
 	camera.begin()
 	for _, node := range nodes {
 		if node == nil {
@@ -187,30 +187,51 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 	}
 	camera.end()
 }
-func (camera *Camera) DrawText(assetId, text string, x, y, height, spacing, smoothness, thickness float32, color uint) {
+
+func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	camera.begin()
-	var font, hasFont = internal.Fonts[assetId]
-	var _, hasAtlas = internal.Atlases[assetId]
-	var c = rl.GetColor(color)
-	var pos = rl.Vector2{X: x, Y: y}
 
-	thickness = number.Limit(thickness, 0, 0.999)
-	smoothness *= 20
+	var sh = internal.ShaderText
+	for _, t := range textBoxes {
+		if t == nil {
+			continue
+		}
 
-	if hasFont {
-		var sh = internal.ShaderText
-		rl.BeginShaderMode(sh)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), []float32{smoothness}, rl.ShaderUniformFloat)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), []float32{thickness}, rl.ShaderUniformFloat)
-		rl.DrawTextPro(*font, text, pos, rl.Vector2{}, 0, height, spacing, c)
-		rl.EndShaderMode()
-	} else if hasAtlas {
-	} else {
-		rl.DrawTextPro(rl.GetFontDefault(), text, pos, rl.Vector2{}, 0, height, spacing, c)
+		var font = t.font()
+		var height = t.height()
+		var c = rl.GetColor(t.Color)
+		var pos = rl.Vector2{X: t.X, Y: t.Y}
+		var smoothness = []float32{t.Smoothness}
+		var thickness = []float32{t.Thickness}
+		thickness[0] = number.Limit(thickness[0], 0, 0.999)
+		smoothness[0] *= height / 5
+
+		if sh.ID != 0 {
+			rl.BeginShaderMode(sh)
+			rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), smoothness, rl.ShaderUniformFloat)
+			rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
+		}
+
+		rl.DrawTextPro(*font, t.Value, pos, t.pivot(), t.Angle, height, t.gapSymbols(), c)
+
+		if sh.ID != 0 {
+			rl.EndShaderMode()
+		}
 	}
 
 	camera.end()
 }
+
 func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 
 }
+
+// #region private
+func GetOrDefault(values []float32, index int, defaultValue float32) float32 {
+	if index >= len(values) {
+		return defaultValue
+	}
+	return values[index]
+}
+
+// #endregion
