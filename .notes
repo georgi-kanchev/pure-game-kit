@@ -33,6 +33,12 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[24] [Fri] [18-07-2025]
+[√] var instead of := wherever possible
+[√] graphics - moved reusable code from sprite to base node + restructure
+[√] graphics - added simpler draw functions
+[√] graphics - added getters for corner positions in node
+
 [23] [Thu] [17-07-2025]
 [x] graphics - text boxes
 

@@ -19,16 +19,16 @@ func OpenURL(url string) {
 func Calculate(mathExpression string) float64 {
 	mathExpression = strings.ReplaceAll(mathExpression, " ", "")
 
-	values := []float64{}
-	operators := []rune{}
-	bracketCountOpen := 0
-	bracketCountClose := 0
+	var values = []float64{}
+	var operators = []rune{}
+	var bracketCountOpen = 0
+	var bracketCountClose = 0
 
-	isOperator := func(c rune) bool {
+	var isOperator = func(c rune) bool {
 		return c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '%'
 	}
 
-	priority := func(op rune) int {
+	var priority = func(op rune) int {
 		switch op {
 		case '+', '-':
 			return 1
@@ -41,7 +41,7 @@ func Calculate(mathExpression string) float64 {
 		}
 	}
 
-	applyOperator := func(val1, val2 float64, op rune) float64 {
+	var applyOperator = func(val1, val2 float64, op rune) float64 {
 		switch op {
 		case '+':
 			return val1 + val2
@@ -63,28 +63,28 @@ func Calculate(mathExpression string) float64 {
 		return math.NaN()
 	}
 
-	process := func() bool {
+	var process = func() bool {
 		if len(values) < 2 || len(operators) < 1 {
 			return true
 		}
-		val2 := values[len(values)-1]
+		var val2 = values[len(values)-1]
 		values = values[:len(values)-1]
-		val1 := values[len(values)-1]
+		var val1 = values[len(values)-1]
 		values = values[:len(values)-1]
-		op := operators[len(operators)-1]
+		var op = operators[len(operators)-1]
 		operators = operators[:len(operators)-1]
 		values = append(values, applyOperator(val1, val2, op))
 		return false
 	}
 
-	getNumber := func(expr string, i *int) float64 {
-		start := *i
+	var getNumber = func(expr string, i *int) float64 {
+		var start = *i
 		for *i < len(expr) && (unicode.IsDigit(rune(expr[*i])) || expr[*i] == '.') {
 			(*i)++
 		}
-		numStr := expr[start:*i]
+		var numStr = expr[start:*i]
 		(*i)--
-		val, err := strconv.ParseFloat(numStr, 64)
+		var val, err = strconv.ParseFloat(numStr, 64)
 		if err != nil {
 			return math.NaN()
 		}
@@ -92,10 +92,10 @@ func Calculate(mathExpression string) float64 {
 	}
 
 	for i := 0; i < len(mathExpression); i++ {
-		c := rune(mathExpression[i])
+		var c = rune(mathExpression[i])
 
 		if unicode.IsDigit(c) || c == '.' {
-			val := getNumber(mathExpression, &i)
+			var val = getNumber(mathExpression, &i)
 			values = append(values, val)
 		} else if c == '(' {
 			operators = append(operators, c)
@@ -141,40 +141,44 @@ func Calculate(mathExpression string) float64 {
 }
 
 func IsNumber(text string) bool {
-	_, err := strconv.ParseFloat(text, 64)
+	var _, err = strconv.ParseFloat(text, 64)
 	return err == nil
 }
 
 func PadLeftAndRight(text string, length int, padStr string) string {
-	textLen := utf8.RuneCountInString(text)
-	spaces := length - textLen
+	var textLen = Length(text)
+	var spaces = length - textLen
 	if spaces <= 0 {
 		return text
 	}
-	left := spaces / 2
+	var left = spaces / 2
 	return PadRight(PadLeft(text, textLen+left, padStr), length, padStr)
 }
 func PadLeft(text string, totalWidth int, padStr string) string {
-	textLen := utf8.RuneCountInString(text)
-	padding := totalWidth - textLen
+	var textLen = Length(text)
+	var padding = totalWidth - textLen
 	if padding <= 0 || padStr == "" {
 		return text
 	}
 	return repeatPad(padStr, padding) + text
 }
 func PadRight(text string, totalWidth int, padStr string) string {
-	textLen := utf8.RuneCountInString(text)
-	padding := totalWidth - textLen
+	var textLen = Length(text)
+	var padding = totalWidth - textLen
 	if padding <= 0 || padStr == "" {
 		return text
 	}
 	return text + repeatPad(padStr, padding)
 }
 
+func Length(text string) int {
+	return utf8.RuneCountInString(text)
+}
+
 func Reveal(text string, progress float32) string {
 	progress = float32(math.Min(1, math.Max(float64(progress), 0)))
-	textLen := utf8.RuneCountInString(text)
-	cutoff := int(math.Round(float64(progress) * float64(textLen)))
+	var textLen = Length(text)
+	var cutoff = int(math.Round(float64(progress) * float64(textLen)))
 
 	return string([]rune(text)[cutoff:])
 }
@@ -193,11 +197,11 @@ func Fit(text string, maxLength int) string {
 	}
 
 	const indicator = "…"
-	textRunes := []rune(text)
-	indicatorLen := len([]rune(indicator))
-	textLen := len(textRunes)
-	absMax := int(math.Abs(float64(maxLength)))
-	trimLen := absMax - indicatorLen
+	var textRunes = []rune(text)
+	var indicatorLen = len([]rune(indicator))
+	var textLen = len(textRunes)
+	var absMax = int(math.Abs(float64(maxLength)))
+	var trimLen = absMax - indicatorLen
 
 	if maxLength > 0 && textLen > int(maxLength) {
 		if trimLen <= 0 {
@@ -218,7 +222,7 @@ func ToBase64(text string) string {
 	return base64.StdEncoding.EncodeToString([]byte(text))
 }
 func FromBase64(textBase64 string) string {
-	decodedBytes, err := base64.StdEncoding.DecodeString(textBase64)
+	var decodedBytes, err = base64.StdEncoding.DecodeString(textBase64)
 	if err != nil {
 		return ""
 	}
@@ -232,11 +236,11 @@ func repeatPad(padStr string, totalRunes int) string {
 		return ""
 	}
 	var builder strings.Builder
-	padRunes := []rune(padStr)
+	var padRunes = []rune(padStr)
 	for builder.Len() < totalRunes {
 		for _, r := range padRunes {
 			builder.WriteRune(r)
-			if utf8.RuneCountInString(builder.String()) >= totalRunes {
+			if Length(builder.String()) >= totalRunes {
 				return truncateToRunes(builder.String(), totalRunes)
 			}
 		}
@@ -245,7 +249,7 @@ func repeatPad(padStr string, totalRunes int) string {
 }
 func truncateToRunes(s string, maxRunes int) string {
 	var builder strings.Builder
-	count := 0
+	var count = 0
 	for _, r := range s {
 		if count >= maxRunes {
 			break

@@ -21,7 +21,7 @@ func WrapRange(number, a, b float32) float32 {
 	if a > b {
 		a, b = b, a
 	}
-	d := b - a
+	var d = b - a
 	if d < 0.001 {
 		return a
 	}
@@ -48,8 +48,8 @@ func Snap(number, interval float32) float32 {
 	if math.IsNaN(float64(interval)) || math.IsInf(float64(number), 0) || math.Abs(float64(interval)) < 0.001 {
 		return number
 	}
-	remainder := float32(math.Mod(float64(number), float64(interval)))
-	halfway := interval / 2.0
+	var remainder = float32(math.Mod(float64(number), float64(interval)))
+	var halfway = interval / 2.0
 	if remainder < halfway {
 		return number - remainder
 	}
@@ -60,7 +60,7 @@ func Map(number float32, fromA, fromB, toA, toB float32) float32 {
 	if math.Abs(float64(fromB-fromA)) < 0.001 {
 		return (toA + toB) / 2
 	}
-	value := ((number-fromA)/(fromB-fromA))*(toB-toA) + toA
+	var value = ((number-fromA)/(fromB-fromA))*(toB-toA) + toA
 	if math.IsNaN(float64(value)) || math.IsInf(float64(value), 0) {
 		return toA
 	}
@@ -75,7 +75,7 @@ func PadZeros(number float32, amountOfZeros int) string {
 		return strconv.FormatFloat(float64(number), 'f', -1, 32)
 	}
 	if amountOfZeros < 0 {
-		width := -amountOfZeros
+		var width = -amountOfZeros
 		return fmt.Sprintf("%0*d", width, int(number))
 	}
 	return fmt.Sprintf("%.*f", amountOfZeros, number)
@@ -92,9 +92,9 @@ func Distribute(amount int, a, b float32) []float32 {
 		return []float32{}
 	}
 
-	result := make([]float32, amount)
-	size := b - a
-	spacing := size / float32(amount+1)
+	var result = make([]float32, amount)
+	var size = b - a
+	var spacing = size / float32(amount+1)
 
 	for i := 1; i <= int(amount); i++ {
 		result[i-1] = a + float32(i)*spacing
@@ -103,8 +103,8 @@ func Distribute(amount int, a, b float32) []float32 {
 	return result
 }
 func Precision(number float32) int {
-	s := strconv.FormatFloat(float64(number), 'f', -1, 32)
-	parts := strings.Split(s, ".")
+	var s = strconv.FormatFloat(float64(number), 'f', -1, 32)
+	var parts = strings.Split(s, ".")
 	if len(parts) == 2 {
 		return len(parts[1])
 	}
@@ -115,11 +115,11 @@ func IsBetween(number float32, a, b float32, includeA, includeB bool) bool {
 	if a > b {
 		a, b = b, a
 	}
-	l := a < number
+	var l = a < number
 	if includeA {
 		l = a <= number
 	}
-	u := b > number
+	var u = b > number
 	if includeB {
 		u = b >= number
 	}
@@ -129,11 +129,11 @@ func IsBetweenInt(number int, a, b int, includeA, includeB bool) bool {
 	if a > b {
 		a, b = b, a
 	}
-	l := a < number
+	var l = a < number
 	if includeA {
 		l = a <= number
 	}
-	u := b > number
+	var u = b > number
 	if includeB {
 		u = b >= number
 	}
@@ -163,8 +163,8 @@ func AverageInt(numbers ...int) int {
 }
 
 func Indexes2DToIndex1D(x, y, width, height int) int {
-	result := x*width + y
-	max := width * height
+	var result = x*width + y
+	var max = width * height
 	if result < 0 {
 		return 0
 	} else if result > max {
@@ -173,14 +173,14 @@ func Indexes2DToIndex1D(x, y, width, height int) int {
 	return result
 }
 func Index1DToIndexes2D(index, width, height int) (int, int) {
-	max := width * height
+	var max = width * height
 	if index < 0 {
 		index = 0
 	} else if index > max {
 		index = max
 	}
-	x := index % width
-	y := index / width
+	var x = index % width
+	var y = index / width
 	return x, y
 }
 
@@ -189,7 +189,7 @@ func ByteSizeToText(byteSize int64) string {
 	if byteSize < unit {
 		return fmt.Sprintf("%d B", byteSize)
 	}
-	div, exp := int64(unit), 0
+	var div, exp = int64(unit), 0
 	for n := byteSize / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++

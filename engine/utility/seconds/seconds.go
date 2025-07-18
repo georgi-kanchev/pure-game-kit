@@ -21,11 +21,11 @@ const (
 type Conversion int
 
 func AsClock24(seconds float64, divider string, units Unit) string {
-	ts := time.Duration(seconds * float64(time.Second))
+	var ts = time.Duration(seconds * float64(time.Second))
 	return formatTimeParts(ts, divider, units, false, false)
 }
 func AsClock12(seconds float64, divider string, units Unit, AM_PM bool) string {
-	ts := time.Duration(seconds * float64(time.Second))
+	var ts = time.Duration(seconds * float64(time.Second))
 	return formatTimeParts(ts, divider, units, true, AM_PM)
 }
 
@@ -57,9 +57,9 @@ func FromWeeks(weeks float64) float64               { return weeks * 604800 }
 
 func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amPm bool) string {
 	var parts []string
-	counter := 0
+	var counter = 0
 
-	conditionalSep := func() string {
+	var conditionalSep = func() string {
 		if counter > 0 {
 			return divider
 		}
@@ -67,16 +67,16 @@ func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amP
 	}
 
 	if units&Day != 0 {
-		val := int(ts.Hours() / 24)
+		var val = int(ts.Hours() / 24)
 		parts = append(parts, fmt.Sprintf("%02d", val))
 		counter++
 	}
 
 	if units&Hour != 0 {
-		sep := conditionalSep()
+		var sep = conditionalSep()
 		var val int
 		if is12Hour {
-			h := int((ts % (24 * time.Hour)) / time.Hour)
+			var h = int((ts % (24 * time.Hour)) / time.Hour)
 			val = int(number.Wrap(float32(h), 12))
 		} else {
 			val = int((ts % (24 * time.Hour)) / time.Hour)
@@ -86,26 +86,26 @@ func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amP
 	}
 
 	if units&Minute != 0 {
-		sep := conditionalSep()
-		val := int((ts % time.Hour) / time.Minute)
+		var sep = conditionalSep()
+		var val = int((ts % time.Hour) / time.Minute)
 		parts = append(parts, sep+fmt.Sprintf("%02d", val))
 		counter++
 	}
 
 	if units&Second != 0 {
-		sep := conditionalSep()
-		val := int((ts % time.Minute) / time.Second)
+		var sep = conditionalSep()
+		var val = int((ts % time.Minute) / time.Second)
 		parts = append(parts, sep+fmt.Sprintf("%02d", val))
 		counter++
 	}
 
 	if units&Millisecond != 0 {
-		val := int((ts % time.Second) / time.Millisecond)
-		dot := ""
+		var val = int((ts % time.Second) / time.Millisecond)
+		var dot = ""
 		if units&Second != 0 {
 			dot = "."
 		}
-		sep := ""
+		var sep = ""
 		if dot == "" && counter > 0 {
 			sep = divider
 		}
@@ -114,8 +114,8 @@ func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amP
 	}
 
 	if is12Hour && amPm {
-		sep := " "
-		amPm := "AM"
+		var sep = " "
+		var amPm = "AM"
 		if int(ts.Hours())%24 >= 12 {
 			amPm = "PM"
 		}

@@ -13,7 +13,7 @@ func Clone[T any](collection []T) []T {
 	return slices.Clone(collection)
 }
 func SameItems[T any](amount int, item T) []T {
-	result := make([]T, amount)
+	var result = make([]T, amount)
 	for i := range amount {
 		result[i] = item
 	}
@@ -72,7 +72,7 @@ func Contains[T comparable](collection []T, value T) bool {
 	return slices.Contains(collection, value)
 }
 func HasDuplicates[T comparable](collection []T) bool {
-	seen := make(map[T]struct{}, len(collection))
+	var seen = make(map[T]struct{}, len(collection))
 	for _, item := range collection {
 		if _, exists := seen[item]; exists {
 			return true
@@ -83,13 +83,13 @@ func HasDuplicates[T comparable](collection []T) bool {
 }
 
 func Shift[T any](collection []T, offset int) {
-	n := len(collection)
+	var n = len(collection)
 	if n == 0 || offset == 0 {
 		return
 	}
 	offset = ((offset % n) + n) % n // normalize offset
 
-	tmp := make([]T, n)
+	var tmp = make([]T, n)
 	copy(tmp[offset:], collection[:n-offset])
 	copy(tmp[:offset], collection[n-offset:])
 	copy(collection, tmp)
@@ -99,8 +99,8 @@ func ShiftIndexes[T any](collection []T, offset int, wrap bool, indexes ...int) 
 		return
 	}
 
-	n := len(collection)
-	indexSet := make(map[int]bool, len(indexes))
+	var n = len(collection)
+	var indexSet = make(map[int]bool, len(indexes))
 	for _, idx := range indexes {
 		if idx >= 0 && idx < n {
 			indexSet[idx] = true
@@ -108,20 +108,20 @@ func ShiftIndexes[T any](collection []T, offset int, wrap bool, indexes ...int) 
 	}
 
 	// Sort indexes ascending for negative offset, descending for positive
-	sorted := slices.Clone(indexes)
+	var sorted = slices.Clone(indexes)
 	if offset > 0 {
 		sort.Sort(sort.Reverse(sort.IntSlice(sorted)))
 	} else {
 		sort.Ints(sorted)
 	}
 
-	tmp := make([]T, n)
+	var tmp = make([]T, n)
 	var zero T
 	for i := range tmp {
 		tmp[i] = zero
 	}
 
-	occupied := make(map[int]bool)
+	var occupied = make(map[int]bool)
 
 	for _, i := range sorted {
 		target := i + offset
@@ -144,8 +144,8 @@ func ShiftIndexes[T any](collection []T, offset int, wrap bool, indexes ...int) 
 		}
 	}
 
-	pos := 0
-	for i := 0; i < n; i++ {
+	var pos = 0
+	for i := range n {
 		if _, moved := indexSet[i]; moved {
 			continue
 		}
@@ -159,7 +159,7 @@ func ShiftIndexes[T any](collection []T, offset int, wrap bool, indexes ...int) 
 	copy(collection, tmp)
 }
 func ShiftItems[T comparable](collection []T, offset int, wrap bool, items ...T) {
-	indexes := make([]int, 0, len(items))
+	var indexes = make([]int, 0, len(items))
 	for _, item := range items {
 		for i, val := range collection {
 			if val == item {
@@ -176,7 +176,7 @@ func Surface[T comparable](collection []T, items []T) {
 	}
 
 	for i := len(items) - 1; i >= 0; i-- {
-		block := items[i]
+		var block = items[i]
 		// Remove the item if it exists
 		for j := range collection {
 			if (collection)[j] == block {
@@ -194,13 +194,13 @@ func Sink[T comparable](collection []T, items []T) {
 	}
 
 	// Build a set for faster lookup
-	itemSet := make(map[T]struct{}, len(items))
+	var itemSet = make(map[T]struct{}, len(items))
 	for _, item := range items {
 		itemSet[item] = struct{}{}
 	}
 
 	// Step 1: Remove all items from collection
-	dst := (collection)[:0]
+	var dst = (collection)[:0]
 	for _, elem := range collection {
 		if _, found := itemSet[elem]; !found {
 			dst = append(dst, elem)
@@ -220,13 +220,13 @@ func Reverse[T any](collection []T) {
 	}
 }
 func Overlap[T comparable](collection, otherCollection []T) []T {
-	setA := make(map[T]struct{})
+	var setA = make(map[T]struct{})
 	for _, item := range collection {
 		setA[item] = struct{}{}
 	}
 
-	result := make([]T, 0)
-	seen := make(map[T]struct{})
+	var result = make([]T, 0)
+	var seen = make(map[T]struct{})
 	for _, item := range otherCollection {
 		if _, found := setA[item]; found {
 			if _, already := seen[item]; !already {
@@ -238,7 +238,7 @@ func Overlap[T comparable](collection, otherCollection []T) []T {
 	return result
 }
 func Take[T any](collection []T, start, end int) []T {
-	n := len(collection)
+	var n = len(collection)
 	if n == 0 {
 		return nil
 	}
@@ -249,17 +249,17 @@ func Take[T any](collection []T, start, end int) []T {
 		start, end = end, start
 	}
 
-	result := make([]T, end-start)
+	var result = make([]T, end-start)
 	copy(result, collection[start:end])
 	return result
 }
 func Join[T any](collection []T, otherCollections ...[]T) []T {
-	totalLen := len(collection)
+	var totalLen = len(collection)
 	for _, arr := range otherCollections {
 		totalLen += len(arr)
 	}
 
-	result := make([]T, 0, totalLen)
+	var result = make([]T, 0, totalLen)
 	result = append(result, collection...)
 	for _, arr := range otherCollections {
 		result = append(result, arr...)
@@ -272,39 +272,39 @@ func Rotate[T any](collection2D [][]T, direction int) [][]T {
 		return collection2D
 	}
 
-	dir := int(math.Abs(float64(direction))) % 4
+	var dir = int(math.Abs(float64(direction))) % 4
 	if dir == 0 {
 		return collection2D
 	}
 
-	m, n := len(collection2D), len(collection2D[0])
-	rotated := make([][]T, n)
+	var m, n = len(collection2D), len(collection2D[0])
+	var rotated = make([][]T, n)
 	for i := range rotated {
 		rotated[i] = make([]T, m)
 	}
 
 	if direction > 0 {
-		for i := 0; i < n; i++ {
-			for j := 0; j < m; j++ {
+		for i := range n {
+			for j := range m {
 				rotated[i][j] = collection2D[m-j-1][i]
 			}
 		}
 		return Rotate(rotated, direction-1)
 	}
 
-	for i := 0; i < n; i++ {
-		for j := 0; j < m; j++ {
+	for i := range n {
+		for j := range m {
 			rotated[i][j] = collection2D[j][n-i-1]
 		}
 	}
 	return Rotate(rotated, direction+1)
 }
 func Flip[T any](collection2D [][]T, horizontally, vertically bool) [][]T {
-	rows := len(collection2D)
+	var rows = len(collection2D)
 	if rows == 0 {
 		return collection2D
 	}
-	cols := len(collection2D[0])
+	var cols = len(collection2D[0])
 
 	if horizontally {
 		for i := range collection2D {
@@ -323,14 +323,14 @@ func Flip[T any](collection2D [][]T, horizontally, vertically bool) [][]T {
 	return collection2D
 }
 func Flatten[T any](collection2D [][]T) []T {
-	rows := len(collection2D)
+	var rows = len(collection2D)
 	if rows == 0 {
 		return nil
 	}
-	cols := len(collection2D[0])
-	result := make([]T, 0, rows*cols)
+	var cols = len(collection2D[0])
+	var result = make([]T, 0, rows*cols)
 
-	for i := 0; i < rows; i++ {
+	for i := range rows {
 		result = append(result, collection2D[i]...)
 	}
 	return result
@@ -363,7 +363,7 @@ func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) strin
 }
 
 func ToPointers[T any](collection []T) []*T {
-	out := make([]*T, len(collection))
+	var out = make([]*T, len(collection))
 	for i := range collection {
 		out[i] = &collection[i]
 	}

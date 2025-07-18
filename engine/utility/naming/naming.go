@@ -41,7 +41,7 @@ func Apply(text string, naming Naming, divider string) string {
 	}
 
 	detectedNaming, detectedDivider := Detect(text)
-	words := []string{text}
+	var words = []string{text}
 	if detectedDivider != "" {
 		words = strings.Split(text, detectedDivider)
 	}
@@ -85,7 +85,7 @@ func Apply(text string, naming Naming, divider string) string {
 
 		if hasFlag(naming, PiNgPoNg_CaSe) {
 			var sb strings.Builder
-			isUpper := true
+			var isUpper = true
 			for _, c := range word {
 				if isUpper {
 					sb.WriteRune(unicode.ToUpper(c))
@@ -99,7 +99,7 @@ func Apply(text string, naming Naming, divider string) string {
 
 		if hasFlag(naming, pOnGpInG_cAsE) {
 			var sb strings.Builder
-			isLower := true
+			var isLower = true
 			for _, c := range word {
 				if isLower {
 					sb.WriteRune(unicode.ToLower(c))
@@ -121,13 +121,11 @@ func Detect(text string) (naming Naming, separator string) {
 		return RaNDomCasE, ""
 	}
 
-	detectedNaming := RaNDomCasE
-	divider := ""
-	words := []string{text}
-
-	// Detect divider by finding the first non-alphanumeric character
-	re := regexp.MustCompile(`[^a-zA-Z0-9]`)
-	match := re.FindString(text)
+	var detectedNaming = RaNDomCasE
+	var divider = ""
+	var words = []string{text}
+	var re = regexp.MustCompile(`[^a-zA-Z0-9]`)
+	var match = re.FindString(text)
 	if match != "" {
 		divider = string(match[0])
 		detectedNaming |= Separated
@@ -135,7 +133,7 @@ func Detect(text string) (naming Naming, separator string) {
 	}
 
 	// Remove divider chars to analyze the core string
-	inputNoDivider := text
+	var inputNoDivider = text
 	if divider != "" {
 		inputNoDivider = strings.ReplaceAll(text, divider, "")
 	}
@@ -152,7 +150,7 @@ func Detect(text string) (naming Naming, separator string) {
 	}
 
 	if len(words) == 1 {
-		runes := []rune(text)
+		var runes = []rune(text)
 		if unicode.IsLower(runes[0]) && containsUpper(runes[1:]) {
 			detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
 			detectedNaming |= camelCase
@@ -165,11 +163,11 @@ func Detect(text string) (naming Naming, separator string) {
 	}
 
 	// Check word-wise naming patterns
-	soFarCamel := isAllLower(words[0])
-	soFarPascal := isCapitalized(words[0])
-	soFarSentence := soFarPascal
-	soFarPing := isPing(words[0])
-	soFarPong := isPong(words[0])
+	var soFarCamel = isAllLower(words[0])
+	var soFarPascal = isCapitalized(words[0])
+	var soFarSentence = soFarPascal
+	var soFarPing = isPing(words[0])
+	var soFarPong = isPong(words[0])
 
 	for _, word := range words[1:] {
 		if !isAllLower(word) {
@@ -245,12 +243,12 @@ func isCapitalized(word string) bool {
 	if word == "" {
 		return false
 	}
-	runes := []rune(word)
+	var runes = []rune(word)
 	return unicode.IsUpper(runes[0]) && isAllLower(string(runes[1:]))
 }
 
 func isPing(s string) bool {
-	isUpper := true
+	var isUpper = true
 	for _, r := range s {
 		if isUpper && !unicode.IsUpper(r) {
 			return false
@@ -264,7 +262,7 @@ func isPing(s string) bool {
 }
 
 func isPong(s string) bool {
-	isLower := true
+	var isLower = true
 	for _, r := range s {
 		if isLower && !unicode.IsLower(r) {
 			return false
@@ -280,12 +278,12 @@ func capitalize(word string) string {
 	if word == "" {
 		return ""
 	}
-	runes := []rune(word)
+	var runes = []rune(word)
 	return string(unicode.ToUpper(runes[0])) + strings.ToLower(string(runes[1:]))
 }
 func addDivCamelPascal(text, div string) string {
 	var result strings.Builder
-	runes := []rune(text)
+	var runes = []rune(text)
 	for i := range runes {
 		if i > 0 && unicode.IsUpper(runes[i]) && (i == len(runes)-1 || unicode.IsLower(runes[i+1])) {
 			result.WriteString(div)

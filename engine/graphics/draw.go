@@ -5,6 +5,7 @@ import (
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/point"
+	"pure-kit/engine/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -28,16 +29,14 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 	camera.begin()
 
 	var sx, sy, sw, sh = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
-	ulx, uly := camera.PointFromScreen(sx, sy)
-	urx, ury := camera.PointFromScreen(sx+sw, sy)
-	lrx, lry := camera.PointFromScreen(sx+sw, sy+sh)
-	llx, lly := camera.PointFromScreen(sx, sy+sh)
-
-	xs := []float32{ulx, urx, llx, lrx}
-	ys := []float32{uly, ury, lly, lry}
-
-	minX, maxX := xs[0], xs[0]
-	minY, maxY := ys[0], ys[0]
+	var ulx, uly = camera.PointFromScreen(sx, sy)
+	var urx, ury = camera.PointFromScreen(sx+sw, sy)
+	var lrx, lry = camera.PointFromScreen(sx+sw, sy+sh)
+	var llx, lly = camera.PointFromScreen(sx, sy+sh)
+	var xs = []float32{ulx, urx, llx, lrx}
+	var ys = []float32{uly, ury, lly, lry}
+	var minX, maxX = xs[0], xs[0]
+	var minY, maxY = ys[0], ys[0]
 
 	for i := 1; i < 4; i++ {
 		if xs[i] < minX {
@@ -54,10 +53,10 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 		}
 	}
 
-	left := float32(math.Floor(float64(minX/spacing))) * spacing
-	right := float32(math.Ceil(float64(maxX/spacing))) * spacing
-	top := float32(math.Floor(float64(minY/spacing))) * spacing
-	bottom := float32(math.Ceil(float64(maxY/spacing))) * spacing
+	var left = float32(math.Floor(float64(minX/spacing))) * spacing
+	var right = float32(math.Ceil(float64(maxX/spacing))) * spacing
+	var top = float32(math.Floor(float64(minY/spacing))) * spacing
+	var bottom = float32(math.Ceil(float64(maxY/spacing))) * spacing
 
 	// vertical
 	for x := left; x <= right; x += spacing {
@@ -106,12 +105,6 @@ func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]
 	}
 	camera.end()
 }
-func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
-	camera.begin()
-	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
-	rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(color))
-	camera.end()
-}
 func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
 	camera.begin()
 	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
@@ -148,20 +141,55 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 
 	camera.end()
 }
-func (camera *Camera) DrawNodes(nodes ...*Sprite) {
+
+func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
 	camera.begin()
-	for _, node := range nodes {
-		if node == nil {
+	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
+	rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(color))
+	camera.end()
+}
+func (camera *Camera) DrawNodes(nodes ...*Node) {
+	camera.begin()
+	for _, n := range nodes {
+		if n == nil {
 			continue
 		}
 
-		var texture, hasTexture = internal.Textures[node.AssetId]
+		var x, y, ang, scX, scY = n.ToCamera()
+		var w, h = n.Width, n.Height
+		var rec = rl.Rectangle{X: x, Y: y, Width: w * scX, Height: h * scY}
+
+		rl.DrawRectanglePro(rec, rl.Vector2{}, ang, n.color())
+	}
+	camera.end()
+}
+
+func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
+	camera.begin()
+	var texture, _ = internal.Textures[textureId]
+	var texX, texY float32 = 0.0, 0.0
+	var w, h = width, height
+	var texW, texH = texture.Width, texture.Height
+	var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
+	var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w), Height: float32(h)}
+
+	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, rl.GetColor(color))
+	camera.end()
+}
+func (camera *Camera) DrawSprites(sprites ...*Sprite) {
+	camera.begin()
+	for _, s := range sprites {
+		if s == nil {
+			continue
+		}
+
+		var texture, hasTexture = internal.Textures[s.AssetId]
 		var texX, texY float32 = 0.0, 0.0
-		var repX, repY = node.RepeatX, node.RepeatY
-		var x, y, ang, scX, scY = node.ToCamera()
+		var repX, repY = s.RepeatX, s.RepeatY
+		var x, y, ang, scX, scY = s.ToCamera()
 
 		if !hasTexture {
-			var rect, hasArea = internal.AtlasRects[node.AssetId]
+			var rect, hasArea = internal.AtlasRects[s.AssetId]
 			if hasArea {
 				var atlas, _ = internal.Atlases[rect.AtlasId]
 				var tex, _ = internal.Textures[atlas.TextureId]
@@ -170,7 +198,7 @@ func (camera *Camera) DrawNodes(nodes ...*Sprite) {
 				texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
 				texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
 			} else {
-				var font, hasFont = internal.Fonts[node.AssetId]
+				var font, hasFont = internal.Fonts[s.AssetId]
 				if !hasFont {
 					continue
 				}
@@ -179,15 +207,44 @@ func (camera *Camera) DrawNodes(nodes ...*Sprite) {
 
 		}
 
-		var texW, texH = node.Size()
+		var w, h = s.Width, s.Height
+		var texW, texH = texture.Width, texture.Height
 		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW) * repX, Height: float32(texH) * repY}
-		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(texW) * scX, Height: float32(texH) * scY}
+		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w) * scX, Height: float32(h) * scY}
 
-		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(node.Tint))
+		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, s.color())
 	}
 	camera.end()
 }
 
+func (camera *Camera) DrawText(fontId, value string, x, y float32, color uint) {
+	camera.begin()
+
+	var sh = internal.ShaderText
+	var pos = rl.Vector2{X: x, Y: y}
+	var smoothness = []float32{0}
+	var thickness = []float32{0.5}
+	var font, has = internal.Fonts[fontId]
+
+	if !has {
+		var defaultFont = rl.GetFontDefault()
+		font = &defaultFont
+	}
+
+	if sh.ID != 0 {
+		rl.BeginShaderMode(sh)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), smoothness, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
+	}
+
+	rl.DrawTextPro(*font, value, pos, rl.Vector2{}, 0, float32(font.BaseSize), 0, rl.GetColor(color))
+
+	if sh.ID != 0 {
+		rl.EndShaderMode()
+	}
+
+	camera.end()
+}
 func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	camera.begin()
 
@@ -197,14 +254,14 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
+		var x, y, a, _, _ = t.ToCamera()
 		var font = t.font()
-		var height = t.height()
-		var c = rl.GetColor(t.Color)
-		var pos = rl.Vector2{X: t.X, Y: t.Y}
+		var pos = rl.Vector2{X: x, Y: y}
 		var smoothness = []float32{t.Smoothness}
 		var thickness = []float32{t.Thickness}
+		var valueLength = text.Length(t.Value)
 		thickness[0] = number.Limit(thickness[0], 0, 0.999)
-		smoothness[0] *= height / 5
+		smoothness[0] *= t.LineHeight / 5
 
 		if sh.ID != 0 {
 			rl.BeginShaderMode(sh)
@@ -212,7 +269,11 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
 		}
 
-		rl.DrawTextPro(*font, t.Value, pos, t.pivot(), t.Angle, height, t.gapSymbols(), c)
+		for i := 0; i < valueLength; i++ {
+
+		}
+
+		rl.DrawTextPro(*font, t.Value, pos, rl.Vector2{}, a, t.LineHeight, t.gapSymbols(), t.color())
 
 		if sh.ID != 0 {
 			rl.EndShaderMode()

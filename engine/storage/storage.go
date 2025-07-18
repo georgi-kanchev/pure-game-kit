@@ -8,8 +8,8 @@ import (
 
 func Compress(data []byte) []byte {
 	var buf bytes.Buffer
-	gw := gzip.NewWriter(&buf)
-	_, err := gw.Write(data)
+	var gw = gzip.NewWriter(&buf)
+	var _, err = gw.Write(data)
 	if err != nil {
 		return data
 	}
@@ -20,8 +20,8 @@ func Compress(data []byte) []byte {
 }
 
 func Decompress(data []byte) []byte {
-	buf := bytes.NewReader(data)
-	gr, err := gzip.NewReader(buf)
+	var buf = bytes.NewReader(data)
+	var gr, err = gzip.NewReader(buf)
 	if err != nil {
 		return data
 	}

@@ -19,7 +19,7 @@ type Scene struct {
 	textures                             []string
 }
 
-func New(tiledMapId string) Scene {
+func New(smoothTexture bool, tiledMapId string) Scene {
 	var data, has = internal.TiledData[tiledMapId]
 	var scene = Scene{}
 
@@ -37,7 +37,7 @@ func New(tiledMapId string) Scene {
 
 	for index, t := range data.Tilesets {
 		var img = t.Image
-		var textureIds = assets.LoadTextures(path.Join(data.Directory, img.Source))
+		var textureIds = assets.LoadTextures(smoothTexture, path.Join(data.Directory, img.Source))
 		if len(textureIds) == 0 {
 			continue
 		}

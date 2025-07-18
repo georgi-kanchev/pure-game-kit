@@ -30,21 +30,21 @@ func RGB(r, g, b byte) uint                 { return colorFromRGBA(r, g, b, 255)
 func RGBA(r, g, b, a byte) uint             { return colorFromRGBA(r, g, b, a) }
 
 func RandomBright() uint {
-	r := randomByteRange(127, 255)
-	g := randomByteRange(127, 255)
-	b := randomByteRange(127, 255)
+	var r = randomByteRange(127, 255)
+	var g = randomByteRange(127, 255)
+	var b = randomByteRange(127, 255)
 	return RGB(r, g, b)
 }
 func RandomDark() uint {
-	r := randomByteRange(0, 127)
-	g := randomByteRange(0, 127)
-	b := randomByteRange(0, 127)
+	var r = randomByteRange(0, 127)
+	var g = randomByteRange(0, 127)
+	var b = randomByteRange(0, 127)
 	return RGB(r, g, b)
 }
 func Random() uint {
-	r := randomByteRange(0, 255)
-	g := randomByteRange(0, 255)
-	b := randomByteRange(0, 255)
+	var r = randomByteRange(0, 255)
+	var g = randomByteRange(0, 255)
+	var b = randomByteRange(0, 255)
 	return RGB(r, g, b)
 }
 

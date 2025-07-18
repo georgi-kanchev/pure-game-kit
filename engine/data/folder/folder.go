@@ -7,15 +7,14 @@ import (
 )
 
 func PathOfExecutable() string {
-	execPath, err := os.Executable()
+	var execPath, err = os.Executable()
 	if err != nil {
 		return ""
 	}
-	execDir := filepath.Dir(execPath)
-	return execDir
+	return filepath.Dir(execPath)
 }
 func Exists(folderPath string) bool {
-	info, err := os.Stat(folderPath)
+	var info, err = os.Stat(folderPath)
 	return err == nil && info.IsDir()
 }
 func IsEmpty(folderPath string) bool {
@@ -41,12 +40,12 @@ func TimeOfLastEdit(folderPath string) (year, month, day, minute int) {
 		return 0, 0, 0, 0
 	}
 
-	info, err := os.Stat(folderPath)
+	var info, err = os.Stat(folderPath)
 	if err != nil {
 		return 0, 0, 0, 0
 	}
 
-	t := info.ModTime()
+	var t = info.ModTime()
 	year = t.Year()
 	month = int(t.Month()) // time.Month is 1-based already
 	day = t.Day()          // day of the month
@@ -55,15 +54,13 @@ func TimeOfLastEdit(folderPath string) (year, month, day, minute int) {
 }
 
 func Create(folderPath string) bool {
-	err := os.MkdirAll(folderPath, 0755) // 0755 is the file permission: rwxr-xr-x
-	return err == nil
+	return os.MkdirAll(folderPath, 0755) == nil // 0755 is the file permission: rwxr-xr-x
 }
 func Delete(folderPath string) bool {
 	if !Exists(folderPath) {
 		return false
 	}
-	err := os.RemoveAll(folderPath)
-	return err == nil
+	return os.RemoveAll(folderPath) == nil
 }
 func DeleteContents(folderPath string) bool {
 	if !Delete(folderPath) {
@@ -75,21 +72,20 @@ func DeleteContents(folderPath string) bool {
 	return true
 }
 func Rename(folderPath string, newName string) bool {
-	newPath := filepath.Join(filepath.Dir(folderPath), newName)
+	var newPath = filepath.Join(filepath.Dir(folderPath), newName)
 
 	if !Exists(folderPath) || Exists(newPath) {
 		return false
 	}
 
-	err := os.Rename(folderPath, newPath)
-	return err == nil
+	return os.Rename(folderPath, newPath) == nil
 }
 func MoveContents(fromFolderPath string, toFolderPath string) bool {
 	if !Exists(fromFolderPath) || !Exists(toFolderPath) {
 		return false
 	}
 
-	err := filepath.WalkDir(fromFolderPath, func(path string, d os.DirEntry, err error) error {
+	var err = filepath.WalkDir(fromFolderPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -103,7 +99,7 @@ func MoveContents(fromFolderPath string, toFolderPath string) bool {
 			return err
 		}
 
-		targetPath := filepath.Join(toFolderPath, relPath)
+		var targetPath = filepath.Join(toFolderPath, relPath)
 
 		if d.IsDir() {
 			return os.MkdirAll(targetPath, 0755)
@@ -146,7 +142,7 @@ func CopyContents(fromFolderPath, toFolderPath string) bool {
 		return false
 	}
 
-	err := filepath.WalkDir(fromFolderPath, func(path string, d os.DirEntry, err error) error {
+	var err = filepath.WalkDir(fromFolderPath, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -186,7 +182,7 @@ func GetContent(folderPath string) []string {
 		return []string{}
 	}
 
-	entries, err := os.ReadDir(folderPath)
+	var entries, err = os.ReadDir(folderPath)
 	if err != nil {
 		return []string{}
 	}
@@ -202,7 +198,7 @@ func GetFiles(folderPath string) []string {
 		return []string{}
 	}
 
-	entries, err := os.ReadDir(folderPath)
+	var entries, err = os.ReadDir(folderPath)
 	if err != nil {
 		return []string{}
 	}
@@ -220,7 +216,7 @@ func GetFolders(folderPath string) []string {
 		return []string{}
 	}
 
-	entries, err := os.ReadDir(folderPath)
+	var entries, err = os.ReadDir(folderPath)
 	if err != nil {
 		return []string{}
 	}

@@ -13,13 +13,13 @@ func Scenes() {
 	var cam = graphics.NewCamera(7)
 	var parent = graphics.NewSprite("map#1objects[1,0]")
 	var data = assets.LoadTiledData("data/map.tmx")[0]
-	var scene = scene.New(data)
+	var scene = scene.New(false, data)
 
 	fmt.Printf("scene.BackgroundColor(): %v\n", scene.BackgroundColor())
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(1, 9, color.Darken(color.Gray, 0.5))
-		cam.DrawNodes(&parent)
+		cam.DrawSprites(&parent)
 	}
 }
