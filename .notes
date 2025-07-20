@@ -30,6 +30,8 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[26] [Sun] [20-07-2025]
+[√] graphics - text embedded assets fixes
 
 [25] [Sat] [19-07-2025]
 [√] execution - revisited & finished flow

@@ -11,18 +11,23 @@ import (
 
 type TextBox struct {
 	Node
-	AlignmentX, AlignmentY, Thickness, Smoothness,
+	Value    string
+	WordWrap bool
+	AlignmentX, AlignmentY,
+	Thickness, Smoothness,
 	SymbolGap, LineHeight, LineGap float32
-	Value            string
-	WordWrap         bool
-	EmbeddedColors   []uint
-	EmbeddedAssetIds []string
+	EmbeddedColorsTag, EmbeddedAssetTag string
+	EmbeddedColors                      []uint
+	EmbeddedAssetIds                    []string
 }
 
 func NewTextBox(fontId string, x, y float32, value ...any) TextBox {
 	var node = NewNode(fontId, x, y)
 	var textBox = TextBox{
-		Node: node, Value: text.New(value...), LineHeight: 100, Thickness: 0.5, SymbolGap: 0.2, WordWrap: true}
+		Node: node, Value: text.New(value...), LineHeight: 100,
+		Thickness: 0.5, SymbolGap: 0.2, WordWrap: true,
+		EmbeddedColorsTag: "`", EmbeddedAssetTag: "^",
+	}
 	var font = textBox.font()
 	var measure = rl.MeasureTextEx(*font, textBox.Value, textBox.LineHeight, textBox.gapSymbols())
 	textBox.Width, textBox.Height = measure.X, measure.Y

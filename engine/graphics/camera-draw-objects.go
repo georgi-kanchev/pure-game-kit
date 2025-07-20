@@ -76,20 +76,18 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 
 		beginShader(t)
-		const colorTag = "`"
-		const assetTag = "@"
+		var assetTag = t.EmbeddedAssetTag
 		var wrapped = t.WrapValue(t.Value)
 		var lines = strings.Split(wrapped, "\n")
 		var _, _, ang, _, _ = t.ToCamera()
 		var curX, curY float32 = 0, 0
 		var font = t.font()
 		var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
-		var color = rl.GetColor(t.Color)
+		var curColor = rl.GetColor(t.Color)
 		var colorIndex, assetIndex = 0, 0
 
 		for l, line := range lines {
-			var tagless = strings.ReplaceAll(line, colorTag, "")
-			tagless = strings.ReplaceAll(tagless, assetTag, "")
+			var tagless = strings.ReplaceAll(line, t.EmbeddedColorsTag, "")
 			var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
 			var lineLength = text.Length(line)
 			var skipRender = false
@@ -105,17 +103,24 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			for c := range lineLength {
 				var char = string(line[c])
 
-				if char == colorTag {
+				if line[c] == '\r' {
+					continue // use as zerospace character or skip altogether
+				}
+
+				var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
+				var lastChar = string(line[number.LimitInt(c-1, 0, lineLength-1)])
+
+				if char == t.EmbeddedColorsTag {
 					if colorIndex < len(t.EmbeddedColors) {
-						color = rl.GetColor(t.EmbeddedColors[colorIndex])
+						curColor = rl.GetColor(t.EmbeddedColors[colorIndex])
 						colorIndex++
 						continue
 					}
-					color = rl.GetColor(t.Color)
+					curColor = rl.GetColor(t.Color)
 					continue
 				}
 
-				if char == assetTag && assetIndex < len(t.EmbeddedAssetIds) {
+				if char == assetTag && (lastChar != assetTag || c == 0) && assetIndex < len(t.EmbeddedAssetIds) {
 					if !skipRender {
 						var assetId = t.EmbeddedAssetIds[assetIndex]
 						var w, h = internal.AssetSize(assetId)
@@ -127,25 +132,26 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 						sprite.Width = sprite.Height * aspect
 						sprite.PivotX, sprite.PivotY = 0, 0
 						sprite.Angle = ang
-						sprite.Color = uint(rl.ColorToInt(color))
+						sprite.Color = uint(rl.ColorToInt(curColor))
 
-						if curX+float32(sprite.Width) < t.Width && curY+t.LineHeight-1 < t.Height {
-							endShader()
-							camera.end()
-							camera.DrawSprites(&sprite)
-							camera.begin()
-							beginShader(t)
-						}
+						endShader()
+						camera.end()
+						camera.DrawSprites(&sprite)
+						camera.begin()
+						beginShader(t)
 					}
-					assetIndex++
+					assetIndex++ // skipping render shouldn't affect assetIndexes
+				}
+
+				if char == assetTag {
+					curX += charSize.X + t.gapSymbols()
 					continue
 				}
 
 				if !skipRender {
-					var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
 					var camX, camY = t.PointToCamera(camera, curX, curY)
 					var pos = rl.Vector2{X: camX, Y: camY}
-					rl.DrawTextPro(*font, char, pos, rl.Vector2{}, ang, t.LineHeight, 0, color)
+					rl.DrawTextPro(*font, char, pos, rl.Vector2{}, ang, t.LineHeight, 0, curColor)
 					curX += charSize.X + t.gapSymbols()
 				}
 			}
