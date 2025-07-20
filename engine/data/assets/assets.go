@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/data/folder"
+	"pure-kit/engine/internal"
 	"pure-kit/engine/window"
 	"strings"
 
@@ -18,6 +19,12 @@ func tryCreateWindow() {
 func tryInitAudio() {
 	if !rl.IsAudioDeviceReady() {
 		rl.InitAudioDevice()
+	}
+}
+
+func tryInitShader() {
+	if internal.ShaderText.ID == 0 {
+		internal.ShaderText = rl.LoadShaderFromMemory("", frag)
 	}
 }
 

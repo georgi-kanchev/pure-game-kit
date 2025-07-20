@@ -92,9 +92,16 @@ func (textBox *TextBox) WrapValue(value string) string {
 
 func (textBox *TextBox) font() *rl.Font {
 	var font, hasFont = internal.Fonts[textBox.AssetId]
+	var defaultFont, hasDefault = internal.Fonts[""]
+
+	if !hasFont && hasDefault {
+		font = defaultFont
+		hasFont = true // fallback to engine default
+	}
+
 	if !hasFont {
 		var defaultFont = rl.GetFontDefault()
-		font = &defaultFont
+		font = &defaultFont // fallback to raylib default
 	}
 	return font
 }

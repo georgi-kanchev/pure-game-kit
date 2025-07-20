@@ -67,6 +67,8 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 	}
 	camera.end()
 }
+func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
+}
 func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	camera.begin()
 
@@ -84,6 +86,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var font = t.font()
 		var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
 		var curColor = rl.GetColor(t.Color)
+		var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
 		var colorIndex, assetIndex = 0, 0
 		// although some chars are invisible, they still need to be iterated cuz of colorIndex and assetIndex
 
@@ -93,8 +96,8 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			var lineLength = text.Length(line)
 			var skipRender = false // it's not 'continue' to avoid skipping the offset calculations
 
-			curX = (t.Width - lineSize.X) * t.AlignmentX
-			curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*t.AlignmentY
+			curX = (t.Width - lineSize.X) * alignX
+			curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
 
 			// hide text outside the box left, top & bottom
 			if curX < 0 || curY < 0 || curY+t.LineHeight-1 > t.Height {
@@ -165,10 +168,6 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	}
 
 	camera.end()
-}
-
-func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
-
 }
 
 // #region private

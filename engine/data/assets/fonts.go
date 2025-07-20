@@ -22,13 +22,7 @@ const extra = "ºª«»¶±×÷=≠<>≤≥∞∑∏√∫∆∂∇≈≡∈∉�
 const all = punctuation + extra + currencies + digits + latin + latinPlus + cyrillic + greek + georgian + armenian
 
 func LoadFonts(size int, filePaths ...string) []string {
-	tryCreateWindow()
 	var result = []string{}
-
-	if internal.ShaderText.ID == 0 {
-		internal.ShaderText = rl.LoadShaderFromMemory("", frag)
-	}
-
 	for _, path := range filePaths {
 		var id, absolutePath = getIdPath(path)
 		var _, has = internal.Fonts[id]
@@ -38,24 +32,9 @@ func LoadFonts(size int, filePaths ...string) []string {
 		}
 
 		var bytes = file.LoadBytes(path)
-		var characters = uniqueRunes(all)
-		var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
-		var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(characters)), Chars: &glyphs[0]}
-		var atlas = rl.GenImageFontAtlas(
-			unsafe.Slice(font.Chars, font.CharsCount),
-			unsafe.Slice(&font.Recs, font.CharsCount),
-			int32(size), 0, 1,
-		)
-		font.Texture = rl.LoadTextureFromImage(&atlas)
-		rl.UnloadImage(&atlas)
-		rl.SetTextureFilter(font.Texture, rl.FilterBilinear)
-
-		if font.BaseSize == 0 {
-			continue
-		}
-
+		loadFont(id, size, bytes)
 		result = append(result, id)
-		internal.Fonts[id] = &font
+
 	}
 	return result
 }
@@ -93,6 +72,27 @@ void main()
     
     finalColor = fill;
 }`
+
+func loadFont(id string, size int, bytes []byte) {
+	tryCreateWindow()
+	tryInitShader()
+
+	var characters = uniqueRunes(all)
+	var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
+	var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(characters)), Chars: &glyphs[0]}
+	var atlas = rl.GenImageFontAtlas(
+		unsafe.Slice(font.Chars, font.CharsCount),
+		unsafe.Slice(&font.Recs, font.CharsCount),
+		int32(size), 0, 1,
+	)
+	font.Texture = rl.LoadTextureFromImage(&atlas)
+	rl.UnloadImage(&atlas)
+	rl.SetTextureFilter(font.Texture, rl.FilterBilinear)
+
+	if font.BaseSize != 0 {
+		internal.Fonts[id] = &font
+	}
+}
 
 func uniqueRunes(str string) []rune {
 	var seen = make(map[rune]bool)
