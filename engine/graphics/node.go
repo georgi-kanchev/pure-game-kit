@@ -4,8 +4,6 @@ import (
 	"math"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/point"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Node struct {
@@ -198,6 +196,5 @@ func (node *Node) getCorner(corner corner) (x, y float32) {
 	x, y = point.MoveAt(x, y, na+90, offY)
 	return
 }
-func (node *Node) color() rl.Color { return rl.GetColor(node.Color) }
 
 // #endregion

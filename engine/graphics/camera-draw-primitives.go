@@ -3,9 +3,7 @@ package graphics
 import (
 	"math"
 	"pure-kit/engine/internal"
-	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/point"
-	"pure-kit/engine/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -105,11 +103,6 @@ func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]
 	}
 	camera.end()
 }
-func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
-	camera.begin()
-	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
-	camera.end()
-}
 func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, color uint) {
 	if thickness == 0 {
 		return
@@ -141,26 +134,15 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 
 	camera.end()
 }
-
 func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
 	camera.begin()
 	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
 	rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(color))
 	camera.end()
 }
-func (camera *Camera) DrawNodes(nodes ...*Node) {
+func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
 	camera.begin()
-	for _, n := range nodes {
-		if n == nil {
-			continue
-		}
-
-		var x, y, ang, scX, scY = n.ToCamera()
-		var w, h = n.Width, n.Height
-		var rec = rl.Rectangle{X: x, Y: y, Width: w * scX, Height: h * scY}
-
-		rl.DrawRectanglePro(rec, rl.Vector2{}, ang, n.color())
-	}
+	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
 	camera.end()
 }
 
@@ -176,47 +158,6 @@ func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle f
 	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, rl.GetColor(color))
 	camera.end()
 }
-func (camera *Camera) DrawSprites(sprites ...*Sprite) {
-	camera.begin()
-	for _, s := range sprites {
-		if s == nil {
-			continue
-		}
-
-		var texture, hasTexture = internal.Textures[s.AssetId]
-		var texX, texY float32 = 0.0, 0.0
-		var repX, repY = s.RepeatX, s.RepeatY
-		var x, y, ang, scX, scY = s.ToCamera()
-
-		if !hasTexture {
-			var rect, hasArea = internal.AtlasRects[s.AssetId]
-			if hasArea {
-				var atlas, _ = internal.Atlases[rect.AtlasId]
-				var tex, _ = internal.Textures[atlas.TextureId]
-
-				texture = tex
-				texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
-				texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
-			} else {
-				var font, hasFont = internal.Fonts[s.AssetId]
-				if !hasFont {
-					continue
-				}
-				texture = &font.Texture
-			}
-
-		}
-
-		var w, h = s.Width, s.Height
-		var texW, texH = texture.Width, texture.Height
-		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW) * repX, Height: float32(texH) * repY}
-		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w) * scX, Height: float32(h) * scY}
-
-		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, s.color())
-	}
-	camera.end()
-}
-
 func (camera *Camera) DrawText(fontId, value string, x, y float32, color uint) {
 	camera.begin()
 
@@ -245,54 +186,3 @@ func (camera *Camera) DrawText(fontId, value string, x, y float32, color uint) {
 
 	camera.end()
 }
-func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
-	camera.begin()
-
-	var sh = internal.ShaderText
-	for _, t := range textBoxes {
-		if t == nil {
-			continue
-		}
-
-		var x, y, a, _, _ = t.ToCamera()
-		var font = t.font()
-		var pos = rl.Vector2{X: x, Y: y}
-		var smoothness = []float32{t.Smoothness}
-		var thickness = []float32{t.Thickness}
-		var valueLength = text.Length(t.Value)
-		thickness[0] = number.Limit(thickness[0], 0, 0.999)
-		smoothness[0] *= t.LineHeight / 5
-
-		if sh.ID != 0 {
-			rl.BeginShaderMode(sh)
-			rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), smoothness, rl.ShaderUniformFloat)
-			rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
-		}
-
-		for i := 0; i < valueLength; i++ {
-
-		}
-
-		rl.DrawTextPro(*font, t.Value, pos, rl.Vector2{}, a, t.LineHeight, t.gapSymbols(), t.color())
-
-		if sh.ID != 0 {
-			rl.EndShaderMode()
-		}
-	}
-
-	camera.end()
-}
-
-func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
-
-}
-
-// #region private
-func GetOrDefault(values []float32, index int, defaultValue float32) float32 {
-	if index >= len(values) {
-		return defaultValue
-	}
-	return values[index]
-}
-
-// #endregion

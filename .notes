@@ -25,14 +25,19 @@ data/storage
 execution flow, wait, stop, resume
 lua scripts
 LAN
-events
-	global?
-	idea: look into giving pointer to any value to notify subscribers it changed?
-
+events global?
 consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+
+[25] [Sat] [19-07-2025]
+[√] execution - revisited & finished flow
+[√] execution - commands
+[√] graphics - text wrap + align
+[√] graphics - text multi color
+[√] graphics - text embedded assets
+
 [24] [Fri] [18-07-2025]
 [√] var instead of := wherever possible
 [√] graphics - moved reusable code from sprite to base node + restructure

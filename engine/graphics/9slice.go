@@ -6,9 +6,9 @@ type NineSlice struct {
 }
 
 func NewNineSlice(assetIds [9]string) NineSlice {
-	var result = NineSlice{Sprite: NewSprite("")}
+	var result = NineSlice{Sprite: NewSprite("", 0, 0)}
 	for i := range 9 {
-		result.Slices[i] = NewSprite(assetIds[i])
+		result.Slices[i] = NewSprite(assetIds[i], 0, 0)
 	}
 	return result
 }

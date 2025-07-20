@@ -12,10 +12,10 @@ import (
 func DefaultRetro() {
 	var camera = graphics.NewCamera(1)
 	var assetId, tileIds = assets.LoadDefaultAtlasRetro()
-	var sprite = graphics.NewSprite(assetId)
+	var sprite = graphics.NewSprite(assetId, 0, 0)
 
 	var textBox = graphics.NewTextBox("", 5, 5, "")
-	textBox.LineHeight, textBox.GapSymbols, textBox.Color = 10, 0.5, color.Cyan
+	textBox.LineHeight, textBox.SymbolGap, textBox.Color = 10, 0.5, color.Cyan
 
 	for window.KeepOpen() {
 		camera.SetScreenAreaToWindow()

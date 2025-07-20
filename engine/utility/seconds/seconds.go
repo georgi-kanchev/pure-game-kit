@@ -20,38 +20,38 @@ const (
 
 type Conversion int
 
-func AsClock24(seconds float64, divider string, units Unit) string {
-	var ts = time.Duration(seconds * float64(time.Second))
+func AsClock24(seconds float32, divider string, units Unit) string {
+	var ts = time.Duration(seconds * float32(time.Second))
 	return formatTimeParts(ts, divider, units, false, false)
 }
-func AsClock12(seconds float64, divider string, units Unit, AM_PM bool) string {
-	var ts = time.Duration(seconds * float64(time.Second))
+func AsClock12(seconds float32, divider string, units Unit, AM_PM bool) string {
+	var ts = time.Duration(seconds * float32(time.Second))
 	return formatTimeParts(ts, divider, units, true, AM_PM)
 }
 
-func GetClock() float64                { return internal.Clock }
-func GetDelta() float64                { return internal.Delta }
-func GetFrameRate() float64            { return internal.FrameRate }
-func GetFrameRateAverage() float64     { return internal.FrameRateAverage }
+func GetClock() float32                { return internal.Clock }
+func GetDelta() float32                { return internal.Delta }
+func GetFrameRate() float32            { return internal.FrameRate }
+func GetFrameRateAverage() float32     { return internal.FrameRateAverage }
 func GetFrameCount() uint64            { return internal.FrameCount }
-func GetRuntime() float64              { return internal.Runtime }
-func GetRealDelta() float64            { return internal.RealDelta }
-func GetRealFrameRate() float64        { return internal.RealFrameRate }
-func GetRealFrameRateAverage() float64 { return internal.RealFrameRateAverage }
+func GetRuntime() float32              { return internal.Runtime }
+func GetRealDelta() float32            { return internal.RealDelta }
+func GetRealFrameRate() float32        { return internal.RealFrameRate }
+func GetRealFrameRateAverage() float32 { return internal.RealFrameRateAverage }
 func GetRealFrameCount() uint64        { return internal.RealFrameCount }
-func GetRealRuntime() float64          { return internal.RealRuntime }
+func GetRealRuntime() float32          { return internal.RealRuntime }
 
-func ToMilliseconds(seconds float64) float64 { return seconds * 1000 }
-func ToMinutes(secodns float64) float64      { return secodns / 60 }
-func ToHours(seconds float64) float64        { return seconds / 3600 }
-func ToDays(seconds float64) float64         { return seconds / 86400 }
-func ToWeeks(seconds float64) float64        { return seconds / 604800 }
+func ToMilliseconds(seconds float32) float32 { return seconds * 1000 }
+func ToMinutes(secodns float32) float32      { return secodns / 60 }
+func ToHours(seconds float32) float32        { return seconds / 3600 }
+func ToDays(seconds float32) float32         { return seconds / 86400 }
+func ToWeeks(seconds float32) float32        { return seconds / 604800 }
 
-func FromMilliseconds(milliseconds float64) float64 { return milliseconds / 1000 }
-func FromMinutes(minutes float64) float64           { return minutes * 60 }
-func FromHours(hours float64) float64               { return hours * 3600 }
-func FromDays(days float64) float64                 { return days * 86400 }
-func FromWeeks(weeks float64) float64               { return weeks * 604800 }
+func FromMilliseconds(milliseconds float32) float32 { return milliseconds / 1000 }
+func FromMinutes(minutes float32) float32           { return minutes * 60 }
+func FromHours(hours float32) float32               { return hours * 3600 }
+func FromDays(days float32) float32                 { return days * 86400 }
+func FromWeeks(weeks float32) float32               { return weeks * 604800 }
 
 // region private
 
