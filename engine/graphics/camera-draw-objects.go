@@ -78,7 +78,8 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 
 		beginShader(t)
-		var assetTag = t.EmbeddedAssetTag
+		var assetTag = string(t.EmbeddedAssetsTag)
+		var colorTag = string(t.EmbeddedColorsTag)
 		var wrapped = t.WrapValue(t.Value)
 		var lines = strings.Split(wrapped, "\n")
 		var _, _, ang, _, _ = t.ToCamera()
@@ -91,7 +92,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		// although some chars are invisible, they still need to be iterated cuz of colorIndex and assetIndex
 
 		for l, line := range lines {
-			var tagless = strings.ReplaceAll(line, t.EmbeddedColorsTag, "")
+			var tagless = strings.ReplaceAll(line, colorTag, "")
 			var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
 			var lineLength = text.Length(line)
 			var skipRender = false // it's not 'continue' to avoid skipping the offset calculations
@@ -118,7 +119,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 				var lastChar = string(line[number.LimitInt(c-1, 0, lineLength-1)])
 
-				if char == t.EmbeddedColorsTag {
+				if char == colorTag {
 					if colorIndex < len(t.EmbeddedColors) {
 						curColor = rl.GetColor(t.EmbeddedColors[colorIndex])
 						colorIndex++

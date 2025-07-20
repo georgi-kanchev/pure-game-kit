@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	example.Texts()
+	example.DefaultAssetUI()
 }
