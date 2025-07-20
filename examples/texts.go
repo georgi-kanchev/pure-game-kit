@@ -29,13 +29,20 @@ func Texts() {
 		textBox.Color = color.Gray
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
+		var copy = textBox
+		copy.Thickness += 0.2
+		copy.Color = color.Black
+		copy.EmbeddedColors = []uint{}
+		cam.DrawTextBoxes(&copy)
 		cam.DrawTextBoxes(&textBox)
 
 		sin = math.Sin(float64(seconds.GetRuntime() / 2))
-		cos = math.Sin(float64(seconds.GetRuntime() / 3))
+		cos = math.Sin(float64(seconds.GetRuntime() / 4))
 		textBox.LineHeight = 180 + float32(sin*10)
 		textBox.AlignmentX = float32(cos+1) / 2
+		textBox.Thickness = float32(math.Sin(float64(seconds.GetRuntime()/2))+1) / 2
 
 		textBox.Width, textBox.Height = textBox.MousePosition(&cam)
+
 	}
 }
