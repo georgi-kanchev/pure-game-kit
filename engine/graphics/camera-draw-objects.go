@@ -85,12 +85,13 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
 		var curColor = rl.GetColor(t.Color)
 		var colorIndex, assetIndex = 0, 0
+		// although some chars are invisible, they still need to be iterated cuz of colorIndex and assetIndex
 
 		for l, line := range lines {
 			var tagless = strings.ReplaceAll(line, t.EmbeddedColorsTag, "")
 			var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
 			var lineLength = text.Length(line)
-			var skipRender = false
+			var skipRender = false // it's not 'continue' to avoid skipping the offset calculations
 
 			curX = (t.Width - lineSize.X) * t.AlignmentX
 			curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*t.AlignmentY
@@ -102,12 +103,16 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 			for c := range lineLength {
 				var char = string(line[c])
+				var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
 
 				if line[c] == '\r' {
 					continue // use as zerospace character or skip altogether
 				}
 
-				var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
+				if curX+charSize.X > t.Width {
+					skipRender = true
+				}
+
 				var lastChar = string(line[number.LimitInt(c-1, 0, lineLength-1)])
 
 				if char == t.EmbeddedColorsTag {

@@ -25,7 +25,7 @@ func NewTextBox(fontId string, x, y float32, value ...any) TextBox {
 	var node = NewNode(fontId, x, y)
 	var textBox = TextBox{
 		Node: node, Value: text.New(value...), LineHeight: 100,
-		Thickness: 0.5, SymbolGap: 0.2, WordWrap: true,
+		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
 		EmbeddedColorsTag: "`", EmbeddedAssetTag: "^",
 	}
 	var font = textBox.font()

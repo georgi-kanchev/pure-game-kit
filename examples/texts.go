@@ -18,7 +18,6 @@ func Texts() {
 	textBox.Angle = 5
 	textBox.EmbeddedColors = []uint{color.Red, color.Green, color.Black, color.White, color.Blue}
 	textBox.EmbeddedAssetIds = []string{tiles[162], tiles[256], tiles[156], tiles[154], tiles[157]}
-	textBox.WordWrap = true
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
