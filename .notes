@@ -4,7 +4,6 @@ tweens are way too complicated to work with - think of something else
 drawing 9-slice
 drawing tilemaps
 input
-data fonts
 gui
 	simplify inputbox, list & other complicated blocks
 	block rename?
