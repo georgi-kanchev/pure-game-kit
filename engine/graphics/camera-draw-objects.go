@@ -16,7 +16,7 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 			continue
 		}
 
-		var x, y, ang, scX, scY = n.ToCamera()
+		var x, y, ang, scX, scY = n.TransformToCamera()
 		var w, h = n.Width, n.Height
 		var rec = rl.Rectangle{X: x, Y: y, Width: w * scX, Height: h * scY}
 
@@ -34,7 +34,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 		var texture, hasTexture = internal.Textures[s.AssetId]
 		var texX, texY float32 = 0.0, 0.0
 		var repX, repY = s.RepeatX, s.RepeatY
-		var x, y, ang, scX, scY = s.ToCamera()
+		var x, y, ang, scX, scY = s.TransformToCamera()
 		var texW, texH = 0, 0
 
 		if !hasTexture {
@@ -77,22 +77,25 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
-		beginShader(t)
+		beginShader(t, t.Thickness)
 		var assetTag = string(t.EmbeddedAssetsTag)
 		var colorTag = string(t.EmbeddedColorsTag)
+		var thickTag = string(t.EmbeddedThicknessTag)
 		var wrapped = t.WrapValue(t.Value)
 		var lines = strings.Split(wrapped, "\n")
-		var _, _, ang, _, _ = t.ToCamera()
+		var _, _, ang, _, _ = t.TransformToCamera()
 		var curX, curY float32 = 0, 0
 		var font = t.font()
 		var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
 		var curColor = rl.GetColor(t.Color)
+		var curThick = t.Thickness
 		var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
-		var colorIndex, assetIndex = 0, 0
+		var colorIndex, assetIndex, thickIndex = 0, 0, 0
 		// although some chars are invisible, they still need to be iterated cuz of colorIndex and assetIndex
 
 		for l, line := range lines {
 			var tagless = strings.ReplaceAll(line, colorTag, "")
+			tagless = strings.ReplaceAll(tagless, thickTag, "")
 			var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
 			var lineLength = text.Length(line)
 			var skipRender = false // it's not 'continue' to avoid skipping the offset calculations
@@ -129,6 +132,21 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 					continue
 				}
 
+				if char == thickTag {
+					if thickIndex < len(t.EmbeddedThicknesses) {
+						curThick = t.EmbeddedThicknesses[thickIndex]
+						thickIndex++
+						endShader()
+						beginShader(t, curThick)
+						continue
+
+					}
+					curThick = t.Thickness
+					endShader()
+					beginShader(t, curThick)
+					continue
+				}
+
 				if char == assetTag && (lastChar != assetTag || c == 0) && assetIndex < len(t.EmbeddedAssetIds) {
 					if !skipRender {
 						var assetId = t.EmbeddedAssetIds[assetIndex]
@@ -147,7 +165,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 						camera.end()
 						camera.DrawSprites(&sprite)
 						camera.begin()
-						beginShader(t)
+						beginShader(t, curThick)
 					}
 					assetIndex++ // skipping render shouldn't affect assetIndexes
 				}
@@ -173,16 +191,22 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 // #region private
 
-func beginShader(t *TextBox) {
+func beginShader(t *TextBox, thick float32) {
 	var sh = internal.ShaderText
 
 	if sh.ID != 0 {
-		var smoothness = []float32{t.Smoothness}
-		var thickness = []float32{t.Thickness}
-		thickness[0] = number.Limit(thickness[0], 0, 0.999)
-		smoothness[0] *= t.LineHeight / 5
+		var smoothness = []float32{t.Smoothness * t.LineHeight / 5}
 		rl.BeginShaderMode(sh)
 		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), smoothness, rl.ShaderUniformFloat)
+		setShaderThick(thick)
+	}
+}
+func setShaderThick(thick float32) {
+	var sh = internal.ShaderText
+
+	if sh.ID != 0 {
+		var thickness = []float32{thick}
+		thickness[0] = number.Limit(thickness[0], 0, 0.999)
 		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
 	}
 }

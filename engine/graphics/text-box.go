@@ -16,9 +16,11 @@ type TextBox struct {
 	AlignmentX, AlignmentY,
 	Thickness, Smoothness,
 	SymbolGap, LineHeight, LineGap float32
-	EmbeddedColorsTag, EmbeddedAssetsTag rune
-	EmbeddedColors                       []uint
-	EmbeddedAssetIds                     []string
+	EmbeddedColorsTag, EmbeddedAssetsTag,
+	EmbeddedThicknessTag rune
+	EmbeddedColors      []uint
+	EmbeddedAssetIds    []string
+	EmbeddedThicknesses []float32
 }
 
 func NewTextBox(fontId string, x, y float32, value ...any) TextBox {
@@ -26,7 +28,7 @@ func NewTextBox(fontId string, x, y float32, value ...any) TextBox {
 	var textBox = TextBox{
 		Node: node, Value: text.New(value...), LineHeight: 100,
 		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
-		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^',
+		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^', EmbeddedThicknessTag: '*',
 	}
 	var font = textBox.font()
 	var measure = rl.MeasureTextEx(*font, textBox.Value, textBox.LineHeight, textBox.gapSymbols())

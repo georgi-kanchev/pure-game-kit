@@ -53,7 +53,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		camera.SetScreenAreaToWindow()
 		textBox.Width, textBox.Height = camera.Size()
 		camera.PivotX, camera.PivotY = 0, 0
-		sprite.Fit(&camera)
+		sprite.CameraFit(&camera)
 		sprite.ScaleX *= scale
 		sprite.ScaleY *= scale
 
@@ -65,7 +65,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 
 		camera.DrawSprites(&sprite)
 
-		if !sprite.IsHovered(&camera) {
+		if !sprite.MouseIsHovering(&camera) {
 			continue
 		}
 

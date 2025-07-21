@@ -22,7 +22,7 @@ func NewNode(assetId string, x, y float32) Node {
 		PivotX: 0.5, PivotY: 0.5, Color: color.White}
 }
 
-func (node *Node) ToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
+func (node *Node) TransformToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	var w, h = node.Width, node.Height
 	var originPixelX = node.PivotX * float32(w)
 	var originPixelY = node.PivotY * float32(h)
@@ -42,7 +42,7 @@ func (node *Node) ToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	localX -= offsetX
 	localY -= offsetY
 
-	var px, py, pr, psx, psy = node.Parent.ToCamera()
+	var px, py, pr, psx, psy = node.Parent.TransformToCamera()
 
 	localX *= psx
 	localY *= psy
@@ -59,9 +59,9 @@ func (node *Node) ToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
 	gScaleY = psy * node.ScaleY
 	return
 }
-func (node *Node) FromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
+func (node *Node) TransformFromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
 	if node.Parent != nil {
-		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.FromCamera(gX, gY, gAngle, gScaleX, gScaleY)
+		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.TransformFromCamera(gX, gY, gAngle, gScaleX, gScaleY)
 	}
 
 	var dx = gX - node.X
@@ -109,7 +109,7 @@ func (node *Node) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
 	return worldX, worldY
 }
 func (node *Node) PointFromCamera(camera *Camera, cX, cY float32) (x, y float32) {
-	x, y, _, _, _ = node.FromCamera(cX, cY, 0, 1, 1)
+	x, y, _, _, _ = node.TransformFromCamera(cX, cY, 0, 1, 1)
 	return x, y
 }
 
@@ -117,13 +117,13 @@ func (node *Node) MousePosition(camera *Camera) (x, y float32) {
 	x, y = camera.MousePosition()
 	return node.PointFromCamera(camera, x, y)
 }
-func (node *Node) IsHovered(camera *Camera) bool {
+func (node *Node) MouseIsHovering(camera *Camera) bool {
 	var mx, my = node.MousePosition(camera)
 	var w, h = node.Width, node.Height
 	return mx >= 0 && my >= 0 && mx < w && my < h
 }
 
-func (node *Node) Fit(camera *Camera) {
+func (node *Node) CameraFit(camera *Camera) {
 	var x, y = camera.PointFromScreen(
 		camera.ScreenX+camera.ScreenWidth/2,
 		camera.ScreenY+camera.ScreenHeight/2,
@@ -137,7 +137,7 @@ func (node *Node) Fit(camera *Camera) {
 	node.ScaleX, node.ScaleY = scale, scale
 	node.Angle = 0
 }
-func (node *Node) Fill(camera *Camera) {
+func (node *Node) CameraFill(camera *Camera) {
 	var x, y = camera.PointFromScreen(
 		camera.ScreenX+camera.ScreenWidth/2,
 		camera.ScreenY+camera.ScreenHeight/2,
@@ -151,7 +151,7 @@ func (node *Node) Fill(camera *Camera) {
 	node.ScaleX, node.ScaleY = scale, scale
 	node.Angle = 0
 }
-func (node *Node) Stretch(camera *Camera) {
+func (node *Node) CameraStretch(camera *Camera) {
 	var x, y = camera.PointFromScreen(
 		camera.ScreenX+camera.ScreenWidth/2,
 		camera.ScreenY+camera.ScreenHeight/2,
@@ -166,10 +166,10 @@ func (node *Node) Stretch(camera *Camera) {
 	node.Angle = 0
 }
 
-func (node *Node) UpperLeft() (x, y float32)  { return node.getCorner(upperLeft) }
-func (node *Node) UpperRight() (x, y float32) { return node.getCorner(upperRight) }
-func (node *Node) LowerRight() (x, y float32) { return node.getCorner(lowerRight) }
-func (node *Node) LowerLeft() (x, y float32)  { return node.getCorner(lowerLeft) }
+func (node *Node) CornerUpperLeft() (x, y float32)  { return node.getCorner(upperLeft) }
+func (node *Node) CornerUpperRight() (x, y float32) { return node.getCorner(upperRight) }
+func (node *Node) CornerLowerRight() (x, y float32) { return node.getCorner(lowerRight) }
+func (node *Node) CornerLowerLeft() (x, y float32)  { return node.getCorner(lowerLeft) }
 
 // #region private
 
@@ -184,7 +184,7 @@ const (
 
 func (node *Node) getCorner(corner corner) (x, y float32) {
 	var width, height = node.Width, node.Height
-	var nx, ny, na, _, _ = node.ToCamera()
+	var nx, ny, na, _, _ = node.TransformToCamera()
 	var offX, offY = -width * node.PivotX, -height * node.PivotY
 	if corner == upperRight || corner == lowerRight {
 		offX = width * (1 - node.PivotX)

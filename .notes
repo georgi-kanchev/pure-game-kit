@@ -30,6 +30,10 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[27] [Mon] [21-07-2025]
+[√] graphics - text embedded thicknesses
+[√] graphics - text renames
+
 [26] [Sun] [20-07-2025]
 [√] graphics - text embedded assets fixes
 [√] data - default font
