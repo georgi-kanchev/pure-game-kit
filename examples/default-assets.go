@@ -5,7 +5,7 @@ import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/text"
+	"pure-kit/engine/utility/symbols"
 	"pure-kit/engine/window"
 )
 
@@ -76,17 +76,17 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		}
 
 		var w, h = assets.Size(txt)
-		var info = text.New(
+		var info = symbols.New(
 			"id: '", txt, "'",
 			"\ncoords: ", imx, ", ", imy,
 			"\nindex: ", index,
 			"\nsize:", tileSize, "x", tileSize)
 
 		if txt == "" && len(tileIds) == 0 && imx == 0 && imy == 0 { // display default texture & font
-			info = text.New("id: '", txt, "'", "\nsize:", w, "x", h)
+			info = symbols.New("id: '", txt, "'", "\nsize:", w, "x", h)
 		}
 
-		textBox.Value = info
+		textBox.Text = info
 		camera.PivotX, camera.PivotY = 0, 0
 		camera.DrawTextBoxes(&textBox)
 	}

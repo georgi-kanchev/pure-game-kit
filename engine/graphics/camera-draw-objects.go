@@ -1,17 +1,17 @@
 package graphics
 
 import (
+	"math"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/point"
-	"pure-kit/engine/utility/text"
+	"pure-kit/engine/utility/symbols"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func (camera *Camera) DrawNodes(nodes ...*Node) {
-	camera.begin()
 	for _, n := range nodes {
 		if n == nil {
 			continue
@@ -19,11 +19,8 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 
 		var x, y, ang, scX, scY = n.TransformToCamera()
 		var w, h = n.Width, n.Height
-		var rec = rl.Rectangle{X: x, Y: y, Width: w * scX, Height: h * scY}
-
-		rl.DrawRectanglePro(rec, rl.Vector2{}, ang, rl.GetColor(n.Color))
+		camera.DrawRectangle(x, y, w*scX, h*scY, ang, n.Color)
 	}
-	camera.end()
 }
 func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 	camera.begin()
@@ -72,7 +69,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 			rectTexture.Width *= -1
 		}
 		if rectWorld.Height < 0 {
-			var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, ang+180, -rectWorld.Width)
+			var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, ang+270, -rectWorld.Height)
 			rectWorld.X = px
 			rectWorld.Y = py
 			rectTexture.Height *= -1
@@ -91,15 +88,42 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 		var w, h = s.Width, s.Height
 		var fx, fy = s.SliceFlipX, s.SliceFlipY
 		var u, r, d, l = s.SliceSizes[0], s.SliceSizes[1], s.SliceSizes[2], s.SliceSizes[3]
-		drawSlice(camera, &s.Node, l, u, w-l-r, h-u-d, false, false, s.AssetId)
-		drawSlice(camera, &s.Node, 0, 0, l, u, fx[0], fy[0], s.SliceIds[0])
-		drawSlice(camera, &s.Node, l, 0, w-l-r, u, fx[1], fy[1], s.SliceIds[1])
-		drawSlice(camera, &s.Node, w-r, 0, r, u, fx[2], fy[2], s.SliceIds[2])
-		drawSlice(camera, &s.Node, w-r, u, r, h-u-d, fx[3], fy[3], s.SliceIds[3])
-		drawSlice(camera, &s.Node, w-r, h-d, u, r, fx[4], fy[4], s.SliceIds[4])
-		drawSlice(camera, &s.Node, l, h-d, w-l-r, u, fx[5], fy[5], s.SliceIds[5])
-		drawSlice(camera, &s.Node, 0, h-d, l, d, fx[6], fy[6], s.SliceIds[6])
-		drawSlice(camera, &s.Node, 0, u, l, h-u-d, fx[7], fy[7], s.SliceIds[7])
+		var errX, errY float32 = 2, 2 // this adds margin of error to the middle part (it's behind all other parts)
+		var c = s.Color
+		var a = s.AssetId
+		var minW = float32(math.Max(float64(l), float64(r)))
+		var minH = float32(math.Max(float64(u), float64(d)))
+
+		if w < 0 {
+			r *= -1
+			l *= -1
+			errX *= -1
+		}
+		if h < 0 {
+			u *= -1
+			d *= -1
+			errY *= -1
+		}
+
+		if number.IsBetween(w, -minW, minW, false, false) ||
+			number.IsBetween(h, -minH, minH, false, false) { // center when too small
+			drawSlice(camera, &s.Node, 0, 0, w, h, false, false, s.AssetId, c)
+			return
+		}
+		drawSlice(camera, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, false, false, a, c) // center
+
+		// edges
+		drawSlice(camera, &s.Node, l, 0, w-l-r, u, fx[1], fy[1], s.SliceIds[1], c)   // upper
+		drawSlice(camera, &s.Node, 0, u, l, h-u-d, fx[3], fy[3], s.SliceIds[3], c)   // left
+		drawSlice(camera, &s.Node, w-r, u, r, h-u-d, fx[4], fy[4], s.SliceIds[4], c) // right
+		drawSlice(camera, &s.Node, l, h-d, w-l-r, d, fx[6], fy[6], s.SliceIds[6], c) // lower
+
+		// corners
+		drawSlice(camera, &s.Node, 0, 0, l, u, fx[0], fy[0], s.SliceIds[0], c)     // upper left
+		drawSlice(camera, &s.Node, w-r, 0, r, u, fx[2], fy[2], s.SliceIds[2], c)   // upper right
+		drawSlice(camera, &s.Node, 0, h-d, l, d, fx[5], fy[5], s.SliceIds[5], c)   // lower left
+		drawSlice(camera, &s.Node, w-r, h-d, r, d, fx[7], fy[7], s.SliceIds[7], c) // lower right
+
 	}
 }
 func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
@@ -114,7 +138,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var assetTag = string(t.EmbeddedAssetsTag)
 		var colorTag = string(t.EmbeddedColorsTag)
 		var thickTag = string(t.EmbeddedThicknessTag)
-		var wrapped = t.WrapValue(t.Value)
+		var wrapped = t.TextWrap(t.Text)
 		var lines = strings.Split(wrapped, "\n")
 		var _, _, ang, _, _ = t.TransformToCamera()
 		var curX, curY float32 = 0, 0
@@ -130,7 +154,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			var tagless = strings.ReplaceAll(line, colorTag, "")
 			tagless = strings.ReplaceAll(tagless, thickTag, "")
 			var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
-			var lineLength = text.Length(line)
+			var lineLength = symbols.Length(line)
 			var skipRender = false // it's not 'continue' to avoid skipping the offset calculations
 
 			curX = (t.Width - lineSize.X) * alignX
@@ -226,12 +250,13 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 var reusableSprite = NewSprite("", 0, 0)
 
-func drawSlice(camera *Camera, parent *Node, x, y, w, h float32, flipX, flipY bool, id string) {
+func drawSlice(camera *Camera, parent *Node, x, y, w, h float32, flipX, flipY bool, id string, color uint) {
 	reusableSprite.AssetId = id
 	reusableSprite.X, reusableSprite.Y = x, y
 	reusableSprite.Parent = parent
 	reusableSprite.Width, reusableSprite.Height = w, h
 	reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
+	reusableSprite.Color = color
 
 	if flipX {
 		reusableSprite.ScaleX = -1

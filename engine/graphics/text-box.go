@@ -3,7 +3,7 @@ package graphics
 import (
 	"bytes"
 	"pure-kit/engine/internal"
-	"pure-kit/engine/utility/text"
+	"pure-kit/engine/utility/symbols"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -11,7 +11,7 @@ import (
 
 type TextBox struct {
 	Node
-	Value    string
+	Text     string
 	WordWrap bool
 	AlignmentX, AlignmentY,
 	Thickness, Smoothness,
@@ -23,15 +23,15 @@ type TextBox struct {
 	EmbeddedThicknesses []float32
 }
 
-func NewTextBox(fontId string, x, y float32, value ...any) TextBox {
+func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
 	var node = NewNode(fontId, x, y)
 	var textBox = TextBox{
-		Node: node, Value: text.New(value...), LineHeight: 100,
+		Node: node, Text: symbols.New(text...), LineHeight: 100,
 		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
 		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^', EmbeddedThicknessTag: '*',
 	}
 	var font = textBox.font()
-	var measure = rl.MeasureTextEx(*font, textBox.Value, textBox.LineHeight, textBox.gapSymbols())
+	var measure = rl.MeasureTextEx(*font, textBox.Text, textBox.LineHeight, textBox.gapSymbols())
 	textBox.Width, textBox.Height = measure.X, measure.Y
 	return textBox
 }
@@ -40,9 +40,9 @@ func (textBox *TextBox) Size() (width, height float32) {
 	return textBox.Width, textBox.Height
 }
 
-func (textBox *TextBox) WrapValue(value string) string {
+func (textBox *TextBox) TextWrap(text string) string {
 	var font = textBox.font()
-	var words = strings.Split(value, " ")
+	var words = strings.Split(text, " ")
 	var curX, curY = textBox.X, textBox.Y
 	var gapSymbols = textBox.gapSymbols()
 	var buffer = bytes.NewBufferString("")
@@ -53,7 +53,7 @@ func (textBox *TextBox) WrapValue(value string) string {
 			word += " " // split removes spaces, add it for all words but last one
 		}
 
-		var wordLength = text.Length(word)
+		var wordLength = symbols.Length(word)
 		var wordSize = rl.MeasureTextEx(*font, strings.Trim(word, " "), textBox.LineHeight, gapSymbols)
 		var wordEndOfBox = curX+wordSize.X > textBox.Width
 		var firstWord = w == 0

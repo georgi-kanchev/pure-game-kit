@@ -32,6 +32,9 @@ DONE:
 [28] [Tue] [22-07-2025]
 [√] graphics - fixed raylib not supporting negative width/height texture rendering
 [√] graphics - 9slices
+[√] graphics - more fixes for negative rectangle, slice, sprite, texture etc rendering
+[√] graphics - textbox renames
+[√] utility - text renamed -> symbols to free the frequent variable/paramter name "text"
 
 [27] [Mon] [21-07-2025]
 [√] graphics - text embedded thicknesses

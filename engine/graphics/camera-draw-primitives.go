@@ -108,18 +108,28 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 		return
 	}
 
-	var c = rl.GetColor(color)
-	var o = rl.Vector2{X: 0, Y: 0}
+	if width < 0 {
+		var px, py = point.MoveAt(x, y, angle+180, -width)
+		x = px
+		y = py
+		width *= -1
+	}
+	if height < 0 {
+		var px, py = point.MoveAt(x, y, angle+270, -height)
+		x = px
+		y = py
+		height *= -1
+	}
 
-	camera.begin()
 	if thickness < 0 {
 		thickness *= -1
 		var trx, try = point.MoveAt(x, y, angle, width-thickness)
 		var brx, bry = point.MoveAt(x, y, angle+90, height-thickness)
-		rl.DrawRectanglePro(rl.Rectangle{X: x, Y: y, Width: width, Height: thickness}, o, angle, c)
-		rl.DrawRectanglePro(rl.Rectangle{X: trx, Y: try, Width: thickness, Height: height}, o, angle, c)
-		rl.DrawRectanglePro(rl.Rectangle{X: brx, Y: bry, Width: width, Height: thickness}, o, angle, c)
-		rl.DrawRectanglePro(rl.Rectangle{X: x, Y: y, Width: thickness, Height: height}, o, angle, c)
+
+		camera.DrawRectangle(x, y, width, thickness, angle, color)
+		camera.DrawRectangle(trx, try, thickness, height, angle, color)
+		camera.DrawRectangle(brx, bry, width, thickness, angle, color)
+		camera.DrawRectangle(x, y, thickness, height, angle, color)
 		return
 	}
 
@@ -127,16 +137,30 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	var tlx, tly = point.MoveAt(x1, y1, angle-180, thickness)
 	var trx, try = point.MoveAt(x1, y1, angle, width)
 	var blx, bly = point.MoveAt(tlx, tly, angle+90, height+thickness)
-	rl.DrawRectanglePro(rl.Rectangle{X: tlx, Y: tly, Width: width + thickness*2, Height: thickness}, o, angle, c)
-	rl.DrawRectanglePro(rl.Rectangle{X: trx, Y: try, Width: thickness, Height: height + thickness*2}, o, angle, c)
-	rl.DrawRectanglePro(rl.Rectangle{X: blx, Y: bly, Width: width + thickness*2, Height: thickness}, o, angle, c)
-	rl.DrawRectanglePro(rl.Rectangle{X: tlx, Y: tly, Width: thickness, Height: height + thickness*2}, o, angle, c)
 
-	camera.end()
+	camera.DrawRectangle(tlx, tly, width+thickness*2, thickness, angle, color)
+	camera.DrawRectangle(trx, try, thickness, height+thickness*2, angle, color)
+	camera.DrawRectangle(blx, bly, width+thickness*2, thickness, angle, color)
+	camera.DrawRectangle(tlx, tly, thickness, height+thickness*2, angle, color)
 }
 func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
 	camera.begin()
 	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
+
+	// raylib doesn't seem to have negative width/height???
+	if rect.Width < 0 && rect.Height > 0 {
+		var px, py = point.MoveAt(rect.X, rect.Y, angle+180, -rect.Width)
+		rect.X = px
+		rect.Y = py
+		rect.Width *= -1
+	}
+	if rect.Height < 0 && rect.Width > 0 {
+		var px, py = point.MoveAt(rect.X, rect.Y, angle+270, -rect.Height)
+		rect.X = px
+		rect.Y = py
+		rect.Height *= -1
+	}
+
 	rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(color))
 	camera.end()
 }
@@ -155,10 +179,23 @@ func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle f
 	var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
 	var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w), Height: float32(h)}
 
+	if rectWorld.Width < 0 {
+		var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, angle+180, -rectWorld.Width)
+		rectWorld.X = px
+		rectWorld.Y = py
+		rectTexture.Width *= -1
+	}
+	if rectWorld.Height < 0 {
+		var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, angle+270, -rectWorld.Height)
+		rectWorld.X = px
+		rectWorld.Y = py
+		rectTexture.Height *= -1
+	}
+
 	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, rl.GetColor(color))
 	camera.end()
 }
-func (camera *Camera) DrawText(fontId, value string, x, y float32, color uint) {
+func (camera *Camera) DrawText(fontId, text string, x, y float32, color uint) {
 	camera.begin()
 
 	var sh = internal.ShaderText
@@ -178,7 +215,7 @@ func (camera *Camera) DrawText(fontId, value string, x, y float32, color uint) {
 		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
 	}
 
-	rl.DrawTextPro(*font, value, pos, rl.Vector2{}, 0, float32(font.BaseSize), 0, rl.GetColor(color))
+	rl.DrawTextPro(*font, text, pos, rl.Vector2{}, 0, float32(font.BaseSize), 0, rl.GetColor(color))
 
 	if sh.ID != 0 {
 		rl.EndShaderMode()

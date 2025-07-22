@@ -1,4 +1,4 @@
-package text
+package symbols
 
 import (
 	"encoding/base64"
