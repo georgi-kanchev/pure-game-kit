@@ -1,9 +1,7 @@
 package main
 
-import (
-	example "pure-kit/examples"
-)
+import example "pure-kit/examples"
 
 func main() {
-	example.Texts()
+	example.NineSlices()
 }

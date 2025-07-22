@@ -1,7 +1,7 @@
 TODO:
+drawing negative size 9-slice
 tiled loading
 tweens are way too complicated to work with - think of something else
-drawing 9-slice
 drawing tilemaps
 input
 gui
@@ -29,6 +29,10 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[28] [Tue] [22-07-2025]
+[√] graphics - fixed raylib not supporting negative width/height texture rendering
+[√] graphics - 9slices
+
 [27] [Mon] [21-07-2025]
 [√] graphics - text embedded thicknesses
 [√] graphics - text renames

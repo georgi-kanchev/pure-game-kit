@@ -2,7 +2,6 @@ package assets
 
 import (
 	"encoding/base64"
-	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/storage"
 
@@ -45,26 +44,26 @@ func loadSound(id, b64 string) string {
 	return id
 }
 
-//	func printSoundBase64(soundPath string) {
-//		var raw, _ = os.ReadFile(soundPath)
-//		var compressed = storage.Compress(raw)
-//		var b64 = base64.StdEncoding.EncodeToString(compressed)
-//		print(b64)
-//	}
-//
-//	func printImageBase64(imgPath string) {
-//		var img = rl.LoadImage(imgPath)
-//		var bytes = rl.ExportImageToMemory(*img, ".png")
-//		var compressed = storage.Compress(bytes)
-//		var b64 = base64.StdEncoding.EncodeToString(compressed)
-//		print(b64)
-//	}
-func printFontBase64(fontPath string) {
-	var bytes = file.LoadBytes(fontPath)
-	var compressed = storage.Compress(bytes)
-	var b64 = base64.StdEncoding.EncodeToString(compressed)
-	print(b64)
-}
-func Main() {
-	printFontBase64("font.ttf")
-}
+// func printSoundBase64(soundPath string) {
+// 	var raw, _ = os.ReadFile(soundPath)
+// 	var compressed = storage.Compress(raw)
+// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	print(b64)
+// }
+
+// func printImageBase64(imgPath string) {
+// 	var img = rl.LoadImage(imgPath)
+// 	var bytes = rl.ExportImageToMemory(*img, ".png")
+// 	var compressed = storage.Compress(bytes)
+// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	print(b64)
+// }
+// func printFontBase64(fontPath string) {
+// 	var bytes = file.LoadBytes(fontPath)
+// 	var compressed = storage.Compress(bytes)
+// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	print(b64)
+// }
+// func Main() {
+// 	printImageBase64("default-ui.png")
+// }

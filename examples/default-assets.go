@@ -34,7 +34,7 @@ func DefaultAssetTexture() {
 	runDefaultAssetDisplay(0.7, 256, 0, 12, 7, function)
 }
 func DefaultAssetUI() {
-	runDefaultAssetDisplay(0.7, 16, 0, 6, 5, assets.LoadDefaultAtlasUI)
+	runDefaultAssetDisplay(0.7, 16, 0, 6, 6, assets.LoadDefaultAtlasUI)
 }
 
 // #region private
@@ -52,7 +52,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 	for window.KeepOpen() {
 		camera.SetScreenAreaToWindow()
 		textBox.Width, textBox.Height = camera.Size()
-		camera.PivotX, camera.PivotY = 0, 0
+		camera.PivotX, camera.PivotY = 0.5, 0.5
 		sprite.CameraFit(&camera)
 		sprite.ScaleX *= scale
 		sprite.ScaleY *= scale
@@ -68,18 +68,26 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		if !sprite.MouseIsHovering(&camera) {
 			continue
 		}
+		camera.DrawFrame(mmx, mmy, tileSize*sprite.ScaleX, tileSize*sprite.ScaleY, 0, 6, color.Cyan)
 
 		var txt = ""
 		if index < len(tileIds) {
 			txt = tileIds[index]
 		}
-		var info = text.New("id: ", txt, "\ncoords: ", imx, ", ", imy, "\nindex: ", index)
-		if txt == "" {
-			info = "id:"
+
+		var w, h = assets.Size(txt)
+		var info = text.New(
+			"id: '", txt, "'",
+			"\ncoords: ", imx, ", ", imy,
+			"\nindex: ", index,
+			"\nsize:", tileSize, "x", tileSize)
+
+		if txt == "" && len(tileIds) == 0 && imx == 0 && imy == 0 { // display default texture & font
+			info = text.New("id: '", txt, "'", "\nsize:", w, "x", h)
 		}
 
 		textBox.Value = info
-		camera.DrawFrame(mmx, mmy, tileSize*sprite.ScaleX, tileSize*sprite.ScaleY, 0, 6, color.Cyan)
+		camera.PivotX, camera.PivotY = 0, 0
 		camera.DrawTextBoxes(&textBox)
 	}
 }

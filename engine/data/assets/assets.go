@@ -11,6 +11,11 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+func Size(assetId string) (width, height float32) {
+	var w, h = internal.AssetSize(assetId)
+	return float32(w), float32(h)
+}
+
 func tryCreateWindow() {
 	if !rl.IsWindowReady() {
 		window.Recreate()
