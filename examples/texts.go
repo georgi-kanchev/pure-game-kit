@@ -4,6 +4,7 @@ import (
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/symbols"
 	"pure-kit/engine/window"
 )
 
@@ -16,9 +17,12 @@ func Texts() {
 	textBox.AlignmentY = 1
 	textBox.LineGap = -1
 	textBox.Angle = 5
+	// textBox.SymbolGap = 2
 	textBox.EmbeddedColors = []uint{color.Red, color.Green, color.Black, color.White, color.Blue}
 	textBox.EmbeddedAssetIds = []string{tiles[162], tiles[256], tiles[156], tiles[154], tiles[157]}
 	textBox.EmbeddedThicknesses = []float32{0.7, 0.5, 0.35, 0.5}
+	textBox.WordWrap = false
+	textBox.Width, textBox.Height = 3000, 1500 //mx, my
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -26,8 +30,13 @@ func Texts() {
 		textBox.Color = color.Darken(color.Gray, 0.5)
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
-		cam.DrawTextBoxes(&textBox)
 
-		textBox.Width, textBox.Height = textBox.MousePosition(&cam)
+		// var mx, my = textBox.MousePosition(&cam)
+		var symbols = symbols.Count(textBox.TextSymbols())
+		for i := range symbols {
+			var x, y, w, h, a = textBox.TextSymbol(&cam, i)
+			cam.DrawRectangle(x, y, w, h, a, color.Brown)
+		}
+		cam.DrawTextBoxes(&textBox)
 	}
 }

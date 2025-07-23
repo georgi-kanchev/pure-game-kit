@@ -1,5 +1,4 @@
 TODO:
-drawing negative size 9-slice
 tiled loading
 tweens are way too complicated to work with - think of something else
 drawing tilemaps
@@ -34,6 +33,7 @@ DONE:
 [√] graphics - 9slices
 [√] graphics - more fixes for negative rectangle, slice, sprite, texture etc rendering
 [√] graphics - textbox renames
+[√] graphics - textbox exposed a way to get symbol rects, formatted text & lines
 [√] utility - text renamed -> symbols to free the frequent variable/paramter name "text"
 
 [27] [Mon] [21-07-2025]

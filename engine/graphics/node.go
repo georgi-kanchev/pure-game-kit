@@ -22,7 +22,7 @@ func NewNode(assetId string, x, y float32) Node {
 		PivotX: 0.5, PivotY: 0.5, Color: color.White}
 }
 
-func (node *Node) TransformToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32) {
+func (node *Node) TransformToCamera() (cX, cY, cAngle, cScaleX, cScaleY float32) {
 	var w, h = node.Width, node.Height
 	var originPixelX = node.PivotX * float32(w)
 	var originPixelY = node.PivotY * float32(h)
@@ -52,20 +52,20 @@ func (node *Node) TransformToCamera() (gX, gY, gAngle, gScaleX, gScaleY float32)
 	var worldX = localX*cosP - localY*sinP + px
 	var worldY = localX*sinP + localY*cosP + py
 
-	gX = worldX
-	gY = worldY
-	gAngle = pr + node.Angle
-	gScaleX = psx * node.ScaleX
-	gScaleY = psy * node.ScaleY
+	cX = worldX
+	cY = worldY
+	cAngle = pr + node.Angle
+	cScaleX = psx * node.ScaleX
+	cScaleY = psy * node.ScaleY
 	return
 }
-func (node *Node) TransformFromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) (x, y, angle, scaleX, scaleY float32) {
+func (node *Node) TransformFromCamera(cX, cY, cAngle, cScaleX, cScaleY float32) (x, y, angle, scaleX, scaleY float32) {
 	if node.Parent != nil {
-		gX, gY, gAngle, gScaleX, gScaleY = node.Parent.TransformFromCamera(gX, gY, gAngle, gScaleX, gScaleY)
+		cX, cY, cAngle, cScaleX, cScaleY = node.Parent.TransformFromCamera(cX, cY, cAngle, cScaleX, cScaleY)
 	}
 
-	var dx = gX - node.X
-	var dy = gY - node.Y
+	var dx = cX - node.X
+	var dy = cY - node.Y
 	var angleRad = -node.Angle * (math.Pi / 180)
 	var sin, cos = float32(math.Sin(float64(angleRad))), float32(math.Cos(float64(angleRad)))
 	var localX = dx*cos - dy*sin
@@ -84,9 +84,9 @@ func (node *Node) TransformFromCamera(gX, gY, gAngle, gScaleX, gScaleY float32) 
 	x = localX + pivotOffsetX
 	y = localY + pivotOffsetY
 
-	angle = gAngle - node.Angle
-	scaleX = gScaleX / node.ScaleX
-	scaleY = gScaleY / node.ScaleY
+	angle = cAngle - node.Angle
+	scaleX = cScaleX / node.ScaleX
+	scaleY = cScaleY / node.ScaleY
 	return
 }
 func (node *Node) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
@@ -113,14 +113,19 @@ func (node *Node) PointFromCamera(camera *Camera, cX, cY float32) (x, y float32)
 	return x, y
 }
 
+func (node *Node) Contains(camera *Camera, cX, cY float32) bool {
+	var x, y = node.PointFromCamera(camera, cX, cY)
+	var w, h = node.Width, node.Height
+	return x >= 0 && y >= 0 && x < w && y < h
+}
+
 func (node *Node) MousePosition(camera *Camera) (x, y float32) {
 	x, y = camera.MousePosition()
 	return node.PointFromCamera(camera, x, y)
 }
 func (node *Node) MouseIsHovering(camera *Camera) bool {
-	var mx, my = node.MousePosition(camera)
-	var w, h = node.Width, node.Height
-	return mx >= 0 && my >= 0 && mx < w && my < h
+	var x, y = camera.MousePosition()
+	return node.Contains(camera, x, y)
 }
 
 func (node *Node) CameraFit(camera *Camera) {

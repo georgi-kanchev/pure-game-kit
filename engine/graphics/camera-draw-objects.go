@@ -5,8 +5,6 @@ import (
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/point"
-	"pure-kit/engine/utility/symbols"
-	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -128,116 +126,47 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 }
 func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	camera.begin()
-
 	for _, t := range textBoxes {
 		if t == nil {
 			continue
 		}
 
-		beginShader(t, t.Thickness)
+		var _, symbols = t.formatSymbols()
+		var lastThickness = t.Thickness
 		var assetTag = string(t.EmbeddedAssetsTag)
-		var colorTag = string(t.EmbeddedColorsTag)
-		var thickTag = string(t.EmbeddedThicknessTag)
-		var wrapped = t.TextWrap(t.Text)
-		var lines = strings.Split(wrapped, "\n")
-		var _, _, ang, _, _ = t.TransformToCamera()
-		var curX, curY float32 = 0, 0
-		var font = t.font()
-		var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
-		var curColor = rl.GetColor(t.Color)
-		var curThick = t.Thickness
-		var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
-		var colorIndex, assetIndex, thickIndex = 0, 0, 0
-		// although some chars are invisible, they still need to be iterated cuz of colorIndex and assetIndex
 
-		for l, line := range lines {
-			var tagless = strings.ReplaceAll(line, colorTag, "")
-			tagless = strings.ReplaceAll(tagless, thickTag, "")
-			var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
-			var lineLength = symbols.Length(line)
-			var skipRender = false // it's not 'continue' to avoid skipping the offset calculations
+		beginShader(t, t.Thickness)
+		for _, s := range symbols {
+			var camX, camY = t.PointToCamera(camera, s.X, s.Y)
+			var pos = rl.Vector2{X: camX, Y: camY}
 
-			curX = (t.Width - lineSize.X) * alignX
-			curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
-
-			// hide text outside the box left, top & bottom
-			if curX < 0 || curY < 0 || curY+t.LineHeight-1 > t.Height {
-				skipRender = true // no need for right cuz text wraps there
+			if s.Thickness != lastThickness {
+				endShader()
+				beginShader(t, s.Thickness)
+				lastThickness = s.Thickness
 			}
 
-			for c := range lineLength {
-				var char = string(line[c])
-				var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
+			if s.Value == assetTag && s.AssetId != "" {
+				var w, h = internal.AssetSize(s.AssetId)
+				var sprite = NewSprite(s.AssetId, camX, camY)
+				var aspect = float32(h / w)
 
-				if line[c] == '\r' {
-					continue // use as zerospace character or skip altogether
-				}
+				sprite.Height = t.LineHeight
+				sprite.Width = sprite.Height * aspect
+				sprite.PivotX, sprite.PivotY = 0, 0
+				sprite.Angle = s.Angle
+				sprite.Color = uint(rl.ColorToInt(s.Color))
 
-				if curX+charSize.X > t.Width {
-					skipRender = true
-				}
+				endShader()
+				camera.end()
+				camera.DrawSprites(&sprite)
+				camera.begin()
+				beginShader(t, s.Thickness)
+				continue
+			}
 
-				var lastChar = string(line[number.LimitInt(c-1, 0, lineLength-1)])
-
-				if char == colorTag {
-					if colorIndex < len(t.EmbeddedColors) {
-						curColor = rl.GetColor(t.EmbeddedColors[colorIndex])
-						colorIndex++
-						continue
-					}
-					curColor = rl.GetColor(t.Color)
-					continue
-				}
-
-				if char == thickTag {
-					if thickIndex < len(t.EmbeddedThicknesses) {
-						curThick = t.EmbeddedThicknesses[thickIndex]
-						thickIndex++
-						endShader()
-						beginShader(t, curThick)
-						continue
-
-					}
-					curThick = t.Thickness
-					endShader()
-					beginShader(t, curThick)
-					continue
-				}
-
-				if char == assetTag && (lastChar != assetTag || c == 0) && assetIndex < len(t.EmbeddedAssetIds) {
-					if !skipRender {
-						var assetId = t.EmbeddedAssetIds[assetIndex]
-						var w, h = internal.AssetSize(assetId)
-						var camX, camY = t.PointToCamera(camera, curX, curY)
-						var sprite = NewSprite(assetId, camX, camY)
-						var aspect = float32(h / w)
-
-						sprite.Height = t.LineHeight
-						sprite.Width = sprite.Height * aspect
-						sprite.PivotX, sprite.PivotY = 0, 0
-						sprite.Angle = ang
-						sprite.Color = uint(rl.ColorToInt(curColor))
-
-						endShader()
-						camera.end()
-						camera.DrawSprites(&sprite)
-						camera.begin()
-						beginShader(t, curThick)
-					}
-					assetIndex++ // skipping render shouldn't affect assetIndexes
-				}
-
-				if char == assetTag {
-					curX += charSize.X + t.gapSymbols()
-					continue
-				}
-
-				if !skipRender {
-					var camX, camY = t.PointToCamera(camera, curX, curY)
-					var pos = rl.Vector2{X: camX, Y: camY}
-					rl.DrawTextPro(*font, char, pos, rl.Vector2{}, ang, t.LineHeight, 0, curColor)
-					curX += charSize.X + t.gapSymbols()
-				}
+			if s.Value != assetTag {
+				rl.DrawTextPro(*s.Font, s.Value, pos, rl.Vector2{}, s.Angle, s.Height, 0, s.Color)
 			}
 		}
 		endShader()

@@ -140,13 +140,13 @@ func Calculate(mathExpression string) float64 {
 	return values[len(values)-1]
 }
 
-func IsNumber(text string) bool {
+func AreNumber(text string) bool {
 	var _, err = strconv.ParseFloat(text, 64)
 	return err == nil
 }
 
 func PadLeftAndRight(text string, length int, padStr string) string {
-	var textLen = Length(text)
+	var textLen = Count(text)
 	var spaces = length - textLen
 	if spaces <= 0 {
 		return text
@@ -155,7 +155,7 @@ func PadLeftAndRight(text string, length int, padStr string) string {
 	return PadRight(PadLeft(text, textLen+left, padStr), length, padStr)
 }
 func PadLeft(text string, totalWidth int, padStr string) string {
-	var textLen = Length(text)
+	var textLen = Count(text)
 	var padding = totalWidth - textLen
 	if padding <= 0 || padStr == "" {
 		return text
@@ -163,7 +163,7 @@ func PadLeft(text string, totalWidth int, padStr string) string {
 	return repeatPad(padStr, padding) + text
 }
 func PadRight(text string, totalWidth int, padStr string) string {
-	var textLen = Length(text)
+	var textLen = Count(text)
 	var padding = totalWidth - textLen
 	if padding <= 0 || padStr == "" {
 		return text
@@ -171,13 +171,13 @@ func PadRight(text string, totalWidth int, padStr string) string {
 	return text + repeatPad(padStr, padding)
 }
 
-func Length(text string) int {
+func Count(text string) int {
 	return utf8.RuneCountInString(text)
 }
 
 func Reveal(text string, progress float32) string {
 	progress = float32(math.Min(1, math.Max(float64(progress), 0)))
-	var textLen = Length(text)
+	var textLen = Count(text)
 	var cutoff = int(math.Round(float64(progress) * float64(textLen)))
 
 	return string([]rune(text)[cutoff:])
@@ -240,7 +240,7 @@ func repeatPad(padStr string, totalRunes int) string {
 	for builder.Len() < totalRunes {
 		for _, r := range padRunes {
 			builder.WriteRune(r)
-			if Length(builder.String()) >= totalRunes {
+			if Count(builder.String()) >= totalRunes {
 				return truncateToRunes(builder.String(), totalRunes)
 			}
 		}
