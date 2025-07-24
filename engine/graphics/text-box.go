@@ -2,6 +2,7 @@ package graphics
 
 import (
 	"bytes"
+	"math"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/symbols"
@@ -209,10 +210,11 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 
 				result = append(result, symbol)
 
-				if l == len(resultLines) {
+				var lineIndex = int(math.Min(float64(l), float64(len(resultLines))))
+				if lineIndex == len(resultLines) {
 					resultLines = append(resultLines, "")
 				}
-				resultLines[l] += symbol.Value
+				resultLines[lineIndex] += symbol.Value
 
 				curX += charSize.X + t.gapSymbols()
 			}

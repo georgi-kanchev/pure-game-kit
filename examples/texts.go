@@ -1,10 +1,11 @@
 package example
 
 import (
+	"math"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/symbols"
+	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/window"
 )
 
@@ -20,9 +21,10 @@ func Texts() {
 	// textBox.SymbolGap = 2
 	textBox.EmbeddedColors = []uint{color.Red, color.Green, color.Black, color.White, color.Blue}
 	textBox.EmbeddedAssetIds = []string{tiles[162], tiles[256], tiles[156], tiles[154], tiles[157]}
-	textBox.EmbeddedThicknesses = []float32{0.7, 0.5, 0.35, 0.5}
+	textBox.EmbeddedThicknesses = []float32{0.7, 0.5, 0.35}
 	textBox.WordWrap = false
-	textBox.Width, textBox.Height = 3000, 1500 //mx, my
+
+	var a = 0.0
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -31,12 +33,17 @@ func Texts() {
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
 
-		// var mx, my = textBox.MousePosition(&cam)
-		var symbols = symbols.Count(textBox.TextSymbols())
-		for i := range symbols {
-			var x, y, w, h, a = textBox.TextSymbol(&cam, i)
-			cam.DrawRectangle(x, y, w, h, a, color.Brown)
-		}
+		a = math.Sin(float64(seconds.GetRuntime()))
+
+		textBox.Thickness = float32(a)
+
+		var mx, my = textBox.MousePosition(&cam)
+		// var symbols = symbols.Count(textBox.TextSymbols())
+		// for i := range symbols {
+		// 	var x, y, w, h, a = textBox.TextSymbol(&cam, i)
+		// 	cam.DrawRectangle(x, y, w, h, a, color.Brown)
+		// }
 		cam.DrawTextBoxes(&textBox)
+		textBox.Width, textBox.Height = mx, my
 	}
 }
