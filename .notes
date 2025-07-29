@@ -27,6 +27,12 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[30] [Tue] [29-07-2025]
+[√] motion - adjustments + fixes for tweens & animations
+[√] execution - renamed flow to commands
+[√] execution - new step flow sequences
+[√] examples - conditions + flow sequences
+
 [29] [Mon] [28-07-2025]
 [√] motion - simplified tweens + no more Advance & passing delta
 [√] motion - animations more funcs + no more Advance & passing delta

@@ -69,4 +69,9 @@ func Update() {
 			delete(CallFor, k)
 		}
 	}
+
+	// sequences from engine/execution/sequence
+	for _, v := range Flows {
+		v.Tick()
+	}
 }

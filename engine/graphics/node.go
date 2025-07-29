@@ -11,14 +11,12 @@ type Node struct {
 	Width, Height  float32
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
-	AssetId        string
 	Parent         *Node
 	Color          uint
 }
 
-func NewNode(assetId string, x, y float32) Node {
-	return Node{
-		AssetId: assetId, X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
+func NewNode(x, y float32) Node {
+	return Node{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
 		PivotX: 0.5, PivotY: 0.5, Color: color.White}
 }
 

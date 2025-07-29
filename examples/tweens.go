@@ -9,6 +9,7 @@ import (
 )
 
 func Tweens() {
+	var cam = graphics.NewCamera(2)
 	var angle = motion.NewTween(45).
 		GoTo(2, curves.EaseBounceOut, 360).
 		GoTo(3, func(progress float32) float32 {
@@ -21,12 +22,14 @@ func Tweens() {
 		GoTo(3, curves.EaseCubicOut, 0, 0).
 		GoTo(2, curves.EaseBackInOut, -200, 200)
 
-	var cam = graphics.NewCamera(2)
-
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
 		var pos = position.CurrentValues()
 		cam.DrawRectangle(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], color.White)
+
+		if position.IsFinished() {
+			position.Restart()
+		}
 	}
 }

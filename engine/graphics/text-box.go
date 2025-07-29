@@ -13,8 +13,8 @@ import (
 
 type TextBox struct {
 	Node
-	Text     string
-	WordWrap bool
+	Text, FontId string
+	WordWrap     bool
 	AlignmentX, AlignmentY,
 	Thickness, Smoothness,
 	SymbolGap, LineHeight, LineGap float32
@@ -26,9 +26,9 @@ type TextBox struct {
 }
 
 func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
-	var node = NewNode(fontId, x, y)
+	var node = NewNode(x, y)
 	var textBox = TextBox{
-		Node: node, Text: symbols.New(text...), LineHeight: 100,
+		FontId: fontId, Node: node, Text: symbols.New(text...), LineHeight: 100,
 		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
 		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^', EmbeddedThicknessesTag: '*',
 	}
@@ -233,7 +233,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 }
 
 func (textBox *TextBox) font() *rl.Font {
-	var font, hasFont = internal.Fonts[textBox.AssetId]
+	var font, hasFont = internal.Fonts[textBox.FontId]
 	var defaultFont, hasDefault = internal.Fonts[""]
 
 	if !hasFont && hasDefault {

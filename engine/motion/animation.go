@@ -19,21 +19,16 @@ func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animatio
 		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: seconds.GetRuntime()}
 }
 
-func (sequence *Animation[T]) Duration() float32 {
-	var count = float32(len(sequence.Items))
-	return count / sequence.ItemsPerSecond
-}
-
 func (sequence *Animation[T]) SetDuration(seconds float32) {
 	sequence.ItemsPerSecond = float32(len(sequence.Items)) / seconds
 }
-func (sequence *Animation[T]) SetIndex(fromIndex int) {
-	fromIndex = number.LimitInt(fromIndex, 0, len(sequence.Items)-1)
-	var newTime = float32(fromIndex) / sequence.ItemsPerSecond
+func (sequence *Animation[T]) SetIndex(index int) {
+	index = number.LimitInt(index, 0, len(sequence.Items)-1)
+	var newTime = float32(index) / sequence.ItemsPerSecond
 	sequence.startTime = seconds.GetRuntime() - newTime
 }
-func (sequence *Animation[T]) SetTime(fromTime float32) {
-	sequence.startTime = seconds.GetRuntime() - fromTime
+func (sequence *Animation[T]) SetTime(seconds float32) {
+	sequence.startTime = runtime() - seconds
 }
 
 func (sequence *Animation[T]) CurrentItem() *T {
@@ -49,12 +44,24 @@ func (sequence *Animation[T]) CurrentTime() float32 {
 	var count = float64(len(sequence.Items))
 	return progress * float32(count) / sequence.ItemsPerSecond
 }
+func (sequence *Animation[T]) CurrentDuration() float32 {
+	var count = float32(len(sequence.Items))
+	return count / sequence.ItemsPerSecond
+}
+
+func (sequence *Animation[T]) IsFinished() bool {
+	var progress = sequence.update()
+	return progress == 1
+}
+func (sequence *Animation[T]) IsPlaying() bool {
+	return !sequence.IsFinished() && !sequence.IsPaused
+}
 
 // #region private
 
 func (sequence *Animation[T]) update() float32 {
 	var runtime = seconds.GetRuntime()
-	var progress = (runtime - sequence.startTime) / sequence.Duration()
+	var progress = (runtime - sequence.startTime) / sequence.CurrentDuration()
 
 	if sequence.IsPaused && runtime != sequence.lastUpdateTime {
 		sequence.startTime += runtime - sequence.lastUpdateTime
@@ -72,5 +79,6 @@ func (sequence *Animation[T]) update() float32 {
 	sequence.lastUpdateTime = runtime
 	return progress
 }
+func runtime() float32 { return seconds.GetRuntime() } // freeing up "seconds" as var/param name
 
 // #endregion

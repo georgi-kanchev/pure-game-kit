@@ -1,4 +1,4 @@
-package flow
+package condition
 
 import "pure-kit/engine/internal"
 

@@ -1,4 +1,4 @@
-package flow
+package command
 
 import (
 	"pure-kit/engine/internal"
@@ -11,11 +11,11 @@ import (
 // 		debug: true
 // 		change_window_title: "My own window!"
 
-func CommandCreate(name string, execution func(parameters []string) (output string)) {
+func Create(name string, execution func(parameters []string) (output string)) {
 	commands[name] = execution
 }
 
-func CommandExecute(command string) (output string) {
+func Execute(command string) (output string) {
 	command = strings.ReplaceAll(command, "\n", "")
 	command = strings.ReplaceAll(command, "\r", "")
 	command = strings.Trim(command, " ")

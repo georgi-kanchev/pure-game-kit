@@ -6,10 +6,10 @@ import (
 )
 
 type Tween struct {
-	IsRunning    bool
-	tweens       []tween
-	currIndex    int
-	startRuntime float32
+	IsPaused                  bool
+	tweens                    []action
+	currIndex                 int
+	startTime, lastUpdateTime float32
 }
 
 func NewTween(startingItems ...float32) *Tween {
@@ -17,11 +17,11 @@ func NewTween(startingItems ...float32) *Tween {
 		return &Tween{}
 	}
 
-	var newChain = &Tween{tweens: make([]tween, 0)}
+	var newChain = &Tween{tweens: make([]action, 0)}
 	var itemsCopy = make([]float32, len(startingItems))
 	copy(itemsCopy, startingItems)
 
-	var newValue = tween{
+	var newValue = action{
 		duration: 0,
 		from:     itemsCopy,
 		to:       itemsCopy,
@@ -46,7 +46,7 @@ func (chain *Tween) GoTo(duration float32, easing func(progress float32) float32
 	copy(copyTo, targets)
 	copy(copyCurr, lastTween.to)
 
-	var newTween = tween{
+	var newTween = action{
 		duration: duration,
 		from:     copyFrom,
 		to:       copyTo,
@@ -57,87 +57,90 @@ func (chain *Tween) GoTo(duration float32, easing func(progress float32) float32
 
 	return chain
 }
-func (chain *Tween) Wait(seconds float32) *Tween {
-	if len(chain.tweens) > 0 {
-		var lastTween = chain.last()
-		chain.GoTo(seconds, nil, lastTween.to...)
+func (tween *Tween) Wait(seconds float32) *Tween {
+	if len(tween.tweens) > 0 {
+		var lastTween = tween.last()
+		tween.GoTo(seconds, nil, lastTween.to...)
 	}
-	return chain
+	return tween
 }
-func (chain *Tween) Restart() {
-	chain.currIndex = 0
-	chain.startRuntime = seconds.GetRuntime()
-	chain.IsRunning = true
+func (tween *Tween) Restart() {
+	tween.currIndex = 0
+	tween.startTime = seconds.GetRuntime()
+	tween.IsPaused = false
 
-	for i := range chain.tweens {
-		var tween = &chain.tweens[i]
+	for i := range tween.tweens {
+		var action = &tween.tweens[i]
 		if i == 0 {
-			copy(tween.current, tween.from)
+			copy(action.current, action.from)
 			continue
 		}
 
-		copy(tween.current, chain.tweens[i-1].to)
+		copy(action.current, tween.tweens[i-1].to)
 	}
 }
 
-func (chain *Tween) CurrentValues() []float32 {
-	if len(chain.tweens) == 0 {
-		return []float32{}
-	}
-
-	var tween = &chain.tweens[chain.currIndex]
-
-	if !chain.IsRunning {
-		return tween.current
-	}
-
-	if len(tween.from) != len(tween.to) || len(tween.from) != len(tween.current) {
-		return []float32{}
-	}
-
+func (tween *Tween) CurrentValues() []float32 {
 	var runtime = seconds.GetRuntime()
-	var elapsed = runtime - chain.startRuntime
-	var tweenDone = elapsed > tween.duration
+	var elapsed = runtime - tween.startTime
 
-	for i := range tween.current {
-		if tweenDone {
-			tween.current[i] = tween.to[i]
+	if tween.IsFinished() {
+		return tween.last().current
+	}
+
+	var act = &tween.tweens[tween.currIndex]
+	var actionDone = elapsed > act.duration
+
+	if len(tween.tweens) == 0 || len(act.from) != len(act.to) || len(act.from) != len(act.current) {
+		return []float32{}
+	}
+	if tween.IsPaused && runtime != tween.lastUpdateTime {
+		tween.startTime += runtime - tween.lastUpdateTime
+	}
+	tween.lastUpdateTime = runtime
+
+	if tween.IsPaused {
+		return act.current
+	}
+
+	for i := range act.current {
+		if actionDone {
+			act.current[i] = act.to[i]
 			continue
 		}
-		var progress = elapsed / tween.duration
+		var progress = elapsed / act.duration
 		var ease float32 = progress
 
-		if tween.easing != nil {
-			ease = tween.easing(progress)
+		if act.easing != nil {
+			ease = act.easing(progress)
 		}
 
-		tween.current[i] = number.Map(ease, 0, 1, tween.from[i], tween.to[i])
+		act.current[i] = number.Map(ease, 0, 1, act.from[i], act.to[i])
 	}
 
-	if tweenDone {
-		chain.startRuntime = runtime
-		chain.currIndex++
+	if actionDone {
+		tween.startTime = runtime
+		tween.currIndex++
 	}
 
-	var chainDone = chain.currIndex >= int(len(chain.tweens))
+	return act.current
+}
 
-	if chainDone {
-		chain.IsRunning = false
-		chain.currIndex--
-		chain.startRuntime = runtime + chain.tweens[chain.currIndex].duration
-	}
-
-	return tween.current
+func (tween *Tween) IsFinished() bool {
+	return tween.currIndex >= len(tween.tweens)
+}
+func (tween *Tween) IsPlaying() bool {
+	return !tween.IsFinished() && !tween.IsPaused
 }
 
 // region private
 
-type tween struct {
+type action struct {
 	duration          float32
 	from, to, current []float32
 	easing            func(progress float32) float32
 }
 
-func (chain *Tween) last() *tween { return &chain.tweens[len(chain.tweens)-1] }
+func (tween *Tween) last() *action { return &tween.tweens[len(tween.tweens)-1] }
 
 // endregion

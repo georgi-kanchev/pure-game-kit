@@ -13,6 +13,15 @@ type Atlas struct {
 	CellWidth, CellHeight, Gap int
 }
 
+type Sequence struct {
+	Steps        []Step
+	CurrentIndex int
+}
+
+type Step interface {
+	Continue() bool
+}
+
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
@@ -22,6 +31,9 @@ var Fonts = make(map[string]*rl.Font)
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 var ShaderText = rl.Shader{}
+
+var Flows = make(map[string]*Sequence)
+var FlowSignals = []string{}
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
@@ -43,4 +55,12 @@ func AssetSize(assetId string) (width, height int) {
 	}
 
 	return
+}
+
+func (f *Sequence) Tick() {
+	var prev = f.CurrentIndex // this checks if we changed index inside the step itself, skip increment if so
+	var keepGoing = f.CurrentIndex >= 0 && f.CurrentIndex < len(f.Steps) && f.Steps[f.CurrentIndex].Continue()
+	if keepGoing && prev == f.CurrentIndex {
+		f.CurrentIndex++
+	}
 }
