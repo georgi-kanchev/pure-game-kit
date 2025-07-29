@@ -1,6 +1,5 @@
 TODO:
 tiled loading
-tweens are way too complicated to work with - think of something else
 drawing tilemaps
 input
 gui
@@ -28,6 +27,10 @@ consistent error handling + logging, console & file
 
 // = = = = = = =
 DONE:
+[29] [Mon] [28-07-2025]
+[√] motion - simplified tweens + no more Advance & passing delta
+[√] motion - animations more funcs + no more Advance & passing delta
+
 [28] [Tue] [22-07-2025]
 [√] graphics - fixed raylib not supporting negative width/height texture rendering
 [√] graphics - 9slices

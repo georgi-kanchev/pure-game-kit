@@ -34,12 +34,12 @@ func CallAfter(seconds float32, function func()) {
 
 	internal.CallAfter[t] = append(internal.CallAfter[t], function)
 }
-func CallFor(seconds float32, function func()) {
+func CallFor(seconds float32, function func(remaining float32)) {
 	var t = internal.Runtime + seconds
 	var _, has = internal.CallFor[t]
 
 	if !has {
-		internal.CallFor[t] = []func(){}
+		internal.CallFor[t] = []func(remaining float32){}
 	}
 
 	internal.CallFor[t] = append(internal.CallFor[t], function)

@@ -15,7 +15,7 @@ var FrameCount, RealFrameCount uint64
 var IsPaused bool
 
 var CallAfter = make(map[float32][]func())
-var CallFor = make(map[float32][]func())
+var CallFor = make(map[float32][]func(remaining float32))
 
 func Update() {
 	var now = time.Now()
@@ -62,12 +62,11 @@ func Update() {
 		}
 	}
 	for k, v := range CallFor {
-		if Runtime > k {
-			delete(CallAfter, k)
-			continue
-		}
 		for _, f := range v {
-			f()
+			f(float32(math.Max(float64(k-Runtime), 0)))
+		}
+		if Runtime > k {
+			delete(CallFor, k)
 		}
 	}
 }
