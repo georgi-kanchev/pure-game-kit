@@ -13,15 +13,15 @@ func NewSequence(name string, steps ...Step) {
 func Signal(signal string) {
 	internal.FlowSignals = append(internal.FlowSignals, signal)
 }
-func GoToStep(name string, index int) {
-	var seq, has = internal.Flows[name]
+func GoToStep(sequenceName string, index int) {
+	var seq, has = internal.Flows[sequenceName]
 	if has {
 		seq.CurrentIndex = index
 	}
 }
-func Start(name string) {
-	GoToStep(name, 0)
+func Start(sequenceName string) {
+	GoToStep(sequenceName, 0)
 }
-func End(name string) {
-	GoToStep(name, -1)
+func End(sequenceName string) {
+	GoToStep(sequenceName, -1)
 }

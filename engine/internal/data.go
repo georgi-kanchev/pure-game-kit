@@ -18,6 +18,11 @@ type Sequence struct {
 	CurrentIndex int
 }
 
+type StateMachine struct {
+	States       []func()
+	CurrentIndex int
+}
+
 type Step interface {
 	Continue() bool
 }
@@ -34,6 +39,7 @@ var ShaderText = rl.Shader{}
 
 var Flows = make(map[string]*Sequence)
 var FlowSignals = []string{}
+var States = make(map[string]*StateMachine)
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
@@ -55,12 +61,4 @@ func AssetSize(assetId string) (width, height int) {
 	}
 
 	return
-}
-
-func (f *Sequence) Tick() {
-	var prev = f.CurrentIndex // this checks if we changed index inside the step itself, skip increment if so
-	var keepGoing = f.CurrentIndex >= 0 && f.CurrentIndex < len(f.Steps) && f.Steps[f.CurrentIndex].Continue()
-	if keepGoing && prev == f.CurrentIndex {
-		f.CurrentIndex++
-	}
 }

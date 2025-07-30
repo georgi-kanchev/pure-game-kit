@@ -16,16 +16,19 @@ geometry
 
 // = = = = = = =
 TODO LONGTERM:
-tileset text rendering when passing atlas id
 audio - sounds, music, playlists
 data/storage
-execution flow, wait, stop, resume
 lua scripts
-LAN
-events global?
 consistent error handling + logging, console & file
+LAN?
+global events/notifications?
 
 // = = = = = = =
+[31] [Wed] [30-07-2025]
+[√] execution - state machine
+[√] examples - improved
+[√] renames
+
 DONE:
 [30] [Tue] [29-07-2025]
 [√] motion - adjustments + fixes for tweens & animations

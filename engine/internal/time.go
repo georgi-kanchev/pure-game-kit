@@ -72,6 +72,17 @@ func Update() {
 
 	// sequences from engine/execution/sequence
 	for _, v := range Flows {
-		v.Tick()
+		var prev = v.CurrentIndex // this checks if we changed index inside the step itself, skip increment if so
+		var keepGoing = v.CurrentIndex >= 0 && v.CurrentIndex < len(v.Steps) && v.Steps[v.CurrentIndex].Continue()
+		if keepGoing && prev == v.CurrentIndex {
+			v.CurrentIndex++
+		}
+	}
+
+	// state machines
+	for _, v := range States {
+		if v.CurrentIndex >= 0 && v.CurrentIndex < len(v.States) {
+			v.States[v.CurrentIndex]()
+		}
 	}
 }
