@@ -1,6 +1,9 @@
 package internal
 
 import (
+	"math"
+	"pure-kit/engine/utility/collection"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -41,6 +44,10 @@ var Flows = make(map[string]*Sequence)
 var FlowSignals = []string{}
 var States = make(map[string]*StateMachine)
 
+var Input = ""
+var Keys = []int{}
+var Buttons = []int{}
+
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
 	width, height = 0, 0
@@ -61,4 +68,82 @@ func AssetSize(assetId string) (width, height int) {
 	}
 
 	return
+}
+
+// state machines from engine/execution/states
+func updateStates() {
+	for _, v := range States {
+		if v.CurrentIndex >= 0 && v.CurrentIndex < len(v.States) {
+			v.States[v.CurrentIndex]()
+		}
+	}
+}
+
+// flows from engine/execution/flow
+func updateFlows() {
+	for _, v := range Flows {
+		var prev = v.CurrentIndex // this checks if we changed index inside the step itself, skip increment if so
+		var keepGoing = v.CurrentIndex >= 0 && v.CurrentIndex < len(v.Steps) && v.Steps[v.CurrentIndex].Continue()
+		if keepGoing && prev == v.CurrentIndex {
+			v.CurrentIndex++
+		}
+	}
+}
+
+// timers from engine/execution/flow
+func updateTimers() {
+	for k, v := range CallAfter {
+		if Runtime > k {
+			for _, f := range v {
+				f()
+				delete(CallAfter, k)
+			}
+		}
+	}
+	for k, v := range CallFor {
+		for _, f := range v {
+			f(float32(math.Max(float64(k-Runtime), 0)))
+		}
+		if Runtime > k {
+			delete(CallFor, k)
+		}
+	}
+}
+
+// keys & buttons from engine/input/keyboard & mouse
+func updateKeysAndButtons() {
+	for i := range 7 {
+		if rl.IsMouseButtonPressed(rl.MouseButton(i)) {
+			Buttons = append(Buttons, i)
+		}
+		if rl.IsMouseButtonReleased(rl.MouseButton(i)) {
+			Buttons = collection.Remove(Buttons, i)
+		}
+	}
+
+	Input = ""
+	var char = rl.GetCharPressed()
+	for char > 0 {
+		Input += string(char)
+		char = rl.GetCharPressed()
+	}
+
+	checkKeyRange(32, 96)
+	checkKeyRange(256, 349)
+
+	if !rl.IsWindowFocused() {
+		Keys = []int{}
+		Buttons = []int{}
+	}
+}
+
+func checkKeyRange(from, to int) {
+	for i := from; i < to+1; i++ {
+		if rl.IsKeyPressed(int32(i)) {
+			Keys = append(Keys, i)
+		}
+		if rl.IsKeyReleased(int32(i)) {
+			Keys = collection.Remove(Keys, i)
+		}
+	}
 }

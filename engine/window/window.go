@@ -140,6 +140,9 @@ func CurrentState() State {
 	return Floating
 }
 
+func IsHovered() bool {
+	return rl.IsCursorOnScreen()
+}
 func IsFocused() bool {
 	return rl.IsWindowFocused()
 }

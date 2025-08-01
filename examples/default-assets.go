@@ -26,7 +26,7 @@ func DefaultAssetPatterns() {
 }
 func DefaultAssetFont() {
 	var function = func() (string, []string) { return "", []string{} }
-	runDefaultAssetDisplay(0.7, 100, 0, 0, 0, function)
+	runDefaultAssetDisplay(0.7, 1024, 0, 0, 0, function)
 }
 func DefaultAssetTexture() {
 	assets.LoadDefaultTexture()
@@ -48,6 +48,8 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 	textBox.PivotX, textBox.PivotY = 0, 0
 	textBox.EmbeddedAssetsTag, textBox.EmbeddedColorsTag = 0, 0
 	var fullSz = tileSize + gap
+	var txt = ""
+	var aw, ah = assets.Size(txt)
 
 	for window.KeepOpen() {
 		camera.SetScreenAreaToWindow()
@@ -57,6 +59,11 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		sprite.ScaleX *= scale
 		sprite.ScaleY *= scale
 
+		if w == 0 && h == 0 {
+			sprite.Width = aw
+			sprite.Height = ah
+		}
+
 		var mx, my = sprite.MousePosition(&camera)
 		var sx, sy = number.Snap(mx-fullSz/2, fullSz), number.Snap(my-fullSz/2, fullSz)
 		var mmx, mmy = sprite.PointToCamera(&camera, sx, sy)
@@ -65,17 +72,17 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 
 		camera.DrawSprites(&sprite)
 
-		if !sprite.MouseIsHovering(&camera) {
+		if !sprite.IsHovered(&camera) {
 			continue
 		}
-		camera.DrawFrame(mmx, mmy, tileSize*sprite.ScaleX, tileSize*sprite.ScaleY, 0, 6, color.Cyan)
 
-		var txt = ""
 		if index < len(tileIds) {
 			txt = tileIds[index]
+			aw, ah = assets.Size(txt)
 		}
 
-		var w, h = assets.Size(txt)
+		camera.DrawFrame(mmx, mmy, aw*sprite.ScaleX, ah*sprite.ScaleY, 0, 6, color.Cyan)
+
 		var info = symbols.New(
 			"id: '", txt, "'",
 			"\ncoords: ", imx, ", ", imy,
@@ -83,7 +90,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			"\nsize:", tileSize, "x", tileSize)
 
 		if txt == "" && len(tileIds) == 0 && imx == 0 && imy == 0 { // display default texture & font
-			info = symbols.New("id: '", txt, "'", "\nsize:", w, "x", h)
+			info = symbols.New("id: '", txt, "'", "\nsize:", aw, "x", ah)
 		}
 
 		textBox.Text = info

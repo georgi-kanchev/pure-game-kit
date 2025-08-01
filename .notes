@@ -1,7 +1,6 @@
-TODO:
+// TODO:
 tiled loading
 drawing tilemaps
-input
 gui
 	simplify inputbox, list & other complicated blocks
 	block rename?
@@ -14,8 +13,7 @@ geometry
 	collision
 	png maps/atlases, as assets?
 
-// = = = = = = =
-TODO LONGTERM:
+// TODO LONGTERM:
 audio - sounds, music, playlists
 data/storage
 lua scripts
@@ -23,13 +21,16 @@ consistent error handling + logging, console & file
 LAN?
 global events/notifications?
 
-// = = = = = = =
+// DONE:
+[32] [Fri] [01-08-2025]
+[√] input - keyboard & mouse
+[√] examples - input keyboard & mouse
+
 [31] [Wed] [30-07-2025]
 [√] execution - state machine
 [√] examples - improved
 [√] renames
 
-DONE:
 [30] [Tue] [29-07-2025]
 [√] motion - adjustments + fixes for tweens & animations
 [√] execution - renamed flow to commands

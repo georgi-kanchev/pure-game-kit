@@ -18,6 +18,14 @@ var CallAfter = make(map[float32][]func())
 var CallFor = make(map[float32][]func(remaining float32))
 
 func Update() {
+	updateData()
+	updateTimers()
+	updateFlows()
+	updateStates()
+	updateKeysAndButtons()
+}
+
+func updateData() {
 	var now = time.Now()
 	var midnight = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	var secondsSinceMidnight = float32(now.Sub(midnight).Seconds())
@@ -51,38 +59,4 @@ func Update() {
 	}
 
 	prevClock = Clock
-
-	// timers from engine/execution/flow
-	for k, v := range CallAfter {
-		if Runtime > k {
-			for _, f := range v {
-				f()
-				delete(CallAfter, k)
-			}
-		}
-	}
-	for k, v := range CallFor {
-		for _, f := range v {
-			f(float32(math.Max(float64(k-Runtime), 0)))
-		}
-		if Runtime > k {
-			delete(CallFor, k)
-		}
-	}
-
-	// sequences from engine/execution/sequence
-	for _, v := range Flows {
-		var prev = v.CurrentIndex // this checks if we changed index inside the step itself, skip increment if so
-		var keepGoing = v.CurrentIndex >= 0 && v.CurrentIndex < len(v.Steps) && v.Steps[v.CurrentIndex].Continue()
-		if keepGoing && prev == v.CurrentIndex {
-			v.CurrentIndex++
-		}
-	}
-
-	// state machines
-	for _, v := range States {
-		if v.CurrentIndex >= 0 && v.CurrentIndex < len(v.States) {
-			v.States[v.CurrentIndex]()
-		}
-	}
 }

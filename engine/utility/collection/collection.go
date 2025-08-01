@@ -20,30 +20,32 @@ func SameItems[T any](amount int, item T) []T {
 	return result
 }
 
-func Add[T any](collection *[]T, items ...T) {
-	*collection = append(*collection, items...)
+func Add[T any](collection []T, items ...T) []T {
+	return append(collection, items...)
 }
-func Insert[T any](collection *[]T, index int, items ...T) {
-	*collection = slices.Insert(*collection, index, items...)
+func Insert[T any](collection []T, index int, items ...T) []T {
+	return slices.Insert(collection, index, items...)
 }
-func Remove[T comparable](collection *[]T, items ...T) {
+func Remove[T comparable](collection []T, items ...T) []T {
 	for _, item := range items {
-		for i, v := range *collection {
+		for i, v := range collection {
 			if v == item {
-				*collection = slices.Delete(*collection, i, i+1)
-				break
+				collection = slices.Delete(collection, i, i+1)
+				break // Remove only the first match per item, like your pointer version
 			}
 		}
 	}
+	return collection
 }
-func RemoveAt[T any](collection *[]T, indexes ...int) {
-	// Sort indexes descending so deleting won't affect subsequent indices
-	slices.SortFunc(indexes, func(a, b int) int { return a - b })
+func RemoveAt[T any](collection []T, indexes ...int) []T {
+	// Sort indexes descending so deletion doesn't affect subsequent indices
+	slices.SortFunc(indexes, func(a, b int) int { return b - a })
 	for _, index := range indexes {
-		if index >= 0 && index < len(*collection) {
-			*collection = slices.Delete(*collection, index, index+1)
+		if index >= 0 && index < len(collection) {
+			collection = slices.Delete(collection, index, index+1)
 		}
 	}
+	return collection
 }
 
 func IndexOf[T comparable](value T, collection []T) int {
@@ -360,12 +362,4 @@ func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) strin
 		}
 	}
 	return sb.String()
-}
-
-func ToPointers[T any](collection []T) []*T {
-	var out = make([]*T, len(collection))
-	for i := range collection {
-		out[i] = &collection[i]
-	}
-	return out
 }

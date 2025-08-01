@@ -111,7 +111,7 @@ func (node *Node) PointFromCamera(camera *Camera, cX, cY float32) (x, y float32)
 	return x, y
 }
 
-func (node *Node) Contains(camera *Camera, cX, cY float32) bool {
+func (node *Node) ContainsPoint(camera *Camera, cX, cY float32) bool {
 	var x, y = node.PointFromCamera(camera, cX, cY)
 	var w, h = node.Width, node.Height
 	return x >= 0 && y >= 0 && x < w && y < h
@@ -121,9 +121,9 @@ func (node *Node) MousePosition(camera *Camera) (x, y float32) {
 	x, y = camera.MousePosition()
 	return node.PointFromCamera(camera, x, y)
 }
-func (node *Node) MouseIsHovering(camera *Camera) bool {
+func (node *Node) IsHovered(camera *Camera) bool {
 	var x, y = camera.MousePosition()
-	return node.Contains(camera, x, y)
+	return node.ContainsPoint(camera, x, y)
 }
 
 func (node *Node) CameraFit(camera *Camera) {

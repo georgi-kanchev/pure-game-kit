@@ -9,7 +9,7 @@ func LoadDefaultFont() (fontId string) {
 	const symbol = ""
 	var raw, _ = base64.StdEncoding.DecodeString(font)
 	var decompressed = storage.Decompress(raw)
-	loadFont(symbol, 32, decompressed)
+	loadFont(symbol, 49, decompressed)
 	return symbol
 }
 

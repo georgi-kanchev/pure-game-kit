@@ -3,5 +3,5 @@ package main
 import example "pure-kit/examples"
 
 func main() {
-	example.Flows()
+	example.InputMouse()
 }
