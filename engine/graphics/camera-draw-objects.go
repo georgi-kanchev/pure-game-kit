@@ -1,10 +1,9 @@
 package graphics
 
 import (
-	"math"
+	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -61,15 +60,11 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 
 		// raylib doesn't seem to have negative width/height???
 		if rectWorld.Width < 0 {
-			var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, ang+180, -rectWorld.Width)
-			rectWorld.X = px
-			rectWorld.Y = py
+			rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, ang+180, -rectWorld.Width)
 			rectTexture.Width *= -1
 		}
 		if rectWorld.Height < 0 {
-			var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, ang+270, -rectWorld.Height)
-			rectWorld.X = px
-			rectWorld.Y = py
+			rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, ang+270, -rectWorld.Height)
 			rectTexture.Height *= -1
 		}
 
@@ -89,8 +84,6 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 		var errX, errY float32 = 2, 2 // this adds margin of error to the middle part (it's behind all other parts)
 		var c = s.Color
 		var a = s.AssetId
-		var minW = float32(math.Max(float64(l), float64(r)))
-		var minH = float32(math.Max(float64(u), float64(d)))
 
 		if w < 0 {
 			r *= -1
@@ -103,11 +96,23 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 			errY *= -1
 		}
 
-		if number.IsBetween(w, -minW, minW, false, false) ||
-			number.IsBetween(h, -minH, minH, false, false) { // center when too small
-			drawSlice(camera, &s.Node, 0, 0, w, h, false, false, s.AssetId, c)
-			return
+		if number.IsBetween(w, -(l + r), l+r, false, false) {
+			var total = l + r
+			if total != 0 {
+				var scale = w / total
+				l *= scale
+				r *= scale
+			}
 		}
+		if number.IsBetween(h, -(u + d), u+d, false, false) {
+			var total = u + d
+			if total != 0 {
+				var scale = h / total
+				u *= scale
+				d *= scale
+			}
+		}
+
 		drawSlice(camera, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, false, false, a, c) // center
 
 		// edges
@@ -121,7 +126,6 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 		drawSlice(camera, &s.Node, w-r, 0, r, u, fx[2], fy[2], s.SliceIds[2], c)   // upper right
 		drawSlice(camera, &s.Node, 0, h-d, l, d, fx[5], fy[5], s.SliceIds[5], c)   // lower left
 		drawSlice(camera, &s.Node, w-r, h-d, r, d, fx[7], fy[7], s.SliceIds[7], c) // lower right
-
 	}
 }
 func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {

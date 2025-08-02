@@ -2,8 +2,8 @@ package graphics
 
 import (
 	"math"
+	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
-	"pure-kit/engine/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -56,8 +56,7 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 	var top = float32(math.Floor(float64(minY/spacing))) * spacing
 	var bottom = float32(math.Ceil(float64(maxY/spacing))) * spacing
 
-	// vertical
-	for x := left; x <= right; x += spacing {
+	for x := left; x <= right; x += spacing { // vertical
 		var myThickness = thickness
 		if float32(math.Mod(float64(x), float64(spacing)*10)) == 0 {
 			myThickness *= 2
@@ -65,9 +64,7 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 
 		camera.DrawLine(x, top, x, bottom, myThickness, color)
 	}
-
-	// horizontal
-	for y := top; y <= bottom; y += spacing {
+	for y := top; y <= bottom; y += spacing { // horizontal
 		var myThickness = thickness
 		if float32(math.Mod(float64(y), float64(spacing)*10)) == 0 {
 			myThickness *= 2
@@ -76,13 +73,10 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 		camera.DrawLine(left, y, right, y, myThickness, color)
 	}
 
-	// x
-	if top <= 0 && bottom >= 0 {
+	if top <= 0 && bottom >= 0 { // x
 		camera.DrawLine(left, 0, right, 0, thickness*3, color)
 	}
-
-	// y
-	if left <= 0 && right >= 0 {
+	if left <= 0 && right >= 0 { // y
 		camera.DrawLine(0, top, 0, bottom, thickness*3, color)
 	}
 
@@ -109,15 +103,11 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	}
 
 	if width < 0 {
-		var px, py = point.MoveAt(x, y, angle+180, -width)
-		x = px
-		y = py
+		x, y = point.MoveAt(x, y, angle+180, -width)
 		width *= -1
 	}
 	if height < 0 {
-		var px, py = point.MoveAt(x, y, angle+270, -height)
-		x = px
-		y = py
+		x, y = point.MoveAt(x, y, angle+270, -height)
 		height *= -1
 	}
 
@@ -149,15 +139,11 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color ui
 
 	// raylib doesn't seem to have negative width/height???
 	if rect.Width < 0 && rect.Height > 0 {
-		var px, py = point.MoveAt(rect.X, rect.Y, angle+180, -rect.Width)
-		rect.X = px
-		rect.Y = py
+		rect.X, rect.Y = point.MoveAt(rect.X, rect.Y, angle+180, -rect.Width)
 		rect.Width *= -1
 	}
 	if rect.Height < 0 && rect.Width > 0 {
-		var px, py = point.MoveAt(rect.X, rect.Y, angle+270, -rect.Height)
-		rect.X = px
-		rect.Y = py
+		rect.X, rect.Y = point.MoveAt(rect.X, rect.Y, angle+270, -rect.Height)
 		rect.Height *= -1
 	}
 
@@ -180,15 +166,11 @@ func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle f
 	var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w), Height: float32(h)}
 
 	if rectWorld.Width < 0 {
-		var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, angle+180, -rectWorld.Width)
-		rectWorld.X = px
-		rectWorld.Y = py
+		rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, angle+180, -rectWorld.Width)
 		rectTexture.Width *= -1
 	}
 	if rectWorld.Height < 0 {
-		var px, py = point.MoveAt(rectWorld.X, rectWorld.Y, angle+270, -rectWorld.Height)
-		rectWorld.X = px
-		rectWorld.Y = py
+		rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, angle+270, -rectWorld.Height)
 		rectTexture.Height *= -1
 	}
 

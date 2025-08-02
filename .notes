@@ -22,6 +22,11 @@ LAN?
 global events/notifications?
 
 // DONE:
+[33] [Sat] [02-08-2025]
+[√] graphics - fixed 9slice rendering when below minimum edges to stretch
+[√] geometry - points & lines
+[√] examples - lines
+
 [32] [Fri] [01-08-2025]
 [√] input - keyboard & mouse
 [√] examples - input keyboard & mouse

@@ -2,8 +2,8 @@ package graphics
 
 import (
 	"math"
+	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/point"
 )
 
 type Node struct {
@@ -20,7 +20,7 @@ func NewNode(x, y float32) Node {
 		PivotX: 0.5, PivotY: 0.5, Color: color.White}
 }
 
-func (node *Node) TransformToCamera() (cX, cY, cAngle, cScaleX, cScaleY float32) {
+func (node *Node) TransformToCamera() (cx, cy, cAngle, cScaleX, cScaleY float32) {
 	var w, h = node.Width, node.Height
 	var originPixelX = node.PivotX * float32(w)
 	var originPixelY = node.PivotY * float32(h)
@@ -50,20 +50,20 @@ func (node *Node) TransformToCamera() (cX, cY, cAngle, cScaleX, cScaleY float32)
 	var worldX = localX*cosP - localY*sinP + px
 	var worldY = localX*sinP + localY*cosP + py
 
-	cX = worldX
-	cY = worldY
+	cx = worldX
+	cy = worldY
 	cAngle = pr + node.Angle
 	cScaleX = psx * node.ScaleX
 	cScaleY = psy * node.ScaleY
 	return
 }
-func (node *Node) TransformFromCamera(cX, cY, cAngle, cScaleX, cScaleY float32) (x, y, angle, scaleX, scaleY float32) {
+func (node *Node) TransformFromCamera(cx, cy, cAngle, cScaleX, cScaleY float32) (x, y, angle, scaleX, scaleY float32) {
 	if node.Parent != nil {
-		cX, cY, cAngle, cScaleX, cScaleY = node.Parent.TransformFromCamera(cX, cY, cAngle, cScaleX, cScaleY)
+		cx, cy, cAngle, cScaleX, cScaleY = node.Parent.TransformFromCamera(cx, cy, cAngle, cScaleX, cScaleY)
 	}
 
-	var dx = cX - node.X
-	var dy = cY - node.Y
+	var dx = cx - node.X
+	var dy = cy - node.Y
 	var angleRad = -node.Angle * (math.Pi / 180)
 	var sin, cos = float32(math.Sin(float64(angleRad))), float32(math.Cos(float64(angleRad)))
 	var localX = dx*cos - dy*sin
@@ -87,7 +87,7 @@ func (node *Node) TransformFromCamera(cX, cY, cAngle, cScaleX, cScaleY float32) 
 	scaleY = cScaleY / node.ScaleY
 	return
 }
-func (node *Node) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
+func (node *Node) PointToCamera(camera *Camera, x, y float32) (cx, cy float32) {
 	var w, h = node.Width, node.Height
 	var originPixelX = node.PivotX * float32(w)
 	var originPixelY = node.PivotY * float32(h)
@@ -106,13 +106,13 @@ func (node *Node) PointToCamera(camera *Camera, x, y float32) (cX, cY float32) {
 
 	return worldX, worldY
 }
-func (node *Node) PointFromCamera(camera *Camera, cX, cY float32) (x, y float32) {
-	x, y, _, _, _ = node.TransformFromCamera(cX, cY, 0, 1, 1)
+func (node *Node) PointFromCamera(camera *Camera, cx, cy float32) (x, y float32) {
+	x, y, _, _, _ = node.TransformFromCamera(cx, cy, 0, 1, 1)
 	return x, y
 }
 
-func (node *Node) ContainsPoint(camera *Camera, cX, cY float32) bool {
-	var x, y = node.PointFromCamera(camera, cX, cY)
+func (node *Node) ContainsPoint(camera *Camera, cx, cy float32) bool {
+	var x, y = node.PointFromCamera(camera, cx, cy)
 	var w, h = node.Width, node.Height
 	return x >= 0 && y >= 0 && x < w && y < h
 }

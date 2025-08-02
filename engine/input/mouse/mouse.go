@@ -29,7 +29,7 @@ const (
 )
 
 func SetCursorPosition(x, y int) {
-	rl.SetMousePosition(x, y)
+	rl.SetMousePosition(int32(x), int32(y))
 }
 func SetCursorVisibility(visible bool) {
 	if visible {
