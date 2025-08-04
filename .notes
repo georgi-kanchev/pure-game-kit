@@ -22,6 +22,10 @@ LAN?
 global events/notifications?
 
 // DONE:
+[34] [Mon] [04-08-2025]
+[√] geometry - shapes
+[√] examples - shapes
+
 [33] [Sat] [02-08-2025]
 [√] graphics - fixed 9slice rendering when below minimum edges to stretch
 [√] geometry - points & lines

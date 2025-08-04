@@ -3,6 +3,7 @@ package graphics
 import (
 	"math"
 	"pure-kit/engine/geometry/point"
+	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/color"
 )
 
@@ -26,7 +27,7 @@ func (node *Node) TransformToCamera() (cx, cy, cAngle, cScaleX, cScaleY float32)
 	var originPixelY = node.PivotY * float32(h)
 	var offsetX = -originPixelX * node.ScaleX
 	var offsetY = -originPixelY * node.ScaleY
-	var localRad = node.Angle * (math.Pi / 180)
+	var localRad = angle.ToRadians(node.Angle)
 	var sinL, cosL = float32(math.Sin(float64(localRad))), float32(math.Cos(float64(localRad)))
 	var originOffsetX = offsetX*cosL - offsetY*sinL
 	var originOffsetY = offsetX*sinL + offsetY*cosL
@@ -40,19 +41,19 @@ func (node *Node) TransformToCamera() (cx, cy, cAngle, cScaleX, cScaleY float32)
 	localX -= offsetX
 	localY -= offsetY
 
-	var px, py, pr, psx, psy = node.Parent.TransformToCamera()
+	var px, py, pa, psx, psy = node.Parent.TransformToCamera()
 
 	localX *= psx
 	localY *= psy
 
-	var parentRad = pr * (math.Pi / 180)
+	var parentRad = angle.ToRadians(pa)
 	var sinP, cosP = float32(math.Sin(float64(parentRad))), float32(math.Cos(float64(parentRad)))
 	var worldX = localX*cosP - localY*sinP + px
 	var worldY = localX*sinP + localY*cosP + py
 
 	cx = worldX
 	cy = worldY
-	cAngle = pr + node.Angle
+	cAngle = pa + node.Angle
 	cScaleX = psx * node.ScaleX
 	cScaleY = psy * node.ScaleY
 	return
@@ -64,7 +65,7 @@ func (node *Node) TransformFromCamera(cx, cy, cAngle, cScaleX, cScaleY float32) 
 
 	var dx = cx - node.X
 	var dy = cy - node.Y
-	var angleRad = -node.Angle * (math.Pi / 180)
+	var angleRad = ToRad(-node.Angle)
 	var sin, cos = float32(math.Sin(float64(angleRad))), float32(math.Cos(float64(angleRad)))
 	var localX = dx*cos - dy*sin
 	var localY = dx*sin + dy*cos
@@ -93,7 +94,7 @@ func (node *Node) PointToCamera(camera *Camera, x, y float32) (cx, cy float32) {
 	var originPixelY = node.PivotY * float32(h)
 	var localX = (x - originPixelX) * node.ScaleX
 	var localY = (y - originPixelY) * node.ScaleY
-	var localRad = node.Angle * (math.Pi / 180)
+	var localRad = ToRad(node.Angle)
 	var sinL, cosL = float32(math.Sin(float64(localRad))), float32(math.Cos(float64(localRad)))
 	var rotX = localX*cosL - localY*sinL
 	var rotY = localX*sinL + localY*cosL
@@ -184,6 +185,8 @@ const (
 	lowerRight
 	lowerLeft
 )
+
+func ToRad(ang float32) float32 { return angle.ToRadians(ang) }
 
 func (node *Node) getCorner(corner corner) (x, y float32) {
 	var width, height = node.Width, node.Height

@@ -105,10 +105,10 @@ func Limit(angle, lower, upper float32) float32 {
 	return angle
 }
 func Dot(angle, target float32) float32 {
-	var ax = float32(math.Cos(float64(angle) * math.Pi / 180))
-	var ay = float32(math.Sin(float64(angle) * math.Pi / 180))
-	var bx = float32(math.Cos(float64(target) * math.Pi / 180))
-	var by = float32(math.Sin(float64(target) * math.Pi / 180))
+	var ax = float32(math.Cos((float64(ToRadians(angle)))))
+	var ay = float32(math.Sin(float64(ToRadians(angle))))
+	var bx = float32(math.Cos(float64(ToRadians(target))))
+	var by = float32(math.Sin(float64(ToRadians(target))))
 	return ax*bx + ay*by
 }
 func Reflect(angle, surfaceAngle float32) float32 {
@@ -121,17 +121,17 @@ func Reverse(angle float32) float32 {
 func BetweenPoints(x, y, targetX, targetY float32) float32 {
 	var dx = targetX - x
 	var dy = targetY - y
-	var angleRad = math.Atan2(float64(dy), float64(dx))
-	var angleDeg = float32(angleRad * 180 / math.Pi)
-	return number.Wrap(angleDeg, 360)
+	var rad = float32(math.Atan2(float64(dy), float64(dx)))
+	return number.Wrap(FromRadians(rad), 360)
 }
 
 func ToDirection(angle float32) (dirX, dirY float32) {
-	var radians = float32(angle) * math.Pi / 180
-	dirX = float32(math.Cos(float64(radians)))
-	dirY = float32(math.Sin(float64(radians)))
+	var rad = ToRadians(angle)
+	dirX = float32(math.Cos(float64(rad)))
+	dirY = float32(math.Sin(float64(rad)))
 	return
 }
 func FromDirection(dirX, dirY float32) float32 {
-	return float32(math.Atan2(float64(dirY), float64(dirX)) * 180 / math.Pi)
+	var rad = math.Atan2(float64(dirY), float64(dirX))
+	return FromRadians(float32(rad))
 }
