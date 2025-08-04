@@ -2,7 +2,7 @@ package example
 
 import (
 	"pure-kit/engine/execution/condition"
-	"pure-kit/engine/geometry/line"
+	"pure-kit/engine/geometry"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
@@ -10,16 +10,16 @@ import (
 
 func GeometryLines() {
 	var cam = graphics.NewCamera(1)
-	var lineA = line.New(0, 0, 400, 400)
-	var lineB = line.New(-400, 400, 0, 0)
+	var lineA = geometry.NewLine(0, 0, 400, 400)
+	var lineB = geometry.NewLine(-400, 400, 0, 0)
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		lineB.Bx, lineB.By = cam.MousePosition()
 
-		var lineColor = condition.If(lineA.IsCrossing(lineB), color.Red, color.Green)
-		var ax, ay = lineA.CrossPoint(lineB)
-		var bx, by = lineA.ClosestPointTo(lineB.Bx, lineB.By)
+		var lineColor = condition.If(lineA.IsCrossingLine(lineB), color.Red, color.Green)
+		var ax, ay = lineA.CrossPointWithLine(lineB)
+		var bx, by = lineA.ClosestToPoint(lineB.Bx, lineB.By)
 		var pointColor = condition.If(lineB.IsLeftOfPoint(lineA.Bx, lineA.By), color.Blue, color.Yellow)
 
 		cam.DrawLine(lineA.Ax, lineA.Ay, lineA.Bx, lineA.By, 5, color.White)

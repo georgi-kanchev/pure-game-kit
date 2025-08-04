@@ -198,8 +198,8 @@ func (node *Node) getCorner(corner corner) (x, y float32) {
 	if corner == lowerLeft || corner == lowerRight {
 		offY = height * (1 - node.PivotY)
 	}
-	x, y = point.MoveAt(nx, ny, na, offX)
-	x, y = point.MoveAt(x, y, na+90, offY)
+	x, y = point.MoveAtAngle(nx, ny, na, offX)
+	x, y = point.MoveAtAngle(x, y, na+90, offY)
 	return
 }
 

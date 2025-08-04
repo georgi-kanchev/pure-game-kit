@@ -1,14 +1,14 @@
-package line
+package geometry
 
 import "math"
 
 type Line struct{ Ax, Ay, Bx, By float32 }
 
-func New(ax, ay, bx, by float32) Line {
+func NewLine(ax, ay, bx, by float32) Line {
 	return Line{Ax: ax, Ay: ay, Bx: bx, By: by}
 }
 
-func (line Line) CrossPoint(target Line) (float32, float32) {
+func (line Line) CrossPointWithLine(target Line) (float32, float32) {
 	var dx1 = line.Bx - line.Ax
 	var dy1 = line.By - line.Ay
 	var dx2 = target.Bx - target.Ax
@@ -31,7 +31,7 @@ func (line Line) CrossPoint(target Line) (float32, float32) {
 
 	return ix, iy
 }
-func (line Line) ClosestPointTo(targetX, targetY float32) (x, y float32) {
+func (line Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
 	var ax, ay = line.Ax, line.Ay
 	var bx, by = line.Bx, line.By
 	var apx, apy = targetX - ax, targetY - ay
@@ -57,7 +57,7 @@ func (line Line) ClosestPointTo(targetX, targetY float32) (x, y float32) {
 	return cx, cy
 }
 
-func (line Line) IsCrossing(target Line) bool {
+func (line Line) IsCrossingLine(target Line) bool {
 	var ax1, ay1, bx1, by1 = line.Ax, line.Ay, line.Bx, line.By
 	var ax2, ay2, bx2, by2 = target.Ax, target.Ay, target.Bx, target.By
 	var d1 = (bx2-ax2)*(ay1-ay2) - (by2-ay2)*(ax1-ax2)

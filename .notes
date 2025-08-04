@@ -1,4 +1,6 @@
 // TODO:
+geometry
+	grid/tilemap cell collision shapes with chunks
 tiled loading
 drawing tilemaps
 gui
@@ -7,11 +9,6 @@ gui
 	merge instant + layout
 	rendering
 	using default assets + replacing them
-geometry
-	point (distance)
-	shape
-	collision
-	png maps/atlases, as assets?
 
 // TODO LONGTERM:
 audio - sounds, music, playlists

@@ -2,6 +2,7 @@ package point
 
 import (
 	"math"
+	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/number"
 )
 
@@ -23,47 +24,47 @@ func Snap(x, y, gridX, gridY float32) (float32, float32) {
 	return x, y
 }
 
-func MoveIn(x, y, directionX, directionY, distance float32) (float32, float32) {
-	if directionX == 0 && directionY == 0 {
-		return x, y
-	}
-
-	var length = float32(math.Sqrt(float64(directionX*directionX + directionY*directionY)))
-	x += (directionX / length) * distance
-	y += (directionY / length) * distance
-	return x, y
-}
-func MoveAt(x, y, angle, distance float32) (float32, float32) {
+func MoveAtAngle(x, y, angle, step float32) (float32, float32) {
 	angle = number.Wrap(angle, 360)
 	var rad = math.Pi / 180 * angle
 	var dirX = float32(math.Cos(float64(rad)))
 	var dirY = float32(math.Sin(float64(rad)))
-	return MoveIn(x, y, dirX, dirY, distance)
+
+	if dirX == 0 && dirY == 0 {
+		return x, y
+	}
+
+	var length = float32(math.Sqrt(float64(dirX*dirX + dirY*dirY)))
+	x += (dirX / length) * step
+	y += (dirY / length) * step
+
+	return x, y
 }
-func MoveTo(x, y, targetX, targetY float32, distance float32) (float32, float32) {
+func MoveToPoint(x, y, targetX, targetY float32, step float32) (float32, float32) {
 	if x == targetX && y == targetY {
 		return x, y
 	}
 
-	x, y = MoveIn(x, y, targetX-x, targetY-y, distance)
+	var angle = angle.BetweenPoints(x, y, targetX, targetY)
+	x, y = MoveAtAngle(x, y, angle, step)
 
-	if Distance(x, y, targetX, targetY) <= distance {
+	if DistanceToPoint(x, y, targetX, targetY) <= step {
 		return targetX, targetY
 	}
 	return x, y
 }
-func MoveBy(x, y, targetX, targetY float32, percent float32) (float32, float32) {
+func MoveByPercent(x, y, targetX, targetY float32, percent float32) (float32, float32) {
 	x = number.Map(percent, 0, 100, x, targetX)
 	y = number.Map(percent, 0, 100, y, targetY)
 	return x, y
 }
 
-func Distance(x, y, targetX, targetY float32) float32 {
+func DistanceToPoint(x, y, targetX, targetY float32) float32 {
 	var dirX, dirY = targetX - x, targetY - y
 	return float32(math.Sqrt(float64(dirX*dirX + dirY*dirY)))
 }
-func Direction(x, y, targetX, targetY float32) (dirX, dirY float32) {
-	var length = Distance(x, y, targetX, targetY)
+func DirectionToPoint(x, y, targetX, targetY float32) (dirX, dirY float32) {
+	var length = DistanceToPoint(x, y, targetX, targetY)
 	dirX, dirY = targetX-x, targetY-y
 	return dirX / length, dirY / length
 }

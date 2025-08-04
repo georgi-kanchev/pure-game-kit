@@ -60,11 +60,11 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 
 		// raylib doesn't seem to have negative width/height???
 		if rectWorld.Width < 0 {
-			rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, ang+180, -rectWorld.Width)
+			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+180, -rectWorld.Width)
 			rectTexture.Width *= -1
 		}
 		if rectWorld.Height < 0 {
-			rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, ang+270, -rectWorld.Height)
+			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+270, -rectWorld.Height)
 			rectTexture.Height *= -1
 		}
 

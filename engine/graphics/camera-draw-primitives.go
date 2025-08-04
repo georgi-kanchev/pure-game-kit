@@ -103,18 +103,18 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	}
 
 	if width < 0 {
-		x, y = point.MoveAt(x, y, angle+180, -width)
+		x, y = point.MoveAtAngle(x, y, angle+180, -width)
 		width *= -1
 	}
 	if height < 0 {
-		x, y = point.MoveAt(x, y, angle+270, -height)
+		x, y = point.MoveAtAngle(x, y, angle+270, -height)
 		height *= -1
 	}
 
 	if thickness < 0 {
 		thickness *= -1
-		var trx, try = point.MoveAt(x, y, angle, width-thickness)
-		var brx, bry = point.MoveAt(x, y, angle+90, height-thickness)
+		var trx, try = point.MoveAtAngle(x, y, angle, width-thickness)
+		var brx, bry = point.MoveAtAngle(x, y, angle+90, height-thickness)
 
 		camera.DrawRectangle(x, y, width, thickness, angle, color)
 		camera.DrawRectangle(trx, try, thickness, height, angle, color)
@@ -123,10 +123,10 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 		return
 	}
 
-	var x1, y1 = point.MoveAt(x, y, angle-90, thickness)
-	var tlx, tly = point.MoveAt(x1, y1, angle-180, thickness)
-	var trx, try = point.MoveAt(x1, y1, angle, width)
-	var blx, bly = point.MoveAt(tlx, tly, angle+90, height+thickness)
+	var x1, y1 = point.MoveAtAngle(x, y, angle-90, thickness)
+	var tlx, tly = point.MoveAtAngle(x1, y1, angle-180, thickness)
+	var trx, try = point.MoveAtAngle(x1, y1, angle, width)
+	var blx, bly = point.MoveAtAngle(tlx, tly, angle+90, height+thickness)
 
 	camera.DrawRectangle(tlx, tly, width+thickness*2, thickness, angle, color)
 	camera.DrawRectangle(trx, try, thickness, height+thickness*2, angle, color)
@@ -139,11 +139,11 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color ui
 
 	// raylib doesn't seem to have negative width/height???
 	if rect.Width < 0 && rect.Height > 0 {
-		rect.X, rect.Y = point.MoveAt(rect.X, rect.Y, angle+180, -rect.Width)
+		rect.X, rect.Y = point.MoveAtAngle(rect.X, rect.Y, angle+180, -rect.Width)
 		rect.Width *= -1
 	}
 	if rect.Height < 0 && rect.Width > 0 {
-		rect.X, rect.Y = point.MoveAt(rect.X, rect.Y, angle+270, -rect.Height)
+		rect.X, rect.Y = point.MoveAtAngle(rect.X, rect.Y, angle+270, -rect.Height)
 		rect.Height *= -1
 	}
 
@@ -166,11 +166,11 @@ func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle f
 	var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w), Height: float32(h)}
 
 	if rectWorld.Width < 0 {
-		rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, angle+180, -rectWorld.Width)
+		rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, angle+180, -rectWorld.Width)
 		rectTexture.Width *= -1
 	}
 	if rectWorld.Height < 0 {
-		rectWorld.X, rectWorld.Y = point.MoveAt(rectWorld.X, rectWorld.Y, angle+270, -rectWorld.Height)
+		rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, angle+270, -rectWorld.Height)
 		rectTexture.Height *= -1
 	}
 

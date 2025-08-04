@@ -2,27 +2,51 @@ package example
 
 import (
 	"pure-kit/engine/execution/condition"
-	"pure-kit/engine/geometry/shape"
+	"pure-kit/engine/geometry"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/window"
 )
 
 func GeometryShape() {
 	var cam = graphics.NewCamera(1)
-	var shape = shape.New([2]float32{}, [2]float32{100, 100}, [2]float32{-100, 100})
+	var shape = geometry.NewShape(
+		[2]float32{},
+		[2]float32{50, -20},
+		[2]float32{100, 0},
+		[2]float32{0, 100},
+		[2]float32{50, 120},
+		[2]float32{100, 100})
+	var triangle = geometry.NewShape([2]float32{}, [2]float32{100, 100}, [2]float32{-100, 100})
+	var rectangle = geometry.NewRectangle(700, 400, 0.5, 0.5)
+	var circle = geometry.NewCircle(500, 16)
 
-	shape.ScaleY = 5
-	shape.X += 200
+	shape.ScaleX, shape.ScaleY = 5, 5
+	shape.X += 180
 	shape.Y -= 200
+	rectangle.Angle = 45
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		shape.Angle++
+		shape.Angle += seconds.GetDelta() * 60
 		var mx, my = cam.MousePosition()
-		var col = condition.If(shape.Contains(mx, my), color.Red, color.Green)
+		var colShape = condition.If(shape.IsOverlappingShape(&triangle), color.Red, color.Green)
+		var colRect = condition.If(rectangle.IsCrossingShape(&shape), color.Brown, color.Cyan)
+		var colCircle = condition.If(circle.IsContainingShape(&triangle), color.Yellow, color.Pink)
 
-		cam.DrawLinesPath(5, col, shape.Corners()...)
+		triangle.X, triangle.Y = mx, my
+
+		var crossPoints = circle.CrossPointsWithShape(&shape)
+
+		cam.DrawLinesPath(8, colShape, shape.CornerPoints()...)
+		cam.DrawLinesPath(8, colRect, rectangle.CornerPoints()...)
+		cam.DrawLinesPath(8, colCircle, circle.CornerPoints()...)
+		cam.DrawLinesPath(8, color.White, triangle.CornerPoints()...)
+
+		for _, v := range crossPoints {
+			cam.DrawCircle(v[0], v[1], 16, color.Green)
+		}
 	}
 }
