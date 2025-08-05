@@ -1,7 +1,7 @@
 package main
 
-import example "pure-kit/examples"
+import example "pure-kit/examples/systems"
 
 func main() {
-	example.GeometryShape()
+	example.ShapeGrid()
 }

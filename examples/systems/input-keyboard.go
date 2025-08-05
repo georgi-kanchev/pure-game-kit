@@ -9,7 +9,7 @@ import (
 	"pure-kit/engine/window"
 )
 
-func InputKeyboard() {
+func Keyboard() {
 	var cam = graphics.NewCamera(1)
 	var text = "Type..."
 	var font = assets.LoadDefaultFont()

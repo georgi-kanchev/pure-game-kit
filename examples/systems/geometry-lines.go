@@ -8,7 +8,7 @@ import (
 	"pure-kit/engine/window"
 )
 
-func GeometryLines() {
+func Lines() {
 	var cam = graphics.NewCamera(1)
 	var lineA = geometry.NewLine(0, 0, 400, 400)
 	var lineB = geometry.NewLine(-400, 400, 0, 0)

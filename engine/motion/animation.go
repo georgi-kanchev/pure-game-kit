@@ -16,7 +16,7 @@ type Animation[T any] struct {
 
 func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animation[T] {
 	return Animation[T]{
-		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: seconds.GetRuntime()}
+		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: seconds.Runtime()}
 }
 
 func (sequence *Animation[T]) SetDuration(seconds float32) {
@@ -25,7 +25,7 @@ func (sequence *Animation[T]) SetDuration(seconds float32) {
 func (sequence *Animation[T]) SetIndex(index int) {
 	index = number.LimitInt(index, 0, len(sequence.Items)-1)
 	var newTime = float32(index) / sequence.ItemsPerSecond
-	sequence.startTime = seconds.GetRuntime() - newTime
+	sequence.startTime = seconds.Runtime() - newTime
 }
 func (sequence *Animation[T]) SetTime(seconds float32) {
 	sequence.startTime = runtime() - seconds
@@ -60,7 +60,7 @@ func (sequence *Animation[T]) IsPlaying() bool {
 // #region private
 
 func (sequence *Animation[T]) update() float32 {
-	var runtime = seconds.GetRuntime()
+	var runtime = seconds.Runtime()
 	var progress = (runtime - sequence.startTime) / sequence.CurrentDuration()
 
 	if sequence.IsPaused && runtime != sequence.lastUpdateTime {
@@ -79,6 +79,6 @@ func (sequence *Animation[T]) update() float32 {
 	sequence.lastUpdateTime = runtime
 	return progress
 }
-func runtime() float32 { return seconds.GetRuntime() } // freeing up "seconds" as var/param name
+func runtime() float32 { return seconds.Runtime() } // freeing up "seconds" as var/param name
 
 // #endregion

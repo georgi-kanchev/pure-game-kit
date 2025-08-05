@@ -19,7 +19,7 @@ func Scenes() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawGrid(1, 9, color.Darken(color.Gray, 0.5))
+		cam.DrawGrid(1, 9, 9, color.Darken(color.Gray, 0.5))
 		cam.DrawSprites(&parent)
 	}
 }

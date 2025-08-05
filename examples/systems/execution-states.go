@@ -14,14 +14,14 @@ func States() {
 
 	states.NewMachine("my-state-machine",
 		func() {
-			node.X += seconds.GetDelta() * 50
+			node.X += seconds.FrameDelta() * 50
 		},
 		func() {
-			node.Angle += seconds.GetDelta() * 50
+			node.Angle += seconds.FrameDelta() * 50
 		},
 		func() {
-			node.ScaleX += seconds.GetDelta()
-			node.ScaleY += seconds.GetDelta()
+			node.ScaleX += seconds.FrameDelta()
+			node.ScaleY += seconds.FrameDelta()
 		},
 	)
 

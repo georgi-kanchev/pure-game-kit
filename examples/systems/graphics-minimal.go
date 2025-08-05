@@ -2,15 +2,14 @@ package example
 
 import (
 	"pure-kit/engine/graphics"
+	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
 
-func Collisions() {
+func Minimal() {
 	var cam = graphics.NewCamera(1)
-	var node = graphics.NewNode(0, 0)
-
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawNodes(&node)
+		cam.DrawCircle(0, 0, 100, color.Red)
 	}
 }

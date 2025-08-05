@@ -23,7 +23,7 @@ func (camera *Camera) DrawScreenFrame(thickness int, color uint) {
 	rl.DrawRectangle(int32(x), int32(y+h-thickness), int32(w), int32(thickness), rl.GetColor(color)) // lower
 	rl.DrawRectangle(int32(x), int32(y), int32(thickness), int32(h), rl.GetColor(color))             // left
 }
-func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
+func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	camera.begin()
 
 	var sx, sy, sw, sh = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
@@ -51,22 +51,22 @@ func (camera *Camera) DrawGrid(thickness, spacing float32, color uint) {
 		}
 	}
 
-	var left = float32(math.Floor(float64(minX/spacing))) * spacing
-	var right = float32(math.Ceil(float64(maxX/spacing))) * spacing
-	var top = float32(math.Floor(float64(minY/spacing))) * spacing
-	var bottom = float32(math.Ceil(float64(maxY/spacing))) * spacing
+	var left = float32(math.Floor(float64(minX/spacingX))) * spacingX
+	var right = float32(math.Ceil(float64(maxX/spacingX))) * spacingX
+	var top = float32(math.Floor(float64(minY/spacingY))) * spacingY
+	var bottom = float32(math.Ceil(float64(maxY/spacingY))) * spacingY
 
-	for x := left; x <= right; x += spacing { // vertical
+	for x := left; x <= right; x += spacingX { // vertical
 		var myThickness = thickness
-		if float32(math.Mod(float64(x), float64(spacing)*10)) == 0 {
+		if float32(math.Mod(float64(x), float64(spacingX)*10)) == 0 {
 			myThickness *= 2
 		}
 
 		camera.DrawLine(x, top, x, bottom, myThickness, color)
 	}
-	for y := top; y <= bottom; y += spacing { // horizontal
+	for y := top; y <= bottom; y += spacingY { // horizontal
 		var myThickness = thickness
-		if float32(math.Mod(float64(y), float64(spacing)*10)) == 0 {
+		if float32(math.Mod(float64(y), float64(spacingY)*10)) == 0 {
 			myThickness *= 2
 		}
 

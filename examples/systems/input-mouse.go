@@ -7,7 +7,7 @@ import (
 	"pure-kit/engine/window"
 )
 
-func InputMouse() {
+func Mouse() {
 	var cam = graphics.NewCamera(1)
 	var node = graphics.NewNode(0, 0)
 	node.Width, node.Height = 300, 300
@@ -16,7 +16,7 @@ func InputMouse() {
 		cam.SetScreenAreaToWindow()
 
 		if mouse.IsButtonPressed(mouse.ButtonLeft) {
-			node.Angle -= seconds.GetDelta() * 60
+			node.Angle -= seconds.FrameDelta() * 60
 		}
 		if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
 			node.Angle = 0

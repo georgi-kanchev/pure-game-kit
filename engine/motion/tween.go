@@ -66,7 +66,7 @@ func (tween *Tween) Wait(seconds float32) *Tween {
 }
 func (tween *Tween) Restart() {
 	tween.currIndex = 0
-	tween.startTime = seconds.GetRuntime()
+	tween.startTime = seconds.Runtime()
 	tween.IsPaused = false
 
 	for i := range tween.tweens {
@@ -81,7 +81,7 @@ func (tween *Tween) Restart() {
 }
 
 func (tween *Tween) CurrentValues() []float32 {
-	var runtime = seconds.GetRuntime()
+	var runtime = seconds.Runtime()
 	var elapsed = runtime - tween.startTime
 
 	if tween.IsFinished() {

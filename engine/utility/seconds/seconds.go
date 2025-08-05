@@ -29,17 +29,17 @@ func AsClock12(seconds float32, divider string, units Unit, AM_PM bool) string {
 	return formatTimeParts(ts, divider, units, true, AM_PM)
 }
 
-func GetClock() float32                { return internal.Clock }
-func GetDelta() float32                { return internal.Delta }
-func GetFrameRate() float32            { return internal.FrameRate }
-func GetFrameRateAverage() float32     { return internal.FrameRateAverage }
-func GetFrameCount() uint64            { return internal.FrameCount }
-func GetRuntime() float32              { return internal.Runtime }
-func GetRealDelta() float32            { return internal.RealDelta }
-func GetRealFrameRate() float32        { return internal.RealFrameRate }
-func GetRealFrameRateAverage() float32 { return internal.RealFrameRateAverage }
-func GetRealFrameCount() uint64        { return internal.RealFrameCount }
-func GetRealRuntime() float32          { return internal.RealRuntime }
+func Clock() float32                { return internal.Clock }
+func FrameDelta() float32           { return internal.Delta }
+func FrameRate() float32            { return internal.FrameRate }
+func FrameRateAverage() float32     { return internal.FrameRateAverage }
+func FrameCount() uint64            { return internal.FrameCount }
+func Runtime() float32              { return internal.Runtime }
+func RealFrameDelta() float32       { return internal.RealDelta }
+func RealFrameRate() float32        { return internal.RealFrameRate }
+func RealFrameRateAverage() float32 { return internal.RealFrameRateAverage }
+func RealFrameCount() uint64        { return internal.RealFrameCount }
+func RealRuntime() float32          { return internal.RealRuntime }
 
 func ToMilliseconds(seconds float32) float32 { return seconds * 1000 }
 func ToMinutes(secodns float32) float32      { return secodns / 60 }

@@ -24,7 +24,7 @@ func NineSlices() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawGrid(1, 100, color.Red)
+		cam.DrawGrid(1, 100, 100, color.Red)
 		cam.DrawNineSlices(&nineSlice)
 
 		var mx, my = nineSlice.MousePosition(&cam)

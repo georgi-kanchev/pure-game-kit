@@ -9,18 +9,18 @@ import (
 	"pure-kit/engine/window"
 )
 
-func GeometryShape() {
+func Shapes() {
 	var cam = graphics.NewCamera(1)
-	var shape = geometry.NewShape(
+	var shape = geometry.NewShapeCorners(
 		[2]float32{},
 		[2]float32{50, -20},
 		[2]float32{100, 0},
 		[2]float32{0, 100},
 		[2]float32{50, 120},
 		[2]float32{100, 100})
-	var triangle = geometry.NewShape([2]float32{}, [2]float32{100, 100}, [2]float32{-100, 100})
-	var rectangle = geometry.NewRectangle(700, 400, 0.5, 0.5)
-	var circle = geometry.NewCircle(500, 16)
+	var triangle = geometry.NewShapeCorners([2]float32{}, [2]float32{100, 100}, [2]float32{-100, 100})
+	var rectangle = geometry.NewShapeRectangle(700, 500, 0.5, 0.5)
+	var circle = geometry.NewShapeSides(500, 16)
 
 	shape.ScaleX, shape.ScaleY = 5, 5
 	shape.X += 180
@@ -30,7 +30,7 @@ func GeometryShape() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		shape.Angle += seconds.GetDelta() * 60
+		shape.Angle += seconds.FrameDelta() * 60
 		var mx, my = cam.MousePosition()
 		var colShape = condition.If(shape.IsOverlappingShape(&triangle), color.Red, color.Green)
 		var colRect = condition.If(rectangle.IsCrossingShape(&shape), color.Brown, color.Cyan)
@@ -40,9 +40,9 @@ func GeometryShape() {
 
 		var crossPoints = circle.CrossPointsWithShape(&shape)
 
-		cam.DrawLinesPath(8, colShape, shape.CornerPoints()...)
 		cam.DrawLinesPath(8, colRect, rectangle.CornerPoints()...)
 		cam.DrawLinesPath(8, colCircle, circle.CornerPoints()...)
+		cam.DrawLinesPath(8, colShape, shape.CornerPoints()...)
 		cam.DrawLinesPath(8, color.White, triangle.CornerPoints()...)
 
 		for _, v := range crossPoints {

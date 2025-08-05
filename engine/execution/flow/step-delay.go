@@ -11,7 +11,7 @@ func WaitForDelay(seconds float32) *StepDelay {
 }
 
 func (step *StepDelay) Continue() bool {
-	var runtime = seconds.GetRuntime()
+	var runtime = seconds.Runtime()
 
 	if step.startTime < 0 {
 		step.startTime = runtime

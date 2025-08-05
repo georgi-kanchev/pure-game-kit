@@ -33,7 +33,7 @@ func Texts() {
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
 
-		a = math.Sin(float64(seconds.GetRuntime()))
+		a = math.Sin(float64(seconds.Runtime()))
 
 		textBox.Thickness = float32(a)
 
