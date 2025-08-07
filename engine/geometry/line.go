@@ -1,6 +1,11 @@
 package geometry
 
-import "math"
+import (
+	"math"
+	"pure-kit/engine/geometry/point"
+	"pure-kit/engine/utility/angle"
+	"pure-kit/engine/utility/number"
+)
 
 type Line struct{ Ax, Ay, Bx, By float32 }
 
@@ -8,7 +13,17 @@ func NewLine(ax, ay, bx, by float32) Line {
 	return Line{Ax: ax, Ay: ay, Bx: bx, By: by}
 }
 
-func (line Line) CrossPointWithLine(target Line) (float32, float32) {
+func (line *Line) Angle() float32 {
+	return angle.BetweenPoints(line.Ax, line.Ay, line.Bx, line.By)
+}
+func (line *Line) Normal() float32 {
+	return number.Wrap(line.Angle()-90, 360)
+}
+func (line *Line) Length() float32 {
+	return point.DistanceToPoint(line.Ax, line.Ay, line.Bx, line.By)
+}
+
+func (line *Line) CrossPointWithLine(target Line) (x, y float32) {
 	var dx1 = line.Bx - line.Ax
 	var dy1 = line.By - line.Ay
 	var dx2 = target.Bx - target.Ax
@@ -31,7 +46,7 @@ func (line Line) CrossPointWithLine(target Line) (float32, float32) {
 
 	return ix, iy
 }
-func (line Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
+func (line *Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
 	var ax, ay = line.Ax, line.Ay
 	var bx, by = line.Bx, line.By
 	var apx, apy = targetX - ax, targetY - ay
@@ -57,7 +72,7 @@ func (line Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
 	return cx, cy
 }
 
-func (line Line) IsCrossingLine(target Line) bool {
+func (line *Line) IsCrossingLine(target Line) bool {
 	var ax1, ay1, bx1, by1 = line.Ax, line.Ay, line.Bx, line.By
 	var ax2, ay2, bx2, by2 = target.Ax, target.Ay, target.Bx, target.By
 	var d1 = (bx2-ax2)*(ay1-ay2) - (by2-ay2)*(ax1-ax2)
@@ -66,6 +81,6 @@ func (line Line) IsCrossingLine(target Line) bool {
 	var d4 = (bx1-ax1)*(by2-ay1) - (by1-ay1)*(bx2-ax1)
 	return d1*d2 < 0 && d3*d4 < 0
 }
-func (line Line) IsLeftOfPoint(x, y float32) bool {
+func (line *Line) IsLeftOfPoint(x, y float32) bool {
 	return (line.Bx-line.Ax)*(y-line.Ay)-(line.By-line.Ay)*(x-line.Ax) < 0
 }

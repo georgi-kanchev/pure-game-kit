@@ -83,7 +83,7 @@ func (shape *Shape) CornerPoints() [][2]float32 {
 }
 
 // all check methods are made with speed in mind, not so much readability
-// they should have the least allocations (once per API call for getPoints() & CornerPoints())
+// they should have the least allocations (once per API call for CornerPoints())
 // and the least iterations (1 loop for 1 shape and 2 loops for 2 shapes)
 // don't be a smartass by "simplifying" and reusing them internally in the future
 
@@ -179,39 +179,20 @@ func (shape *Shape) IsOverlappingShape(target *Shape) bool {
 		return false
 	}
 
-	// overlap happens when:
-	// 		one of shape's corners is within target
-	//		one of target's corners is within shape
-	// 		or there is a crossing
-
-	for i := 1; i < len(targetCorners); i++ { // crossing + target inside shape checks
-		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
-		if shape.internalIsOverlappingLine(corners, line) {
-			return true
-		}
-	}
-
-	for i := 1; i < len(corners); i++ { // skipping crossing & straight to shape inside target check
-		var line = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
-		if target.internalIsContainingLine(targetCorners, line) {
-			return true
-		}
-	}
-
-	return false
+	return shape.internalIsOverlappingShape(corners, targetCorners, target)
 }
 
 // #region private
 
 func (shape *Shape) internalIsContainingPoint(corners [][2]float32, x, y float32) bool {
-	var n = len(corners)
-	if n < 3 {
+	var l = len(corners)
+	if l < 3 {
 		return false
 	}
 
 	var inside = false
-	for i := range n {
-		var j = (i + 1) % n
+	for i := range l {
+		var j = (i + 1) % l
 		var vi = corners[i]
 		var vj = corners[j]
 
@@ -261,7 +242,7 @@ func (shape *Shape) internalCrossPointsWithLine(corners [][2]float32, line Line)
 	}
 	return result
 }
-func (shape *Shape) internalCrossPointsWithShape(corners [][2]float32, targetCorners [][2]float32) [][2]float32 {
+func (shape *Shape) internalCrossPointsWithShape(corners, targetCorners [][2]float32) [][2]float32 {
 	var result = [][2]float32{}
 
 	for i := 1; i < len(targetCorners); i++ {
@@ -272,13 +253,35 @@ func (shape *Shape) internalCrossPointsWithShape(corners [][2]float32, targetCor
 	return result
 }
 
-func (shape *Shape) internalIsCrossingShape(corners [][2]float32, targetCorners [][2]float32) bool {
+func (shape *Shape) internalIsCrossingShape(corners, targetCorners [][2]float32) bool {
 	for i := 1; i < len(targetCorners); i++ {
 		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
 		if shape.internalIsCrossingLine(corners, line) {
 			return true
 		}
 	}
+	return false
+}
+func (shape *Shape) internalIsOverlappingShape(corners, targetCorners [][2]float32, target *Shape) bool {
+	// overlap happens when:
+	// 		one of shape's corners is within target
+	//		one of target's corners is within shape
+	// 		or there is a crossing
+
+	for i := 1; i < len(targetCorners); i++ { // crossing + target inside shape checks
+		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
+		if shape.internalIsOverlappingLine(corners, line) {
+			return true
+		}
+	}
+
+	for i := 1; i < len(corners); i++ { // skipping crossing & straight to shape inside target check
+		var line = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
+		if target.internalIsContainingLine(targetCorners, line) {
+			return true
+		}
+	}
+
 	return false
 }
 

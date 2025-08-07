@@ -9,7 +9,7 @@ import (
 	"pure-kit/engine/window"
 )
 
-func ShapeGrid() {
+func ShapesGrids() {
 	var cam = graphics.NewCamera(4)
 	var grid = geometry.NewShapeGrid(32, 32)
 	var shape = geometry.NewShapeCorners(

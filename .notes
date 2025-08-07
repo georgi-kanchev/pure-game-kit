@@ -19,6 +19,10 @@ LAN?
 global events/notifications?
 
 // DONE:
+[36] [Wed] [06-08-2025]
+[√] geometry - shape collisions + resolutions
+[√] examples - shape collisions + resolutions
+
 [35] [Tue] [05-08-2025]
 [√] examples - renames & restructure
 [√] geometry - shape optimization AABB before slow checks
