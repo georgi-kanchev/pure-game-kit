@@ -87,25 +87,6 @@ func (shape *Shape) CornerPoints() [][2]float32 {
 // and the least iterations (1 loop for 1 shape and 2 loops for 2 shapes)
 // don't be a smartass by "simplifying" and reusing them internally in the future
 
-func (shape *Shape) CrossPointsWithLine(line Line) [][2]float32 {
-	var corners = shape.CornerPoints()
-
-	if !shape.inBoundingBoxLine(line) {
-		return [][2]float32{}
-	}
-
-	return shape.internalCrossPointsWithLine(corners, line)
-}
-func (shape *Shape) CrossPointsWithShape(target *Shape) [][2]float32 {
-	var corners = shape.CornerPoints()
-	var targetCorners = target.CornerPoints()
-	if !shape.inBoundingBoxShape(*target) {
-		return [][2]float32{}
-	}
-
-	return shape.internalCrossPointsWithShape(corners, targetCorners)
-}
-
 func (shape *Shape) IsContainingPoint(x, y float32) bool {
 	var corners = shape.CornerPoints()
 
@@ -116,70 +97,87 @@ func (shape *Shape) IsContainingPoint(x, y float32) bool {
 	return shape.internalIsContainingPoint(corners, x, y)
 }
 
-func (shape *Shape) IsCrossingLine(line Line) bool {
+func (shape *Shape) CrossPointsWithLines(lines ...Line) [][2]float32 {
 	var corners = shape.CornerPoints()
+	var result = [][2]float32{}
 
-	if !shape.inBoundingBoxLine(line) {
-		return false
+	for _, line := range lines {
+		if shape.inBoundingBoxLine(line) {
+			result = append(result, shape.internalCrossPointsWithLine(corners, line)...)
+		}
 	}
-
-	return shape.internalIsCrossingLine(corners, line)
+	return result
 }
-func (shape *Shape) IsContainingLine(line Line) bool {
+func (shape *Shape) IsCrossingLines(lines ...Line) bool {
 	var corners = shape.CornerPoints()
-
-	if !shape.inBoundingBoxLine(line) {
-		return false
+	for _, line := range lines {
+		if shape.inBoundingBoxLine(line) && shape.internalIsCrossingLine(corners, line) {
+			return true
+		}
 	}
-
-	return shape.internalIsContainingLine(corners, line)
+	return false
 }
-func (shape *Shape) IsOverlappingLine(line Line) bool {
+func (shape *Shape) IsContainingLines(lines ...Line) bool {
 	var corners = shape.CornerPoints()
-
-	if !shape.inBoundingBoxLine(line) {
-		return false
-	}
-
-	return shape.internalIsOverlappingLine(corners, line)
-}
-
-func (shape *Shape) IsCrossingShape(target *Shape) bool {
-	var corners = shape.CornerPoints()
-	var targetCorners = target.CornerPoints()
-
-	if !shape.inBoundingBoxShape(*target) {
-		return false
-	}
-
-	return shape.internalIsCrossingShape(corners, targetCorners)
-}
-
-func (shape *Shape) IsContainingShape(target *Shape) bool {
-	var corners = shape.CornerPoints()
-	var targetCorners = target.CornerPoints()
-
-	if !shape.inBoundingBoxShape(*target) {
-		return false
-	}
-
-	for i := 1; i < len(targetCorners); i++ {
-		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
-		if !shape.internalIsContainingLine(corners, line) {
+	for _, line := range lines {
+		if !shape.inBoundingBoxLine(line) || !shape.internalIsContainingLine(corners, line) {
 			return false
 		}
 	}
 	return true
 }
-func (shape *Shape) IsOverlappingShape(target *Shape) bool {
+func (shape *Shape) IsOverlappingLines(lines ...Line) bool {
 	var corners = shape.CornerPoints()
-	var targetCorners = target.CornerPoints()
-
-	if !shape.inBoundingBoxShape(*target) {
-		return false
+	for _, line := range lines {
+		if shape.inBoundingBoxLine(line) && shape.internalIsOverlappingLine(corners, line) {
+			return true
+		}
 	}
+	return false
+}
 
-	return shape.internalIsOverlappingShape(corners, targetCorners, target)
+func (shape *Shape) CrossPointsWithShapes(shapes ...*Shape) [][2]float32 {
+	var corners = shape.CornerPoints()
+	var result = [][2]float32{}
+
+	for _, target := range shapes {
+		var targetCorners = target.CornerPoints()
+		if shape.inBoundingBoxShape(*target) {
+			result = append(result, shape.internalCrossPointsWithShape(corners, targetCorners)...)
+		}
+	}
+	return result
+}
+func (shape *Shape) IsCrossingShapes(shapes ...*Shape) bool {
+	var corners = shape.CornerPoints()
+	for _, target := range shapes {
+		var targetCorners = target.CornerPoints()
+		if shape.inBoundingBoxShape(*target) && shape.internalIsCrossingShape(corners, targetCorners) {
+			return true
+		}
+	}
+	return false
+}
+func (shape *Shape) IsContainingShapes(shapes ...*Shape) bool {
+	var corners = shape.CornerPoints()
+	for _, target := range shapes {
+		var targetCorners = target.CornerPoints()
+		if !shape.inBoundingBoxShape(*target) || !shape.internalIsContainingShapes(corners, targetCorners) {
+			return false
+		}
+	}
+	return true
+}
+func (shape *Shape) IsOverlappingShapes(shapes ...*Shape) bool {
+	var corners = shape.CornerPoints()
+
+	for _, target := range shapes {
+		var targetCorners = target.CornerPoints()
+		if shape.inBoundingBoxShape(*target) && shape.internalIsOverlappingShape(corners, targetCorners, target) {
+			return true
+		}
+	}
+	return false
 }
 
 // #region private
@@ -208,6 +206,19 @@ func (shape *Shape) internalIsContainingPoint(corners [][2]float32, x, y float32
 	return inside
 }
 
+func (shape *Shape) internalCrossPointsWithLine(corners [][2]float32, line Line) [][2]float32 {
+	var result = [][2]float32{}
+
+	for i := 1; i < len(corners); i++ {
+		var curLine = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
+		var cx, cy = line.CrossPointWithLine(curLine)
+
+		if !math.IsNaN(float64(cx)) && !math.IsNaN(float64(cy)) {
+			result = append(result, [2]float32{cx, cy})
+		}
+	}
+	return result
+}
 func (shape *Shape) internalIsCrossingLine(corners [][2]float32, line Line) bool {
 	for i := 1; i < len(corners); i++ {
 		var curLine = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
@@ -229,19 +240,6 @@ func (shape *Shape) internalIsOverlappingLine(corners [][2]float32, line Line) b
 	return containsA || containsB || crossing
 }
 
-func (shape *Shape) internalCrossPointsWithLine(corners [][2]float32, line Line) [][2]float32 {
-	var result = [][2]float32{}
-
-	for i := 1; i < len(corners); i++ {
-		var curLine = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
-		var cx, cy = line.CrossPointWithLine(curLine)
-
-		if !math.IsNaN(float64(cx)) && !math.IsNaN(float64(cy)) {
-			result = append(result, [2]float32{cx, cy})
-		}
-	}
-	return result
-}
 func (shape *Shape) internalCrossPointsWithShape(corners, targetCorners [][2]float32) [][2]float32 {
 	var result = [][2]float32{}
 
@@ -252,7 +250,6 @@ func (shape *Shape) internalCrossPointsWithShape(corners, targetCorners [][2]flo
 	}
 	return result
 }
-
 func (shape *Shape) internalIsCrossingShape(corners, targetCorners [][2]float32) bool {
 	for i := 1; i < len(targetCorners); i++ {
 		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
@@ -261,6 +258,15 @@ func (shape *Shape) internalIsCrossingShape(corners, targetCorners [][2]float32)
 		}
 	}
 	return false
+}
+func (shape *Shape) internalIsContainingShapes(corners, targetCorners [][2]float32) bool {
+	for i := 1; i < len(targetCorners); i++ {
+		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
+		if !shape.internalIsContainingLine(corners, line) {
+			return false
+		}
+	}
+	return true
 }
 func (shape *Shape) internalIsOverlappingShape(corners, targetCorners [][2]float32, target *Shape) bool {
 	// overlap happens when:

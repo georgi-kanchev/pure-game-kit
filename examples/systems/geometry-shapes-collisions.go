@@ -6,6 +6,7 @@ import (
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/direction"
 	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/window"
 )
@@ -47,7 +48,10 @@ func Collisions() {
 		}
 		shape4.Angle++
 
-		shape.MoveAndCollide(dirX*step, dirY*step, &shape2, &shape3, &shape4)
+		dirX, dirY = direction.Normalize(dirX, dirY)
+		dirX, dirY = shape.Collide(dirX*step, dirY*step, &shape2, &shape3, &shape4)
+		shape.X += dirX
+		shape.Y += dirY
 		cam.DrawLinesPath(8, color.Red, shape2.CornerPoints()...)
 		cam.DrawLinesPath(8, color.Red, shape3.CornerPoints()...)
 		cam.DrawLinesPath(8, color.Red, shape4.CornerPoints()...)

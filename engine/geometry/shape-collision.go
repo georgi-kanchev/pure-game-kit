@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-func (shape *Shape) MoveAndCollide(velocityX, velocityY float32, targets ...*Shape) {
+func (shape *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVelocityX, newVelocityY float32) {
 	for _, target := range targets {
 		if !shape.inBoundingBoxShape(*target) {
 			continue
@@ -112,6 +112,5 @@ func (shape *Shape) MoveAndCollide(velocityX, velocityY float32, targets ...*Sha
 		}
 
 	}
-	shape.X += velocityX
-	shape.Y += velocityY
+	return velocityX, velocityY
 }

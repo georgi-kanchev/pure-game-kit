@@ -17,12 +17,10 @@ const (
 )
 
 func ToRadians(degrees float32) float32 {
-	degrees = number.Wrap(degrees, 360)
-	return degrees * (math.Pi / 180)
+	return number.Wrap(degrees, 360) * (math.Pi / 180)
 }
 func FromRadians(radians float32) float32 {
-	var deg = radians * (180 / math.Pi)
-	return number.Wrap(deg, 360)
+	return number.Wrap(radians*(180/math.Pi), 360)
 }
 
 func Rotate(angle, target, speed float32) float32 {
@@ -104,13 +102,6 @@ func Limit(angle, lower, upper float32) float32 {
 	}
 	return angle
 }
-func Dot(angle, target float32) float32 {
-	var ax = float32(math.Cos((float64(ToRadians(angle)))))
-	var ay = float32(math.Sin(float64(ToRadians(angle))))
-	var bx = float32(math.Cos(float64(ToRadians(target))))
-	var by = float32(math.Sin(float64(ToRadians(target))))
-	return ax*bx + ay*by
-}
 func Reflect(angle, surfaceAngle float32) float32 {
 	return number.Wrap(2*surfaceAngle-angle+180, 360)
 }
@@ -125,13 +116,7 @@ func BetweenPoints(x, y, targetX, targetY float32) float32 {
 	return number.Wrap(FromRadians(rad), 360)
 }
 
-func ToDirection(angle float32) (dirX, dirY float32) {
-	var rad = ToRadians(angle)
-	dirX = float32(math.Cos(float64(rad)))
-	dirY = float32(math.Sin(float64(rad)))
-	return
-}
-func FromDirection(dirX, dirY float32) float32 {
-	var rad = math.Atan2(float64(dirY), float64(dirX))
+func FromDirection(x, y float32) float32 {
+	var rad = math.Atan2(float64(y), float64(x))
 	return FromRadians(float32(rad))
 }

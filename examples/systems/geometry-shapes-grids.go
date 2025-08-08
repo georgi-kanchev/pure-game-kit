@@ -22,7 +22,7 @@ func ShapesGrids() {
 
 	for i := -8; i < 8; i++ {
 		for j := -8; j < 8; j++ {
-			grid.SetShapesAtCell(i, j, geometry.NewShapeRectangle(24, 24, 0.5, 0.5))
+			grid.SetAtCell(i, j, geometry.NewShapeRectangle(24, 24, 0.5, 0.5))
 		}
 	}
 
@@ -35,8 +35,8 @@ func ShapesGrids() {
 		shape.X, shape.Y = mx, my
 		shape.Angle += seconds.FrameDelta() * 20
 
-		var allShapes = grid.AllShapes()
-		var potential = grid.ShapesAroundShape(&shape)
+		var allShapes = grid.GetAll()
+		var potential = grid.GetAroundShape(&shape)
 		for _, v := range allShapes {
 			cam.DrawLinesPath(1, color.Gray, v.CornerPoints()...)
 		}
@@ -44,10 +44,12 @@ func ShapesGrids() {
 			cam.DrawLinesPath(2, color.Green, v.CornerPoints()...)
 		}
 
-		var col = condition.If(grid.IsCrossingShape(&shape), color.Violet, color.Cyan)
+		var surroundingShapes = grid.GetAroundShape(&shape)
+		var crossPoints = shape.CrossPointsWithShapes(surroundingShapes...)
+		var col = condition.If(shape.IsCrossingShapes(surroundingShapes...), color.Violet, color.Cyan)
+
 		cam.DrawLinesPath(2, col, shape.CornerPoints()...)
 
-		var crossPoints = grid.CrossPointsWithShape(&shape)
 		for _, v := range crossPoints {
 			cam.DrawCircle(v[0], v[1], 3, color.Magenta)
 		}
