@@ -42,7 +42,7 @@ func LoadTextureArea(textureId, areaId string, x, y, width, height int) string {
 	var _, has = internal.Textures[textureId]
 
 	if has && areaId != "" {
-		var atlas = internal.Atlas{TextureId: textureId, CellWidth: 1, CellHeight: 1, Gap: 0}
+		var atlas = internal.Atlas{TextureId: textureId, CellWidth: 1, CellHeight: 1}
 		var cx, cy, cw, ch = float32(x), float32(y), float32(width), float32(height)
 		var rect = internal.AtlasRect{CellX: cx, CellY: cy, CountX: cw, CountY: ch, AtlasId: textureId}
 		internal.Atlases[textureId] = atlas
@@ -107,6 +107,10 @@ func LoadTextureAtlasTile(atlasId, tileId string, cellX, cellY, countX, countY f
 	}
 
 	return ""
+}
+func LoadTextureNineSlice(nineSliceId string, assetIds [9]string) string {
+	internal.NineSlices[nineSliceId] = assetIds
+	return nineSliceId
 }
 
 func UnloadTextures(textureIds ...string) {

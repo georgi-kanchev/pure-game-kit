@@ -31,10 +31,10 @@ func DefaultAssetFont() {
 func DefaultAssetTexture() {
 	assets.LoadDefaultTexture()
 	var function = func() (string, []string) { return "", []string{} }
-	runDefaultAssetDisplay(0.7, 256, 0, 12, 7, function)
+	runDefaultAssetDisplay(0.7, 256, 0, 0, 0, function)
 }
 func DefaultAssetUI() {
-	runDefaultAssetDisplay(0.7, 16, 0, 6, 6, assets.LoadDefaultAtlasUI)
+	runDefaultAssetDisplay(0.7, 16, 0, 9, 7, assets.LoadDefaultAtlasUI)
 }
 
 // #region private
@@ -60,8 +60,9 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		sprite.ScaleY *= scale
 
 		if w == 0 && h == 0 {
-			sprite.Width = aw
-			sprite.Height = ah
+			sprite.Width, sprite.Height = aw, ah
+		} else {
+			aw, ah = tileSize, tileSize
 		}
 
 		var mx, my = sprite.MousePosition(&camera)
@@ -79,6 +80,10 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		if index < len(tileIds) {
 			txt = tileIds[index]
 			aw, ah = assets.Size(txt)
+
+			if w != 0 || h != 0 {
+				aw, ah = tileSize, tileSize
+			}
 		}
 
 		camera.DrawFrame(mmx, mmy, aw*sprite.ScaleX, ah*sprite.ScaleY, 0, 6, color.Cyan)

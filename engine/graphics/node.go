@@ -170,20 +170,20 @@ func (node *Node) CameraStretch(camera *Camera) {
 	node.Angle = 0
 }
 
-func (node *Node) CornerUpperLeft() (x, y float32)  { return node.getCorner(upperLeft) }
-func (node *Node) CornerUpperRight() (x, y float32) { return node.getCorner(upperRight) }
-func (node *Node) CornerLowerRight() (x, y float32) { return node.getCorner(lowerRight) }
-func (node *Node) CornerLowerLeft() (x, y float32)  { return node.getCorner(lowerLeft) }
+func (node *Node) CornerTopLeft() (x, y float32)     { return node.getCorner(topLeft) }
+func (node *Node) CornerTopRight() (x, y float32)    { return node.getCorner(topRight) }
+func (node *Node) CornerBottomRight() (x, y float32) { return node.getCorner(bottomRight) }
+func (node *Node) CornerBottomLeft() (x, y float32)  { return node.getCorner(bottomLeft) }
 
 // #region private
 
 type corner byte
 
 const (
-	upperLeft corner = iota
-	upperRight
-	lowerRight
-	lowerLeft
+	topLeft corner = iota
+	topRight
+	bottomRight
+	bottomLeft
 )
 
 func ToRad(ang float32) float32 { return angle.ToRadians(ang) }
@@ -192,10 +192,10 @@ func (node *Node) getCorner(corner corner) (x, y float32) {
 	var width, height = node.Width, node.Height
 	var nx, ny, na, _, _ = node.TransformToCamera()
 	var offX, offY = -width * node.PivotX, -height * node.PivotY
-	if corner == upperRight || corner == lowerRight {
+	if corner == topRight || corner == bottomRight {
 		offX = width * (1 - node.PivotX)
 	}
-	if corner == lowerLeft || corner == lowerRight {
+	if corner == bottomLeft || corner == bottomRight {
 		offY = height * (1 - node.PivotY)
 	}
 	x, y = point.MoveAtAngle(nx, ny, na, offX)

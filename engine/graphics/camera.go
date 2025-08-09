@@ -116,6 +116,14 @@ func (camera *Camera) PointFromCamera(otherCamera *Camera, otherX, otherY float3
 func (camera *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (otherX, otherY float32) {
 	return otherCamera.PointFromCamera(camera, myX, myY)
 }
+func (camera *Camera) PointFromPivot(pivotX, pivotY float32) (x, y float32) {
+	// useful to get edge coordinates
+	var prevX, prevY = camera.PivotX, camera.PivotY
+	camera.PivotX, camera.PivotY = pivotX, pivotY
+	var scrX, scrY = camera.PointToScreen(0, 0)
+	camera.PivotX, camera.PivotY = prevX, prevY
+	return camera.PointFromScreen(scrX, scrY)
+}
 
 // region private
 

@@ -79,11 +79,15 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 		}
 
 		var w, h = s.Width, s.Height
-		var fx, fy = s.SliceFlipX, s.SliceFlipY
-		var u, r, d, l = s.SliceSizes[0], s.SliceSizes[1], s.SliceSizes[2], s.SliceSizes[3]
+		var u, r, d, l = s.EdgeBottom, s.EdgeRight, s.EdgeTop, s.EdgeLeft
 		var errX, errY float32 = 2, 2 // this adds margin of error to the middle part (it's behind all other parts)
 		var c = s.Color
-		var a = s.AssetId
+		var asset, has = internal.NineSlices[s.AssetId]
+
+		if !has {
+			camera.DrawSprites(&s.Sprite)
+			return // fallback to sprite rendering if no 9slice asset found
+		}
 
 		if w < 0 {
 			r *= -1
@@ -113,19 +117,19 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 			}
 		}
 
-		drawSlice(camera, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, false, false, a, c) // center
+		drawSlice(camera, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], c) // center
 
 		// edges
-		drawSlice(camera, &s.Node, l, 0, w-l-r, u, fx[1], fy[1], s.SliceIds[1], c)   // upper
-		drawSlice(camera, &s.Node, 0, u, l, h-u-d, fx[3], fy[3], s.SliceIds[3], c)   // left
-		drawSlice(camera, &s.Node, w-r, u, r, h-u-d, fx[4], fy[4], s.SliceIds[4], c) // right
-		drawSlice(camera, &s.Node, l, h-d, w-l-r, d, fx[6], fy[6], s.SliceIds[6], c) // lower
+		drawSlice(camera, &s.Node, l, 0, w-l-r, u, asset[1], c)   // top
+		drawSlice(camera, &s.Node, 0, u, l, h-u-d, asset[3], c)   // left
+		drawSlice(camera, &s.Node, w-r, u, r, h-u-d, asset[5], c) // right
+		drawSlice(camera, &s.Node, l, h-d, w-l-r, d, asset[7], c) // bottom
 
 		// corners
-		drawSlice(camera, &s.Node, 0, 0, l, u, fx[0], fy[0], s.SliceIds[0], c)     // upper left
-		drawSlice(camera, &s.Node, w-r, 0, r, u, fx[2], fy[2], s.SliceIds[2], c)   // upper right
-		drawSlice(camera, &s.Node, 0, h-d, l, d, fx[5], fy[5], s.SliceIds[5], c)   // lower left
-		drawSlice(camera, &s.Node, w-r, h-d, r, d, fx[7], fy[7], s.SliceIds[7], c) // lower right
+		drawSlice(camera, &s.Node, 0, 0, l, u, asset[0], c)     // top left
+		drawSlice(camera, &s.Node, w-r, 0, r, u, asset[2], c)   // top right
+		drawSlice(camera, &s.Node, 0, h-d, l, d, asset[6], c)   // bottom left
+		drawSlice(camera, &s.Node, w-r, h-d, r, d, asset[8], c) // bottom right
 	}
 }
 func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
@@ -183,22 +187,13 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 var reusableSprite = NewSprite("", 0, 0)
 
-func drawSlice(camera *Camera, parent *Node, x, y, w, h float32, flipX, flipY bool, id string, color uint) {
+func drawSlice(camera *Camera, parent *Node, x, y, w, h float32, id string, color uint) {
 	reusableSprite.AssetId = id
 	reusableSprite.X, reusableSprite.Y = x, y
 	reusableSprite.Parent = parent
 	reusableSprite.Width, reusableSprite.Height = w, h
 	reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
 	reusableSprite.Color = color
-
-	if flipX {
-		reusableSprite.ScaleX = -1
-		reusableSprite.X += w
-	}
-	if flipY {
-		reusableSprite.ScaleY = -1
-		reusableSprite.Y += h
-	}
 
 	camera.DrawSprites(&reusableSprite)
 }

@@ -10,16 +10,16 @@ import (
 func NineSlices() {
 	var cam = graphics.NewCamera(1)
 	var _, t = assets.LoadDefaultAtlasUI()
-	var nineSlice = graphics.NewNineSlice(t[32], 0, 0, [8]string{
-		t[0], t[1], t[0],
-		t[6] /*t[32]*/, t[6],
-		t[12], t[13], t[12]})
+	var asset = assets.LoadTextureNineSlice("button", [9]string{
+		t[0], t[1], t[2],
+		t[9], t[10], t[11],
+		t[18], t[19], t[20]})
+	var nineSlice = graphics.NewNineSlice(asset, 0, 0)
 	nineSlice.PivotX, nineSlice.PivotY = 0, 0
-	nineSlice.SliceSizes = [4]float32{100, 100, 100, 100}
-	nineSlice.SliceFlipX = [8]bool{
-		false, false, true,
-		false /*false*/, true,
-		false, false, true}
+	nineSlice.EdgeLeft = 100
+	nineSlice.EdgeRight = 100
+	nineSlice.EdgeBottom = 100
+	nineSlice.EdgeTop = 100
 	nineSlice.Color = color.Cyan
 
 	for window.KeepOpen() {
