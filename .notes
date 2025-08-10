@@ -17,6 +17,10 @@ LAN?
 global events/notifications?
 
 // DONE:
+[39] [Sun] [10-08-2025]
+[√] symbols - calculate func fix not supporting negative numbers such as "10 * -2"
+[x] gui - progress
+
 [38] [Sat] [09-08-2025]
 [√] data - nine slices assets
 [√] data - updated default ui

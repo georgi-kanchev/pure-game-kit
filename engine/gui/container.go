@@ -5,14 +5,13 @@ type container struct {
 	Buttons []button `xml:"Button"`
 }
 
-func Container(id, x, y, width, height string, properties ...string) string {
-	return newWidget("Container", id, x, y, width, height) + extraProps(properties...) + ">"
-}
-func ContainerEnd() string { return "</Container>" }
+func (c *container) findWidget(id string) *widget {
+	if len(c.widget.Properties) > 0 && c.widget.Properties[0].Value == id {
+		return &c.widget
+	}
 
-func (c *container) FindWidget(id string) *widget {
 	for _, v := range c.Buttons {
-		if v.Properties[0].Value == id {
+		if len(v.widget.Properties) > 0 && v.Properties[0].Value == id {
 			return &v.widget
 		}
 	}

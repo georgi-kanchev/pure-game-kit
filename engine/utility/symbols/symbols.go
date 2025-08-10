@@ -111,12 +111,27 @@ func Calculate(mathExpression string) float64 {
 				operators = operators[:len(operators)-1]
 			}
 		} else if isOperator(c) {
-			for len(operators) > 0 && priority(operators[len(operators)-1]) >= priority(c) {
-				if process() {
+			// Check for unary minus or plus
+			if (i == 0) || mathExpression[i-1] == '(' || isOperator(rune(mathExpression[i-1])) {
+				// It's a sign, parse the number after it
+				i++
+				if i >= len(mathExpression) {
 					return math.NaN()
 				}
+				val := getNumber(mathExpression, &i)
+				if c == '-' {
+					val = -val
+				}
+				values = append(values, val)
+			} else {
+				// Normal binary operator
+				for len(operators) > 0 && priority(operators[len(operators)-1]) >= priority(c) {
+					if process() {
+						return math.NaN()
+					}
+				}
+				operators = append(operators, c)
 			}
-			operators = append(operators, c)
 		}
 
 		if bracketCountClose > bracketCountOpen {

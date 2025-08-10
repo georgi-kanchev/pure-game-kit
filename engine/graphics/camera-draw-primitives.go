@@ -74,10 +74,10 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 	}
 
 	if top <= 0 && bottom >= 0 { // x
-		camera.DrawLine(left, 0, right, 0, thickness*3, color)
+		camera.DrawLine(left, 0, right, 0, thickness*4, color)
 	}
 	if left <= 0 && right >= 0 { // y
-		camera.DrawLine(0, top, 0, bottom, thickness*3, color)
+		camera.DrawLine(0, top, 0, bottom, thickness*4, color)
 	}
 
 	camera.end()
