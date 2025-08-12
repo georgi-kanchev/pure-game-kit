@@ -7,6 +7,7 @@ import (
 	"pure-kit/engine/gui/dynamic"
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/utility/symbols"
+	"strconv"
 	"strings"
 )
 
@@ -48,13 +49,33 @@ func New(widgets ...string) GUI {
 	fmt.Printf("%v\n", result)
 
 	xml.Unmarshal([]byte(result), &gui)
+
+	for i := range gui.Containers {
+		var c = &gui.Containers[i]
+
+		for j := range c.Widgets {
+			var w = &c.Widgets[j]
+			var class = w.findPropValue("class", "")
+			var fn, has = updateAndDrawFuncs[class]
+
+			if has {
+				w.UpdateAndDraw = fn
+			}
+		}
+	}
+
 	return GUI{root: gui}
 }
-func Container(id, x, y, width, height string, properties ...string) string {
-	return widgetNew("Container", id, x, y, width, height) + widgetExtraProps(properties...) + ">"
+func Container(id, x, y, width, height string, properties [][2]string) string {
+	var props = "<Container id=\"" + id + "\"" +
+		" x=\"" + x + "\"" +
+		" y=\"" + y + "\"" +
+		" width=\"" + width + "\"" +
+		" height=\"" + height + "\""
+	return props + widgetExtraProps(properties) + ">"
 }
-func NewButton(id, x, y, width, height string, properties ...string) string {
-	return widgetNew("Button", id, x, y, width, height) + widgetExtraProps(properties...) + " />"
+func NewButton(id, x, y, width, height string, properties [][2]string, children [][2]string) string {
+	return newWidget("button", id, x, y, width, height, properties, children)
 }
 
 func (gui *GUI) Property(widgetId, property string) string {
@@ -80,21 +101,36 @@ func (gui *GUI) SetProperty(widgetId, property string, value string) {
 func (gui *GUI) Draw(camera *graphics.Camera) {
 	var prevAng = camera.Angle
 	var containers = gui.root.Containers
+	var prevScX, prevScY = camera.ScreenX, camera.ScreenY // each container masks an area, store to turn back later
+	var prevScW, prevScH = camera.ScreenWidth, camera.ScreenHeight
 
 	camera.Angle = 0 // force no cam rotation for UI
 
-	for _, c := range containers {
-		var x, y, w, h, col = c.properties(camera, nil)
-		camera.DrawRectangle(float32(x), float32(y), float32(w), float32(h), 0, col)
+	for i := range containers {
+		var c = &containers[i]
+		var x, _ = strconv.ParseFloat(dyn(camera, c, c.findPropValue(property.X, "0")), 32)
+		var y, _ = strconv.ParseFloat(dyn(camera, c, c.findPropValue(property.Y, "0")), 32)
+		var w, _ = strconv.ParseFloat(dyn(camera, c, c.findPropValue(property.Width, "0")), 32)
+		var h, _ = strconv.ParseFloat(dyn(camera, c, c.findPropValue(property.Height, "0")), 32)
+		var scx, scy = camera.PointToScreen(float32(x), float32(y))
 
-		for _, v := range c.Buttons {
-			v.widget.draw(camera, &c)
+		camera.Mask(scx, scy, int(w), int(h))
+		c.draw(camera, nil)
+		for j := range c.Widgets {
+			var widget = &c.Widgets[j]
+			widget.UpdateAndDraw(camera, widget, c)
 		}
 	}
-	camera.Angle = prevAng
+
+	camera.Angle = prevAng // return camera stuff back to how it was
+	camera.SetScreenArea(prevScX, prevScY, prevScW, prevScH)
 }
 
 // #region private
+
+var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, widget *widget, owner *container){
+	"button": buttonUpdateAndDraw,
+}
 
 func dyn(cam *graphics.Camera, owner *container, value string) string {
 	var tlx, tly = cam.PointFromPivot(0, 0)

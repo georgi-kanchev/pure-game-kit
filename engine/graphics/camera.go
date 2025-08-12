@@ -10,6 +10,7 @@ import (
 type Camera struct {
 	ScreenX, ScreenY, ScreenWidth, ScreenHeight int
 	X, Y, Angle, Zoom, PivotX, PivotY           float32
+	maskX, maskY, maskW, maskH                  int
 }
 
 func NewCamera(zoom float32) Camera {
@@ -38,15 +39,17 @@ func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight 
 	camera.ScreenY = screenY
 	camera.ScreenWidth = screenWidth
 	camera.ScreenHeight = screenHeight
+	camera.Mask(screenX, screenY, screenWidth, screenHeight)
 }
 func (camera *Camera) SetScreenAreaToWindow() {
 	tryRecreateWindow()
 
 	var w, h = window.Size()
-	camera.ScreenX = 0
-	camera.ScreenY = 0
-	camera.ScreenWidth = w
-	camera.ScreenHeight = h
+	camera.SetScreenArea(0, 0, w, h)
+}
+func (camera *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
+	camera.maskX, camera.maskY = screenX, screenY
+	camera.maskW, camera.maskH = screenWidth, screenHeight
 }
 
 func (camera *Camera) IsHovered() bool {
@@ -145,10 +148,16 @@ func (camera *Camera) begin() {
 	rlCam.Zoom = float32(camera.Zoom)
 	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*float32(camera.PivotX)
 	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*float32(camera.PivotY)
+
+	var mx = int(math.Max(float64(camera.maskX), float64(camera.ScreenX)))
+	var my = int(math.Max(float64(camera.maskY), float64(camera.ScreenY)))
+	var maxW = camera.ScreenX + camera.ScreenWidth - mx
+	var maxH = camera.ScreenY + camera.ScreenHeight - my
+	var mw = int32(math.Min(float64(camera.maskW), float64(maxW)))
+	var mh = int32(math.Min(float64(camera.maskH), float64(maxH)))
+
 	rl.BeginMode2D(rlCam)
-	rl.BeginScissorMode(
-		int32(camera.ScreenX), int32(camera.ScreenY),
-		int32(camera.ScreenWidth), int32(camera.ScreenHeight))
+	rl.BeginScissorMode(int32(mx), int32(my), mw, mh)
 }
 
 // call after draw to get back to using screen space

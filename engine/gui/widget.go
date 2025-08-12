@@ -10,29 +10,36 @@ import (
 )
 
 type widget struct {
-	Properties []xml.Attr `xml:",any,attr"`
+	Properties    []xml.Attr `xml:",any,attr"`
+	Children      string     `xml:",innerxml"`
+	UpdateAndDraw func(cam *graphics.Camera, widget *widget, owner *container)
 }
 
-func widgetNew(class, id, x, y, width, height string) string {
-	return "<" + class + " id=\"" + id + "\"" +
+func newWidget(class, id, x, y, width, height string, properties, children [][2]string) string {
+	var result = "<Widget class=\"" + class + "\"" +
+		" id=\"" + id + "\"" +
 		" x=\"" + x + "\"" +
 		" y=\"" + y + "\"" +
 		" width=\"" + width + "\"" +
 		" height=\"" + height + "\""
-}
-func widgetExtraProps(props ...string) string {
-	var result = ""
-	for i, v := range props {
-		if i%2 == 0 {
-			result += " " + v + "=\""
-			continue
-		}
-		result += v + "\""
-	}
-	if len(props)%2 != 0 {
-		result += "\""
+	result += widgetExtraProps(properties)
+
+	if len(children) == 0 {
+		return result + " />"
 	}
 
+	result += ">\n"
+	for _, child := range children {
+		result += "\t\t\t<" + child[0] + ">" + child[1] + "</" + child[0] + ">"
+	}
+
+	return result + "\n\t\t</Widget>"
+}
+func widgetExtraProps(props [][2]string) string {
+	var result = ""
+	for _, v := range props {
+		result += " " + v[0] + "=\"" + v[1] + "\""
+	}
 	return result
 }
 

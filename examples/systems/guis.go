@@ -14,16 +14,24 @@ const btn1 = "btn1"
 func GUIs() {
 	var cam = graphics.NewCamera(1)
 	var menu = gui.New(
-		gui.Container("top", d.CameraLeftX+"+50", d.CameraTopY+"+50", d.CameraWidth+"-100", "200",
-			property.RGBA, "255 0 0 128"),
-		gui.NewButton(btn1, d.OwnerLeftX+"+10", d.OwnerTopY+"+10", "300", d.OwnerHeight+"-20",
-			property.RGBA, "0 255 0 255"),
+		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "200",
+			[][2]string{
+				{property.RGBA, "255 0 0 128"},
+			}),
+		gui.NewButton(btn1, d.OwnerLeftX+"+20", d.OwnerTopY+"+20", "200", d.OwnerHeight+"",
+			[][2]string{
+				{property.RGBA, "0 255 0 255"},
+			},
+			[][2]string{
+				{property.Text, "Hello,\nWorld!\nNew\nLine"},
+			}),
 	)
 
 	cam.Angle = 45
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
+		cam.ScreenWidth /= 2
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
 
 		menu.Draw(&cam)

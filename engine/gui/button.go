@@ -1,5 +1,7 @@
 package gui
 
-type button struct {
-	widget
+import "pure-kit/engine/graphics"
+
+func buttonUpdateAndDraw(cam *graphics.Camera, widget *widget, owner *container) {
+	widget.draw(cam, owner)
 }

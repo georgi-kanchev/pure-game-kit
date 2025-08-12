@@ -2,7 +2,7 @@ package gui
 
 type container struct {
 	widget
-	Buttons []button `xml:"Button"`
+	Widgets []widget `xml:"Widget"`
 }
 
 func (c *container) findWidget(id string) *widget {
@@ -10,9 +10,9 @@ func (c *container) findWidget(id string) *widget {
 		return &c.widget
 	}
 
-	for _, v := range c.Buttons {
-		if len(v.widget.Properties) > 0 && v.Properties[0].Value == id {
-			return &v.widget
+	for _, v := range c.Widgets {
+		if len(v.Properties) > 0 && v.Properties[0].Value == id {
+			return &v
 		}
 	}
 	return nil

@@ -7,6 +7,6 @@ const (
 	Width   = "width"
 	Height  = "height"
 	Text    = "text"
-	RGBA    = "rgba"
+	RGBA    = "rgba" // separated with space, example: 255 0 0 255
 	AssetId = "assetId"
 )
