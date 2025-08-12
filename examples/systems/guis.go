@@ -24,6 +24,7 @@ func GUIs() {
 			},
 			[][2]string{
 				{property.Text, "Hello,\nWorld!\nNew\nLine"},
+				{"Prop", "Value"},
 			}),
 	)
 

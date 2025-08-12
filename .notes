@@ -17,6 +17,10 @@ LAN?
 global events/notifications?
 
 // DONE:
+[40] [Tue] [12-08-2025]
+[√] graphics - camera mask
+[x] gui - progress
+
 [39] [Sun] [10-08-2025]
 [√] symbols - calculate func fix not supporting negative numbers such as "10 * -2"
 [x] gui - progress
