@@ -3,6 +3,7 @@ package gui
 import (
 	"encoding/xml"
 	"fmt"
+	"math"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/dynamic"
 	"pure-kit/engine/gui/property"
@@ -71,7 +72,7 @@ func New(widgets ...string) GUI {
 			var fn, has = updateAndDrawFuncs[wClass]
 			c.Widgets[j] = wId
 			w.Owner = cId
-			w.Properties = make(map[string]string, len(w.XmlProps)+len(w.XmlExtraProps))
+			w.Properties = make(map[string]string, len(w.XmlProps)) //+len(w.XmlExtraProps))
 
 			if has {
 				w.UpdateAndDraw = fn
@@ -80,9 +81,11 @@ func New(widgets ...string) GUI {
 			for _, xmlProp := range w.XmlProps {
 				w.Properties[xmlProp.Name.Local] = xmlProp.Value
 			}
-			for _, xmlProp := range w.XmlExtraProps {
-				w.Properties[xmlProp.XMLName.Local] = xmlProp.Value
-			}
+
+			// check comment in widget.go for a reason why this was removed
+			// for _, xmlProp := range w.XmlExtraProps {
+			// 	w.Properties[xmlProp.XMLName.Local] = xmlProp.Value
+			// }
 
 			gui.Widgets[wId] = *w
 		}
@@ -91,16 +94,16 @@ func New(widgets ...string) GUI {
 
 	return GUI{root: gui}
 }
-func Container(id, x, y, width, height string, properties [][2]string) string {
+func Container(id, x, y, width, height string, properties ...string) string {
 	var props = "<Container id=\"" + id + "\"" +
 		" x=\"" + x + "\"" +
 		" y=\"" + y + "\"" +
 		" width=\"" + width + "\"" +
 		" height=\"" + height + "\""
-	return props + widgetExtraProps(properties) + ">"
+	return props + widgetExtraProps(properties...) + ">"
 }
-func NewButton(id, x, y, width, height string, properties [][2]string, children [][2]string) string {
-	return newWidget("button", id, x, y, width, height, properties, children)
+func NewButton(id, width, height string, properties ...string) string {
+	return newWidget("button", id, "", "", width, height, properties...)
 }
 
 func (gui *GUI) Property(widgetId, property string) string {
@@ -123,17 +126,15 @@ func (gui *GUI) SetProperty(widgetId, property string, value string) {
 func (gui *GUI) Draw(camera *graphics.Camera) {
 	var prevAng = camera.Angle
 	var containers = gui.root.XmlContainers
-	var prevScX, prevScY = camera.ScreenX, camera.ScreenY // each container masks an area, store to turn back later
-	var prevScW, prevScH = camera.ScreenWidth, camera.ScreenHeight
 
 	camera.Angle = 0 // force no cam rotation for UI
 
-	for _, v := range containers {
-		v.UpdateAndDraw(&gui.root, camera)
+	for _, c := range containers {
+		c.UpdateAndDraw(&gui.root, camera)
 	}
 
-	camera.Angle = prevAng // return camera stuff back to how it was
-	camera.SetScreenArea(prevScX, prevScY, prevScW, prevScH)
+	camera.Angle = prevAng // reset angle & mask to how it was
+	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 }
 
 // #region private
@@ -142,7 +143,7 @@ var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, widget *widget, o
 	"button": buttonUpdateAndDraw,
 }
 
-func dyn(cam *graphics.Camera, owner *container, value string) string {
+func dyn(cam *graphics.Camera, owner *container, value string, defaultValue string) string {
 	var tlx, tly = cam.PointFromPivot(0, 0)
 	var brx, bry = cam.PointFromPivot(1, 1)
 	var cx, cy = cam.PointFromPivot(0.5, 0.5)
@@ -158,10 +159,10 @@ func dyn(cam *graphics.Camera, owner *container, value string) string {
 	value = strings.ReplaceAll(value, dynamic.CameraHeight, symbols.New(h))
 
 	if owner != nil {
-		var ox = symbols.New(dyn(cam, nil, owner.Properties[property.X]))
-		var oy = symbols.New(dyn(cam, nil, owner.Properties[property.Y]))
-		var ow = symbols.New(dyn(cam, nil, owner.Properties[property.Width]))
-		var oh = symbols.New(dyn(cam, nil, owner.Properties[property.Height]))
+		var ox = symbols.New(dyn(cam, nil, owner.Properties[property.X], "0"))
+		var oy = symbols.New(dyn(cam, nil, owner.Properties[property.Y], "0"))
+		var ow = symbols.New(dyn(cam, nil, owner.Properties[property.Width], "0"))
+		var oh = symbols.New(dyn(cam, nil, owner.Properties[property.Height], "0"))
 		var olx = ox
 		var orx = olx + "+" + ow
 		var oty = oy
@@ -177,15 +178,19 @@ func dyn(cam *graphics.Camera, owner *container, value string) string {
 		value = strings.ReplaceAll(value, dynamic.OwnerBottomY, oby)
 	}
 
-	return symbols.New(symbols.Calculate(value))
+	var calc = symbols.Calculate(value)
+	if math.IsNaN(calc) {
+		return defaultValue
+	}
+	return symbols.New(calc)
 }
 
 func getArea(cam *graphics.Camera, owner *container, props map[string]string) (x, y, w, h float32) {
-	var vx, _ = strconv.ParseFloat(dyn(cam, owner, props[property.X]), 32)
-	var vy, _ = strconv.ParseFloat(dyn(cam, owner, props[property.Y]), 32)
-	var vw, _ = strconv.ParseFloat(dyn(cam, owner, props[property.Width]), 32)
-	var vh, _ = strconv.ParseFloat(dyn(cam, owner, props[property.Height]), 32)
-	return float32(vx), float32(vy), float32(vw), float32(vh)
+	var vx = parseNum(dyn(cam, owner, props[property.X], "0"))
+	var vy = parseNum(dyn(cam, owner, props[property.Y], "0"))
+	var vw = parseNum(dyn(cam, owner, props[property.Width], "0"))
+	var vh = parseNum(dyn(cam, owner, props[property.Height], "0"))
+	return vx, vy, vw, vh
 }
 
 func getColor(props map[string]string) uint {
@@ -202,6 +207,10 @@ func getColor(props map[string]string) uint {
 		a, _ = strconv.ParseUint(rgba[3], 10, 8)
 	}
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
+}
+func parseNum(value string) float32 {
+	var v, _ = strconv.ParseFloat(value, 32)
+	return float32(v)
 }
 
 // #endregion

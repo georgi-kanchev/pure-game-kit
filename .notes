@@ -17,13 +17,16 @@ LAN?
 global events/notifications?
 
 // DONE:
+[41] [Wed] [13-08-2025]
+[x] gui - sorting widgets
+
 [40] [Tue] [12-08-2025]
 [√] graphics - camera mask
-[x] gui - progress
+[x] gui - extracting data from xml for faster use
 
 [39] [Sun] [10-08-2025]
 [√] symbols - calculate func fix not supporting negative numbers such as "10 * -2"
-[x] gui - progress
+[x] gui - stuff taking shape
 
 [38] [Sat] [09-08-2025]
 [√] data - nine slices assets
