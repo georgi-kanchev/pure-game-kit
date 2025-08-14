@@ -18,7 +18,7 @@ type GUI struct {
 }
 
 func New(widgets ...string) GUI {
-	var gui root
+	var root root
 	var result = "<GUI>"
 
 	// container is missing on top, add root container
@@ -50,13 +50,15 @@ func New(widgets ...string) GUI {
 
 	fmt.Printf("%v\n", result)
 
-	xml.Unmarshal([]byte(result), &gui)
+	var err = xml.Unmarshal([]byte(result), &root)
+	fmt.Printf("err: %v\n", err)
 
-	gui.Containers = map[string]container{}
-	gui.Widgets = map[string]widget{}
+	root.Containers = map[string]container{}
+	root.Widgets = map[string]widget{}
+	root.Themes = map[string]theme{}
 
-	for i := range gui.XmlContainers {
-		var c = &gui.XmlContainers[i]
+	for i := range root.XmlContainers {
+		var c = &root.XmlContainers[i]
 		var cId = c.XmlProps[0].Value
 		c.Widgets = make([]string, len(c.XmlWidgets))
 		c.Properties = make(map[string]string, len(c.XmlProps))
@@ -72,7 +74,7 @@ func New(widgets ...string) GUI {
 			var fn, has = updateAndDrawFuncs[wClass]
 			c.Widgets[j] = wId
 			w.Owner = cId
-			w.Properties = make(map[string]string, len(w.XmlProps)) //+len(w.XmlExtraProps))
+			w.Properties = make(map[string]string, len(w.XmlProps))
 
 			if has {
 				w.UpdateAndDraw = fn
@@ -82,28 +84,30 @@ func New(widgets ...string) GUI {
 				w.Properties[xmlProp.Name.Local] = xmlProp.Value
 			}
 
-			// check comment in widget.go for a reason why this was removed
-			// for _, xmlProp := range w.XmlExtraProps {
-			// 	w.Properties[xmlProp.XMLName.Local] = xmlProp.Value
-			// }
-
-			gui.Widgets[wId] = *w
+			root.Widgets[wId] = *w
 		}
-		gui.Containers[cId] = *c
+		for j := range c.XmlThemes {
+			var t = &c.XmlThemes[j]
+			var tId = t.XmlProps[0].Value
+			t.Properties = make(map[string]string, len(t.XmlProps))
+
+			for _, xmlProp := range t.XmlProps {
+				t.Properties[xmlProp.Name.Local] = xmlProp.Value
+			}
+			root.Themes[tId] = *t
+		}
+
+		root.Containers[cId] = *c
 	}
 
-	return GUI{root: gui}
+	return GUI{root: root}
 }
-func Container(id, x, y, width, height string, properties ...string) string {
-	var props = "<Container id=\"" + id + "\"" +
-		" x=\"" + x + "\"" +
-		" y=\"" + y + "\"" +
-		" width=\"" + width + "\"" +
-		" height=\"" + height + "\""
-	return props + widgetExtraProps(properties...) + ">"
+
+func (gui *GUI) ThemeProperty(themeId, property string) string {
+	return gui.root.Themes[themeId].Properties[property]
 }
-func NewButton(id, width, height string, properties ...string) string {
-	return newWidget("button", id, "", "", width, height, properties...)
+func (gui *GUI) SetThemeProperty(themeId, property, value string) {
+	gui.root.Themes[themeId].Properties[property] = value
 }
 
 func (gui *GUI) Property(widgetId, property string) string {
@@ -139,8 +143,70 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 
 // #region private
 
-var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, widget *widget, owner *container){
+var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
 	"button": buttonUpdateAndDraw,
+}
+
+func extraProps(props ...string) string {
+	var result = ""
+	for i, v := range props {
+		if i%2 == 0 {
+			result += " " + v + "=\""
+			continue
+		}
+		result += v + "\""
+	}
+	if len(props)%2 != 0 {
+		result += "\""
+	}
+	return result
+}
+
+func themedProp(prop string, root *root, c *container, w *widget) string {
+	// priority for widget: widget -> widget theme -> container theme -> container
+	// priority for container: container -> container theme
+
+	var wSelf, cSelf = "", ""
+	var wTheme, cTheme theme
+	var hasW, hasC, hasWt, hasCt = false, false, false, false
+
+	if w != nil {
+		wSelf, hasW = w.Properties[prop]
+		wTheme, hasWt = root.Themes[w.Properties[property.ThemeId]]
+	}
+	if c != nil {
+		cSelf, hasC = c.Properties[prop]
+		cTheme, hasCt = root.Themes[c.Properties[property.ThemeId]]
+	}
+
+	// container checks
+	if w == nil {
+		if hasC {
+			return cSelf
+		}
+		if hasCt {
+			return cTheme.Properties[prop]
+		}
+
+		return ""
+	}
+
+	// widget checks
+	if hasW {
+		return wSelf
+	}
+	if hasWt {
+		return wTheme.Properties[prop]
+	}
+
+	if hasCt {
+		return cTheme.Properties[prop]
+	}
+	if hasC {
+		return cSelf
+	}
+
+	return ""
 }
 
 func dyn(cam *graphics.Camera, owner *container, value string, defaultValue string) string {
@@ -185,16 +251,8 @@ func dyn(cam *graphics.Camera, owner *container, value string, defaultValue stri
 	return symbols.New(calc)
 }
 
-func getArea(cam *graphics.Camera, owner *container, props map[string]string) (x, y, w, h float32) {
-	var vx = parseNum(dyn(cam, owner, props[property.X], "0"))
-	var vy = parseNum(dyn(cam, owner, props[property.Y], "0"))
-	var vw = parseNum(dyn(cam, owner, props[property.Width], "0"))
-	var vh = parseNum(dyn(cam, owner, props[property.Height], "0"))
-	return vx, vy, vw, vh
-}
-
-func getColor(props map[string]string) uint {
-	var rgba = strings.Split(props[property.RGBA], " ")
+func parseColor(value string) uint {
+	var rgba = strings.Split(value, " ")
 	var r, g, b, a uint64
 
 	if len(rgba) == 3 || len(rgba) == 4 {
@@ -208,8 +266,11 @@ func getColor(props map[string]string) uint {
 	}
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
 }
-func parseNum(value string) float32 {
-	var v, _ = strconv.ParseFloat(value, 32)
+func parseNum(value string, defaultValue float32) float32 {
+	var v, err = strconv.ParseFloat(value, 32)
+	if err != nil {
+		return defaultValue
+	}
 	return float32(v)
 }
 

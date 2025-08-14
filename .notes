@@ -17,6 +17,10 @@ LAN?
 global events/notifications?
 
 // DONE:
+[42] [Thu] [14-08-2025]
+[√] graphics - textboxes 2 wrapping fixes
+[x] gui - themes & per widget/container/theme properties
+
 [41] [Wed] [13-08-2025]
 [x] gui - sorting widgets
 

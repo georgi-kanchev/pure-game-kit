@@ -45,8 +45,7 @@ func (textBox *TextBox) Size() (width, height float32) {
 func (textBox *TextBox) TextWrap(text string) string {
 	var font = textBox.font()
 	var words = strings.Split(text, " ")
-	var curX, curY = textBox.X, textBox.Y
-	var gapSymbols = textBox.gapSymbols()
+	var curX, curY float32 = 0, 0
 	var buffer = bytes.NewBufferString("")
 
 	for w := range words {
@@ -56,7 +55,7 @@ func (textBox *TextBox) TextWrap(text string) string {
 		}
 
 		var wordLength = symbols.Count(word)
-		var wordSize = rl.MeasureTextEx(*font, strings.Trim(word, " "), textBox.LineHeight, gapSymbols)
+		var wordSize = rl.MeasureTextEx(*font, strings.Trim(word, " "), textBox.LineHeight, textBox.gapSymbols())
 		var wordEndOfBox = curX+wordSize.X > textBox.Width
 		var firstWord = w == 0
 
@@ -82,7 +81,12 @@ func (textBox *TextBox) TextWrap(text string) string {
 			}
 
 			buffer.WriteRune(char)
-			curX += charSize.X + gapSymbols
+
+			if char == textBox.EmbeddedColorsTag || char == textBox.EmbeddedThicknessesTag {
+				continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
+			} // however, the assets tag has width and it should
+
+			curX += charSize.X + textBox.gapSymbols()
 		}
 	}
 
@@ -167,9 +171,9 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 				continue // use as zerospace character or skip anyway
 			}
 
-			if curX+charSize.X > t.Width {
-				skip = true
-			}
+			// if curX+charSize.X > t.Width {
+			// 	skip = true
+			// }
 
 			if char == colorTag {
 				if colorIndex < len(t.EmbeddedColors) {

@@ -16,13 +16,11 @@ func Texts() {
 	var textBox = graphics.NewTextBox(font, 0, 0, "Lorem `ipsum ^^ dolor` sit amet, *consectetur* ^^ adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. `Ut enim ^^ ad minim` veniam, quis nostrud *exercitation* ^^\r^^ ullamco laboris nisi ut aliquip ex ea commodo consequat. `Duis aute irure dolor in reprehenderit in voluptate velit esse cillum doloreeu fugiat nulla pariatur.")
 	textBox.PivotX, textBox.PivotY = 0, 0
 	textBox.AlignmentY = 1
-	textBox.LineGap = -1
-	textBox.Angle = 5
-	// textBox.SymbolGap = 2
+	textBox.Angle = 0
 	textBox.EmbeddedColors = []uint{color.Red, color.Green, color.Black, color.White, color.Blue}
 	textBox.EmbeddedAssetIds = []string{tiles[162], tiles[256], tiles[156], tiles[154], tiles[157]}
 	textBox.EmbeddedThicknesses = []float32{0.7, 0.5, 0.35}
-	textBox.WordWrap = false
+	textBox.LineHeight = 100
 
 	var a = 0.0
 
@@ -33,9 +31,9 @@ func Texts() {
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
 
-		a = math.Sin(float64(seconds.Runtime()))
+		a = math.Sin(float64(seconds.Runtime() / 5))
 
-		textBox.Thickness = float32(a)
+		textBox.Thickness = float32(0.5 + a/2)
 
 		var mx, my = textBox.MousePosition(&cam)
 		// var symbols = symbols.Count(textBox.TextSymbols())
