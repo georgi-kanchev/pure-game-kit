@@ -17,6 +17,11 @@ LAN?
 global events/notifications?
 
 // DONE:
+[44] [Sat] [16-08-2025]
+[√] gui + camera huge optimizations
+[√] seconds + window fixes & touch ups
+[√] performance cpu profiler
+
 [43] [Fri] [15-08-2025]
 [√] graphics - textbox wrap fix
 [√] graphics - textbox adding "..." at start & end of hidden lines

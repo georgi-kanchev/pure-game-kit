@@ -143,7 +143,25 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 
 	camera.Angle = 0 // force no cam rotation for UI
 
+	var tlx, tly = camera.PointFromPivot(0, 0)
+	var brx, bry = camera.PointFromPivot(1, 1)
+	var cx, cy = camera.PointFromPivot(0.5, 0.5)
+	var w, h = camera.Size() // caching dynamic cam props
+	camCx, camCy = symbols.New(cx), symbols.New(cy)
+	camLx, camRx = symbols.New(tlx), symbols.New(brx)
+	camTy, camBy = symbols.New(tly), symbols.New(bry)
+	camW, camH = symbols.New(w), symbols.New(h)
+
 	for _, c := range containers {
+		var ox = symbols.New(dyn(nil, c.Properties[property.X], "0"))
+		var oy = symbols.New(dyn(nil, c.Properties[property.Y], "0"))
+		var ow = symbols.New(dyn(nil, c.Properties[property.Width], "0"))
+		var oh = symbols.New(dyn(nil, c.Properties[property.Height], "0"))
+		ownerX, ownerY = ox, oy // caching dynamic owner/container props
+		ownerLx, ownerRx = ox, ox+"+"+ow
+		ownerTy, ownerBy = oy, oy+"+"+oh
+		ownerW, ownerH = ow, oh
+
 		c.UpdateAndDraw(&gui.root, camera)
 	}
 
@@ -171,6 +189,8 @@ var updateAndDrawFuncs = map[string]func(
 	"visual": visual,
 	"button": button,
 }
+var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
+var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache
 
 func extraProps(props ...string) string {
 	var result = ""
@@ -222,39 +242,25 @@ func defaultValue(value, defaultValue string) string {
 	return value
 }
 
-func dyn(cam *graphics.Camera, owner *container, value string, defaultValue string) string {
-	var tlx, tly = cam.PointFromPivot(0, 0)
-	var brx, bry = cam.PointFromPivot(1, 1)
-	var cx, cy = cam.PointFromPivot(0.5, 0.5)
-	var w, h = cam.Size()
-
-	value = strings.ReplaceAll(value, dynamic.CameraCenterX, symbols.New(cx))
-	value = strings.ReplaceAll(value, dynamic.CameraCenterY, symbols.New(cy))
-	value = strings.ReplaceAll(value, dynamic.CameraLeftX, symbols.New(tlx))
-	value = strings.ReplaceAll(value, dynamic.CameraRightX, symbols.New(brx))
-	value = strings.ReplaceAll(value, dynamic.CameraTopY, symbols.New(tly))
-	value = strings.ReplaceAll(value, dynamic.CameraBottomY, symbols.New(bry))
-	value = strings.ReplaceAll(value, dynamic.CameraWidth, symbols.New(w))
-	value = strings.ReplaceAll(value, dynamic.CameraHeight, symbols.New(h))
+func dyn(owner *container, value string, defaultValue string) string {
+	value = strings.ReplaceAll(value, dynamic.CameraCenterX, camCx)
+	value = strings.ReplaceAll(value, dynamic.CameraCenterY, camCy)
+	value = strings.ReplaceAll(value, dynamic.CameraLeftX, camLx)
+	value = strings.ReplaceAll(value, dynamic.CameraRightX, camRx)
+	value = strings.ReplaceAll(value, dynamic.CameraTopY, camTy)
+	value = strings.ReplaceAll(value, dynamic.CameraBottomY, camBy)
+	value = strings.ReplaceAll(value, dynamic.CameraWidth, camW)
+	value = strings.ReplaceAll(value, dynamic.CameraHeight, camH)
 
 	if owner != nil {
-		var ox = symbols.New(dyn(cam, nil, owner.Properties[property.X], "0"))
-		var oy = symbols.New(dyn(cam, nil, owner.Properties[property.Y], "0"))
-		var ow = symbols.New(dyn(cam, nil, owner.Properties[property.Width], "0"))
-		var oh = symbols.New(dyn(cam, nil, owner.Properties[property.Height], "0"))
-		var olx = ox
-		var orx = olx + "+" + ow
-		var oty = oy
-		var oby = oty + "+" + oh
-
-		value = strings.ReplaceAll(value, dynamic.ContainerX, ox)
-		value = strings.ReplaceAll(value, dynamic.ContainerY, oy)
-		value = strings.ReplaceAll(value, dynamic.ContainerWidth, ow)
-		value = strings.ReplaceAll(value, dynamic.ContainerHeight, oh)
-		value = strings.ReplaceAll(value, dynamic.ContainerLeftX, olx)
-		value = strings.ReplaceAll(value, dynamic.ContainerRightX, orx)
-		value = strings.ReplaceAll(value, dynamic.ContainerTopY, oty)
-		value = strings.ReplaceAll(value, dynamic.ContainerBottomY, oby)
+		value = strings.ReplaceAll(value, dynamic.ContainerX, ownerX)
+		value = strings.ReplaceAll(value, dynamic.ContainerY, ownerY)
+		value = strings.ReplaceAll(value, dynamic.ContainerWidth, ownerW)
+		value = strings.ReplaceAll(value, dynamic.ContainerHeight, ownerH)
+		value = strings.ReplaceAll(value, dynamic.ContainerLeftX, ownerLx)
+		value = strings.ReplaceAll(value, dynamic.ContainerRightX, ownerRx)
+		value = strings.ReplaceAll(value, dynamic.ContainerTopY, ownerTy)
+		value = strings.ReplaceAll(value, dynamic.ContainerBottomY, ownerBy)
 	}
 
 	var calc = symbols.Calculate(value)

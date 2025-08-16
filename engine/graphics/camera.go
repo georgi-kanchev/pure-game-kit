@@ -2,6 +2,7 @@ package graphics
 
 import (
 	"math"
+	"pure-kit/engine/internal"
 	"pure-kit/engine/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -10,7 +11,30 @@ import (
 type Camera struct {
 	ScreenX, ScreenY, ScreenWidth, ScreenHeight int
 	X, Y, Angle, Zoom, PivotX, PivotY           float32
-	maskX, maskY, maskW, maskH                  int
+
+	// Makes sequencial Draw calls faster.
+	// All of the drawing to the camera can be batched, as long as the other parameters don't change.
+	// Make sure to turn off batching after done drawing the batch,
+	// otherwise the other camera parameters will never take effect visually again.
+	//
+	// 	// recommended
+	// 	camera.Angle = 45
+	// 	camera.Batch = true
+	// 	camera.Draw...
+	// 	camera.Draw...
+	// 	camera.Batch = false
+	// 	camera.X = 300
+	//
+	//	// not recommended
+	// 	camera.Batch = true
+	// 	camera.Draw...
+	// 	camera.Angle = 45
+	// 	camera.X = 300
+	// 	camera.Draw...
+	// 	camera.Batch = false
+	Batch bool
+
+	maskX, maskY, maskW, maskH int
 }
 
 func NewCamera(zoom float32) Camera {
@@ -43,7 +67,6 @@ func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight 
 }
 func (camera *Camera) SetScreenAreaToWindow() {
 	tryRecreateWindow()
-
 	var w, h = window.Size()
 	camera.SetScreenArea(0, 0, w, h)
 }
@@ -67,7 +90,7 @@ func (camera *Camera) MousePosition() (x, y float32) {
 	return camera.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
 }
 func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
-	camera.begin()
+	camera.update()
 
 	var sx = float32(screenX)
 	var sy = float32(screenY)
@@ -87,12 +110,10 @@ func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 
 	rotX += float32(rlCam.Target.X)
 	rotY += float32(rlCam.Target.Y)
-
-	camera.end()
 	return rotX, rotY
 }
 func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
-	camera.begin()
+	camera.update()
 
 	x -= float32(rlCam.Target.X)
 	y -= float32(rlCam.Target.Y)
@@ -108,8 +129,6 @@ func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 
 	rotX += float32(rlCam.Offset.X)
 	rotY += float32(rlCam.Offset.Y)
-
-	camera.end()
 	return int(rotX), int(rotY)
 }
 func (camera *Camera) PointFromCamera(otherCamera *Camera, otherX, otherY float32) (myX, myY float32) {
@@ -131,15 +150,10 @@ func (camera *Camera) PointFromPivot(pivotX, pivotY float32) (x, y float32) {
 // region private
 
 var rlCam = rl.Camera2D{}
+var maskX, maskY, maskW, maskH int32
 
 // call before draw to update camera but use screen space instead of camera space
 func (camera *Camera) update() {
-	camera.begin()
-	camera.end()
-}
-
-// call before draw to update camera and use camera space
-func (camera *Camera) begin() {
 	tryRecreateWindow()
 
 	rlCam.Target.X = float32(camera.X)
@@ -156,17 +170,35 @@ func (camera *Camera) begin() {
 	var mw = int32(math.Min(float64(camera.maskW), float64(maxW)))
 	var mh = int32(math.Min(float64(camera.maskH), float64(maxH)))
 
+	maskX, maskY, maskW, maskH = int32(mx), int32(my), mw, mh
+}
+
+// call before draw to update camera and use camera space
+func (camera *Camera) begin() {
+	camera.update()
+	if camera.Batch {
+		return
+	}
+
 	rl.BeginMode2D(rlCam)
-	rl.BeginScissorMode(int32(mx), int32(my), mw, mh)
+	rl.BeginScissorMode(maskX, maskY, maskW, maskH)
 }
 
 // call after draw to get back to using screen space
 func (camera *Camera) end() {
+	if camera.Batch {
+		return
+	}
+
 	rl.EndScissorMode()
 	rl.EndMode2D()
 }
 
 func tryRecreateWindow() {
+	if internal.WindowReady {
+		return
+	}
+
 	if !rl.IsWindowReady() {
 		window.Recreate()
 	}

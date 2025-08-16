@@ -29,6 +29,9 @@ func AsClock12(seconds float32, divider string, units Unit, AM_PM bool) string {
 	return formatTimeParts(ts, divider, units, true, AM_PM)
 }
 
+func SetTimeScale(timeScale float32) { internal.TimeScale = timeScale }
+
+func TimeScale() float32            { return internal.TimeScale }
 func Clock() float32                { return internal.Clock }
 func FrameDelta() float32           { return internal.Delta }
 func FrameRate() float32            { return internal.FrameRate }

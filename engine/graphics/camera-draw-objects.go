@@ -73,6 +73,8 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 	camera.end()
 }
 func (camera *Camera) DrawBoxes(boxes ...*Box) {
+	camera.begin()
+	camera.Batch = true
 	for _, s := range boxes {
 		if s == nil {
 			continue
@@ -131,9 +133,12 @@ func (camera *Camera) DrawBoxes(boxes ...*Box) {
 		drawSlice(camera, &s.Node, 0, h-d, l, d, asset[6], c)   // bottom left
 		drawSlice(camera, &s.Node, w-r, h-d, r, d, asset[8], c) // bottom right
 	}
+	camera.Batch = false
+	camera.end()
 }
 func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	camera.begin()
+	camera.Batch = true
 	for _, t := range textBoxes {
 		if t == nil {
 			continue
@@ -166,9 +171,8 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 				sprite.Color = uint(rl.ColorToInt(s.Color))
 
 				endShader()
-				camera.end()
+				camera.update()
 				camera.DrawSprites(&sprite)
-				camera.begin()
 				beginShader(t, s.Thickness)
 				continue
 			}
@@ -179,7 +183,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 		endShader()
 	}
-
+	camera.Batch = false
 	camera.end()
 }
 

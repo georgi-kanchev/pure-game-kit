@@ -17,10 +17,10 @@ var reusableNineslice graphics.Box = graphics.Box{}
 
 func visual(w, h float32, cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var assetId = widget.AssetId
-	var cLeft = parseNum(dyn(cam, owner, themedProp(p.BoxEdgeLeft, root, owner, widget), "100"), 0)
-	var cRight = parseNum(dyn(cam, owner, themedProp(p.BoxEdgeRight, root, owner, widget), "100"), 0)
-	var cTop = parseNum(dyn(cam, owner, themedProp(p.BoxEdgeTop, root, owner, widget), "100"), 0)
-	var cBottom = parseNum(dyn(cam, owner, themedProp(p.BoxEdgeBottom, root, owner, widget), "100"), 0)
+	var cLeft = parseNum(dyn(owner, themedProp(p.BoxEdgeLeft, root, owner, widget), "100"), 0)
+	var cRight = parseNum(dyn(owner, themedProp(p.BoxEdgeRight, root, owner, widget), "100"), 0)
+	var cTop = parseNum(dyn(owner, themedProp(p.BoxEdgeTop, root, owner, widget), "100"), 0)
+	var cBottom = parseNum(dyn(owner, themedProp(p.BoxEdgeBottom, root, owner, widget), "100"), 0)
 	var col = parseColor(themedProp(p.Color, root, owner, widget))
 
 	if assetId != "" {

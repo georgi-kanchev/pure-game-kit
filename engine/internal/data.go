@@ -49,6 +49,8 @@ var Input = ""
 var Keys = []int{}
 var Buttons = []int{}
 
+var WindowReady = false
+
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
 	width, height = 0, 0

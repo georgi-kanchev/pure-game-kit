@@ -9,13 +9,15 @@ import (
 )
 
 func (camera *Camera) DrawColor(color uint) {
-	camera.update()
+	camera.begin()
+	camera.end()
 
 	var x, y, w, h = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
 	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(h), rl.GetColor(color))
 }
 func (camera *Camera) DrawScreenFrame(thickness int, color uint) {
-	camera.update()
+	camera.begin()
+	camera.end()
 
 	var x, y, w, h = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
 	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(thickness), rl.GetColor(color))             // top
@@ -25,7 +27,7 @@ func (camera *Camera) DrawScreenFrame(thickness int, color uint) {
 }
 func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	camera.begin()
-
+	camera.Batch = true
 	var sx, sy, sw, sh = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
 	var ulx, uly = camera.PointFromScreen(sx, sy)
 	var urx, ury = camera.PointFromScreen(sx+sw, sy)
@@ -79,7 +81,7 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 	if left <= 0 && right >= 0 { // y
 		camera.DrawLine(0, top, 0, bottom, thickness*4, color)
 	}
-
+	camera.Batch = false
 	camera.end()
 }
 
@@ -101,6 +103,9 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	if thickness == 0 {
 		return
 	}
+
+	camera.Batch = true
+	defer func() { camera.Batch = false }()
 
 	if width < 0 {
 		x, y = point.MoveAtAngle(x, y, angle+180, -width)

@@ -39,7 +39,6 @@ func KeepOpen() bool {
 	tryCreate()
 	tryUpdateProperties()
 
-	rl.DrawFPS(0, 0)
 	rl.EndDrawing()
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.GetColor(Color))
@@ -186,7 +185,7 @@ func SetIcon(assetId string) {
 // region private
 var terminate = false
 var currTitle = ""
-var currTargetFPS byte = 60
+var currTargetFPS byte = 0
 
 func tryCreate() {
 	if rl.IsWindowReady() {
@@ -206,7 +205,7 @@ func tryCreate() {
 	rl.InitWindow(1280, 720, Title)
 	rl.SetExitKey(rl.KeyNull)
 	rl.MaximizeWindow()
-	rl.SetTargetFPS(60)
+	internal.WindowReady = true
 
 	tryUpdateProperties()
 	IsOpen = true
@@ -219,7 +218,9 @@ func tryUpdateProperties() {
 		rl.SetWindowTitle(Title)
 	}
 
-	if TargetFrameRate != currTargetFPS {
+	if TargetFrameRate == 0 {
+		rl.SetTargetFPS(99999999)
+	} else if TargetFrameRate != currTargetFPS {
 		rl.SetTargetFPS(int32(TargetFrameRate))
 	}
 }

@@ -1,10 +1,12 @@
 package example
 
 import (
+	"fmt"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/motion"
 	"pure-kit/engine/motion/curves"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/window"
 )
 
@@ -22,11 +24,18 @@ func Tweens() {
 		GoTo(3, curves.EaseCubicOut, 0, 0).
 		GoTo(2, curves.EaseBackInOut, -200, 200)
 
+	window.IsVSynced = false
+	window.TargetFrameRate = 255
+
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
+		cam.DrawGrid(1, 100, 100, color.Gray)
+
 		var pos = position.CurrentValues()
 		cam.DrawRectangle(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], color.White)
+
+		fmt.Printf("seconds.FrameRate(): %v\n", seconds.FrameRate())
 
 		if position.IsFinished() {
 			position.Restart()

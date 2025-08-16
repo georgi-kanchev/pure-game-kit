@@ -199,9 +199,24 @@ func Reveal(text string, progress float32) string {
 }
 
 func New(elements ...any) string {
-	var result string
+	var result = ""
 	for _, e := range elements {
-		result += fmt.Sprint(e)
+		switch v := e.(type) {
+		case string:
+			result += v
+		case int:
+			result += strconv.Itoa(v)
+		case int64:
+			result += strconv.FormatInt(v, 10)
+		case float64:
+			result += strconv.FormatFloat(v, 'f', -1, 64)
+		case float32:
+			result += strconv.FormatFloat(float64(v), 'f', -1, 32)
+		case fmt.Stringer:
+			result += v.String()
+		default:
+			result += fmt.Sprint(v) // fallback for any other type
+		}
 	}
 	return result
 }

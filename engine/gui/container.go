@@ -28,13 +28,13 @@ func Container(id, x, y, width, height string, properties ...string) string {
 }
 
 func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
-	var x = parseNum(dyn(cam, nil, c.Properties[p.X], "0"), 0)
-	var y = parseNum(dyn(cam, nil, c.Properties[p.Y], "0"), 0)
-	var w = parseNum(dyn(cam, nil, c.Properties[p.Width], "0"), 0)
-	var h = parseNum(dyn(cam, nil, c.Properties[p.Height], "0"), 0)
+	var x = parseNum(dyn(nil, c.Properties[p.X], "0"), 0)
+	var y = parseNum(dyn(nil, c.Properties[p.Y], "0"), 0)
+	var w = parseNum(dyn(nil, c.Properties[p.Width], "0"), 0)
+	var h = parseNum(dyn(nil, c.Properties[p.Height], "0"), 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
-	var cGapX = parseNum(dyn(cam, c, c.Properties[p.GapX], "0"), 0)
-	var cGapY = parseNum(dyn(cam, c, c.Properties[p.GapY], "0"), 0)
+	var cGapX = parseNum(dyn(c, c.Properties[p.GapX], "0"), 0)
+	var cGapY = parseNum(dyn(c, c.Properties[p.GapY], "0"), 0)
 	var curX, curY = x + cGapX, y + cGapY
 	var maxHeight float32
 
@@ -43,12 +43,12 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 
 	for _, wId := range c.Widgets {
 		var widget = root.Widgets[wId]
-		var ww = parseNum(dyn(cam, c, themedProp(p.Width, root, c, &widget), "0"), 0)
-		var wh = parseNum(dyn(cam, c, themedProp(p.Height, root, c, &widget), "0"), 0)
-		var gapX = parseNum(dyn(cam, c, themedProp(p.GapX, root, c, &widget), "0"), 0)
-		var gapY = parseNum(dyn(cam, c, themedProp(p.GapY, root, c, &widget), "0"), 0)
-		var offX = parseNum(dyn(cam, c, widget.Properties[p.OffsetX], "0"), 0)
-		var offY = parseNum(dyn(cam, c, widget.Properties[p.OffsetY], "0"), 0)
+		var ww = parseNum(dyn(c, themedProp(p.Width, root, c, &widget), "0"), 0)
+		var wh = parseNum(dyn(c, themedProp(p.Height, root, c, &widget), "0"), 0)
+		var gapX = parseNum(dyn(c, themedProp(p.GapX, root, c, &widget), "0"), 0)
+		var gapY = parseNum(dyn(c, themedProp(p.GapY, root, c, &widget), "0"), 0)
+		var offX = parseNum(dyn(c, widget.Properties[p.OffsetX], "0"), 0)
+		var offY = parseNum(dyn(c, widget.Properties[p.OffsetY], "0"), 0)
 		var _, isBgr = widget.Properties[p.FillContainer]
 
 		if isBgr {
@@ -58,7 +58,7 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 			var row, newRow = widget.Properties[p.NewRow]
 			if newRow {
 				curX = x + cGapX
-				curY += parseNum(dyn(cam, c, row, symbols.New(maxHeight+gapY)), 0)
+				curY += parseNum(dyn(c, row, symbols.New(maxHeight+gapY)), 0)
 			}
 
 			widget.X = curX + offX
