@@ -2,7 +2,6 @@ package graphics
 
 import (
 	"bytes"
-	"math"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/symbols"
@@ -145,6 +144,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
 	var colorIndex, assetIndex, thickIndex = 0, 0, 0
 	var lastChar = ""
+	var lineIndex = 0
 	// although some chars are "outside" of the box, they still need to be iterated cuz of colorIndex and assetIndex
 
 	for l, line := range lines {
@@ -162,6 +162,13 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			skip = true // no need for right cuz text wraps there
 		}
 
+		if !skip && lineIndex == 0 && l > 0 && symbols.Count(line) > 3 {
+			line = "..." + line[3:] // invisible lines before this one, indicate it
+		}
+		if curY+t.LineHeight*1.5-1 > t.Height && l < len(lines)-1 && symbols.Count(line) > 3 {
+			line = line[:len(line)-3] + "..." // invisible lines after this one, indicate it
+		}
+
 		for c := range lineLength {
 			var char = string(line[c])
 			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
@@ -171,9 +178,9 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 				continue // use as zerospace character or skip anyway
 			}
 
-			// if curX+charSize.X > t.Width {
-			// 	skip = true
-			// }
+			if curX+charSize.X > t.Width {
+				skip = true
+			}
 
 			if char == colorTag {
 				if colorIndex < len(t.EmbeddedColors) {
@@ -214,13 +221,13 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 
 				result = append(result, symbol)
 
-				var lineIndex = int(math.Min(float64(l), float64(len(resultLines))))
 				if lineIndex == len(resultLines) {
 					resultLines = append(resultLines, "")
 				}
-				resultLines[lineIndex] += symbol.Value
 
+				resultLines[lineIndex] += symbol.Value
 				curX += charSize.X + t.gapSymbols()
+
 			}
 
 			if isAsset {
@@ -230,6 +237,10 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			if char != "\n" {
 				lastChar = char
 			}
+		}
+
+		if !skip {
+			lineIndex++
 		}
 	}
 

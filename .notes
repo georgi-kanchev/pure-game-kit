@@ -17,6 +17,15 @@ LAN?
 global events/notifications?
 
 // DONE:
+[43] [Fri] [15-08-2025]
+[√] graphics - textbox wrap fix
+[√] graphics - textbox adding "..." at start & end of hidden lines
+[√] gui - textbox
+[√] gui - visual
+[√] gui - button visuals
+[√] gui - restructure
+[√] assets - updated default ui
+
 [42] [Thu] [14-08-2025]
 [√] graphics - textboxes 2 wrapping fixes
 [x] gui - themes & per widget/container/theme properties

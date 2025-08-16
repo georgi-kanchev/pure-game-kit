@@ -2,14 +2,14 @@ package graphics
 
 import "pure-kit/engine/internal"
 
-type NineSlice struct {
+type Box struct {
 	Sprite
 	EdgeLeft, EdgeRight, EdgeTop, EdgeBottom float32
 }
 
-func NewNineSlice(assetId string, x, y float32) NineSlice {
-	var result = NineSlice{Sprite: NewSprite(assetId, x, y)}
-	var slices, has = internal.NineSlices[assetId]
+func NewBox(assetId string, x, y float32) Box {
+	var result = Box{Sprite: NewSprite(assetId, x, y)}
+	var slices, has = internal.Boxes[assetId]
 
 	if !has {
 		slices = [9]string{}

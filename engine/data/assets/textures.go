@@ -108,9 +108,9 @@ func LoadTextureAtlasTile(atlasId, tileId string, cellX, cellY, countX, countY f
 
 	return ""
 }
-func LoadTextureNineSlice(nineSliceId string, assetIds [9]string) string {
-	internal.NineSlices[nineSliceId] = assetIds
-	return nineSliceId
+func LoadTextureBox(boxId string, assetIds [9]string) string {
+	internal.Boxes[boxId] = assetIds
+	return boxId
 }
 
 func UnloadTextures(textureIds ...string) {
@@ -141,5 +141,10 @@ func UnloadTextureAtlases(atlasIds ...string) {
 func UnloadTextureAtlasTiles(tileIds ...string) {
 	for _, v := range tileIds {
 		delete(internal.AtlasRects, v)
+	}
+}
+func UnloadTextureBoxes(nineSliceIds ...string) {
+	for _, v := range nineSliceIds {
+		delete(internal.Boxes, v)
 	}
 }

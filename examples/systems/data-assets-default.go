@@ -34,7 +34,11 @@ func DefaultAssetTexture() {
 	runDefaultAssetDisplay(0.7, 256, 0, 0, 0, function)
 }
 func DefaultAssetUI() {
-	runDefaultAssetDisplay(0.7, 16, 0, 9, 7, assets.LoadDefaultAtlasUI)
+	var function = func() (string, []string) {
+		var a, b, _ = assets.LoadDefaultAtlasUI()
+		return a, b
+	}
+	runDefaultAssetDisplay(0.7, 16, 0, 9, 8, function)
 }
 
 // #region private

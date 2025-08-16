@@ -72,8 +72,8 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 	}
 	camera.end()
 }
-func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
-	for _, s := range nineSlices {
+func (camera *Camera) DrawBoxes(boxes ...*Box) {
+	for _, s := range boxes {
 		if s == nil {
 			continue
 		}
@@ -82,7 +82,7 @@ func (camera *Camera) DrawNineSlices(nineSlices ...*NineSlice) {
 		var u, r, d, l = s.EdgeBottom, s.EdgeRight, s.EdgeTop, s.EdgeLeft
 		var errX, errY float32 = 2, 2 // this adds margin of error to the middle part (it's behind all other parts)
 		var c = s.Color
-		var asset, has = internal.NineSlices[s.AssetId]
+		var asset, has = internal.Boxes[s.AssetId]
 
 		if !has {
 			camera.DrawSprites(&s.Sprite)

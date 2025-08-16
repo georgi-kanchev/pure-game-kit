@@ -17,12 +17,12 @@ type GUI struct {
 	root root
 }
 
-func New(widgets ...string) GUI {
+func New(elements ...string) GUI {
 	var root root
 	var result = "<GUI>"
 
 	// container is missing on top, add root container
-	if len(widgets) > 0 && !strings.HasPrefix(widgets[0], "<Container") {
+	if len(elements) > 0 && !strings.HasPrefix(elements[0], "<Container") {
 		result += "\n\t<Container " + property.Id + "=\"root\" " +
 			property.X + "=\"" + dynamic.CameraLeftX + "\" " +
 			property.Y + "=\"" + dynamic.CameraTopY + "\" " +
@@ -30,7 +30,7 @@ func New(widgets ...string) GUI {
 			property.Height + "=\"" + dynamic.CameraHeight + "\">"
 	}
 
-	for i, v := range widgets {
+	for i, v := range elements {
 		if strings.HasPrefix(v, "<Container") {
 			if i > 0 {
 				result += "\n\t</Container>"
@@ -41,7 +41,7 @@ func New(widgets ...string) GUI {
 
 		result += "\n\t" + v
 
-		if i == len(widgets)-1 {
+		if i == len(elements)-1 {
 			result += "\n\t</Container>"
 		}
 	}
@@ -74,6 +74,7 @@ func New(widgets ...string) GUI {
 			var fn, has = updateAndDrawFuncs[wClass]
 			c.Widgets[j] = wId
 			w.Owner = cId
+			w.Class = wClass
 			w.Properties = make(map[string]string, len(w.XmlProps))
 
 			if has {
@@ -103,28 +104,37 @@ func New(widgets ...string) GUI {
 	return GUI{root: root}
 }
 
-func (gui *GUI) ThemeProperty(themeId, property string) string {
-	return gui.root.Themes[themeId].Properties[property]
-}
-func (gui *GUI) SetThemeProperty(themeId, property, value string) {
-	gui.root.Themes[themeId].Properties[property] = value
-}
+func (gui *GUI) Property(id, property string) string {
+	var w, hasW = gui.root.Widgets[id]
+	var c, hasC = gui.root.Containers[id]
+	var t, hasT = gui.root.Themes[id]
 
-func (gui *GUI) Property(widgetId, property string) string {
-	var widget, has = gui.root.Widgets[widgetId]
-	if !has {
-		return ""
+	if hasW {
+		return w.Properties[property]
+	}
+	if hasC {
+		return c.Properties[property]
+	}
+	if hasT {
+		return t.Properties[property]
 	}
 
-	return widget.Properties[property]
+	return ""
 }
-func (gui *GUI) SetProperty(widgetId, property string, value string) {
-	var widget, has = gui.root.Widgets[widgetId]
-	if !has {
-		return
-	}
+func (gui *GUI) SetProperty(id, property string, value string) {
+	var w, hasW = gui.root.Widgets[id]
+	var c, hasC = gui.root.Containers[id]
+	var t, hasT = gui.root.Themes[id]
 
-	widget.Properties[property] = value
+	if hasW {
+		w.Properties[property] = value
+	}
+	if hasC {
+		c.Properties[property] = value
+	}
+	if hasT {
+		t.Properties[property] = value
+	}
 }
 
 func (gui *GUI) Draw(camera *graphics.Camera) {
@@ -141,10 +151,25 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 }
 
+func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
+	var w, hasW = gui.root.Widgets[id]
+	var c, hasC = gui.root.Containers[id]
+
+	if hasW {
+		return w.IsHovered(&gui.root, camera)
+	}
+	if hasC {
+		return c.IsHovered(&gui.root, camera)
+	}
+	return false
+}
+
 // #region private
 
-var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
-	"button": buttonUpdateAndDraw,
+var updateAndDrawFuncs = map[string]func(
+	w, h float32, cam *graphics.Camera, root *root, widget *widget, owner *container){
+	"visual": visual,
+	"button": button,
 }
 
 func extraProps(props ...string) string {
@@ -163,32 +188,18 @@ func extraProps(props ...string) string {
 }
 
 func themedProp(prop string, root *root, c *container, w *widget) string {
-	// priority for widget: widget -> widget theme -> container theme -> container
-	// priority for container: container -> container theme
+	// priority for widget: widget -> widget theme -> container theme
 
-	var wSelf, cSelf = "", ""
+	var wSelf = ""
 	var wTheme, cTheme theme
-	var hasW, hasC, hasWt, hasCt = false, false, false, false
+	var hasW, hasWt, hasCt = false, false, false
 
 	if w != nil {
 		wSelf, hasW = w.Properties[prop]
 		wTheme, hasWt = root.Themes[w.Properties[property.ThemeId]]
 	}
 	if c != nil {
-		cSelf, hasC = c.Properties[prop]
 		cTheme, hasCt = root.Themes[c.Properties[property.ThemeId]]
-	}
-
-	// container checks
-	if w == nil {
-		if hasC {
-			return cSelf
-		}
-		if hasCt {
-			return cTheme.Properties[prop]
-		}
-
-		return ""
 	}
 
 	// widget checks
@@ -202,11 +213,13 @@ func themedProp(prop string, root *root, c *container, w *widget) string {
 	if hasCt {
 		return cTheme.Properties[prop]
 	}
-	if hasC {
-		return cSelf
-	}
-
 	return ""
+}
+func defaultValue(value, defaultValue string) string {
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
 
 func dyn(cam *graphics.Camera, owner *container, value string, defaultValue string) string {
@@ -234,14 +247,14 @@ func dyn(cam *graphics.Camera, owner *container, value string, defaultValue stri
 		var oty = oy
 		var oby = oty + "+" + oh
 
-		value = strings.ReplaceAll(value, dynamic.OwnerX, ox)
-		value = strings.ReplaceAll(value, dynamic.OwnerY, oy)
-		value = strings.ReplaceAll(value, dynamic.OwnerWidth, ow)
-		value = strings.ReplaceAll(value, dynamic.OwnerHeight, oh)
-		value = strings.ReplaceAll(value, dynamic.OwnerLeftX, olx)
-		value = strings.ReplaceAll(value, dynamic.OwnerRightX, orx)
-		value = strings.ReplaceAll(value, dynamic.OwnerTopY, oty)
-		value = strings.ReplaceAll(value, dynamic.OwnerBottomY, oby)
+		value = strings.ReplaceAll(value, dynamic.ContainerX, ox)
+		value = strings.ReplaceAll(value, dynamic.ContainerY, oy)
+		value = strings.ReplaceAll(value, dynamic.ContainerWidth, ow)
+		value = strings.ReplaceAll(value, dynamic.ContainerHeight, oh)
+		value = strings.ReplaceAll(value, dynamic.ContainerLeftX, olx)
+		value = strings.ReplaceAll(value, dynamic.ContainerRightX, orx)
+		value = strings.ReplaceAll(value, dynamic.ContainerTopY, oty)
+		value = strings.ReplaceAll(value, dynamic.ContainerBottomY, oby)
 	}
 
 	var calc = symbols.Calculate(value)
