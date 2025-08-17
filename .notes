@@ -22,6 +22,7 @@ LAN?
 [√] data & sprite draw - rotate + flip for texture area/tile
 [√] data - default ui fixes
 [√] mouse - cursor cache
+[√] states - deleted due to being too shallow
 
 [44] [Sat] [16-08-2025]
 [√] gui + camera huge optimizations
