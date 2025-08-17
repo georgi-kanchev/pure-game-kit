@@ -3,7 +3,7 @@ package assets
 func LoadDefaultAtlasIcons() (atlasId string, tileIds []string) {
 	const symbol = "@"
 	var tex = loadTexture(symbol, icons)
-	var id = LoadTextureAtlas(tex, 50, 50, 0)
+	var id = SetTextureAtlas(tex, 50, 50, 0)
 	var ids = []string{
 		"club", "spade", "diamond1", "heart", "heart-broken", "shape",
 		"pawn", "knight", "bishop", "rook", "queen", "king", "crown1", "crown2",
@@ -41,7 +41,7 @@ func LoadDefaultAtlasIcons() (atlasId string, tileIds []string) {
 			ids[i] = symbol + ids[i]
 		}
 	}
-	var tiles = LoadTextureAtlasTiles(id, 0, 0, ids...)
+	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
 	return id, tiles
 }
 

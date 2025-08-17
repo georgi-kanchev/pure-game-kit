@@ -51,7 +51,7 @@ func New(smoothTexture bool, tiledMapId string) Scene {
 		for i := 0; i < t.TileCount/t.Columns; i++ {
 			for j := 0; j < t.Columns; j++ {
 				var rectId = fmt.Sprintf("%v%v%v%v%v%v", atlasId, "[", j, ",", i, "]")
-				assets.LoadTextureAtlasTile(atlasId, rectId, float32(j), float32(i), 1, 1)
+				assets.SetTextureAtlasTile(atlasId, rectId, float32(j), float32(i), 1, 1, 0, false)
 			}
 		}
 	}
@@ -61,7 +61,7 @@ func New(smoothTexture bool, tiledMapId string) Scene {
 
 func (scene *Scene) Unload() {
 	assets.UnloadTiledData(scene.name)
-	assets.UnloadTextureAtlases(scene.atlases...)
+	assets.RemoveTextureAtlases(scene.atlases...)
 	assets.UnloadTextures(scene.textures...)
 
 	fmt.Printf("internal.TiledData: %v\n", internal.TiledData)

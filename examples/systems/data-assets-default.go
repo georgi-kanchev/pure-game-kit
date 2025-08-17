@@ -94,8 +94,9 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 
 		var info = symbols.New(
 			"id: '", txt, "'",
-			"\ncoords: ", imx, ", ", imy,
+			"\ncell: ", imx, ", ", imy,
 			"\nindex: ", index,
+			"\ncoords: ", imx*int(tileSize+gap), ", ", imy*int(tileSize+gap),
 			"\nsize:", tileSize, "x", tileSize)
 
 		if txt == "" && len(tileIds) == 0 && imx == 0 && imy == 0 { // display default texture & font

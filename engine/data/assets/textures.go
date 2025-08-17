@@ -37,14 +37,27 @@ func LoadTextures(smooth bool, filePaths ...string) []string {
 
 	return result
 }
+func UnloadTextures(textureIds ...string) {
+	for _, v := range textureIds {
+		var tex, has = internal.Textures[v]
+		delete(internal.Textures, v)
+		RemoveTextureAtlases(v)
 
-func LoadTextureArea(textureId, areaId string, x, y, width, height int) string {
+		if has {
+			rl.UnloadTexture(*tex)
+		}
+	}
+}
+
+func SetTextureArea(textureId, areaId string, x, y, width, height, rotations int, flip bool) string {
 	var _, has = internal.Textures[textureId]
 
 	if has && areaId != "" {
 		var atlas = internal.Atlas{TextureId: textureId, CellWidth: 1, CellHeight: 1}
+
 		var cx, cy, cw, ch = float32(x), float32(y), float32(width), float32(height)
-		var rect = internal.AtlasRect{CellX: cx, CellY: cy, CountX: cw, CountY: ch, AtlasId: textureId}
+		var rect = internal.AtlasRect{
+			CellX: cx, CellY: cy, CountX: cw, CountY: ch, AtlasId: textureId, Rotations: rotations, Flip: flip}
 		internal.Atlases[textureId] = atlas
 		internal.AtlasRects[areaId] = rect
 		return textureId
@@ -52,7 +65,7 @@ func LoadTextureArea(textureId, areaId string, x, y, width, height int) string {
 
 	return ""
 }
-func LoadTextureAtlas(textureId string, cellWidth, cellHeight, cellGap int) string {
+func SetTextureAtlas(textureId string, cellWidth, cellHeight, cellGap int) string {
 	var _, has = internal.Textures[textureId]
 
 	if has {
@@ -63,7 +76,7 @@ func LoadTextureAtlas(textureId string, cellWidth, cellHeight, cellGap int) stri
 
 	return ""
 }
-func LoadTextureAtlasTiles(atlasId string, startCellX, startCellY int, tileIds ...string) []string {
+func SetTextureAtlasTiles(atlasId string, startCellX, startCellY int, tileIds ...string) []string {
 	var atlas, has = internal.Atlases[atlasId]
 	var tex, _ = internal.Textures[atlas.TextureId]
 	var tileCountX = int(tex.Width / (int32(atlas.CellWidth + atlas.Gap)))
@@ -97,37 +110,28 @@ func LoadTextureAtlasTiles(atlasId string, startCellX, startCellY int, tileIds .
 
 	return result
 }
-func LoadTextureAtlasTile(atlasId, tileId string, cellX, cellY, countX, countY float32) string {
+func SetTextureAtlasTile(atlasId, tileId string, cellX, cellY, countX, countY float32, rotations int, flip bool) string {
 	var _, has = internal.Atlases[atlasId]
 
 	if has && tileId != "" {
-		var texRect = internal.AtlasRect{AtlasId: atlasId, CellX: cellX, CellY: cellY, CountX: countX, CountY: countY}
+		var texRect = internal.AtlasRect{
+			AtlasId: atlasId, CellX: cellX, CellY: cellY, CountX: countX, CountY: countY,
+			Rotations: rotations, Flip: flip}
 		internal.AtlasRects[tileId] = texRect
 		return tileId
 	}
 
 	return ""
 }
-func LoadTextureBox(boxId string, assetIds [9]string) string {
+func SetTextureBox(boxId string, assetIds [9]string) string {
 	internal.Boxes[boxId] = assetIds
 	return boxId
 }
 
-func UnloadTextures(textureIds ...string) {
-	for _, v := range textureIds {
-		var tex, has = internal.Textures[v]
-		delete(internal.Textures, v)
-		UnloadTextureAtlases(v)
-
-		if has {
-			rl.UnloadTexture(*tex)
-		}
-	}
+func RemoveTextureAreas(areaIds ...string) {
+	RemoveTextureAtlasTiles(areaIds...)
 }
-func UnloadTextureAreas(areaIds ...string) {
-	UnloadTextureAtlasTiles(areaIds...)
-}
-func UnloadTextureAtlases(atlasIds ...string) {
+func RemoveTextureAtlases(atlasIds ...string) {
 	for _, v := range atlasIds {
 		delete(internal.Atlases, v)
 
@@ -138,12 +142,12 @@ func UnloadTextureAtlases(atlasIds ...string) {
 		}
 	}
 }
-func UnloadTextureAtlasTiles(tileIds ...string) {
+func RemoveTextureAtlasTiles(tileIds ...string) {
 	for _, v := range tileIds {
 		delete(internal.AtlasRects, v)
 	}
 }
-func UnloadTextureBoxes(nineSliceIds ...string) {
+func RemoveTextureBoxes(nineSliceIds ...string) {
 	for _, v := range nineSliceIds {
 		delete(internal.Boxes, v)
 	}

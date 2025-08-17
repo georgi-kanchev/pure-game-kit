@@ -39,7 +39,7 @@ func SetCursorVisibility(visible bool) {
 	}
 }
 func SetCursor(cursor int) {
-	rl.SetMouseCursor(int32(cursor))
+	internal.Cursor = cursor
 }
 
 func Scroll() int {

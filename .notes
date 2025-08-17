@@ -17,6 +17,18 @@ LAN?
 global events/notifications?
 
 // DONE:
+[45] [Sun] [17-08-2025]
+[√] gui - text embeded props
+[√] gui - widget gap fix
+[√] gui - button press/hover uses themes now + changes cursor
+[√] gui - widget hover check bound to container mask
+[√] example - full guis sorting elements looking finished
+[√] example - added pixel coords to default assets indicator
+[√] graphics - draw frame fix
+[√] data & sprite draw - rotate + flip for texture area/tile
+[√] data - default ui fixes
+[√] mouse - cursor cache
+
 [44] [Sat] [16-08-2025]
 [√] gui + camera huge optimizations
 [√] seconds + window fixes & touch ups

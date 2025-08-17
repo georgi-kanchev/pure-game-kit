@@ -2,7 +2,7 @@ package assets
 
 func LoadDefaultAtlasInput() (atlasId string, tileIds []string) {
 	var tex = loadTexture("[]", input)
-	var id = LoadTextureAtlas(tex, 50, 50, 0)
+	var id = SetTextureAtlas(tex, 50, 50, 0)
 	var ids = []string{
 		"escape", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "print", "pause",
 		"num-lock", "*",
@@ -19,7 +19,7 @@ func LoadDefaultAtlasInput() (atlasId string, tileIds []string) {
 			ids[i] = "[" + ids[i] + "]"
 		}
 	}
-	var tiles = LoadTextureAtlasTiles(id, 0, 0, ids...)
+	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
 	return id, tiles
 }
 

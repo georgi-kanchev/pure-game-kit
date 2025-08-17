@@ -31,6 +31,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 		var repX, repY = s.RepeatX, s.RepeatY
 		var x, y, ang, scX, scY = s.TransformToCamera()
 		var texW, texH = 0, 0
+		var rotations, flip = 0, false
 
 		if !hasTexture {
 			var rect, hasArea = internal.AtlasRects[s.AssetId]
@@ -42,6 +43,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 				texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
 				texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
 				texW, texH = atlas.CellWidth, atlas.CellHeight
+				rotations, flip = rect.Rotations, rect.Flip
 			} else {
 				var font, hasFont = internal.Fonts[s.AssetId]
 				if !hasFont {
@@ -67,6 +69,22 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+270, -rectWorld.Height)
 			rectTexture.Height *= -1
 		}
+
+		if flip {
+			rectTexture.Width *= -1
+		}
+		switch rotations % 4 {
+		case 1: // 90
+			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang, rectWorld.Height)
+		case 2: // 180
+			rectTexture.Height *= -1
+			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang, rectWorld.Width)
+			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+90, rectWorld.Width)
+		case 3: // 270
+			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+90, rectWorld.Width)
+		}
+
+		ang += float32(rotations * 90)
 
 		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(s.Color))
 	}

@@ -3,7 +3,7 @@ package assets
 func LoadDefaultAtlasCursors() (atlasId string, tileIds []string) {
 	const symbol = "^"
 	var tex = loadTexture(symbol, cursors)
-	var id = LoadTextureAtlas(tex, 32, 32, 0)
+	var id = SetTextureAtlas(tex, 32, 32, 0)
 	var ids = []string{
 		"pointer1", "pointer2", "pointer3", "pointer4", "pointer5", "pointer6", "pointer7", "pointer8",
 		"pointer9", "pointer10", "pointer11", "pointer12", "pointer13", "pointer14", "pointer15", "pointer16",
@@ -30,7 +30,7 @@ func LoadDefaultAtlasCursors() (atlasId string, tileIds []string) {
 			ids[i] = symbol + ids[i]
 		}
 	}
-	var tiles = LoadTextureAtlasTiles(id, 0, 0, ids...)
+	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
 	return id, tiles
 }
 

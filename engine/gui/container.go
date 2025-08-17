@@ -61,14 +61,15 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 				curY += parseNum(dyn(c, row, symbols.New(maxHeight+gapY)), 0)
 			}
 
+			curX += gapX
 			widget.X = curX + offX
 			widget.Y = curY + offY
-			curX += ww + gapX
+			curX += ww
 			maxHeight = condition.If(maxHeight < wh, wh, maxHeight)
 		}
 
 		widget.Width, widget.Height = ww, wh
-		widget.AssetId = themedProp(p.AssetId, root, c, &widget)
+		widget.ThemeId = themedProp(p.ThemeId, root, c, &widget)
 
 		if widget.UpdateAndDraw != nil {
 			widget.UpdateAndDraw(ww, wh, cam, root, &widget, c)

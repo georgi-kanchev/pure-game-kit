@@ -5,13 +5,13 @@ import "strconv"
 func LoadDefaultAtlasPatterns() (atlasId string, tileIds []string) {
 	const symbol = "&"
 	var tex = loadTexture(symbol, patterns)
-	var id = LoadTextureAtlas(tex, 64, 64, 0)
+	var id = SetTextureAtlas(tex, 64, 64, 0)
 	var ids = []string{}
 
 	for i := range 84 {
 		ids = append(ids, symbol+strconv.Itoa(i))
 	}
-	var tiles = LoadTextureAtlasTiles(id, 0, 0, ids...)
+	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
 	return id, tiles
 }
 

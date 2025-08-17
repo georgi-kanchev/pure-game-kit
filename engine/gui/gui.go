@@ -7,6 +7,7 @@ import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/dynamic"
 	"pure-kit/engine/gui/property"
+	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/symbols"
 	"strconv"
@@ -142,6 +143,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	var containers = gui.root.XmlContainers
 
 	camera.Angle = 0 // force no cam rotation for UI
+	mouse.SetCursor(mouse.CursorArrow)
 
 	var tlx, tly = camera.PointFromPivot(0, 0)
 	var brx, bry = camera.PointFromPivot(1, 1)
@@ -174,7 +176,8 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var c, hasC = gui.root.Containers[id]
 
 	if hasW {
-		return w.IsHovered(&gui.root, camera)
+		var owner = gui.root.Containers[w.Owner]
+		return w.IsHovered(&gui.root, &owner, camera)
 	}
 	if hasC {
 		return c.IsHovered(&gui.root, camera)
@@ -216,7 +219,7 @@ func themedProp(prop string, root *root, c *container, w *widget) string {
 
 	if w != nil {
 		wSelf, hasW = w.Properties[prop]
-		wTheme, hasWt = root.Themes[w.Properties[property.ThemeId]]
+		wTheme, hasWt = root.Themes[w.ThemeId]
 	}
 	if c != nil {
 		cTheme, hasCt = root.Themes[c.Properties[property.ThemeId]]

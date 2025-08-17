@@ -6,29 +6,31 @@ import (
 	"pure-kit/engine/input/mouse"
 )
 
-func WidgetButton(id string, properties ...string) string {
+func Button(id string, properties ...string) string {
 	return newWidget("button", id, properties...)
 }
 
 // #region private
 
 func button(w, h float32, cam *graphics.Camera, root *root, widget *widget, owner *container) {
-	var prev = widget.AssetId
-	var hover = themedProp(property.ButtonAssetIdHover, root, owner, widget)
-	var press = themedProp(property.ButtonAssetIdPress, root, owner, widget)
+	var prev = widget.ThemeId
+	var hover = themedProp(property.ButtonHoverThemeId, root, owner, widget)
+	var press = themedProp(property.ButtonPressThemeId, root, owner, widget)
 
-	if widget.IsHovered(root, cam) {
+	if widget.IsHovered(root, owner, cam) {
+		mouse.SetCursor(mouse.CursorHand)
+
 		if hover != "" {
-			widget.AssetId = hover
+			widget.ThemeId = hover
 		}
 
 		if press != "" && mouse.IsButtonPressed(mouse.ButtonLeft) {
-			widget.AssetId = press
+			widget.ThemeId = press
 		}
 	}
 
 	visual(w, h, cam, root, widget, owner)
-	widget.AssetId = prev
+	widget.ThemeId = prev
 }
 
 // #endregion

@@ -8,12 +8,16 @@ import (
 )
 
 type AtlasRect struct {
-	CellX, CellY, CountX, CountY float32
-	AtlasId                      string
+	CellX, CellY,
+	CountX, CountY float32
+	AtlasId   string
+	Rotations int
+	Flip      bool
 }
 type Atlas struct {
-	TextureId                  string
-	CellWidth, CellHeight, Gap int
+	TextureId string
+	CellWidth, CellHeight,
+	Gap int
 }
 
 type Sequence struct {
@@ -45,11 +49,14 @@ var Flows = make(map[string]*Sequence)
 var FlowSignals = []string{}
 var States = make(map[string]*StateMachine)
 
+var Cursor int
 var Input = ""
 var Keys = []int{}
 var Buttons = []int{}
 
 var WindowReady = false
+
+var prevCursor int
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
@@ -123,6 +130,11 @@ func updateKeysAndButtons() {
 			Buttons = collection.Remove(Buttons, i)
 		}
 	}
+
+	if prevCursor != Cursor {
+		rl.SetMouseCursor(int32(Cursor))
+	}
+	prevCursor = Cursor
 
 	Input = ""
 	var char = rl.GetCharPressed()

@@ -3,7 +3,7 @@ package assets
 func LoadDefaultAtlasUI() (atlasId string, tileIds []string, boxIds []string) {
 	const symbol = "!"
 	var tex = loadTexture(symbol, ui)
-	var id = LoadTextureAtlas(tex, 16, 16, 0)
+	var id = SetTextureAtlas(tex, 16, 16, 0)
 	var t = []string{
 		"out1-tl", "out1-t", "out1-tr", "out2-tl", "out2-t", "out2-tr", "out3-tl", "out3-t", "out3-tr",
 		"out1-l", "out1-c", "out1-r", "out2-l", "out2-c", "out2-r", "out3-l", "out3-c", "out3-r",
@@ -20,21 +20,21 @@ func LoadDefaultAtlasUI() (atlasId string, tileIds []string, boxIds []string) {
 			t[i] = symbol + t[i]
 		}
 	}
-	var tiles = LoadTextureAtlasTiles(id, 0, 0, t...)
+	var tiles = SetTextureAtlasTiles(id, 0, 0, t...)
 	boxIds = []string{
-		LoadTextureBox(symbol+"out1", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[18], t[19], t[20]}),
-		LoadTextureBox(symbol+"out1-", [9]string{t[27], t[28], t[29], t[9], t[10], t[11], t[18], t[19], t[20]}),
-		LoadTextureBox(symbol+"out1+", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[36], t[37], t[38]}),
-		LoadTextureBox(symbol+"out2", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[21], t[22], t[23]}),
-		LoadTextureBox(symbol+"out2-", [9]string{t[30], t[31], t[32], t[12], t[13], t[14], t[21], t[22], t[23]}),
-		LoadTextureBox(symbol+"out2+", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[39], t[40], t[41]}),
-		LoadTextureBox(symbol+"out3", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[24], t[25], t[26]}),
-		LoadTextureBox(symbol+"out3-", [9]string{t[33], t[34], t[35], t[15], t[16], t[17], t[24], t[25], t[26]}),
-		LoadTextureBox(symbol+"out3+", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[42], t[43], t[44]}),
-		LoadTextureBox(symbol+"in", [9]string{t[36], t[37], t[38], t[45], t[46], t[47], t[54], t[55], t[56]}),
-		LoadTextureBox(symbol+"step", [9]string{t[39], t[43], t[41], t[39], t[43], t[41], t[39], t[43], t[41]}),
-		LoadTextureBox(symbol+"bar", [9]string{t[42], t[43], t[44], t[42], t[43], t[44], t[42], t[43], t[44]}),
-		LoadTextureBox(symbol+"divider", [9]string{t[51], t[52], t[53], t[51], t[52], t[53], t[51], t[52], t[53]}),
+		SetTextureBox(symbol+"out1", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[18], t[19], t[20]}),
+		SetTextureBox(symbol+"out1-", [9]string{t[27], t[28], t[29], t[9], t[10], t[11], t[18], t[19], t[20]}),
+		SetTextureBox(symbol+"out1+", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[36], t[37], t[38]}),
+		SetTextureBox(symbol+"out2", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[21], t[22], t[23]}),
+		SetTextureBox(symbol+"out2-", [9]string{t[30], t[31], t[32], t[12], t[13], t[14], t[21], t[22], t[23]}),
+		SetTextureBox(symbol+"out2+", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[39], t[40], t[41]}),
+		SetTextureBox(symbol+"out3", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[24], t[25], t[26]}),
+		SetTextureBox(symbol+"out3-", [9]string{t[33], t[34], t[35], t[15], t[16], t[17], t[24], t[25], t[26]}),
+		SetTextureBox(symbol+"out3+", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[42], t[43], t[44]}),
+		SetTextureBox(symbol+"in", [9]string{t[45], t[46], t[47], t[54], t[55], t[56], t[63], t[64], t[65]}),
+		SetTextureBox(symbol+"step", [9]string{t[48], t[52], t[50], t[48], t[52], t[50], t[48], t[52], t[50]}),
+		SetTextureBox(symbol+"bar", [9]string{t[51], t[52], t[53], t[51], t[52], t[53], t[51], t[52], t[53]}),
+		SetTextureBox(symbol+"divider", [9]string{t[60], t[61], t[62], t[60], t[61], t[62], t[60], t[61], t[62]}),
 	}
 
 	return id, tiles, boxIds

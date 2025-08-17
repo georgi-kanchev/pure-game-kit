@@ -104,6 +104,7 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 		return
 	}
 
+	camera.begin()
 	camera.Batch = true
 	defer func() { camera.Batch = false }()
 
@@ -137,6 +138,7 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	camera.DrawRectangle(trx, try, thickness, height+thickness*2, angle, color)
 	camera.DrawRectangle(blx, bly, width+thickness*2, thickness, angle, color)
 	camera.DrawRectangle(tlx, tly, thickness, height+thickness*2, angle, color)
+	camera.end()
 }
 func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
 	camera.begin()

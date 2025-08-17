@@ -3,7 +3,7 @@ package assets
 func LoadDefaultAtlasRetro() (atlasId string, tileIds []string) {
 	const symbol = "#"
 	var tex = loadTexture(symbol, retro)
-	var id = LoadTextureAtlas(tex, 8, 8, 1)
+	var id = SetTextureAtlas(tex, 8, 8, 1)
 	var ids = []string{
 		"empty", "shade1", "shade2", "shade3", "shade4", "shade5", "shade6", "shade7", "shade8", "shade9", "full",
 		"tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9",
@@ -73,7 +73,7 @@ func LoadDefaultAtlasRetro() (atlasId string, tileIds []string) {
 			ids[i] = symbol + ids[i]
 		}
 	}
-	var tiles = LoadTextureAtlasTiles(id, 0, 0, ids...)
+	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
 
 	return id, tiles
 }

@@ -6,17 +6,18 @@ import (
 	"pure-kit/engine/internal"
 )
 
-func WidgetVisual(id string, properties ...string) string {
+func Visual(id string, properties ...string) string {
 	return newWidget("visual", id, properties...)
 }
 
 // #region private
 
+var reusableTextBox graphics.TextBox = graphics.TextBox{}
 var reusableSprite graphics.Sprite = graphics.Sprite{}
 var reusableNineslice graphics.Box = graphics.Box{}
 
 func visual(w, h float32, cam *graphics.Camera, root *root, widget *widget, owner *container) {
-	var assetId = widget.AssetId
+	var assetId = themedProp(p.AssetId, root, owner, widget)
 	var cLeft = parseNum(dyn(owner, themedProp(p.BoxEdgeLeft, root, owner, widget), "100"), 0)
 	var cRight = parseNum(dyn(owner, themedProp(p.BoxEdgeRight, root, owner, widget), "100"), 0)
 	var cTop = parseNum(dyn(owner, themedProp(p.BoxEdgeTop, root, owner, widget), "100"), 0)
@@ -52,28 +53,64 @@ func visual(w, h float32, cam *graphics.Camera, root *root, widget *widget, owne
 
 	var text, _ = widget.Properties[p.Text]
 	if text != "" {
-		var textBox = graphics.NewTextBox("", widget.X, widget.Y, text)
-		textBox.WordWrap = defaultValue(themedProp(p.TextWordWrap, root, owner, widget), "on") == "on"
-		textBox.PivotX, textBox.PivotY = 0, 0
-		textBox.Width, textBox.Height = w, h
-		textBox.FontId = themedProp(p.TextFontId, root, owner, widget)
-		textBox.LineHeight = parseNum(themedProp(p.TextLineHeight, root, owner, widget), 60)
-		textBox.LineGap = parseNum(themedProp(p.TextLineGap, root, owner, widget), 0)
-		textBox.AlignmentX = parseNum(themedProp(p.TextAlignmentX, root, owner, widget), 0)
-		textBox.AlignmentY = parseNum(themedProp(p.TextAlignmentY, root, owner, widget), 0)
+		reusableTextBox.ScaleX, reusableTextBox.ScaleY = 1, 1
+		reusableTextBox.X, reusableTextBox.Y = widget.X, widget.Y
+		reusableTextBox.EmbeddedColorsTag = '`'
+		reusableTextBox.EmbeddedAssetsTag = '^'
+		reusableTextBox.EmbeddedThicknessesTag = '*'
+		reusableTextBox.Text = text
+		reusableTextBox.WordWrap = defaultValue(themedProp(p.TextWordWrap, root, owner, widget), "on") == "on"
+		reusableTextBox.PivotX, reusableTextBox.PivotY = 0, 0
+		reusableTextBox.Width, reusableTextBox.Height = w, h
+		reusableTextBox.FontId = themedProp(p.TextFontId, root, owner, widget)
+		reusableTextBox.LineHeight = parseNum(themedProp(p.TextLineHeight, root, owner, widget), 60)
+		reusableTextBox.LineGap = parseNum(themedProp(p.TextLineGap, root, owner, widget), 0)
+		reusableTextBox.SymbolGap = parseNum(themedProp(p.TextSymbolGap, root, owner, widget), 0.2)
+		reusableTextBox.AlignmentX = parseNum(themedProp(p.TextAlignmentX, root, owner, widget), 0)
+		reusableTextBox.AlignmentY = parseNum(themedProp(p.TextAlignmentY, root, owner, widget), 0)
+
+		reusableTextBox.EmbeddedAssetsTag =
+			rune(defaultValue(themedProp(p.TextEmbeddedAssetsTag, root, owner, widget), "^")[0])
+		reusableTextBox.EmbeddedAssetIds = []string{
+			themedProp(p.TextEmbeddedAssetId1, root, owner, widget),
+			themedProp(p.TextEmbeddedAssetId2, root, owner, widget),
+			themedProp(p.TextEmbeddedAssetId3, root, owner, widget),
+			themedProp(p.TextEmbeddedAssetId4, root, owner, widget),
+			themedProp(p.TextEmbeddedAssetId5, root, owner, widget),
+		}
+
+		reusableTextBox.EmbeddedColorsTag =
+			rune(defaultValue(themedProp(p.TextEmbeddedColorsTag, root, owner, widget), "`")[0])
+		reusableTextBox.EmbeddedColors = []uint{
+			parseColor(themedProp(p.TextEmbeddedColor1, root, owner, widget)),
+			parseColor(themedProp(p.TextEmbeddedColor2, root, owner, widget)),
+			parseColor(themedProp(p.TextEmbeddedColor3, root, owner, widget)),
+			parseColor(themedProp(p.TextEmbeddedColor4, root, owner, widget)),
+			parseColor(themedProp(p.TextEmbeddedColor5, root, owner, widget)),
+		}
+
+		reusableTextBox.EmbeddedThicknessesTag =
+			rune(defaultValue(themedProp(p.TextEmbeddedThicknessesTag, root, owner, widget), "*")[0])
+		reusableTextBox.EmbeddedThicknesses = []float32{
+			parseNum(themedProp(p.TextEmbeddedThickness1, root, owner, widget), 0.5),
+			parseNum(themedProp(p.TextEmbeddedThickness2, root, owner, widget), 0.5),
+			parseNum(themedProp(p.TextEmbeddedThickness3, root, owner, widget), 0.5),
+			parseNum(themedProp(p.TextEmbeddedThickness4, root, owner, widget), 0.5),
+			parseNum(themedProp(p.TextEmbeddedThickness5, root, owner, widget), 0.5),
+		}
 
 		var outlineCol = themedProp(p.TextColorOutline, root, owner, widget)
 		if outlineCol != "" {
-			textBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
-			textBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
-			textBox.Color = parseColor(outlineCol)
-			cam.DrawTextBoxes(&textBox)
+			reusableTextBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
+			reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
+			reusableTextBox.Color = parseColor(outlineCol)
+			cam.DrawTextBoxes(&reusableTextBox)
 		}
 
-		textBox.Color = parseColor(themedProp(p.TextColor, root, owner, widget))
-		textBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
-		textBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
-		cam.DrawTextBoxes(&textBox)
+		reusableTextBox.Color = parseColor(themedProp(p.TextColor, root, owner, widget))
+		reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
+		reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
+		cam.DrawTextBoxes(&reusableTextBox)
 	}
 }
 
