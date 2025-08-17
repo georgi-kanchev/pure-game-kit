@@ -1,20 +1,14 @@
 // TODO:
+gui
 tiled loading
 drawing tilemaps
-gui
-	simplify inputbox, list & other complicated blocks
-	block rename?
-	merge instant + layout
-	rendering
-	using default assets + replacing them
+audio - sounds, music, playlists
 
 // TODO LONGTERM:
-audio - sounds, music, playlists
-data/storage
-lua scripts
+data/storage?
 consistent error handling + logging, console & file
+lua scripts
 LAN?
-global events/notifications?
 
 // DONE:
 [45] [Sun] [17-08-2025]
