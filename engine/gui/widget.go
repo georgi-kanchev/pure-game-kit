@@ -20,12 +20,7 @@ func newWidget(class, id string, properties ...string) string {
 		extraProps(properties...) + " />"
 }
 
-func (widget *widget) IsHovered(root *root, owner *container, cam *graphics.Camera) bool {
-	if !owner.IsHovered(root, cam) {
-		return false
-	}
-
-	var x, y = cam.PointToScreen(widget.X, widget.Y)
-	var mx, my = cam.PointToScreen(cam.MousePosition())
-	return mx > x && mx < x+int(widget.Width) && my > y && my < y+int(widget.Height)
+func (widget *widget) IsHovered(owner *container, cam *graphics.Camera) bool {
+	return isHovered(owner.X, owner.Y, owner.Width, owner.Height, cam) &&
+		isHovered(widget.X, widget.Y, widget.Width, widget.Height, cam)
 }

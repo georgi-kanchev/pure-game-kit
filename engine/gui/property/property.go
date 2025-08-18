@@ -6,6 +6,7 @@ const (
 	X       = "x"       // [widget] [container]
 	Y       = "y"       // [widget] [container]
 	ThemeId = "themeId" // [widget] [container]
+	Hidden  = "hidden"  // [widget] [container]
 
 	Width   = "width"   // [widget] [theme] [container]
 	Height  = "height"  // [widget] [theme] [container]
@@ -13,6 +14,7 @@ const (
 	GapX    = "gapX"    // [widget] [theme] [container]
 	GapY    = "gapY"    // [widget] [theme] [container]
 
+	Disabled      = "disabled"      // [widget]
 	FillContainer = "fillContainer" // [widget]
 	NewRow        = "newRow"        // [widget] example: "200", "" = GapY
 	OffsetX       = "offsetX"       // [widget]

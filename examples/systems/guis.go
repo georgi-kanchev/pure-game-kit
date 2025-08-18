@@ -36,6 +36,7 @@ func GUIs() {
 			p.TextAlignmentX, "0", p.TextAlignmentY, "0.5", p.TextColor, "0 0 0 255",
 			p.TextLineHeight, "80",
 		),
+		// ======================================================
 		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1175",
 			p.ThemeId, "button", p.GapX, "50", p.GapY, "50"),
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
@@ -50,10 +51,9 @@ func GUIs() {
 		gui.Visual("checkbox-label", p.ThemeId, "label", p.Text, "Checkbox", p.NewRow, ""),
 		gui.Button("checkbox", p.Width, "100", p.TextEmbeddedAssetId1, icons[249], p.Text, "^^ ", p.AssetId, box[9],
 			p.TextAlignmentX, "0.6", p.TextAlignmentY, "0.53"),
-		gui.Button("dropdown", p.NewRow, "", p.AssetId, box[9], p.Text, "List selection", p.Width, "820",
-			p.TextAlignmentX, "0.1", p.TextAlignmentY, "0.5", p.TextColor, "150 150 150 255"),
-		gui.Visual("dropdown-btn", p.Width, "100", p.Height, "70", p.OffsetX, "-135", p.OffsetY, "15",
-			p.Text, "^^", p.TextEmbeddedAssetId1, "arrow-down"),
+		gui.Button("dropdown", p.NewRow, "", p.AssetId, box[9], p.Text, "^^ List selection", p.Width, "820",
+			p.TextAlignmentX, "0.05", p.TextAlignmentY, "0.5", p.TextColor, "150 150 150 255",
+			p.TextEmbeddedAssetId1, "arrow-down"),
 		gui.Visual("sliders-label", p.ThemeId, "label", p.Text, "Sliders", p.TextLineHeight, "60", p.NewRow, ""),
 		gui.Visual("slider1", p.AssetId, box[10], p.BoxEdgeTop, "0", p.BoxEdgeBottom, "0", p.NewRow, "",
 			p.Width, "820", p.Height, "40"),
@@ -86,6 +86,10 @@ func GUIs() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
 
-		menu.Draw(&cam)
+		if menu.ButtonClickedOnce("dropdown", cam) {
+			menu.SetProperty("dropdown", p.GapX, menu.Property("dropdown", p.GapX)+"+20")
+		}
+
+		menu.Draw(cam)
 	}
 }

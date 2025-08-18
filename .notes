@@ -11,6 +11,12 @@ lua scripts
 LAN?
 
 // DONE:
+[46] [Mon] [18-08-2025]
+[√] graphics - camera new returns pointer + examples fixed
+[√] gui - pointers everywhere
+[√] gui - button functionality
+[√] gui - disabled + hidden
+
 [45] [Sun] [17-08-2025]
 [√] gui - text embeded props
 [√] gui - widget gap fix

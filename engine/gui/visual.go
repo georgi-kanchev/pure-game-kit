@@ -22,7 +22,10 @@ func visual(w, h float32, cam *graphics.Camera, root *root, widget *widget, owne
 	var cRight = parseNum(dyn(owner, themedProp(p.BoxEdgeRight, root, owner, widget), "100"), 0)
 	var cTop = parseNum(dyn(owner, themedProp(p.BoxEdgeTop, root, owner, widget), "100"), 0)
 	var cBottom = parseNum(dyn(owner, themedProp(p.BoxEdgeBottom, root, owner, widget), "100"), 0)
-	var col = parseColor(themedProp(p.Color, root, owner, widget))
+	var _, disabled = widget.Properties[p.Disabled]
+	var _, ownerDisabled = owner.Properties[p.Disabled]
+	disabled = disabled || ownerDisabled
+	var col = parseColor(themedProp(p.Color, root, owner, widget), disabled)
 
 	if assetId != "" {
 		var _, has = internal.Boxes[assetId]
@@ -82,11 +85,11 @@ func visual(w, h float32, cam *graphics.Camera, root *root, widget *widget, owne
 		reusableTextBox.EmbeddedColorsTag =
 			rune(defaultValue(themedProp(p.TextEmbeddedColorsTag, root, owner, widget), "`")[0])
 		reusableTextBox.EmbeddedColors = []uint{
-			parseColor(themedProp(p.TextEmbeddedColor1, root, owner, widget)),
-			parseColor(themedProp(p.TextEmbeddedColor2, root, owner, widget)),
-			parseColor(themedProp(p.TextEmbeddedColor3, root, owner, widget)),
-			parseColor(themedProp(p.TextEmbeddedColor4, root, owner, widget)),
-			parseColor(themedProp(p.TextEmbeddedColor5, root, owner, widget)),
+			parseColor(themedProp(p.TextEmbeddedColor1, root, owner, widget), disabled),
+			parseColor(themedProp(p.TextEmbeddedColor2, root, owner, widget), disabled),
+			parseColor(themedProp(p.TextEmbeddedColor3, root, owner, widget), disabled),
+			parseColor(themedProp(p.TextEmbeddedColor4, root, owner, widget), disabled),
+			parseColor(themedProp(p.TextEmbeddedColor5, root, owner, widget), disabled),
 		}
 
 		reusableTextBox.EmbeddedThicknessesTag =
@@ -103,11 +106,11 @@ func visual(w, h float32, cam *graphics.Camera, root *root, widget *widget, owne
 		if outlineCol != "" {
 			reusableTextBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
 			reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
-			reusableTextBox.Color = parseColor(outlineCol)
+			reusableTextBox.Color = parseColor(outlineCol, disabled)
 			cam.DrawTextBoxes(&reusableTextBox)
 		}
 
-		reusableTextBox.Color = parseColor(themedProp(p.TextColor, root, owner, widget))
+		reusableTextBox.Color = parseColor(themedProp(p.TextColor, root, owner, widget), disabled)
 		reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
 		reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
 		cam.DrawTextBoxes(&reusableTextBox)

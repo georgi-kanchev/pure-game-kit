@@ -15,11 +15,11 @@ import (
 )
 
 type GUI struct {
-	root root
+	root *root
 }
 
-func New(elements ...string) GUI {
-	var root root
+func New(elements ...string) *GUI {
+	var gui = GUI{root: &root{}}
 	var result = "<GUI>"
 
 	// container is missing on top, add root container
@@ -51,15 +51,14 @@ func New(elements ...string) GUI {
 
 	fmt.Printf("%v\n", result)
 
-	var err = xml.Unmarshal([]byte(result), &root)
+	var err = xml.Unmarshal([]byte(result), &gui.root)
 	fmt.Printf("err: %v\n", err)
 
-	root.Containers = map[string]container{}
-	root.Widgets = map[string]widget{}
-	root.Themes = map[string]theme{}
+	gui.root.Containers = map[string]*container{}
+	gui.root.Widgets = map[string]*widget{}
+	gui.root.Themes = map[string]*theme{}
 
-	for i := range root.XmlContainers {
-		var c = &root.XmlContainers[i]
+	for _, c := range gui.root.XmlContainers {
 		var cId = c.XmlProps[0].Value
 		c.Widgets = make([]string, len(c.XmlWidgets))
 		c.Properties = make(map[string]string, len(c.XmlProps))
@@ -68,8 +67,7 @@ func New(elements ...string) GUI {
 			c.Properties[xmlProp.Name.Local] = xmlProp.Value
 		}
 
-		for j := range c.XmlWidgets {
-			var w = &c.XmlWidgets[j]
+		for j, w := range c.XmlWidgets {
 			var wClass = w.XmlProps[0].Value
 			var wId = w.XmlProps[1].Value
 			var fn, has = updateAndDrawFuncs[wClass]
@@ -86,23 +84,22 @@ func New(elements ...string) GUI {
 				w.Properties[xmlProp.Name.Local] = xmlProp.Value
 			}
 
-			root.Widgets[wId] = *w
+			gui.root.Widgets[wId] = w
 		}
-		for j := range c.XmlThemes {
-			var t = &c.XmlThemes[j]
+		for _, t := range c.XmlThemes {
 			var tId = t.XmlProps[0].Value
 			t.Properties = make(map[string]string, len(t.XmlProps))
 
 			for _, xmlProp := range t.XmlProps {
 				t.Properties[xmlProp.Name.Local] = xmlProp.Value
 			}
-			root.Themes[tId] = *t
+			gui.root.Themes[tId] = t
 		}
 
-		root.Containers[cId] = *c
+		gui.root.Containers[cId] = c
 	}
 
-	return GUI{root: root}
+	return &gui
 }
 
 func (gui *GUI) Property(id, property string) string {
@@ -111,7 +108,8 @@ func (gui *GUI) Property(id, property string) string {
 	var t, hasT = gui.root.Themes[id]
 
 	if hasW {
-		return w.Properties[property]
+		var owner = gui.root.Containers[w.Owner]
+		return themedProp(property, gui.root, owner, w)
 	}
 	if hasC {
 		return c.Properties[property]
@@ -140,7 +138,11 @@ func (gui *GUI) SetProperty(id, property string, value string) {
 
 func (gui *GUI) Draw(camera *graphics.Camera) {
 	var prevAng = camera.Angle
-	var containers = gui.root.XmlContainers
+	var containers = gui.root.Containers
+
+	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) || mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+		pressedOn = nil
+	}
 
 	camera.Angle = 0 // force no cam rotation for UI
 	mouse.SetCursor(mouse.CursorArrow)
@@ -164,7 +166,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		ownerTy, ownerBy = oy, oy+"+"+oh
 		ownerW, ownerH = ow, oh
 
-		c.UpdateAndDraw(&gui.root, camera)
+		c.UpdateAndDraw(gui.root, camera)
 	}
 
 	camera.Angle = prevAng // reset angle & mask to how it was
@@ -177,10 +179,10 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 
 	if hasW {
 		var owner = gui.root.Containers[w.Owner]
-		return w.IsHovered(&gui.root, &owner, camera)
+		return w.IsHovered(owner, camera)
 	}
 	if hasC {
-		return c.IsHovered(&gui.root, camera)
+		return c.IsHovered(camera)
 	}
 	return false
 }
@@ -214,7 +216,7 @@ func themedProp(prop string, root *root, c *container, w *widget) string {
 	// priority for widget: widget -> widget theme -> container theme
 
 	var wSelf = ""
-	var wTheme, cTheme theme
+	var wTheme, cTheme *theme
 	var hasW, hasWt, hasCt = false, false, false
 
 	if w != nil {
@@ -273,7 +275,7 @@ func dyn(owner *container, value string, defaultValue string) string {
 	return symbols.New(calc)
 }
 
-func parseColor(value string) uint {
+func parseColor(value string, disabled ...bool) uint {
 	var rgba = strings.Split(value, " ")
 	var r, g, b, a uint64
 
@@ -286,6 +288,11 @@ func parseColor(value string) uint {
 	if len(rgba) == 4 {
 		a, _ = strconv.ParseUint(rgba[3], 10, 8)
 	}
+
+	if len(disabled) == 1 && disabled[0] {
+		a /= 3
+	}
+
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
 }
 func parseNum(value string, defaultValue float32) float32 {
@@ -294,6 +301,16 @@ func parseNum(value string, defaultValue float32) float32 {
 		return defaultValue
 	}
 	return float32(v)
+}
+
+func isHovered(x, y, w, h float32, cam *graphics.Camera) bool {
+	var prevAng = cam.Angle
+	cam.Angle = 0
+	var sx, sy = cam.PointToScreen(x, y)
+	var mx, my = cam.PointToScreen(cam.MousePosition())
+	var result = mx > sx && mx < sx+int(w) && my > sy && my < sy+int(h)
+	cam.Angle = prevAng
+	return result
 }
 
 // #endregion

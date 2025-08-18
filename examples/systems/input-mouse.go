@@ -27,7 +27,7 @@ func Mouse() {
 			node.Height = node.Width
 		}
 
-		if node.IsHovered(&cam) {
+		if node.IsHovered(cam) {
 			mouse.SetCursor(mouse.CursorHand)
 		} else {
 			mouse.SetCursor(mouse.CursorArrow)

@@ -10,8 +10,8 @@ import (
 
 type container struct {
 	XmlProps   []xml.Attr `xml:",any,attr"`
-	XmlWidgets []widget   `xml:"Widget"`
-	XmlThemes  []theme    `xml:"Theme"`
+	XmlWidgets []*widget  `xml:"Widget"`
+	XmlThemes  []*theme   `xml:"Theme"`
 
 	X, Y, Width, Height float32
 	Properties          map[string]string
@@ -28,10 +28,12 @@ func Container(id, x, y, width, height string, properties ...string) string {
 }
 
 func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
-	var x = parseNum(dyn(nil, c.Properties[p.X], "0"), 0)
-	var y = parseNum(dyn(nil, c.Properties[p.Y], "0"), 0)
-	var w = parseNum(dyn(nil, c.Properties[p.Width], "0"), 0)
-	var h = parseNum(dyn(nil, c.Properties[p.Height], "0"), 0)
+	var _, hidden = c.Properties[p.Hidden]
+	if hidden {
+		return
+	}
+
+	var x, y, w, h = parseNum(ownerX, 0), parseNum(ownerY, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
 	var cGapX = parseNum(dyn(c, c.Properties[p.GapX], "0"), 0)
 	var cGapY = parseNum(dyn(c, c.Properties[p.GapY], "0"), 0)
@@ -43,10 +45,15 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 
 	for _, wId := range c.Widgets {
 		var widget = root.Widgets[wId]
-		var ww = parseNum(dyn(c, themedProp(p.Width, root, c, &widget), "0"), 0)
-		var wh = parseNum(dyn(c, themedProp(p.Height, root, c, &widget), "0"), 0)
-		var gapX = parseNum(dyn(c, themedProp(p.GapX, root, c, &widget), "0"), 0)
-		var gapY = parseNum(dyn(c, themedProp(p.GapY, root, c, &widget), "0"), 0)
+		var _, wHidden = widget.Properties[p.Hidden]
+		if wHidden {
+			continue
+		}
+
+		var ww = parseNum(dyn(c, themedProp(p.Width, root, c, widget), "0"), 0)
+		var wh = parseNum(dyn(c, themedProp(p.Height, root, c, widget), "0"), 0)
+		var gapX = parseNum(dyn(c, themedProp(p.GapX, root, c, widget), "0"), 0)
+		var gapY = parseNum(dyn(c, themedProp(p.GapY, root, c, widget), "0"), 0)
 		var offX = parseNum(dyn(c, widget.Properties[p.OffsetX], "0"), 0)
 		var offY = parseNum(dyn(c, widget.Properties[p.OffsetY], "0"), 0)
 		var _, isBgr = widget.Properties[p.FillContainer]
@@ -69,16 +76,14 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 		}
 
 		widget.Width, widget.Height = ww, wh
-		widget.ThemeId = themedProp(p.ThemeId, root, c, &widget)
+		widget.ThemeId = themedProp(p.ThemeId, root, c, widget)
 
 		if widget.UpdateAndDraw != nil {
-			widget.UpdateAndDraw(ww, wh, cam, root, &widget, c)
+			widget.UpdateAndDraw(ww, wh, cam, root, widget, c)
 		}
 	}
 }
 
-func (c *container) IsHovered(root *root, cam *graphics.Camera) bool {
-	var x, y = cam.PointToScreen(c.X, c.Y)
-	var mx, my = cam.PointToScreen(cam.MousePosition())
-	return mx > x && mx < x+int(c.Width) && my > y && my < y+int(c.Height)
+func (c *container) IsHovered(cam *graphics.Camera) bool {
+	return isHovered(c.X, c.Y, c.Width, c.Height, cam)
 }

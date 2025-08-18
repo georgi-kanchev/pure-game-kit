@@ -37,10 +37,10 @@ type Camera struct {
 	maskX, maskY, maskW, maskH int
 }
 
-func NewCamera(zoom float32) Camera {
+func NewCamera(zoom float32) *Camera {
 	var cam = Camera{Zoom: zoom, PivotX: 0.5, PivotY: 0.5}
 	cam.SetScreenAreaToWindow()
-	return cam
+	return &cam
 }
 
 func (camera *Camera) DragAndZoom() {
