@@ -40,7 +40,7 @@ func (gui *GUI) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) b
 var pressedOn *widget
 var pressedAt float32
 
-func button(w, h float32, cam *graphics.Camera, root *root, widget *widget, owner *container) {
+func button(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var prev = widget.ThemeId
 	var _, ownerDisabled = owner.Properties[property.Disabled]
 	var _, disabled = widget.Properties[property.Disabled]
@@ -62,11 +62,14 @@ func button(w, h float32, cam *graphics.Camera, root *root, widget *widget, owne
 			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
 				pressedOn = widget
 				pressedAt = seconds.RealRuntime()
+				tooltipForWidget = nil
 			}
 		}
 	}
 
-	visual(w, h, cam, root, widget, owner)
+	setupVisualsTextured(root, widget, owner)
+	setupVisualsText(root, widget, owner)
+	drawVisuals(cam, root, widget, owner)
 	widget.ThemeId = prev
 }
 

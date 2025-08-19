@@ -11,6 +11,10 @@ lua scripts
 LAN?
 
 // DONE:
+[47] [Tue] [19-08-2025]
+[√] gui - restructure
+[x] gui - tooltips started
+
 [46] [Mon] [18-08-2025]
 [√] graphics - camera new returns pointer + examples fixed
 [√] gui - pointers everywhere

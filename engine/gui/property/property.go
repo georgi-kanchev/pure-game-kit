@@ -19,7 +19,9 @@ const (
 	NewRow        = "newRow"        // [widget] example: "200", "" = GapY
 	OffsetX       = "offsetX"       // [widget]
 	OffsetY       = "offsetY"       // [widget]
+	TooltipText   = "tooltipText"   // [widget]
 
+	TooltipId     = "tooltipId"     // [widget] [theme]
 	Color         = "color"         // [widget] [theme] separated with space, example: "255 0 0 255"
 	BoxEdgeLeft   = "boxEdgeLeft"   // [widget] [theme]
 	BoxEdgeRight  = "boxEdgeRight"  // [widget] [theme]

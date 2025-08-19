@@ -37,10 +37,6 @@ func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
 	return textBox
 }
 
-func (textBox *TextBox) Size() (width, height float32) {
-	return textBox.Width, textBox.Height
-}
-
 func (textBox *TextBox) TextWrap(text string) string {
 	var font = textBox.font()
 	var words = strings.Split(text, " ")

@@ -12,7 +12,7 @@ type widget struct {
 	Class, Owner, ThemeId string
 	X, Y, Width, Height   float32
 	Properties            map[string]string
-	UpdateAndDraw         func(w, h float32, cam *graphics.Camera, root *root, widget *widget, owner *container)
+	UpdateAndDraw         func(cam *graphics.Camera, root *root, widget *widget, owner *container)
 }
 
 func newWidget(class, id string, properties ...string) string {
@@ -23,4 +23,10 @@ func newWidget(class, id string, properties ...string) string {
 func (widget *widget) IsHovered(owner *container, cam *graphics.Camera) bool {
 	return isHovered(owner.X, owner.Y, owner.Width, owner.Height, cam) &&
 		isHovered(widget.X, widget.Y, widget.Width, widget.Height, cam)
+}
+
+func (widget *widget) IsDisabled(owner *container) bool {
+	var _, disabled = widget.Properties[property.Disabled]
+	var _, ownerDisabled = owner.Properties[property.Disabled]
+	return disabled || ownerDisabled
 }

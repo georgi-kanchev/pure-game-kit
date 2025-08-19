@@ -27,6 +27,11 @@ func Container(id, x, y, width, height string, properties ...string) string {
 	return rid + rx + ry + rw + rh + extraProps(properties...) + ">"
 }
 
+// #region private
+
+var tooltipForWidget *widget
+var tooltipAt float32
+
 func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 	var _, hidden = c.Properties[p.Hidden]
 	if hidden {
@@ -46,7 +51,7 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 	for _, wId := range c.Widgets {
 		var widget = root.Widgets[wId]
 		var _, wHidden = widget.Properties[p.Hidden]
-		if wHidden {
+		if wHidden || widget.Class == "tooltip" {
 			continue
 		}
 
@@ -79,7 +84,12 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 		widget.ThemeId = themedProp(p.ThemeId, root, c, widget)
 
 		if widget.UpdateAndDraw != nil {
-			widget.UpdateAndDraw(ww, wh, cam, root, widget, c)
+			widget.UpdateAndDraw(cam, root, widget, c)
+			tryShowTooltip(wId, root, c, widget, cam, scx, scy, w, h)
+		} else if widget.Class == "visual" {
+			setupVisualsTextured(root, widget, c)
+			setupVisualsText(root, widget, c)
+			drawVisuals(cam, root, widget, c)
 		}
 	}
 }
@@ -87,3 +97,5 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 func (c *container) IsHovered(cam *graphics.Camera) bool {
 	return isHovered(c.X, c.Y, c.Width, c.Height, cam)
 }
+
+// #endregion

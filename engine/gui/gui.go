@@ -189,9 +189,7 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 
 // #region private
 
-var updateAndDrawFuncs = map[string]func(
-	w, h float32, cam *graphics.Camera, root *root, widget *widget, owner *container){
-	"visual": visual,
+var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
 	"button": button,
 }
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
