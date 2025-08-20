@@ -29,9 +29,6 @@ func Container(id, x, y, width, height string, properties ...string) string {
 
 // #region private
 
-var tooltipForWidget *widget
-var tooltipAt float32
-
 func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 	var _, hidden = c.Properties[p.Hidden]
 	if hidden {
@@ -85,11 +82,12 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 
 		if widget.UpdateAndDraw != nil {
 			widget.UpdateAndDraw(cam, root, widget, c)
-			tryShowTooltip(wId, root, c, widget, cam, scx, scy, w, h)
+			tryShowTooltip(widget, root, c, cam)
 		} else if widget.Class == "visual" {
 			setupVisualsTextured(root, widget, c)
 			setupVisualsText(root, widget, c)
 			drawVisuals(cam, root, widget, c)
+			tryShowTooltip(widget, root, c, cam)
 		}
 	}
 }

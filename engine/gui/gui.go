@@ -72,9 +72,10 @@ func New(elements ...string) *GUI {
 			var wId = w.XmlProps[1].Value
 			var fn, has = updateAndDrawFuncs[wClass]
 			c.Widgets[j] = wId
-			w.Owner = cId
+			w.OwnerId = cId
 			w.Class = wClass
 			w.Properties = make(map[string]string, len(w.XmlProps))
+			w.Id = wId
 
 			if has {
 				w.UpdateAndDraw = fn
@@ -108,7 +109,7 @@ func (gui *GUI) Property(id, property string) string {
 	var t, hasT = gui.root.Themes[id]
 
 	if hasW {
-		var owner = gui.root.Containers[w.Owner]
+		var owner = gui.root.Containers[w.OwnerId]
 		return themedProp(property, gui.root, owner, w)
 	}
 	if hasC {
@@ -145,7 +146,10 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	}
 
 	camera.Angle = 0 // force no cam rotation for UI
-	mouse.SetCursor(mouse.CursorArrow)
+
+	if tooltip == nil {
+		mouse.SetCursor(mouse.CursorArrow)
+	}
 
 	var tlx, tly = camera.PointFromPivot(0, 0)
 	var brx, bry = camera.PointFromPivot(1, 1)
@@ -169,6 +173,12 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		c.UpdateAndDraw(gui.root, camera)
 	}
 
+	if tooltip != nil {
+		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
+		var tooltipOwner = gui.root.Containers[tooltip.OwnerId]
+		drawTooltip(gui.root, tooltipOwner, camera)
+	}
+
 	camera.Angle = prevAng // reset angle & mask to how it was
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 }
@@ -178,7 +188,7 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var c, hasC = gui.root.Containers[id]
 
 	if hasW {
-		var owner = gui.root.Containers[w.Owner]
+		var owner = gui.root.Containers[w.OwnerId]
 		return w.IsHovered(owner, camera)
 	}
 	if hasC {

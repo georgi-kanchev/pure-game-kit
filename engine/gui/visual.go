@@ -116,9 +116,7 @@ func setupVisualsText(root *root, widget *widget, owner *container) {
 
 func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var assetId = themedProp(p.AssetId, root, owner, widget)
-	var _, disabled = widget.Properties[p.Disabled]
-	var _, ownerDisabled = owner.Properties[p.Disabled]
-	disabled = disabled || ownerDisabled
+	var disabled = widget.IsDisabled(owner)
 	var col = parseColor(themedProp(p.Color, root, owner, widget), disabled)
 	var text, _ = widget.Properties[p.Text]
 

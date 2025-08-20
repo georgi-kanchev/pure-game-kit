@@ -20,33 +20,37 @@ func GUIs() {
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.AssetId, box[2], p.TextAlignmentX, "0.5", p.TextAlignmentY, "0.3", p.TextColor, "80 80 80 255",
 			p.TextLineHeight, "70", p.ButtonHoverThemeId, "button-hover", p.ButtonPressThemeId, "button-press",
+			p.TooltipId, "tooltip",
 		),
 		gui.Theme("button-hover", p.Color, "255 255 255 255", p.Width, "300", p.Height, "100",
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40",
 			p.BoxEdgeBottom, "40", p.AssetId, box[5], p.TextAlignmentX, "0.5", p.TextAlignmentY, "0.3",
 			p.TextColor, "127 127 127 255", p.TextLineHeight, "70", p.GapX, "20", p.GapY, "20",
+			p.TooltipId, "tooltip",
 		),
 		gui.Theme("button-press", p.Color, "200 200 200 255", p.Width, "300", p.Height, "100",
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.AssetId, box[4], p.TextAlignmentX, "0.5", p.TextAlignmentY, "0.6", p.TextColor, "80 80 80 255",
-			p.TextLineHeight, "70", p.GapX, "20", p.GapY, "20",
+			p.TextLineHeight, "70", p.GapX, "20", p.GapY, "20", p.TooltipId, "tooltip",
 		),
 		gui.Theme("label", p.Color, "0 0 0 0", p.Width, "300", p.Height, "100", p.GapX, "20", p.GapY, "20",
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.TextAlignmentX, "0", p.TextAlignmentY, "0.5", p.TextColor, "0 0 0 255",
-			p.TextLineHeight, "80",
+			p.TextLineHeight, "80", p.TooltipId, "tooltip",
 		),
 		// ======================================================
 		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1175",
 			p.ThemeId, "button", p.GapX, "50", p.GapY, "50"),
-		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		gui.Tooltip("tooltip", p.AssetId, box[7], p.Width, "800", p.TextAlignmentX, "0.5",
 			p.TextAlignmentY, "0.5"),
-		gui.Visual("name-label", p.ThemeId, "label", p.Text, "Name"),
+		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
+		// ======================================================
+		gui.Visual("name-label", p.ThemeId, "label", p.Text, "Name", p.TooltipText, "Wow, tooltip for labels!"),
 		gui.Visual("name", p.Width, "500", p.AssetId, box[9], p.Text, "Kenney", p.TextAlignmentX, "0.1",
 			p.TextAlignmentY, "0.5", p.TextColor, "150 150 150 255"),
 		gui.Visual("stepper-label", p.ThemeId, "label", p.Text, "Stepper", p.NewRow, ""),
-		gui.Button("step-left", p.Width, "100", p.TextEmbeddedAssetId1, "arrow-left", p.Text, "^^ ", p.TooltipId, "tooltip", p.TooltipText, "Press this button to accept absolutely nothing."),
+		gui.Button("step-left", p.Width, "100", p.TextEmbeddedAssetId1, "arrow-left", p.Text, "^^ ",
+			p.TooltipText, "Press this button to do absolutely nothing."),
 		gui.Visual("stepper", p.AssetId, box[9], p.Text, "10/10", p.TextAlignmentY, "0.5", p.GapX, "0",
 			p.TextColor, "150 150 150 255"),
 		gui.Button("step-right", p.Width, "100", p.TextEmbeddedAssetId1, icons[212], p.Text, "^^", p.GapX, "0"),
@@ -70,9 +74,10 @@ func GUIs() {
 		gui.Visual("slider2-100", p.ThemeId, "label", p.Text, "100", p.TextLineHeight, "50", p.GapX, "710",
 			p.Width, "80", p.TextAlignmentX, "0.5"),
 		gui.Visual("divider", p.AssetId, box[12], p.BoxEdgeTop, "0", p.BoxEdgeBottom, "0", p.NewRow, "",
-			p.Width, "820", p.Height, "40"),
+			p.Width, "820", p.Height, "40", p.TooltipText, "Tooltips for dividers?! WHAT?"),
 		gui.Button("x", p.Width, "170", p.Height, "140", p.TextEmbeddedAssetId1, icons[250], p.Text, "^^ ",
-			p.NewRow, "70", p.TextColor, "255 255 255 255", p.Color, "200 0 0 255"),
+			p.NewRow, "70", p.TextColor, "255 255 255 255", p.Color, "200 0 0 255",
+			p.TooltipText, "This is a pretty squarish X button."),
 		gui.Button("v", p.Width, "630", p.Height, "140", p.TextEmbeddedAssetId1, icons[249], p.Text, "^^ Accept ",
 			p.TextColor, "255 255 255 255", p.Color, "0 200 0 255"),
 	)
@@ -87,10 +92,6 @@ func GUIs() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
-
-		if menu.ButtonClickedOnce("dropdown", cam) {
-			menu.SetProperty("dropdown", p.GapX, menu.Property("dropdown", p.GapX)+"+20")
-		}
 
 		menu.Draw(cam)
 	}

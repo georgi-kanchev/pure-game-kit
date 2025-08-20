@@ -14,7 +14,7 @@ func Button(id string, properties ...string) string {
 
 func (gui *GUI) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = gui.root.Widgets[buttonId]
-	var owner = gui.root.Containers[widget.Owner]
+	var owner = gui.root.Containers[widget.OwnerId]
 
 	return exists && mouse.IsButtonReleasedOnce(mouse.ButtonLeft) &&
 		widget.IsHovered(owner, camera) &&
@@ -26,7 +26,7 @@ func (gui *GUI) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) b
 		return false
 	}
 
-	var owner = gui.root.Containers[widget.Owner]
+	var owner = gui.root.Containers[widget.OwnerId]
 	var hover = widget.IsHovered(owner, camera)
 	var first = condition.TrueOnce(hover && mouse.IsButtonPressedOnce(mouse.ButtonLeft), ";;first-"+buttonId)
 
