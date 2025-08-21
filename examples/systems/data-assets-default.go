@@ -13,16 +13,20 @@ func DefaultAssetRetro() {
 	runDefaultAssetDisplay(0.9, 8, 1, 26, 21, assets.LoadDefaultAtlasRetro)
 }
 func DefaultAssetIcons() {
-	runDefaultAssetDisplay(0.7, 50, 0, 22, 13, assets.LoadDefaultAtlasIcons)
+	var function = func() (string, []string) { return assets.LoadDefaultAtlasIcons(true) }
+	runDefaultAssetDisplay(0.7, 50, 0, 22, 13, function)
 }
 func DefaultAssetCursors() {
-	runDefaultAssetDisplay(0.9, 32, 0, 19, 8, assets.LoadDefaultAtlasCursors)
+	var function = func() (string, []string) { return assets.LoadDefaultAtlasCursors(true) }
+	runDefaultAssetDisplay(0.9, 32, 0, 19, 8, function)
 }
 func DefaultAssetInput() {
-	runDefaultAssetDisplay(0.9, 50, 0, 17, 6, assets.LoadDefaultAtlasInput)
+	var function = func() (string, []string) { return assets.LoadDefaultAtlasInput(true) }
+	runDefaultAssetDisplay(0.9, 50, 0, 17, 6, function)
 }
 func DefaultAssetPatterns() {
-	runDefaultAssetDisplay(0.7, 64, 0, 12, 7, assets.LoadDefaultAtlasPatterns)
+	var function = func() (string, []string) { return assets.LoadDefaultAtlasPatterns(true) }
+	runDefaultAssetDisplay(0.7, 64, 0, 12, 7, function)
 }
 func DefaultAssetFont() {
 	var function = func() (string, []string) { return "", []string{} }
@@ -35,7 +39,7 @@ func DefaultAssetTexture() {
 }
 func DefaultAssetUI() {
 	var function = func() (string, []string) {
-		var a, b, _ = assets.LoadDefaultAtlasUI()
+		var a, b, _ = assets.LoadDefaultAtlasUI(false)
 		return a, b
 	}
 	runDefaultAssetDisplay(0.7, 16, 0, 9, 8, function)

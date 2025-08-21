@@ -143,6 +143,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 
 	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) || mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
 		pressedOn = nil
+		tooltip = nil
 	}
 
 	camera.Angle = 0 // force no cam rotation for UI
@@ -200,7 +201,7 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 // #region private
 
 var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
-	"button": button,
+	"button": button, "slider": slider,
 }
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
 var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache

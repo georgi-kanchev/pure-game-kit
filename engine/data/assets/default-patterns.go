@@ -2,9 +2,9 @@ package assets
 
 import "strconv"
 
-func LoadDefaultAtlasPatterns() (atlasId string, tileIds []string) {
+func LoadDefaultAtlasPatterns(smooth bool) (atlasId string, tileIds []string) {
 	const symbol = "&"
-	var tex = loadTexture(symbol, patterns)
+	var tex = loadTexture(symbol, patterns, smooth)
 	var id = SetTextureAtlas(tex, 64, 64, 0)
 	var ids = []string{}
 

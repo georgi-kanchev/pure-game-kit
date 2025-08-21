@@ -17,7 +17,6 @@ var reusableSprite graphics.Sprite = graphics.Sprite{}
 var reusableNineslice graphics.Box = graphics.Box{}
 
 func setupVisualsTextured(root *root, widget *widget, owner *container) {
-	var disabled = widget.IsDisabled(owner)
 	var assetId = themedProp(p.AssetId, root, owner, widget)
 
 	if assetId != "" {
@@ -25,7 +24,7 @@ func setupVisualsTextured(root *root, widget *widget, owner *container) {
 		var cRight = parseNum(dyn(owner, themedProp(p.BoxEdgeRight, root, owner, widget), "100"), 0)
 		var cTop = parseNum(dyn(owner, themedProp(p.BoxEdgeTop, root, owner, widget), "100"), 0)
 		var cBottom = parseNum(dyn(owner, themedProp(p.BoxEdgeBottom, root, owner, widget), "100"), 0)
-		var col = parseColor(themedProp(p.Color, root, owner, widget), disabled)
+		var col = parseColor(themedProp(p.Color, root, owner, widget), widget.IsDisabled(owner))
 		var _, has = internal.Boxes[assetId]
 
 		if has {
@@ -116,8 +115,7 @@ func setupVisualsText(root *root, widget *widget, owner *container) {
 
 func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var assetId = themedProp(p.AssetId, root, owner, widget)
-	var disabled = widget.IsDisabled(owner)
-	var col = parseColor(themedProp(p.Color, root, owner, widget), disabled)
+	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.IsDisabled(owner))
 	var text, _ = widget.Properties[p.Text]
 
 	if assetId != "" {

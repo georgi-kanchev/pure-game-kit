@@ -1,8 +1,8 @@
 package assets
 
-func LoadDefaultAtlasCursors() (atlasId string, tileIds []string) {
+func LoadDefaultAtlasCursors(smooth bool) (atlasId string, tileIds []string) {
 	const symbol = "^"
-	var tex = loadTexture(symbol, cursors)
+	var tex = loadTexture(symbol, cursors, smooth)
 	var id = SetTextureAtlas(tex, 32, 32, 0)
 	var ids = []string{
 		"pointer1", "pointer2", "pointer3", "pointer4", "pointer5", "pointer6", "pointer7", "pointer8",

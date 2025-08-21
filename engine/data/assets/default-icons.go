@@ -1,8 +1,8 @@
 package assets
 
-func LoadDefaultAtlasIcons() (atlasId string, tileIds []string) {
+func LoadDefaultAtlasIcons(smooth bool) (atlasId string, tileIds []string) {
 	const symbol = "@"
-	var tex = loadTexture(symbol, icons)
+	var tex = loadTexture(symbol, icons, smooth)
 	var id = SetTextureAtlas(tex, 50, 50, 0)
 	var ids = []string{
 		"club", "spade", "diamond1", "heart", "heart-broken", "shape",

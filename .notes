@@ -1,8 +1,10 @@
 // TODO:
+add padding for ALL default assets
 gui
 tiled loading
-drawing tilemaps
+drawing tilemaps - https://wareya.github.io/webtyler/
 audio - sounds, music, playlists
+GPU particles?
 
 // TODO LONGTERM:
 data/storage?
@@ -12,7 +14,9 @@ LAN?
 
 // DONE:
 [48] [Wed] [20-08-2025]
+[√] debug - print lines of code in project
 [√] gui - tooltips
+[√] gui - sliders
 
 [47] [Tue] [19-08-2025]
 [√] gui - restructure

@@ -197,5 +197,10 @@ func ByteSizeToText(byteSize int64) string {
 	return fmt.Sprintf("%.1f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }
 
+func Round(number float32, precision int) float32 {
+	var pow = math.Pow(10, float64(precision))
+	return float32(math.Round(float64(number)*pow) / pow)
+}
+
 func IsNaN(number float32) bool { return math.IsNaN(float64(number)) }
 func NaN() float32              { return float32(math.NaN()) }

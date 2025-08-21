@@ -12,7 +12,7 @@ import (
 func Texts() {
 	var cam = graphics.NewCamera(1)
 	var font = assets.LoadDefaultFont()
-	var _, tiles = assets.LoadDefaultAtlasIcons()
+	var _, tiles = assets.LoadDefaultAtlasIcons(true)
 	var textBox = graphics.NewTextBox(font, 0, 0, "Lorem `ipsum ^^ dolor` sit amet, *consectetur* ^^ adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. `Ut enim ^^ ad minim` veniam, quis nostrud *exercitation* ^^\r^^ ullamco laboris nisi ut aliquip ex ea commodo consequat. `Duis aute irure dolor in reprehenderit in voluptate velit esse cillum doloreeu fugiat nulla pariatur.")
 	textBox.PivotX, textBox.PivotY = 0, 0
 	textBox.AlignmentY = 1
