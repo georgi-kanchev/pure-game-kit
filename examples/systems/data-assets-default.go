@@ -26,7 +26,7 @@ func DefaultAssetInput() {
 }
 func DefaultAssetPatterns() {
 	var function = func() (string, []string) { return assets.LoadDefaultAtlasPatterns(true) }
-	runDefaultAssetDisplay(0.7, 64, 0, 12, 7, function)
+	runDefaultAssetDisplay(0.7, 64, 1, 12, 7, function)
 }
 func DefaultAssetFont() {
 	var function = func() (string, []string) { return "", []string{} }

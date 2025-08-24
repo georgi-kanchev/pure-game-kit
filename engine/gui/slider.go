@@ -30,11 +30,13 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 		widget.Height *= 2
 	}
 
-	var handleWidth = (widget.Height * 1.2) / 2
+	var handleScale float32 = 1.8
+	var handleWidth = (widget.Height * handleScale) / 2
 	var x = widget.X + handleWidth
 	var value = parseNum(widget.Properties[property.SliderValue], 0)
 	var step = parseNum(themedProp(property.SliderStep, root, owner, widget), 0)
 	var handleAssetId = themedProp(property.SliderHandleAssetId, root, owner, widget)
+	var handleY = widget.Y - (handleWidth)/3
 
 	if step > 0 {
 		var stepPx = (widget.Width - handleWidth*2) * step
@@ -54,7 +56,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 
 	if pressedOn == widget {
 		var mx, _ = cam.MousePosition()
-		value = number.Map(mx, widget.X+handleWidth, widget.X+widget.Width-handleWidth, 0, 1)
+		value = number.Map(mx, widget.X+handleWidth/2, widget.X+widget.Width-handleWidth/2, 0, 1)
 		value = widget.setSliderValue(value, root, owner)
 	}
 
@@ -64,17 +66,17 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 		value = widget.setSliderValue(value, root, owner)
 	}
 
-	x = number.Map(value, 0, 1, widget.X+handleWidth, widget.X+widget.Width-handleWidth)
+	x = number.Map(value, 0, 1, widget.X+handleWidth/2, widget.X+widget.Width-handleWidth/2)
+
+	buttonColor = color.Brighten(buttonColor, 0.5)
 
 	if handleAssetId == "" {
-		var smaller = handleWidth * 0.75
-		cam.DrawCircle(x, widget.Y+smaller, handleWidth, color.Gray)
-		cam.DrawCircle(x, widget.Y+smaller, smaller, buttonColor)
-		return
+		cam.DrawCircle(x, handleY+handleWidth*0.8, handleWidth, color.Darken(buttonColor, 0.5))
+		cam.DrawCircle(x, handleY+handleWidth*0.8, handleWidth*0.75, buttonColor)
+	} else {
+		handleWidget.Width, handleWidget.Height = widget.Height*handleScale, widget.Height*handleScale
+		drawReusableWidget(buttonColor, handleAssetId, x-handleWidth, handleY, root, owner, cam)
 	}
-
-	handleWidget.Width, handleWidget.Height = widget.Height*1.2, widget.Height*1.2
-	drawReusableWidget(buttonColor, handleAssetId, x-handleWidth, widget.Y, root, owner, cam)
 }
 
 func (widget *widget) setSliderValue(value float32, root *root, owner *container) float32 {
