@@ -14,13 +14,18 @@ func GUIs() {
 	var cam = graphics.NewCamera(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons(true)
 	var _, ids, box = assets.LoadDefaultAtlasUI(true)
-	var menu = gui.New(
+	var hud = gui.New(
 		gui.Container("themes", "", "", "", ""),
+		gui.Theme("label", p.Color, "0 0 0 0", p.Width, "300", p.Height, "100", p.GapX, "20", p.GapY, "20",
+			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
+			p.TextAlignmentX, "0", p.TextAlignmentY, "0.5", p.TextColor, "0 0 0 255",
+			p.TextLineHeight, "80", p.TooltipId, "tooltip"),
+		// ======================================================
 		gui.Theme("button", p.Color, "220 220 220 255", p.Width, "300", p.Height, "100", p.GapX, "20", p.GapY, "20",
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.AssetId, box[2], p.TextAlignmentX, "0.5", p.TextAlignmentY, "0.3", p.TextColor, "80 80 80 255",
-			p.TextLineHeight, "70", p.ButtonHoverThemeId, "button-hover", p.ButtonPressThemeId, "button-press",
-			p.TooltipId, "tooltip", p.SliderStep, "0.1", p.SliderHandleAssetId, ids[69],
+			p.TextLineHeight, "70", p.ButtonThemeIdHover, "button-hover", p.ButtonThemeIdPress, "button-press",
+			p.TooltipId, "tooltip", p.SliderStep, "0.1", p.SliderHandleAssetId, box[14],
 			p.SliderStepAssetId, ids[49]),
 		gui.Theme("button-hover", p.Color, "255 255 255 255", p.Width, "300", p.Height, "100",
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40",
@@ -31,14 +36,35 @@ func GUIs() {
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.AssetId, box[4], p.TextAlignmentX, "0.5", p.TextAlignmentY, "0.6", p.TextColor, "80 80 80 255",
 			p.TextLineHeight, "70", p.GapX, "20", p.GapY, "20", p.TooltipId, "tooltip"),
-		gui.Theme("label", p.Color, "0 0 0 0", p.Width, "300", p.Height, "100", p.GapX, "20", p.GapY, "20",
-			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
-			p.TextAlignmentX, "0", p.TextAlignmentY, "0.5", p.TextColor, "0 0 0 255",
-			p.TextLineHeight, "80", p.TooltipId, "tooltip"),
+		// ======================================================
+		gui.Theme("checkbox-on", p.Color, "220 220 220 255", p.Width, "100", p.Height, "100", p.GapX, "20",
+			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
+			p.AssetId, box[9], p.TextColor, "80 80 80 255", p.TextLineHeight, "70",
+			p.ButtonThemeIdHover, "checkbox-on-hover", p.ButtonThemeIdPress, "checkbox-on-press",
+			p.TooltipId, "tooltip", p.TooltipText, "Currently on!",
+			p.TextEmbeddedAssetId1, icons[249], p.Text, "^^ ", p.TextAlignmentX, "0.6", p.TextAlignmentY, "0.53"),
+		gui.Theme("checkbox-on-hover", p.Color, "255 255 255 255", p.Width, "100", p.Height, "100", p.GapX, "20",
+			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
+			p.AssetId, box[9], p.TextColor, "80 80 80 255", p.TextLineHeight, "70",
+			p.TextEmbeddedAssetId1, icons[249], p.Text, "^^ ", p.TextAlignmentX, "0.6", p.TextAlignmentY, "0.53"),
+		gui.Theme("checkbox-on-press", p.Color, "200 200 200 255", p.Width, "100", p.Height, "100", p.GapX, "20",
+			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
+			p.AssetId, box[9], p.TextColor, "80 80 80 255", p.TextLineHeight, "70",
+			p.TextEmbeddedAssetId1, icons[249], p.Text, "^^ ", p.TextAlignmentX, "0.6", p.TextAlignmentY, "0.53"),
+		gui.Theme("checkbox-off", p.Color, "220 220 220 255", p.Width, "100", p.Height, "100", p.GapX, "20",
+			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
+			p.ButtonThemeIdHover, "checkbox-off-hover", p.ButtonThemeIdPress, "checkbox-off-press",
+			p.AssetId, box[9], p.TooltipId, "tooltip", p.TooltipText, "Currently off!"),
+		gui.Theme("checkbox-off-hover", p.Color, "255 255 255 255", p.Width, "100", p.Height, "100", p.GapX, "20",
+			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
+			p.AssetId, box[9]),
+		gui.Theme("checkbox-off-press", p.Color, "200 200 200 255", p.Width, "100", p.Height, "100", p.GapX, "20",
+			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
+			p.AssetId, box[9]),
 		// ======================================================
 		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1175",
 			p.ThemeId, "button", p.GapX, "50", p.GapY, "50"),
-		gui.Tooltip("tooltip", p.AssetId, box[7], p.Width, "800", p.TextAlignmentX, "0.5",
+		gui.Tooltip("tooltip", p.AssetId, box[7], p.Width, "700", p.TextAlignmentX, "0.5",
 			p.TextAlignmentY, "0.5"),
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		// ======================================================
@@ -52,8 +78,7 @@ func GUIs() {
 			p.TextColor, "150 150 150 255"),
 		gui.Button("step-right", p.Width, "100", p.TextEmbeddedAssetId1, icons[212], p.Text, "^^", p.GapX, "0"),
 		gui.Visual("checkbox-label", p.ThemeId, "label", p.Text, "Checkbox", p.NewRow, ""),
-		gui.Button("checkbox", p.Width, "100", p.TextEmbeddedAssetId1, icons[249], p.Text, "^^ ", p.AssetId, box[9],
-			p.TextAlignmentX, "0.6", p.TextAlignmentY, "0.53"),
+		gui.Checkbox("checkbox", p.ThemeId, "checkbox-off", p.CheckboxThemeId, "checkbox-on"),
 		gui.Button("dropdown", p.NewRow, "", p.AssetId, box[9], p.Text, "^^ List selection", p.Width, "820",
 			p.TextAlignmentX, "0.05", p.TextAlignmentY, "0.5", p.TextColor, "150 150 150 255",
 			p.TextEmbeddedAssetId1, "arrow-down"),
@@ -90,6 +115,6 @@ func GUIs() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
 
-		menu.Draw(cam)
+		hud.Draw(cam)
 	}
 }

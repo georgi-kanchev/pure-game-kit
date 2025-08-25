@@ -141,7 +141,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	var prevAng = camera.Angle
 	var containers = gui.root.Containers
 
-	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) || mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
 		pressedOn = nil
 		tooltip = nil
 	}
@@ -182,6 +182,11 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 
 	camera.Angle = prevAng // reset angle & mask to how it was
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
+
+	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+		pressedOn = nil
+		tooltip = nil
+	}
 }
 
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
@@ -201,7 +206,7 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 // #region private
 
 var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
-	"button": button, "slider": slider,
+	"button": button, "slider": slider, "checkbox": checkbox,
 }
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
 var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache

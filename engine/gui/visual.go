@@ -51,7 +51,7 @@ func setupVisualsTextured(root *root, widget *widget, owner *container) {
 
 func setupVisualsText(root *root, widget *widget, owner *container) {
 	var disabled = widget.IsDisabled(owner)
-	var text, _ = widget.Properties[p.Text]
+	var text = themedProp(p.Text, root, owner, widget)
 
 	if text != "" {
 		reusableTextBox.ScaleX, reusableTextBox.ScaleY = 1, 1
@@ -116,7 +116,7 @@ func setupVisualsText(root *root, widget *widget, owner *container) {
 func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var assetId = themedProp(p.AssetId, root, owner, widget)
 	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.IsDisabled(owner))
-	var text, _ = widget.Properties[p.Text]
+	var text = themedProp(p.Text, root, owner, widget)
 
 	if assetId != "" {
 		var _, has = internal.Boxes[assetId]

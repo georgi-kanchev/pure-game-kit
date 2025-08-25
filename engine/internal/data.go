@@ -72,6 +72,24 @@ func AssetSize(assetId string) (width, height int) {
 		return atlas.CellWidth * int(rect.CountX), atlas.CellHeight * int(rect.CountY)
 	}
 
+	var box, hasBox = Boxes[assetId]
+	if hasBox {
+		w, h := 0, 0
+		for _, id := range box {
+			if id == "" {
+				continue
+			}
+			var curW, curH = AssetSize(id)
+			if curW > w {
+				w = curW
+			}
+			if curH > h {
+				h = curH
+			}
+		}
+		return w, h
+	}
+
 	var font, hasFont = Fonts[assetId]
 	if hasFont {
 		return int(font.Texture.Width), int(font.Texture.Height)

@@ -12,6 +12,12 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[50] [Mon] [25-08-2025]
+[√] assets - fixes on default ui asset
+[√] gui - slider fixes
+[√] gui - checkboxes
+[√] gui - tooltips fix + new prop
+
 [49] [Sun] [24-08-2025]
 [√] assets - added padding to all default assets
 [√] gui - slider more readable handle

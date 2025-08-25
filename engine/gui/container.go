@@ -30,8 +30,8 @@ func Container(id, x, y, width, height string, properties ...string) string {
 // #region private
 
 func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
-	var _, hidden = c.Properties[p.Hidden]
-	if hidden {
+	var hidden, _ = c.Properties[p.Hidden]
+	if hidden != "" {
 		return
 	}
 
@@ -47,8 +47,8 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 
 	for _, wId := range c.Widgets {
 		var widget = root.Widgets[wId]
-		var _, wHidden = widget.Properties[p.Hidden]
-		if wHidden || widget.Class == "tooltip" {
+		var wHidden, _ = widget.Properties[p.Hidden]
+		if wHidden != "" || widget.Class == "tooltip" {
 			continue
 		}
 

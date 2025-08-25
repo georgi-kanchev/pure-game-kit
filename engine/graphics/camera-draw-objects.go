@@ -42,7 +42,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 				texture = tex
 				texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
 				texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
-				texW, texH = atlas.CellWidth, atlas.CellHeight
+				texW, texH = atlas.CellWidth*int(rect.CountX), atlas.CellHeight*int(rect.CountY)
 				rotations, flip = rect.Rotations, rect.Flip
 			} else {
 				var font, hasFont = internal.Fonts[s.AssetId]

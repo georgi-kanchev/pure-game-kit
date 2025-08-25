@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/input/mouse"
@@ -13,26 +12,10 @@ func Button(id string, properties ...string) string {
 }
 
 func (gui *GUI) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
-	var widget, exists = gui.root.Widgets[buttonId]
-	var owner = gui.root.Containers[widget.OwnerId]
-
-	return exists && mouse.IsButtonReleasedOnce(mouse.ButtonLeft) &&
-		widget.IsHovered(owner, camera) &&
-		pressedOn == widget
+	return gui.root.ButtonClickedOnce(buttonId, camera)
 }
 func (gui *GUI) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
-	var widget, exists = gui.root.Widgets[buttonId]
-	if !exists {
-		return false
-	}
-
-	var owner = gui.root.Containers[widget.OwnerId]
-	var hover = widget.IsHovered(owner, camera)
-	var first = condition.TrueOnce(hover && mouse.IsButtonPressedOnce(mouse.ButtonLeft), ";;first-"+buttonId)
-
-	return first || (hover && pressedOn == widget &&
-		condition.TrueEvery(0.1, ";;hold-"+buttonId) &&
-		seconds.RealRuntime() > pressedAt+0.5)
+	return gui.root.ButtonClickedAndHeld(buttonId, camera)
 }
 
 // #region private
@@ -45,8 +28,8 @@ func button(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 	var prev = widget.ThemeId
 	var _, ownerDisabled = owner.Properties[property.Disabled]
 	var _, disabled = widget.Properties[property.Disabled]
-	var hover = themedProp(property.ButtonHoverThemeId, root, owner, widget)
-	var press = themedProp(property.ButtonPressThemeId, root, owner, widget)
+	var hover = themedProp(property.ButtonThemeIdHover, root, owner, widget)
+	var press = themedProp(property.ButtonThemeIdPress, root, owner, widget)
 
 	if widget.IsHovered(owner, cam) {
 		mouse.SetCursor(mouse.CursorHand)

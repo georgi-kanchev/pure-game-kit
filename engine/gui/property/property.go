@@ -14,6 +14,7 @@ const (
 	GapX    = "gapX"    // [widget] [theme] [container]
 	GapY    = "gapY"    // [widget] [theme] [container]
 
+	Value         = "value"         // [widget]
 	Disabled      = "disabled"      // [widget]
 	FillContainer = "fillContainer" // [widget]
 	NewRow        = "newRow"        // [widget] example: "200", "" = GapY
@@ -22,6 +23,7 @@ const (
 	TooltipText   = "tooltipText"   // [widget]
 
 	TooltipId     = "tooltipId"     // [widget] [theme]
+	TooltipMargin = "tooltipMargin" // [widget] [theme]
 	Color         = "color"         // [widget] [theme] separated with space, example: "255 0 0 255"
 	BoxEdgeLeft   = "boxEdgeLeft"   // [widget] [theme]
 	BoxEdgeRight  = "boxEdgeRight"  // [widget] [theme]
@@ -62,12 +64,13 @@ const (
 	TextEmbeddedThickness4     = "textEmbeddedThickness4"     // [widget] [theme] default: "0.5"
 	TextEmbeddedThickness5     = "textEmbeddedThickness5"     // [widget] [theme] default: "0.5"
 
-	ButtonHoverThemeId   = "buttonHoverThemeId"   // [widget] [theme]
-	ButtonPressThemeId   = "buttonPressThemeId"   // [widget] [theme]
-	ButtonDisableThemeId = "buttonDisableThemeId" // [widget] [theme]
+	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
+	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
+	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
 
-	SliderValue         = "sliderValue"         // [widget]
 	SliderStep          = "sliderStep"          // [widget] [theme] step <= 0 hides indicators, example: "-0.1", "0.2"
 	SliderStepAssetId   = "sliderStepAssetId"   // [widget] [theme]
 	SliderHandleAssetId = "sliderHandleAssetId" // [widget] [theme]
+
+	CheckboxThemeId = "checkboxThemeId" // [widget] [theme]
 )

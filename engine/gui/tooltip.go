@@ -28,7 +28,7 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 		tooltip = root.Widgets[tooltipId]
 
 		if tooltip != nil {
-			var text = widget.Properties[property.TooltipText]
+			var text = themedProp(property.TooltipText, root, c, widget)
 			tooltip.Properties[property.Text] = text
 
 			if text != "" {
@@ -51,7 +51,9 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 
 	var camW, camH = cam.Size()
 	var width = parseNum(dyn(c, tooltip.Properties[property.Width], "500"), 500)
-	tooltip.Width, tooltip.Height = width, camH
+	var margin = parseNum(themedProp(property.TooltipMargin, root, c, tooltip), 50)
+	tooltip.Width, tooltip.Height = width-margin, camH
+
 	setupVisualsText(root, tooltip, c)
 
 	var lines = reusableTextBox.TextLines()
@@ -64,9 +66,11 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	reusableTextBox.Y = number.Limit(reusableTextBox.Y, -camH/2, camH/2-textH)
 	tooltip.X, tooltip.Y, tooltip.Width, tooltip.Height = reusableTextBox.X, reusableTextBox.Y, width, textH
 
+	reusableTextBox.X += margin / 2
+
 	if tooltip.Y+tooltip.Height > tooltipForWidget.Y+2 { // margin of error 2 pixels
 		tooltip.Y = tooltipForWidget.Y + tooltipForWidget.Height
-		setupVisualsText(root, tooltip, c)
+		reusableTextBox.Y = tooltip.Y
 	}
 
 	setupVisualsTextured(root, tooltip, c)
