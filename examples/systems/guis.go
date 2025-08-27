@@ -79,9 +79,9 @@ func GUIs() {
 		gui.Button("step-right", p.Width, "100", p.TextEmbeddedAssetId1, icons[212], p.Text, "^^", p.GapX, "0"),
 		gui.Visual("checkbox-label", p.ThemeId, "label", p.Text, "Checkbox", p.NewRow, ""),
 		gui.Checkbox("checkbox", p.ThemeId, "checkbox-off", p.CheckboxThemeId, "checkbox-on"),
-		gui.Button("dropdown", p.NewRow, "", p.AssetId, box[9], p.Text, "^^ List selection", p.Width, "820",
+		gui.Menu("dropdown", p.NewRow, "", p.AssetId, box[9], p.Text, "^^ List selection", p.Width, "820",
 			p.TextAlignmentX, "0.05", p.TextAlignmentY, "0.5", p.TextColor, "150 150 150 255",
-			p.TextEmbeddedAssetId1, "arrow-down"),
+			p.TextEmbeddedAssetId1, "arrow-down", p.MenuContainerId, "menu"),
 		gui.Visual("sliders-label", p.ThemeId, "label", p.Text, "Sliders", p.TextLineHeight, "60", p.NewRow, ""),
 		gui.Slider("slider1", p.AssetId, box[10], p.BoxEdgeTop, "0", p.BoxEdgeBottom, "0", p.NewRow, "",
 			p.Width, "820", p.Height, "40"),
@@ -102,6 +102,17 @@ func GUIs() {
 			p.TooltipText, "This is a pretty squarish X button."),
 		gui.Button("v", p.Width, "630", p.Height, "140", p.TextEmbeddedAssetId1, icons[249], p.Text, "^^ Accept ",
 			p.TextColor, "255 255 255 255", p.Color, "0 200 0 255"),
+		// ======================================================
+		gui.Container("menu", "0", "0", "820", "600", p.ThemeId, "button", p.Hidden, "+"),
+		gui.Visual("menu-bgr", p.FillContainer, "", p.AssetId, box[0], p.Color, "200 200 200 255"),
+		gui.Button("menu-1", p.GapX, "0", p.Width, d.ContainerWidth, p.Text, "Monday"),
+		gui.Button("menu-2", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Tuesday"),
+		gui.Button("menu-3", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Wednesday"),
+		gui.Button("menu-4", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Thursday",
+			p.TooltipText, "Hello, World! It's thursday, my dudes!"),
+		gui.Button("menu-5", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Friday"),
+		gui.Button("menu-6", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Saturday"),
+		gui.Button("menu-7", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Sunday"),
 	)
 
 	cam.Angle = 45

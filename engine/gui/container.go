@@ -80,6 +80,10 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 		widget.Width, widget.Height = ww, wh
 		widget.ThemeId = themedProp(p.ThemeId, root, c, widget)
 
+		if widget.IsHovered(c, cam) {
+			hovered = widget
+		}
+
 		if widget.UpdateAndDraw != nil {
 			widget.UpdateAndDraw(cam, root, widget, c)
 			tryShowTooltip(widget, root, c, cam)

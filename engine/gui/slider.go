@@ -5,7 +5,6 @@ import (
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/property"
-	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/symbols"
@@ -60,12 +59,6 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 	if pressedOn == widget {
 		var mx, _ = cam.MousePosition()
 		value = number.Map(mx, widget.X, widget.X+widget.Width-handleWidth, 0, 1)
-		value = widget.setSliderValue(value, root, owner)
-	}
-
-	if widget.IsHovered(owner, cam) && mouse.Scroll() != 0 {
-		step = number.Limit(float32(math.Abs(float64(step))), 0.05, 1)
-		value -= step * float32(mouse.Scroll())
 		value = widget.setSliderValue(value, root, owner)
 	}
 

@@ -12,9 +12,10 @@ type root struct {
 	XmlName       xml.Name     `xml:"GUI"`
 	XmlContainers []*container `xml:"Container"`
 
-	Themes     map[string]*theme
-	Containers map[string]*container
-	Widgets    map[string]*widget
+	ContainerIds []string
+	Themes       map[string]*theme
+	Containers   map[string]*container
+	Widgets      map[string]*widget
 }
 
 func (root *root) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {

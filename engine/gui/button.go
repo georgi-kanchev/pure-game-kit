@@ -31,7 +31,7 @@ func button(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 	var hover = themedProp(property.ButtonThemeIdHover, root, owner, widget)
 	var press = themedProp(property.ButtonThemeIdPress, root, owner, widget)
 
-	if widget.IsHovered(owner, cam) {
+	if widget.IsFocused(root, cam) {
 		mouse.SetCursor(mouse.CursorHand)
 
 		if disabled || ownerDisabled {

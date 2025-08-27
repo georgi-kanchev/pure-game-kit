@@ -98,6 +98,7 @@ func New(elements ...string) *GUI {
 		}
 
 		gui.root.Containers[cId] = c
+		gui.root.ContainerIds = append(gui.root.ContainerIds, cId)
 	}
 
 	return &gui
@@ -139,7 +140,7 @@ func (gui *GUI) SetProperty(id, property string, value string) {
 
 func (gui *GUI) Draw(camera *graphics.Camera) {
 	var prevAng = camera.Angle
-	var containers = gui.root.Containers
+	var containers = gui.root.ContainerIds
 
 	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
 		pressedOn = nil
@@ -161,7 +162,8 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	camTy, camBy = symbols.New(tly), symbols.New(bry)
 	camW, camH = symbols.New(w), symbols.New(h)
 
-	for _, c := range containers {
+	for _, id := range containers {
+		var c = gui.root.Containers[id]
 		var ox = symbols.New(dyn(nil, c.Properties[property.X], "0"))
 		var oy = symbols.New(dyn(nil, c.Properties[property.Y], "0"))
 		var ow = symbols.New(dyn(nil, c.Properties[property.Width], "0"))
@@ -172,6 +174,10 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		ownerW, ownerH = ow, oh
 
 		c.UpdateAndDraw(gui.root, camera)
+	}
+
+	if wasHovered == hovered {
+		focused = hovered // only widgets that are hovered 2 frames in a row accept input (top-down prio)
 	}
 
 	if tooltip != nil {
@@ -187,6 +193,8 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		pressedOn = nil
 		tooltip = nil
 	}
+
+	wasHovered = hovered
 }
 
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
@@ -203,10 +211,19 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	return false
 }
 
+func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
+	var w, has = gui.root.Widgets[widgetId]
+	if has {
+		return w.IsFocused(gui.root, camera)
+	}
+	return false
+}
+
 // #region private
 
+var focused, hovered, wasHovered *widget
 var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
-	"button": button, "slider": slider, "checkbox": checkbox,
+	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu,
 }
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
 var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache

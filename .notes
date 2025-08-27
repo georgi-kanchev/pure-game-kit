@@ -13,6 +13,10 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[51] [Wed] [27-08-2025]
+[√] gui - menu started
+[√] gui - z order widget input handling
+
 [50] [Mon] [25-08-2025]
 [√] assets - fixes on default ui asset
 [√] gui - slider fixes

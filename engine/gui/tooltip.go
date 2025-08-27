@@ -21,6 +21,7 @@ var tooltipAt float32
 
 func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Camera) {
 	var hov = widget.IsHovered(c, cam)
+
 	if condition.TrueOnce(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget
 		tooltipAt = seconds.RealRuntime()
@@ -45,7 +46,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	if tooltip == nil || tooltipForWidget == nil || seconds.RealRuntime() < tooltipAt+0.5 {
 		return
 	}
-	if tooltip.Properties[property.Text] == "" {
+	if tooltip.Properties[property.Text] == "" || !tooltipForWidget.IsFocused(root, cam) {
 		return
 	}
 
