@@ -1,4 +1,5 @@
 // TODO:
+example for texture areas, whole texture + all area rects + hover & name
 gui, sounds
 tiled loading
 drawing tilemaps - https://wareya.github.io/webtyler/
