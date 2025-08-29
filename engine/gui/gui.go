@@ -176,8 +176,11 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		c.UpdateAndDraw(gui.root, camera)
 	}
 
-	if wasHovered == hovered {
-		focused = hovered // only widgets that are hovered 2 frames in a row accept input (top-down prio)
+	if cWasHovered == cHovered {
+		cFocused = cHovered // only containers that are hovered 2 frames in a row accept input (top-down prio)
+	}
+	if wWasHovered == wHovered {
+		wFocused = wHovered // only widgets that are hovered 2 frames in a row accept input (top-down prio)
 	}
 
 	if tooltip != nil {
@@ -194,7 +197,8 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		tooltip = nil
 	}
 
-	wasHovered = hovered
+	wWasHovered = wHovered
+	cWasHovered = cHovered
 }
 
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
@@ -202,11 +206,10 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var c, hasC = gui.root.Containers[id]
 
 	if hasW {
-		var owner = gui.root.Containers[w.OwnerId]
-		return w.IsHovered(owner, camera)
+		return w.IsFocused(gui.root, camera)
 	}
 	if hasC {
-		return c.IsHovered(camera)
+		return c.IsFocused(gui.root, camera)
 	}
 	return false
 }
@@ -221,7 +224,8 @@ func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 
 // #region private
 
-var focused, hovered, wasHovered *widget
+var wFocused, wHovered, wWasHovered *widget
+var cFocused, cHovered, cWasHovered *container
 var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu,
 }

@@ -1,18 +1,26 @@
 // TODO:
+gui - radio buttons
+gui - 
+gui - option to turn off widget input, helps if there's text above widget that shouldn't be interactable
 example for texture areas, whole texture + all area rects + hover & name
-gui, sounds
 tiled loading
 drawing tilemaps - https://wareya.github.io/webtyler/
-audio - sounds, music, playlists
-data/storage?
 
 // TODO LONGTERM:
+audio - sounds, music, playlists
+gui, sounds
+data/storage?
 GPU particles?
 lua scripts
 LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[52] [Fri] [29-08-2025]
+[√] gui - z order container input handling
+[√] gui - container scrolling lookin SICC
+[√] gui - menu & tooltip fixes
+
 [51] [Wed] [27-08-2025]
 [√] gui - menu started
 [√] gui - z order widget input handling

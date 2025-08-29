@@ -20,7 +20,7 @@ var tooltipForWidget *widget
 var tooltipAt float32
 
 func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Camera) {
-	var hov = widget.IsHovered(c, cam)
+	var hov = widget.IsFocused(root, cam)
 
 	if condition.TrueOnce(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget

@@ -20,11 +20,9 @@ type root struct {
 
 func (root *root) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
-	var owner = root.Containers[widget.OwnerId]
 
 	return exists && mouse.IsButtonReleasedOnce(mouse.ButtonLeft) &&
-		widget.IsHovered(owner, camera) &&
-		pressedOn == widget
+		widget.IsFocused(root, camera) && pressedOn == widget
 }
 func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
@@ -32,8 +30,7 @@ func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera)
 		return false
 	}
 
-	var owner = root.Containers[widget.OwnerId]
-	var hover = widget.IsHovered(owner, camera)
+	var hover = widget.IsFocused(root, camera)
 	var first = condition.TrueOnce(hover && mouse.IsButtonPressedOnce(mouse.ButtonLeft), ";;first-"+buttonId)
 
 	return first || (hover && pressedOn == widget &&
