@@ -1,6 +1,7 @@
 package example
 
 import (
+	"fmt"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/input/keyboard"
@@ -26,6 +27,10 @@ func Keyboard() {
 		}
 		if keyboard.IsKeyPressedOnce(key.Enter) || keyboard.IsKeyHeld(key.Enter) {
 			text += "\n"
+		}
+
+		if keyboard.IsAnyKeyPressedOnce() {
+			fmt.Printf("%v\n", "hello, world")
 		}
 
 		cam.DrawText(font, text, 0, 0, 200, color.White)

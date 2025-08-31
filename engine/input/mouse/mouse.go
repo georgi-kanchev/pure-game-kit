@@ -1,6 +1,7 @@
 package mouse
 
 import (
+	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/internal"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -57,4 +58,11 @@ func IsButtonPressedOnce(button int) bool {
 }
 func IsButtonReleasedOnce(button int) bool {
 	return rl.IsMouseButtonReleased(rl.MouseButton(button))
+}
+
+func IsAnyKeyPressed() bool {
+	return len(internal.Buttons) > 0
+}
+func IsAnyKeyPressedOnce() bool {
+	return condition.TrueOnce(len(internal.Buttons) > 0, ";;mouse-any-pressed")
 }
