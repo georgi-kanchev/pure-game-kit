@@ -20,8 +20,8 @@ func (gui *GUI) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) b
 
 // #region private
 
-var pressedOn *widget
-var pressedAt float32
+var wPressedOn *widget
+var wPressedAt float32
 var buttonColor uint
 
 func button(cam *graphics.Camera, root *root, widget *widget, owner *container) {
@@ -40,12 +40,12 @@ func button(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 			if hover != "" {
 				widget.ThemeId = hover
 			}
-			if press != "" && pressedOn == widget && mouse.IsButtonPressed(mouse.ButtonLeft) {
+			if press != "" && wPressedOn == widget && mouse.IsButtonPressed(mouse.ButtonLeft) {
 				widget.ThemeId = press
 			}
 			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
-				pressedOn = widget
-				pressedAt = seconds.RealRuntime()
+				wPressedOn = widget
+				wPressedAt = seconds.RealRuntime()
 			}
 		}
 	}

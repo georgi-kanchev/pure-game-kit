@@ -56,7 +56,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 		}
 	}
 
-	if pressedOn == widget {
+	if wPressedOn == widget {
 		var mx, _ = cam.MousePosition()
 		value = number.Map(mx, widget.X, widget.X+widget.Width-handleWidth, 0, 1)
 		value = widget.setSliderValue(value, root, owner)

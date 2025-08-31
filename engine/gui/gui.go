@@ -143,8 +143,14 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	var containers = gui.root.ContainerIds
 
 	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
-		pressedOn = nil
+		wPressedOn = nil
 		tooltip = nil
+		cPressedOnScrollH = nil
+		cPressedOnScrollV = nil
+	}
+	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+		cPressedOnScrollH = nil
+		cPressedOnScrollV = nil
 	}
 
 	camera.Angle = 0 // force no cam rotation for UI
@@ -193,7 +199,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
 	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
-		pressedOn = nil
+		wPressedOn = nil
 		tooltip = nil
 	}
 

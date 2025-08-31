@@ -17,6 +17,7 @@ consistent error handling + logging, console & file
 // DONE:
 [53] [Sun] [31-08-2025]
 [√] gui - camera zoom for gui scale fixes
+[√] gui - container scrolls left click & drag
 [√] window - ending scissors mode just in case, caused flickering before when missed
 [√] input - keyboard & mouse any button pressed & onces
 

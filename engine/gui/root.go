@@ -22,7 +22,7 @@ func (root *root) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bo
 	var widget, exists = root.Widgets[buttonId]
 
 	return exists && mouse.IsButtonReleasedOnce(mouse.ButtonLeft) &&
-		widget.IsFocused(root, camera) && pressedOn == widget
+		widget.IsFocused(root, camera) && wPressedOn == widget
 }
 func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
@@ -33,7 +33,7 @@ func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera)
 	var hover = widget.IsFocused(root, camera)
 	var first = condition.TrueOnce(hover && mouse.IsButtonPressedOnce(mouse.ButtonLeft), ";;first-"+buttonId)
 
-	return first || (hover && pressedOn == widget &&
+	return first || (hover && wPressedOn == widget &&
 		condition.TrueEvery(0.1, ";;hold-"+buttonId) &&
-		seconds.RealRuntime() > pressedAt+0.5)
+		seconds.RealRuntime() > wPressedAt+0.5)
 }
