@@ -51,7 +51,7 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 	var curX, curY = x + cGapX, y + cGapY
 	var maxHeight float32
 
-	cam.Mask(scx, scy, int(w), int(h))
+	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
 
 	if c.IsHovered(cam) {

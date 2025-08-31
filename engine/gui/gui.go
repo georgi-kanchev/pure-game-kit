@@ -343,7 +343,7 @@ func isHovered(x, y, w, h float32, cam *graphics.Camera) bool {
 	cam.Angle = 0
 	var sx, sy = cam.PointToScreen(x, y)
 	var mx, my = cam.PointToScreen(cam.MousePosition())
-	var result = mx > sx && mx < sx+int(w) && my > sy && my < sy+int(h)
+	var result = mx > sx && mx < sx+int(w*cam.Zoom) && my > sy && my < sy+int(h*cam.Zoom)
 	cam.Angle = prevAng
 	return result
 }

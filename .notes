@@ -16,6 +16,9 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[53] [Sun] [31-08-2025]
+[√] gui - camera zoom for gui scale fixes
+
 [52] [Fri] [29-08-2025]
 [√] gui - z order container input handling
 [√] gui - container scrolling lookin SICC

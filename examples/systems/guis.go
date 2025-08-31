@@ -11,7 +11,7 @@ import (
 )
 
 func GUIs() {
-	var cam = graphics.NewCamera(1)
+	var cam = graphics.NewCamera(0.5)
 	var atlas, icons = assets.LoadDefaultAtlasIcons(true)
 	var _, ids, box = assets.LoadDefaultAtlasUI(true)
 	var hud = gui.New(
