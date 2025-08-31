@@ -39,6 +39,7 @@ func KeepOpen() bool {
 	tryCreate()
 	tryUpdateProperties()
 
+	rl.EndScissorMode()
 	rl.EndDrawing()
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.GetColor(Color))

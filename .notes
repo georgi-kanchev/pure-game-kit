@@ -1,6 +1,5 @@
 // TODO:
 gui - radio buttons
-gui - option to turn off widget input, helps if there's text above widget that shouldn't be interactable
 gui - inputbox
 example for texture areas, whole texture + all area rects + hover & name
 tiled loading
@@ -18,6 +17,7 @@ consistent error handling + logging, console & file
 // DONE:
 [53] [Sun] [31-08-2025]
 [√] gui - camera zoom for gui scale fixes
+[√] window - ending scissors mode just in case, caused flickering before when missed
 [√] input - keyboard & mouse any button pressed & onces
 
 [52] [Fri] [29-08-2025]
