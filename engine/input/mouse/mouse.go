@@ -62,9 +62,9 @@ func IsButtonReleasedOnce(button int) bool {
 	return rl.IsMouseButtonReleased(rl.MouseButton(button))
 }
 
-func IsAnyKeyPressed() bool {
+func IsAnyButtonPressed() bool {
 	return len(internal.Buttons) > 0
 }
-func IsAnyKeyPressedOnce() bool {
+func IsAnyButtonPressedOnce() bool {
 	return condition.TrueOnce(len(internal.Buttons) > 0, ";;mouse-any-pressed")
 }

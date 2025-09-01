@@ -1,14 +1,12 @@
 package example
 
 import (
-	"fmt"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui"
 	d "pure-kit/engine/gui/dynamic"
 	p "pure-kit/engine/gui/property"
 	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/window"
 )
 
@@ -64,7 +62,7 @@ func GUIs() {
 			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.AssetId, box[9]),
 		// ======================================================
-		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "500",
+		gui.Container("panel", d.CameraLeftX+"+10", d.CameraBottomY+"-500", d.CameraWidth+"-20", "500",
 			p.ThemeId, "button", p.GapX, "40", p.GapY, "20"),
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		// ======================================================
@@ -126,8 +124,7 @@ func GUIs() {
 		gui.Button("menu-7", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Sunday"),
 		// ======================================================
 		gui.Container("tooltips", "", "", "", "", p.ThemeId, "button", p.Hidden, "+"),
-		gui.Tooltip("tooltip", p.AssetId, box[7], p.Width, "700", p.TextAlignmentX, "0.5",
-			p.TextAlignmentY, "0.5"),
+		gui.Tooltip("tooltip", p.AssetId, box[7], p.Width, "700", p.TextAlignmentX, "0.5", p.TextAlignmentY, "0.5"),
 	)
 	cam.Angle = 45
 
@@ -135,14 +132,9 @@ func GUIs() {
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
 
-	window.TargetFrameRate = 0
-	window.IsVSynced = false
-
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
-
-		fmt.Printf("seconds.FrameRate(): %v\n", seconds.FrameRate())
 
 		hud.Draw(cam)
 	}

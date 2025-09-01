@@ -15,14 +15,10 @@ func Menu(id string, properties ...string) string {
 func menu(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	button(cam, root, widget, owner)
 
-	var scrolledOutside = mouse.Scroll() != 0 && !widget.IsFocused(root, cam)
-	// var draggedOutside = mouse.IsButtonPressed(mouse.ButtonMiddle) && cFocused != owner
-	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) ||
-		mouse.IsButtonPressedOnce(mouse.ButtonMiddle) || scrolledOutside ||
-		mouse.IsButtonPressedOnce(mouse.ButtonRight) {
+	if mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0 {
 		var containerId = themedProp(property.MenuContainerId, root, owner, widget)
 		var c, has = root.Containers[containerId]
-		if has && !c.IsFocused(root, cam) && !widget.IsFocused(root, cam) {
+		if has && !c.IsFocused(root, cam) {
 			c.Properties[property.Hidden] = "+"
 		}
 	}
