@@ -63,7 +63,7 @@ func GUIs() {
 			p.AssetId, box[9]),
 		// ======================================================
 		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1175",
-			p.ThemeId, "button", p.GapX, "50", p.GapY, "50"),
+			p.ThemeId, "button", p.GapX, "40", p.GapY, "20"),
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		// ======================================================
 		gui.Visual("name-label", p.ThemeId, "label", p.Text, "Name", p.TooltipText, "Wow, tooltip for labels!"),

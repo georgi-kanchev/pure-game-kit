@@ -54,8 +54,10 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 	var cGapY = parseNum(dyn(c, c.Properties[p.GapY], "0"), 0)
 	var curX, curY = x + cGapX, y + cGapY
 	var maxHeight float32
+	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
+	var nonBgrIndex = 0
 
-	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
+	cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
 
 	if c.IsHovered(cam) {
@@ -83,6 +85,7 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 		if isBgr {
 			widget.X, widget.Y = x, y
 			ww, wh = w, h
+			cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom)) // gap clipping doesn't affect bgr
 		} else {
 			var row, newRow = widget.Properties[p.NewRow]
 			if newRow {
@@ -90,11 +93,12 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 				curY += parseNum(dyn(c, row, symbols.New(maxHeight+gapY)), 0)
 			}
 
-			curX += gapX
+			curX += condition.If(newRow || nonBgrIndex == 0, 0, gapX)
 			widget.X = curX + offX
 			widget.Y = curY + offY
 			curX += ww
 			maxHeight = condition.If(maxHeight < wh, wh, maxHeight)
+			nonBgrIndex++
 		}
 
 		widget.Width, widget.Height = ww, wh
@@ -117,6 +121,9 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 			setupVisualsText(root, widget, c)
 			drawVisuals(cam, root, widget, c)
 			tryShowTooltip(widget, root, c, cam)
+		}
+		if isBgr { // back to gap clipping
+			cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
 		}
 	}
 

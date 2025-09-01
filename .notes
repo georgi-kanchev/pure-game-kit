@@ -18,6 +18,7 @@ consistent error handling + logging, console & file
 [√] window - added monitors info
 [√] gui - radio checkboxes through group properties
 [√] gui - container mid mouse button scroll fix
+[√] gui - container mask gaps around edges
 
 [53] [Sun] [31-08-2025]
 [√] gui - camera zoom for gui scale fixes
