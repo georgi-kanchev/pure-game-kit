@@ -73,6 +73,7 @@ const (
 	SliderHandleAssetId = "sliderHandleAssetId" // [widget] [theme]
 
 	CheckboxThemeId = "checkboxThemeId" // [widget] [theme]
+	CheckboxGroup   = "checkboxGroup"   // [widget] [theme]
 
 	MenuContainerId = "menuContainerId" // [widget] [theme]
 )
