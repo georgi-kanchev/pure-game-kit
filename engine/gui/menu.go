@@ -30,6 +30,16 @@ func menu(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 			c.Properties[property.Hidden] = condition.If(c.Properties[property.Hidden] == "", "+", "")
 			c.Properties[property.X] = symbols.New(widget.X)
 			c.Properties[property.Y] = symbols.New(widget.Y + widget.Height)
+
+			c.X = widget.X
+			c.Y = widget.Y + widget.Height
+
+			var _, camH = cam.Size()
+			var h = parseNum(themedProp(property.Height, root, c, nil), 0)
+			if c.Y+h > camH/2 {
+				c.Properties[property.Y] = symbols.New(widget.Y - h)
+				c.Y = widget.Y - h
+			}
 		}
 	}
 }

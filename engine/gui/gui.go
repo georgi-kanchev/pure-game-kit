@@ -263,29 +263,41 @@ func extraProps(props ...string) string {
 func themedProp(prop string, root *root, c *container, w *widget) string {
 	// priority for widget: widget -> widget theme -> container theme
 
-	var wSelf = ""
+	var wSelf, cSelf = "", ""
 	var wTheme, cTheme *theme
-	var hasW, hasWt, hasCt = false, false, false
+	var hasW, hasC, hasWt, hasCt = false, false, false, false
 
 	if w != nil {
 		wSelf, hasW = w.Properties[prop]
 		wTheme, hasWt = root.Themes[w.ThemeId]
 	}
 	if c != nil {
+		cSelf, hasC = c.Properties[prop]
 		cTheme, hasCt = root.Themes[c.Properties[property.ThemeId]]
 	}
 
-	// widget checks
-	if hasW {
-		return wSelf
-	}
-	if hasWt {
-		return wTheme.Properties[prop]
+	if w != nil {
+		if hasW {
+			return wSelf
+		}
+		if hasWt {
+			return wTheme.Properties[prop]
+		}
+		if hasCt {
+			return cTheme.Properties[prop]
+		}
+		if hasC {
+			return cSelf
+		}
 	}
 
+	if hasC {
+		return cSelf
+	}
 	if hasCt {
 		return cTheme.Properties[prop]
 	}
+
 	return ""
 }
 func defaultValue(value, defaultValue string) string {

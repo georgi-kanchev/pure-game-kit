@@ -21,6 +21,7 @@ consistent error handling + logging, console & file
 [√] gui - container mask gaps around edges
 [√] gui - container culling for outside widgets
 [√] gui - menu staying open fix
+[√] gui - menu opening up when down goes off-screen
 
 [53] [Sun] [31-08-2025]
 [√] gui - camera zoom for gui scale fixes

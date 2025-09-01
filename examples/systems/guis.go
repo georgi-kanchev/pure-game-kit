@@ -62,7 +62,7 @@ func GUIs() {
 			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.AssetId, box[9]),
 		// ======================================================
-		gui.Container("panel", d.CameraLeftX+"+10", d.CameraBottomY+"-500", d.CameraWidth+"-20", "500",
+		gui.Container("panel", d.CameraLeftX+"+10", d.CameraBottomY+"-650", d.CameraWidth+"-20", "650",
 			p.ThemeId, "button", p.GapX, "40", p.GapY, "20"),
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		// ======================================================
