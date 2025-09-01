@@ -1,10 +1,12 @@
 // TODO:
+gui - drag & drop
 gui - inputbox
 example for texture areas, whole texture + all area rects + hover & name
 tiled loading
 drawing tilemaps - https://wareya.github.io/webtyler/
 
 // TODO LONGTERM:
+shader effects, port?
 audio - sounds, music, playlists
 gui, sounds
 data/storage?
