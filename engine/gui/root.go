@@ -11,6 +11,7 @@ import (
 type root struct {
 	XmlName       xml.Name     `xml:"GUI"`
 	XmlContainers []*container `xml:"Container"`
+	Scale         string       `xml:"scale,attr"`
 
 	ContainerIds []string
 	Themes       map[string]*theme

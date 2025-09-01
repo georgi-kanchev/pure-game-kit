@@ -38,6 +38,7 @@ func Container(id, x, y, width, height string, properties ...string) string {
 
 const scrollSize, scrollSpeed = 20, 100
 
+var cMiddlePressed *container
 var cPressedOnScrollH *container
 var cPressedOnScrollV *container
 
@@ -59,6 +60,9 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 
 	if c.IsHovered(cam) {
 		cHovered = c
+	}
+	if c.IsFocused(root, cam) && mouse.IsButtonPressedOnce(mouse.ButtonMiddle) {
+		cMiddlePressed = c
 	}
 
 	for _, wId := range c.Widgets {
@@ -128,16 +132,15 @@ func (c *container) TryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 	var mx, my = cam.MousePosition()
 	var focused = c.IsFocused(root, cam)
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
+	var scroll = mouse.Scroll()
 
 	if minX < c.X+1 || maxX > c.X+c.Width-1 {
-		var scroll = mouse.Scroll()
-		var ratio = c.Width / (maxX - minX)
-		var w = ratio * c.Width
+		var w = c.Width / (maxX - minX) * c.Width
 
 		if scroll != 0 && focused && shift {
 			c.ScrollX -= float32(scroll) * scrollSpeed
 		}
-		if mouse.IsButtonPressed(mouse.ButtonMiddle) && focused {
+		if c == cMiddlePressed {
 			c.ScrollX -= mx - c.prevMouseX
 		}
 		if focused && isHovered(c.X, c.Y+c.Height-scrollSize, c.Width, scrollSize, cam) {
@@ -162,14 +165,12 @@ func (c *container) TryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		cam.DrawFrame(x, c.Y+c.Height-scrollSize, w, scrollSize, 0, -scrollSize*0.3, color.Black)
 	}
 	if minY < c.Y || maxY > c.Y+c.Height {
-		var scroll = mouse.Scroll()
-		var ratio = c.Height / (maxY - minY)
-		var h = ratio * c.Height
+		var h = (c.Height / (maxY - minY)) * c.Height
 
 		if scroll != 0 && focused && !shift {
 			c.ScrollY -= float32(scroll) * scrollSpeed
 		}
-		if mouse.IsButtonPressed(mouse.ButtonMiddle) && focused {
+		if c == cMiddlePressed {
 			c.ScrollY -= my - c.prevMouseY
 		}
 		if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {

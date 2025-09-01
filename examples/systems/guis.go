@@ -11,10 +11,10 @@ import (
 )
 
 func GUIs() {
-	var cam = graphics.NewCamera(0.5)
+	var cam = graphics.NewCamera(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons(true)
 	var _, ids, box = assets.LoadDefaultAtlasUI(true)
-	var hud = gui.New(
+	var hud = gui.NewElements(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", p.Color, "0 0 0 0", p.Width, "300", p.Height, "100", p.GapX, "20", p.GapY, "20",
 			p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
@@ -130,7 +130,6 @@ func GUIs() {
 	cam.Angle = 45
 
 	assets.LoadDefaultFont()
-
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
 

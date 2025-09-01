@@ -2,7 +2,6 @@ package gui
 
 import (
 	"encoding/xml"
-	"fmt"
 	"math"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/dynamic"
@@ -15,44 +14,15 @@ import (
 )
 
 type GUI struct {
-	root *root
+	Scale float32
+	root  *root
 }
 
-func New(elements ...string) *GUI {
-	var gui = GUI{root: &root{}}
-	var result = "<GUI>"
-
-	// container is missing on top, add root container
-	if len(elements) > 0 && !strings.HasPrefix(elements[0], "<Container") {
-		result += "\n\t<Container " + property.Id + "=\"root\" " +
-			property.X + "=\"" + dynamic.CameraLeftX + "\" " +
-			property.Y + "=\"" + dynamic.CameraTopY + "\" " +
-			property.Width + "=\"" + dynamic.CameraWidth + "\" " +
-			property.Height + "=\"" + dynamic.CameraHeight + "\">"
-	}
-
-	for i, v := range elements {
-		if strings.HasPrefix(v, "<Container") {
-			if i > 0 {
-				result += "\n\t</Container>"
-			}
-		} else {
-			v = "\t" + v
-		}
-
-		result += "\n\t" + v
-
-		if i == len(elements)-1 {
-			result += "\n\t</Container>"
-		}
-	}
-
-	result += "\n</GUI>"
-
-	fmt.Printf("%v\n", result)
-
-	var err = xml.Unmarshal([]byte(result), &gui.root)
-	fmt.Printf("err: %v\n", err)
+func NewXML(xmlData string) *GUI {
+	var gui = GUI{root: &root{}, Scale: 1}
+	var _ = xml.Unmarshal([]byte(xmlData), &gui.root)
+	// fmt.Printf("%v\n", xmlData)
+	// fmt.Printf("err: %v\n", err)
 
 	gui.root.Containers = map[string]*container{}
 	gui.root.Widgets = map[string]*widget{}
@@ -103,6 +73,37 @@ func New(elements ...string) *GUI {
 
 	return &gui
 }
+func NewElements(elements ...string) *GUI {
+	var result = "<GUI scale=\"1\">"
+
+	// container is missing on top, add root container
+	if len(elements) > 0 && !strings.HasPrefix(elements[0], "<Container") {
+		result += "\n\t<Container " + property.Id + "=\"root\" " +
+			property.X + "=\"" + dynamic.CameraLeftX + "\" " +
+			property.Y + "=\"" + dynamic.CameraTopY + "\" " +
+			property.Width + "=\"" + dynamic.CameraWidth + "\" " +
+			property.Height + "=\"" + dynamic.CameraHeight + "\">"
+	}
+
+	for i, v := range elements {
+		if strings.HasPrefix(v, "<Container") {
+			if i > 0 {
+				result += "\n\t</Container>"
+			}
+		} else {
+			v = "\t" + v
+		}
+
+		result += "\n\t" + v
+
+		if i == len(elements)-1 {
+			result += "\n\t</Container>"
+		}
+	}
+
+	result += "\n</GUI>"
+	return NewXML(result)
+}
 
 func (gui *GUI) Property(id, property string) string {
 	var w, hasW = gui.root.Widgets[id]
@@ -139,7 +140,7 @@ func (gui *GUI) SetProperty(id, property string, value string) {
 }
 
 func (gui *GUI) Draw(camera *graphics.Camera) {
-	var prevAng = camera.Angle
+	var prevAng, prevZoom = camera.Angle, camera.Zoom
 	var containers = gui.root.ContainerIds
 
 	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
@@ -152,7 +153,11 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		cPressedOnScrollH = nil
 		cPressedOnScrollV = nil
 	}
+	if mouse.IsButtonReleasedOnce(mouse.ButtonMiddle) {
+		cMiddlePressed = nil
+	}
 
+	camera.Zoom = gui.Scale
 	camera.Angle = 0 // force no cam rotation for UI
 
 	if tooltip == nil {
@@ -195,7 +200,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		drawTooltip(gui.root, tooltipOwner, camera)
 	}
 
-	camera.Angle = prevAng // reset angle & mask to how it was
+	camera.Angle, camera.Zoom = prevAng, prevZoom // reset angle, zoom & mask to how it was
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
 	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
