@@ -16,6 +16,7 @@ consistent error handling + logging, console & file
 // DONE:
 [54] [Mon] [01-09-2025]
 [√] gui - radio checkboxes through group properties
+[√] window - added monitors info
 
 [53] [Sun] [31-08-2025]
 [√] gui - camera zoom for gui scale fixes

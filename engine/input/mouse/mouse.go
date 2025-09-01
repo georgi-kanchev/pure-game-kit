@@ -29,9 +29,11 @@ const (
 	CursorNotAllowed
 )
 
-func SetCursorPosition(x, y int) {
-	rl.SetMousePosition(int32(x), int32(y))
-}
+// compile-time error on windows for some reason
+//	func SetCursorPosition(x, y int) {
+//		rl.SetMousePosition(int32(x), int32(y))
+//	}
+
 func SetCursorVisibility(visible bool) {
 	if visible {
 		rl.ShowCursor()

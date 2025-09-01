@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/symbols"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -58,17 +59,28 @@ func Close() {
 	rl.CloseWindow()
 }
 
-func MoveToMonitor(monitor byte) {
+func MoveToMonitor(monitor int) {
 	var wasMax = rl.IsWindowMaximized()
 	if wasMax {
 		rl.RestoreWindow()
 	}
 
-	rl.SetWindowMonitor(int(monitor))
+	rl.SetWindowMonitor(monitor)
 
 	if wasMax {
 		rl.MaximizeWindow()
 	}
+}
+func Monitors() (info []string, current int) {
+	var count = rl.GetMonitorCount()
+	info = make([]string, count)
+	for i := 0; i < count; i++ {
+		var refreshRate = rl.GetMonitorRefreshRate(i)
+		var name = rl.GetMonitorName(i)
+		var w, h = rl.GetMonitorWidth(i), rl.GetMonitorHeight(i)
+		info[i] = symbols.New(name, " [", w, "x", h, ", ", refreshRate, "Hz]")
+	}
+	return info, rl.GetCurrentMonitor()
 }
 
 func ApplyState(state State) {
