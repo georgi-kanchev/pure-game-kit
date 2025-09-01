@@ -1,12 +1,14 @@
 package example
 
 import (
+	"fmt"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui"
 	d "pure-kit/engine/gui/dynamic"
 	p "pure-kit/engine/gui/property"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/window"
 )
 
@@ -62,7 +64,7 @@ func GUIs() {
 			p.GapY, "20", p.BoxEdgeLeft, "40", p.BoxEdgeRight, "40", p.BoxEdgeTop, "40", p.BoxEdgeBottom, "40",
 			p.AssetId, box[9]),
 		// ======================================================
-		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1175",
+		gui.Container("top", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "500",
 			p.ThemeId, "button", p.GapX, "40", p.GapY, "20"),
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		// ======================================================
@@ -111,7 +113,7 @@ func GUIs() {
 		gui.Checkbox("outside5", p.ThemeId, "checkbox-off", p.CheckboxThemeId, "checkbox-on", p.NewRow, "",
 			p.CheckboxGroup, "radio"),
 		// ======================================================
-		gui.Container("menu", "0", "0", "820", "300", p.ThemeId, "button", p.Hidden, "+"),
+		gui.Container("menu", "", "", "820", "300", p.ThemeId, "button", p.Hidden, "+", p.GapX, "10", p.GapY, "10"),
 		gui.Visual("menu-bgr", p.FillContainer, "", p.AssetId, box[0], p.Color, "200 200 200 255"),
 		gui.Button("menu-1", p.GapX, "0", p.Width, "1000", p.Text, "Monday"),
 		gui.Button("menu-2", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Tuesday"),
@@ -133,9 +135,14 @@ func GUIs() {
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
 
+	window.TargetFrameRate = 0
+	window.IsVSynced = false
+
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
+
+		fmt.Printf("seconds.FrameRate(): %v\n", seconds.FrameRate())
 
 		hud.Draw(cam)
 	}

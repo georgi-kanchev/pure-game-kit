@@ -19,6 +19,7 @@ consistent error handling + logging, console & file
 [√] gui - radio checkboxes through group properties
 [√] gui - container mid mouse button scroll fix
 [√] gui - container mask gaps around edges
+[√] gui - container culling for outside widgets
 
 [53] [Sun] [31-08-2025]
 [√] gui - camera zoom for gui scale fixes

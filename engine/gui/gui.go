@@ -19,7 +19,7 @@ type GUI struct {
 }
 
 func NewXML(xmlData string) *GUI {
-	var gui = GUI{root: &root{}, Scale: 1}
+	var gui = GUI{root: &root{}}
 	var _ = xml.Unmarshal([]byte(xmlData), &gui.root)
 	// fmt.Printf("%v\n", xmlData)
 	// fmt.Printf("err: %v\n", err)
@@ -71,6 +71,8 @@ func NewXML(xmlData string) *GUI {
 		gui.root.ContainerIds = append(gui.root.ContainerIds, cId)
 	}
 
+	var sc, _ = strconv.ParseFloat(gui.root.XmlScale, 32)
+	gui.Scale = float32(sc)
 	return &gui
 }
 func NewElements(elements ...string) *GUI {

@@ -74,13 +74,13 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 			continue
 		}
 
+		var _, isBgr = widget.Properties[p.FillContainer]
 		var ww = parseNum(dyn(c, themedProp(p.Width, root, c, widget), "0"), 0)
 		var wh = parseNum(dyn(c, themedProp(p.Height, root, c, widget), "0"), 0)
 		var gapX = parseNum(dyn(c, themedProp(p.GapX, root, c, widget), "0"), 0)
 		var gapY = parseNum(dyn(c, themedProp(p.GapY, root, c, widget), "0"), 0)
 		var offX = parseNum(dyn(c, widget.Properties[p.OffsetX], "0"), 0)
 		var offY = parseNum(dyn(c, widget.Properties[p.OffsetY], "0"), 0)
-		var _, isBgr = widget.Properties[p.FillContainer]
 
 		if isBgr {
 			widget.X, widget.Y = x, y
@@ -113,20 +113,26 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 			wHovered = widget
 		}
 
-		if widget.UpdateAndDraw != nil {
-			widget.UpdateAndDraw(cam, root, widget, c)
-			tryShowTooltip(widget, root, c, cam)
-		} else if widget.Class == "visual" {
-			setupVisualsTextured(root, widget, c)
-			setupVisualsText(root, widget, c)
-			drawVisuals(cam, root, widget, c)
-			tryShowTooltip(widget, root, c, cam)
+		var outsideX = widget.X+widget.Width < c.X || widget.X > c.X+c.Width
+		var outsideY = widget.Y+widget.Height < c.Y || widget.Y > c.Y+c.Height
+		if !outsideX && !outsideY { // culling widgets outside of the container (masked, invisible)
+			if widget.UpdateAndDraw != nil {
+				widget.UpdateAndDraw(cam, root, widget, c)
+				tryShowTooltip(widget, root, c, cam)
+			} else if widget.Class == "visual" {
+				setupVisualsTextured(root, widget, c)
+				setupVisualsText(root, widget, c)
+				drawVisuals(cam, root, widget, c)
+				tryShowTooltip(widget, root, c, cam)
+			}
 		}
+
 		if isBgr { // back to gap clipping
 			cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
 		}
 	}
 
+	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
 	c.TryShowScroll(cGapX, cGapY, root, cam)
 }
 
@@ -141,7 +147,7 @@ func (c *container) TryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var scroll = mouse.Scroll()
 
-	if minX < c.X+1 || maxX > c.X+c.Width-1 {
+	if minX < c.X || maxX > c.X+c.Width {
 		var w = c.Width / (maxX - minX) * c.Width
 
 		if scroll != 0 && focused && shift {
