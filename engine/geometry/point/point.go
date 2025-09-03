@@ -59,6 +59,16 @@ func MoveByPercent(x, y, targetX, targetY float32, percent float32) (float32, fl
 	return x, y
 }
 
+func RotateAroundPoint(x, y, targetX, targetY, angle float32) (float32, float32) {
+	var rad = float32(math.Pi/180) * angle
+	var tx, ty = x - targetX, y - targetY
+	var cosA = float32(math.Cos(float64(rad)))
+	var sinA = float32(math.Sin(float64(rad)))
+	var rx, ry = tx*cosA - ty*sinA, tx*sinA + ty*cosA
+
+	return rx + targetX, ry + targetY
+}
+
 func DistanceToPoint(x, y, targetX, targetY float32) float32 {
 	var dirX, dirY = targetX - x, targetY - y
 	return float32(math.Sqrt(float64(dirX*dirX + dirY*dirY)))

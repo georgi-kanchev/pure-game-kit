@@ -99,6 +99,11 @@ func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]
 	}
 	camera.end()
 }
+func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
+	camera.begin()
+	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
+	camera.end()
+}
 func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, color uint) {
 	if thickness == 0 {
 		return
@@ -141,6 +146,10 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	camera.end()
 }
 func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
+	if !camera.isAreaVisible(x, y, width, height, 0, 0, angle) {
+		return
+	}
+
 	camera.begin()
 	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
 
@@ -157,13 +166,12 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color ui
 	rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(color))
 	camera.end()
 }
-func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
-	camera.begin()
-	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
-	camera.end()
-}
 
 func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
+	if !camera.isAreaVisible(x, y, width, height, 0, 0, angle) {
+		return
+	}
+
 	camera.begin()
 	var texture, _ = internal.Textures[textureId]
 	var texX, texY float32 = 0.0, 0.0
@@ -188,9 +196,6 @@ func (camera *Camera) DrawText(fontId, text string, x, y, height float32, color 
 	camera.begin()
 
 	var sh = internal.ShaderText
-	var pos = rl.Vector2{X: x, Y: y}
-	var smoothness = []float32{0}
-	var thickness = []float32{0.5}
 	var font, has = internal.Fonts[fontId]
 
 	if !has {
@@ -200,11 +205,11 @@ func (camera *Camera) DrawText(fontId, text string, x, y, height float32, color 
 
 	if sh.ID != 0 {
 		rl.BeginShaderMode(sh)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), smoothness, rl.ShaderUniformFloat)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), []float32{0}, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), []float32{0.5}, rl.ShaderUniformFloat)
 	}
 
-	rl.DrawTextPro(*font, text, pos, rl.Vector2{}, 0, height, 0, rl.GetColor(color))
+	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, 0, rl.GetColor(color))
 
 	if sh.ID != 0 {
 		rl.EndShaderMode()

@@ -16,6 +16,10 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[55] [Wed] [03-09-2025]
+[√] graphics - camera mask culling optimization for rect, texture, sprite, boxes, texts etc
+[√] graphics - textbox measure text
+
 [54] [Mon] [01-09-2025]
 [√] window - added monitors info
 [√] gui - radio checkboxes through group properties

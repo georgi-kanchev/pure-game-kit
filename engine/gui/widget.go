@@ -11,6 +11,7 @@ type widget struct {
 
 	Id, Class, OwnerId, ThemeId string
 	X, Y, Width, Height         float32
+	CursorIndex, SelectIndex    int
 	Properties                  map[string]string
 	UpdateAndDraw               func(cam *graphics.Camera, root *root, widget *widget, owner *container)
 }

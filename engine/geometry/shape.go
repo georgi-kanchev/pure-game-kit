@@ -10,8 +10,8 @@ type Shape struct {
 	X, Y, Angle    float32
 	ScaleX, ScaleY float32
 
-	MinX, MinY float32
-	MaxX, MaxY float32
+	minX, minY float32
+	maxX, maxY float32
 
 	corners [][2]float32
 }
@@ -50,8 +50,8 @@ func NewShapeRectangle(width, height, pivotX, pivotY float32) Shape {
 
 func (shape *Shape) CornerPoints() [][2]float32 {
 	var result = make([][2]float32, len(shape.corners))
-	shape.MinX, shape.MinY = float32(math.Inf(1)), float32(math.Inf(1))
-	shape.MaxX, shape.MaxY = float32(math.Inf(-1)), float32(math.Inf(-1))
+	shape.minX, shape.minY = float32(math.Inf(1)), float32(math.Inf(1))
+	shape.maxX, shape.maxY = float32(math.Inf(-1)), float32(math.Inf(-1))
 
 	for i := range shape.corners {
 		var x, y = shape.corners[i][0], shape.corners[i][1]
@@ -64,17 +64,17 @@ func (shape *Shape) CornerPoints() [][2]float32 {
 		var resultX = shape.X + (x*cos - y*sin)
 		var resultY = shape.Y + (x*sin + y*cos)
 
-		if shape.MinX > resultX {
-			shape.MinX = resultX
+		if shape.minX > resultX {
+			shape.minX = resultX
 		}
-		if shape.MinY > resultY {
-			shape.MinY = resultY
+		if shape.minY > resultY {
+			shape.minY = resultY
 		}
-		if shape.MaxX < resultX {
-			shape.MaxX = resultX
+		if shape.maxX < resultX {
+			shape.maxX = resultX
 		}
-		if shape.MaxY < resultY {
-			shape.MaxY = resultY
+		if shape.maxY < resultY {
+			shape.maxY = resultY
 		}
 
 		result[i] = [2]float32{resultX, resultY}
@@ -186,10 +186,10 @@ func (shape *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (ne
 			continue
 		}
 
-		var cax = shape.MinX + (shape.MaxX-shape.MinX)/2
-		var cay = shape.MinY + (shape.MaxY-shape.MinY)/2
-		var cbx = target.MinX + (target.MaxX-target.MinX)/2
-		var cby = target.MinY + (target.MaxY-target.MinY)/2
+		var cax = shape.minX + (shape.maxX-shape.minX)/2
+		var cay = shape.minY + (shape.maxY-shape.minY)/2
+		var cbx = target.minX + (target.maxX-target.minX)/2
+		var cby = target.minY + (target.maxY-target.minY)/2
 		var corners = shape.CornerPoints()
 		var targetCorners = target.CornerPoints()
 
@@ -406,14 +406,14 @@ func (shape *Shape) internalIsOverlappingShape(corners, targetCorners [][2]float
 // they rely on having CornerPoints() called beforehand
 
 func (shape *Shape) inBoundingBoxPoint(x, y float32) bool {
-	return x >= shape.MinX && x <= shape.MaxX && y >= shape.MinY && y <= shape.MaxY
+	return x >= shape.minX && x <= shape.maxX && y >= shape.minY && y <= shape.maxY
 }
 func (shape *Shape) inBoundingBoxLine(line Line) bool {
 	return shape.inBoundingBoxPoint(line.Ax, line.Ay) || shape.inBoundingBoxPoint(line.Bx, line.By)
 }
 func (shape *Shape) inBoundingBoxShape(target Shape) bool {
-	return shape.MinX <= target.MaxX && shape.MaxX >= target.MinX &&
-		shape.MinY <= target.MaxY && shape.MaxY >= target.MinY
+	return shape.minX <= target.maxX && shape.maxX >= target.minX &&
+		shape.minY <= target.maxY && shape.maxY >= target.minY
 }
 
 // #endregion

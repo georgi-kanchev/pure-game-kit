@@ -2,6 +2,7 @@ package graphics
 
 import (
 	"math"
+	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/window"
 
@@ -82,13 +83,14 @@ func (camera *Camera) IsHovered() bool {
 		float32(mousePos.X) < float32(camera.ScreenX+camera.ScreenWidth) &&
 		float32(mousePos.Y) < float32(camera.ScreenY+camera.ScreenHeight)
 }
+func (camera *Camera) MousePosition() (x, y float32) {
+	return camera.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
+}
 func (camera *Camera) Size() (width, height float32) {
 	camera.update()
 	return float32(camera.ScreenWidth) / camera.Zoom, float32(camera.ScreenHeight) / camera.Zoom
 }
-func (camera *Camera) MousePosition() (x, y float32) {
-	return camera.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
-}
+
 func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	camera.update()
 
@@ -192,6 +194,37 @@ func (camera *Camera) end() {
 
 	rl.EndScissorMode()
 	rl.EndMode2D()
+}
+
+func (camera *Camera) isAreaVisible(x, y, width, height, pivotX, pivotY, angle float32) bool {
+	var originX = x - width*pivotX
+	var originY = y - height*pivotY
+	var tlx, tly = originX, originY
+	var trx, try = originX + width, originY
+	var brx, bry = originX + width, originY + height
+	var blx, bly = originX, originY + height
+	tlx, tly = point.RotateAroundPoint(tlx, tly, x, y, angle)
+	trx, try = point.RotateAroundPoint(trx, try, x, y, angle)
+	brx, bry = point.RotateAroundPoint(brx, bry, x, y, angle)
+	blx, bly = point.RotateAroundPoint(blx, bly, x, y, angle)
+
+	// project to screen
+	var stlx, stly = camera.PointToScreen(tlx, tly)
+	var strx, stry = camera.PointToScreen(trx, try)
+	var sbrx, sbry = camera.PointToScreen(brx, bry)
+	var sblx, sbly = camera.PointToScreen(blx, bly)
+
+	// mask bounds
+	var mtlx, mtly = camera.maskX, camera.maskY
+	var mbrx, mbry = camera.maskX + camera.maskW, camera.maskY + camera.maskH
+
+	// screen-space bounds of rotated rect
+	var minX = int(math.Min(math.Min(float64(stlx), float64(strx)), math.Min(float64(sbrx), float64(sblx))))
+	var maxX = int(math.Max(math.Max(float64(stlx), float64(strx)), math.Max(float64(sbrx), float64(sblx))))
+	var minY = int(math.Min(math.Min(float64(stly), float64(stry)), math.Min(float64(sbry), float64(sbly))))
+	var maxY = int(math.Max(math.Max(float64(stly), float64(stry)), math.Max(float64(sbry), float64(sbly))))
+
+	return !(maxX < mtlx || minX > mbrx || maxY < mtly || minY > mbry)
 }
 
 func tryRecreateWindow() {

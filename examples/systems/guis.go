@@ -2,10 +2,13 @@ package example
 
 import (
 	"pure-kit/engine/data/assets"
+	"pure-kit/engine/debug"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui"
 	d "pure-kit/engine/gui/dynamic"
 	p "pure-kit/engine/gui/property"
+	"pure-kit/engine/input/keyboard"
+	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
@@ -67,7 +70,7 @@ func GUIs() {
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		// ======================================================
 		gui.Visual("name-label", p.ThemeId, "label", p.Text, "Name", p.TooltipText, "Wow, tooltip for labels!"),
-		gui.Visual("name", p.Width, "500", p.AssetId, box[9], p.Text, "Kenney", p.TextAlignmentX, "0.1",
+		gui.InputField("name", p.Width, "500", p.AssetId, box[9], p.Text, "Kenney", p.TextAlignmentX, "0.1",
 			p.TextAlignmentY, "0.5", p.TextColor, "150 150 150 255"),
 		gui.Visual("stepper-label", p.ThemeId, "label", p.Text, "Stepper", p.NewRow, ""),
 		gui.Button("step-left", p.Width, "100", p.TextEmbeddedAssetId1, "arrow-left", p.Text, "^^ ",
@@ -132,9 +135,15 @@ func GUIs() {
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
 
+	debug.ProfileCPU(5)
+
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
+
+		if keyboard.IsKeyPressedOnce(key.A) {
+			debug.ProfileCPU(5)
+		}
 
 		hud.Draw(cam)
 	}

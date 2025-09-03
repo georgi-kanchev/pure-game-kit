@@ -15,6 +15,10 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 		}
 
 		var x, y, ang, scX, scY = n.TransformToCamera()
+		if !camera.isAreaVisible(x, y, n.Width*scX, n.Height*scY, n.PivotX, n.PivotY, ang) {
+			continue
+		}
+
 		var w, h = n.Width, n.Height
 		camera.DrawRectangle(x, y, w*scX, h*scY, ang, n.Color)
 	}
@@ -26,10 +30,14 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 			continue
 		}
 
+		var x, y, ang, scX, scY = s.TransformToCamera()
+		if !camera.isAreaVisible(x, y, s.Width*scX, s.Height*scY, s.PivotX, s.PivotY, ang) {
+			continue
+		}
+
 		var texture, hasTexture = internal.Textures[s.AssetId]
 		var texX, texY float32 = 0.0, 0.0
 		var repX, repY = s.RepeatX, s.RepeatY
-		var x, y, ang, scX, scY = s.TransformToCamera()
 		var texW, texH = 0, 0
 		var rotations, flip = 0, false
 
@@ -159,6 +167,11 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	camera.Batch = true
 	for _, t := range textBoxes {
 		if t == nil {
+			continue
+		}
+
+		var x, y, ang, scX, scY = t.TransformToCamera()
+		if !camera.isAreaVisible(x, y, t.Width*scX, t.Height*scY, t.PivotX, t.PivotY, ang) {
 			continue
 		}
 

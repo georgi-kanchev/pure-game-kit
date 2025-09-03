@@ -37,6 +37,10 @@ func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
 	return textBox
 }
 
+func (textBox *TextBox) TextMeasure(text string) (width, height float32) {
+	var size = rl.MeasureTextEx(*textBox.font(), text, textBox.LineHeight+textBox.gapLines(), textBox.gapSymbols())
+	return size.X, size.Y
+}
 func (textBox *TextBox) TextWrap(text string) string {
 	var font = textBox.font()
 	var words = strings.Split(text, " ")
