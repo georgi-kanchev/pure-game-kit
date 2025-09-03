@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+// https://showcase.primefaces.org - basic default browser widgets showcase (scroll down to forms on the left)
+
 type GUI struct {
 	Scale float32
 	root  *root

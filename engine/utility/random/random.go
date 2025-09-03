@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-func Seed(keys []float32) float32 {
+func Seed(keys ...float32) float32 {
 	var ints = make([]int, len(keys))
 	for i := range ints {
 		ints[i] = floatToIntSeed(keys[i])
 	}
-	return float32(SeedInts(ints))
+	return float32(SeedInts(ints...))
 }
-func SeedInts(keys []int) int {
+func SeedInts(keys ...int) int {
 	var hashSeed = func(seed uint64, a int) uint64 {
 		seed ^= uint64(a)
 		seed = (seed ^ (seed >> 16)) * 2246822519
@@ -62,27 +62,27 @@ func HasChanceSeeded(percent, seed float32) bool {
 	return n <= percent
 }
 
-func Shuffle[T any](items []T) {
-	ShuffleSeeded(items, float32(math.NaN()))
+func Shuffle[T any](items ...T) {
+	ShuffleSeeded(float32(math.NaN()), items...)
 }
-func ShuffleSeeded[T any](items []T, seed float32) {
+func ShuffleSeeded[T any](seed float32, items ...T) {
 	for i := len(items) - 1; i > 0; i-- {
 		var j = RangeInt(0, i, seed)
 		items[i], items[j] = items[j], items[i]
 	}
 }
 
-func ChooseMultiple[T any](items []T, count int) []T {
+func ChooseMultiple[T any](count int, items ...T) []T {
 	return chooseMultipleInternal(items, count, float32(math.NaN()))
 }
-func ChooseMultipleSeeded[T any](items []T, count int, seed float32) []T {
+func ChooseMultipleSeeded[T any](count int, seed float32, items ...T) []T {
 	return chooseMultipleInternal(items, count, seed)
 }
 
-func ChooseOne[T any](items []T) *T {
+func ChooseOne[T any](items ...T) *T {
 	return singlePointer(chooseMultipleInternal(items, 1, float32(math.NaN())))
 }
-func ChooseOneSeeded[T any](items []T, seed float32) *T {
+func ChooseOneSeeded[T any](seed float32, items ...T) *T {
 	return singlePointer(chooseMultipleInternal(items, 1, seed))
 }
 
@@ -95,7 +95,7 @@ func NoisePerlin(x, y, scale, seed float32) float32 {
 	var fade = func(t float32) float32 { return t * t * t * (t*(t*6-15) + 10) }
 	var lerp = func(a, b, t float32) float32 { return a + t*(b-a) }
 	var dot = func(ix, iy int, x, y float32) float32 {
-		var hash = SeedInts([]int{intSeed, ix, iy})
+		var hash = SeedInts(intSeed, ix, iy)
 		var g = gradients[hash%8]
 		var dx = x - float32(ix)
 		var dy = y - float32(iy)
@@ -132,7 +132,7 @@ func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
 		{5, -2}, {2, -5}, {-5, -2}, {-2, -5},
 	}
 	var getPerm = func(i, j int) int {
-		var subSeed = SeedInts([]int{intSeed, i, j})
+		var subSeed = SeedInts(intSeed, i, j)
 		var r = Range(0, 255, float32(subSeed))
 		return int(r) & 255
 	}
@@ -194,7 +194,7 @@ func NoiseWorley(x, y, scale, seed float32) float32 {
 		for dx := int(-1); dx <= 1; dx++ {
 			var ix = xi + dx
 			var iy = yi + dy
-			var cellSeed = SeedInts([]int{instSeed, ix, iy})
+			var cellSeed = SeedInts(instSeed, ix, iy)
 			var fx = Range(0, 1, float32(cellSeed))
 			var fy = Range(0, 1, float32(cellSeed+1))
 			var cx = float32(ix) + fx
@@ -227,7 +227,7 @@ func NoiseVoronoi(x, y, scale, seed float32) float32 {
 		for dx := int(-1); dx <= 1; dx++ {
 			var ix = xi + dx
 			var iy = yi + dy
-			var cellSeed = SeedInts([]int{intSeed, ix, iy})
+			var cellSeed = SeedInts(intSeed, ix, iy)
 			var fx = Range(0, 1, float32(cellSeed))
 			var fy = Range(0, 1, float32(cellSeed+1))
 			var cx = float32(ix) + fx
@@ -243,7 +243,7 @@ func NoiseVoronoi(x, y, scale, seed float32) float32 {
 		}
 	}
 
-	var regionID = SeedInts([]int{floatToIntSeed(seed), closestFeature[0], closestFeature[1]})
+	var regionID = SeedInts(floatToIntSeed(seed), closestFeature[0], closestFeature[1])
 	var regionVal = Range(0, 1, float32(regionID))
 
 	return regionVal
@@ -260,10 +260,10 @@ func NoiseValue(x, y, scale, seed float32) float32 {
 	var yi = int(math.Floor(float64(y)))
 	var xf = x - float32(xi)
 	var yf = y - float32(yi)
-	var seed00 = SeedInts([]int{intSeed, xi, yi})
-	var seed10 = SeedInts([]int{intSeed, xi + 1, yi})
-	var seed01 = SeedInts([]int{intSeed, xi, yi + 1})
-	var seed11 = SeedInts([]int{intSeed, xi + 1, yi + 1})
+	var seed00 = SeedInts(intSeed, xi, yi)
+	var seed10 = SeedInts(intSeed, xi+1, yi)
+	var seed01 = SeedInts(intSeed, xi, yi+1)
+	var seed11 = SeedInts(intSeed, xi+1, yi+1)
 	var v00 = Range(0, 1, float32(seed00))
 	var v10 = Range(0, 1, float32(seed10))
 	var v01 = Range(0, 1, float32(seed01))
@@ -297,7 +297,7 @@ func NoiseValueCubic(x, y, scale, seed float32) float32 {
 
 	for gy := -1; gy <= 2; gy++ {
 		for gx := -1; gx <= 2; gx++ {
-			var cellSeed = SeedInts([]int{intSeed, xi + int(gx), yi + int(gy)})
+			var cellSeed = SeedInts(intSeed, xi+int(gx), yi+int(gy))
 			vals[gx+1][gy+1] = Range(0, 1, float32(cellSeed))
 		}
 	}

@@ -25,6 +25,8 @@ const (
 	TooltipId     = "tooltipId"     // [widget] [theme]
 	TooltipMargin = "tooltipMargin" // [widget] [theme]
 	Color         = "color"         // [widget] [theme] separated with space, example: "255 0 0 255"
+	FrameColor    = "frameColor"    // [widget] [theme] separated with space, example: "255 0 0 255"
+	FrameSize     = "frameSize"     // [widget] [theme] positive outward, negative inward
 	BoxEdgeLeft   = "boxEdgeLeft"   // [widget] [theme]
 	BoxEdgeRight  = "boxEdgeRight"  // [widget] [theme]
 	BoxEdgeTop    = "boxEdgeTop"    // [widget] [theme]
@@ -76,4 +78,6 @@ const (
 	CheckboxGroup   = "checkboxGroup"   // [widget] [theme]
 
 	MenuContainerId = "menuContainerId" // [widget] [theme]
+
+	InputFieldMargin = "inputFieldMargin" // [widget] [theme] default: "30"
 )

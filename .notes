@@ -1,6 +1,7 @@
 // TODO:
-gui - drag & drop
 gui - inputbox
+gui - slider range second handle
+gui - drag & drop
 example for texture areas, whole texture + all area rects + hover & name
 tiled loading
 drawing tilemaps - https://wareya.github.io/webtyler/
@@ -19,6 +20,7 @@ consistent error handling + logging, console & file
 [55] [Wed] [03-09-2025]
 [√] graphics - camera mask culling optimization for rect, texture, sprite, boxes, texts etc
 [√] graphics - textbox measure text
+[√] gui - input field started
 
 [54] [Mon] [01-09-2025]
 [√] window - added monitors info
