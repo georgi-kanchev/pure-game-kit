@@ -10,8 +10,9 @@ import (
 )
 
 type Camera struct {
-	ScreenX, ScreenY, ScreenWidth, ScreenHeight int
-	X, Y, Angle, Zoom, PivotX, PivotY           float32
+	ScreenX, ScreenY, ScreenWidth, ScreenHeight,
+	MaskX, MaskY, MaskWidth, MaskHeight int
+	X, Y, Angle, Zoom, PivotX, PivotY float32
 
 	// Makes sequencial Draw calls faster.
 	// All of the drawing to the camera can be batched, as long as the other parameters don't change.
@@ -34,8 +35,6 @@ type Camera struct {
 	// 	camera.Draw...
 	// 	camera.Batch = false
 	Batch bool
-
-	maskX, maskY, maskW, maskH int
 }
 
 func NewCamera(zoom float32) *Camera {
@@ -72,8 +71,8 @@ func (camera *Camera) SetScreenAreaToWindow() {
 	camera.SetScreenArea(0, 0, w, h)
 }
 func (camera *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
-	camera.maskX, camera.maskY = screenX, screenY
-	camera.maskW, camera.maskH = screenWidth, screenHeight
+	camera.MaskX, camera.MaskY = screenX, screenY
+	camera.MaskWidth, camera.MaskHeight = screenWidth, screenHeight
 }
 
 func (camera *Camera) IsHovered() bool {
@@ -165,12 +164,12 @@ func (camera *Camera) update() {
 	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*float32(camera.PivotX)
 	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*float32(camera.PivotY)
 
-	var mx = int(math.Max(float64(camera.maskX), float64(camera.ScreenX)))
-	var my = int(math.Max(float64(camera.maskY), float64(camera.ScreenY)))
+	var mx = int(math.Max(float64(camera.MaskX), float64(camera.ScreenX)))
+	var my = int(math.Max(float64(camera.MaskY), float64(camera.ScreenY)))
 	var maxW = camera.ScreenX + camera.ScreenWidth - mx
 	var maxH = camera.ScreenY + camera.ScreenHeight - my
-	var mw = int32(math.Min(float64(camera.maskW), float64(maxW)))
-	var mh = int32(math.Min(float64(camera.maskH), float64(maxH)))
+	var mw = int32(math.Min(float64(camera.MaskWidth), float64(maxW)))
+	var mh = int32(math.Min(float64(camera.MaskHeight), float64(maxH)))
 
 	maskX, maskY, maskW, maskH = int32(mx), int32(my), mw, mh
 }
@@ -206,8 +205,8 @@ func (camera *Camera) isAreaVisible(x, y, width, height, pivotX, pivotY, angle f
 	var strx, stry = camera.PointToScreen(trx, try)
 	var sbrx, sbry = camera.PointToScreen(brx, bry)
 	var sblx, sbly = camera.PointToScreen(blx, bly)
-	var mtlx, mtly = camera.maskX, camera.maskY
-	var mbrx, mbry = camera.maskX + camera.maskW, camera.maskY + camera.maskH
+	var mtlx, mtly = camera.MaskX, camera.MaskY
+	var mbrx, mbry = camera.MaskX + camera.MaskWidth, camera.MaskY + camera.MaskHeight
 	var minX = int(math.Min(math.Min(float64(stlx), float64(strx)), math.Min(float64(sbrx), float64(sblx))))
 	var maxX = int(math.Max(math.Max(float64(stlx), float64(strx)), math.Max(float64(sbrx), float64(sblx))))
 	var minY = int(math.Min(math.Min(float64(stly), float64(stry)), math.Min(float64(sbry), float64(sbly))))

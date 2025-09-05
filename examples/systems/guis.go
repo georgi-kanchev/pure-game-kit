@@ -2,13 +2,10 @@ package example
 
 import (
 	"pure-kit/engine/data/assets"
-	"pure-kit/engine/debug"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui"
 	d "pure-kit/engine/gui/dynamic"
 	p "pure-kit/engine/gui/property"
-	"pure-kit/engine/input/keyboard"
-	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
@@ -137,10 +134,6 @@ func GUIs() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
-
-		if keyboard.IsKeyPressedOnce(key.A) {
-			debug.ProfileCPU(5)
-		}
 
 		hud.Draw(cam)
 	}

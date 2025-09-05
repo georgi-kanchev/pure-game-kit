@@ -138,12 +138,20 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *contai
 	}
 
 	if text != "" {
+		var mx, my, mw, mh = cam.MaskX, cam.MaskY, cam.MaskWidth, cam.MaskHeight
+		if maskText {
+			var x, y = cam.PointToScreen(widget.X+textMargin, widget.Y+textMargin/2)
+			var xw, yh = cam.PointToScreen(widget.X+widget.Width-textMargin, widget.Y+widget.Height-textMargin/2)
+			cam.Mask(x, y, xw-x, yh-y)
+		}
+
 		var outlineCol = themedProp(p.TextColorOutline, root, owner, widget)
 		if outlineCol != "" {
 			cam.DrawTextBoxes(&reusableTextBox)
 		}
 
 		cam.DrawTextBoxes(&reusableTextBox)
+		cam.Mask(mx, my, mw, mh)
 	}
 
 	if frameSz != 0 && frameCol != 0 {
