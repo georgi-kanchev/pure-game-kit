@@ -37,7 +37,7 @@ func Rotate(angle, target, speed float32) float32 {
 	var checkedSpeed = speed
 
 	// Snap if within rotation threshold or just over 360 wraparound
-	if math.Abs(float64(diff)) < float64(checkedSpeed) || math.Abs(float64(diff)) > float64(360-checkedSpeed) {
+	if number.Unsign(diff) < checkedSpeed || number.Unsign(diff) > 360-checkedSpeed {
 		return target
 	}
 
@@ -91,7 +91,7 @@ func Distance(angle, target float32) float32 {
 	} else if diff >= 180 {
 		diff -= 360
 	}
-	return float32(math.Abs(float64(diff)))
+	return number.Unsign(diff)
 }
 func Limit(angle, lower, upper float32) float32 {
 	if !IsWithin(angle, lower, upper) {

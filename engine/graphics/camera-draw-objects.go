@@ -218,7 +218,8 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	camera.end()
 }
 
-// #region private
+//=================================================================
+// private
 
 var reusableSprite = NewSprite("", 0, 0)
 
@@ -259,5 +260,3 @@ func endShader() {
 		rl.EndShaderMode()
 	}
 }
-
-// #endregion

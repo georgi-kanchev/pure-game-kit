@@ -18,7 +18,7 @@ func Exists(folderPath string) bool {
 	return err == nil && info.IsDir()
 }
 func IsEmpty(folderPath string) bool {
-	return len(GetContent(folderPath)) == 0
+	return len(Content(folderPath)) == 0
 }
 func ByteSize(folderPath string) int64 {
 	var totalSize int64 = 0
@@ -177,7 +177,7 @@ func CopyContents(fromFolderPath, toFolderPath string) bool {
 	return err == nil
 }
 
-func GetContent(folderPath string) []string {
+func Content(folderPath string) []string {
 	if !Exists(folderPath) {
 		return []string{}
 	}
@@ -193,7 +193,7 @@ func GetContent(folderPath string) []string {
 	}
 	return names
 }
-func GetFiles(folderPath string) []string {
+func Files(folderPath string) []string {
 	if !Exists(folderPath) {
 		return []string{}
 	}
@@ -211,7 +211,7 @@ func GetFiles(folderPath string) []string {
 	}
 	return files
 }
-func GetFolders(folderPath string) []string {
+func Folders(folderPath string) []string {
 	if !Exists(folderPath) {
 		return []string{}
 	}

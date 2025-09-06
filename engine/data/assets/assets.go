@@ -16,7 +16,8 @@ func Size(assetId string) (width, height float32) {
 	return float32(w), float32(h)
 }
 
-// #region private
+//=================================================================
+// private
 
 func tryCreateWindow() {
 	if !rl.IsWindowReady() {
@@ -40,5 +41,3 @@ func getIdPath(path string) (id, absolutePath string) {
 	id = strings.ReplaceAll(path, file.Extension(path), "")
 	return
 }
-
-// #endregion

@@ -2,12 +2,12 @@ package gui
 
 import (
 	"encoding/xml"
-	"math"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/dynamic"
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/symbols"
 	"strconv"
 	"strings"
@@ -109,39 +109,8 @@ func NewElements(elements ...string) *GUI {
 	return NewXML(result)
 }
 
-func (gui *GUI) Property(id, property string) string {
-	var w, hasW = gui.root.Widgets[id]
-	var c, hasC = gui.root.Containers[id]
-	var t, hasT = gui.root.Themes[id]
-
-	if hasW {
-		var owner = gui.root.Containers[w.OwnerId]
-		return themedProp(property, gui.root, owner, w)
-	}
-	if hasC {
-		return c.Properties[property]
-	}
-	if hasT {
-		return t.Properties[property]
-	}
-
-	return ""
-}
-func (gui *GUI) SetProperty(id, property string, value string) {
-	var w, hasW = gui.root.Widgets[id]
-	var c, hasC = gui.root.Containers[id]
-	var t, hasT = gui.root.Themes[id]
-
-	if hasW {
-		w.Properties[property] = value
-	}
-	if hasC {
-		c.Properties[property] = value
-	}
-	if hasT {
-		t.Properties[property] = value
-	}
-}
+// =================================================================
+// setters
 
 func (gui *GUI) Draw(camera *graphics.Camera) {
 	var prevAng, prevZoom = camera.Angle, camera.Zoom
@@ -188,7 +157,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		ownerTy, ownerBy = oy, oy+"+"+oh
 		ownerW, ownerH = ow, oh
 
-		c.UpdateAndDraw(gui.root, camera)
+		c.updateAndDraw(gui.root, camera)
 	}
 
 	if cWasHovered == cHovered {
@@ -216,28 +185,66 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	cWasHovered = cHovered
 }
 
+func (gui *GUI) SetProperty(id, property string, value string) {
+	var w, hasW = gui.root.Widgets[id]
+	var c, hasC = gui.root.Containers[id]
+	var t, hasT = gui.root.Themes[id]
+
+	if hasW {
+		w.Properties[property] = value
+	}
+	if hasC {
+		c.Properties[property] = value
+	}
+	if hasT {
+		t.Properties[property] = value
+	}
+}
+
+//=================================================================
+// getters
+
+func (gui *GUI) Property(id, property string) string {
+	var w, hasW = gui.root.Widgets[id]
+	var c, hasC = gui.root.Containers[id]
+	var t, hasT = gui.root.Themes[id]
+
+	if hasW {
+		var owner = gui.root.Containers[w.OwnerId]
+		return themedProp(property, gui.root, owner, w)
+	}
+	if hasC {
+		return c.Properties[property]
+	}
+	if hasT {
+		return t.Properties[property]
+	}
+
+	return ""
+}
+
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
 
 	if hasW {
-		return w.IsFocused(gui.root, camera)
+		return w.isFocused(gui.root, camera)
 	}
 	if hasC {
-		return c.IsFocused(gui.root, camera)
+		return c.isFocused(camera)
 	}
 	return false
 }
-
 func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 	var w, has = gui.root.Widgets[widgetId]
 	if has {
-		return w.IsFocused(gui.root, camera)
+		return w.isFocused(gui.root, camera)
 	}
 	return false
 }
 
-// #region private
+//=================================================================
+// private
 
 var wFocused, wHovered, wWasHovered *widget
 var cFocused, cHovered, cWasHovered *container
@@ -331,7 +338,7 @@ func dyn(owner *container, value string, defaultValue string) string {
 	}
 
 	var calc = symbols.Calculate(value)
-	if math.IsNaN(calc) {
+	if number.IsNaN(calc) {
 		return defaultValue
 	}
 	return symbols.New(calc)
@@ -374,5 +381,3 @@ func isHovered(x, y, w, h float32, cam *graphics.Camera) bool {
 	cam.Angle = prevAng
 	return result
 }
-
-// #endregion

@@ -20,6 +20,14 @@ const (
 
 type Conversion int
 
+//=================================================================
+// setters
+
+func SetTimeScale(timeScale float32) { internal.TimeScale = timeScale }
+
+//=================================================================
+// getters
+
 func AsClock24(seconds float32, divider string, units Unit) string {
 	var ts = time.Duration(seconds * float32(time.Second))
 	return formatTimeParts(ts, divider, units, false, false)
@@ -28,8 +36,6 @@ func AsClock12(seconds float32, divider string, units Unit, AM_PM bool) string {
 	var ts = time.Duration(seconds * float32(time.Second))
 	return formatTimeParts(ts, divider, units, true, AM_PM)
 }
-
-func SetTimeScale(timeScale float32) { internal.TimeScale = timeScale }
 
 func TimeScale() float32            { return internal.TimeScale }
 func Clock() float32                { return internal.Clock }
@@ -56,7 +62,8 @@ func FromHours(hours float32) float32               { return hours * 3600 }
 func FromDays(days float32) float32                 { return days * 86400 }
 func FromWeeks(weeks float32) float32               { return weeks * 604800 }
 
-// region private
+//=================================================================
+// private
 
 func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amPm bool) string {
 	var parts []string
@@ -127,5 +134,3 @@ func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amP
 
 	return strings.Join(parts, "")
 }
-
-// endregion

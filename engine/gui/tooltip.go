@@ -13,14 +13,15 @@ func Tooltip(id string, properties ...string) string {
 	return newWidget("tooltip", id, properties...)
 }
 
-// #region private
+//=================================================================
+// private
 
 var tooltip *widget
 var tooltipForWidget *widget
 var tooltipAt float32
 
 func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Camera) {
-	var hov = widget.IsFocused(root, cam)
+	var hov = widget.isFocused(root, cam)
 
 	if condition.TrueOnce(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget
@@ -46,7 +47,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	if tooltip == nil || tooltipForWidget == nil || seconds.RealRuntime() < tooltipAt+0.5 {
 		return
 	}
-	if tooltip.Properties[property.Text] == "" || !tooltipForWidget.IsFocused(root, cam) {
+	if tooltip.Properties[property.Text] == "" || !tooltipForWidget.isFocused(root, cam) {
 		return
 	}
 
@@ -77,5 +78,3 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	setupVisualsTextured(root, tooltip, c)
 	drawVisuals(cam, root, tooltip, c)
 }
-
-// #endregion

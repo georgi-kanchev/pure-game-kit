@@ -28,6 +28,9 @@ var IsAntialiased = false
 var TargetFrameRate byte = 60
 var IsOpen = false
 
+//=================================================================
+// setters
+
 func Recreate() {
 	Close()
 	tryCreate()
@@ -57,30 +60,6 @@ func Close() {
 	IsOpen = false
 	terminate = true
 	rl.CloseWindow()
-}
-
-func MoveToMonitor(monitor int) {
-	var wasMax = rl.IsWindowMaximized()
-	if wasMax {
-		rl.RestoreWindow()
-	}
-
-	rl.SetWindowMonitor(monitor)
-
-	if wasMax {
-		rl.MaximizeWindow()
-	}
-}
-func Monitors() (info []string, current int) {
-	var count = rl.GetMonitorCount()
-	info = make([]string, count)
-	for i := 0; i < count; i++ {
-		var refreshRate = rl.GetMonitorRefreshRate(i)
-		var name = rl.GetMonitorName(i)
-		var w, h = rl.GetMonitorWidth(i), rl.GetMonitorHeight(i)
-		info[i] = symbols.New(name, " [", w, "x", h, ", ", refreshRate, "Hz]")
-	}
-	return info, rl.GetCurrentMonitor()
 }
 
 func ApplyState(state State) {
@@ -127,39 +106,18 @@ func ApplyState(state State) {
 	}
 
 }
-func CurrentState() State {
-	var fs = rl.IsWindowFullscreen()
-	var bor = rl.IsWindowState(rl.FlagBorderlessWindowedMode)
-	var max = rl.IsWindowMaximized()
-	var min = rl.IsWindowMinimized()
 
-	if min {
-		return Minimized
-	}
-	if fs && !bor && !max {
-		return Fullscreen
-	}
-	if !fs && bor && max {
-		return FullscreenBorderless
-	}
-	if !fs && bor && !max {
-		return FloatingBorderless
-	}
-	if !fs && !bor && max {
-		return Maximized
+func MoveToMonitor(monitor int) {
+	var wasMax = rl.IsWindowMaximized()
+	if wasMax {
+		rl.RestoreWindow()
 	}
 
-	return Floating
-}
+	rl.SetWindowMonitor(monitor)
 
-func IsHovered() bool {
-	return rl.IsCursorOnScreen()
-}
-func IsFocused() bool {
-	return rl.IsWindowFocused()
-}
-func Size() (width, height int) {
-	return rl.GetScreenWidth(), rl.GetScreenHeight()
+	if wasMax {
+		rl.MaximizeWindow()
+	}
 }
 
 func SetIcon(assetId string) {
@@ -195,7 +153,60 @@ func SetIcon(assetId string) {
 	rl.SetWindowIcon(*imgPtr)
 }
 
-// region private
+//=================================================================
+// getters
+
+func Size() (width, height int) {
+	return rl.GetScreenWidth(), rl.GetScreenHeight()
+}
+
+func Monitors() (info []string, current int) {
+	var count = rl.GetMonitorCount()
+	info = make([]string, count)
+	for i := 0; i < count; i++ {
+		var refreshRate = rl.GetMonitorRefreshRate(i)
+		var name = rl.GetMonitorName(i)
+		var w, h = rl.GetMonitorWidth(i), rl.GetMonitorHeight(i)
+		info[i] = symbols.New(name, " [", w, "x", h, ", ", refreshRate, "Hz]")
+	}
+	return info, rl.GetCurrentMonitor()
+}
+
+func CurrentState() State {
+	var fs = rl.IsWindowFullscreen()
+	var bor = rl.IsWindowState(rl.FlagBorderlessWindowedMode)
+	var max = rl.IsWindowMaximized()
+	var min = rl.IsWindowMinimized()
+
+	if min {
+		return Minimized
+	}
+	if fs && !bor && !max {
+		return Fullscreen
+	}
+	if !fs && bor && max {
+		return FullscreenBorderless
+	}
+	if !fs && bor && !max {
+		return FloatingBorderless
+	}
+	if !fs && !bor && max {
+		return Maximized
+	}
+
+	return Floating
+}
+
+func IsHovered() bool {
+	return rl.IsCursorOnScreen()
+}
+func IsFocused() bool {
+	return rl.IsWindowFocused()
+}
+
+// =================================================================
+// private
+
 var terminate = false
 var currTitle = ""
 var currTargetFPS byte = 0
@@ -237,5 +248,3 @@ func tryUpdateProperties() {
 		rl.SetTargetFPS(int32(TargetFrameRate))
 	}
 }
-
-//endregion

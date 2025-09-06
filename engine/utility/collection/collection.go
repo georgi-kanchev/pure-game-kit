@@ -2,7 +2,6 @@ package collection
 
 import (
 	"fmt"
-	"math"
 	"pure-kit/engine/utility/number"
 	"slices"
 	"sort"
@@ -274,8 +273,7 @@ func Rotate[T any](collection2D [][]T, direction int) [][]T {
 		return collection2D
 	}
 
-	var dir = int(math.Abs(float64(direction))) % 4
-	if dir == 0 {
+	if number.UnsignInt(direction)%4 == 0 {
 		return collection2D
 	}
 

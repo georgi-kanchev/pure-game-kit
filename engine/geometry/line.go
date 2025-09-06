@@ -1,7 +1,6 @@
 package geometry
 
 import (
-	"math"
 	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/number"
@@ -12,6 +11,9 @@ type Line struct{ Ax, Ay, Bx, By float32 }
 func NewLine(ax, ay, bx, by float32) Line {
 	return Line{Ax: ax, Ay: ay, Bx: bx, By: by}
 }
+
+//=================================================================
+// getters
 
 func (line *Line) Angle() float32 {
 	return angle.BetweenPoints(line.Ax, line.Ay, line.Bx, line.By)
@@ -31,14 +33,14 @@ func (line *Line) CrossPointWithLine(target Line) (x, y float32) {
 	var det = dx1*dy2 - dy1*dx2
 
 	if det > -0.001 && det < 0.001 { // Lines are parallel or duplicate
-		return float32(math.NaN()), float32(math.NaN())
+		return number.NaN(), number.NaN()
 	}
 
 	var s = ((line.Ay-target.Ay)*dx2 - (line.Ax-target.Ax)*dy2) / det
 	var t = ((line.Ay-target.Ay)*dx1 - (line.Ax-target.Ax)*dy1) / det
 
 	if s < 0 || s > 1 || t < 0 || t > 1 { // Intersection not within both segments
-		return float32(math.NaN()), float32(math.NaN())
+		return number.NaN(), number.NaN()
 	}
 
 	var ix = line.Ax + s*dx1

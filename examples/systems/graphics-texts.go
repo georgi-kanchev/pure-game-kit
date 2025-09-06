@@ -1,10 +1,10 @@
 package example
 
 import (
-	"math"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/window"
 )
@@ -22,7 +22,7 @@ func Texts() {
 	textBox.EmbeddedThicknesses = []float32{0.7, 0.5, 0.35}
 	textBox.LineHeight = 100
 
-	var a = 0.0
+	var a float32 = 0
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -31,7 +31,7 @@ func Texts() {
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
 
-		a = math.Sin(float64(seconds.Runtime() / 5))
+		a = number.Sine(seconds.Runtime() / 5)
 
 		textBox.Thickness = float32(0.5 + a/2)
 

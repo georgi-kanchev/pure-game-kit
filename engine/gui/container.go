@@ -2,7 +2,6 @@ package gui
 
 import (
 	"encoding/xml"
-	"math"
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
 	p "pure-kit/engine/gui/property"
@@ -34,7 +33,8 @@ func Container(id, x, y, width, height string, properties ...string) string {
 	return rid + rx + ry + rw + rh + extraProps(properties...) + ">"
 }
 
-// #region private
+//=================================================================
+// private
 
 const scrollSize, scrollSpeed = 20, 100
 
@@ -42,7 +42,7 @@ var cMiddlePressed *container
 var cPressedOnScrollH *container
 var cPressedOnScrollV *container
 
-func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
+func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var hidden, _ = c.Properties[p.Hidden]
 	if hidden != "" {
 		return
@@ -60,10 +60,10 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 	cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
 
-	if c.IsHovered(cam) {
+	if c.isHovered(cam) {
 		cHovered = c
 	}
-	if c.IsFocused(root, cam) && mouse.IsButtonPressedOnce(mouse.ButtonMiddle) {
+	if c.isFocused(cam) && mouse.IsButtonPressedOnce(mouse.ButtonMiddle) {
 		cMiddlePressed = c
 	}
 
@@ -109,7 +109,7 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 			widget.Y -= c.ScrollY
 		}
 
-		if widget.IsHovered(c, cam) {
+		if widget.isHovered(c, cam) {
 			wHovered = widget
 		}
 
@@ -133,17 +133,12 @@ func (c *container) UpdateAndDraw(root *root, cam *graphics.Camera) {
 	}
 
 	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
-	c.TryShowScroll(cGapX, cGapY, root, cam)
+	c.tryShowScroll(cGapX, cGapY, root, cam)
 }
-
-func (c *container) IsHovered(cam *graphics.Camera) bool {
-	return isHovered(c.X, c.Y, c.Width, c.Height, cam)
-}
-
-func (c *container) TryShowScroll(gapX, gapY float32, root *root, cam *graphics.Camera) {
-	var minX, minY, maxX, maxY = c.ContentMinMax(gapX, gapY, root)
+func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.Camera) {
+	var minX, minY, maxX, maxY = c.contentMinMax(gapX, gapY, root)
 	var mx, my = cam.MousePosition()
-	var focused = c.IsFocused(root, cam)
+	var focused = c.isFocused(cam)
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var scroll = mouse.Scroll()
 
@@ -209,9 +204,16 @@ func (c *container) TryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 	c.prevMouseX, c.prevMouseY = mx, my
 }
 
-func (c *container) ContentMinMax(gapX, gapY float32, root *root) (minX, minY, maxX, maxY float32) {
-	minX, minY = float32(math.Inf(1)), float32(math.Inf(1))
-	maxX, maxY = float32(math.Inf(-1)), float32(math.Inf(-1))
+func (c *container) isHovered(cam *graphics.Camera) bool {
+	return isHovered(c.X, c.Y, c.Width, c.Height, cam)
+}
+func (c *container) isFocused(cam *graphics.Camera) bool {
+	return cFocused == c && cWasHovered == c && c.isHovered(cam)
+}
+
+func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, maxX, maxY float32) {
+	minX, minY = number.Infinity(), number.Infinity()
+	maxX, maxY = number.NegativeInfinity(), number.NegativeInfinity()
 
 	for _, w := range c.Widgets {
 		var widget = root.Widgets[w]
@@ -231,9 +233,3 @@ func (c *container) ContentMinMax(gapX, gapY float32, root *root) (minX, minY, m
 	maxY += gapY + scrollSize
 	return
 }
-
-func (c *container) IsFocused(root *root, cam *graphics.Camera) bool {
-	return cFocused == c && cWasHovered == c && c.IsHovered(cam)
-}
-
-// #endregion

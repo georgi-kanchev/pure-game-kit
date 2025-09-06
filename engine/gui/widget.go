@@ -20,15 +20,16 @@ func newWidget(class, id string, properties ...string) string {
 		extraProps(properties...) + " />"
 }
 
-func (widget *widget) IsHovered(owner *container, cam *graphics.Camera) bool {
+//=================================================================
+
+func (widget *widget) isHovered(owner *container, cam *graphics.Camera) bool {
 	return isHovered(owner.X, owner.Y, owner.Width, owner.Height, cam) &&
 		isHovered(widget.X, widget.Y, widget.Width, widget.Height, cam)
 }
-func (widget *widget) IsFocused(root *root, cam *graphics.Camera) bool {
-	return wFocused == widget && wWasHovered == widget && widget.IsHovered(root.Containers[widget.OwnerId], cam)
+func (widget *widget) isFocused(root *root, cam *graphics.Camera) bool {
+	return wFocused == widget && wWasHovered == widget && widget.isHovered(root.Containers[widget.OwnerId], cam)
 }
-
-func (widget *widget) IsDisabled(owner *container) bool {
+func (widget *widget) isDisabled(owner *container) bool {
 	var _, disabled = widget.Properties[property.Disabled]
 	var ownerDisabled = false
 

@@ -33,6 +33,28 @@ func NewTween(startingItems ...float32) *Tween {
 	return newChain
 }
 
+//=================================================================
+// setters
+
+func (tween *Tween) Restart() {
+	tween.currIndex = 0
+	tween.startTime = seconds.Runtime()
+	tween.IsPaused = false
+
+	for i := range tween.tweens {
+		var action = &tween.tweens[i]
+		if i == 0 {
+			copy(action.current, action.from)
+			continue
+		}
+
+		copy(action.current, tween.tweens[i-1].to)
+	}
+}
+
+//=================================================================
+// getters
+
 func (chain *Tween) GoTo(duration float32, easing func(progress float32) float32, targets ...float32) *Tween {
 	if len(chain.tweens) == 0 {
 		return chain
@@ -63,21 +85,6 @@ func (tween *Tween) Wait(seconds float32) *Tween {
 		tween.GoTo(seconds, nil, lastTween.to...)
 	}
 	return tween
-}
-func (tween *Tween) Restart() {
-	tween.currIndex = 0
-	tween.startTime = seconds.Runtime()
-	tween.IsPaused = false
-
-	for i := range tween.tweens {
-		var action = &tween.tweens[i]
-		if i == 0 {
-			copy(action.current, action.from)
-			continue
-		}
-
-		copy(action.current, tween.tweens[i-1].to)
-	}
 }
 
 func (tween *Tween) CurrentValues() []float32 {
@@ -133,7 +140,8 @@ func (tween *Tween) IsPlaying() bool {
 	return !tween.IsFinished() && !tween.IsPaused
 }
 
-// region private
+// =================================================================
+// private
 
 type action struct {
 	duration          float32
@@ -142,5 +150,3 @@ type action struct {
 }
 
 func (tween *Tween) last() *action { return &tween.tweens[len(tween.tweens)-1] }
-
-// endregion

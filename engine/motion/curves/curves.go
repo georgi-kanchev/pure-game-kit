@@ -1,14 +1,14 @@
 package curves
 
 import (
-	"math"
+	"pure-kit/engine/utility/number"
 
 	"github.com/gen2brain/raylib-go/easings"
 )
 
 func TraceBezier(progress float32, curvePoints [][2]float32) (x, y float32) {
 	if len(curvePoints) == 0 {
-		return float32(math.NaN()), float32(math.NaN())
+		return number.NaN(), number.NaN()
 	}
 	if len(curvePoints) == 1 {
 		return curvePoints[0][0], curvePoints[0][1]
@@ -34,7 +34,7 @@ func TraceBezier(progress float32, curvePoints [][2]float32) (x, y float32) {
 }
 func TraceSpline(progress float32, curvePoints [][2]float32) (x, y float32) {
 	if len(curvePoints) < 4 {
-		return float32(math.NaN()), float32(math.NaN())
+		return number.NaN(), number.NaN()
 	}
 
 	var numSegments = len(curvePoints) - 3

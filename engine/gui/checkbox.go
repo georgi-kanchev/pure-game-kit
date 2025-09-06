@@ -10,7 +10,8 @@ func Checkbox(id string, properties ...string) string {
 	return newWidget("checkbox", id, properties...)
 }
 
-// #region private
+//=================================================================
+// private
 
 func checkbox(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var on = themedProp(property.CheckboxThemeId, root, owner, widget)
@@ -38,5 +39,3 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget, owner *container
 		widget.Properties[property.Value] = "v"
 	}
 }
-
-// #endregion

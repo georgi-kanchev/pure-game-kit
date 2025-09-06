@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"math"
 	"pure-kit/engine/utility/collection"
+	"pure-kit/engine/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -98,6 +98,9 @@ func AssetSize(assetId string) (width, height int) {
 	return
 }
 
+//=================================================================
+// private
+
 // state machines from engine/execution/states
 func updateStates() {
 	for _, v := range States {
@@ -130,7 +133,7 @@ func updateTimers() {
 	}
 	for k, v := range CallFor {
 		for _, f := range v {
-			f(float32(math.Max(float64(k-Runtime), 0)))
+			f(number.Biggest(k-Runtime, 0))
 		}
 		if Runtime > k {
 			delete(CallFor, k)

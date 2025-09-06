@@ -29,10 +29,8 @@ const (
 	CursorNotAllowed
 )
 
-// compile-time error on windows for some reason
-//	func SetCursorPosition(x, y int) {
-//		rl.SetMousePosition(int32(x), int32(y))
-//	}
+//=================================================================
+// setters
 
 func SetCursorVisibility(visible bool) {
 	if visible {
@@ -44,6 +42,9 @@ func SetCursorVisibility(visible bool) {
 func SetCursor(cursor int) {
 	internal.Cursor = cursor
 }
+
+//=================================================================
+// getters
 
 func Scroll() int {
 	return int(rl.GetMouseWheelMoveV().Y)

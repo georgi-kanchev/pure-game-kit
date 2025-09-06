@@ -1,7 +1,6 @@
 package color
 
 import (
-	"math"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/random"
 )
@@ -92,10 +91,11 @@ func Opposite(color uint) uint {
 	return RGBA(255-r, 255-g, 255-b, a)
 }
 
-// region private
+//=================================================================
+// private
 
 func randomByteRange(min, max byte) byte {
-	return byte(random.Range(float32(min), float32(max)+1, float32(math.NaN())))
+	return byte(random.Range(float32(min), float32(max)+1, number.NaN()))
 }
 
 func colorFromRGBA(r, g, b, a byte) uint {
@@ -108,5 +108,3 @@ func colorToRGBA(value uint) (r, g, b, a uint8) {
 	a = uint8(value)
 	return
 }
-
-// endregion

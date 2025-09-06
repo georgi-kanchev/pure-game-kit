@@ -2,13 +2,12 @@ package assets
 
 import (
 	"encoding/base64"
-	"pure-kit/engine/storage"
 )
 
 func LoadDefaultFont() (fontId string) {
 	const symbol = ""
 	var raw, _ = base64.StdEncoding.DecodeString(font)
-	var decompressed = storage.Decompress(raw)
+	var decompressed = decompress(raw)
 	loadFont(symbol, 49, decompressed)
 	return symbol
 }

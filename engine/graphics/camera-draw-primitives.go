@@ -1,9 +1,9 @@
 package graphics
 
 import (
-	"math"
 	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -53,14 +53,14 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 		}
 	}
 
-	var left = float32(math.Floor(float64(minX/spacingX))) * spacingX
-	var right = float32(math.Ceil(float64(maxX/spacingX))) * spacingX
-	var top = float32(math.Floor(float64(minY/spacingY))) * spacingY
-	var bottom = float32(math.Ceil(float64(maxY/spacingY))) * spacingY
+	var left = number.RoundDown(minX/spacingX, -1) * spacingX
+	var right = number.RoundUp(maxX/spacingX, -1) * spacingX
+	var top = number.RoundDown(minY/spacingY, -1) * spacingY
+	var bottom = number.RoundUp(maxY/spacingY, -1) * spacingY
 
 	for x := left; x <= right; x += spacingX { // vertical
 		var myThickness = thickness
-		if float32(math.Mod(float64(x), float64(spacingX)*10)) == 0 {
+		if number.DivisionRemainder(x, spacingX*10) == 0 {
 			myThickness *= 2
 		}
 
@@ -68,7 +68,7 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 	}
 	for y := top; y <= bottom; y += spacingY { // horizontal
 		var myThickness = thickness
-		if float32(math.Mod(float64(y), float64(spacingY)*10)) == 0 {
+		if number.DivisionRemainder(y, spacingY*10) == 0 {
 			myThickness *= 2
 		}
 

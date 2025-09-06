@@ -59,6 +59,9 @@ func New(smoothTexture bool, tiledMapId string) Scene {
 	return scene
 }
 
+//=================================================================
+// setters
+
 func (scene *Scene) Unload() {
 	assets.UnloadTiledData(scene.name)
 	assets.RemoveTextureAtlases(scene.atlases...)
@@ -69,6 +72,9 @@ func (scene *Scene) Unload() {
 	fmt.Printf("internal.AtlasRects: %v\n", internal.AtlasRects)
 	fmt.Printf("internal.Textures: %v\n", internal.Textures)
 }
+
+//=================================================================
+// getters
 
 func (scene *Scene) Size() (width, height int) {
 	return scene.width, scene.height
@@ -82,14 +88,16 @@ func (scene *Scene) ParallaxOrigin() (x, y int) {
 func (scene *Scene) Class() string {
 	return scene.class
 }
-func (scene *Scene) Infinite() bool {
+func (scene *Scene) IsInfinite() bool {
 	return scene.infinite
 }
 func (scene *Scene) BackgroundColor() uint {
 	return scene.backgroundColor
 }
 
-// #region private
+//=================================================================
+// private
+
 func color(hex string) uint {
 	var trimmed = strings.TrimPrefix(hex, "#")
 
@@ -106,5 +114,3 @@ func color(hex string) uint {
 
 	return uint(value)
 }
-
-// #endregion

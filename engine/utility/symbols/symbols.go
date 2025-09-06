@@ -3,7 +3,7 @@ package symbols
 import (
 	"encoding/base64"
 	"fmt"
-	"math"
+	"pure-kit/engine/utility/number"
 	"strconv"
 	"strings"
 	"unicode"
@@ -16,10 +16,10 @@ func OpenURL(url string) {
 	rl.OpenURL(url)
 }
 
-func Calculate(mathExpression string) float64 {
+func Calculate(mathExpression string) float32 {
 	mathExpression = strings.ReplaceAll(mathExpression, " ", "")
 
-	var values = []float64{}
+	var values = []float32{}
 	var operators = []rune{}
 	var bracketCountOpen = 0
 	var bracketCountClose = 0
@@ -41,7 +41,7 @@ func Calculate(mathExpression string) float64 {
 		}
 	}
 
-	var applyOperator = func(val1, val2 float64, op rune) float64 {
+	var applyOperator = func(val1, val2 float32, op rune) float32 {
 		switch op {
 		case '+':
 			return val1 + val2
@@ -55,12 +55,12 @@ func Calculate(mathExpression string) float64 {
 			}
 		case '%':
 			if val2 != 0 {
-				return math.Mod(val1, val2)
+				return number.DivisionRemainder(val1, val2)
 			}
 		case '^':
-			return math.Pow(val1, val2)
+			return number.Power(val1, val2)
 		}
-		return math.NaN()
+		return number.NaN()
 	}
 
 	var process = func() bool {
@@ -77,18 +77,18 @@ func Calculate(mathExpression string) float64 {
 		return false
 	}
 
-	var getNumber = func(expr string, i *int) float64 {
+	var getNumber = func(expr string, i *int) float32 {
 		var start = *i
 		for *i < len(expr) && (unicode.IsDigit(rune(expr[*i])) || expr[*i] == '.') {
 			(*i)++
 		}
 		var numStr = expr[start:*i]
 		(*i)--
-		var val, err = strconv.ParseFloat(numStr, 64)
+		var val, err = strconv.ParseFloat(numStr, 32)
 		if err != nil {
-			return math.NaN()
+			return number.NaN()
 		}
-		return val
+		return float32(val)
 	}
 
 	for i := 0; i < len(mathExpression); i++ {
@@ -104,7 +104,7 @@ func Calculate(mathExpression string) float64 {
 			bracketCountClose++
 			for len(operators) > 0 && operators[len(operators)-1] != '(' {
 				if process() {
-					return math.NaN()
+					return number.NaN()
 				}
 			}
 			if len(operators) > 0 {
@@ -116,7 +116,7 @@ func Calculate(mathExpression string) float64 {
 				// It's a sign, parse the number after it
 				i++
 				if i >= len(mathExpression) {
-					return math.NaN()
+					return number.NaN()
 				}
 				val := getNumber(mathExpression, &i)
 				if c == '-' {
@@ -127,7 +127,7 @@ func Calculate(mathExpression string) float64 {
 				// Normal binary operator
 				for len(operators) > 0 && priority(operators[len(operators)-1]) >= priority(c) {
 					if process() {
-						return math.NaN()
+						return number.NaN()
 					}
 				}
 				operators = append(operators, c)
@@ -135,22 +135,22 @@ func Calculate(mathExpression string) float64 {
 		}
 
 		if bracketCountClose > bracketCountOpen {
-			return math.NaN()
+			return number.NaN()
 		}
 	}
 
 	if bracketCountOpen != bracketCountClose {
-		return math.NaN()
+		return number.NaN()
 	}
 
 	for len(operators) > 0 {
 		if process() {
-			return math.NaN()
+			return number.NaN()
 		}
 	}
 
 	if len(values) == 0 {
-		return math.NaN()
+		return number.NaN()
 	}
 	return values[len(values)-1]
 }
@@ -191,9 +191,9 @@ func Count(text string) int {
 }
 
 func Reveal(text string, progress float32) string {
-	progress = float32(math.Min(1, math.Max(float64(progress), 0)))
-	var textLen = Count(text)
-	var cutoff = int(math.Round(float64(progress) * float64(textLen)))
+	progress = number.Limit(progress, 0, 1)
+	var textLen = float32(Count(text))
+	var cutoff = int(number.Round(progress*textLen, -1))
 
 	return string([]rune(text)[cutoff:])
 }
@@ -230,7 +230,7 @@ func Fit(text string, maxLength int) string {
 	var textRunes = []rune(text)
 	var indicatorLen = len([]rune(indicator))
 	var textLen = len(textRunes)
-	var absMax = int(math.Abs(float64(maxLength)))
+	var absMax = number.UnsignInt(maxLength)
 	var trimLen = absMax - indicatorLen
 
 	if maxLength > 0 && textLen > int(maxLength) {
@@ -259,7 +259,8 @@ func FromBase64(textBase64 string) string {
 	return string(decodedBytes)
 }
 
-// region private
+//=================================================================
+// private
 
 func repeatPad(padStr string, totalRunes int) string {
 	if padStr == "" {
@@ -289,5 +290,3 @@ func truncateToRunes(s string, maxRunes int) string {
 	}
 	return builder.String()
 }
-
-// endregion

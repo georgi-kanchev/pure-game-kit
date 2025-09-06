@@ -216,7 +216,9 @@ func Detect(text string) (naming Naming, separator string) {
 	return detectedNaming, divider
 }
 
-// region private
+// =================================================================
+// private
+
 func isAllLower(s string) bool {
 	for _, r := range s {
 		if !unicode.IsLower(r) {
@@ -298,5 +300,3 @@ func hasFlag(value Naming, flag Naming) bool {
 func removeFlag(value Naming, flag Naming) Naming {
 	return value &^ flag
 }
-
-// endregion

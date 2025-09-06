@@ -6,7 +6,7 @@ import (
 )
 
 func Commands() {
-	command.Create("log_messages", func(parameters []string) (output string) {
+	command.New("log_messages", func(parameters []string) (output string) {
 		for i, v := range parameters {
 			fmt.Printf("%v: %v\n", i, v)
 		}

@@ -10,6 +10,8 @@ func NewSequence(name string, steps ...Step) {
 	internal.Flows[name] = &internal.Sequence{Steps: steps, CurrentIndex: -1}
 }
 
+//=================================================================
+
 func Signal(signal string) {
 	internal.FlowSignals = append(internal.FlowSignals, signal)
 }

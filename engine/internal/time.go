@@ -1,15 +1,11 @@
 package internal
 
 import (
-	"math"
+	"pure-kit/engine/utility/number"
 	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
-
-const deltaMax float32 = 0.1
-
-var prevClock float32
 
 var Clock, Delta, FrameRate, FrameRateAverage, Runtime float32
 var RealDelta, RealFrameRate, RealFrameRateAverage, RealRuntime float32
@@ -26,6 +22,13 @@ func Update() {
 	updateStates()
 	updateKeysAndButtons()
 }
+
+//=================================================================
+// private
+
+const deltaMax float32 = 0.1
+
+var prevClock float32
 
 func updateData() {
 	var now = time.Now()
@@ -48,7 +51,7 @@ func updateData() {
 	RealFrameRateAverage = float32(RealFrameCount) / RealRuntime
 	RealFrameCount++
 
-	Delta = float32(math.Min(float64(RealDelta*TimeScale), float64(deltaMax)))
+	Delta = number.Smallest(RealDelta*TimeScale, deltaMax)
 	Runtime += Delta
 	FrameRate = 1.0 / Delta
 	FrameRateAverage = float32(FrameCount) / Runtime

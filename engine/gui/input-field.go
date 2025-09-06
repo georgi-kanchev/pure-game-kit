@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"math"
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/property"
@@ -9,6 +8,7 @@ import (
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/seconds"
 	"pure-kit/engine/utility/symbols"
 	"strings"
@@ -18,7 +18,8 @@ func InputField(id string, properties ...string) string {
 	return newWidget("inputField", id, properties...)
 }
 
-// #region private
+//=================================================================
+// private
 
 var typingIn *widget
 var indexCursor int
@@ -26,16 +27,29 @@ var cursorTime, scrollX, textMargin float32
 var symbolXs []float32 = []float32{}
 var maskText = false
 
+func setupText(margin float32, root *root, widget *widget, owner *container) {
+	setupVisualsText(root, widget, owner)
+	reusableTextBox.AlignmentX, reusableTextBox.AlignmentY = 0, 0
+	reusableTextBox.Width = 9999
+	reusableTextBox.Height = widget.Height - margin
+	reusableTextBox.LineHeight = widget.Height - margin
+	reusableTextBox.X = reusableTextBox.X + margin - scrollX
+	reusableTextBox.Y += margin / 2
+	reusableTextBox.Text = strings.ReplaceAll(reusableTextBox.Text, "\n", "")
+	reusableTextBox.EmbeddedAssetsTag = 0
+	reusableTextBox.EmbeddedColorsTag = 0
+	reusableTextBox.EmbeddedThicknessesTag = 0
+}
 func inputField(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var margin = parseNum(themedProp(property.InputFieldMargin, root, owner, widget), 30)
 	setupText(margin, root, widget, owner)
 	setupVisualsTextured(root, widget, owner)
 
-	if widget.IsFocused(root, cam) {
+	if widget.isFocused(root, cam) {
 		mouse.SetCursor(mouse.CursorInput)
 	}
 
-	var focused = widget.IsFocused(root, cam)
+	var focused = widget.isFocused(root, cam)
 	var anyInput = mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0
 
 	if anyInput && !focused {
@@ -90,12 +104,12 @@ func inputField(cam *graphics.Camera, root *root, widget *widget, owner *contain
 		}
 
 		if keyboard.IsKeyPressedOnce(key.Left) || keyboard.IsKeyHeld(key.Left) {
-			indexCursor = int(math.Max(float64(indexCursor-1), 0))
+			indexCursor = number.BiggestInt(indexCursor-1, 0)
 			cursorTime = 0
 
 		}
 		if keyboard.IsKeyPressedOnce(key.Right) || keyboard.IsKeyHeld(key.Right) {
-			indexCursor = int(math.Min(float64(symbols.Count(text)), float64(indexCursor+1)))
+			indexCursor = number.SmallestInt(symbols.Count(text), indexCursor+1)
 			cursorTime = 0
 		}
 
@@ -134,10 +148,10 @@ func closestIndex(cam *graphics.Camera) int {
 	}
 
 	var closestIndex = 0
-	var minDist = float32(math.Abs(float64(mx - symbolXs[0])))
+	var minDist = number.Unsign(mx - symbolXs[0])
 
 	for i, v := range symbolXs[1:] {
-		var dist = float32(math.Abs(float64(mx - v)))
+		var dist = number.Unsign(mx - v)
 		if dist < minDist {
 			minDist = dist
 			closestIndex = i + 1
@@ -146,7 +160,6 @@ func closestIndex(cam *graphics.Camera) int {
 
 	return closestIndex
 }
-
 func calculateXs(cam *graphics.Camera) {
 	var textLength = symbols.Count(reusableTextBox.Text)
 	symbolXs = []float32{}
@@ -160,28 +173,12 @@ func calculateXs(cam *graphics.Camera) {
 		symbolXs = append(symbolXs, reusableTextBox.X+w+scrollX)
 	}
 }
-
-func setupText(margin float32, root *root, widget *widget, owner *container) {
-	setupVisualsText(root, widget, owner)
-	reusableTextBox.AlignmentX, reusableTextBox.AlignmentY = 0, 0
-	reusableTextBox.Width = 9999
-	reusableTextBox.Height = widget.Height - margin
-	reusableTextBox.LineHeight = widget.Height - margin
-	reusableTextBox.X = reusableTextBox.X + margin - scrollX
-	reusableTextBox.Y += margin / 2
-	reusableTextBox.Text = strings.ReplaceAll(reusableTextBox.Text, "\n", "")
-	reusableTextBox.EmbeddedAssetsTag = 0
-	reusableTextBox.EmbeddedColorsTag = 0
-	reusableTextBox.EmbeddedThicknessesTag = 0
-}
-
 func cursorX(margin float32, widget *widget) float32 {
 	if len(symbolXs) > 0 {
 		return symbolXs[indexCursor] - scrollX
 	}
 	return widget.X + margin
 }
-
 func remove(back, front int, cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	cursorTime = 0
 
@@ -198,5 +195,3 @@ func remove(back, front int, cam *graphics.Camera, root *root, widget *widget, o
 	indexCursor -= back
 	calculateXs(cam)
 }
-
-// #endregion

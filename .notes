@@ -17,8 +17,14 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[57] [Sat] [06-09-2025]
+[√] project cleanup
+[√] regions replaced with separators
+[√] longer files separated with private, getters, setters and constructor parts
+[√] math package minimized, a lot of stuff moved to number
+
 [56] [Thu] [04-09-2025]
-[√] gui - input field mighty fine
+[√] gui - input field lookin fine as FUKK
 
 [55] [Wed] [03-09-2025]
 [√] graphics - camera mask culling optimization for rect, texture, sprite, boxes, texts etc

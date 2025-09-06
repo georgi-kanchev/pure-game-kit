@@ -1,8 +1,8 @@
 package point
 
 import (
-	"math"
 	"pure-kit/engine/utility/angle"
+	"pure-kit/engine/utility/direction"
 	"pure-kit/engine/utility/number"
 )
 
@@ -18,23 +18,19 @@ func Snap(x, y, gridX, gridY float32) (float32, float32) {
 		y -= gridY
 	}
 
-	x -= float32(math.Mod(float64(x), float64(gridX)))
-	y -= float32(math.Mod(float64(y), float64(gridY)))
+	x -= number.DivisionRemainder(x, gridX)
+	y -= number.DivisionRemainder(y, gridY)
 
 	return x, y
 }
 
 func MoveAtAngle(x, y, angle, step float32) (float32, float32) {
-	angle = number.Wrap(angle, 360)
-	var rad = math.Pi / 180 * angle
-	var dirX = float32(math.Cos(float64(rad)))
-	var dirY = float32(math.Sin(float64(rad)))
-
+	var dirX, dirY = dir(angle)
 	if dirX == 0 && dirY == 0 {
 		return x, y
 	}
 
-	var length = float32(math.Sqrt(float64(dirX*dirX + dirY*dirY)))
+	var length = direction.Length(dirX, dirY)
 	x += (dirX / length) * step
 	y += (dirY / length) * step
 
@@ -60,21 +56,30 @@ func MoveByPercent(x, y, targetX, targetY float32, percent float32) (float32, fl
 }
 
 func RotateAroundPoint(x, y, targetX, targetY, angle float32) (float32, float32) {
-	var rad = float32(math.Pi/180) * angle
+	var rad = rad(angle)
 	var tx, ty = x - targetX, y - targetY
-	var cosA = float32(math.Cos(float64(rad)))
-	var sinA = float32(math.Sin(float64(rad)))
+	var cosA = number.Cosine(rad)
+	var sinA = number.Sine(rad)
 	var rx, ry = tx*cosA - ty*sinA, tx*sinA + ty*cosA
 
 	return rx + targetX, ry + targetY
 }
 
 func DistanceToPoint(x, y, targetX, targetY float32) float32 {
-	var dirX, dirY = targetX - x, targetY - y
-	return float32(math.Sqrt(float64(dirX*dirX + dirY*dirY)))
+	return direction.Length(targetX-x, targetY-y)
 }
 func DirectionToPoint(x, y, targetX, targetY float32) (dirX, dirY float32) {
 	var length = DistanceToPoint(x, y, targetX, targetY)
 	dirX, dirY = targetX-x, targetY-y
 	return dirX / length, dirY / length
+}
+
+//=================================================================
+// private
+
+func dir(ang float32) (float32, float32) {
+	return direction.FromAngle(ang)
+}
+func rad(ang float32) float32 {
+	return angle.ToRadians(ang)
 }

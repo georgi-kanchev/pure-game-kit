@@ -45,7 +45,8 @@ func DefaultAssetUI() {
 	runDefaultAssetDisplay(0.7, 16, 0, 9, 8, function)
 }
 
-// #region private
+//=================================================================
+// private
 
 func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load func() (string, []string)) {
 	var camera = graphics.NewCamera(1)
@@ -112,5 +113,3 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		camera.DrawTextBoxes(&textBox)
 	}
 }
-
-// #endregion

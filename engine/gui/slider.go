@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"math"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/property"
@@ -14,7 +13,8 @@ func Slider(id string, properties ...string) string {
 	return newWidget("slider", id, properties...)
 }
 
-// #region private
+//=================================================================
+// private
 
 var reusableWidget *widget = &widget{Properties: map[string]string{}}
 
@@ -42,7 +42,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 
 	if step > 0 {
 		var stepPx = (widget.Width - handleWidth) * step
-		var totalSteps = int(math.Ceil(float64((1 - step) / step)))
+		var totalSteps = int(number.RoundUp((1-step)/step, -1))
 		var stepAssetId = themedProp(property.SliderStepAssetId, root, owner, widget)
 
 		for i := 1; i <= totalSteps; i++ {
@@ -76,12 +76,11 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 
 func (widget *widget) setSliderValue(value float32, root *root, owner *container) float32 {
 	var step = parseNum(themedProp(property.SliderStep, root, owner, widget), 0)
-	value = number.Snap(value, float32(math.Abs(float64(step))))
+	value = number.Snap(value, number.Unsign(step))
 	value = number.Limit(value, 0, 1)
 	widget.Properties[property.Value] = symbols.New(value)
 	return value
 }
-
 func drawReusableWidget(col uint, assetId string, x, y float32, root *root, owner *container, cam *graphics.Camera) {
 	var r, g, b, a = color.Channels(col)
 	clear(reusableWidget.Properties)
@@ -92,5 +91,3 @@ func drawReusableWidget(col uint, assetId string, x, y float32, root *root, owne
 	setupVisualsTextured(root, reusableWidget, owner)
 	drawVisuals(cam, root, reusableWidget, owner)
 }
-
-// #endregion

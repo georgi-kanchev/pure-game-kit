@@ -1,7 +1,7 @@
 package geometry
 
 import (
-	"math"
+	"pure-kit/engine/utility/number"
 )
 
 type ShapeGrid struct {
@@ -13,20 +13,26 @@ func NewShapeGrid(cellWidth, cellHeight int) ShapeGrid {
 	return ShapeGrid{cellWidth: cellWidth, cellHeight: cellHeight, cells: make(map[[2]int][]Shape)}
 }
 
+//=================================================================
+// setters
+
 func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...Shape) {
 	var key = [2]int{x, y}
 	shapeGrid.cells[key] = []Shape{}
 	shapeGrid.cells[key] = append(shapeGrid.cells[key], shapes...)
 }
 
-func (shapeGrid *ShapeGrid) GetAll() []*Shape {
+//=================================================================
+// getters
+
+func (shapeGrid *ShapeGrid) All() []*Shape {
 	var result = []*Shape{}
 	for k := range shapeGrid.cells {
-		result = append(result, shapeGrid.GetAtCell(k[0], k[1])...)
+		result = append(result, shapeGrid.AtCell(k[0], k[1])...)
 	}
 	return result
 }
-func (shapeGrid *ShapeGrid) GetAtCell(x, y int) []*Shape {
+func (shapeGrid *ShapeGrid) AtCell(x, y int) []*Shape {
 	// this makes a copy on purpose, the original shape values shouldn't change
 	// also the whole result slice is a copy so it cannot be extended by the user without calling SetShapesAtCell()
 
@@ -45,15 +51,15 @@ func (shapeGrid *ShapeGrid) GetAtCell(x, y int) []*Shape {
 	}
 	return []*Shape{}
 }
-func (shapeGrid *ShapeGrid) GetAtPoint(x, y float32) []*Shape {
+func (shapeGrid *ShapeGrid) AtPoint(x, y float32) []*Shape {
 	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
-	var i, j = int(math.Floor(float64(x / w))), int(math.Floor(float64(y / h)))
-	return shapeGrid.GetAtCell(i, j)
+	var i, j = number.RoundDown(x/w, -1), number.RoundDown(y/h, -1)
+	return shapeGrid.AtCell(int(i), int(j))
 }
-func (shapeGrid *ShapeGrid) GetAroundLine(line Line) []*Shape {
+func (shapeGrid *ShapeGrid) AroundLine(line Line) []*Shape {
 	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
 	if w == 0 || h == 0 {
 		return []*Shape{}
@@ -61,8 +67,8 @@ func (shapeGrid *ShapeGrid) GetAroundLine(line Line) []*Shape {
 
 	var result []*Shape
 	var x0, y0, x1, y1 = line.Ax / w, line.Ay / h, line.Bx / w, line.By / h
-	var ix0, iy0 = int(math.Floor(float64(x0))), int(math.Floor(float64(y0)))
-	var ix1, iy1 = int(math.Floor(float64(x1))), int(math.Floor(float64(y1)))
+	var ix0, iy0 = int(number.RoundDown(x0, -1)), int(number.RoundDown(y0, -1))
+	var ix1, iy1 = int(number.RoundDown(x1, -1)), int(number.RoundDown(y1, -1))
 	var dx, dy = x1 - x0, y1 - y0
 	var stepX, stepY int
 	var tMaxX, tMaxY, tDeltaX, tDeltaY float32
@@ -77,7 +83,7 @@ func (shapeGrid *ShapeGrid) GetAroundLine(line Line) []*Shape {
 		tDeltaX = 1 / -dx
 	} else {
 		stepX = 0
-		tMaxX = math.MaxFloat32
+		tMaxX = number.Infinity()
 	}
 
 	if dy > 0 {
@@ -90,11 +96,11 @@ func (shapeGrid *ShapeGrid) GetAroundLine(line Line) []*Shape {
 		tDeltaY = 1 / -dy
 	} else {
 		stepY = 0
-		tMaxY = math.MaxFloat32
+		tMaxY = number.Infinity()
 	}
 
 	for { // Traverse until reaching the target cell
-		result = append(result, shapeGrid.GetAtCell(ix0, iy0)...)
+		result = append(result, shapeGrid.AtCell(ix0, iy0)...)
 		if ix0 == ix1 && iy0 == iy1 {
 			break
 		}
@@ -109,7 +115,7 @@ func (shapeGrid *ShapeGrid) GetAroundLine(line Line) []*Shape {
 
 	return result
 }
-func (shapeGrid *ShapeGrid) GetAroundShape(shape *Shape) []*Shape {
+func (shapeGrid *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
 	if w == 0 || h == 0 {
 		return []*Shape{}
@@ -120,7 +126,7 @@ func (shapeGrid *ShapeGrid) GetAroundShape(shape *Shape) []*Shape {
 
 	for i := 1; i < len(corners); i++ {
 		var line = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
-		result = append(result, shapeGrid.GetAroundLine(line)...)
+		result = append(result, shapeGrid.AroundLine(line)...)
 	}
 	return result
 }

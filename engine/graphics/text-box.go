@@ -37,6 +37,9 @@ func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
 	return textBox
 }
 
+//=================================================================
+// getters
+
 func (textBox *TextBox) TextMeasure(text string) (width, height float32) {
 	var size = rl.MeasureTextEx(*textBox.font(), text, textBox.LineHeight+textBox.gapLines(), textBox.gapSymbols())
 	return size.X, size.Y
@@ -117,7 +120,8 @@ func (textBox *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWi
 	return cX, cY, symbol.Width, symbol.Height, symbol.Angle
 }
 
-// #region private
+//=================================================================
+// private
 
 type symbol struct {
 	X, Y, Angle, Width, Height,
@@ -268,5 +272,3 @@ func (textBox *TextBox) gapSymbols() float32 {
 func (textBox *TextBox) gapLines() float32 {
 	return textBox.LineGap * textBox.LineHeight / 5
 }
-
-// #endregion

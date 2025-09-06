@@ -72,10 +72,9 @@ func TrueEvery(seconds float32, key any) bool {
 	return false
 }
 
-// region private
+//=================================================================
+// private
 
 var trueChanges = make(map[any]any)
 var trueOnce = make(map[any]bool)
 var trueEvery = make(map[any]float32)
-
-// endregion

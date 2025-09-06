@@ -10,7 +10,8 @@ func Visual(id string, properties ...string) string {
 	return newWidget("visual", id, properties...)
 }
 
-// #region private
+//=================================================================
+// private
 
 var reusableTextBox graphics.TextBox = graphics.TextBox{}
 var reusableSprite graphics.Sprite = graphics.Sprite{}
@@ -24,7 +25,7 @@ func setupVisualsTextured(root *root, widget *widget, owner *container) {
 		var cRight = parseNum(dyn(owner, themedProp(p.BoxEdgeRight, root, owner, widget), "100"), 0)
 		var cTop = parseNum(dyn(owner, themedProp(p.BoxEdgeTop, root, owner, widget), "100"), 0)
 		var cBottom = parseNum(dyn(owner, themedProp(p.BoxEdgeBottom, root, owner, widget), "100"), 0)
-		var col = parseColor(themedProp(p.Color, root, owner, widget), widget.IsDisabled(owner))
+		var col = parseColor(themedProp(p.Color, root, owner, widget), widget.isDisabled(owner))
 		var _, has = internal.Boxes[assetId]
 		var offX = parseNum(dyn(owner, widget.Properties[p.OffsetX], "0"), 0)
 		var offY = parseNum(dyn(owner, widget.Properties[p.OffsetY], "0"), 0)
@@ -50,14 +51,13 @@ func setupVisualsTextured(root *root, widget *widget, owner *container) {
 
 	}
 }
-
 func setupVisualsText(root *root, widget *widget, owner *container) {
 	var text = themedProp(p.Text, root, owner, widget)
 	if text == "" {
 		return
 	}
 
-	var disabled = widget.IsDisabled(owner)
+	var disabled = widget.isDisabled(owner)
 	var offX = parseNum(dyn(owner, widget.Properties[p.OffsetX], "0"), 0)
 	var offY = parseNum(dyn(owner, widget.Properties[p.OffsetY], "0"), 0)
 	reusableTextBox.ScaleX, reusableTextBox.ScaleY = 1, 1
@@ -117,11 +117,10 @@ func setupVisualsText(root *root, widget *widget, owner *container) {
 	reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
 	reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
 }
-
 func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	var assetId = themedProp(p.AssetId, root, owner, widget)
-	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.IsDisabled(owner))
-	var frameCol = parseColor(themedProp(p.FrameColor, root, owner, widget), widget.IsDisabled(owner))
+	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.isDisabled(owner))
+	var frameCol = parseColor(themedProp(p.FrameColor, root, owner, widget), widget.isDisabled(owner))
 	var frameSz = parseNum(themedProp(p.FrameSize, root, owner, widget), 0)
 	var text = themedProp(p.Text, root, owner, widget)
 
@@ -158,5 +157,3 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *contai
 		cam.DrawFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, frameSz, frameCol)
 	}
 }
-
-// #endregion

@@ -12,13 +12,16 @@ func Menu(id string, properties ...string) string {
 	return newWidget("menu", id, properties...)
 }
 
+//=================================================================
+// private
+
 func menu(cam *graphics.Camera, root *root, widget *widget, owner *container) {
 	button(cam, root, widget, owner)
 
 	if mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0 {
 		var containerId = themedProp(property.MenuContainerId, root, owner, widget)
 		var c, has = root.Containers[containerId]
-		if has && !c.IsFocused(root, cam) {
+		if has && !c.isFocused(cam) {
 			c.Properties[property.Hidden] = "+"
 		}
 	}

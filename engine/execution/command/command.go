@@ -5,16 +5,18 @@ import (
 	"strings"
 )
 
-// commands example
-//		name: param0, param1, param2
-// 		log_messages: "hello, world!", 1, 2, 3, 4, true, false, true
-// 		debug: true
-// 		change_window_title: "My own window!"
-
-func Create(name string, execution func(parameters []string) (output string)) {
+func New(name string, execution func(parameters []string) (output string)) {
 	commands[name] = execution
 }
 
+//=================================================================
+
+// example
+//
+//	"command_name: param0, param1, param2"
+//	"log_messages: `hello, world!`, 1, 2, 3, 4, true, false, true"
+//	"debug: true"
+//	"change_window_title: `My own window!`"
 func Execute(command string) (output string) {
 	command = strings.ReplaceAll(command, "\n", "")
 	command = strings.ReplaceAll(command, "\r", "")
@@ -49,7 +51,8 @@ func Execute(command string) (output string) {
 	return execution(parts)
 }
 
-// #region private
+//=================================================================
+// private
 
 const dividerParts = ","
 const dividerName = ':'
@@ -64,5 +67,3 @@ func substringUntilChar(text string, char rune) string {
 	}
 	return text[:index]
 }
-
-// #endregion

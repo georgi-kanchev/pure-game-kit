@@ -7,11 +7,63 @@ import (
 	"strings"
 )
 
+const MaximumInt = 2147483647
+const MinimumInt = -MaximumInt
+
+func Biggest(number, target float32, other ...float32) float32 {
+	var max = number
+	if target > max {
+		max = target
+	}
+	for _, v := range other {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+func BiggestInt(number, target int, other ...int) int {
+	var max = number
+	if target > max {
+		max = target
+	}
+	for _, v := range other {
+		if v > max {
+			max = v
+		}
+	}
+	return max
+}
+func Smallest(number, target float32, other ...float32) float32 {
+	var min = number
+	if target < min {
+		min = target
+	}
+	for _, v := range other {
+		if v < min {
+			min = v
+		}
+	}
+	return min
+}
+func SmallestInt(number, target int, other ...int) int {
+	var min = number
+	if target < min {
+		min = target
+	}
+	for _, v := range other {
+		if v < min {
+			min = v
+		}
+	}
+	return min
+}
+
 func Limit(number, a, b float32) float32 {
 	if a > b {
 		a, b = b, a
 	}
-	return float32(math.Max(float64(a), math.Min(float64(number), float64(b))))
+	return Biggest(a, Smallest(number, b))
 }
 func LimitInt(number, a, b int) int {
 	return int(Limit(float32(number), float32(a), float32(b)))
@@ -55,8 +107,23 @@ func Snap(number, interval float32) float32 {
 	}
 	return number + (interval - remainder)
 }
+func SnapInt(number, interval int) int {
+	if interval == 0 {
+		return number // avoid divide-by-zero
+	}
+	var remainder = number % interval
+	var halfway = interval / 2
+	if remainder < 0 {
+		remainder += interval // handle negatives consistently
+	}
 
-func Map(number float32, fromA, fromB, toA, toB float32) float32 {
+	if remainder < halfway {
+		return number - remainder
+	}
+	return number + (interval - remainder)
+}
+
+func Map(number, fromA, fromB, toA, toB float32) float32 {
 	if math.Abs(float64(fromB-fromA)) < 0.001 {
 		return (toA + toB) / 2
 	}
@@ -66,7 +133,7 @@ func Map(number float32, fromA, fromB, toA, toB float32) float32 {
 	}
 	return value
 }
-func MapInt(number int, fromA, fromB, toA, toB int) int {
+func MapInt(number, fromA, fromB, toA, toB int) int {
 	return int(Map(float32(number), float32(fromA), float32(fromB), float32(toA), float32(toB)))
 }
 
@@ -80,11 +147,135 @@ func PadZeros(number float32, amountOfZeros int) string {
 	}
 	return fmt.Sprintf("%.*f", amountOfZeros, number)
 }
-func PadZerosInt(number int, amountOfZeros int) string {
+func PadZerosInt(number, amountOfZeros int) string {
 	if amountOfZeros <= 0 {
 		return fmt.Sprintf("%d", number)
 	}
 	return fmt.Sprintf("%0*d", amountOfZeros, number)
+}
+
+func IsBetween(number, a, b float32, includeA, includeB bool) bool {
+	if a > b {
+		a, b = b, a
+	}
+	var l = a < number
+	if includeA {
+		l = a <= number
+	}
+	var u = b > number
+	if includeB {
+		u = b >= number
+	}
+	return l && u
+}
+func IsBetweenInt(number, a, b int, includeA, includeB bool) bool {
+	if a > b {
+		a, b = b, a
+	}
+	var l = a < number
+	if includeA {
+		l = a <= number
+	}
+	var u = b > number
+	if includeB {
+		u = b >= number
+	}
+	return l && u
+}
+
+func IsWithin(number, target, distance float32) bool {
+	return IsBetween(number, target-distance, target+distance, true, true)
+}
+func IsWithinInt(number, target, distance int) bool {
+	return IsBetweenInt(number, target-distance, target+distance, true, true)
+}
+
+func Average(number float32, others ...float32) float32 {
+	var sum = number
+	for _, n := range others {
+		sum += n
+	}
+	return sum / float32(1+len(others))
+}
+func AverageInt(number int, others ...int) int {
+	var sum = number
+	for _, n := range others {
+		sum += n
+	}
+	return sum / (1 + len(others))
+}
+
+func Indexes2DToIndex1D(x, y, width, height int) int {
+	var result = x*width + y
+	var max = width * height
+	if result < 0 {
+		return 0
+	} else if result > max {
+		return max
+	}
+	return result
+}
+func Index1DToIndexes2D(index, width, height int) (int, int) {
+	var max = width * height
+	if index < 0 {
+		index = 0
+	} else if index > max {
+		index = max
+	}
+	var x = index % width
+	var y = index / width
+	return x, y
+}
+
+func Absolute(number float32) float32 {
+	if number < 0 {
+		return -number
+	}
+	return number
+}
+func AbsoluteInt(number int) int {
+	if number < 0 {
+		return -number
+	}
+	return number
+}
+func Unsign(number float32) float32 {
+	return Absolute(number)
+}
+func UnsignInt(number int) int {
+	return AbsoluteInt(number)
+}
+
+func Power(number, power float32) float32 {
+	return float32(math.Pow(float64(number), float64(power)))
+}
+func PowerInt(number, power int) int {
+	return int(math.Pow(float64(number), float64(power)))
+}
+
+//=================================================================
+// float only
+
+func DivisionRemainder(number, target float32) float32 {
+	return float32(math.Mod(float64(number), float64(target)))
+}
+
+func SquareRoot(number float32) float32 {
+	return float32(math.Sqrt(float64(number)))
+}
+
+func Sine(number float32) float32 {
+	return float32(math.Sin(float64(number)))
+}
+func Cosine(number float32) float32 {
+	return float32(math.Cos(float64(number)))
+}
+
+func Infinity() float32 {
+	return float32(math.Inf(1))
+}
+func NegativeInfinity() float32 {
+	return float32(math.Inf(-1))
 }
 
 func Distribute(amount int, a, b float32) []float32 {
@@ -111,96 +302,52 @@ func Precision(number float32) int {
 	return 0
 }
 
-func IsBetween(number float32, a, b float32, includeA, includeB bool) bool {
-	if a > b {
-		a, b = b, a
+// negative precision ignores it
+func Round(number float32, precision int) float32 {
+	if precision < 0 {
+		return float32(math.Round(float64(number)))
 	}
-	var l = a < number
-	if includeA {
-		l = a <= number
-	}
-	var u = b > number
-	if includeB {
-		u = b >= number
-	}
-	return l && u
-}
-func IsBetweenInt(number int, a, b int, includeA, includeB bool) bool {
-	if a > b {
-		a, b = b, a
-	}
-	var l = a < number
-	if includeA {
-		l = a <= number
-	}
-	var u = b > number
-	if includeB {
-		u = b >= number
-	}
-	return l && u
+	var pow = math.Pow(10, float64(precision))
+	return float32(math.Round(float64(number)*pow) / pow)
 }
 
-func IsWithin(number, target, distance float32) bool {
-	return IsBetween(number, target-distance, target+distance, true, true)
-}
-func IsWithinInt(number, target, distance int) bool {
-	return IsBetweenInt(number, target-distance, target+distance, true, true)
+// negative precision ignores it
+func RoundUp(number float32, precision int) float32 {
+	if precision < 0 {
+		return float32(math.Ceil(float64(number)))
+	}
+	var pow = math.Pow(10, float64(precision))
+	return float32(math.Ceil(float64(number)*pow) / pow)
 }
 
-func Average(numbers ...float32) float32 {
-	var sum float32
-	for _, n := range numbers {
-		sum += float32(n)
+// negative precision ignores it
+func RoundDown(number float32, precision int) float32 {
+	if precision < 0 {
+		return float32(math.Floor(float64(number)))
 	}
-	return sum / float32(len(numbers))
-}
-func AverageInt(numbers ...int) int {
-	var sum int
-	for _, n := range numbers {
-		sum += int(n)
-	}
-	return sum / len(numbers)
+	var pow = math.Pow(10, float64(precision))
+	return float32(math.Floor(float64(number)*pow) / pow)
 }
 
-func Indexes2DToIndex1D(x, y, width, height int) int {
-	var result = x*width + y
-	var max = width * height
-	if result < 0 {
-		return 0
-	} else if result > max {
-		return max
-	}
-	return result
+func IsNaN(number float32) bool {
+	return math.IsNaN(float64(number))
 }
-func Index1DToIndexes2D(index, width, height int) (int, int) {
-	var max = width * height
-	if index < 0 {
-		index = 0
-	} else if index > max {
-		index = max
-	}
-	var x = index % width
-	var y = index / width
-	return x, y
+func NaN() float32 {
+	return float32(math.NaN())
 }
 
-func ByteSizeToText(byteSize int64) string {
+//=================================================================
+// int only
+
+func ByteSize(byteSize int) string {
 	const unit = 1024
 	if byteSize < unit {
 		return fmt.Sprintf("%d B", byteSize)
 	}
-	var div, exp = int64(unit), 0
+	var div, exp = int(unit), 0
 	for n := byteSize / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
 	}
 	return fmt.Sprintf("%.1f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }
-
-func Round(number float32, precision int) float32 {
-	var pow = math.Pow(10, float64(precision))
-	return float32(math.Round(float64(number)*pow) / pow)
-}
-
-func IsNaN(number float32) bool { return math.IsNaN(float64(number)) }
-func NaN() float32              { return float32(math.NaN()) }

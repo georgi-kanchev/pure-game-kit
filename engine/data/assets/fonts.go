@@ -37,7 +37,8 @@ func UnloadFonts(fontIds ...string) {
 	}
 }
 
-// #region private
+//=================================================================
+// private
 
 const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const latinPlus = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßŒŠŽŁŃŚŹŻĆČĐŐŰàáâãäåæçèéêëìíîïñòóôõöøùúûüýþßœšžłńśźżćčđőűáéíóúüñãõçâêôÁÉÍÓÚÜÑÃÕÇÂÊÔßẞøØåÅþÞðÐœŒ"
@@ -105,5 +106,3 @@ func uniqueRunes(str string) []rune {
 	}
 	return unique
 }
-
-// #endregion

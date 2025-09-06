@@ -11,6 +11,9 @@ func Button(id string, properties ...string) string {
 	return newWidget("button", id, properties...)
 }
 
+//=================================================================
+// getters
+
 func (gui *GUI) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
 	return gui.root.ButtonClickedOnce(buttonId, camera)
 }
@@ -18,7 +21,8 @@ func (gui *GUI) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) b
 	return gui.root.ButtonClickedAndHeld(buttonId, camera)
 }
 
-// #region private
+//=================================================================
+// private
 
 var wPressedOn *widget
 var wPressedAt float32
@@ -31,7 +35,7 @@ func button(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 	var hover = themedProp(property.ButtonThemeIdHover, root, owner, widget)
 	var press = themedProp(property.ButtonThemeIdPress, root, owner, widget)
 
-	if widget.IsFocused(root, cam) {
+	if widget.isFocused(root, cam) {
 		mouse.SetCursor(mouse.CursorHand)
 
 		if disabled || ownerDisabled {
@@ -53,8 +57,6 @@ func button(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 	setupVisualsTextured(root, widget, owner)
 	setupVisualsText(root, widget, owner)
 	drawVisuals(cam, root, widget, owner)
-	buttonColor = parseColor(themedProp(property.Color, root, owner, widget), widget.IsDisabled(owner))
+	buttonColor = parseColor(themedProp(property.Color, root, owner, widget), widget.isDisabled(owner))
 	widget.ThemeId = prev
 }
-
-// #endregion

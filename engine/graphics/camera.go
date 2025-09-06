@@ -1,9 +1,10 @@
 package graphics
 
 import (
-	"math"
 	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/angle"
+	"pure-kit/engine/utility/number"
 	"pure-kit/engine/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -43,6 +44,9 @@ func NewCamera(zoom float32) *Camera {
 	return &cam
 }
 
+//=================================================================
+// setters
+
 func (camera *Camera) DragAndZoom() {
 	var delta = rl.GetMouseDelta()
 	var scroll = rl.GetMouseWheelMove()
@@ -75,6 +79,9 @@ func (camera *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
 	camera.MaskWidth, camera.MaskHeight = screenWidth, screenHeight
 }
 
+//=================================================================
+// getters
+
 func (camera *Camera) IsHovered() bool {
 	var mousePos = rl.GetMousePosition()
 	return float32(mousePos.X) > float32(camera.ScreenX) &&
@@ -93,22 +100,16 @@ func (camera *Camera) Size() (width, height float32) {
 func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	camera.update()
 
-	var sx = float32(screenX)
-	var sy = float32(screenY)
-
+	var sx, sy = float32(screenX), float32(screenY)
 	sx -= float32(rlCam.Offset.X)
 	sy -= float32(rlCam.Offset.Y)
 
-	var angle = -rlCam.Rotation * rl.Deg2rad
-	var cos = float32(math.Cos(float64(angle)))
-	var sin = float32(math.Sin(float64(angle)))
-
-	var rotX = sx*cos - sy*sin
-	var rotY = sx*sin + sy*cos
+	var angle = angle.ToRadians(-rlCam.Rotation)
+	var cos, sin = number.Cosine(angle), number.Sine(angle)
+	var rotX, rotY = sx*cos - sy*sin, sx*sin + sy*cos
 
 	rotX /= float32(rlCam.Zoom)
 	rotY /= float32(rlCam.Zoom)
-
 	rotX += float32(rlCam.Target.X)
 	rotY += float32(rlCam.Target.Y)
 	return rotX, rotY
@@ -118,15 +119,12 @@ func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 
 	x -= float32(rlCam.Target.X)
 	y -= float32(rlCam.Target.Y)
-
 	x *= float32(rlCam.Zoom)
 	y *= float32(rlCam.Zoom)
 
-	var angle = rlCam.Rotation * rl.Deg2rad
-	var cos = float32(math.Cos(float64(angle)))
-	var sin = float32(math.Sin(float64(angle)))
-	var rotX = x*cos - y*sin
-	var rotY = x*sin + y*cos
+	var angle = angle.ToRadians(rlCam.Rotation)
+	var cos, sin = number.Cosine(angle), number.Sine(angle)
+	var rotX, rotY = x*cos - y*sin, x*sin + y*cos
 
 	rotX += float32(rlCam.Offset.X)
 	rotY += float32(rlCam.Offset.Y)
@@ -148,10 +146,11 @@ func (camera *Camera) PointFromPivot(pivotX, pivotY float32) (x, y float32) {
 	return camera.PointFromScreen(scrX, scrY)
 }
 
-// region private
+//=================================================================
+// private
 
 var rlCam = rl.Camera2D{}
-var maskX, maskY, maskW, maskH int32
+var maskX, maskY, maskW, maskH int
 
 // call before draw to update camera but use screen space instead of camera space
 func (camera *Camera) update() {
@@ -164,14 +163,14 @@ func (camera *Camera) update() {
 	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*float32(camera.PivotX)
 	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*float32(camera.PivotY)
 
-	var mx = int(math.Max(float64(camera.MaskX), float64(camera.ScreenX)))
-	var my = int(math.Max(float64(camera.MaskY), float64(camera.ScreenY)))
+	var mx = number.BiggestInt(camera.MaskX, camera.ScreenX)
+	var my = number.BiggestInt(camera.MaskY, camera.ScreenY)
 	var maxW = camera.ScreenX + camera.ScreenWidth - mx
 	var maxH = camera.ScreenY + camera.ScreenHeight - my
-	var mw = int32(math.Min(float64(camera.MaskWidth), float64(maxW)))
-	var mh = int32(math.Min(float64(camera.MaskHeight), float64(maxH)))
+	var mw = number.SmallestInt(camera.MaskWidth, maxW)
+	var mh = number.SmallestInt(camera.MaskHeight, maxH)
 
-	maskX, maskY, maskW, maskH = int32(mx), int32(my), mw, mh
+	maskX, maskY, maskW, maskH = mx, my, mw, mh
 }
 
 // call before draw to update camera and use camera space
@@ -182,7 +181,7 @@ func (camera *Camera) begin() {
 	}
 
 	rl.BeginMode2D(rlCam)
-	rl.BeginScissorMode(maskX, maskY, maskW, maskH)
+	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
 }
 
 // call after draw to get back to using screen space
@@ -207,10 +206,10 @@ func (camera *Camera) isAreaVisible(x, y, width, height, pivotX, pivotY, angle f
 	var sblx, sbly = camera.PointToScreen(blx, bly)
 	var mtlx, mtly = camera.MaskX, camera.MaskY
 	var mbrx, mbry = camera.MaskX + camera.MaskWidth, camera.MaskY + camera.MaskHeight
-	var minX = int(math.Min(math.Min(float64(stlx), float64(strx)), math.Min(float64(sbrx), float64(sblx))))
-	var maxX = int(math.Max(math.Max(float64(stlx), float64(strx)), math.Max(float64(sbrx), float64(sblx))))
-	var minY = int(math.Min(math.Min(float64(stly), float64(stry)), math.Min(float64(sbry), float64(sbly))))
-	var maxY = int(math.Max(math.Max(float64(stly), float64(stry)), math.Max(float64(sbry), float64(sbly))))
+	var minX = number.SmallestInt(stlx, strx, sbrx, sblx)
+	var maxX = number.BiggestInt(stlx, strx, sbrx, sblx)
+	var minY = number.SmallestInt(stly, stry, sbry, sbly)
+	var maxY = number.BiggestInt(stly, stry, sbry, sbly)
 
 	return !(maxX < mtlx || minX > mbrx || maxY < mtly || minY > mbry)
 }
@@ -224,5 +223,3 @@ func tryRecreateWindow() {
 		window.Recreate()
 	}
 }
-
-// endregion
