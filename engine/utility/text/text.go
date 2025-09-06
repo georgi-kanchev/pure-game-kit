@@ -1,4 +1,4 @@
-package symbols
+package text
 
 import (
 	"encoding/base64"
@@ -84,11 +84,7 @@ func Calculate(mathExpression string) float32 {
 		}
 		var numStr = expr[start:*i]
 		(*i)--
-		var val, err = strconv.ParseFloat(numStr, 32)
-		if err != nil {
-			return number.NaN()
-		}
-		return float32(val)
+		return FromNumber(numStr)
 	}
 
 	for i := 0; i < len(mathExpression); i++ {
@@ -155,9 +151,12 @@ func Calculate(mathExpression string) float32 {
 	return values[len(values)-1]
 }
 
-func AreNumber(text string) bool {
-	var _, err = strconv.ParseFloat(text, 64)
-	return err == nil
+func FromNumber(text string) float32 {
+	var result, err = strconv.ParseFloat(text, 32)
+	if err != nil {
+		return number.NaN()
+	}
+	return float32(result)
 }
 
 func PadLeftAndRight(text string, length int, padStr string) string {
@@ -257,6 +256,17 @@ func FromBase64(textBase64 string) string {
 		return ""
 	}
 	return string(decodedBytes)
+}
+
+func PadZeros(number float32, amountOfZeros int) string {
+	if amountOfZeros == 0 {
+		return New(number)
+	}
+	if amountOfZeros < 0 {
+		var width = -amountOfZeros
+		return fmt.Sprintf("%0*d", width, int(number))
+	}
+	return fmt.Sprintf("%.*f", amountOfZeros, number)
 }
 
 //=================================================================

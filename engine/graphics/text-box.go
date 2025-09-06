@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/symbols"
+	txt "pure-kit/engine/utility/text"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -27,7 +27,7 @@ type TextBox struct {
 func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
 	var node = NewNode(x, y)
 	var textBox = TextBox{
-		FontId: fontId, Node: node, Text: symbols.New(text...), LineHeight: 100,
+		FontId: fontId, Node: node, Text: txt.New(text...), LineHeight: 100,
 		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
 		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^', EmbeddedThicknessesTag: '*',
 	}
@@ -56,7 +56,7 @@ func (textBox *TextBox) TextWrap(text string) string {
 			word += " " // split removes spaces, add it for all words but last one
 		}
 
-		var wordLength = symbols.Count(word)
+		var wordLength = txt.Count(word)
 		var wordSize = rl.MeasureTextEx(*font, strings.Trim(word, " "), textBox.LineHeight, textBox.gapSymbols())
 		var wordEndOfBox = curX+wordSize.X > textBox.Width
 		var firstWord = w == 0
@@ -155,7 +155,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		var tagless = strings.ReplaceAll(line, colorTag, "")
 		tagless = strings.ReplaceAll(tagless, thickTag, "")
 		var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
-		var lineLength = symbols.Count(line)
+		var lineLength = txt.Count(line)
 		var skip = false // replaces 'continue' to avoid skipping the offset calculations
 
 		curX = (t.Width - lineSize.X) * alignX
@@ -166,10 +166,10 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			skip = true // no need for right cuz text wraps there
 		}
 
-		if !skip && lineIndex == 0 && l > 0 && symbols.Count(line) > 3 {
+		if !skip && lineIndex == 0 && l > 0 && txt.Count(line) > 3 {
 			line = "..." + line[3:] // invisible lines before this one, indicate it
 		}
-		if curY+t.LineHeight*1.5-1 > t.Height && l < len(lines)-1 && symbols.Count(line) > 3 {
+		if curY+t.LineHeight*1.5-1 > t.Height && l < len(lines)-1 && txt.Count(line) > 3 {
 			line = line[:len(line)-3] + "..." // invisible lines after this one, indicate it
 		}
 

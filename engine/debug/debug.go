@@ -9,10 +9,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"pure-kit/engine/data/folder"
+	"pure-kit/engine/utility/text"
 	"runtime"
 	"runtime/pprof"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -40,10 +40,10 @@ func PrintLinesOfCode() {
 		if len(parts) < 2 {
 			continue
 		}
-		var count, _ = strconv.Atoi(parts[0])
+		var count = text.FromNumber(parts[0])
 		var path = parts[1]
 		var rel, _ = filepath.Rel(directory, path)
-		results[rel] = count
+		results[rel] = int(count)
 	}
 
 	var dirTotals = make(map[string]int)

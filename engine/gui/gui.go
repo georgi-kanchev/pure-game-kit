@@ -8,8 +8,7 @@ import (
 	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/symbols"
-	"strconv"
+	"pure-kit/engine/utility/text"
 	"strings"
 )
 
@@ -73,8 +72,7 @@ func NewXML(xmlData string) *GUI {
 		gui.root.ContainerIds = append(gui.root.ContainerIds, cId)
 	}
 
-	var sc, _ = strconv.ParseFloat(gui.root.XmlScale, 32)
-	gui.Scale = float32(sc)
+	gui.Scale = text.FromNumber(gui.root.XmlScale)
 	return &gui
 }
 func NewElements(elements ...string) *GUI {
@@ -141,17 +139,17 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	var brx, bry = camera.PointFromPivot(1, 1)
 	var cx, cy = camera.PointFromPivot(0.5, 0.5)
 	var w, h = camera.Size() // caching dynamic cam props
-	camCx, camCy = symbols.New(cx), symbols.New(cy)
-	camLx, camRx = symbols.New(tlx), symbols.New(brx)
-	camTy, camBy = symbols.New(tly), symbols.New(bry)
-	camW, camH = symbols.New(w), symbols.New(h)
+	camCx, camCy = text.New(cx), text.New(cy)
+	camLx, camRx = text.New(tlx), text.New(brx)
+	camTy, camBy = text.New(tly), text.New(bry)
+	camW, camH = text.New(w), text.New(h)
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
-		var ox = symbols.New(dyn(nil, c.Properties[property.X], "0"))
-		var oy = symbols.New(dyn(nil, c.Properties[property.Y], "0"))
-		var ow = symbols.New(dyn(nil, c.Properties[property.Width], "0"))
-		var oh = symbols.New(dyn(nil, c.Properties[property.Height], "0"))
+		var ox = text.New(dyn(nil, c.Properties[property.X], "0"))
+		var oy = text.New(dyn(nil, c.Properties[property.Y], "0"))
+		var ow = text.New(dyn(nil, c.Properties[property.Width], "0"))
+		var oh = text.New(dyn(nil, c.Properties[property.Height], "0"))
 		ownerX, ownerY = ox, oy // caching dynamic owner/container props
 		ownerLx, ownerRx = ox, ox+"+"+ow
 		ownerTy, ownerBy = oy, oy+"+"+oh
@@ -337,11 +335,11 @@ func dyn(owner *container, value string, defaultValue string) string {
 		value = strings.ReplaceAll(value, dynamic.ContainerBottomY, ownerBy)
 	}
 
-	var calc = symbols.Calculate(value)
+	var calc = text.Calculate(value)
 	if number.IsNaN(calc) {
 		return defaultValue
 	}
-	return symbols.New(calc)
+	return text.New(calc)
 }
 
 func parseColor(value string, disabled ...bool) uint {
@@ -349,13 +347,13 @@ func parseColor(value string, disabled ...bool) uint {
 	var r, g, b, a uint64
 
 	if len(rgba) == 3 || len(rgba) == 4 {
-		r, _ = strconv.ParseUint(rgba[0], 10, 8)
-		g, _ = strconv.ParseUint(rgba[1], 10, 8)
-		b, _ = strconv.ParseUint(rgba[2], 10, 8)
+		r = uint64(text.FromNumber(rgba[0]))
+		g = uint64(text.FromNumber(rgba[1]))
+		b = uint64(text.FromNumber(rgba[2]))
 		a = 255
 	}
 	if len(rgba) == 4 {
-		a, _ = strconv.ParseUint(rgba[3], 10, 8)
+		a = uint64(text.FromNumber(rgba[3]))
 	}
 
 	if len(disabled) == 1 && disabled[0] {
@@ -365,8 +363,8 @@ func parseColor(value string, disabled ...bool) uint {
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
 }
 func parseNum(value string, defaultValue float32) float32 {
-	var v, err = strconv.ParseFloat(value, 32)
-	if err != nil {
+	var v = text.FromNumber(value)
+	if number.IsNaN(v) {
 		return defaultValue
 	}
 	return float32(v)

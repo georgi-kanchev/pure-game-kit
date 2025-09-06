@@ -18,10 +18,12 @@ consistent error handling + logging, console & file
 
 // DONE:
 [57] [Sat] [06-09-2025]
-[√] project cleanup
+[√] project cleanup + renames
 [√] regions replaced with separators
 [√] longer files separated with private, getters, setters and constructor parts
 [√] math package minimized, a lot of stuff moved to number
+[√] utility - more number functions
+[√] gui - input field mask fix
 
 [56] [Thu] [04-09-2025]
 [√] gui - input field lookin fine as FUKK

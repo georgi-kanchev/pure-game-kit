@@ -3,8 +3,6 @@ package number
 import (
 	"fmt"
 	"math"
-	"strconv"
-	"strings"
 )
 
 const MaximumInt = 2147483647
@@ -135,23 +133,6 @@ func Map(number, fromA, fromB, toA, toB float32) float32 {
 }
 func MapInt(number, fromA, fromB, toA, toB int) int {
 	return int(Map(float32(number), float32(fromA), float32(fromB), float32(toA), float32(toB)))
-}
-
-func PadZeros(number float32, amountOfZeros int) string {
-	if amountOfZeros == 0 {
-		return strconv.FormatFloat(float64(number), 'f', -1, 32)
-	}
-	if amountOfZeros < 0 {
-		var width = -amountOfZeros
-		return fmt.Sprintf("%0*d", width, int(number))
-	}
-	return fmt.Sprintf("%.*f", amountOfZeros, number)
-}
-func PadZerosInt(number, amountOfZeros int) string {
-	if amountOfZeros <= 0 {
-		return fmt.Sprintf("%d", number)
-	}
-	return fmt.Sprintf("%0*d", amountOfZeros, number)
 }
 
 func IsBetween(number, a, b float32, includeA, includeB bool) bool {
@@ -294,10 +275,11 @@ func Distribute(amount int, a, b float32) []float32 {
 	return result
 }
 func Precision(number float32) int {
-	var s = strconv.FormatFloat(float64(number), 'f', -1, 32)
-	var parts = strings.Split(s, ".")
-	if len(parts) == 2 {
-		return len(parts[1])
+	for i := range 9 {
+		if math.Abs(float64(number)-math.Round(float64(number))) < 1e-6 {
+			return i
+		}
+		number *= 10
 	}
 	return 0
 }

@@ -6,7 +6,7 @@ import (
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/symbols"
+	"pure-kit/engine/utility/text"
 )
 
 func Slider(id string, properties ...string) string {
@@ -78,14 +78,14 @@ func (widget *widget) setSliderValue(value float32, root *root, owner *container
 	var step = parseNum(themedProp(property.SliderStep, root, owner, widget), 0)
 	value = number.Snap(value, number.Unsign(step))
 	value = number.Limit(value, 0, 1)
-	widget.Properties[property.Value] = symbols.New(value)
+	widget.Properties[property.Value] = text.New(value)
 	return value
 }
 func drawReusableWidget(col uint, assetId string, x, y float32, root *root, owner *container, cam *graphics.Camera) {
 	var r, g, b, a = color.Channels(col)
 	clear(reusableWidget.Properties)
 	reusableWidget.Properties[property.AssetId] = assetId
-	reusableWidget.Properties[property.Color] = symbols.New(r, " ", g, " ", b, " ", a)
+	reusableWidget.Properties[property.Color] = text.New(r, " ", g, " ", b, " ", a)
 	reusableWidget.X, reusableWidget.Y = x, y
 
 	setupVisualsTextured(root, reusableWidget, owner)

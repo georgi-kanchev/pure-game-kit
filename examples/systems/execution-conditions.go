@@ -4,7 +4,7 @@ import (
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/symbols"
+	"pure-kit/engine/utility/text"
 	"pure-kit/engine/window"
 )
 
@@ -20,7 +20,7 @@ func Conditions() {
 			node.Angle = number.Wrap(node.Angle+45, 360)
 
 			var lambda = condition.If(node.Angle == 45, "yes", "no")
-			print(symbols.New("lambda angle is 45: ", lambda, "(", node.Angle, ")\n"))
+			print(text.New("lambda angle is 45: ", lambda, "(", node.Angle, ")\n"))
 		}
 	}
 }

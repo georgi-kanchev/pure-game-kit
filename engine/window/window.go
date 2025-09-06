@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
-	"pure-kit/engine/utility/symbols"
+	"pure-kit/engine/utility/text"
 	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -167,7 +167,7 @@ func Monitors() (info []string, current int) {
 		var refreshRate = rl.GetMonitorRefreshRate(i)
 		var name = rl.GetMonitorName(i)
 		var w, h = rl.GetMonitorWidth(i), rl.GetMonitorHeight(i)
-		info[i] = symbols.New(name, " [", w, "x", h, ", ", refreshRate, "Hz]")
+		info[i] = text.New(name, " [", w, "x", h, ", ", refreshRate, "Hz]")
 	}
 	return info, rl.GetCurrentMonitor()
 }

@@ -1,6 +1,8 @@
 package assets
 
-import "strconv"
+import (
+	"pure-kit/engine/utility/text"
+)
 
 func LoadDefaultAtlasPatterns(smooth bool) (atlasId string, tileIds []string) {
 	const symbol = "&"
@@ -9,7 +11,7 @@ func LoadDefaultAtlasPatterns(smooth bool) (atlasId string, tileIds []string) {
 	var ids = []string{}
 
 	for i := range 84 {
-		ids = append(ids, symbol+strconv.Itoa(i))
+		ids = append(ids, symbol+text.New(i))
 	}
 	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
 	return id, tiles

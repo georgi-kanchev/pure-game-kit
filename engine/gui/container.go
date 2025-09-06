@@ -10,7 +10,7 @@ import (
 	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/symbols"
+	"pure-kit/engine/utility/text"
 )
 
 type container struct {
@@ -90,7 +90,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 			var row, newRow = widget.Properties[p.NewRow]
 			if newRow {
 				curX = x + cGapX
-				curY += parseNum(dyn(c, row, symbols.New(maxHeight+gapY)), 0)
+				curY += parseNum(dyn(c, row, text.New(maxHeight+gapY)), 0)
 			}
 
 			curX += condition.If(newRow || nonBgrIndex == 0, 0, gapX)

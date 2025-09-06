@@ -5,7 +5,7 @@ import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/symbols"
+	"pure-kit/engine/utility/text"
 	"pure-kit/engine/window"
 )
 
@@ -97,7 +97,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 
 		camera.DrawFrame(mmx, mmy, aw*sprite.ScaleX, ah*sprite.ScaleY, 0, 6, color.Cyan)
 
-		var info = symbols.New(
+		var info = text.New(
 			"id: '", txt, "'",
 			"\ncell: ", imx, ", ", imy,
 			"\nindex: ", index,
@@ -105,7 +105,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			"\nsize:", tileSize, "x", tileSize)
 
 		if txt == "" && len(tileIds) == 0 && imx == 0 && imy == 0 { // display default texture & font
-			info = symbols.New("id: '", txt, "'", "\nsize:", aw, "x", ah)
+			info = text.New("id: '", txt, "'", "\nsize:", aw, "x", ah)
 		}
 
 		textBox.Text = info

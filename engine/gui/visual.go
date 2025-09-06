@@ -4,6 +4,7 @@ import (
 	"pure-kit/engine/graphics"
 	p "pure-kit/engine/gui/property"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/number"
 )
 
 func Visual(id string, properties ...string) string {
@@ -141,6 +142,10 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *contai
 		if maskText {
 			var x, y = cam.PointToScreen(widget.X+textMargin, widget.Y+textMargin/2)
 			var xw, yh = cam.PointToScreen(widget.X+widget.Width-textMargin, widget.Y+widget.Height-textMargin/2)
+			xw = number.LimitInt(xw, cam.MaskX, cam.MaskX+cam.MaskWidth)
+			yh = number.LimitInt(yh, cam.MaskY, cam.MaskY+cam.MaskHeight)
+			x = number.LimitInt(x, cam.MaskX, cam.MaskX+cam.MaskWidth)
+			y = number.LimitInt(y, cam.MaskY, cam.MaskY+cam.MaskHeight)
 			cam.Mask(x, y, xw-x, yh-y)
 		}
 

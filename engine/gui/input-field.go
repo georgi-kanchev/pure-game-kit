@@ -10,7 +10,7 @@ import (
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/seconds"
-	"pure-kit/engine/utility/symbols"
+	txt "pure-kit/engine/utility/text"
 	"strings"
 )
 
@@ -60,7 +60,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget, owner *contain
 		typingIn = widget
 		cursorTime = 0
 		var text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
-		if symbols.Count(text) == 0 {
+		if txt.Count(text) == 0 {
 			symbolXs = []float32{}
 			indexCursor = 0
 		} else {
@@ -75,7 +75,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget, owner *contain
 		var text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
 		var left, right = widget.X + margin, widget.X + widget.Width - margin
 		if input != "" {
-			if symbols.Count(text) == 0 {
+			if txt.Count(text) == 0 {
 				text = input
 				widget.Properties[property.Text] = text
 				setupText(margin, root, widget, owner) // text is not setuped cuz it was empty "" (skipped)
@@ -84,7 +84,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget, owner *contain
 			}
 			widget.Properties[property.Text] = text
 			reusableTextBox.Text = text
-			indexCursor += symbols.Count(input)
+			indexCursor += txt.Count(input)
 			cursorTime = 0
 			calculateXs(cam)
 		}
@@ -109,7 +109,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget, owner *contain
 
 		}
 		if keyboard.IsKeyPressedOnce(key.Right) || keyboard.IsKeyHeld(key.Right) {
-			indexCursor = number.SmallestInt(symbols.Count(text), indexCursor+1)
+			indexCursor = number.SmallestInt(txt.Count(text), indexCursor+1)
 			cursorTime = 0
 		}
 
@@ -118,12 +118,12 @@ func inputField(cam *graphics.Camera, root *root, widget *widget, owner *contain
 			scrollX -= left - cx
 			setupText(margin, root, widget, owner)
 		}
-		if cx > right && indexCursor <= symbols.Count(text) {
+		if cx > right && indexCursor <= txt.Count(text) {
 			scrollX += cx - right
 			setupText(margin, root, widget, owner)
 		}
 
-		scrollX = condition.If(symbols.Count(text) == 0, 0, scrollX)
+		scrollX = condition.If(txt.Count(text) == 0, 0, scrollX)
 		cursorTime += seconds.RealFrameDelta()
 	}
 
@@ -161,7 +161,7 @@ func closestIndex(cam *graphics.Camera) int {
 	return closestIndex
 }
 func calculateXs(cam *graphics.Camera) {
-	var textLength = symbols.Count(reusableTextBox.Text)
+	var textLength = txt.Count(reusableTextBox.Text)
 	symbolXs = []float32{}
 
 	for i := range textLength {
@@ -186,7 +186,7 @@ func remove(back, front int, cam *graphics.Camera, root *root, widget *widget, o
 		return
 	}
 	var text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
-	if front > 0 && indexCursor == symbols.Count(text) {
+	if front > 0 && indexCursor == txt.Count(text) {
 		return
 	}
 	text = text[:indexCursor-back] + text[indexCursor+front:]
