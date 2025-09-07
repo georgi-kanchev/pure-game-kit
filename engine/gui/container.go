@@ -115,14 +115,16 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 
 		var outsideX = widget.X+widget.Width < c.X || widget.X > c.X+c.Width
 		var outsideY = widget.Y+widget.Height < c.Y || widget.Y > c.Y+c.Height
-		if !outsideX && !outsideY { // culling widgets outside of the container (masked, invisible)
+		widget.IsCulled = outsideX || outsideY
+
+		if !widget.IsCulled { // culling widgets outside of the container (masked, invisible)
 			if widget.UpdateAndDraw != nil {
-				widget.UpdateAndDraw(cam, root, widget, c)
+				widget.UpdateAndDraw(cam, root, widget)
 				tryShowTooltip(widget, root, c, cam)
 			} else if widget.Class == "visual" {
-				setupVisualsTextured(root, widget, c)
-				setupVisualsText(root, widget, c)
-				drawVisuals(cam, root, widget, c)
+				setupVisualsTextured(root, widget)
+				setupVisualsText(root, widget)
+				drawVisuals(cam, root, widget)
 				tryShowTooltip(widget, root, c, cam)
 			}
 		}

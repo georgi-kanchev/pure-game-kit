@@ -17,6 +17,11 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[58] [Sun] [07-09-2025]
+[√] graphics - camera culling fix
+[√] gui - input field more hotkeys + fixes
+[√] gui - input field finished & cleaned up
+
 [57] [Sat] [06-09-2025]
 [√] project cleanup + renames
 [√] regions replaced with separators

@@ -15,7 +15,7 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 		}
 
 		var x, y, ang, scX, scY = n.TransformToCamera()
-		if !camera.isAreaVisible(x, y, n.Width*scX, n.Height*scY, n.PivotX, n.PivotY, ang) {
+		if !camera.isAreaVisible(x, y, n.Width*scX, n.Height*scY, ang) {
 			continue
 		}
 
@@ -31,7 +31,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		var x, y, ang, scX, scY = s.TransformToCamera()
-		if !camera.isAreaVisible(x, y, s.Width*scX, s.Height*scY, s.PivotX, s.PivotY, ang) {
+		if !camera.isAreaVisible(x, y, s.Width*scX, s.Height*scY, ang) {
 			continue
 		}
 
@@ -171,7 +171,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 
 		var x, y, ang, scX, scY = t.TransformToCamera()
-		if !camera.isAreaVisible(x, y, t.Width*scX, t.Height*scY, t.PivotX, t.PivotY, ang) {
+		if !camera.isAreaVisible(x, y, t.Width*scX, t.Height*scY, ang) {
 			continue
 		}
 

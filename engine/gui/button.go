@@ -28,7 +28,8 @@ var wPressedOn *widget
 var wPressedAt float32
 var buttonColor uint
 
-func button(cam *graphics.Camera, root *root, widget *widget, owner *container) {
+func button(cam *graphics.Camera, root *root, widget *widget) {
+	var owner = root.Containers[widget.OwnerId]
 	var prev = widget.ThemeId
 	var _, ownerDisabled = owner.Properties[property.Disabled]
 	var _, disabled = widget.Properties[property.Disabled]
@@ -54,9 +55,9 @@ func button(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 		}
 	}
 
-	setupVisualsTextured(root, widget, owner)
-	setupVisualsText(root, widget, owner)
-	drawVisuals(cam, root, widget, owner)
+	setupVisualsTextured(root, widget)
+	setupVisualsText(root, widget)
+	drawVisuals(cam, root, widget)
 	buttonColor = parseColor(themedProp(property.Color, root, owner, widget), widget.isDisabled(owner))
 	widget.ThemeId = prev
 }

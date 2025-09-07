@@ -67,7 +67,9 @@ func GUIs() {
 		gui.Visual("background", p.FillContainer, "", p.AssetId, box[8], p.Color, "200 200 200 255"),
 		// ======================================================
 		gui.Visual("name-label", p.ThemeId, "label", p.Text, "Name", p.TooltipText, "Wow, tooltip for labels!"),
-		gui.InputField("name", p.Width, "500", p.AssetId, box[9], p.Text, "Kenney\nhi"),
+		gui.InputField("name", p.Width, "500", p.AssetId, box[9], p.Text, "Kenney"),
+		gui.Visual("class-label", p.ThemeId, "label", p.Text, "Class", p.NewRow, ""),
+		gui.InputField("class", p.Width, "500", p.AssetId, box[9], p.Text, "Cool"),
 		gui.Visual("stepper-label", p.ThemeId, "label", p.Text, "Stepper", p.NewRow, ""),
 		gui.Button("step-left", p.Width, "100", p.TextEmbeddedAssetId1, "arrow-left", p.Text, "^^ ",
 			p.TooltipText, "Press this button to do absolutely nothing."),

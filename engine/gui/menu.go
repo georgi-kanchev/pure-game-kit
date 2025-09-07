@@ -15,8 +15,9 @@ func Menu(id string, properties ...string) string {
 //=================================================================
 // private
 
-func menu(cam *graphics.Camera, root *root, widget *widget, owner *container) {
-	button(cam, root, widget, owner)
+func menu(cam *graphics.Camera, root *root, widget *widget) {
+	var owner = root.Containers[widget.OwnerId]
+	button(cam, root, widget)
 
 	if mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0 {
 		var containerId = themedProp(property.MenuContainerId, root, owner, widget)

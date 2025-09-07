@@ -146,7 +146,7 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	camera.end()
 }
 func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
-	if !camera.isAreaVisible(x, y, width, height, 0, 0, angle) {
+	if !camera.isAreaVisible(x, y, width, height, angle) {
 		return
 	}
 
@@ -168,7 +168,7 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color ui
 }
 
 func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
-	if !camera.isAreaVisible(x, y, width, height, 0, 0, angle) {
+	if !camera.isAreaVisible(x, y, width, height, angle) {
 		return
 	}
 

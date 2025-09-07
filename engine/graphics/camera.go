@@ -194,9 +194,8 @@ func (camera *Camera) end() {
 	rl.EndMode2D()
 }
 
-func (camera *Camera) isAreaVisible(x, y, width, height, pivotX, pivotY, angle float32) bool {
-	var tlx, _ = point.MoveAtAngle(x, y, angle, width*pivotX)
-	var _, tly = point.MoveAtAngle(x, y, angle+90, height*pivotY)
+func (camera *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
+	var tlx, tly = x, y
 	var trx, try = point.MoveAtAngle(tlx, tly, angle, width)
 	var brx, bry = point.MoveAtAngle(trx, try, angle+90, height)
 	var blx, bly = point.MoveAtAngle(tlx, tly, angle+90, height)
@@ -211,7 +210,7 @@ func (camera *Camera) isAreaVisible(x, y, width, height, pivotX, pivotY, angle f
 	var minY = number.SmallestInt(stly, stry, sbry, sbly)
 	var maxY = number.BiggestInt(stly, stry, sbry, sbly)
 
-	return !(maxX < mtlx || minX > mbrx || maxY < mtly || minY > mbry)
+	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
 }
 
 func tryRecreateWindow() {

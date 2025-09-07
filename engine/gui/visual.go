@@ -18,7 +18,8 @@ var reusableTextBox graphics.TextBox = graphics.TextBox{}
 var reusableSprite graphics.Sprite = graphics.Sprite{}
 var reusableNineslice graphics.Box = graphics.Box{}
 
-func setupVisualsTextured(root *root, widget *widget, owner *container) {
+func setupVisualsTextured(root *root, widget *widget) {
+	var owner = root.Containers[widget.OwnerId]
 	var assetId = themedProp(p.AssetId, root, owner, widget)
 
 	if assetId != "" {
@@ -52,7 +53,8 @@ func setupVisualsTextured(root *root, widget *widget, owner *container) {
 
 	}
 }
-func setupVisualsText(root *root, widget *widget, owner *container) {
+func setupVisualsText(root *root, widget *widget) {
+	var owner = root.Containers[widget.OwnerId]
 	var text = themedProp(p.Text, root, owner, widget)
 	if text == "" {
 		return
@@ -118,7 +120,8 @@ func setupVisualsText(root *root, widget *widget, owner *container) {
 	reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
 	reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
 }
-func drawVisuals(cam *graphics.Camera, root *root, widget *widget, owner *container) {
+func drawVisuals(cam *graphics.Camera, root *root, widget *widget) {
+	var owner = root.Containers[widget.OwnerId]
 	var assetId = themedProp(p.AssetId, root, owner, widget)
 	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.isDisabled(owner))
 	var frameCol = parseColor(themedProp(p.FrameColor, root, owner, widget), widget.isDisabled(owner))

@@ -56,7 +56,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	var margin = parseNum(themedProp(property.TooltipMargin, root, c, tooltip), 50)
 	tooltip.Width, tooltip.Height = width-margin, camH
 
-	setupVisualsText(root, tooltip, c)
+	setupVisualsText(root, tooltip)
 
 	var lines = reusableTextBox.TextLines()
 	var lh = reusableTextBox.LineHeight
@@ -75,6 +75,6 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 		reusableTextBox.Y = tooltip.Y
 	}
 
-	setupVisualsTextured(root, tooltip, c)
-	drawVisuals(cam, root, tooltip, c)
+	setupVisualsTextured(root, tooltip)
+	drawVisuals(cam, root, tooltip)
 }

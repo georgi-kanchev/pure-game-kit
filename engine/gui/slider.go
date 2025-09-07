@@ -18,13 +18,14 @@ func Slider(id string, properties ...string) string {
 
 var reusableWidget *widget = &widget{Properties: map[string]string{}}
 
-func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) {
+func slider(cam *graphics.Camera, root *root, widget *widget) {
+	var owner = root.Containers[widget.OwnerId]
 	var assetId = themedProp(property.AssetId, root, owner, widget)
 	if assetId == "" {
 		widget.Height /= 2
 		widget.Y += widget.Height / 2
 	}
-	button(cam, root, widget, owner)
+	button(cam, root, widget)
 	if assetId == "" {
 		widget.Y -= widget.Height / 2
 		widget.Height *= 2
@@ -49,7 +50,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 			var stepX = (widget.X + handleWidth/2) + float32(i)*stepPx
 			if stepAssetId != "" && stepPx > widget.Height {
 				reusableWidget.Width, reusableWidget.Height = widget.Height, widget.Height
-				drawReusableWidget(buttonColor, stepAssetId, stepX-widget.Height/2, widget.Y, root, owner, cam)
+				drawReusableWidget(buttonColor, stepAssetId, stepX-widget.Height/2, widget.Y, root, cam)
 			} else {
 				cam.DrawRectangle(stepX, widget.Y, 5, widget.Height, 0, buttonColor)
 			}
@@ -59,7 +60,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 	if wPressedOn == widget {
 		var mx, _ = cam.MousePosition()
 		value = number.Map(mx, widget.X, widget.X+widget.Width-handleWidth, 0, 1)
-		value = widget.setSliderValue(value, root, owner)
+		value = widget.setSliderValue(value, root)
 	}
 
 	var x = number.Map(value, 0, 1, widget.X, widget.X+widget.Width-handleWidth)
@@ -70,24 +71,25 @@ func slider(cam *graphics.Camera, root *root, widget *widget, owner *container) 
 		cam.DrawCircle(x, handleY+handleWidth*0.8, handleWidth*0.75, buttonColor)
 	} else {
 		reusableWidget.Width, reusableWidget.Height = handleWidth, handleHeight
-		drawReusableWidget(buttonColor, handleAssetId, x, handleY, root, owner, cam)
+		drawReusableWidget(buttonColor, handleAssetId, x, handleY, root, cam)
 	}
 }
 
-func (widget *widget) setSliderValue(value float32, root *root, owner *container) float32 {
+func (widget *widget) setSliderValue(value float32, root *root) float32 {
+	var owner = root.Containers[widget.OwnerId]
 	var step = parseNum(themedProp(property.SliderStep, root, owner, widget), 0)
 	value = number.Snap(value, number.Unsign(step))
 	value = number.Limit(value, 0, 1)
 	widget.Properties[property.Value] = text.New(value)
 	return value
 }
-func drawReusableWidget(col uint, assetId string, x, y float32, root *root, owner *container, cam *graphics.Camera) {
+func drawReusableWidget(col uint, assetId string, x, y float32, root *root, cam *graphics.Camera) {
 	var r, g, b, a = color.Channels(col)
 	clear(reusableWidget.Properties)
 	reusableWidget.Properties[property.AssetId] = assetId
 	reusableWidget.Properties[property.Color] = text.New(r, " ", g, " ", b, " ", a)
 	reusableWidget.X, reusableWidget.Y = x, y
 
-	setupVisualsTextured(root, reusableWidget, owner)
-	drawVisuals(cam, root, reusableWidget, owner)
+	setupVisualsTextured(root, reusableWidget)
+	drawVisuals(cam, root, reusableWidget)
 }

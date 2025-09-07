@@ -13,12 +13,13 @@ func Checkbox(id string, properties ...string) string {
 //=================================================================
 // private
 
-func checkbox(cam *graphics.Camera, root *root, widget *widget, owner *container) {
+func checkbox(cam *graphics.Camera, root *root, widget *widget) {
+	var owner = root.Containers[widget.OwnerId]
 	var on = themedProp(property.CheckboxThemeId, root, owner, widget)
 	var off = themedProp(property.ThemeId, root, owner, widget)
 	widget.ThemeId = condition.If(widget.Properties[property.Value] == "", off, on)
 
-	button(cam, root, widget, owner)
+	button(cam, root, widget)
 
 	if root.ButtonClickedOnce(widget.Id, cam) {
 		widget.Properties[property.Value] = condition.If(widget.Properties[property.Value] == "", "v", "")

@@ -246,7 +246,7 @@ func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 
 var wFocused, wHovered, wWasHovered *widget
 var cFocused, cHovered, cWasHovered *container
-var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget, owner *container){
+var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget){
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 }
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
