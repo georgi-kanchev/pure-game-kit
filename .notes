@@ -1,9 +1,6 @@
 // TODO:
-gui - inputbox
-gui - slider range second handle
-gui - drag & drop
 example for texture areas, whole texture + all area rects + hover & name
-tiled loading
+tiled scenes loading
 drawing tilemaps - https://wareya.github.io/webtyler/
 
 // TODO LONGTERM:
@@ -21,6 +18,7 @@ consistent error handling + logging, console & file
 [√] gui - drag & drop, useful for inventories
 [√] gui - input field + drag & drop event functions
 [√] gui - renames
+[√] gui - pretty much done, anything missing will be added later
 
 [58] [Sun] [07-09-2025]
 [√] graphics - camera culling fix
