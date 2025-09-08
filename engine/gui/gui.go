@@ -114,35 +114,14 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 	var prevAng, prevZoom = camera.Angle, camera.Zoom
 	var containers = gui.root.ContainerIds
 
-	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
-		wPressedOn = nil
-		tooltip = nil
-		cPressedOnScrollH = nil
-		cPressedOnScrollV = nil
-	}
-	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
-		cPressedOnScrollH = nil
-		cPressedOnScrollV = nil
-	}
-	if mouse.IsButtonReleasedOnce(mouse.ButtonMiddle) {
-		cMiddlePressed = nil
-	}
-
-	camera.Zoom = gui.Scale
-	camera.Angle = 0 // force no cam rotation for UI
-
-	if tooltip == nil {
-		mouse.SetCursor(mouse.CursorArrow)
-	}
+	reset(camera, gui) // keep order of variables & reset
 
 	var tlx, tly = camera.PointFromPivot(0, 0)
 	var brx, bry = camera.PointFromPivot(1, 1)
 	var cx, cy = camera.PointFromPivot(0.5, 0.5)
 	var w, h = camera.Size() // caching dynamic cam props
-	camCx, camCy = text.New(cx), text.New(cy)
-	camLx, camRx = text.New(tlx), text.New(brx)
-	camTy, camBy = text.New(tly), text.New(bry)
-	camW, camH = text.New(w), text.New(h)
+	camCx, camCy, camLx, camRx = text.New(cx), text.New(cy), text.New(tlx), text.New(brx)
+	camTy, camBy, camW, camH = text.New(tly), text.New(bry), text.New(w), text.New(h)
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
@@ -151,9 +130,7 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		var ow = text.New(dyn(nil, c.Properties[property.Width], "0"))
 		var oh = text.New(dyn(nil, c.Properties[property.Height], "0"))
 		ownerX, ownerY = ox, oy // caching dynamic owner/container props
-		ownerLx, ownerRx = ox, ox+"+"+ow
-		ownerTy, ownerBy = oy, oy+"+"+oh
-		ownerW, ownerH = ow, oh
+		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
 
 		c.updateAndDraw(gui.root, camera)
 	}
@@ -165,24 +142,19 @@ func (gui *GUI) Draw(camera *graphics.Camera) {
 		wFocused = wHovered // only widgets that are hovered 2 frames in a row accept input (top-down prio)
 	}
 
+	if wPressedOn != nil && wPressedOn.Class == "draggable" {
+		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
+		drawDraggable(wPressedOn, gui.root, camera)
+	}
 	if tooltip != nil {
 		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
-		var tooltipOwner = gui.root.Containers[tooltip.OwnerId]
-		drawTooltip(gui.root, tooltipOwner, camera)
+		drawTooltip(gui.root, gui.root.Containers[tooltip.OwnerId], camera)
 	}
 
-	camera.Angle, camera.Zoom = prevAng, prevZoom // reset angle, zoom & mask to how it was
-	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
-
-	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
-		wPressedOn = nil
-		tooltip = nil
-	}
-
-	wWasHovered = wHovered
-	cWasHovered = cHovered
+	restore(camera, prevAng, prevZoom) // undoes what reset does, leaving everything as it was for the cam
 }
 
+// works for widgets & containers
 func (gui *GUI) SetProperty(id, property string, value string) {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
@@ -202,6 +174,7 @@ func (gui *GUI) SetProperty(id, property string, value string) {
 //=================================================================
 // getters
 
+// works for widgets & containers
 func (gui *GUI) Property(id, property string) string {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
@@ -221,6 +194,7 @@ func (gui *GUI) Property(id, property string) string {
 	return ""
 }
 
+// works for widgets & containers
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
@@ -233,6 +207,8 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	}
 	return false
 }
+
+// works for widgets & containers
 func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 	var w, has = gui.root.Widgets[widgetId]
 	if has {
@@ -244,13 +220,52 @@ func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 //=================================================================
 // private
 
+var mouseX, mouseY, prevMouseX, prevMouseY float32
 var wFocused, wHovered, wWasHovered *widget
 var cFocused, cHovered, cWasHovered *container
 var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget){
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
+	"draggable": draggable,
 }
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
 var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache
+
+func reset(camera *graphics.Camera, gui *GUI) {
+	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
+		wPressedOn = nil
+		tooltip = nil
+		cPressedOnScrollH = nil
+		cPressedOnScrollV = nil
+	}
+	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+		cPressedOnScrollH = nil
+		cPressedOnScrollV = nil
+	}
+	if mouse.IsButtonReleasedOnce(mouse.ButtonMiddle) {
+		cMiddlePressed = nil
+	}
+
+	camera.Zoom = gui.Scale
+	camera.Angle = 0 // force no cam rotation for UI
+	mouseX, mouseY = camera.MousePosition()
+
+	if tooltip == nil {
+		mouse.SetCursor(mouse.CursorArrow)
+	}
+}
+func restore(camera *graphics.Camera, prevAng float32, prevZoom float32) {
+	camera.Angle, camera.Zoom = prevAng, prevZoom // reset angle, zoom & mask to how it was
+	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
+
+	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+		wPressedOn = nil
+		tooltip = nil
+	}
+
+	wWasHovered = wHovered
+	cWasHovered = cHovered
+	prevMouseX, prevMouseY = mouseX, mouseY
+}
 
 func extraProps(props ...string) string {
 	var result = ""

@@ -20,6 +20,20 @@ func InputField(id string, properties ...string) string {
 }
 
 //=================================================================
+// getters
+
+func (gui *GUI) InputFieldIsTyping() (inputFieldId string) {
+	if typingIn != nil {
+		return typingIn.Id
+	}
+	return ""
+}
+func (gui *GUI) InputFieldStopTyping() {
+	typingIn = nil
+	scrollX = 0
+}
+
+//=================================================================
 // private
 
 var typingIn *widget
@@ -279,7 +293,8 @@ func calculateXs(cam *graphics.Camera) {
 	}
 }
 func cursorX(margin float32, widget *widget) float32 {
-	if len(symbolXs) > 0 {
+	var length = len(symbolXs)
+	if length > 0 && indexCursor < length {
 		return symbolXs[indexCursor] - scrollX
 	}
 	return widget.X + margin

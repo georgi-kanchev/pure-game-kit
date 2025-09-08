@@ -6,6 +6,7 @@ import (
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/text"
+	"pure-kit/engine/window"
 )
 
 func Menu(id string, properties ...string) string {
@@ -19,7 +20,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	button(cam, root, widget)
 
-	if mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0 {
+	if mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0 || !window.IsHovered() {
 		var containerId = themedProp(property.MenuContainerId, root, owner, widget)
 		var c, has = root.Containers[containerId]
 		if has && !c.isFocused(cam) {

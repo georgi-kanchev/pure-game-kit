@@ -56,6 +56,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var maxHeight float32
 	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
 	var nonBgrIndex = 0
+	var draggables []*widget = make([]*widget, 0)
 
 	cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
@@ -127,6 +128,10 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 				drawVisuals(cam, root, widget)
 				tryShowTooltip(widget, root, c, cam)
 			}
+
+			if widget.Class == "draggable" {
+				draggables = append(draggables, widget)
+			}
 		}
 
 		if isBgr { // back to gap clipping
@@ -134,9 +139,16 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		}
 	}
 
+	for _, draggable := range draggables {
+		if draggable != wPressedOn {
+			drawDraggable(draggable, root, cam)
+		}
+	}
+
 	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
 	c.tryShowScroll(cGapX, cGapY, root, cam)
 }
+
 func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.Camera) {
 	var minX, minY, maxX, maxY = c.contentMinMax(gapX, gapY, root)
 	var mx, my = cam.MousePosition()

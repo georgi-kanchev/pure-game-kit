@@ -10,10 +10,11 @@ type widget struct {
 	XmlProps []xml.Attr `xml:",any,attr"`
 
 	Id, Class, OwnerId, ThemeId string
-	X, Y, Width, Height         float32
-	IsCulled                    bool
-	Properties                  map[string]string
-	UpdateAndDraw               func(cam *graphics.Camera, root *root, widget *widget)
+	X, Y, Width, Height,
+	DragX, DragY float32
+	IsCulled      bool
+	Properties    map[string]string
+	UpdateAndDraw func(cam *graphics.Camera, root *root, widget *widget)
 }
 
 func newWidget(class, id string, properties ...string) string {

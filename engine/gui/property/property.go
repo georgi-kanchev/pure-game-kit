@@ -24,8 +24,8 @@ const (
 
 	TooltipId     = "tooltipId"     // [widget] [theme]
 	TooltipMargin = "tooltipMargin" // [widget] [theme]
-	Color         = "color"         // [widget] [theme] separated with space, example: "255 0 0 255"
-	FrameColor    = "frameColor"    // [widget] [theme] separated with space, example: "255 0 0 255"
+	Color         = "color"         // [widget] [theme] example: "255 0 0 255"
+	FrameColor    = "frameColor"    // [widget] [theme] example: "255 0 0 255"
 	FrameSize     = "frameSize"     // [widget] [theme] positive outward, negative inward
 	BoxEdgeLeft   = "boxEdgeLeft"   // [widget] [theme]
 	BoxEdgeRight  = "boxEdgeRight"  // [widget] [theme]
@@ -34,7 +34,7 @@ const (
 
 	Text                  = "text"                  // [widget] [theme]
 	TextFontId            = "textFontId"            // [widget] [theme]
-	TextColor             = "textColor"             // [widget] [theme] separated with space, example: "255 0 0 255"
+	TextColor             = "textColor"             // [widget] [theme] default: "255 255 255 255"
 	TextLineHeight        = "textLineHeight"        // [widget] [theme] default: "60"
 	TextLineGap           = "textLineGap"           // [widget] [theme]
 	TextSymbolGap         = "textSymbolGap"         // [widget] [theme] default: "0.2"
@@ -45,7 +45,7 @@ const (
 	TextSmoothness        = "textSmoothness"        // [widget] [theme] default: "0.02"
 	TextThicknessOutline  = "textThicknessOutline"  // [widget] [theme] default: "0.92"
 	TextSmoothnessOutline = "textSmoothnessOutline" // [widget] [theme] default: "0.08"
-	TextColorOutline      = "textColorOutline"      // [widget] [theme] separated with space, example: "255 0 0 255"
+	TextColorOutline      = "textColorOutline"      // [widget] [theme] example: "255 0 0 255"
 
 	TextEmbeddedAssetsTag      = "textEmbeddedAssetsTag"      // [widget] [theme] default: "^"
 	TextEmbeddedAssetId1       = "textEmbeddedAssetId1"       // [widget] [theme]
@@ -80,4 +80,8 @@ const (
 	MenuContainerId = "menuContainerId" // [widget] [theme]
 
 	InputFieldMargin = "inputFieldMargin" // [widget] [theme] default: "30"
+
+	DraggableSpriteId    = "draggableSpriteId"    // [widget] [theme]
+	DraggableSpriteColor = "draggableSpriteColor" // [widget] [theme] default: "255 255 255 255"
+	DraggableSpriteScale = "draggableSpriteScale" // [widget] [theme] default: "1"
 )

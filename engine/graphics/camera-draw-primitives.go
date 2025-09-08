@@ -172,8 +172,12 @@ func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle f
 		return
 	}
 
+	var texture, has = internal.Textures[textureId]
+	if !has {
+		return
+	}
+
 	camera.begin()
-	var texture, _ = internal.Textures[textureId]
 	var texX, texY float32 = 0.0, 0.0
 	var w, h = width, height
 	var texW, texH = texture.Width, texture.Height

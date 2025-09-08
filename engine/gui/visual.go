@@ -38,12 +38,12 @@ func setupVisualsTextured(root *root, widget *widget) {
 			reusableNineslice.Color = col
 			reusableNineslice.ScaleX, reusableNineslice.ScaleY = 1, 1
 			reusableNineslice.Width, reusableNineslice.Height = widget.Width, widget.Height
-			reusableNineslice.EdgeLeft = cLeft
-			reusableNineslice.EdgeRight = cRight
-			reusableNineslice.EdgeTop = cTop
-			reusableNineslice.EdgeBottom = cBottom
+			reusableNineslice.EdgeLeft, reusableNineslice.EdgeRight = cLeft, cRight
+			reusableNineslice.EdgeTop, reusableNineslice.EdgeBottom = cTop, cBottom
+			reusableNineslice.PivotX, reusableNineslice.PivotY = 0, 0
 		} else {
 			reusableSprite.X, reusableSprite.Y = widget.X+offX, widget.Y+offY
+			reusableSprite.PivotX, reusableSprite.PivotY = 0, 0
 			reusableSprite.AssetId = assetId
 			reusableSprite.Color = col
 			reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
@@ -116,7 +116,7 @@ func setupVisualsText(root *root, widget *widget) {
 		reusableTextBox.Color = parseColor(outlineCol, disabled)
 	}
 
-	reusableTextBox.Color = parseColor(themedProp(p.TextColor, root, owner, widget), disabled)
+	reusableTextBox.Color = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled)
 	reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
 	reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
 }
