@@ -14,6 +14,9 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[60] [Tue] [09-09-2025]
+[√] linux + windows release single exe build scripts
+
 [59] [Mon] [08-09-2025]
 [√] gui - drag & drop, useful for inventories
 [√] gui - input field + drag & drop event functions
