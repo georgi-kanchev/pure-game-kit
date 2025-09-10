@@ -47,7 +47,7 @@ func setupVisualsTextured(root *root, widget *widget) {
 			reusableSprite.AssetId = assetId
 			reusableSprite.Color = col
 			reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
-			reusableSprite.RepeatX, reusableSprite.RepeatY = 1, 1
+			reusableSprite.TextureRepeat = false
 			reusableSprite.Width, reusableSprite.Height = widget.Width, widget.Height
 		}
 

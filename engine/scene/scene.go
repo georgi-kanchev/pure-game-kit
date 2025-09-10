@@ -19,15 +19,15 @@ type Scene struct {
 	textures                             []string
 }
 
-func New(smoothTexture bool, tiledMapId string) Scene {
-	var data, has = internal.TiledData[tiledMapId]
-	var scene = Scene{}
+func New(smoothTexture bool, tiledDataId string) *Scene {
+	var data, has = internal.TiledDatas[tiledDataId]
+	var scene *Scene = &Scene{}
 
 	if !has {
 		return scene
 	}
 
-	scene.name, scene.class = tiledMapId, data.Class
+	scene.name, scene.class = tiledDataId, data.Class
 	scene.width, scene.height = data.Width, data.Height
 	scene.tileWidth, scene.tileHeight = data.TileWidth, data.TileHeight
 	scene.parallaxX, scene.parallaxY = data.ParallaxOriginX, data.ParallaxOriginY
@@ -43,7 +43,7 @@ func New(smoothTexture bool, tiledMapId string) Scene {
 		}
 
 		// same name is a possibility so adding index
-		var name = fmt.Sprintf("%v%v%v%v", tiledMapId, "#", index, t.Name)
+		var name = fmt.Sprintf("%v%v%v%v", tiledDataId, "#", index, t.Name)
 		var atlasId = internal.LoadTextureAtlas(textureIds[0], name, t.TileWidth, t.TileHeight, t.Spacing)
 		scene.atlases[index] = atlasId
 		scene.textures = append(scene.textures, textureIds[0])
@@ -66,34 +66,17 @@ func (scene *Scene) Unload() {
 	assets.UnloadTiledData(scene.name)
 	assets.RemoveTextureAtlases(scene.atlases...)
 	assets.UnloadTextures(scene.textures...)
-
-	fmt.Printf("internal.TiledData: %v\n", internal.TiledData)
-	fmt.Printf("internal.Atlases: %v\n", internal.Atlases)
-	fmt.Printf("internal.AtlasRects: %v\n", internal.AtlasRects)
-	fmt.Printf("internal.Textures: %v\n", internal.Textures)
 }
 
 //=================================================================
 // getters
 
-func (scene *Scene) Size() (width, height int) {
-	return scene.width, scene.height
-}
-func (scene *Scene) TileSize() (width, height int) {
-	return scene.width, scene.height
-}
-func (scene *Scene) ParallaxOrigin() (x, y int) {
-	return scene.width, scene.height
-}
-func (scene *Scene) Class() string {
-	return scene.class
-}
-func (scene *Scene) IsInfinite() bool {
-	return scene.infinite
-}
-func (scene *Scene) BackgroundColor() uint {
-	return scene.backgroundColor
-}
+func (scene *Scene) Size() (width, height int)     { return scene.width, scene.height }
+func (scene *Scene) TileSize() (width, height int) { return scene.width, scene.height }
+func (scene *Scene) ParallaxOrigin() (x, y int)    { return scene.width, scene.height }
+func (scene *Scene) Class() string                 { return scene.class }
+func (scene *Scene) IsInfinite() bool              { return scene.infinite }
+func (scene *Scene) BackgroundColor() uint         { return scene.backgroundColor }
 
 //=================================================================
 // private

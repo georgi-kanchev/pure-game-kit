@@ -2,6 +2,7 @@ package assets
 
 import (
 	"encoding/xml"
+	"fmt"
 	"os"
 	"path/filepath"
 	"pure-kit/engine/internal"
@@ -13,11 +14,12 @@ func LoadTiledData(tmxFilePaths ...string) []string {
 	for _, path := range tmxFilePaths {
 		file, err := os.Open(path)
 		if err != nil {
+			fmt.Printf("err: %v\n", err)
 			continue
 		}
 		defer file.Close()
 
-		var scene internal.TiledMap
+		var scene *internal.TiledData
 		var error = xml.NewDecoder(file).Decode(&scene)
 		if error != nil {
 			continue
@@ -27,13 +29,13 @@ func LoadTiledData(tmxFilePaths ...string) []string {
 		scene.Directory = filepath.Dir(path)
 		name = strings.TrimSuffix(name, filepath.Ext(name))
 		resultIds = append(resultIds, name)
-		internal.TiledData[name] = scene
+		internal.TiledDatas[name] = scene
 	}
 	return resultIds
 }
 
 func UnloadTiledData(tiledMapIds ...string) {
 	for _, v := range tiledMapIds {
-		delete(internal.TiledData, v)
+		delete(internal.TiledDatas, v)
 	}
 }

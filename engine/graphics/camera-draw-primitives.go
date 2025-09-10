@@ -104,6 +104,11 @@ func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
 	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
 	camera.end()
 }
+func (camera *Camera) DrawEllipse(x, y, width, height float32, color uint) {
+	camera.begin()
+	rl.DrawEllipse(int32(x), int32(y), width/2, height/2, rl.GetColor(color))
+	camera.end()
+}
 func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, color uint) {
 	if thickness == 0 {
 		return

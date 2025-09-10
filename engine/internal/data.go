@@ -37,7 +37,7 @@ type Step interface {
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
-var TiledData = make(map[string]TiledMap)
+var TiledDatas = make(map[string]*TiledData)
 var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)

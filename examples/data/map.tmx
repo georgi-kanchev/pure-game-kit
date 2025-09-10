@@ -141,7 +141,7 @@
    <object id="35" x="256" y="176">
     <polygon points="0,0 16,16 0,16"/>
    </object>
-   <object id="36" x="231" y="160" width="18" height="19">
+   <object id="36" x="231" y="162" width="18" height="17">
     <ellipse/>
    </object>
    <object id="37" x="265" y="166">
@@ -155,7 +155,7 @@
  <imagelayer id="9" name="Tree" offsetx="68" offsety="199">
   <image source="tree.png" width="64" height="80"/>
  </imagelayer>
- <imagelayer id="7" name="Tree" offsetx="45" offsety="226">
+ <imagelayer id="7" name="Tree" offsetx="52" offsety="222">
   <image source="tree.png" trans="ff0000" width="64" height="80"/>
  </imagelayer>
 </map>

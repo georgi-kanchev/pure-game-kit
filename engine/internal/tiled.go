@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 )
 
-type TiledMap struct {
+type TiledData struct {
 	Directory       string
 	XMLName         xml.Name       `xml:"map"`
 	Version         string         `xml:"version,attr"`

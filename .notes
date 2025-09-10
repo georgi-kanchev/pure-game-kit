@@ -14,6 +14,11 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[61] [Wed] [10-09-2025]
+[√] graphics - sprite repeat texture bool instead of repeatsX & repeatsY + texture scroll x & y
+[√] graphics - camera draw ellipse
+[x] scenes - started again
+
 [60] [Tue] [09-09-2025]
 [√] linux + windows release single exe build scripts
 
