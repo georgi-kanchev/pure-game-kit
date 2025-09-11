@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="11" nextobjectid="40">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="13" nextobjectid="72">
  <editorsettings>
   <chunksize width="15" height="15"/>
  </editorsettings>
@@ -56,31 +56,6 @@
 23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23,23
 </data>
  </layer>
- <objectgroup id="10" name="Structure" offsetx="62" offsety="107">
-  <object id="9" gid="770" x="16" y="32" width="16" height="16"/>
-  <object id="10" gid="771" x="32" y="32" width="16" height="16"/>
-  <object id="11" gid="755" x="32" y="16" width="16" height="16"/>
-  <object id="12" gid="756" x="48" y="16" width="16" height="16"/>
-  <object id="13" gid="757" x="64" y="16" width="16" height="16"/>
-  <object id="14" gid="773" x="64" y="32" width="16" height="16"/>
-  <object id="15" gid="789" x="64" y="48" width="16" height="16"/>
-  <object id="16" gid="772" x="48" y="32" width="16" height="16"/>
-  <object id="17" gid="788" x="48" y="48" width="16" height="16"/>
-  <object id="18" gid="787" x="32" y="48" width="16" height="16"/>
-  <object id="19" gid="786" x="16" y="48" width="16" height="16"/>
-  <object id="20" gid="785" x="0" y="48" width="16" height="16"/>
-  <object id="21" gid="769" x="0" y="32" width="16" height="16"/>
-  <object id="24" gid="801" x="0" y="64" width="16" height="16"/>
-  <object id="25" gid="817" x="0" y="80" width="16" height="16"/>
-  <object id="26" gid="818" x="16" y="80" width="16" height="16"/>
-  <object id="27" gid="819" x="32" y="80" width="16" height="16"/>
-  <object id="28" gid="820" x="48" y="80" width="16" height="16"/>
-  <object id="29" gid="821" x="64" y="80" width="16" height="16"/>
-  <object id="30" gid="805" x="64" y="64" width="16" height="16"/>
-  <object id="31" gid="804" x="48" y="64" width="16" height="16"/>
-  <object id="32" gid="803" x="32" y="64" width="16" height="16"/>
-  <object id="33" gid="802" x="16" y="64" width="16" height="16"/>
- </objectgroup>
  <group id="6" name="group">
   <layer id="3" name="Tile Layer 2" width="20" height="20">
    <properties>
@@ -109,7 +84,7 @@
 0,0,0,0,0,0,0,0,0,0,717,718,719,720,0,0,0,0,0,0
 </data>
   </layer>
-  <objectgroup color="#0000ff" draworder="index" id="2" name="Collision" class="test">
+  <objectgroup color="#ff0000" draworder="index" id="2" name="Collision" class="test">
    <properties>
     <property name="ffff" type="float" value="0"/>
     <property name="hui" type="class" propertytype="structure">
@@ -126,9 +101,9 @@
     <property name="kur" propertytype="hmmmm" value="hi"/>
    </properties>
    <object id="4" x="237" y="245" width="26.4179" height="5.86871" rotation="331.198"/>
-   <object id="5" type="1" x="260" y="232" width="31" height="6"/>
+   <object id="5" x="260" y="232" width="31" height="6"/>
    <object id="6" x="283" y="236" width="8" height="45"/>
-   <object id="7" name="test" x="238" y="266" width="30.9207" height="20" rotation="328.387">
+   <object id="7" x="238.78" y="265.52" width="30.0045" height="20" rotation="328.387">
     <properties>
      <property name="col" type="color" value="#ffaa007f"/>
      <property name="prop" type="bool" value="true"/>
@@ -141,7 +116,7 @@
    <object id="35" x="256" y="176">
     <polygon points="0,0 16,16 0,16"/>
    </object>
-   <object id="36" x="231" y="162" width="18" height="17">
+   <object id="36" x="231" y="162" width="18" height="32">
     <ellipse/>
    </object>
    <object id="37" x="265" y="166">
@@ -152,10 +127,31 @@
    </object>
   </objectgroup>
  </group>
- <imagelayer id="9" name="Tree" offsetx="68" offsety="199">
-  <image source="tree.png" width="64" height="80"/>
- </imagelayer>
- <imagelayer id="7" name="Tree" offsetx="52" offsety="222">
-  <image source="tree.png" trans="ff0000" width="64" height="80"/>
- </imagelayer>
+ <layer id="12" name="ObjectTiles" width="20" height="20">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,116,117,118,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,137,138,139,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,158,159,160,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup color="#0000ff" id="11" name="Objects">
+  <object id="70" name="rock" x="32" y="112" width="48" height="48"/>
+ </objectgroup>
 </map>

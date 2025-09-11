@@ -26,7 +26,8 @@
             }
         },
         "map.tmx#atlas": {
-            "scaleInDock": 1.5
+            "scaleInDock": 1.5,
+            "scaleInEditor": 3
         },
         "map.tmx#objects": {
             "scaleInDock": 3,
@@ -48,6 +49,7 @@
         "map.tmx",
         "atlas.tsx"
     ],
+    "textEdit.monospace": false,
     "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.margin": 1,
