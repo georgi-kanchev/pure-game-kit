@@ -40,7 +40,7 @@ func PrintLinesOfCode() {
 		if len(parts) < 2 {
 			continue
 		}
-		var count = text.FromNumber(parts[0])
+		var count = text.ToNumber(parts[0])
 		var path = parts[1]
 		var rel, _ = filepath.Rel(directory, path)
 		results[rel] = int(count)

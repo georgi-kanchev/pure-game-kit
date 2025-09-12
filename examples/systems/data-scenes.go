@@ -4,18 +4,25 @@ import (
 	"fmt"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/scene"
+	"pure-kit/engine/tiled"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
 
 func Scenes() {
 	var cam = graphics.NewCamera(7)
-	var sprite = graphics.NewSprite("map#1objects[1,0]", 0, 0)
-	var data = assets.LoadTiledData("examples/data/map.tmx")[0]
-	var scene = scene.New(false, data)
+	var sprite = graphics.NewSprite("examples/data/atlas[335]", 0, 0)
+	var mapData = assets.LoadTiledMaps("examples/data/map.tmx")[0]
+	var props = tiled.ExtractMapProperties(mapData)
+	var world = assets.LoadTiledWorlds("examples/data/world.world")[0]
+	var tileset = assets.LoadTiledTilesets("examples/data/atlas.tsx")[0]
 
-	fmt.Printf("scene.BackgroundColor(): %v\n", scene.BackgroundColor())
+	fmt.Printf("props: %v\n", props)
+	fmt.Printf("worlds: %v\n", world)
+	fmt.Printf("tilesets: %v\n", tileset)
+
+	var myNumber = tiled.TilesetProperty(tileset, tiled.TilesetColumns)
+	fmt.Printf("myNumber: %v\n", myNumber)
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()

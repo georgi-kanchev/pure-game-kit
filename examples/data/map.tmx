@@ -84,7 +84,7 @@
 0,0,0,0,0,0,0,0,0,0,717,718,719,720,0,0,0,0,0,0
 </data>
   </layer>
-  <objectgroup color="#ff0000" draworder="index" id="2" name="Collision" class="test">
+  <objectgroup color="#0000ff" draworder="index" id="2" name="Collision" class="test">
    <properties>
     <property name="ffff" type="float" value="0"/>
     <property name="hui" type="class" propertytype="structure">
@@ -119,7 +119,7 @@
    <object id="36" x="231" y="162" width="18" height="32">
     <ellipse/>
    </object>
-   <object id="37" x="265" y="166">
+   <object id="37" x="263" y="163">
     <point/>
    </object>
    <object id="39" x="283" y="139">

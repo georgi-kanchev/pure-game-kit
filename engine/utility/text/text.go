@@ -84,7 +84,7 @@ func Calculate(mathExpression string) float32 {
 		}
 		var numStr = expr[start:*i]
 		(*i)--
-		return FromNumber(numStr)
+		return ToNumber(numStr)
 	}
 
 	for i := 0; i < len(mathExpression); i++ {
@@ -151,7 +151,7 @@ func Calculate(mathExpression string) float32 {
 	return values[len(values)-1]
 }
 
-func FromNumber(text string) float32 {
+func ToNumber(text string) float32 {
 	var result, err = strconv.ParseFloat(text, 32)
 	if err != nil {
 		return number.NaN()

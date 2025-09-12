@@ -72,7 +72,7 @@ func NewXML(xmlData string) *GUI {
 		gui.root.ContainerIds = append(gui.root.ContainerIds, cId)
 	}
 
-	gui.Scale = text.FromNumber(gui.root.XmlScale)
+	gui.Scale = text.ToNumber(gui.root.XmlScale)
 	return &gui
 }
 func NewElements(elements ...string) *GUI {
@@ -362,13 +362,13 @@ func parseColor(value string, disabled ...bool) uint {
 	var r, g, b, a uint64
 
 	if len(rgba) == 3 || len(rgba) == 4 {
-		r = uint64(text.FromNumber(rgba[0]))
-		g = uint64(text.FromNumber(rgba[1]))
-		b = uint64(text.FromNumber(rgba[2]))
+		r = uint64(text.ToNumber(rgba[0]))
+		g = uint64(text.ToNumber(rgba[1]))
+		b = uint64(text.ToNumber(rgba[2]))
 		a = 255
 	}
 	if len(rgba) == 4 {
-		a = uint64(text.FromNumber(rgba[3]))
+		a = uint64(text.ToNumber(rgba[3]))
 	}
 
 	if len(disabled) == 1 && disabled[0] {
@@ -378,11 +378,11 @@ func parseColor(value string, disabled ...bool) uint {
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
 }
 func parseNum(value string, defaultValue float32) float32 {
-	var v = text.FromNumber(value)
+	var v = text.ToNumber(value)
 	if number.IsNaN(v) {
 		return defaultValue
 	}
-	return float32(v)
+	return v
 }
 
 func isHovered(x, y, w, h float32, cam *graphics.Camera) bool {

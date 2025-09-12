@@ -1,0 +1,51 @@
+package internal
+
+type Tileset struct {
+	Identity
+	AtlasId         string
+	Version         string                 `xml:"version,attr"`
+	TiledVersion    string                 `xml:"tiledversion,attr"`
+	FirstGID        int                    `xml:"firstgid,attr"`
+	TileWidth       int                    `xml:"tilewidth,attr"`
+	TileHeight      int                    `xml:"tileheight,attr"`
+	TileCount       int                    `xml:"tilecount,attr"`
+	Columns         int                    `xml:"columns,attr"`
+	Spacing         int                    `xml:"spacing,attr"`
+	Margin          int                    `xml:"margin,attr"`
+	ObjectAlignment string                 `xml:"objectalignment,attr"`
+	TileRenderSize  string                 `xml:"tilerendersize,attr"`
+	BackgroundColor string                 `xml:"backgroundcolor,attr"`
+	FillMode        string                 `xml:"fillmode,attr"`
+	TileOffset      TilesetTileOffset      `xml:"tileoffset"`
+	Grid            TilesetGrid            `xml:"grid"`
+	Transformations TilesetTransformations `xml:"transformations"`
+	PerTileData     []TilesetTile          `xml:"tile"`
+	Image           TilesetImage           `xml:"image"`
+	Properties      []Property             `xml:"properties>property"`
+}
+
+type TilesetTile struct {
+	Id             string         `xml:"id,attr"`
+	TilesCollision []LayerObjects `xml:"objectgroup"`
+}
+type TilesetTileOffset struct {
+	X int `xml:"x,attr"`
+	Y int `xml:"y,attr"`
+}
+type TilesetTransformations struct {
+	FlipH                    bool `xml:"hflip,attr"`
+	FlipV                    bool `xml:"vflip,attr"`
+	Rotate                   bool `xml:"rotate,attr"`
+	PreferUntransformedTiles bool `xml:"preferuntransformed,attr"`
+}
+type TilesetGrid struct {
+	Orientation string `xml:"orientation,attr"`
+	Width       int    `xml:"width,attr"`
+	Height      int    `xml:"height,attr"`
+}
+type TilesetImage struct {
+	Source           string `xml:"source,attr"`
+	Width            int    `xml:"width,attr"`
+	Height           int    `xml:"height,attr"`
+	TransparentColor string `xml:"trans,attr"`
+}

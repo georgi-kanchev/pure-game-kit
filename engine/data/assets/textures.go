@@ -7,7 +7,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadTextures(smooth bool, filePaths ...string) []string {
+func LoadTextures(filePaths ...string) []string {
 	tryCreateWindow()
 
 	var result = []string{}
@@ -28,10 +28,6 @@ func LoadTextures(smooth bool, filePaths ...string) []string {
 		if texture.Width != 0 {
 			internal.Textures[id] = &texture
 			result = append(result, id)
-
-			if smooth {
-				rl.SetTextureFilter(texture, rl.FilterBilinear)
-			}
 		}
 	}
 
@@ -49,6 +45,15 @@ func UnloadTextures(textureIds ...string) {
 	}
 }
 
+func SetTextureSmoothness(textureId string, smooth bool) {
+	var tex, has = internal.Textures[textureId]
+	if has && smooth {
+		rl.SetTextureFilter(*tex, rl.FilterBilinear)
+	}
+	if has && !smooth {
+		rl.SetTextureFilter(*tex, rl.FilterPoint)
+	}
+}
 func SetTextureArea(textureId, areaId string, x, y, width, height, rotations int, flip bool) string {
 	var _, has = internal.Textures[textureId]
 

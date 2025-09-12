@@ -37,7 +37,6 @@ type Step interface {
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
-var TiledDatas = make(map[string]*TiledData)
 var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)
@@ -48,6 +47,10 @@ var ShaderText = rl.Shader{}
 var Flows = make(map[string]*Sequence)
 var FlowSignals = []string{}
 var States = make(map[string]*StateMachine)
+
+var TiledTilesets = make(map[string]*Tileset)
+var TiledMaps = make(map[string]*Map)
+var TiledWorlds = make(map[string]*World)
 
 var Cursor int
 var Input = ""
