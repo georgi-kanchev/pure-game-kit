@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "map.tmx",
+    "activeFile": "atlas.tsx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -21,21 +21,22 @@
                 6
             ],
             "scale": 3,
-            "selectedLayer": 2,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 197.16666666666663,
-                "y": 171.66666666666669
+                "x": 113.33333333333331,
+                "y": 182.33333333333331
             }
         },
         "map.tmx#atlas": {
-            "scaleInDock": 3,
+            "scaleInDock": 0.75,
             "scaleInEditor": 3
         },
         "map.tmx#objects": {
-            "scaleInDock": 3,
+            "scaleInDock": 0.75,
             "scaleInEditor": 4
         }
     },
+    "frame.defaultDuration": 200,
     "last.imagePath": "/home/gojur/code/pure-kit/examples/data",
     "last.objectTypesPath": "C:/Users/PC/Desktop/tiled/structure.xml",
     "last.worldFilePath": "/home/gojur/code/pure-kit/examples/data",
@@ -47,10 +48,11 @@
     "map.tileWidth": 16,
     "map.width": 20,
     "openFiles": [
-        "map.tmx"
+        "map.tmx",
+        "atlas.tsx"
     ],
     "project": "game-name.tiled-project",
-    "property.type": "float",
+    "property.type": "bool",
     "recentFiles": [
         "map.tmx",
         "atlas.tsx"

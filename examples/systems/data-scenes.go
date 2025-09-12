@@ -3,30 +3,43 @@ package example
 import (
 	"fmt"
 	"pure-kit/engine/data/assets"
+	"pure-kit/engine/geometry"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/tiled"
+	"pure-kit/engine/tiled/tileset"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
 
 func Scenes() {
-	var cam = graphics.NewCamera(7)
-	var sprite = graphics.NewSprite("examples/data/atlas[335]", 0, 0)
-	var mapData = assets.LoadTiledMaps("examples/data/map.tmx")[0]
-	var props = tiled.ExtractMapProperties(mapData)
-	var world = assets.LoadTiledWorlds("examples/data/world.world")[0]
-	var tileset = assets.LoadTiledTilesets("examples/data/atlas.tsx")[0]
+	var cam = graphics.NewCamera(20)
+	var id = assets.LoadTiledTilesets("examples/data/atlas.tsx")[0]
+	var sprite = graphics.NewSprite(id+"[115]", 0, 0)
 
-	fmt.Printf("props: %v\n", props)
-	fmt.Printf("worlds: %v\n", world)
-	fmt.Printf("tilesets: %v\n", tileset)
-
-	var myNumber = tiled.TilesetProperty(tileset, tiled.TilesetColumns)
+	var myNumber = tileset.Property(id, tileset.PropertyColumns)
 	fmt.Printf("myNumber: %v\n", myNumber)
+
+	var points = tileset.TileShapeCorners(id, 115, "collision")
+	var x, y = tileset.TileShapePoint(id, 115, "5")
+	var solid = tileset.TileShapeProperty(id, 115, "collision", "solid")
+
+	fmt.Printf("solid: %v\n", solid)
+
+	fmt.Printf("points: %v\n", points)
+
+	fmt.Printf("%v, %v\n", x, y)
+
+	var sh = geometry.NewShapeCorners(points...)
+	sprite.Width, sprite.Height = 16, 16
+	sprite.PivotX, sprite.PivotY = 0, 0
+
+	var durs = tileset.TileAnimationTileIds(id, 139)
+
+	fmt.Printf("durs: %v\n", durs)
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(1, 9, 9, color.Darken(color.Gray, 0.5))
 		cam.DrawSprites(&sprite)
+		cam.DrawLinesPath(0.2, color.White, sh.CornerPoints()...)
 	}
 }

@@ -4,12 +4,41 @@
   <property name="myNumber" type="float" value="32.61"/>
  </properties>
  <image source="atlas.png" width="336" height="256"/>
- <tile id="115">
+ <tile id="110">
   <objectgroup draworder="index" id="2">
-   <object id="1" x="8" y="9" width="8" height="7"/>
-   <object id="3" x="5" y="4">
+   <object id="1" x="5" y="4">
     <point/>
    </object>
   </objectgroup>
+ </tile>
+ <tile id="115">
+  <objectgroup draworder="index" id="2">
+   <object id="4" name="collision" x="9" y="4">
+    <properties>
+     <property name="solid" type="bool" value="true"/>
+    </properties>
+    <polyline points="1,7 -1,12 7,12 7,5 1,7"/>
+   </object>
+   <object id="5" name="origin" x="7" y="6">
+    <point/>
+   </object>
+  </objectgroup>
+ </tile>
+ <tile id="138">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0" y="0" width="9" height="16"/>
+  </objectgroup>
+ </tile>
+ <tile id="139">
+  <animation>
+   <frame tileid="110" duration="100"/>
+   <frame tileid="111" duration="100"/>
+   <frame tileid="112" duration="200"/>
+   <frame tileid="133" duration="100"/>
+   <frame tileid="154" duration="100"/>
+   <frame tileid="153" duration="100"/>
+   <frame tileid="152" duration="100"/>
+   <frame tileid="131" duration="100"/>
+  </animation>
  </tile>
 </tileset>

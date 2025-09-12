@@ -15,7 +15,7 @@ consistent error handling + logging, console & file
 
 // DONE:
 [63] [Fri] [12-09-2025]
-[x] tiled - tilesets started
+[√] tiled - tilesets API done, everything but auto-tiling rules
 
 [62] [Thu] [11-09-2025]
 [√] small tiled data changes

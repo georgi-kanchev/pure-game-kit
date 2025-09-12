@@ -16,19 +16,14 @@ type Tileset struct {
 	TileRenderSize  string                 `xml:"tilerendersize,attr"`
 	BackgroundColor string                 `xml:"backgroundcolor,attr"`
 	FillMode        string                 `xml:"fillmode,attr"`
-	TileOffset      TilesetTileOffset      `xml:"tileoffset"`
+	Offset          TilesetOffset          `xml:"tileoffset"`
 	Grid            TilesetGrid            `xml:"grid"`
 	Transformations TilesetTransformations `xml:"transformations"`
-	PerTileData     []TilesetTile          `xml:"tile"`
+	Tiles           []TilesetTile          `xml:"tile"`
 	Image           TilesetImage           `xml:"image"`
 	Properties      []Property             `xml:"properties>property"`
 }
-
-type TilesetTile struct {
-	Id             string         `xml:"id,attr"`
-	TilesCollision []LayerObjects `xml:"objectgroup"`
-}
-type TilesetTileOffset struct {
+type TilesetOffset struct {
 	X int `xml:"x,attr"`
 	Y int `xml:"y,attr"`
 }
@@ -48,4 +43,20 @@ type TilesetImage struct {
 	Width            int    `xml:"width,attr"`
 	Height           int    `xml:"height,attr"`
 	TransparentColor string `xml:"trans,attr"`
+}
+
+// =================================================================
+
+type TilesetTile struct {
+	Identity                             // no name
+	Probability     float32              `xml:"probability,attr"`
+	CollisionLayers []LayerObjects       `xml:"objectgroup"`
+	Animation       TilesetTileAnimation `xml:"animation"`
+}
+type TilesetTileAnimation struct {
+	Frames []TilesetTileFrame `xml:"frame"`
+}
+type TilesetTileFrame struct {
+	TileId   int `xml:"tileid,attr"`
+	Duration int `xml:"duration,attr"`
 }

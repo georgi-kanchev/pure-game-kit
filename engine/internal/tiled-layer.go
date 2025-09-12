@@ -39,15 +39,16 @@ type LayerObjects struct {
 }
 type LayerObject struct {
 	Identity
-	Width      float64            `xml:"width,attr"`
-	Height     float64            `xml:"height,attr"`
-	X          float64            `xml:"x,attr"`
-	Y          float64            `xml:"y,attr"`
-	Rotation   float64            `xml:"rotation,attr"`
-	Visible    string             `xml:"visible,attr"`
-	Text       LayerObjectText    `xml:"text"`
-	Polygon    LayerObjectPolygon `xml:"polygon"`
-	Properties []Property         `xml:"properties>property"`
+	Width       float32            `xml:"width,attr"`
+	Height      float32            `xml:"height,attr"`
+	X           float32            `xml:"x,attr"`
+	Y           float32            `xml:"y,attr"`
+	Rotation    float32            `xml:"rotation,attr"`
+	Visible     string             `xml:"visible,attr"`
+	Text        LayerObjectText    `xml:"text"`
+	Polygon     LayerObjectPolygon `xml:"polygon"`
+	PolygonTile LayerObjectPolygon `xml:"polyline"`
+	Properties  []Property         `xml:"properties>property"`
 }
 type LayerObjectPolygon struct {
 	Points string `xml:"points,attr"`
