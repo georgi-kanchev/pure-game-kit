@@ -50,7 +50,6 @@ var States = make(map[string]*StateMachine)
 
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
-var TiledWorlds = make(map[string]*World)
 
 var Cursor int
 var Input = ""

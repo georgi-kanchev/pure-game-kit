@@ -7,7 +7,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/collection"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
 	"strings"
@@ -55,33 +57,49 @@ func LoadTiledTilesets(tsxFilePaths ...string) []string {
 	}
 	return resultIds
 }
-
-func LoadTiledWorlds(worldFilePaths ...string) []string {
+func LoadTiledWorlds(worldFilePaths ...string) (tilemapIds []string) {
 	var resultIds = []string{}
-	for _, path := range worldFilePaths {
-		file, err := os.Open(path)
+	for _, worldPath := range worldFilePaths {
+		worldFile, err := os.Open(worldPath)
 		if err != nil {
 			fmt.Printf("error: %v\n", err)
 			continue
 		}
-		defer file.Close()
+		defer worldFile.Close()
 
 		var world *internal.World
-		var err2 = json.NewDecoder(file).Decode(&world)
+		var err2 = json.NewDecoder(worldFile).Decode(&world)
 		if err2 != nil {
 			continue
 		}
 
-		var name = filepath.Base(path)
-		world.Directory = filepath.Dir(path)
-		name = strings.TrimSuffix(name, filepath.Ext(name))
-		resultIds = append(resultIds, name)
-		world.Name = name
-		internal.TiledWorlds[name] = world
+		var name = filepath.Base(worldPath)
+		world.Directory = filepath.Dir(worldPath)
+		world.Name = strings.TrimSuffix(name, filepath.Ext(name))
+
+		for _, m := range world.Maps {
+			var mapPath = path.Join(world.Directory, m.FileName)
+			var name = path.Base(strings.ReplaceAll(mapPath, file.Extension(mapPath), ""))
+
+			if collection.Contains(resultIds, name) {
+				continue
+			}
+
+			var mapIds = LoadTiledMaps(mapPath)
+			if len(mapIds) == 0 {
+				continue
+			}
+
+			resultIds = append(resultIds, mapIds...)
+			for _, mapId := range mapIds {
+				var mp, _ = internal.TiledMaps[mapId]
+				mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
+			}
+		}
 	}
+
 	return resultIds
 }
-
 func LoadTiledMaps(tmxFilePaths ...string) []string {
 	var resultIds = []string{}
 	for _, path := range tmxFilePaths {
@@ -99,16 +117,25 @@ func LoadTiledMaps(tmxFilePaths ...string) []string {
 		}
 
 		var name = filepath.Base(path)
-		mapData.Directory = filepath.Dir(path)
 		name = strings.TrimSuffix(name, filepath.Ext(name))
+		mapData.Name = name
+		mapData.Directory = filepath.Dir(path)
 		resultIds = append(resultIds, name)
 		internal.TiledMaps[name] = mapData
 	}
 	return resultIds
 }
 
-func UnloadTiledMaps(tiledMapIds ...string) {
-	for _, v := range tiledMapIds {
+func UnloadTiledWorlds(worldFilePaths ...string) {
+	UnloadTiledMaps(LoadTiledWorlds(worldFilePaths...)...)
+}
+func UnloadTiledMaps(tilemapIds ...string) {
+	for _, v := range tilemapIds {
 		delete(internal.TiledMaps, v)
+	}
+}
+func UnloadTiledTilesets(tilesetIds ...string) {
+	for _, v := range tilesetIds {
+		delete(internal.TiledTilesets, v)
 	}
 }

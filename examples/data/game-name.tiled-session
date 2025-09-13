@@ -3,28 +3,45 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "atlas.tsx",
+    "activeFile": "desert.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
-            "scaleInDock": 3,
+            "scaleInDock": 0.75,
             "scaleInEditor": 8
         },
         "atlas.tsx": {
             "scaleInDock": 1,
-            "scaleInEditor": 3
+            "scaleInEditor": 1.5
+        },
+        "desert.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 15.5,
+                "y": 144.5
+            }
         },
         "map.tmx": {
             "expandedGroupLayers": [
                 6
             ],
-            "scale": 3,
+            "expandedObjectLayers": [
+                6,
+                11,
+                2
+            ],
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 113.33333333333331,
-                "y": 182.33333333333331
+                "x": 320.25,
+                "y": 174.75
             }
         },
         "map.tmx#atlas": {
@@ -34,10 +51,15 @@
         "map.tmx#objects": {
             "scaleInDock": 0.75,
             "scaleInEditor": 4
+        },
+        "objects.tsx": {
+            "scaleInDock": 4,
+            "scaleInEditor": 1.5
         }
     },
-    "frame.defaultDuration": 200,
+    "frame.defaultDuration": 400,
     "last.imagePath": "/home/gojur/code/pure-kit/examples/data",
+    "last.objectTemplatePath": "/home/gojur/code/pure-kit/examples/data",
     "last.objectTypesPath": "C:/Users/PC/Desktop/tiled/structure.xml",
     "last.worldFilePath": "/home/gojur/code/pure-kit/examples/data",
     "loadedWorlds": [
@@ -49,16 +71,20 @@
     "map.width": 20,
     "openFiles": [
         "map.tmx",
-        "atlas.tsx"
+        "atlas.tsx",
+        "desert.tmx",
+        "objects.tsx"
     ],
     "project": "game-name.tiled-project",
-    "property.type": "bool",
+    "property.type": "int",
     "recentFiles": [
         "map.tmx",
-        "atlas.tsx"
+        "atlas.tsx",
+        "objects.tsx",
+        "desert.tmx"
     ],
     "textEdit.monospace": false,
-    "tileset.embedInMap": true,
+    "tileset.embedInMap": false,
     "tileset.lastUsedFormat": "tsx",
     "tileset.margin": 0,
     "tileset.spacing": 0,

@@ -31,6 +31,14 @@ type LayerTilesData struct {
 }
 
 // =================================================================
+type LayerImage struct {
+	Layer
+	RepeatX bool         `xml:"repeatx,attr"`
+	RepeatY bool         `xml:"repeaty,attr"`
+	Image   TilesetImage `xml:"image"`
+}
+
+// =================================================================
 type LayerObjects struct {
 	Layer
 	DrawOrder string        `xml:"draworder,attr"`
@@ -45,6 +53,7 @@ type LayerObject struct {
 	Y           float32            `xml:"y,attr"`
 	Rotation    float32            `xml:"rotation,attr"`
 	Visible     string             `xml:"visible,attr"`
+	Template    string             `xml:"template,attr"`
 	Text        LayerObjectText    `xml:"text"`
 	Polygon     LayerObjectPolygon `xml:"polygon"`
 	PolygonTile LayerObjectPolygon `xml:"polyline"`
@@ -68,9 +77,6 @@ type LayerObjectText struct {
 }
 
 // =================================================================
-type LayerImage struct {
-	Layer
-	RepeatX bool         `xml:"repeatx,attr"`
-	RepeatY bool         `xml:"repeaty,attr"`
-	Image   TilesetImage `xml:"image"`
+type Template struct {
+	Object LayerObject `xml:"object"`
 }

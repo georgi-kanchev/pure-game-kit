@@ -5,8 +5,6 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"io"
-	"os"
-	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -67,50 +65,51 @@ func decompress(data []byte) []byte {
 
 	return result
 }
-func compress(data []byte) []byte {
-	var buf bytes.Buffer
-	var gw = gzip.NewWriter(&buf)
-	var _, err = gw.Write(data)
-	if err != nil {
-		return data
-	}
-	if err := gw.Close(); err != nil {
-		return data
-	}
-	return buf.Bytes()
-}
 
-func printSoundBase64(path string) {
-	if path == "" {
-		return
-	}
-	var raw, _ = os.ReadFile(path)
-	var compressed = compress(raw)
-	var b64 = base64.StdEncoding.EncodeToString(compressed)
-	print(b64)
-}
-func printFontBase64(path string) {
-	if path == "" {
-		return
-	}
-	var bytes = file.LoadBytes(path)
-	var compressed = compress(bytes)
-	var b64 = base64.StdEncoding.EncodeToString(compressed)
-	print(b64)
-}
-func printImageBase64(path string) {
-	if path == "" {
-		return
-	}
-	var img = rl.LoadImage(path)
-	var bytes = rl.ExportImageToMemory(*img, ".png")
-	var compressed = compress(bytes)
-	var b64 = base64.StdEncoding.EncodeToString(compressed)
-	print(b64)
-}
+// func compress(data []byte) []byte {
+// 	var buf bytes.Buffer
+// 	var gw = gzip.NewWriter(&buf)
+// 	var _, err = gw.Write(data)
+// 	if err != nil {
+// 		return data
+// 	}
+// 	if err := gw.Close(); err != nil {
+// 		return data
+// 	}
+// 	return buf.Bytes()
+// }
 
-func Main() {
-	printSoundBase64("")
-	printFontBase64("")
-	printImageBase64("default-ui.png")
-}
+// func printSoundBase64(path string) {
+// 	if path == "" {
+// 		return
+// 	}
+// 	var raw, _ = os.ReadFile(path)
+// 	var compressed = compress(raw)
+// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	print(b64)
+// }
+// func printFontBase64(path string) {
+// 	if path == "" {
+// 		return
+// 	}
+// 	var bytes = file.LoadBytes(path)
+// 	var compressed = compress(bytes)
+// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	print(b64)
+// }
+// func printImageBase64(path string) {
+// 	if path == "" {
+// 		return
+// 	}
+// 	var img = rl.LoadImage(path)
+// 	var bytes = rl.ExportImageToMemory(*img, ".png")
+// 	var compressed = compress(bytes)
+// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	print(b64)
+// }
+
+// func Main() {
+// 	printSoundBase64("")
+// 	printFontBase64("")
+// 	printImageBase64("default-ui.png")
+// }

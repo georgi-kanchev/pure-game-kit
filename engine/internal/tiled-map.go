@@ -5,7 +5,8 @@ import (
 )
 
 type Map struct {
-	Directory       string
+	Name, Directory string
+	WorldX, WorldY  float32
 	XMLName         xml.Name       `xml:"map"`
 	Version         string         `xml:"version,attr"`
 	TiledVersion    string         `xml:"tiledversion,attr"`
@@ -28,6 +29,7 @@ type Map struct {
 	LayersTiles     []LayerTiles   `xml:"layer"`
 	LayersObjects   []LayerObjects `xml:"objectgroup"`
 	LayersImages    []LayerImage   `xml:"imagelayer"`
+	Properties      []Property     `xml:"properties>property"`
 }
 
 type MapChunkSize struct {

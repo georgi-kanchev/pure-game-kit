@@ -52,8 +52,10 @@ func (camera *Camera) DragAndZoom() {
 	var scroll = rl.GetMouseWheelMove()
 
 	if rl.IsMouseButtonDown(rl.MouseButtonMiddle) {
-		camera.X -= float32(delta.X) / camera.Zoom
-		camera.Y -= float32(delta.Y) / camera.Zoom
+		var rad = angle.ToRadians(-camera.Angle)
+		var sin, cos = number.Sine(rad), number.Cosine(rad)
+		camera.X -= (delta.X*cos - delta.Y*sin) / camera.Zoom
+		camera.Y -= (delta.X*sin + delta.Y*cos) / camera.Zoom
 	}
 	if scroll > 0 {
 		camera.Zoom *= 1.05

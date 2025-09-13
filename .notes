@@ -1,4 +1,6 @@
 // TODO:
+gui text outline doesn't work
+menu dropdown container doesn't disappear sometimes when clicked
 example for texture areas, whole texture + all area rects + hover & name
 tiled scenes loading
 drawing tilemaps - https://wareya.github.io/webtyler/
@@ -14,6 +16,11 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[64] [Sat] [13-09-2025]
+[√] camera - fixed drag & zoom when camera is rotated
+[√] tiled - map tile layers -> sprites, taking into account tilesets
+[√] tiled - hotreloading works pretty well, may have to think of hot reloading just SOME things
+
 [63] [Fri] [12-09-2025]
 [√] tiled - tilesets API done, everything but auto-tiling rules
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <object name="rock" type="player" width="48" height="48">
+  <properties>
+   <property name="health" type="float" value="32.2"/>
+   <property name="name" value="whatever"/>
+  </properties>
+ </object>
+</template>

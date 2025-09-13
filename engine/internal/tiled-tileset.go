@@ -3,9 +3,10 @@ package internal
 type Tileset struct {
 	Identity
 	AtlasId         string
+	Source          string                 `xml:"source,attr"`
 	Version         string                 `xml:"version,attr"`
 	TiledVersion    string                 `xml:"tiledversion,attr"`
-	FirstGID        int                    `xml:"firstgid,attr"`
+	FirstTileId     int                    `xml:"firstgid,attr"`
 	TileWidth       int                    `xml:"tilewidth,attr"`
 	TileHeight      int                    `xml:"tileheight,attr"`
 	TileCount       int                    `xml:"tilecount,attr"`

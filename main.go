@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	example.Scenes()
+	example.Tiled()
 }
