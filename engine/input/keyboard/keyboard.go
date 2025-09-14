@@ -47,3 +47,26 @@ func IsAnyKeyReleasedOnce() bool {
 	}
 	return false
 }
+
+func IsComboPressedOnce(keys ...int) bool {
+	return combo(keys) && IsKeyPressedOnce(keys[len(keys)-1])
+}
+func IsComboHeld(keys ...int) bool {
+	return combo(keys) && IsKeyHeld(keys[len(keys)-1])
+}
+
+//=================================================================
+// private
+
+func combo(keys []int) bool {
+	if len(internal.Keys) != len(keys) {
+		return false
+	}
+
+	for i := range internal.Keys {
+		if internal.Keys[i] != keys[i] {
+			return false
+		}
+	}
+	return true
+}

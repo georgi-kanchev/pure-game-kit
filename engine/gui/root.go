@@ -4,8 +4,12 @@ import (
 	"encoding/xml"
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/input/mouse"
+	"pure-kit/engine/gui/property"
+	k "pure-kit/engine/input/keyboard"
+	"pure-kit/engine/input/keyboard/key"
+	m "pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/text"
 )
 
 type root struct {
@@ -21,9 +25,12 @@ type root struct {
 
 func (root *root) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
+	var owner = root.Containers[widget.OwnerId]
+	var hotkey = key.FromName(themedProp(property.ButtonHotkey, root, owner, widget))
+	var focus = widget.isFocused(root, camera) && wPressedOn == widget
+	var input = k.IsKeyPressedOnce(hotkey) || (focus && m.IsButtonReleasedOnce(m.ButtonLeft))
 
-	return exists && mouse.IsButtonReleasedOnce(mouse.ButtonLeft) &&
-		widget.isFocused(root, camera) && wPressedOn == widget
+	return exists && input
 }
 func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
@@ -31,10 +38,13 @@ func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera)
 		return false
 	}
 
-	var hover = widget.isFocused(root, camera)
-	var first = condition.TrueOnce(hover && mouse.IsButtonPressedOnce(mouse.ButtonLeft), ";;first-"+buttonId)
+	var focus = widget.isFocused(root, camera)
+	var owner = root.Containers[widget.OwnerId]
+	var hotkey = key.FromName(themedProp(property.ButtonHotkey, root, owner, widget))
+	var first = k.IsKeyPressedOnce(hotkey) || (focus && m.IsButtonPressedOnce(m.ButtonLeft))
+	var tick = seconds.RealRuntime() > wPressedAt+0.5
+	var inputHold = k.IsKeyPressed(hotkey) || (focus && wPressedOn == widget && m.IsButtonPressed(m.ButtonLeft))
+	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId, "-", hotkey)) && tick
 
-	return first || (hover && wPressedOn == widget &&
-		condition.TrueEvery(0.1, ";;hold-"+buttonId) &&
-		seconds.RealRuntime() > wPressedAt+0.5)
+	return first || hold
 }

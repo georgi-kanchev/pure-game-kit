@@ -7,7 +7,6 @@ import (
 	"pure-kit/engine/gui"
 	d "pure-kit/engine/gui/dynamic"
 	p "pure-kit/engine/gui/property"
-	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
@@ -74,7 +73,7 @@ func GUIs() {
 		gui.InputField("class", p.Width, "500", p.AssetId, box[9], p.Text, "Cool"),
 		gui.Visual("stepper-label", p.ThemeId, "label", p.Text, "Stepper", p.NewRow, ""),
 		gui.Button("step-left", p.Width, "100", p.TextEmbeddedAssetId1, "arrow-left", p.Text, "^^ ",
-			p.TooltipText, "Press this button to do absolutely nothing."),
+			p.TooltipText, "Press this button to do absolutely nothing.", p.ButtonHotkey, "A"),
 		gui.Visual("stepper", p.AssetId, box[9], p.Text, "10/10", p.TextAlignmentY, "0.5", p.GapX, "0",
 			p.TextColor, "150 150 150 255"),
 		gui.Button("step-right", p.Width, "100", p.TextEmbeddedAssetId1, icons[212], p.Text, "^^", p.GapX, "0"),
@@ -130,14 +129,14 @@ func GUIs() {
 		gui.Container("menu", "", "", "820", "300", p.ThemeId, "button", p.Hidden, "+", p.GapX, "10", p.GapY, "10"),
 		gui.Visual("menu-bgr", p.FillContainer, "", p.AssetId, box[0], p.Color, "200 200 200 255"),
 		gui.Button("menu-1", p.GapX, "0", p.Width, "1000", p.Text, "Monday"),
-		gui.Button("menu-2", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Tuesday"),
-		gui.Button("menu-3", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Wednesday"),
-		gui.Button("menu-4", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Thursday",
+		gui.Button("menu-2", p.GapX, "0", p.NewRow, "", p.Width, d.OwnerWidth, p.Text, "Tuesday"),
+		gui.Button("menu-3", p.GapX, "0", p.NewRow, "", p.Width, d.OwnerWidth, p.Text, "Wednesday"),
+		gui.Button("menu-4", p.GapX, "0", p.NewRow, "", p.Width, d.OwnerWidth, p.Text, "Thursday",
 			p.TooltipText, "It's thursday, wohooo!"),
-		gui.Button("menu-5", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Friday"),
+		gui.Button("menu-5", p.GapX, "0", p.NewRow, "", p.Width, d.OwnerWidth, p.Text, "Friday"),
 		gui.Visual("weekend-label", p.ThemeId, "label", p.Text, "Weekend", p.NewRow, ""),
-		gui.Button("menu-6", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Saturday"),
-		gui.Button("menu-7", p.GapX, "0", p.NewRow, "", p.Width, d.ContainerWidth, p.Text, "Sunday"),
+		gui.Button("menu-6", p.GapX, "0", p.NewRow, "", p.Width, d.OwnerWidth, p.Text, "Saturday"),
+		gui.Button("menu-7", p.GapX, "0", p.NewRow, "", p.Width, d.OwnerWidth, p.Text, "Sunday"),
 		// ======================================================
 		gui.Container("tooltips", "", "", "", "", p.ThemeId, "button", p.Hidden, "+"),
 		gui.Tooltip("tooltip", p.AssetId, box[7], p.Width, "700", p.TextAlignmentX, "0.5", p.TextAlignmentY, "0.5"),
@@ -165,13 +164,10 @@ func GUIs() {
 			hud.SetProperty(to, p.DraggableSpriteId, fromId)
 		}
 
-		if keyboard.IsAnyKeyPressedOnce() {
-			print("press")
-		}
-		if keyboard.IsAnyKeyReleasedOnce() {
-			print("release")
+		if hud.ButtonOnClickAndHold("step-left", cam) {
+			print("hi")
 		}
 
-		hud.Draw(cam)
+		hud.UpdateAndDraw(cam)
 	}
 }

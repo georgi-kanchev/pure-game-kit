@@ -3,7 +3,9 @@ package gui
 import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/property"
-	"pure-kit/engine/input/mouse"
+	k "pure-kit/engine/input/keyboard"
+	"pure-kit/engine/input/keyboard/key"
+	m "pure-kit/engine/input/mouse"
 	"pure-kit/engine/utility/seconds"
 )
 
@@ -33,31 +35,39 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	var prev = widget.ThemeId
 	var _, ownerDisabled = owner.Properties[property.Disabled]
 	var _, disabled = widget.Properties[property.Disabled]
-	var hover = themedProp(property.ButtonThemeIdHover, root, owner, widget)
-	var press = themedProp(property.ButtonThemeIdPress, root, owner, widget)
+	var themePress = themedProp(property.ButtonThemeIdPress, root, owner, widget)
+	var focus = widget.isFocused(root, cam)
 
-	if widget.isFocused(root, cam) {
-		mouse.SetCursor(mouse.CursorHand)
+	if focus {
+		m.SetCursor(m.CursorHand)
 
 		if disabled || ownerDisabled {
-			mouse.SetCursor(mouse.CursorNotAllowed)
-		} else {
-			if hover != "" {
-				widget.ThemeId = hover
-			}
-			if press != "" && wPressedOn == widget && mouse.IsButtonPressed(mouse.ButtonLeft) {
-				widget.ThemeId = press
-			}
-			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
-				wPressedOn = widget
-				wPressedAt = seconds.RealRuntime()
-			}
+			m.SetCursor(m.CursorNotAllowed)
 		}
+
+		var themeHover = themedProp(property.ButtonThemeIdHover, root, owner, widget)
+		if themeHover != "" {
+			widget.ThemeId = themeHover
+		}
+		tryPress(m.IsButtonPressed(m.ButtonLeft), m.IsButtonPressedOnce(m.ButtonLeft), themePress, widget)
 	}
+
+	var hotkey = key.FromName(themedProp(property.ButtonHotkey, root, owner, widget))
+	tryPress(k.IsKeyPressed(hotkey), k.IsKeyPressedOnce(hotkey), themePress, widget)
 
 	setupVisualsTextured(root, widget)
 	setupVisualsText(root, widget)
 	drawVisuals(cam, root, widget)
 	buttonColor = parseColor(themedProp(property.Color, root, owner, widget), widget.isDisabled(owner))
 	widget.ThemeId = prev
+}
+
+func tryPress(press, once bool, themePress string, widget *widget) {
+	if press && wPressedOn == widget && themePress != "" {
+		widget.ThemeId = themePress
+	}
+	if once {
+		wPressedOn = widget
+		wPressedAt = seconds.RealRuntime()
+	}
 }

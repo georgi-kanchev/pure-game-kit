@@ -69,6 +69,7 @@ const (
 	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
 	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
 	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
+	ButtonHotkey         = "buttonHotkey"         // [widget] [theme]
 
 	SliderStep          = "sliderStep"          // [widget] [theme] step <= 0 hides indicators, example: "-0.1", "0.2"
 	SliderStepAssetId   = "sliderStepAssetId"   // [widget] [theme]

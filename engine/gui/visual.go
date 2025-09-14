@@ -108,17 +108,6 @@ func setupVisualsText(root *root, widget *widget) {
 		parseNum(themedProp(p.TextEmbeddedThickness4, root, owner, widget), 0.5),
 		parseNum(themedProp(p.TextEmbeddedThickness5, root, owner, widget), 0.5),
 	}
-
-	var outlineCol = themedProp(p.TextColorOutline, root, owner, widget)
-	if outlineCol != "" {
-		reusableTextBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
-		reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
-		reusableTextBox.Color = parseColor(outlineCol, disabled)
-	}
-
-	reusableTextBox.Color = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled)
-	reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
-	reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
 }
 func drawVisuals(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
@@ -152,11 +141,19 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget) {
 			cam.Mask(x, y, xw-x, yh-y)
 		}
 
+		var disabled = widget.isDisabled(owner)
 		var outlineCol = themedProp(p.TextColorOutline, root, owner, widget)
 		if outlineCol != "" {
+			reusableTextBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
+			reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
+			reusableTextBox.Color = parseColor(outlineCol, disabled)
 			cam.DrawTextBoxes(&reusableTextBox)
 		}
 
+		var col = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled)
+		reusableTextBox.Color = col
+		reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
+		reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
 		cam.DrawTextBoxes(&reusableTextBox)
 		cam.Mask(mx, my, mw, mh)
 	}

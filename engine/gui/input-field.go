@@ -68,9 +68,11 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		mouse.SetCursor(mouse.CursorInput)
 	}
 
-	var focused = widget.isFocused(root, cam)
 	var anyInput = mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0
-	if (anyInput && !focused) || !window.IsHovered() {
+	var focused = widget.isFocused(root, cam)
+	var meTyping = typingIn == widget // each input field should disable its own typing
+
+	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyPressedOnce(key.Escape)) {
 		typingIn = nil
 		scrollX = 0
 	}

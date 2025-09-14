@@ -92,6 +92,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 			if newRow {
 				curX = x + cGapX
 				curY += parseNum(dyn(c, row, text.New(maxHeight+gapY)), 0)
+				maxHeight = 0
 			}
 
 			curX += condition.If(newRow || nonBgrIndex == 0, 0, gapX)

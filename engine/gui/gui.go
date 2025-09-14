@@ -110,7 +110,7 @@ func NewElements(elements ...string) *GUI {
 // =================================================================
 // setters
 
-func (gui *GUI) Draw(camera *graphics.Camera) {
+func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var prevAng, prevZoom = camera.Angle, camera.Zoom
 	var containers = gui.root.ContainerIds
 
@@ -340,15 +340,24 @@ func dyn(owner *container, value string, defaultValue string) string {
 	value = strings.ReplaceAll(value, dynamic.CameraHeight, camH)
 
 	if owner != nil {
-		value = strings.ReplaceAll(value, dynamic.ContainerX, ownerX)
-		value = strings.ReplaceAll(value, dynamic.ContainerY, ownerY)
-		value = strings.ReplaceAll(value, dynamic.ContainerWidth, ownerW)
-		value = strings.ReplaceAll(value, dynamic.ContainerHeight, ownerH)
-		value = strings.ReplaceAll(value, dynamic.ContainerLeftX, ownerLx)
-		value = strings.ReplaceAll(value, dynamic.ContainerRightX, ownerRx)
-		value = strings.ReplaceAll(value, dynamic.ContainerTopY, ownerTy)
-		value = strings.ReplaceAll(value, dynamic.ContainerBottomY, ownerBy)
+		value = strings.ReplaceAll(value, dynamic.OwnerX, ownerX)
+		value = strings.ReplaceAll(value, dynamic.OwnerY, ownerY)
+		value = strings.ReplaceAll(value, dynamic.OwnerWidth, ownerW)
+		value = strings.ReplaceAll(value, dynamic.OwnerHeight, ownerH)
+		value = strings.ReplaceAll(value, dynamic.OwnerLeftX, ownerLx)
+		value = strings.ReplaceAll(value, dynamic.OwnerRightX, ownerRx)
+		value = strings.ReplaceAll(value, dynamic.OwnerTopY, ownerTy)
+		value = strings.ReplaceAll(value, dynamic.OwnerBottomY, ownerBy)
 	}
+
+	// value = strings.ReplaceAll(value, dynamic.MyX, "")
+	// value = strings.ReplaceAll(value, dynamic.MyY, "")
+	// value = strings.ReplaceAll(value, dynamic.MyWidth, "")
+	// value = strings.ReplaceAll(value, dynamic.MyHeight, "")
+	// value = strings.ReplaceAll(value, dynamic.MyLeftX, "")
+	// value = strings.ReplaceAll(value, dynamic.MyRightX, "")
+	// value = strings.ReplaceAll(value, dynamic.MyTopY, "")
+	// value = strings.ReplaceAll(value, dynamic.MyBottomY, "")
 
 	var calc = text.Calculate(value)
 	if number.IsNaN(calc) {
