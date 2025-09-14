@@ -54,7 +54,10 @@ var TiledMaps = make(map[string]*Map)
 var Cursor int
 var Input = ""
 var Keys = []int{}
+var KeysPrev = []int{}
 var Buttons = []int{}
+var AnyButtonPressedOnce = false
+var AnyButtonReleasedOnce = false
 
 var WindowReady = false
 
@@ -145,12 +148,16 @@ func updateTimers() {
 
 // keys & buttons from engine/input/keyboard & mouse
 func updateKeysAndButtons() {
+	AnyButtonPressedOnce = false
+	AnyButtonReleasedOnce = false
 	for i := range 7 {
 		if rl.IsMouseButtonPressed(rl.MouseButton(i)) {
 			Buttons = append(Buttons, i)
+			AnyButtonPressedOnce = true
 		}
 		if rl.IsMouseButtonReleased(rl.MouseButton(i)) {
 			Buttons = collection.Remove(Buttons, i)
+			AnyButtonReleasedOnce = true
 		}
 	}
 
@@ -166,6 +173,7 @@ func updateKeysAndButtons() {
 		char = rl.GetCharPressed()
 	}
 
+	KeysPrev = collection.Clone(Keys)
 	checkKeyRange(32, 96)
 	checkKeyRange(256, 349)
 

@@ -1,8 +1,8 @@
 package keyboard
 
 import (
-	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/collection"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -32,5 +32,18 @@ func IsAnyKeyPressed() bool {
 	return len(internal.Keys) > 0
 }
 func IsAnyKeyPressedOnce() bool {
-	return condition.TrueOnce(len(internal.Keys) > 0, ";;keyboard-any-pressed")
+	for _, k := range internal.Keys {
+		if !collection.Contains(internal.KeysPrev, k) {
+			return true
+		}
+	}
+	return false
+}
+func IsAnyKeyReleasedOnce() bool {
+	for _, k := range internal.KeysPrev {
+		if !collection.Contains(internal.Keys, k) {
+			return true
+		}
+	}
+	return false
 }

@@ -7,6 +7,7 @@ import (
 	"pure-kit/engine/gui"
 	d "pure-kit/engine/gui/dynamic"
 	p "pure-kit/engine/gui/property"
+	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
@@ -77,7 +78,6 @@ func GUIs() {
 		gui.Visual("stepper", p.AssetId, box[9], p.Text, "10/10", p.TextAlignmentY, "0.5", p.GapX, "0",
 			p.TextColor, "150 150 150 255"),
 		gui.Button("step-right", p.Width, "100", p.TextEmbeddedAssetId1, icons[212], p.Text, "^^", p.GapX, "0"),
-		gui.Visual("lalalalala", p.ThemeId, "label", p.Text, "Lalalalala"),
 		gui.Visual("checkbox-label", p.ThemeId, "label", p.Text, "Checkbox", p.NewRow, ""),
 		gui.Checkbox("checkbox", p.ThemeId, "checkbox-off", p.CheckboxThemeId, "checkbox-on"),
 		gui.Menu("dropdown", p.NewRow, "", p.AssetId, box[9], p.Text, "^^ List selection", p.Width, "820",
@@ -163,6 +163,13 @@ func GUIs() {
 			var toId = hud.Property(to, p.DraggableSpriteId)
 			hud.SetProperty(from, p.DraggableSpriteId, toId)
 			hud.SetProperty(to, p.DraggableSpriteId, fromId)
+		}
+
+		if keyboard.IsAnyKeyPressedOnce() {
+			print("press")
+		}
+		if keyboard.IsAnyKeyReleasedOnce() {
+			print("release")
 		}
 
 		hud.Draw(cam)

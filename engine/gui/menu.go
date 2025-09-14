@@ -20,6 +20,10 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	button(cam, root, widget)
 
+	if mouse.IsAnyButtonPressedOnce() {
+		print()
+	}
+
 	if mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0 || !window.IsHovered() {
 		var containerId = themedProp(property.MenuContainerId, root, owner, widget)
 		var c, has = root.Containers[containerId]
