@@ -1,5 +1,4 @@
 // TODO:
-gui add more hotkey functionality
 example for texture areas, whole texture + all area rects + hover & name
 tiled scenes loading
 drawing tilemaps - https://wareya.github.io/webtyler/
@@ -22,6 +21,7 @@ consistent error handling + logging, console & file
 [√] gui - fixed menu dropdown not disappearing on click
 [√] gui - fixed button events sometimes not triggering etc
 [√] gui - button hotkeys
+[√] gui - escapes closes menu & stops typing
 [√] mouse - added any button release funcs + fixed any button press
 [√] keyboard - added any key release funcs + fixed any key press
 [√] keyboard - keys better data layout + name mappings
