@@ -15,6 +15,7 @@ consistent error handling + logging, console & file
 
 // DONE:
 [66] [Mon] [15-09-2025]
+[√] gui - button hotkeys no longer work while typing
 [√] gui - input field selection functionality
 [√] gui - input field placeholder
 
