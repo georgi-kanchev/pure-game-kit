@@ -80,7 +80,8 @@ const (
 
 	MenuContainerId = "menuContainerId" // [widget] [theme]
 
-	InputFieldMargin = "inputFieldMargin" // [widget] [theme] default: "30"
+	InputFieldMargin      = "inputFieldMargin"      // [widget] [theme] default: "30"
+	InputFieldPlaceholder = "inputFieldPlaceholder" // [widget] [theme] default: "Type..."
 
 	DraggableSpriteId    = "draggableSpriteId"    // [widget] [theme]
 	DraggableSpriteColor = "draggableSpriteColor" // [widget] [theme] default: "255 255 255 255"

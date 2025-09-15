@@ -43,8 +43,8 @@ var symbolXs []float32 = []float32{}
 var maskText = false
 var frame = 0
 
-func setupText(margin float32, root *root, widget *widget) {
-	setupVisualsText(root, widget)
+func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
+	setupVisualsText(root, widget, skipEmpty)
 	reusableTextBox.AlignmentX, reusableTextBox.AlignmentY = 0, 0
 	reusableTextBox.Width = 9999
 	reusableTextBox.Height = widget.Height - margin
@@ -67,7 +67,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		indexCursor = len(symbolXs) - 1
 	}
 
-	setupText(margin, root, widget)
+	setupText(margin, root, widget, true)
 	setupVisualsTextured(root, widget)
 
 	if widget.isFocused(root, cam) {
@@ -77,7 +77,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var anyInput = mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0
 	var focused = widget.isFocused(root, cam)
 	var meTyping = typingIn == widget // each input field should disable its own typing
-	var text = ""
+	var text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
 
 	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyPressedOnce(key.Escape)) {
 		typingIn = nil
@@ -91,7 +91,6 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		typingIn = widget
 	}
 	if typingIn == widget {
-		text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
 		text = tryInput(text, widget, margin, root, cam)
 		tryRemove(cam, text, root, widget, margin)
 		tryMoveCursor(widget, text, cam, margin, root)
@@ -101,9 +100,18 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		cursorTime += seconds.RealFrameDelta()
 	}
 
+	var isPlaceholder = false
+	if text == "" {
+		var placeholder = themedProp(property.InputFieldPlaceholder, root, owner, widget)
+		placeholder = strings.ReplaceAll(defaultValue(placeholder, "Type..."), "\n", "")
+		setupText(margin, root, widget, false) // don't skip when empty!
+		reusableTextBox.Text = placeholder
+		isPlaceholder = true
+	}
+
 	maskText = true
 	textMargin = margin
-	drawVisuals(cam, root, widget, func() {
+	drawVisuals(cam, root, widget, isPlaceholder, func() {
 		if indexCursor == indexSelect || typingIn != widget {
 			return
 		}
@@ -215,11 +223,11 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 	var left, right = widget.X + margin, widget.X + widget.Width - margin
 	if cx < left && indexCursor >= 0 {
 		scrollX -= left - cx
-		setupText(margin, root, widget)
+		setupText(margin, root, widget, true)
 	}
 	if cx > right && indexCursor <= length {
 		scrollX += cx - right
-		setupText(margin, root, widget)
+		setupText(margin, root, widget, true)
 	}
 }
 func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, margin float32) {
@@ -260,7 +268,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		if indexCursor > 0 && textRight < right {
 			scrollX -= right - textRight
 			scrollX = condition.If(textWidth < right-left, 0, scrollX)
-			setupText(margin, root, widget)
+			setupText(margin, root, widget, true)
 		}
 	}
 	if keyboard.IsKeyPressedOnce(key.Delete) || keyboard.IsKeyHeld(key.Delete) {
@@ -276,7 +284,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	if txt.Length(text) == 0 {
 		text = input
 		setText(widget, text)
-		setupText(margin, root, widget) // text is not setuped cuz it was empty "" (skipped)
+		setupText(margin, root, widget, true) // text is not setuped cuz it was empty "" (skipped)
 	} else {
 		text = text[:indexCursor] + input + text[indexCursor:]
 	}
@@ -318,7 +326,7 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	frame = int(seconds.FrameCount()) // only once per frame
 
 	var margin = parseNum(themedProp(property.InputFieldMargin, root, owner, typingIn), 30)
-	setupText(margin, root, typingIn)
+	setupText(margin, root, typingIn, true)
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
 		reusableTextBox.Text = ""
 	}

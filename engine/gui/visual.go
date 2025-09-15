@@ -53,10 +53,10 @@ func setupVisualsTextured(root *root, widget *widget) {
 
 	}
 }
-func setupVisualsText(root *root, widget *widget) {
+func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	var owner = root.Containers[widget.OwnerId]
 	var text = themedProp(p.Text, root, owner, widget)
-	if text == "" {
+	if skipEmpty && text == "" {
 		return
 	}
 
@@ -109,13 +109,12 @@ func setupVisualsText(root *root, widget *widget) {
 		parseNum(themedProp(p.TextEmbeddedThickness5, root, owner, widget), 0.5),
 	}
 }
-func drawVisuals(cam *graphics.Camera, root *root, widget *widget, betweenVisualAndText func()) {
+func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool, betweenVisualAndText func()) {
 	var owner = root.Containers[widget.OwnerId]
 	var assetId = themedProp(p.AssetId, root, owner, widget)
 	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.isDisabled(owner))
 	var frameCol = parseColor(themedProp(p.FrameColor, root, owner, widget), widget.isDisabled(owner))
 	var frameSz = parseNum(themedProp(p.FrameSize, root, owner, widget), 0)
-	var text = themedProp(p.Text, root, owner, widget)
 
 	if assetId != "" {
 		var _, has = internal.Boxes[assetId]
@@ -129,7 +128,7 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, betweenVisual
 		cam.DrawRectangle(widget.X, widget.Y, widget.Width, widget.Height, 0, col)
 	}
 
-	if text != "" {
+	if reusableTextBox.Text != "" {
 		var mx, my, mw, mh = cam.MaskX, cam.MaskY, cam.MaskWidth, cam.MaskHeight
 		if maskText {
 			var x, y = cam.PointToScreen(widget.X+textMargin, widget.Y+textMargin/2)
@@ -154,8 +153,8 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, betweenVisual
 			cam.DrawTextBoxes(&reusableTextBox)
 		}
 
-		var col = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled)
-		reusableTextBox.Color = col
+		var c = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled || fadeText)
+		reusableTextBox.Color = c
 		reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
 		reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
 		cam.DrawTextBoxes(&reusableTextBox)

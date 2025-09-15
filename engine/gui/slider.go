@@ -91,5 +91,5 @@ func drawReusableWidget(col uint, assetId string, x, y float32, root *root, cam 
 	reusableWidget.X, reusableWidget.Y = x, y
 
 	setupVisualsTextured(root, reusableWidget)
-	drawVisuals(cam, root, reusableWidget, nil)
+	drawVisuals(cam, root, reusableWidget, false, nil)
 }

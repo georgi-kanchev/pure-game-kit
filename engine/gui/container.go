@@ -125,8 +125,8 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 				tryShowTooltip(widget, root, c, cam)
 			} else if widget.Class == "visual" {
 				setupVisualsTextured(root, widget)
-				setupVisualsText(root, widget)
-				drawVisuals(cam, root, widget, nil)
+				setupVisualsText(root, widget, true)
+				drawVisuals(cam, root, widget, false, nil)
 				tryShowTooltip(widget, root, c, cam)
 			}
 
