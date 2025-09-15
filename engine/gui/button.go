@@ -52,12 +52,14 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 		tryPress(m.IsButtonPressed(m.ButtonLeft), m.IsButtonPressedOnce(m.ButtonLeft), themePress, widget)
 	}
 
-	var hotkey = key.FromName(themedProp(property.ButtonHotkey, root, owner, widget))
-	tryPress(k.IsKeyPressed(hotkey), k.IsKeyPressedOnce(hotkey), themePress, widget)
+	if typingIn == nil { // no hotkeys while typing
+		var hotkey = key.FromName(themedProp(property.ButtonHotkey, root, owner, widget))
+		tryPress(k.IsKeyPressed(hotkey), k.IsKeyPressedOnce(hotkey), themePress, widget)
+	}
 
 	setupVisualsTextured(root, widget)
 	setupVisualsText(root, widget)
-	drawVisuals(cam, root, widget)
+	drawVisuals(cam, root, widget, nil)
 	buttonColor = parseColor(themedProp(property.Color, root, owner, widget), widget.isDisabled(owner))
 	widget.ThemeId = prev
 }

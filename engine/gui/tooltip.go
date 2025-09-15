@@ -76,5 +76,5 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	}
 
 	setupVisualsTextured(root, tooltip)
-	drawVisuals(cam, root, tooltip)
+	drawVisuals(cam, root, tooltip, nil)
 }

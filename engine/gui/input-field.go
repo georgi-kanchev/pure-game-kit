@@ -37,7 +37,7 @@ func (gui *GUI) InputFieldStopTyping() {
 // private
 
 var typingIn *widget
-var indexCursor int
+var indexCursor, indexSelect int
 var cursorTime, scrollX, textMargin float32
 var symbolXs []float32 = []float32{}
 var maskText = false
@@ -61,6 +61,12 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var margin = parseNum(themedProp(property.InputFieldMargin, root, owner, widget), 30)
 
+	if keyboard.IsComboPressedOnce(key.LeftControl, key.A) ||
+		keyboard.IsComboPressedOnce(key.RightControl, key.A) {
+		indexSelect = 0
+		indexCursor = len(symbolXs) - 1
+	}
+
 	setupText(margin, root, widget)
 	setupVisualsTextured(root, widget)
 
@@ -71,6 +77,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var anyInput = mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0
 	var focused = widget.isFocused(root, cam)
 	var meTyping = typingIn == widget // each input field should disable its own typing
+	var text = ""
 
 	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyPressedOnce(key.Escape)) {
 		typingIn = nil
@@ -84,7 +91,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		typingIn = widget
 	}
 	if typingIn == widget {
-		var text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
+		text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
 		text = tryInput(text, widget, margin, root, cam)
 		tryRemove(cam, text, root, widget, margin)
 		tryMoveCursor(widget, text, cam, margin, root)
@@ -96,7 +103,19 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 	maskText = true
 	textMargin = margin
-	drawVisuals(cam, root, widget)
+	drawVisuals(cam, root, widget, func() {
+		if indexCursor == indexSelect || typingIn != widget {
+			return
+		}
+		var ax = symbolXs[indexCursor] - scrollX
+		var bx = symbolXs[indexSelect] - scrollX
+
+		if ax > bx {
+			ax, bx = bx, ax
+		}
+
+		cam.DrawRectangle(ax, reusableTextBox.Y, bx-ax, reusableTextBox.Height, 0, color.Azure)
+	})
 	maskText = false
 
 	if typingIn == widget {
@@ -105,28 +124,56 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 	if typingIn == widget && cursorTime < 0.5 {
 		var x = cursorX(margin, widget)
-		cam.DrawLine(x, reusableTextBox.Y, x, reusableTextBox.Y+reusableTextBox.LineHeight, 5, color.Black)
+		cam.DrawLine(x, reusableTextBox.Y, x, reusableTextBox.Y+reusableTextBox.Height, 5, color.Black)
 	}
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
 }
 
 func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin float32, root *root) {
+	var ctrl = keyboard.IsKeyPressed(key.LeftControl) || keyboard.IsKeyPressed(key.RightControl)
+	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
+	var length = txt.Length(text)
+	var a, b = indexSelect, indexCursor
+	var teleport = indexCursor != indexSelect
+
 	if keyboard.IsKeyPressedOnce(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow) {
 		cursorTime = 0
-		if ctrl() {
-			indexCursor = wordIndex(text, true)
-		} else {
-			indexCursor = number.BiggestInt(indexCursor-1, 0)
+		indexCursor = condition.If(ctrl, wordIndex(text, true), number.BiggestInt(indexCursor-1, 0))
+
+		if !shift {
+			indexSelect = indexCursor
+
+			if teleport {
+				indexCursor = condition.If(a < b, a, b)
+				indexSelect = indexCursor
+			}
 		}
 	}
 	if keyboard.IsKeyPressedOnce(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow) {
 		cursorTime = 0
-		if ctrl() {
-			indexCursor = wordIndex(text, false)
-		} else {
-			indexCursor = number.SmallestInt(txt.Length(text), indexCursor+1)
+		indexCursor = condition.If(ctrl, wordIndex(text, false), number.SmallestInt(length, indexCursor+1))
+
+		if !shift {
+			indexSelect = indexCursor
+
+			if teleport {
+				indexCursor = condition.If(a < b, b, a)
+				indexSelect = indexCursor
+			}
 		}
+
 	}
+	if keyboard.IsKeyPressedOnce(key.UpArrow) || keyboard.IsKeyPressedOnce(key.End) {
+		cursorTime = 0
+		indexCursor = 0
+		indexSelect = indexCursor
+	}
+	if keyboard.IsKeyPressedOnce(key.DownArrow) || keyboard.IsKeyPressedOnce(key.Home) {
+		cursorTime = 0
+		indexCursor = length
+		indexSelect = indexCursor
+	}
+
 	if mouse.IsButtonPressed(mouse.ButtonLeft) {
 		cursorTime = 0
 		var closestIndex = func(cam *graphics.Camera) int {
@@ -151,21 +198,17 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 			return closestIndex
 		}
 
-		if txt.Length(text) == 0 {
+		if length == 0 {
 			symbolXs = []float32{}
 			indexCursor = 0
 		} else {
 			calculateXs(cam)
 			indexCursor = closestIndex(cam)
+
+			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
+				indexSelect = indexCursor
+			}
 		}
-	}
-	if keyboard.IsKeyPressedOnce(key.DownArrow) || keyboard.IsKeyPressedOnce(key.Home) {
-		cursorTime = 0
-		indexCursor = 0
-	}
-	if keyboard.IsKeyPressedOnce(key.UpArrow) || keyboard.IsKeyPressedOnce(key.End) {
-		cursorTime = 0
-		indexCursor = txt.Length(text)
 	}
 
 	var cx = cursorX(margin, widget)
@@ -174,13 +217,14 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 		scrollX -= left - cx
 		setupText(margin, root, widget)
 	}
-	if cx > right && indexCursor <= txt.Length(text) {
+	if cx > right && indexCursor <= length {
 		scrollX += cx - right
 		setupText(margin, root, widget)
 	}
 }
 func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, margin float32) {
 	var left, right = widget.X + margin, widget.X + widget.Width - margin
+	var ctrl = keyboard.IsKeyPressed(key.LeftControl) || keyboard.IsKeyPressed(key.RightControl)
 	var remove = func(back, front int) {
 		cursorTime = 0
 
@@ -191,38 +235,36 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 			return
 		}
 		text = text[:indexCursor-back] + text[indexCursor+front:]
-		widget.Properties[property.Text] = text
-		reusableTextBox.Text = text
+		setText(widget, text)
 		indexCursor -= back
+		indexSelect = indexCursor
 		calculateXs(cam)
 	}
 
-	if keyboard.IsKeyPressedOnce(key.Backspace) || keyboard.IsKeyHeld(key.Backspace) {
-		if ctrl() {
-			var newIndex = wordIndex(text, true)
-			setText(widget, text[:newIndex]+text[indexCursor:])
-			indexCursor = newIndex
-			cursorTime = 0
-		} else {
-			remove(1, 0)
+	if keyboard.IsKeyPressedOnce(key.Backspace) || keyboard.IsKeyPressedOnce(key.Delete) {
+		if indexSelect < indexCursor {
+			remove(indexCursor-indexSelect, 0)
+			return
+		} else if indexCursor < indexSelect {
+			remove(0, indexSelect-indexCursor)
+			return
+		}
+	}
 
-			var textWidth, _ = reusableTextBox.TextMeasure(reusableTextBox.Text)
-			var textRight = (left - scrollX) + textWidth
-			if indexCursor > 0 && textRight < right {
-				scrollX -= right - textRight
-				scrollX = condition.If(textWidth < right-left, 0, scrollX)
-				setupText(margin, root, widget)
-			}
+	if keyboard.IsKeyPressedOnce(key.Backspace) || keyboard.IsKeyHeld(key.Backspace) {
+		remove(condition.If(ctrl, indexCursor-wordIndex(text, true), 1), 0)
+
+		// scrolls left when empty space appears on the right (if possible)
+		var textWidth, _ = reusableTextBox.TextMeasure(reusableTextBox.Text)
+		var textRight = (left - scrollX) + textWidth
+		if indexCursor > 0 && textRight < right {
+			scrollX -= right - textRight
+			scrollX = condition.If(textWidth < right-left, 0, scrollX)
+			setupText(margin, root, widget)
 		}
 	}
 	if keyboard.IsKeyPressedOnce(key.Delete) || keyboard.IsKeyHeld(key.Delete) {
-		if ctrl() {
-			var newIndex = wordIndex(text, false)
-			setText(widget, text[:indexCursor]+text[newIndex:])
-			cursorTime = 0
-		} else {
-			remove(0, 1)
-		}
+		remove(0, condition.If(ctrl, wordIndex(text, false)-indexCursor, 1))
 	}
 }
 func tryInput(text string, widget *widget, margin float32, root *root, cam *graphics.Camera) string {
@@ -240,6 +282,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	}
 	setText(widget, text)
 	indexCursor += txt.Length(input)
+	indexSelect = indexCursor
 	cursorTime = 0
 	calculateXs(cam)
 	return text
@@ -271,6 +314,7 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	typingIn = allInputFields[(myIndex+1)%total]
 	var text = strings.ReplaceAll(themedProp(property.Text, root, owner, typingIn), "\n", "")
 	indexCursor = len(text)
+	indexSelect = indexCursor
 	frame = int(seconds.FrameCount()) // only once per frame
 
 	var margin = parseNum(themedProp(property.InputFieldMargin, root, owner, typingIn), 30)
@@ -292,6 +336,10 @@ func calculateXs(cam *graphics.Camera) {
 	if len(symbolXs) > 0 {
 		var w, _ = reusableTextBox.TextMeasure(reusableTextBox.Text)
 		symbolXs = append(symbolXs, reusableTextBox.X+w+scrollX)
+	}
+
+	if indexSelect > textLength {
+		indexSelect = textLength
 	}
 }
 func cursorX(margin float32, widget *widget) float32 {
@@ -338,9 +386,4 @@ func wordIndex(text string, left bool) int {
 func setText(widget *widget, text string) {
 	widget.Properties[property.Text] = text
 	reusableTextBox.Text = text
-}
-
-func ctrl() bool {
-	var keys = keyboard.KeysPressed()
-	return len(keys) == 2 && (keys[0] == key.LeftControl || keys[0] == key.RightControl)
 }

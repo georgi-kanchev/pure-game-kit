@@ -14,6 +14,9 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[66] [Mon] [15-09-2025]
+[√] gui - input field selection functionality
+
 [65] [Sun] [14-09-2025]
 [√] gui - fixed empty new row not calculating default value correctly
 [√] gui - fixed input field disabling other input fields' typing

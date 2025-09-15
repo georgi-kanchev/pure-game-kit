@@ -112,7 +112,7 @@ func (textBox *TextBox) TextLines() []string {
 func (textBox *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, cHeight, cAngle float32) {
 	var _, symbols = textBox.formatSymbols()
 	if symbolIndex < 0 || symbolIndex >= len(symbols) {
-		return
+		return number.NaN(), number.NaN(), number.NaN(), number.NaN(), number.NaN()
 	}
 
 	var symbol = symbols[symbolIndex]

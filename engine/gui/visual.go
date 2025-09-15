@@ -109,7 +109,7 @@ func setupVisualsText(root *root, widget *widget) {
 		parseNum(themedProp(p.TextEmbeddedThickness5, root, owner, widget), 0.5),
 	}
 }
-func drawVisuals(cam *graphics.Camera, root *root, widget *widget) {
+func drawVisuals(cam *graphics.Camera, root *root, widget *widget, betweenVisualAndText func()) {
 	var owner = root.Containers[widget.OwnerId]
 	var assetId = themedProp(p.AssetId, root, owner, widget)
 	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.isDisabled(owner))
@@ -139,6 +139,10 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget) {
 			x = number.LimitInt(x, cam.MaskX, cam.MaskX+cam.MaskWidth)
 			y = number.LimitInt(y, cam.MaskY, cam.MaskY+cam.MaskHeight)
 			cam.Mask(x, y, xw-x, yh-y)
+		}
+
+		if betweenVisualAndText != nil {
+			betweenVisualAndText()
 		}
 
 		var disabled = widget.isDisabled(owner)
