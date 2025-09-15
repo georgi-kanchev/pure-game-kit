@@ -1,4 +1,5 @@
 // TODO:
+add debug profile for memory usage
 example for texture areas, whole texture + all area rects + hover & name
 tiled scenes loading
 drawing tilemaps - https://wareya.github.io/webtyler/
