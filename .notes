@@ -18,6 +18,7 @@ consistent error handling + logging, console & file
 [√] gui - button hotkeys no longer work while typing
 [√] gui - input field selection functionality
 [√] gui - input field placeholder
+[√] gui - input field performance fix when holding lmb, calculateXs
 
 [65] [Sun] [14-09-2025]
 [√] gui - fixed empty new row not calculating default value correctly

@@ -12,6 +12,9 @@ import (
 )
 
 func GUIs() {
+	window.TargetFrameRate = 0
+	window.IsVSynced = false
+
 	var cam = graphics.NewCamera(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons(true)
 	var _, ids, box = assets.LoadDefaultAtlasUI(true)
@@ -163,10 +166,6 @@ func GUIs() {
 			var toId = hud.Property(to, p.DraggableSpriteId)
 			hud.SetProperty(from, p.DraggableSpriteId, toId)
 			hud.SetProperty(to, p.DraggableSpriteId, fromId)
-		}
-
-		if hud.ButtonOnClickAndHold("step-left", cam) {
-			print("hi")
 		}
 
 		hud.UpdateAndDraw(cam)

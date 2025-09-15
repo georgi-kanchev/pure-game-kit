@@ -37,7 +37,7 @@ func (gui *GUI) InputFieldStopTyping() {
 // private
 
 var typingIn *widget
-var indexCursor, indexSelect int
+var indexCursor, indexSelect, indexCursorPrev int
 var cursorTime, scrollX, textMargin float32
 var symbolXs []float32 = []float32{}
 var maskText = false
@@ -135,6 +135,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		cam.DrawLine(x, reusableTextBox.Y, x, reusableTextBox.Y+reusableTextBox.Height, 5, color.Black)
 	}
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
+	indexCursorPrev = indexCursor
 }
 
 func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin float32, root *root) {
@@ -210,10 +211,11 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 			symbolXs = []float32{}
 			indexCursor = 0
 		} else {
-			calculateXs(cam)
 			indexCursor = closestIndex(cam)
 
 			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
+				calculateXs(cam) // calculate once and update indexes to not drop performance
+				indexCursor = closestIndex(cam)
 				indexSelect = indexCursor
 			}
 		}
