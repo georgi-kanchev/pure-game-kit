@@ -7,41 +7,37 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadTextures(filePaths ...string) []string {
+func LoadTextures(filePath string) []string {
 	tryCreateWindow()
 
 	var result = []string{}
-	for _, path := range filePaths {
-		var id, absolutePath = getIdPath(path)
-		var tex, has = internal.Textures[id]
+	var id, absolutePath = getIdPath(filePath)
+	var tex, has = internal.Textures[id]
 
-		if !file.Exists(absolutePath) {
-			continue
-		}
+	if !file.Exists(absolutePath) {
+		return result
+	}
 
-		if has { // hot reloading?
-			rl.UnloadTexture(*tex)
-		}
+	if has { // hot reloading?
+		rl.UnloadTexture(*tex)
+	}
 
-		var texture = rl.LoadTexture(absolutePath)
+	var texture = rl.LoadTexture(absolutePath)
 
-		if texture.Width != 0 {
-			internal.Textures[id] = &texture
-			result = append(result, id)
-		}
+	if texture.Width != 0 {
+		internal.Textures[id] = &texture
+		result = append(result, id)
 	}
 
 	return result
 }
-func UnloadTextures(textureIds ...string) {
-	for _, v := range textureIds {
-		var tex, has = internal.Textures[v]
-		delete(internal.Textures, v)
-		RemoveTextureAtlases(v)
+func UnloadTextures(textureId string) {
+	var tex, has = internal.Textures[textureId]
+	delete(internal.Textures, textureId)
+	RemoveTextureAtlases(textureId)
 
-		if has {
-			rl.UnloadTexture(*tex)
-		}
+	if has {
+		rl.UnloadTexture(*tex)
 	}
 }
 
@@ -133,27 +129,21 @@ func SetTextureBox(boxId string, assetIds [9]string) string {
 	return boxId
 }
 
-func RemoveTextureAreas(areaIds ...string) {
-	RemoveTextureAtlasTiles(areaIds...)
+func RemoveTextureAreas(areaId string) {
+	RemoveTextureAtlasTiles(areaId)
 }
-func RemoveTextureAtlases(atlasIds ...string) {
-	for _, v := range atlasIds {
-		delete(internal.Atlases, v)
+func RemoveTextureAtlases(atlasId string) {
+	delete(internal.Atlases, atlasId)
 
-		for i, a := range internal.AtlasRects {
-			if a.AtlasId == v {
-				delete(internal.AtlasRects, i)
-			}
+	for i, a := range internal.AtlasRects {
+		if a.AtlasId == atlasId {
+			delete(internal.AtlasRects, i)
 		}
 	}
 }
-func RemoveTextureAtlasTiles(tileIds ...string) {
-	for _, v := range tileIds {
-		delete(internal.AtlasRects, v)
-	}
+func RemoveTextureAtlasTiles(tileId string) {
+	delete(internal.AtlasRects, tileId)
 }
-func RemoveTextureBoxes(nineSliceIds ...string) {
-	for _, v := range nineSliceIds {
-		delete(internal.Boxes, v)
-	}
+func RemoveTextureBoxes(nineSliceId string) {
+	delete(internal.Boxes, nineSliceId)
 }

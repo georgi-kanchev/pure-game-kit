@@ -7,25 +7,23 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadSounds(filePaths ...string) []string {
+func LoadSounds(filePath string) []string {
 	tryCreateWindow()
 	tryInitAudio()
 
 	var result = []string{}
-	for _, path := range filePaths {
-		var id, absolutePath = getIdPath(path)
-		var _, has = internal.Sounds[id]
+	var id, absolutePath = getIdPath(filePath)
+	var _, has = internal.Sounds[id]
 
-		if has || !file.Exists(absolutePath) {
-			continue
-		}
+	if has || !file.Exists(absolutePath) {
+		return result
+	}
 
-		var sound = rl.LoadSound(absolutePath)
+	var sound = rl.LoadSound(absolutePath)
 
-		if sound.FrameCount != 0 {
-			internal.Sounds[id] = &sound
-			result = append(result, id)
-		}
+	if sound.FrameCount != 0 {
+		internal.Sounds[id] = &sound
+		result = append(result, id)
 	}
 
 	return result

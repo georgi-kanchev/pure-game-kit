@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "desert.tmx",
+    "activeFile": "map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -18,14 +18,11 @@
             "scaleInEditor": 1.5
         },
         "desert.tmx": {
-            "expandedObjectLayers": [
-                4
-            ],
-            "scale": 1,
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 15.5,
-                "y": 144.5
+                "x": 166.25,
+                "y": 120.25
             }
         },
         "map.tmx": {
@@ -33,15 +30,15 @@
                 6
             ],
             "expandedObjectLayers": [
-                6,
                 11,
-                2
+                2,
+                6
             ],
-            "scale": 2,
+            "scale": 8,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 320.25,
-                "y": 174.75
+                "x": 398.0625,
+                "y": 55.1875
             }
         },
         "map.tmx#atlas": {
@@ -53,8 +50,8 @@
             "scaleInEditor": 4
         },
         "objects.tsx": {
-            "scaleInDock": 4,
-            "scaleInEditor": 1.5
+            "scaleInDock": 1,
+            "scaleInEditor": 8
         }
     },
     "frame.defaultDuration": 400,
@@ -76,12 +73,12 @@
         "objects.tsx"
     ],
     "project": "game-name.tiled-project",
-    "property.type": "int",
+    "property.type": "string",
     "recentFiles": [
-        "map.tmx",
-        "atlas.tsx",
         "objects.tsx",
-        "desert.tmx"
+        "desert.tmx",
+        "atlas.tsx",
+        "map.tmx"
     ],
     "textEdit.monospace": false,
     "tileset.embedInMap": false,

@@ -36,7 +36,7 @@ func ShapesGrids() {
 		shape.Angle += seconds.FrameDelta() * 20
 
 		var allShapes = grid.All()
-		var potential = grid.AroundShape(&shape)
+		var potential = grid.AroundShape(shape)
 		for _, v := range allShapes {
 			cam.DrawLinesPath(1, color.Gray, v.CornerPoints()...)
 		}
@@ -44,7 +44,7 @@ func ShapesGrids() {
 			cam.DrawLinesPath(2, color.Green, v.CornerPoints()...)
 		}
 
-		var surroundingShapes = grid.AroundShape(&shape)
+		var surroundingShapes = grid.AroundShape(shape)
 		var crossPoints = shape.CrossPointsWithShapes(surroundingShapes...)
 		var col = condition.If(shape.IsCrossingShapes(surroundingShapes...), color.Violet, color.Cyan)
 

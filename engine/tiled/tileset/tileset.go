@@ -57,6 +57,19 @@ func Property(tilesetId, property string) string {
 	return ""
 }
 
+func TileProperty(tilesetId string, tileId int, property string) string {
+	var tile = getTile(tilesetId, tileId)
+	if tile == nil {
+		return ""
+	}
+
+	for _, prop := range tile.Properties {
+		if prop.Name == property {
+			return prop.Value
+		}
+	}
+	return ""
+}
 func TileShapeRectangle(tilesetId string, tileId int, shapeNameOrId string) (x, y, width, height float32) {
 	var obj = getObj(tilesetId, tileId, shapeNameOrId)
 	if obj != nil {
@@ -148,11 +161,11 @@ func getObj(tilesetId string, tileId int, shapeNameOrId string) *internal.LayerO
 	var layer = tile.CollisionLayers[0]
 	for _, obj := range layer.Objects {
 		if obj.Name == shapeNameOrId {
-			return &obj
+			return obj
 		}
 		var id = text.ToNumber(shapeNameOrId)
 		if !number.IsNaN(id) && obj.ID == int(id) {
-			return &obj
+			return obj
 		}
 	}
 	return nil

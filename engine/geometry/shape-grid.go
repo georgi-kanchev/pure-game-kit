@@ -5,20 +5,20 @@ import (
 )
 
 type ShapeGrid struct {
-	cells                 map[[2]int][]Shape
+	cells                 map[[2]int][]*Shape
 	cellWidth, cellHeight int
 }
 
-func NewShapeGrid(cellWidth, cellHeight int) ShapeGrid {
-	return ShapeGrid{cellWidth: cellWidth, cellHeight: cellHeight, cells: make(map[[2]int][]Shape)}
+func NewShapeGrid(cellWidth, cellHeight int) *ShapeGrid {
+	return &ShapeGrid{cellWidth: cellWidth, cellHeight: cellHeight, cells: make(map[[2]int][]*Shape)}
 }
 
 //=================================================================
 // setters
 
-func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...Shape) {
+func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
 	var key = [2]int{x, y}
-	shapeGrid.cells[key] = []Shape{}
+	shapeGrid.cells[key] = []*Shape{}
 	shapeGrid.cells[key] = append(shapeGrid.cells[key], shapes...)
 }
 
@@ -42,9 +42,9 @@ func (shapeGrid *ShapeGrid) AtCell(x, y int) []*Shape {
 		var result = make([]*Shape, len(shapes))
 		for i := range shapes {
 			var shape = shapes[i]
-			shape.X += float32(x*w) + (float32(w) * 0.5)
-			shape.Y += float32(y*h) + (float32(h) * 0.5)
-			result[i] = &shape
+			shape.X = float32(x*w) + (float32(w) * 0.5)
+			shape.Y = float32(y*h) + (float32(h) * 0.5)
+			result[i] = shape
 		}
 
 		return result

@@ -23,6 +23,8 @@ type Tileset struct {
 	Tiles           []TilesetTile          `xml:"tile"`
 	Image           TilesetImage           `xml:"image"`
 	Properties      []Property             `xml:"properties>property"`
+
+	MappedTiles map[int]TilesetTile
 }
 type TilesetOffset struct {
 	X int `xml:"x,attr"`
@@ -53,6 +55,7 @@ type TilesetTile struct {
 	Probability     float32              `xml:"probability,attr"`
 	CollisionLayers []LayerObjects       `xml:"objectgroup"`
 	Animation       TilesetTileAnimation `xml:"animation"`
+	Properties      []Property           `xml:"properties>property"`
 }
 type TilesetTileAnimation struct {
 	Frames []TilesetTileFrame `xml:"frame"`

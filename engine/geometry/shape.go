@@ -14,13 +14,13 @@ type Shape struct {
 	corners [][2]float32
 }
 
-func NewShapeCorners(corners ...[2]float32) Shape {
+func NewShapeCorners(corners ...[2]float32) *Shape {
 	if len(corners) == 0 {
-		return Shape{}
+		return &Shape{}
 	}
-	return Shape{ScaleX: 1, ScaleY: 1, corners: append(corners, corners[0])}
+	return &Shape{ScaleX: 1, ScaleY: 1, corners: append(corners, corners[0])}
 }
-func NewShapeSides(radius float32, sides int) Shape {
+func NewShapeSides(radius float32, sides int) *Shape {
 	var corners = [][2]float32{}
 	var step float32 = 360.0 / float32(sides)
 	for i := range sides {
@@ -32,9 +32,9 @@ func NewShapeSides(radius float32, sides int) Shape {
 		corners = append(corners, corners[0])
 	}
 
-	return Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
-func NewShapeRectangle(width, height, pivotX, pivotY float32) Shape {
+func NewShapeRectangle(width, height, pivotX, pivotY float32) *Shape {
 	var offX, offY = width * pivotX, height * pivotY
 	var corners = [][2]float32{
 		{-offX, -offY},
@@ -43,7 +43,7 @@ func NewShapeRectangle(width, height, pivotX, pivotY float32) Shape {
 		{-offX, height - offY},
 		{-offX, -offY},
 	}
-	return Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
 
 //=================================================================

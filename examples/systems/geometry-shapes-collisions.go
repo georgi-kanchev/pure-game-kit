@@ -49,7 +49,7 @@ func Collisions() {
 		shape4.Angle++
 
 		dirX, dirY = direction.Normalize(dirX, dirY)
-		dirX, dirY = shape.Collide(dirX*step, dirY*step, &shape2, &shape3, &shape4)
+		dirX, dirY = shape.Collide(dirX*step, dirY*step, shape2, shape3, shape4)
 		shape.X += dirX
 		shape.Y += dirY
 		cam.DrawLinesPath(8, color.Red, shape2.CornerPoints()...)

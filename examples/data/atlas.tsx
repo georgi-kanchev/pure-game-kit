@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="atlas" tilewidth="16" tileheight="16" tilecount="336" columns="21">
  <image source="atlas.png" width="336" height="256"/>
+ <tile id="7">
+  <objectgroup draworder="index" id="2">
+   <object id="1" name="collision" x="16" y="7">
+    <polygon points="0,0 -8,4 -10,9 0,9"/>
+   </object>
+  </objectgroup>
+ </tile>
  <tile id="110">
   <objectgroup draworder="index" id="2">
    <object id="1" x="5" y="4">
     <point/>
    </object>
   </objectgroup>
+ </tile>
+ <tile id="111">
+  <properties>
+   <property name="test" value="hello, world!"/>
+  </properties>
  </tile>
  <tile id="115">
   <objectgroup draworder="index" id="2">

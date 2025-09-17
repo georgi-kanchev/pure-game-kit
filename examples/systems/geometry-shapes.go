@@ -32,13 +32,13 @@ func Shapes() {
 
 		shape.Angle += seconds.FrameDelta() * 60
 		var mx, my = cam.MousePosition()
-		var colShape = condition.If(shape.IsOverlappingShapes(&triangle), color.Red, color.Green)
-		var colRect = condition.If(rectangle.IsCrossingShapes(&shape), color.Brown, color.Cyan)
-		var colCircle = condition.If(circle.IsContainingShapes(&triangle), color.Yellow, color.Pink)
+		var colShape = condition.If(shape.IsOverlappingShapes(triangle), color.Red, color.Green)
+		var colRect = condition.If(rectangle.IsCrossingShapes(shape), color.Brown, color.Cyan)
+		var colCircle = condition.If(circle.IsContainingShapes(triangle), color.Yellow, color.Pink)
 
 		triangle.X, triangle.Y = mx, my
 
-		var crossPoints = circle.CrossPointsWithShapes(&shape)
+		var crossPoints = circle.CrossPointsWithShapes(shape)
 
 		cam.DrawLinesPath(8, colRect, rectangle.CornerPoints()...)
 		cam.DrawLinesPath(8, colCircle, circle.CornerPoints()...)

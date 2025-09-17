@@ -15,6 +15,12 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[67] [Wed] [17-09-2025]
+[√] assets - loading & unloading no longer accepts multiple file paths, keeping it simple
+[√] tiled - tilemaps + tilesets cache
+[√] tiled - more reusable code
+[√] tiled - tilemap shape grid started, all looks good, object parsing remaining
+
 [66] [Mon] [15-09-2025]
 [√] gui - button hotkeys no longer work while typing
 [√] gui - input field selection functionality
