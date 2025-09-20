@@ -54,7 +54,7 @@ func LoadTiledTileset(tsxFilePath string) []string {
 
 	tileset.MappedTiles = map[int]internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
-		tileset.MappedTiles[tile.ID] = tile
+		tileset.MappedTiles[tile.Id] = tile
 	}
 
 	return resultIds

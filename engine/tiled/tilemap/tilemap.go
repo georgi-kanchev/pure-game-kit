@@ -4,6 +4,7 @@ import (
 	"path"
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/geometry"
+	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
@@ -136,12 +137,12 @@ func LayerTilesShapeGrid(mapId, layerNameOrId, objectNameOrClass string) *geomet
 		x += int(mapData.WorldX) / mapData.TileWidth
 		y += int(mapData.WorldY) / mapData.TileHeight
 
-		for _, obj := range objs {
-			if objectNameOrClass == "" || obj.Name == objectNameOrClass || obj.Class == objectNameOrClass {
-				result.SetAtCell(x, y, geometry.NewShapeRectangle(16, 16, 0.5, 0.5))
-				// make reusable functions to parse objects
-			}
+		var shapes = findAndParseShapes(objs, objectNameOrClass)
+		for _, shape := range shapes {
+			shape.X -= float32(mapData.TileWidth) / 2
+			shape.Y -= float32(mapData.TileHeight) / 2
 		}
+		result.SetAtCell(x, y, shapes...)
 	}
 	return result
 }
@@ -183,14 +184,14 @@ func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *
 func findLayerTiles(data *internal.Map, layerNameOrId string) *internal.LayerTiles {
 	var wantedLayer *internal.LayerTiles
 	for _, layer := range data.LayersTiles {
-		if layer.Name == layerNameOrId || layer.ID == int(text.ToNumber(layerNameOrId)) {
+		if layer.Name == layerNameOrId || layer.Id == int(text.ToNumber(layerNameOrId)) {
 			wantedLayer = &layer
 			break
 		}
 	}
 	for _, group := range data.Groups {
 		for _, layer := range group.LayersTiles {
-			if layer.Name == layerNameOrId || layer.ID == int(text.ToNumber(layerNameOrId)) {
+			if layer.Name == layerNameOrId || layer.Id == int(text.ToNumber(layerNameOrId)) {
 				wantedLayer = layer
 				break
 			}
@@ -226,6 +227,43 @@ func currentTileset(usedTilesets []*internal.Tileset, tile int) *internal.Tilese
 		}
 	}
 	return curTileset
+}
+
+func findAndParseShapes(objs []*internal.LayerObject, objNameOrClass string) []*geometry.Shape {
+	var result = []*geometry.Shape{}
+	for _, obj := range objs {
+		if objNameOrClass != "" && obj.Name != objNameOrClass && obj.Class != objNameOrClass {
+			continue
+		}
+
+		var ptsData = ""
+		if obj.PolygonTile != nil {
+			ptsData = obj.PolygonTile.Points
+		}
+		if obj.Polygon != nil {
+			ptsData = obj.Polygon.Points
+		}
+		if ptsData == "" {
+			var w, h = obj.Width, obj.Height
+			ptsData = text.New(0, ",", 0, " ", w, ",", 0, " ", w, ",", h, " ", 0, ",", h)
+		}
+
+		var corners = [][2]float32{}
+		var pts = strings.Split(ptsData, " ")
+		for _, pt := range pts {
+			var xy = strings.Split(pt, ",")
+			if len(xy) == 2 {
+				var x, y = text.ToNumber(xy[0]), text.ToNumber(xy[1])
+				x, y = point.RotateAroundPoint(x, y, 0, 0, obj.Rotation)
+				corners = append(corners, [2]float32{x, y})
+			}
+		}
+
+		var shape = geometry.NewShapeCorners(corners...)
+		shape.X, shape.Y = obj.X, obj.Y
+		result = append(result, shape)
+	}
+	return result
 }
 
 func color(hex string) uint {

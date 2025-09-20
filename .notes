@@ -15,6 +15,10 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[68] [Sat] [20-09-2025]
+[√] gui - no camera x y offset fix
+[x] tiled - tilemap collisions
+
 [67] [Wed] [17-09-2025]
 [√] assets - loading & unloading no longer accepts multiple file paths, keeping it simple
 [√] tiled - tilemaps + tilesets cache

@@ -4,7 +4,6 @@ import (
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
-	"strings"
 )
 
 const (
@@ -70,41 +69,6 @@ func TileProperty(tilesetId string, tileId int, property string) string {
 	}
 	return ""
 }
-func TileShapeRectangle(tilesetId string, tileId int, shapeNameOrId string) (x, y, width, height float32) {
-	var obj = getObj(tilesetId, tileId, shapeNameOrId)
-	if obj != nil {
-		return obj.X, obj.Y, obj.Width, obj.Height
-	}
-	return number.NaN(), number.NaN(), number.NaN(), number.NaN()
-}
-func TileShapePoint(tilesetId string, tileId int, shapeNameOrId string) (x, y float32) {
-	var obj = getObj(tilesetId, tileId, shapeNameOrId)
-	if obj != nil {
-		return obj.X, obj.Y
-	}
-	return number.NaN(), number.NaN()
-}
-func TileShapeCorners(tilesetId string, tileId int, shapeNameOrId string) [][2]float32 {
-	var obj = getObj(tilesetId, tileId, shapeNameOrId)
-	if obj == nil {
-		return [][2]float32{}
-	}
-
-	var split = strings.Split(obj.PolygonTile.Points, " ")
-	if len(split) == 0 {
-		return [][2]float32{}
-	}
-
-	var result = make([][2]float32, len(split))
-	for i, v := range split {
-		var xy = strings.Split(v, ",")
-		if len(xy) != 2 {
-			continue
-		}
-		result[i] = [2]float32{obj.X + text.ToNumber(xy[0]), obj.Y + text.ToNumber(xy[1])}
-	}
-	return result
-}
 func TileShapeProperty(tilesetId string, tileId int, shapeNameOrId, property string) string {
 	var obj = getObj(tilesetId, tileId, shapeNameOrId)
 	if obj == nil {
@@ -145,7 +109,7 @@ func getTile(tilesetId string, tileId int) *internal.TilesetTile {
 	}
 
 	for _, tile := range data.Tiles {
-		if tile.ID == tileId {
+		if tile.Id == tileId {
 			return &tile
 		}
 	}
@@ -164,7 +128,7 @@ func getObj(tilesetId string, tileId int, shapeNameOrId string) *internal.LayerO
 			return obj
 		}
 		var id = text.ToNumber(shapeNameOrId)
-		if !number.IsNaN(id) && obj.ID == int(id) {
+		if !number.IsNaN(id) && obj.Id == int(id) {
 			return obj
 		}
 	}

@@ -9,7 +9,7 @@ import (
 
 type Shape struct {
 	X, Y, Angle, ScaleX, ScaleY,
-	minX, minY, maxX, maxY float32
+	minX, minY, maxX, maxY, gridX, gridY float32
 
 	corners [][2]float32
 }
@@ -62,8 +62,8 @@ func (shape *Shape) CornerPoints() [][2]float32 {
 
 		var rad = angle.ToRadians(shape.Angle)
 		var sin, cos = number.Sine(rad), number.Cosine(rad)
-		var resultX = shape.X + (x*cos - y*sin)
-		var resultY = shape.Y + (x*sin + y*cos)
+		var resultX = shape.gridX + shape.X + (x*cos - y*sin)
+		var resultY = shape.gridY + shape.Y + (x*sin + y*cos)
 
 		if shape.minX > resultX {
 			shape.minX = resultX

@@ -111,7 +111,7 @@ func NewElements(elements ...string) *GUI {
 // setters
 
 func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
-	var prevAng, prevZoom = camera.Angle, camera.Zoom
+	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
 	var containers = gui.root.ContainerIds
 
 	reset(camera, gui) // keep order of variables & reset
@@ -151,7 +151,7 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		drawTooltip(gui.root, gui.root.Containers[tooltip.OwnerId], camera)
 	}
 
-	restore(camera, prevAng, prevZoom) // undoes what reset does, leaving everything as it was for the cam
+	restore(camera, prevAng, prevZoom, prevX, prevY) // undo what reset does, everything as it was for cam
 }
 
 // works for widgets & containers
@@ -246,15 +246,17 @@ func reset(camera *graphics.Camera, gui *GUI) {
 	}
 
 	camera.Zoom = gui.Scale
-	camera.Angle = 0 // force no cam rotation for UI
+	camera.Angle = 0          // force no cam rotation for UI
+	camera.X, camera.Y = 0, 0 // force no position offset for UI
 	mouseX, mouseY = camera.MousePosition()
 
 	if tooltip == nil {
 		mouse.SetCursor(mouse.CursorArrow)
 	}
 }
-func restore(camera *graphics.Camera, prevAng float32, prevZoom float32) {
+func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
 	camera.Angle, camera.Zoom = prevAng, prevZoom // reset angle, zoom & mask to how it was
+	camera.X, camera.Y = prevX, prevY             // also x y
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
 	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {

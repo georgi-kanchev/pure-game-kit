@@ -18,7 +18,13 @@ func NewShapeGrid(cellWidth, cellHeight int) *ShapeGrid {
 
 func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
 	var key = [2]int{x, y}
+	var w, h = shapeGrid.cellWidth, shapeGrid.cellHeight
 	shapeGrid.cells[key] = []*Shape{}
+
+	for _, shape := range shapes {
+		shape.gridX = float32(x*w) + (float32(w) * 0.5)
+		shape.gridY = float32(y*h) + (float32(h) * 0.5)
+	}
 	shapeGrid.cells[key] = append(shapeGrid.cells[key], shapes...)
 }
 
@@ -33,21 +39,9 @@ func (shapeGrid *ShapeGrid) All() []*Shape {
 	return result
 }
 func (shapeGrid *ShapeGrid) AtCell(x, y int) []*Shape {
-	// this makes a copy on purpose, the original shape values shouldn't change
-	// also the whole result slice is a copy so it cannot be extended by the user without calling SetShapesAtCell()
-
 	var shapes, has = shapeGrid.cells[[2]int{x, y}]
-	var w, h = shapeGrid.cellWidth, shapeGrid.cellHeight
 	if has {
-		var result = make([]*Shape, len(shapes))
-		for i := range shapes {
-			var shape = shapes[i]
-			shape.X = float32(x*w) + (float32(w) * 0.5)
-			shape.Y = float32(y*h) + (float32(h) * 0.5)
-			result[i] = shape
-		}
-
-		return result
+		return shapes
 	}
 	return []*Shape{}
 }

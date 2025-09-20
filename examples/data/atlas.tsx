@@ -3,8 +3,19 @@
  <image source="atlas.png" width="336" height="256"/>
  <tile id="7">
   <objectgroup draworder="index" id="2">
-   <object id="1" name="collision" x="16" y="7">
-    <polygon points="0,0 -8,4 -10,9 0,9"/>
+   <object id="1" x="16" y="7">
+    <polygon points="0,0 -1,0 -7,3 -8,4 -10,8 -10,9 0,9"/>
+   </object>
+   <object id="2" x="8" y="0" width="8" height="8"/>
+   <object id="3" x="6" y="2" width="5" height="9" rotation="34.6505">
+    <ellipse/>
+   </object>
+  </objectgroup>
+ </tile>
+ <tile id="8">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="6" y="6">
+    <polygon points="0,0 -2,1 -6,1 -6,10 10,10 10,1 5,1 4,0"/>
    </object>
   </objectgroup>
  </tile>

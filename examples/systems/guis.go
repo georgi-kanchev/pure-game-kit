@@ -155,6 +155,8 @@ func GUIs() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
 
+		cam.DragAndZoom()
+
 		var grab = hud.DragOnGrab()
 		if grab != "" {
 			fmt.Printf("grab: %v\n", grab)
