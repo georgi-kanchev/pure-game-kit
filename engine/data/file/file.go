@@ -1,28 +1,18 @@
 package file
 
 import (
+	"bytes"
+	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 )
 
-func PathOfExecutable() string {
-	var execPath, err = os.Executable()
-	if err != nil {
-		return ""
-	}
-	return execPath
-}
 func Exists(filePath string) bool {
 	var info, err = os.Stat(filePath)
 	return err == nil && !info.IsDir()
-}
-func Extension(filePath string) string {
-	if !Exists(filePath) {
-		return ""
-	}
-	return filepath.Ext(filePath)
 }
 func ByteSize(filePath string) int64 {
 	var info, err = os.Stat(filePath)
@@ -50,24 +40,24 @@ func TimeOfLastEdit(filePath string) (year, month, day, minute int) {
 	return
 }
 
-func LoadText(filePath string) string {
-	var data, err = os.ReadFile(filePath)
-	if err != nil {
-		return ""
-	}
-	return string(data)
-}
 func LoadBytes(filePath string) []byte {
 	var data, err = os.ReadFile(filePath)
 	if err != nil {
+		fmt.Printf("Failed to read file '%s': %v\n", filePath, err)
 		return []byte{}
 	}
 	return data
 }
+func LoadText(filePath string) string {
+	return string(LoadBytes(filePath))
+}
 
-func SaveText(filePath, content string) bool {
-	var err = os.WriteFile(filePath, []byte(content), 0644) // 0644 is the file permission: rw-r--r--
+func SaveBytes(filePath string, content []byte) bool {
+	var err = os.WriteFile(filePath, content, 0644) // 0644 is the file permission: rw-r--r--
 	return err == nil
+}
+func SaveText(filePath, content string) bool {
+	return SaveBytes(filePath, []byte(content))
 }
 func SaveTextAppend(filePath string, content string) bool {
 	if !Exists(filePath) {
@@ -82,10 +72,6 @@ func SaveTextAppend(filePath string, content string) bool {
 
 	var _, err2 = file.WriteString(content)
 	return err2 == nil
-}
-func SaveBytes(filePath string, content []byte) bool {
-	var err = os.WriteFile(filePath, content, 0644) // 0644 is the file permission: rw-r--r--
-	return err == nil
 }
 
 func Delete(filePath string) bool {
@@ -128,4 +114,35 @@ func Copy(filePath, toFolderPath string) bool {
 
 	_, err = io.Copy(destFile, srcFile)
 	return err == nil
+}
+
+func Compress(data []byte) []byte {
+	var buf bytes.Buffer
+	var gw = gzip.NewWriter(&buf)
+	var _, err = gw.Write(data)
+
+	if err != nil {
+		return data
+	}
+
+	if err := gw.Close(); err != nil {
+		return data
+	}
+	return buf.Bytes()
+}
+func Decompress(data []byte) []byte {
+	var buf = bytes.NewReader(data)
+	var gr, err = gzip.NewReader(buf)
+
+	if err != nil {
+		return data
+	}
+	defer gr.Close()
+
+	var result, err2 = io.ReadAll(gr)
+	if err2 != nil {
+		return data
+	}
+	return result
+
 }

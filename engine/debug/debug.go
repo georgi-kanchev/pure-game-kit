@@ -8,7 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"pure-kit/engine/data/folder"
+	"pure-kit/engine/data/path"
 	"pure-kit/engine/utility/text"
 	"runtime"
 	"runtime/pprof"
@@ -18,7 +18,7 @@ import (
 )
 
 func PrintLinesOfCode() {
-	directory := folder.PathOfExecutable()
+	directory := path.Folder(path.Executable())
 	cmd := exec.Command("bash", "-c",
 		fmt.Sprintf(`find "%s" -name "*.go" -type f -exec wc -l {} +`, directory),
 	)

@@ -6,13 +6,6 @@ import (
 	"path/filepath"
 )
 
-func PathOfExecutable() string {
-	var execPath, err = os.Executable()
-	if err != nil {
-		return ""
-	}
-	return filepath.Dir(execPath)
-}
 func Exists(folderPath string) bool {
 	var info, err = os.Stat(folderPath)
 	return err == nil && info.IsDir()

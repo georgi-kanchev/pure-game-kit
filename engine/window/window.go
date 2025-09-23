@@ -1,11 +1,9 @@
 package window
 
 import (
-	"path/filepath"
-	"pure-kit/engine/data/file"
+	"pure-kit/engine/data/path"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/text"
-	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -21,7 +19,7 @@ const (
 	Minimized
 )
 
-var Title = strings.TrimSuffix(filepath.Base(file.PathOfExecutable()), filepath.Ext(file.PathOfExecutable()))
+var Title = path.RemoveExtension(path.LastElement(path.Executable()))
 var Color uint = 0
 var IsVSynced = false
 var IsAntialiased = false

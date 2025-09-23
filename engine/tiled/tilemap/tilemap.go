@@ -1,8 +1,7 @@
 package tilemap
 
 import (
-	"path"
-	"pure-kit/engine/data/file"
+	"pure-kit/engine/data/path"
 	"pure-kit/engine/geometry"
 	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/graphics"
@@ -204,9 +203,9 @@ func usedTilesets(data *internal.Map) []*internal.Tileset {
 
 	for i, tileset := range data.Tilesets {
 		if tileset.Source != "" {
-			var tilesetId = path.Join(data.Directory, tileset.Source)
-			tilesetId = path.Base(strings.ReplaceAll(tilesetId, file.Extension(tilesetId), ""))
-			tilesetId = path.Join(data.Directory, tilesetId)
+			var tilesetId = path.New(data.Directory, tileset.Source)
+			tilesetId = path.RemoveExtension(path.LastElement(tilesetId))
+			tilesetId = path.New(data.Directory, tilesetId)
 			usedTilesets[i] = internal.TiledTilesets[tilesetId]
 			if usedTilesets[i] != nil {
 				usedTilesets[i].FirstTileId = tileset.FirstTileId

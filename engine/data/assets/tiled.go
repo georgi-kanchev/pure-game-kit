@@ -5,14 +5,11 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
-	"path"
-	"path/filepath"
-	"pure-kit/engine/data/file"
+	"pure-kit/engine/data/path"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/collection"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
-	"strings"
 )
 
 func LoadTiledTileset(tsxFilePath string) []string {
@@ -30,13 +27,13 @@ func LoadTiledTileset(tsxFilePath string) []string {
 		return resultIds
 	}
 
-	var name = filepath.Base(tsxFilePath)
-	name = strings.TrimSuffix(name, filepath.Ext(name))
-	var id = path.Join(path.Dir(tsxFilePath), name)
+	var name = path.LastElement(tsxFilePath)
+	name = path.RemoveExtension(name)
+	var id = path.New(path.Folder(tsxFilePath), name)
 	resultIds = append(resultIds, id)
 	internal.TiledTilesets[id] = tileset
 
-	var texturePath = path.Join(path.Dir(tsxFilePath), tileset.Image.Source)
+	var texturePath = path.New(path.Folder(tsxFilePath), tileset.Image.Source)
 	var textureIds = LoadTextures(texturePath)
 	if len(textureIds) == 0 {
 		return resultIds
@@ -74,13 +71,13 @@ func LoadTiledWorld(worldFilePath string) (tilemapIds []string) {
 		return resultIds
 	}
 
-	var name = filepath.Base(worldFilePath)
-	world.Directory = filepath.Dir(worldFilePath)
-	world.Name = strings.TrimSuffix(name, filepath.Ext(name))
+	var name = path.LastElement(worldFilePath)
+	world.Directory = path.Folder(worldFilePath)
+	world.Name = path.RemoveExtension(name)
 
 	for _, m := range world.Maps {
-		var mapPath = path.Join(world.Directory, m.FileName)
-		var name = path.Base(strings.ReplaceAll(mapPath, file.Extension(mapPath), ""))
+		var mapPath = path.New(world.Directory, m.FileName)
+		var name = path.RemoveExtension(path.LastElement(mapPath))
 
 		if collection.Contains(resultIds, name) {
 			continue
@@ -115,11 +112,11 @@ func LoadTiledMap(tmxFilePath string) []string {
 		return resultIds
 	}
 
-	var name = filepath.Base(tmxFilePath)
-	name = strings.TrimSuffix(name, filepath.Ext(name))
+	var name = path.LastElement(tmxFilePath)
+	name = path.RemoveExtension(name)
 	mapData.Name = name
-	mapData.Directory = filepath.Dir(tmxFilePath)
-	var id = path.Join(mapData.Directory, name)
+	mapData.Directory = path.Folder(tmxFilePath)
+	var id = path.New(mapData.Directory, name)
 	internal.TiledMaps[id] = mapData
 	resultIds = append(resultIds, id)
 

@@ -1,5 +1,4 @@
 // TODO:
-drop all io, os, path, dependencies by extracting them to file + path, make the engine use only dir'/'dir'/'file.ext
 add debug profile for memory usage
 example for texture areas, whole texture + all area rects + hover & name
 tiled scenes loading
