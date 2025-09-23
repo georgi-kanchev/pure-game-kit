@@ -1,4 +1,5 @@
 // TODO:
+drop all io, os, path, dependencies by extracting them to file + path, make the engine use only dir'/'dir'/'file.ext
 add debug profile for memory usage
 example for texture areas, whole texture + all area rects + hover & name
 tiled scenes loading
@@ -15,6 +16,9 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[69] [Mon] [23-09-2025]
+[√] geometry - shape cell on grid getter
+
 [68] [Sat] [20-09-2025]
 [√] gui - no camera x y offset fix
 [x] tiled - tilemap collisions

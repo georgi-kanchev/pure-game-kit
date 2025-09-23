@@ -10,7 +10,7 @@ import (
 )
 
 func ShapesGrids() {
-	var cam = graphics.NewCamera(4)
+	var cam = graphics.NewCamera(1)
 	var grid = geometry.NewShapeGrid(32, 32)
 	var shape = geometry.NewShapeCorners(
 		[2]float32{},

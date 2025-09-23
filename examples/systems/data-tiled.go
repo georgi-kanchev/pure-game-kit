@@ -13,7 +13,8 @@ import (
 
 func Tiled() {
 	var cam = graphics.NewCamera(4)
-	var layer1, layer2, objs, t1, grid1, grid2 = reload()
+	var layer1, layer2, objs, t1, g1, g2 = reload()
+	var grid1, grid2 = g1.All(), g2.All()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -25,19 +26,24 @@ func Tiled() {
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
 		for _, shape := range grid1 {
+			var cellX, cellY = g1.Cell(shape)
+			_, _ = cellX, cellY
 			cam.DrawLinesPath(0.5, color.Red, shape.CornerPoints()...)
 		}
 		for _, shape := range grid2 {
+			var cellX, cellY = g2.Cell(shape)
+			_, _ = cellX, cellY
 			cam.DrawLinesPath(0.5, color.Red, shape.CornerPoints()...)
 		}
 
 		if keyboard.IsKeyPressedOnce(key.F5) {
-			layer1, layer2, objs, t1, grid1, grid2 = reload()
+			layer1, layer2, objs, t1, g1, g2 = reload()
+			grid1, grid2 = g1.All(), g2.All()
 		}
 	}
 }
 
-func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, g1, g2 []*geometry.Shape) {
+func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, g1, g2 *geometry.ShapeGrid) {
 	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
 	assets.LoadTiledTileset("examples/data/atlas.tsx")
 	assets.LoadTiledTileset("examples/data/objects.tsx")
@@ -45,9 +51,7 @@ func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, g1, g2 []*geometry.S
 	layer2 = tilemap.LayerTiles(mapIds[0], "3")
 	objs = tilemap.LayerTiles(mapIds[1], "3")
 	t1 = tilemap.LayerTiles(mapIds[1], "1")
-	var grid = tilemap.LayerTilesShapeGrid("examples/data/desert", "3", "")
-	var grid2 = tilemap.LayerTilesShapeGrid("examples/data/map", "3", "")
-	g1 = grid.All()
-	g2 = grid2.All()
+	g1 = tilemap.LayerTilesShapeGrid("examples/data/desert", "3", "")
+	g2 = tilemap.LayerTilesShapeGrid("examples/data/map", "3", "")
 	return
 }

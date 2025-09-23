@@ -31,6 +31,12 @@ func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
 //=================================================================
 // getters
 
+func (shapeGrid *ShapeGrid) Cell(shape *Shape) (cellX, cellY int) {
+	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
+	var x, y = shape.gridX / w, shape.gridY / h
+	return int(x), int(y)
+}
+
 func (shapeGrid *ShapeGrid) All() []*Shape {
 	var result = []*Shape{}
 	for k := range shapeGrid.cells {
