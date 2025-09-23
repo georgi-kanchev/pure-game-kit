@@ -18,38 +18,36 @@ import (
 )
 
 func PrintLinesOfCode() {
-	var directory = folder.PathOfExecutable()
-	var cmd = exec.Command("bash", "-c",
+	directory := folder.PathOfExecutable()
+	cmd := exec.Command("bash", "-c",
 		fmt.Sprintf(`find "%s" -name "*.go" -type f -exec wc -l {} +`, directory),
 	)
 
 	var cmdOut bytes.Buffer
 	cmd.Stdout = &cmdOut
 	cmd.Stderr = &cmdOut
-	var err = cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return
 	}
 
-	var results = make(map[string]int)
-	var scanner = bufio.NewScanner(&cmdOut)
-
+	results := make(map[string]int)
+	scanner := bufio.NewScanner(&cmdOut)
 	for scanner.Scan() {
-		var line = strings.TrimSpace(scanner.Text())
-		var parts = strings.Fields(line)
+		line := strings.TrimSpace(scanner.Text())
+		parts := strings.Fields(line)
 		if len(parts) < 2 {
 			continue
 		}
-		var count = text.ToNumber(parts[0])
-		var path = parts[1]
-		var rel, _ = filepath.Rel(directory, path)
+		count := text.ToNumber(parts[0])
+		path := parts[1]
+		rel, _ := filepath.Rel(directory, path)
 		results[rel] = int(count)
 	}
 
-	var dirTotals = make(map[string]int)
+	dirTotals := make(map[string]int)
 	for path, count := range results {
 		dirTotals[path] = count
-		var dir = filepath.Dir(path)
+		dir := filepath.Dir(path)
 		for dir != path {
 			dirTotals[dir] += count
 			dir = filepath.Dir(dir)
@@ -68,23 +66,20 @@ func PrintLinesOfCode() {
 	sort.Strings(allPaths)
 
 	var out strings.Builder
-	fmt.Fprintf(&out, "%s", "Lines of code in:\n")
+	fmt.Fprintf(&out, "%s\n", "Lines of code in:")
 
-	var printTree func(path string, prefix string, isLast bool)
-	printTree = func(path string, prefix string, isLast bool) {
-		var connector string
+	var printTree func(path, prefix string, isLast bool)
+	printTree = func(path, prefix string, isLast bool) {
+		connector := "├"
 		if isLast {
 			connector = "└"
-		} else {
-			connector = "├"
 		}
 
-		var name = filepath.Base(path)
-
-		var displayCount string
-		if _, ok := results[path]; ok { // It's a file
+		name := filepath.Base(path)
+		displayCount := ""
+		if _, ok := results[path]; ok {
 			displayCount = fmt.Sprintf("%d", dirTotals[path])
-		} else { // It's a directory
+		} else {
 			displayCount = fmt.Sprintf("[%d]", dirTotals[path])
 		}
 
@@ -103,11 +98,11 @@ func PrintLinesOfCode() {
 		sort.Strings(children)
 
 		for i, c := range children {
-			var newPrefix string
+			newPrefix := prefix
 			if isLast {
-				newPrefix = prefix + "  "
+				newPrefix += "  "
 			} else {
-				newPrefix = prefix + "│ "
+				newPrefix += "│ "
 			}
 			printTree(c, newPrefix, i == len(children)-1)
 		}
@@ -124,7 +119,48 @@ func PrintLinesOfCode() {
 		printTree(t, "", i == len(topLevel)-1)
 	}
 
-	fmt.Printf("%v\n", out.String())
+	fmt.Print(out.String())
+}
+
+func PrintDependencies() {
+	var out strings.Builder
+	cmd := exec.Command("go", "list", "-f", "{{.ImportPath}} -> {{.Imports}}", "./...")
+	var cmdOut bytes.Buffer
+	cmd.Stdout = &cmdOut
+	cmd.Run()
+
+	lines := strings.Split(strings.TrimSpace(cmdOut.String()), "\n")
+	deps := make(map[string][]string)
+
+	for _, line := range lines {
+		parts := strings.Split(line, "->")
+		if len(parts) != 2 {
+			continue
+		}
+		pkg := strings.TrimSpace(parts[0])
+		imports := strings.Fields(strings.TrimSpace(parts[1]))
+		deps[pkg] = imports
+	}
+
+	var pkgs []string
+	for k := range deps {
+		pkgs = append(pkgs, k)
+	}
+	sort.Strings(pkgs)
+
+	for _, pkg := range pkgs {
+		fmt.Fprintf(&out, "%s\n", pkg)
+		imports := deps[pkg]
+		sort.Strings(imports)
+		for _, imp := range imports {
+			imp = strings.ReplaceAll(imp, "[", "")
+			imp = strings.ReplaceAll(imp, "]", "")
+			fmt.Fprintf(&out, "\t%s\n", imp)
+		}
+		fmt.Fprintln(&out)
+	}
+
+	fmt.Print(out.String())
 }
 
 func ProfileCPU(seconds float32) {

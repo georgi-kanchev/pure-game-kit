@@ -18,6 +18,7 @@ consistent error handling + logging, console & file
 // DONE:
 [69] [Mon] [23-09-2025]
 [√] geometry - shape cell on grid getter
+[√] debug - print dependencies function
 
 [68] [Sat] [20-09-2025]
 [√] gui - no camera x y offset fix
