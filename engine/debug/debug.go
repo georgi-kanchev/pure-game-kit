@@ -153,8 +153,7 @@ func PrintDependencies() {
 		imports := deps[pkg]
 		sort.Strings(imports)
 		for _, imp := range imports {
-			imp = strings.ReplaceAll(imp, "[", "")
-			imp = strings.ReplaceAll(imp, "]", "")
+			imp = text.Remove(imp, "[", "]")
 			fmt.Fprintf(&out, "\t%s\n", imp)
 		}
 		fmt.Fprintln(&out)

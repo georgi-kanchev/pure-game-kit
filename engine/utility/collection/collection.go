@@ -3,9 +3,9 @@ package collection
 import (
 	"fmt"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/text"
 	"slices"
 	"sort"
-	"strings"
 )
 
 func Clone[T any](collection []T) []T {
@@ -47,7 +47,7 @@ func RemoveAt[T any](collection []T, indexes ...int) []T {
 	return collection
 }
 
-func IndexOf[T comparable](value T, collection []T) int {
+func IndexOf[T comparable](collection []T, value T) int {
 	for i, v := range collection {
 		if v == value {
 			return i
@@ -337,27 +337,27 @@ func Flatten[T any](collection2D [][]T) []T {
 }
 
 func ToText[T any](collection []T, divider string) string {
-	var sb strings.Builder
+	var builder = text.NewBuilder()
 	for i, elem := range collection {
 		if i > 0 {
-			sb.WriteString(divider)
+			builder.WriteText(divider)
 		}
-		sb.WriteString(fmt.Sprint(elem))
+		builder.WriteText(fmt.Sprint(elem))
 	}
-	return sb.String()
+	return builder.ToText()
 }
 func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) string {
-	var sb strings.Builder
+	var builder = text.NewBuilder()
 	for i, row := range collection2D {
 		for j, elem := range row {
-			sb.WriteString(fmt.Sprint(elem))
+			builder.WriteText(fmt.Sprint(elem))
 			if j < len(row)-1 {
-				sb.WriteString(dividerRow)
+				builder.WriteText(dividerRow)
 			}
 		}
 		if i < len(collection2D)-1 {
-			sb.WriteString(dividerColumn)
+			builder.WriteText(dividerColumn)
 		}
 	}
-	return sb.String()
+	return builder.ToText()
 }

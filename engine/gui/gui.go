@@ -1,7 +1,7 @@
 package gui
 
 import (
-	"encoding/xml"
+	"pure-kit/engine/data/storage"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/dynamic"
 	"pure-kit/engine/gui/property"
@@ -9,7 +9,6 @@ import (
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
-	"strings"
 )
 
 // https://showcase.primefaces.org - basic default browser widgets showcase (scroll down to forms on the left)
@@ -21,9 +20,7 @@ type GUI struct {
 
 func NewXML(xmlData string) *GUI {
 	var gui = GUI{root: &root{}}
-	var _ = xml.Unmarshal([]byte(xmlData), &gui.root)
-	// fmt.Printf("%v\n", xmlData)
-	// fmt.Printf("err: %v\n", err)
+	storage.FromXML(xmlData, &gui.root)
 
 	gui.root.Containers = map[string]*container{}
 	gui.root.Widgets = map[string]*widget{}
@@ -79,7 +76,7 @@ func NewElements(elements ...string) *GUI {
 	var result = "<GUI scale=\"1\">"
 
 	// container is missing on top, add root container
-	if len(elements) > 0 && !strings.HasPrefix(elements[0], "<Container") {
+	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
 		result += "\n\t<Container " + property.Id + "=\"root\" " +
 			property.X + "=\"" + dynamic.CameraLeftX + "\" " +
 			property.Y + "=\"" + dynamic.CameraTopY + "\" " +
@@ -88,7 +85,7 @@ func NewElements(elements ...string) *GUI {
 	}
 
 	for i, v := range elements {
-		if strings.HasPrefix(v, "<Container") {
+		if text.StartsWith(v, "<Container") {
 			if i > 0 {
 				result += "\n\t</Container>"
 			}
@@ -332,24 +329,24 @@ func defaultValue(value, defaultValue string) string {
 }
 
 func dyn(owner *container, value string, defaultValue string) string {
-	value = strings.ReplaceAll(value, dynamic.CameraCenterX, camCx)
-	value = strings.ReplaceAll(value, dynamic.CameraCenterY, camCy)
-	value = strings.ReplaceAll(value, dynamic.CameraLeftX, camLx)
-	value = strings.ReplaceAll(value, dynamic.CameraRightX, camRx)
-	value = strings.ReplaceAll(value, dynamic.CameraTopY, camTy)
-	value = strings.ReplaceAll(value, dynamic.CameraBottomY, camBy)
-	value = strings.ReplaceAll(value, dynamic.CameraWidth, camW)
-	value = strings.ReplaceAll(value, dynamic.CameraHeight, camH)
+	value = text.Replace(value, dynamic.CameraCenterX, camCx)
+	value = text.Replace(value, dynamic.CameraCenterY, camCy)
+	value = text.Replace(value, dynamic.CameraLeftX, camLx)
+	value = text.Replace(value, dynamic.CameraRightX, camRx)
+	value = text.Replace(value, dynamic.CameraTopY, camTy)
+	value = text.Replace(value, dynamic.CameraBottomY, camBy)
+	value = text.Replace(value, dynamic.CameraWidth, camW)
+	value = text.Replace(value, dynamic.CameraHeight, camH)
 
 	if owner != nil {
-		value = strings.ReplaceAll(value, dynamic.OwnerX, ownerX)
-		value = strings.ReplaceAll(value, dynamic.OwnerY, ownerY)
-		value = strings.ReplaceAll(value, dynamic.OwnerWidth, ownerW)
-		value = strings.ReplaceAll(value, dynamic.OwnerHeight, ownerH)
-		value = strings.ReplaceAll(value, dynamic.OwnerLeftX, ownerLx)
-		value = strings.ReplaceAll(value, dynamic.OwnerRightX, ownerRx)
-		value = strings.ReplaceAll(value, dynamic.OwnerTopY, ownerTy)
-		value = strings.ReplaceAll(value, dynamic.OwnerBottomY, ownerBy)
+		value = text.Replace(value, dynamic.OwnerX, ownerX)
+		value = text.Replace(value, dynamic.OwnerY, ownerY)
+		value = text.Replace(value, dynamic.OwnerWidth, ownerW)
+		value = text.Replace(value, dynamic.OwnerHeight, ownerH)
+		value = text.Replace(value, dynamic.OwnerLeftX, ownerLx)
+		value = text.Replace(value, dynamic.OwnerRightX, ownerRx)
+		value = text.Replace(value, dynamic.OwnerTopY, ownerTy)
+		value = text.Replace(value, dynamic.OwnerBottomY, ownerBy)
 	}
 
 	// value = strings.ReplaceAll(value, dynamic.MyX, "")
@@ -369,7 +366,7 @@ func dyn(owner *container, value string, defaultValue string) string {
 }
 
 func parseColor(value string, disabled ...bool) uint {
-	var rgba = strings.Split(value, " ")
+	var rgba = text.Split(value, " ")
 	var r, g, b, a uint64
 
 	if len(rgba) == 3 || len(rgba) == 4 {

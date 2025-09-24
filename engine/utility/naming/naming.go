@@ -1,11 +1,13 @@
 package naming
 
 import (
-	"math/rand"
 	"regexp"
-	"slices"
-	"strings"
 	"unicode"
+
+	"pure-kit/engine/utility/collection"
+	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/random"
+	txt "pure-kit/engine/utility/text"
 )
 
 type Naming int
@@ -28,44 +30,44 @@ func Apply(text string, naming Naming, divider string) string {
 	}
 
 	if naming == RaNDomCasE {
-		var result strings.Builder
-		var randBool = rand.Float64() < 0.5
+		var result = txt.NewBuilder()
+		var randBool = random.Range(0, 1, number.NaN()) < 0.5
 		for _, r := range text {
 			if randBool {
-				result.WriteRune(unicode.ToLower(r))
+				result.WriteSymbol(unicode.ToLower(r))
 			} else {
-				result.WriteRune(unicode.ToUpper(r))
+				result.WriteSymbol(unicode.ToUpper(r))
 			}
 		}
-		return result.String()
+		return result.ToText()
 	}
 
 	detectedNaming, detectedDivider := Detect(text)
 	var words = []string{text}
 	if detectedDivider != "" {
-		words = strings.Split(text, detectedDivider)
+		words = txt.Split(text, detectedDivider)
 	}
 
 	if len(words) == 1 &&
 		divider != "" &&
 		(hasFlag(detectedNaming, camelCase) || hasFlag(detectedNaming, PascalCase)) {
-		words = strings.Split(addDivCamelPascal(words[0], divider), divider)
+		words = txt.Split(addDivCamelPascal(words[0], divider), divider)
 	}
 
 	for i := range words {
 		word := words[i]
 
 		if hasFlag(naming, lower) {
-			word = strings.ToLower(word)
+			word = txt.LowerCase(word)
 		}
 
 		if hasFlag(naming, UPPER) {
-			word = strings.ToUpper(word)
+			word = txt.UpperCase(word)
 		}
 
 		if hasFlag(naming, camelCase) {
 			if i == 0 {
-				word = strings.ToLower(word)
+				word = txt.LowerCase(word)
 			} else {
 				word = capitalize(word)
 			}
@@ -79,45 +81,45 @@ func Apply(text string, naming Naming, divider string) string {
 			if i == 0 {
 				word = capitalize(word)
 			} else {
-				word = strings.ToLower(word)
+				word = txt.LowerCase(word)
 			}
 		}
 
 		if hasFlag(naming, PiNgPoNg_CaSe) {
-			var sb strings.Builder
+			var builder = txt.NewBuilder()
 			var isUpper = true
 			for _, c := range word {
 				if isUpper {
-					sb.WriteRune(unicode.ToUpper(c))
+					builder.WriteSymbol(unicode.ToUpper(c))
 				} else {
-					sb.WriteRune(unicode.ToLower(c))
+					builder.WriteSymbol(unicode.ToLower(c))
 				}
 				isUpper = !isUpper
 			}
-			word = sb.String()
+			word = builder.ToText()
 		}
 
 		if hasFlag(naming, pOnGpInG_cAsE) {
-			var sb strings.Builder
+			var builder = txt.NewBuilder()
 			var isLower = true
 			for _, c := range word {
 				if isLower {
-					sb.WriteRune(unicode.ToLower(c))
+					builder.WriteSymbol(unicode.ToLower(c))
 				} else {
-					sb.WriteRune(unicode.ToUpper(c))
+					builder.WriteSymbol(unicode.ToUpper(c))
 				}
 				isLower = !isLower
 			}
-			word = sb.String()
+			word = builder.ToText()
 		}
 
 		words[i] = word
 	}
 
-	return strings.Join(words, divider)
+	return collection.ToText(words, divider)
 }
 func Detect(text string) (naming Naming, separator string) {
-	if strings.TrimSpace(text) == "" {
+	if txt.Trim(text) == "" {
 		return RaNDomCasE, ""
 	}
 
@@ -129,13 +131,13 @@ func Detect(text string) (naming Naming, separator string) {
 	if match != "" {
 		divider = string(match[0])
 		detectedNaming |= Separated
-		words = strings.Split(text, divider)
+		words = txt.Split(text, divider)
 	}
 
 	// Remove divider chars to analyze the core string
 	var inputNoDivider = text
 	if divider != "" {
-		inputNoDivider = strings.ReplaceAll(text, divider, "")
+		inputNoDivider = txt.Remove(text, divider)
 	}
 
 	if isAllLower(inputNoDivider) {
@@ -238,7 +240,12 @@ func isAllUpper(s string) bool {
 }
 
 func containsUpper(runes []rune) bool {
-	return slices.ContainsFunc(runes, unicode.IsUpper)
+	for _, r := range runes { // no need for slices dependency
+		if unicode.IsUpper(r) {
+			return true
+		}
+	}
+	return false
 }
 
 func isCapitalized(word string) bool {
@@ -281,18 +288,18 @@ func capitalize(word string) string {
 		return ""
 	}
 	var runes = []rune(word)
-	return string(unicode.ToUpper(runes[0])) + strings.ToLower(string(runes[1:]))
+	return string(unicode.ToUpper(runes[0])) + txt.LowerCase(string(runes[1:]))
 }
 func addDivCamelPascal(text, div string) string {
-	var result strings.Builder
+	var result = txt.NewBuilder()
 	var runes = []rune(text)
 	for i := range runes {
 		if i > 0 && unicode.IsUpper(runes[i]) && (i == len(runes)-1 || unicode.IsLower(runes[i+1])) {
-			result.WriteString(div)
+			result.WriteText(div)
 		}
-		result.WriteRune(runes[i])
+		result.WriteSymbol(runes[i])
 	}
-	return result.String()
+	return result.ToText()
 }
 func hasFlag(value Naming, flag Naming) bool {
 	return value&flag != 0

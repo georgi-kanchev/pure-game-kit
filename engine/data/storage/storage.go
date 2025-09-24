@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func FromFileJSON(filePath string, structPointer any) {
+func FromFileJSON(filePath string, structInstance any) {
 	var file, err = os.Open(filePath)
 	if err != nil {
 		fmt.Printf("Failed to open JSON file: %v\n", err)
@@ -16,12 +16,12 @@ func FromFileJSON(filePath string, structPointer any) {
 	defer file.Close()
 
 	var decoder = json.NewDecoder(file)
-	var err2 = decoder.Decode(structPointer)
+	var err2 = decoder.Decode(structInstance)
 	if err2 != nil {
 		fmt.Printf("Failed to decode JSON file: %v\n", err2)
 	}
 }
-func FromFileXML(filePath string, structPointer any) {
+func FromFileXML(filePath string, structInstance any) {
 	var file, err = os.Open(filePath)
 	if err != nil {
 		fmt.Printf("Failed to open XML file: %v\n", err)
@@ -30,20 +30,20 @@ func FromFileXML(filePath string, structPointer any) {
 	defer file.Close()
 
 	var decoder = xml.NewDecoder(file)
-	var err2 = decoder.Decode(structPointer)
+	var err2 = decoder.Decode(structInstance)
 	if err2 != nil {
 		fmt.Printf("Failed to decode XML file: %v\n", err2)
 	}
 }
 
-func FromJSON(jsonData string, structPointer any) {
-	var err = json.Unmarshal([]byte(jsonData), structPointer)
+func FromJSON(jsonData string, structInstance any) {
+	var err = json.Unmarshal([]byte(jsonData), structInstance)
 	if err != nil {
 		fmt.Printf("Failed to unmarshal JSON: %v\n", err)
 	}
 }
-func FromXML(xmlData string, structPointer any) {
-	var err = xml.Unmarshal([]byte(xmlData), structPointer)
+func FromXML(xmlData string, structInstance any) {
+	var err = xml.Unmarshal([]byte(xmlData), structInstance)
 	if err != nil {
 		fmt.Printf("Failed to unmarshal XML: %v\n", err)
 	}

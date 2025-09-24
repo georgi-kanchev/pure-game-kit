@@ -3,7 +3,6 @@ package assets
 import (
 	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
-	"unsafe"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -74,12 +73,10 @@ func loadFont(id string, size int, bytes []byte) {
 
 	var characters = uniqueRunes(all)
 	var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
-	var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(characters)), Chars: &glyphs[0]}
-	var atlas = rl.GenImageFontAtlas(
-		unsafe.Slice(font.Chars, font.CharsCount),
-		unsafe.Slice(&font.Recs, font.CharsCount),
-		int32(size), 0, 1,
-	)
+	var recs = make([]*rl.Rectangle, len(glyphs))
+	var atlas = rl.GenImageFontAtlas(glyphs, recs, int32(size), 0, 1)
+	var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(glyphs)), Chars: &glyphs[0], Recs: recs[0]}
+
 	font.Texture = rl.LoadTextureFromImage(&atlas)
 	rl.UnloadImage(&atlas)
 	rl.SetTextureFilter(font.Texture, rl.FilterBilinear)

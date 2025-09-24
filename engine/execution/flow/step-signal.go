@@ -2,7 +2,7 @@ package flow
 
 import (
 	"pure-kit/engine/internal"
-	"slices"
+	"pure-kit/engine/utility/collection"
 )
 
 type StepSignal struct {
@@ -14,9 +14,9 @@ func WaitForSignal(signal string) *StepSignal {
 }
 
 func (step *StepSignal) Continue() bool {
-	if slices.Contains(internal.FlowSignals, step.signal) {
-		var i = slices.Index(internal.FlowSignals, step.signal)
-		internal.FlowSignals = slices.Delete(internal.FlowSignals, i, i+1)
+	if collection.Contains(internal.FlowSignals, step.signal) {
+		var i = collection.IndexOf(internal.FlowSignals, step.signal)
+		internal.FlowSignals = collection.RemoveAt(internal.FlowSignals, i, i+1)
 		return true
 	}
 	return false

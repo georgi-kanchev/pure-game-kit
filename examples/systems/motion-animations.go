@@ -3,10 +3,10 @@ package example
 import (
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
+	"pure-kit/engine/input/keyboard"
+	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/motion"
 	"pure-kit/engine/window"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func Animations() {
@@ -23,7 +23,7 @@ func Animations() {
 		sprite.AssetId = *animation.CurrentItem()
 		cam.DrawSprites(&sprite)
 
-		if rl.IsKeyPressed(rl.KeyA) {
+		if keyboard.IsKeyPressedOnce(key.A) {
 			animation.SetTime(3.8)
 		}
 	}

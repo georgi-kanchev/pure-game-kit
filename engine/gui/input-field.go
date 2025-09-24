@@ -12,7 +12,6 @@ import (
 	"pure-kit/engine/utility/seconds"
 	txt "pure-kit/engine/utility/text"
 	"pure-kit/engine/window"
-	"strings"
 )
 
 func InputField(id string, properties ...string) string {
@@ -37,7 +36,7 @@ func (gui *GUI) InputFieldStopTyping() {
 // private
 
 var typingIn *widget
-var indexCursor, indexSelect, indexCursorPrev int
+var indexCursor, indexSelect int
 var cursorTime, scrollX, textMargin float32
 var symbolXs []float32 = []float32{}
 var maskText = false
@@ -52,7 +51,7 @@ func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 	var scroll = condition.If(typingIn == widget, scrollX, 0)
 	reusableTextBox.X = reusableTextBox.X + margin - scroll
 	reusableTextBox.Y += margin / 2
-	reusableTextBox.Text = strings.ReplaceAll(reusableTextBox.Text, "\n", "")
+	reusableTextBox.Text = txt.Remove(reusableTextBox.Text, "\n")
 	reusableTextBox.EmbeddedAssetsTag = 0
 	reusableTextBox.EmbeddedColorsTag = 0
 	reusableTextBox.EmbeddedThicknessesTag = 0
@@ -77,7 +76,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var anyInput = mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0
 	var focused = widget.isFocused(root, cam)
 	var meTyping = typingIn == widget // each input field should disable its own typing
-	var text = strings.ReplaceAll(themedProp(property.Text, root, owner, widget), "\n", "")
+	var text = txt.Remove(themedProp(property.Text, root, owner, widget), "\n")
 
 	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyPressedOnce(key.Escape)) {
 		typingIn = nil
@@ -103,7 +102,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var isPlaceholder = false
 	if text == "" {
 		var placeholder = themedProp(property.InputFieldPlaceholder, root, owner, widget)
-		placeholder = strings.ReplaceAll(defaultValue(placeholder, "Type..."), "\n", "")
+		placeholder = txt.Remove(defaultValue(placeholder, "Type..."), "\n")
 		setupText(margin, root, widget, false) // don't skip when empty!
 		reusableTextBox.Text = placeholder
 		isPlaceholder = true
@@ -135,7 +134,6 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		cam.DrawLine(x, reusableTextBox.Y, x, reusableTextBox.Y+reusableTextBox.Height, 5, color.Black)
 	}
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
-	indexCursorPrev = indexCursor
 }
 
 func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin float32, root *root) {
@@ -322,7 +320,7 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	cursorTime = 0
 	scrollX = 0
 	typingIn = allInputFields[(myIndex+1)%total]
-	var text = strings.ReplaceAll(themedProp(property.Text, root, owner, typingIn), "\n", "")
+	var text = txt.Remove(themedProp(property.Text, root, owner, typingIn), "\n")
 	indexCursor = len(text)
 	indexSelect = indexCursor
 	frame = int(seconds.FrameCount()) // only once per frame

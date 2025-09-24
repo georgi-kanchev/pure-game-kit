@@ -3,8 +3,8 @@ package seconds
 import (
 	"fmt"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/collection"
 	"pure-kit/engine/utility/number"
-	"strings"
 	"time"
 )
 
@@ -132,5 +132,5 @@ func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amP
 		parts = append(parts, sep+amPm)
 	}
 
-	return strings.Join(parts, "")
+	return collection.ToText(parts, "")
 }

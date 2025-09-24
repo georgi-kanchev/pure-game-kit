@@ -15,7 +15,10 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
-[69] [Mon] [23-09-2025]
+[70] [Wed] [24-09-2025]
+[√] less package dependencies everywhere, more code goes through the engine, wrappers etc
+
+[69] [Mon] [22-09-2025]
 [√] geometry - shape cell on grid getter
 [√] debug - print dependencies function
 [√] data - path + storage

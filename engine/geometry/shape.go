@@ -1,7 +1,6 @@
 package geometry
 
 import (
-	"math"
 	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/number"
@@ -141,7 +140,7 @@ func (shape *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (ne
 			}
 
 			var axisX, axisY = -edgeY, edgeX
-			var axisLen = float32(math.Hypot(float64(axisX), float64(axisY)))
+			var axisLen = number.SquareRoot(axisX*axisX + axisY*axisY)
 			if axisLen != 0 {
 				axisX /= axisLen
 				axisY /= axisLen

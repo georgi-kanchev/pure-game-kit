@@ -2,14 +2,14 @@ package is
 
 import (
 	"fmt"
-	"slices"
+	"pure-kit/engine/utility/collection"
 
 	"golang.org/x/exp/constraints"
 )
 
-func AnyOf[T comparable](value T, values ...T) bool  { return slices.Contains(values, value) }
-func OneOf[T comparable](value T, values ...T) bool  { return slices.Contains(values, value) }
-func NoneOf[T comparable](value T, values ...T) bool { return !slices.Contains(values, value) }
+func AnyOf[T comparable](value T, values ...T) bool  { return collection.Contains(values, value) }
+func OneOf[T comparable](value T, values ...T) bool  { return collection.Contains(values, value) }
+func NoneOf[T comparable](value T, values ...T) bool { return !collection.Contains(values, value) }
 func AllOf[T comparable](value T, values ...T) bool {
 	for _, v := range values {
 		if value != v {

@@ -1,13 +1,8 @@
 package internal
 
-import (
-	"encoding/xml"
-)
-
 type Map struct {
 	Name, Directory string
 	WorldX, WorldY  float32
-	XMLName         xml.Name       `xml:"map"`
 	Version         string         `xml:"version,attr"`
 	TiledVersion    string         `xml:"tiledversion,attr"`
 	Class           string         `xml:"class,attr"`

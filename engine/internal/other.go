@@ -1,23 +1,21 @@
 package internal
 
-import (
-	"strings"
-)
+import txt "pure-kit/engine/utility/text"
 
 const Placeholder = '╌'
 
 func ReplaceQuotedStrings(text string, quote, placeholder rune) (replaced string, originals []string) {
-	var result strings.Builder
+	var result = txt.NewBuilder()
 	var inQuotes bool
-	var current strings.Builder
+	var current = txt.NewBuilder()
 
 	for i, char := range text {
 		if char == quote {
 			if inQuotes { // closing quote found
 				inQuotes = false
-				originals = append(originals, current.String())
-				result.WriteRune(placeholder)
-				current.Reset()
+				originals = append(originals, current.ToText())
+				result.WriteSymbol(placeholder)
+				current.Clear()
 			} else { // opening quote found
 				inQuotes = true
 			}
@@ -25,15 +23,15 @@ func ReplaceQuotedStrings(text string, quote, placeholder rune) (replaced string
 		}
 
 		if inQuotes {
-			current.WriteRune(char)
+			current.WriteSymbol(char)
 
 			if i == len(text)-1 { // no closing quote found results in no replacement
-				result.WriteString(string(quote) + current.String())
+				result.WriteText(string(quote) + current.ToText())
 			}
 		} else {
-			result.WriteRune(char)
+			result.WriteSymbol(char)
 		}
 	}
 
-	return result.String(), originals
+	return result.ToText(), originals
 }

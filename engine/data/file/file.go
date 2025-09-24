@@ -6,8 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path"
-	"path/filepath"
+	"pure-kit/engine/data/path"
 )
 
 func Exists(filePath string) bool {
@@ -82,7 +81,7 @@ func Delete(filePath string) bool {
 	return err == nil
 }
 func Rename(filePath, newName string) bool {
-	var newFilePath = filepath.Join(filepath.Dir(filePath), newName)
+	var newFilePath = path.New(path.Folder(filePath), newName)
 
 	if !Exists(filePath) || Exists(newFilePath) {
 		return false
@@ -97,7 +96,7 @@ func Move(filePath, toFolderPath string) bool {
 	if !Exists(filePath) || !folderExists {
 		return false
 	}
-	return Rename(filePath, path.Join(toFolderPath, filePath))
+	return Rename(filePath, path.New(toFolderPath, filePath))
 }
 func Copy(filePath, toFolderPath string) bool {
 	var srcFile, err = os.Open(filePath)
@@ -106,7 +105,7 @@ func Copy(filePath, toFolderPath string) bool {
 	}
 	defer srcFile.Close()
 
-	var destFile, err2 = os.Create(path.Join(toFolderPath, filePath))
+	var destFile, err2 = os.Create(path.New(toFolderPath, filePath))
 	if err2 != nil {
 		return false
 	}

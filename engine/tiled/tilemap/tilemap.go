@@ -8,8 +8,6 @@ import (
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -154,13 +152,17 @@ func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *
 		return layer.Tiles // fast return if cached
 	} // cache otherwise
 
-	var tileData = strings.Trim(layer.TileData.Tiles, "\n")
-	var rows = strings.Split(tileData, "\n")
+	var tileData = text.Trim(layer.TileData.Tiles)
+	var rows = text.Split(tileData, "\n")
 	layer.Tiles = make([]int, mapData.Width*mapData.Height)
 
 	for i := 0; i < mapData.Height; i++ {
-		var row = strings.Trim(rows[i], ",")
-		var columns = strings.Split(row, ",")
+		var row = rows[i]
+		if text.EndsWith(row, ",") {
+			row = row[:len(row)-1]
+		}
+
+		var columns = text.Split(row, ",")
 		for j := 0; j < mapData.Width; j++ {
 			var tile = int(text.ToNumber(columns[j]))
 			if tile == 0 {
@@ -248,9 +250,9 @@ func findAndParseShapes(objs []*internal.LayerObject, objNameOrClass string) []*
 		}
 
 		var corners = [][2]float32{}
-		var pts = strings.Split(ptsData, " ")
+		var pts = text.Split(ptsData, " ")
 		for _, pt := range pts {
-			var xy = strings.Split(pt, ",")
+			var xy = text.Split(pt, ",")
 			if len(xy) == 2 {
 				var x, y = text.ToNumber(xy[0]), text.ToNumber(xy[1])
 				x, y = point.RotateAroundPoint(x, y, 0, 0, obj.Rotation)
@@ -266,7 +268,7 @@ func findAndParseShapes(objs []*internal.LayerObject, objNameOrClass string) []*
 }
 
 func color(hex string) uint {
-	var trimmed = strings.TrimPrefix(hex, "#")
+	var trimmed = hex[1:]
 
 	if len(trimmed) == 6 {
 		trimmed += "FF"
@@ -274,10 +276,5 @@ func color(hex string) uint {
 		return 0
 	}
 
-	var value, err = strconv.ParseUint(trimmed, 16, 32)
-	if err != nil {
-		return 0
-	}
-
-	return uint(value)
+	return text.ToUint(trimmed)
 }

@@ -3,7 +3,7 @@ package path
 import (
 	"os"
 	"path/filepath"
-	"strings"
+	"pure-kit/engine/utility/text"
 )
 
 func New(elements ...string) string {
@@ -23,7 +23,7 @@ func Executable() string {
 }
 
 func IsDirectory(path string) bool {
-	if strings.HasSuffix(path, string(filepath.Separator)) {
+	if text.EndsWith(path, string(filepath.Separator)) {
 		return true
 	}
 	return Extension(path) == ""

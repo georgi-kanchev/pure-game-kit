@@ -1,9 +1,6 @@
 package number
 
-import (
-	"fmt"
-	"math"
-)
+import "math"
 
 const MaximumInt = 2147483647
 const MinimumInt = -MaximumInt
@@ -316,20 +313,4 @@ func IsNaN(number float32) bool {
 }
 func NaN() float32 {
 	return float32(math.NaN())
-}
-
-//=================================================================
-// int only
-
-func ByteSize(byteSize int) string {
-	const unit = 1024
-	if byteSize < unit {
-		return fmt.Sprintf("%d B", byteSize)
-	}
-	var div, exp = int(unit), 0
-	for n := byteSize / unit; n >= unit; n /= unit {
-		div *= unit
-		exp++
-	}
-	return fmt.Sprintf("%.1f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }

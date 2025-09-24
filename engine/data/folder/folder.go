@@ -3,7 +3,7 @@ package folder
 import (
 	"io"
 	"os"
-	"path/filepath"
+	"pure-kit/engine/data/path"
 )
 
 func Exists(folderPath string) bool {
@@ -14,17 +14,20 @@ func IsEmpty(folderPath string) bool {
 	return len(Content(folderPath)) == 0
 }
 func ByteSize(folderPath string) int64 {
-	var totalSize int64 = 0
+	var totalSize int64
 
-	_ = filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return nil // skip unreadable files
-		}
-		if !info.IsDir() {
+	var files = Files(folderPath)
+	for _, file := range files {
+		var info, err = os.Stat(path.New(folderPath, file))
+		if err == nil {
 			totalSize += info.Size()
 		}
-		return nil
-	})
+	}
+
+	var folders = Folders(folderPath)
+	for _, sub := range folders {
+		totalSize += ByteSize(path.New(folderPath, sub))
+	}
 
 	return totalSize
 }
@@ -64,8 +67,8 @@ func DeleteContents(folderPath string) bool {
 	}
 	return true
 }
-func Rename(folderPath string, newName string) bool {
-	var newPath = filepath.Join(filepath.Dir(folderPath), newName)
+func Rename(folderPath, newName string) bool {
+	var newPath = path.New(path.Folder(folderPath), newName)
 
 	if !Exists(folderPath) || Exists(newPath) {
 		return false
@@ -73,101 +76,111 @@ func Rename(folderPath string, newName string) bool {
 
 	return os.Rename(folderPath, newPath) == nil
 }
-func MoveContents(fromFolderPath string, toFolderPath string) bool {
+func MoveContents(fromFolderPath, toFolderPath string) bool {
 	if !Exists(fromFolderPath) || !Exists(toFolderPath) {
 		return false
 	}
 
-	var err = filepath.WalkDir(fromFolderPath, func(path string, d os.DirEntry, err error) error {
+	var files = Files(fromFolderPath)
+	for _, file := range files {
+		var srcPath = path.New(fromFolderPath, file)
+		var destPath = path.New(toFolderPath, file)
+		var err = os.MkdirAll(path.Folder(destPath), 0755)
 		if err != nil {
-			return err
+			return false
 		}
 
-		if path == fromFolderPath {
-			return nil // Skip root
+		var err2 = os.Rename(srcPath, destPath)
+		if err2 == nil {
+			continue
 		}
 
-		relPath, err := filepath.Rel(fromFolderPath, path)
-		if err != nil {
-			return err
-		}
-
-		var targetPath = filepath.Join(toFolderPath, relPath)
-
-		if d.IsDir() {
-			return os.MkdirAll(targetPath, 0755)
-		}
-
-		// Ensure parent folder exists
-		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
-			return err
-		}
-
-		// Try rename first
-		if err := os.Rename(path, targetPath); err == nil {
-			return nil
-		}
-
-		// Fallback: copy + delete
-		srcFile, err := os.Open(path)
-		if err != nil {
-			return err
+		var srcFile, err3 = os.Open(srcPath)
+		if err3 != nil {
+			return false
 		}
 		defer srcFile.Close()
 
-		destFile, err := os.Create(targetPath)
-		if err != nil {
-			return err
+		var destFile, err4 = os.Create(destPath)
+		if err4 != nil {
+			return false
 		}
 		defer destFile.Close()
 
-		if _, err := io.Copy(destFile, srcFile); err != nil {
-			return err
+		var _, err5 = io.Copy(destFile, srcFile)
+		if err5 != nil {
+			return false
 		}
 
-		return os.Remove(path)
-	})
+		var err6 = os.Remove(srcPath)
+		if err6 != nil {
+			return false
+		}
+	}
 
-	return err == nil
+	var folders = Folders(fromFolderPath)
+	for _, sub := range folders {
+		var srcSub = path.New(fromFolderPath, sub)
+		var destSub = path.New(toFolderPath, sub)
+
+		var err = os.MkdirAll(destSub, 0755)
+		if err != nil {
+			return false
+		}
+		if !MoveContents(srcSub, destSub) {
+			return false
+		}
+	}
+
+	return true
 }
 func CopyContents(fromFolderPath, toFolderPath string) bool {
 	if !Exists(fromFolderPath) || !Exists(toFolderPath) {
 		return false
 	}
 
-	var err = filepath.WalkDir(fromFolderPath, func(path string, d os.DirEntry, err error) error {
+	var files = Files(fromFolderPath)
+	for _, file := range files {
+		var srcPath = path.New(fromFolderPath, file)
+		var destPath = path.New(toFolderPath, file)
+		var srcFile, err = os.Open(srcPath)
 		if err != nil {
-			return err
+			return false
 		}
 
-		relPath, err := filepath.Rel(fromFolderPath, path)
-		if err != nil {
-			return err
-		}
-
-		targetPath := filepath.Join(toFolderPath, relPath)
-
-		if d.IsDir() {
-			return os.MkdirAll(targetPath, 0755)
-		}
-
-		// Copy file
-		srcFile, err := os.Open(path)
-		if err != nil {
-			return err
-		}
 		defer srcFile.Close()
 
-		destFile, err := os.Create(targetPath)
-		if err != nil {
-			return err
+		var err2 = os.MkdirAll(path.Folder(destPath), 0755)
+		if err2 != nil {
+			return false
+		}
+
+		var destFile, err3 = os.Create(destPath)
+		if err3 != nil {
+			return false
 		}
 		defer destFile.Close()
 
-		_, err = io.Copy(destFile, srcFile)
-		return err
-	})
-	return err == nil
+		var _, err4 = io.Copy(destFile, srcFile)
+		if err4 != nil {
+			return false
+		}
+	}
+
+	var folders = Folders(fromFolderPath)
+	for _, sub := range folders {
+		var srcSub = path.New(fromFolderPath, sub)
+		var destSub = path.New(toFolderPath, sub)
+		var err = os.MkdirAll(destSub, 0755)
+		if err != nil {
+			return false
+		}
+		if !CopyContents(srcSub, destSub) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func Content(folderPath string) []string {

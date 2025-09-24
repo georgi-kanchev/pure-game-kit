@@ -1,11 +1,9 @@
 package graphics
 
 import (
-	"bytes"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	txt "pure-kit/engine/utility/text"
-	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -46,9 +44,9 @@ func (textBox *TextBox) TextMeasure(text string) (width, height float32) {
 }
 func (textBox *TextBox) TextWrap(text string) string {
 	var font = textBox.font()
-	var words = strings.Split(text, " ")
+	var words = txt.Split(text, " ")
 	var curX, curY float32 = 0, 0
-	var buffer = bytes.NewBufferString("")
+	var buffer = txt.NewBuilder()
 
 	for w := range words {
 		var word = words[w]
@@ -57,14 +55,14 @@ func (textBox *TextBox) TextWrap(text string) string {
 		}
 
 		var wordLength = txt.Length(word)
-		var wordSize = rl.MeasureTextEx(*font, strings.Trim(word, " "), textBox.LineHeight, textBox.gapSymbols())
+		var wordSize = rl.MeasureTextEx(*font, txt.Trim(word), textBox.LineHeight, textBox.gapSymbols())
 		var wordEndOfBox = curX+wordSize.X > textBox.Width
 		var firstWord = w == 0
 
 		if !firstWord && textBox.WordWrap && wordEndOfBox {
 			curX = 0
 			curY += textBox.LineHeight + textBox.gapLines()
-			buffer.WriteRune('\n')
+			buffer.WriteSymbol('\n')
 		}
 
 		for c := range wordLength {
@@ -78,11 +76,11 @@ func (textBox *TextBox) TextWrap(text string) string {
 				curY += textBox.LineHeight + textBox.gapLines()
 
 				if char != '\n' {
-					buffer.WriteRune('\n')
+					buffer.WriteSymbol('\n')
 				}
 			}
 
-			buffer.WriteRune(char)
+			buffer.WriteSymbol(char)
 
 			if char == textBox.EmbeddedColorsTag || char == textBox.EmbeddedThicknessesTag {
 				continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
@@ -92,8 +90,8 @@ func (textBox *TextBox) TextWrap(text string) string {
 		}
 	}
 
-	var result = buffer.String()
-	result = strings.ReplaceAll(result, " \n", "\n")
+	var result = buffer.ToText()
+	result = txt.Replace(result, " \n", "\n")
 
 	return result
 }
@@ -138,7 +136,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var colorTag = string(t.EmbeddedColorsTag)
 	var thickTag = string(t.EmbeddedThicknessesTag)
 	var wrapped = t.TextWrap(t.Text)
-	var lines = strings.Split(wrapped, "\n")
+	var lines = txt.Split(wrapped, "\n")
 	var _, _, ang, _, _ = t.TransformToCamera()
 	var curX, curY float32 = 0, 0
 	var font = t.font()
@@ -152,8 +150,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	// although some chars are "outside" of the box, they still need to be iterated cuz of colorIndex and assetIndex
 
 	for l, line := range lines {
-		var tagless = strings.ReplaceAll(line, colorTag, "")
-		tagless = strings.ReplaceAll(tagless, thickTag, "")
+		var tagless = txt.Remove(line, colorTag, thickTag)
 		var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
 		var lineLength = txt.Length(line)
 		var skip = false // replaces 'continue' to avoid skipping the offset calculations

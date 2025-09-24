@@ -193,8 +193,8 @@ func NoiseWorley(x, y, scale, seed float32) float32 {
 	}
 
 	// Normalize distance: closer = lower, scale to [0, 1]
-	// sqrt(2) is max possible distance from center to feature point
-	var result = float32(math.Sqrt(float64(minDist)) / math.Sqrt2)
+	const sqrt2 = 1.4142 // max possible distance from center to feature point
+	var result = float32(number.SquareRoot(minDist) / sqrt2)
 	return number.Limit(result, 0, 1)
 }
 func NoiseVoronoi(x, y, scale, seed float32) float32 {

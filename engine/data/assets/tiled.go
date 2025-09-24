@@ -1,11 +1,8 @@
 package assets
 
 import (
-	"encoding/json"
-	"encoding/xml"
-	"fmt"
-	"os"
 	"pure-kit/engine/data/path"
+	"pure-kit/engine/data/storage"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/collection"
 	"pure-kit/engine/utility/number"
@@ -14,22 +11,14 @@ import (
 
 func LoadTiledTileset(tsxFilePath string) []string {
 	var resultIds = []string{}
-	file, err := os.Open(tsxFilePath)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return resultIds
-	}
-	defer file.Close()
-
 	var tileset *internal.Tileset
-	var err2 = xml.NewDecoder(file).Decode(&tileset)
-	if err2 != nil {
+	var id = path.RemoveExtension(tsxFilePath)
+
+	storage.FromFileXML(tsxFilePath, &tileset)
+	if tileset == nil {
 		return resultIds
 	}
 
-	var name = path.LastElement(tsxFilePath)
-	name = path.RemoveExtension(name)
-	var id = path.New(path.Folder(tsxFilePath), name)
 	resultIds = append(resultIds, id)
 	internal.TiledTilesets[id] = tileset
 
@@ -58,22 +47,15 @@ func LoadTiledTileset(tsxFilePath string) []string {
 }
 func LoadTiledWorld(worldFilePath string) (tilemapIds []string) {
 	var resultIds = []string{}
-	worldFile, err := os.Open(worldFilePath)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return resultIds
-	}
-	defer worldFile.Close()
-
 	var world *internal.World
-	var err2 = json.NewDecoder(worldFile).Decode(&world)
-	if err2 != nil {
+
+	storage.FromFileJSON(worldFilePath, &world)
+	if world == nil {
 		return resultIds
 	}
 
-	var name = path.LastElement(worldFilePath)
 	world.Directory = path.Folder(worldFilePath)
-	world.Name = path.RemoveExtension(name)
+	world.Name = path.RemoveExtension(path.LastElement(worldFilePath))
 
 	for _, m := range world.Maps {
 		var mapPath = path.New(world.Directory, m.FileName)
@@ -99,26 +81,18 @@ func LoadTiledWorld(worldFilePath string) (tilemapIds []string) {
 }
 func LoadTiledMap(tmxFilePath string) []string {
 	var resultIds = []string{}
-	file, err := os.Open(tmxFilePath)
-	if err != nil {
-		fmt.Printf("error: %v\n", err)
-		return resultIds
-	}
-	defer file.Close()
-
 	var mapData *internal.Map
-	var error = xml.NewDecoder(file).Decode(&mapData)
-	if error != nil {
+	var name = path.RemoveExtension(tmxFilePath)
+
+	storage.FromFileXML(tmxFilePath, &mapData)
+	if mapData == nil {
 		return resultIds
 	}
 
-	var name = path.LastElement(tmxFilePath)
-	name = path.RemoveExtension(name)
-	mapData.Name = name
+	mapData.Name = path.LastElement(name)
 	mapData.Directory = path.Folder(tmxFilePath)
-	var id = path.New(mapData.Directory, name)
-	internal.TiledMaps[id] = mapData
-	resultIds = append(resultIds, id)
+	internal.TiledMaps[name] = mapData
+	resultIds = append(resultIds, name)
 
 	return resultIds
 }

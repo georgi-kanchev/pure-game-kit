@@ -1,11 +1,9 @@
 package assets
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/base64"
-	"io"
+	"pure-kit/engine/data/file"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -18,8 +16,7 @@ func loadTexture(id, b64 string, smooth bool) string {
 		UnloadTextures(id)
 	}
 
-	var raw, _ = base64.StdEncoding.DecodeString(b64)
-	var decompressed = decompress(raw)
+	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
 	var image = rl.LoadImageFromMemory(".png", decompressed, int32(len(decompressed)))
 	var tex = rl.LoadTextureFromImage(image)
 
@@ -40,8 +37,7 @@ func loadSound(id, b64 string) string {
 		UnloadSounds(id)
 	}
 
-	var raw, _ = base64.StdEncoding.DecodeString(b64)
-	var decompressed = decompress(raw)
+	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
 	var wave = rl.LoadWaveFromMemory(".mp3", decompressed, int32(len(decompressed)))
 	var sound = rl.LoadSoundFromWave(wave)
 	internal.Sounds[id] = &sound
@@ -50,42 +46,13 @@ func loadSound(id, b64 string) string {
 	return id
 }
 
-func decompress(data []byte) []byte {
-	var buf = bytes.NewReader(data)
-	var gr, err = gzip.NewReader(buf)
-	if err != nil {
-		return data
-	}
-	defer gr.Close()
-
-	var result, err2 = io.ReadAll(gr)
-	if err2 != nil {
-		return data
-	}
-
-	return result
-}
-
-// func compress(data []byte) []byte {
-// 	var buf bytes.Buffer
-// 	var gw = gzip.NewWriter(&buf)
-// 	var _, err = gw.Write(data)
-// 	if err != nil {
-// 		return data
-// 	}
-// 	if err := gw.Close(); err != nil {
-// 		return data
-// 	}
-// 	return buf.Bytes()
-// }
-
 // func printSoundBase64(path string) {
 // 	if path == "" {
 // 		return
 // 	}
-// 	var raw, _ = os.ReadFile(path)
-// 	var compressed = compress(raw)
-// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	var raw = file.LoadBytes(path)
+// 	var compressed = file.Compress(raw)
+// 	var b64 = text.ToBase64(string(compressed))
 // 	print(b64)
 // }
 // func printFontBase64(path string) {
@@ -93,8 +60,8 @@ func decompress(data []byte) []byte {
 // 		return
 // 	}
 // 	var bytes = file.LoadBytes(path)
-// 	var compressed = compress(bytes)
-// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	var compressed = file.Compress(bytes)
+// 	var b64 = text.ToBase64(string(compressed))
 // 	print(b64)
 // }
 // func printImageBase64(path string) {
@@ -103,8 +70,8 @@ func decompress(data []byte) []byte {
 // 	}
 // 	var img = rl.LoadImage(path)
 // 	var bytes = rl.ExportImageToMemory(*img, ".png")
-// 	var compressed = compress(bytes)
-// 	var b64 = base64.StdEncoding.EncodeToString(compressed)
+// 	var compressed = file.Compress(bytes)
+// 	var b64 = text.ToBase64(string(compressed))
 // 	print(b64)
 // }
 
