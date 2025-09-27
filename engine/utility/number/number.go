@@ -231,6 +231,20 @@ func PowerInt(number, power int) int {
 	return int(math.Pow(float64(number), float64(power)))
 }
 
+func AlmostEquals(number, target, tolerance float32) bool {
+	return float32(Unsign(number-target)) <= tolerance
+}
+
+func Animate(value, target, rate float32) float32 {
+	value += (target - value) * (1.0 - Power(2.0, -rate))
+
+	if AlmostEquals(value, target, 0.001) {
+		return target
+	}
+
+	return value
+}
+
 //=================================================================
 // float only
 

@@ -5,7 +5,7 @@ import (
 	"pure-kit/engine/geometry"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
 )
 
@@ -33,7 +33,7 @@ func ShapesGrids() {
 
 		var mx, my = cam.MousePosition()
 		shape.X, shape.Y = mx, my
-		shape.Angle += seconds.FrameDelta() * 20
+		shape.Angle += time.FrameDelta() * 20
 
 		var allShapes = grid.All()
 		var potential = grid.AroundShape(shape)

@@ -6,28 +6,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-const (
-	ButtonLeft = iota
-	ButtonRight
-	ButtonMiddle
-	ButtonExtra1
-	ButtonExtra2
-)
-
-const (
-	CursorDefault = iota
-	CursorArrow
-	CursorInput
-	CursorCrosshair
-	CursorHand
-	CursorResize1
-	CursorResize2
-	CursorResize3
-	CursorResize4
-	CursorMove
-	CursorNotAllowed
-)
-
 //=================================================================
 // setters
 
@@ -45,6 +23,10 @@ func SetCursor(cursor int) {
 //=================================================================
 // getters
 
+func CursorDelta() (x, y float32) {
+	var delta = rl.GetMouseDelta()
+	return delta.X, delta.Y
+}
 func Scroll() int {
 	return int(rl.GetMouseWheelMoveV().Y)
 }

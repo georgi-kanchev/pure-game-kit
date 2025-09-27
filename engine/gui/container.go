@@ -8,6 +8,8 @@ import (
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/input/mouse"
+	b "pure-kit/engine/input/mouse/button"
+	"pure-kit/engine/input/mouse/cursor"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
@@ -64,7 +66,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	if c.isHovered(cam) {
 		cHovered = c
 	}
-	if c.isFocused(cam) && mouse.IsButtonPressedOnce(mouse.ButtonMiddle) {
+	if c.isFocused(cam) && mouse.IsButtonPressedOnce(b.Middle) {
 		cMiddlePressed = c
 	}
 
@@ -170,9 +172,9 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			wHovered = nil
 			wWasHovered = nil
 			wFocused = nil
-			mouse.SetCursor(mouse.CursorHand)
+			mouse.SetCursor(cursor.Hand)
 
-			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
+			if mouse.IsButtonPressedOnce(b.Left) {
 				cPressedOnScrollV = c
 			}
 		}
@@ -200,9 +202,9 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			wHovered = nil
 			wWasHovered = nil
 			wFocused = nil
-			mouse.SetCursor(mouse.CursorHand)
+			mouse.SetCursor(cursor.Hand)
 
-			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
+			if mouse.IsButtonPressedOnce(b.Left) {
 				cPressedOnScrollH = c
 			}
 		}

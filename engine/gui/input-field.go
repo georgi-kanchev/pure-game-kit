@@ -7,10 +7,12 @@ import (
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/input/mouse"
+	btn "pure-kit/engine/input/mouse/button"
+	"pure-kit/engine/input/mouse/cursor"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/seconds"
 	txt "pure-kit/engine/utility/text"
+	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
 )
 
@@ -70,7 +72,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	setupVisualsTextured(root, widget)
 
 	if widget.isFocused(root, cam) {
-		mouse.SetCursor(mouse.CursorInput)
+		mouse.SetCursor(cursor.Input)
 	}
 
 	var anyInput = mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0
@@ -82,7 +84,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		typingIn = nil
 		scrollX = 0
 	}
-	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) && focused {
+	if mouse.IsButtonPressedOnce(btn.Left) && focused {
 		if typingIn != widget {
 			scrollX = 0
 		}
@@ -96,7 +98,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		tryFocusNextField(cam, root, widget)
 
 		scrollX = condition.If(txt.Length(text) == 0, 0, scrollX)
-		cursorTime += seconds.RealFrameDelta()
+		cursorTime += time.RealFrameDelta()
 	}
 
 	var isPlaceholder = false
@@ -181,7 +183,7 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 		indexSelect = indexCursor
 	}
 
-	if mouse.IsButtonPressed(mouse.ButtonLeft) {
+	if mouse.IsButtonPressed(btn.Left) {
 		cursorTime = 0
 		var closestIndex = func(cam *graphics.Camera) int {
 			var mx, _ = cam.MousePosition()
@@ -211,7 +213,7 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 		} else {
 			indexCursor = closestIndex(cam)
 
-			if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
+			if mouse.IsButtonPressedOnce(btn.Left) {
 				calculateXs(cam) // calculate once and update indexes to not drop performance
 				indexCursor = closestIndex(cam)
 				indexSelect = indexCursor
@@ -296,7 +298,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	return text
 }
 func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
-	if !keyboard.IsKeyPressedOnce(key.Tab) || frame == int(seconds.FrameCount()) {
+	if !keyboard.IsKeyPressedOnce(key.Tab) || frame == int(time.FrameCount()) {
 		return
 	}
 
@@ -323,7 +325,7 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	var text = txt.Remove(themedProp(property.Text, root, owner, typingIn), "\n")
 	indexCursor = len(text)
 	indexSelect = indexCursor
-	frame = int(seconds.FrameCount()) // only once per frame
+	frame = int(time.FrameCount()) // only once per frame
 
 	var margin = parseNum(themedProp(property.InputFieldMargin, root, owner, typingIn), 30)
 	setupText(margin, root, typingIn, true)

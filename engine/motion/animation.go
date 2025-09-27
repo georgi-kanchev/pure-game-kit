@@ -2,7 +2,7 @@ package motion
 
 import (
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/time"
 )
 
 type Animation[T any] struct {
@@ -15,7 +15,7 @@ type Animation[T any] struct {
 
 func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animation[T] {
 	return Animation[T]{
-		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: seconds.Runtime()}
+		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: time.Runtime()}
 }
 
 //=================================================================
@@ -27,7 +27,7 @@ func (sequence *Animation[T]) SetDuration(seconds float32) {
 func (sequence *Animation[T]) SetIndex(index int) {
 	index = number.LimitInt(index, 0, len(sequence.Items)-1)
 	var newTime = float32(index) / sequence.ItemsPerSecond
-	sequence.startTime = seconds.Runtime() - newTime
+	sequence.startTime = time.Runtime() - newTime
 }
 func (sequence *Animation[T]) SetTime(seconds float32) {
 	sequence.startTime = runtime() - seconds
@@ -66,7 +66,7 @@ func (sequence *Animation[T]) IsPlaying() bool {
 // private
 
 func (sequence *Animation[T]) update() float32 {
-	var runtime = seconds.Runtime()
+	var runtime = time.Runtime()
 	var progress = (runtime - sequence.startTime) / sequence.CurrentDuration()
 
 	if sequence.IsPaused && runtime != sequence.lastUpdateTime {
@@ -85,4 +85,4 @@ func (sequence *Animation[T]) update() float32 {
 	sequence.lastUpdateTime = runtime
 	return progress
 }
-func runtime() float32 { return seconds.Runtime() } // freeing up "seconds" as var/param name
+func runtime() float32 { return time.Runtime() } // freeing up "seconds" as var/param name

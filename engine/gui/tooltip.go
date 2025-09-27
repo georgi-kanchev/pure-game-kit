@@ -5,8 +5,9 @@ import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/input/mouse"
+	"pure-kit/engine/input/mouse/cursor"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/time"
 )
 
 func Tooltip(id string, properties ...string) string {
@@ -25,7 +26,7 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 
 	if condition.TrueOnce(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget
-		tooltipAt = seconds.RealRuntime()
+		tooltipAt = time.RealRuntime()
 		var tooltipId = themedProp(property.TooltipId, root, c, widget)
 		tooltip = root.Widgets[tooltipId]
 
@@ -34,7 +35,7 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 			tooltip.Properties[property.Text] = text
 
 			if text != "" {
-				mouse.SetCursor(mouse.CursorHand)
+				mouse.SetCursor(cursor.Hand)
 			}
 		}
 	}
@@ -44,7 +45,7 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 	}
 }
 func drawTooltip(root *root, c *container, cam *graphics.Camera) {
-	if tooltip == nil || tooltipForWidget == nil || seconds.RealRuntime() < tooltipAt+0.5 {
+	if tooltip == nil || tooltipForWidget == nil || time.RealRuntime() < tooltipAt+0.5 {
 		return
 	}
 	if tooltip.Properties[property.Text] == "" || !tooltipForWidget.isFocused(root, cam) {

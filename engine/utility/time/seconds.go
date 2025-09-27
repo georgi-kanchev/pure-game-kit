@@ -1,4 +1,4 @@
-package seconds
+package time
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ type Conversion int
 //=================================================================
 // setters
 
-func SetTimeScale(timeScale float32) { internal.TimeScale = timeScale }
+func SetScale(scale float32) { internal.TimeScale = scale }
 
 //=================================================================
 // getters
@@ -37,7 +37,7 @@ func AsClock12(seconds float32, divider string, units Unit, AM_PM bool) string {
 	return formatTimeParts(ts, divider, units, true, AM_PM)
 }
 
-func TimeScale() float32            { return internal.TimeScale }
+func Scale() float32                { return internal.TimeScale }
 func Clock() float32                { return internal.Clock }
 func FrameDelta() float32           { return internal.Delta }
 func FrameRate() float32            { return internal.FrameRate }

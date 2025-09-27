@@ -2,6 +2,8 @@ package graphics
 
 import (
 	"pure-kit/engine/geometry/point"
+	"pure-kit/engine/input/mouse"
+	"pure-kit/engine/input/mouse/button"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/number"
@@ -48,19 +50,14 @@ func NewCamera(zoom float32) *Camera {
 // setters
 
 func (camera *Camera) DragAndZoom() {
-	var delta = rl.GetMouseDelta()
-	var scroll = rl.GetMouseWheelMove()
+	var dx, dy = mouse.CursorDelta()
+	camera.Zoom *= 1 + 0.05*float32(mouse.Scroll())
 
-	if rl.IsMouseButtonDown(rl.MouseButtonMiddle) {
+	if mouse.IsButtonPressed(button.Middle) {
 		var rad = angle.ToRadians(-camera.Angle)
 		var sin, cos = number.Sine(rad), number.Cosine(rad)
-		camera.X -= (delta.X*cos - delta.Y*sin) / camera.Zoom
-		camera.Y -= (delta.X*sin + delta.Y*cos) / camera.Zoom
-	}
-	if scroll > 0 {
-		camera.Zoom *= 1.05
-	} else if scroll < 0 {
-		camera.Zoom *= 0.95
+		camera.X -= (dx*cos - dy*sin) / camera.Zoom
+		camera.Y -= (dx*sin + dy*cos) / camera.Zoom
 	}
 }
 

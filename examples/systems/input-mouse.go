@@ -3,7 +3,9 @@ package example
 import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/input/mouse"
-	"pure-kit/engine/utility/seconds"
+	b "pure-kit/engine/input/mouse/button"
+	"pure-kit/engine/input/mouse/cursor"
+	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
 )
 
@@ -15,10 +17,10 @@ func Mouse() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		if mouse.IsButtonPressed(mouse.ButtonLeft) {
-			node.Angle -= seconds.FrameDelta() * 60
+		if mouse.IsButtonPressed(b.Left) {
+			node.Angle -= time.FrameDelta() * 60
 		}
-		if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+		if mouse.IsButtonReleasedOnce(b.Left) {
 			node.Angle = 0
 		}
 
@@ -28,9 +30,9 @@ func Mouse() {
 		}
 
 		if node.IsHovered(cam) {
-			mouse.SetCursor(mouse.CursorHand)
+			mouse.SetCursor(cursor.Hand)
 		} else {
-			mouse.SetCursor(mouse.CursorArrow)
+			mouse.SetCursor(cursor.Arrow)
 		}
 
 		cam.DrawNodes(&node)

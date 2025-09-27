@@ -6,7 +6,9 @@ import (
 	k "pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	m "pure-kit/engine/input/mouse"
-	"pure-kit/engine/utility/seconds"
+	b "pure-kit/engine/input/mouse/button"
+	"pure-kit/engine/input/mouse/cursor"
+	"pure-kit/engine/utility/time"
 )
 
 func Button(id string, properties ...string) string {
@@ -39,17 +41,17 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	var focus = widget.isFocused(root, cam)
 
 	if focus {
-		m.SetCursor(m.CursorHand)
+		m.SetCursor(cursor.Hand)
 
 		if disabled || ownerDisabled {
-			m.SetCursor(m.CursorNotAllowed)
+			m.SetCursor(cursor.NotAllowed)
 		}
 
 		var themeHover = themedProp(property.ButtonThemeIdHover, root, owner, widget)
 		if themeHover != "" {
 			widget.ThemeId = themeHover
 		}
-		tryPress(m.IsButtonPressed(m.ButtonLeft), m.IsButtonPressedOnce(m.ButtonLeft), themePress, widget)
+		tryPress(m.IsButtonPressed(b.Left), m.IsButtonPressedOnce(b.Left), themePress, widget)
 	}
 
 	if typingIn == nil { // no hotkeys while typing
@@ -70,6 +72,6 @@ func tryPress(press, once bool, themePress string, widget *widget) {
 	}
 	if once {
 		wPressedOn = widget
-		wPressedAt = seconds.RealRuntime()
+		wPressedAt = time.RealRuntime()
 	}
 }

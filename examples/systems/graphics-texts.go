@@ -5,7 +5,7 @@ import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
 )
 
@@ -31,7 +31,7 @@ func Texts() {
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
 
-		a = number.Sine(seconds.Runtime() / 5)
+		a = number.Sine(time.Runtime() / 5)
 
 		textBox.Thickness = float32(0.5 + a/2)
 

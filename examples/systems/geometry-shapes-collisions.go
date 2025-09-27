@@ -7,7 +7,7 @@ import (
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/direction"
-	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
 )
 
@@ -32,7 +32,7 @@ func Collisions() {
 		cam.SetScreenAreaToWindow()
 
 		var dirX, dirY float32 = 0, 0
-		var step = seconds.FrameDelta() * 600
+		var step = time.FrameDelta() * 600
 
 		if keyboard.IsKeyPressed(key.A) {
 			dirX -= 1

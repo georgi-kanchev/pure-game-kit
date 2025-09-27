@@ -37,6 +37,8 @@ func Tiled() {
 		}
 
 		if keyboard.IsKeyPressedOnce(key.F5) {
+			cam.Zoom = 1
+
 			layer1, layer2, objs, t1, g1, g2 = reload()
 			grid1, grid2 = g1.All(), g2.All()
 		}

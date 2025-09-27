@@ -1,6 +1,6 @@
 package flow
 
-import "pure-kit/engine/utility/seconds"
+import "pure-kit/engine/utility/time"
 
 type StepDelay struct {
 	startTime, delay float32
@@ -11,7 +11,7 @@ func WaitForDelay(seconds float32) *StepDelay {
 }
 
 func (step *StepDelay) Continue() bool {
-	var runtime = seconds.Runtime()
+	var runtime = time.Runtime()
 
 	if step.startTime < 0 {
 		step.startTime = runtime

@@ -2,7 +2,7 @@ package motion
 
 import (
 	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/time"
 )
 
 type Tween struct {
@@ -38,7 +38,7 @@ func NewTween(startingItems ...float32) *Tween {
 
 func (tween *Tween) Restart() {
 	tween.currIndex = 0
-	tween.startTime = seconds.Runtime()
+	tween.startTime = time.Runtime()
 	tween.IsPaused = false
 
 	for i := range tween.tweens {
@@ -88,7 +88,7 @@ func (tween *Tween) Wait(seconds float32) *Tween {
 }
 
 func (tween *Tween) CurrentValues() []float32 {
-	var runtime = seconds.Runtime()
+	var runtime = time.Runtime()
 	var elapsed = runtime - tween.startTime
 
 	if tween.IsFinished() {

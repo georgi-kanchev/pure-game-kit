@@ -6,6 +6,8 @@ import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/input/mouse"
+	b "pure-kit/engine/input/mouse/button"
+	"pure-kit/engine/input/mouse/cursor"
 )
 
 func Draggable(id string, properties ...string) string {
@@ -28,7 +30,7 @@ func (gui *GUI) DragOnGrab() (draggableId string) {
 
 }
 func (gui *GUI) DragOnDrop() (grabId, dropId string) {
-	var left = mouse.IsButtonReleasedOnce(mouse.ButtonLeft)
+	var left = mouse.IsButtonReleasedOnce(b.Left)
 	if wPressedOn != nil && wPressedOn.Class == "draggable" && left {
 		if wFocused == nil || wFocused.Class == "draggable" {
 			return wPressedOn.Id, wFocused.Id
@@ -49,7 +51,7 @@ func (gui *GUI) DragCancel() {
 
 func draggable(cam *graphics.Camera, root *root, widget *widget) {
 	if wPressedOn == widget {
-		mouse.SetCursor(mouse.CursorHand)
+		mouse.SetCursor(cursor.Hand)
 		widget.DragX += mouseX - prevMouseX
 		widget.DragY += mouseY - prevMouseY
 	} else {

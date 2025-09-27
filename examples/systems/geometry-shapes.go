@@ -5,7 +5,7 @@ import (
 	"pure-kit/engine/geometry"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/seconds"
+	"pure-kit/engine/utility/time"
 	"pure-kit/engine/window"
 )
 
@@ -30,7 +30,7 @@ func Shapes() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		shape.Angle += seconds.FrameDelta() * 60
+		shape.Angle += time.FrameDelta() * 60
 		var mx, my = cam.MousePosition()
 		var colShape = condition.If(shape.IsOverlappingShapes(triangle), color.Red, color.Green)
 		var colRect = condition.If(rectangle.IsCrossingShapes(shape), color.Brown, color.Cyan)

@@ -6,6 +6,8 @@ import (
 	"pure-kit/engine/gui/dynamic"
 	"pure-kit/engine/gui/property"
 	"pure-kit/engine/input/mouse"
+	b "pure-kit/engine/input/mouse/button"
+	"pure-kit/engine/input/mouse/cursor"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
@@ -228,17 +230,17 @@ var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               //
 var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache
 
 func reset(camera *graphics.Camera, gui *GUI) {
-	if mouse.IsButtonPressedOnce(mouse.ButtonLeft) {
+	if mouse.IsButtonPressedOnce(b.Left) {
 		wPressedOn = nil
 		tooltip = nil
 		cPressedOnScrollH = nil
 		cPressedOnScrollV = nil
 	}
-	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+	if mouse.IsButtonReleasedOnce(b.Left) {
 		cPressedOnScrollH = nil
 		cPressedOnScrollV = nil
 	}
-	if mouse.IsButtonReleasedOnce(mouse.ButtonMiddle) {
+	if mouse.IsButtonReleasedOnce(b.Middle) {
 		cMiddlePressed = nil
 	}
 
@@ -248,7 +250,7 @@ func reset(camera *graphics.Camera, gui *GUI) {
 	mouseX, mouseY = camera.MousePosition()
 
 	if tooltip == nil {
-		mouse.SetCursor(mouse.CursorArrow)
+		mouse.SetCursor(cursor.Arrow)
 	}
 }
 func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
@@ -256,7 +258,7 @@ func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
 	camera.X, camera.Y = prevX, prevY             // also x y
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
-	if mouse.IsButtonReleasedOnce(mouse.ButtonLeft) {
+	if mouse.IsButtonReleasedOnce(b.Left) {
 		wPressedOn = nil
 		tooltip = nil
 	}
