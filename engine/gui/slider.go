@@ -3,7 +3,7 @@ package gui
 import (
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
@@ -20,7 +20,7 @@ var reusableWidget *widget = &widget{Properties: map[string]string{}}
 
 func slider(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
-	var assetId = themedProp(property.AssetId, root, owner, widget)
+	var assetId = themedProp(field.AssetId, root, owner, widget)
 	if assetId == "" {
 		widget.Height /= 2
 		widget.Y += widget.Height / 2
@@ -33,18 +33,18 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 
 	var _, h = assets.Size(assetId)
 	var ratio = widget.Height / h
-	var handleAssetId = themedProp(property.SliderHandleAssetId, root, owner, widget)
+	var handleAssetId = themedProp(field.SliderHandleAssetId, root, owner, widget)
 	var handleWidth, handleHeight = assets.Size(handleAssetId)
 	handleWidth *= ratio
 	handleHeight *= ratio
 	var handleY = widget.Y - (handleWidth)/3
-	var value = parseNum(widget.Properties[property.Value], 0)
-	var step = parseNum(themedProp(property.SliderStep, root, owner, widget), 0)
+	var value = parseNum(widget.Properties[field.Value], 0)
+	var step = parseNum(themedProp(field.SliderStep, root, owner, widget), 0)
 
 	if step > 0 {
 		var stepPx = (widget.Width - handleWidth) * step
 		var totalSteps = int(number.RoundUp((1-step)/step, -1))
-		var stepAssetId = themedProp(property.SliderStepAssetId, root, owner, widget)
+		var stepAssetId = themedProp(field.SliderStepAssetId, root, owner, widget)
 
 		for i := 1; i <= totalSteps; i++ {
 			var stepX = (widget.X + handleWidth/2) + float32(i)*stepPx
@@ -77,17 +77,17 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 
 func (widget *widget) setSliderValue(value float32, root *root) float32 {
 	var owner = root.Containers[widget.OwnerId]
-	var step = parseNum(themedProp(property.SliderStep, root, owner, widget), 0)
+	var step = parseNum(themedProp(field.SliderStep, root, owner, widget), 0)
 	value = number.Snap(value, number.Unsign(step))
 	value = number.Limit(value, 0, 1)
-	widget.Properties[property.Value] = text.New(value)
+	widget.Properties[field.Value] = text.New(value)
 	return value
 }
 func drawReusableWidget(col uint, assetId string, x, y float32, root *root, cam *graphics.Camera) {
 	var r, g, b, a = color.Channels(col)
 	clear(reusableWidget.Properties)
-	reusableWidget.Properties[property.AssetId] = assetId
-	reusableWidget.Properties[property.Color] = text.New(r, " ", g, " ", b, " ", a)
+	reusableWidget.Properties[field.AssetId] = assetId
+	reusableWidget.Properties[field.Color] = text.New(r, " ", g, " ", b, " ", a)
 	reusableWidget.X, reusableWidget.Y = x, y
 
 	setupVisualsTextured(root, reusableWidget)

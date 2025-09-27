@@ -4,7 +4,7 @@ import (
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 	"pure-kit/engine/input/mouse"
 	b "pure-kit/engine/input/mouse/button"
 	"pure-kit/engine/input/mouse/cursor"
@@ -21,7 +21,7 @@ func (gui *GUI) DragOnGrab() (draggableId string) {
 	var result = condition.TrueOnce(wPressedOn != nil && wPressedOn.Class == "draggable", ";;;;draggg-start")
 	if result {
 		var owner = gui.root.Containers[wPressedOn.OwnerId]
-		if themedProp(property.DraggableSpriteId, gui.root, owner, wPressedOn) == "" {
+		if themedProp(field.DraggableSpriteId, gui.root, owner, wPressedOn) == "" {
 			return ""
 		}
 		return wPressedOn.Id
@@ -63,8 +63,8 @@ func draggable(cam *graphics.Camera, root *root, widget *widget) {
 
 func drawDraggable(draggable *widget, root *root, cam *graphics.Camera) {
 	var owner = root.Containers[draggable.OwnerId]
-	var assetId = defaultValue(themedProp(property.DraggableSpriteId, root, owner, draggable), ";;;;;")
-	var scale = parseNum(themedProp(property.DraggableSpriteScale, root, owner, draggable), 1)
+	var assetId = defaultValue(themedProp(field.DraggableSpriteId, root, owner, draggable), ";;;;;")
+	var scale = parseNum(themedProp(field.DraggableSpriteScale, root, owner, draggable), 1)
 
 	if assetId == "" {
 		return
@@ -75,7 +75,7 @@ func drawDraggable(draggable *widget, root *root, cam *graphics.Camera) {
 	var spriteRatio = draggable.Width / draggable.Height
 	var drawW, drawH float32
 	var disabled = draggable.isDisabled(owner)
-	var col = defaultValue(themedProp(property.DraggableSpriteColor, root, owner, draggable), "255 255 255")
+	var col = defaultValue(themedProp(field.DraggableSpriteColor, root, owner, draggable), "255 255 255")
 
 	if assetRatio > spriteRatio {
 		drawW = draggable.Width

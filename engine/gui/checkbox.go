@@ -3,7 +3,7 @@ package gui
 import (
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 )
 
 func Checkbox(id string, properties ...string) string {
@@ -15,28 +15,28 @@ func Checkbox(id string, properties ...string) string {
 
 func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
-	var on = themedProp(property.CheckboxThemeId, root, owner, widget)
-	var off = themedProp(property.ThemeId, root, owner, widget)
-	widget.ThemeId = condition.If(widget.Properties[property.Value] == "", off, on)
+	var on = themedProp(field.CheckboxThemeId, root, owner, widget)
+	var off = themedProp(field.ThemeId, root, owner, widget)
+	widget.ThemeId = condition.If(widget.Properties[field.Value] == "", off, on)
 
 	button(cam, root, widget)
 
 	if root.ButtonClickedOnce(widget.Id, cam) {
-		widget.Properties[property.Value] = condition.If(widget.Properties[property.Value] == "", "v", "")
+		widget.Properties[field.Value] = condition.If(widget.Properties[field.Value] == "", "v", "")
 
-		var group = themedProp(property.CheckboxGroup, root, owner, widget)
+		var group = themedProp(field.CheckboxGroup, root, owner, widget)
 		if group == "" {
 			return
 		}
 
 		for _, w := range root.Widgets {
 			var wOwner = root.Containers[w.OwnerId]
-			var wGroup = themedProp(property.CheckboxGroup, root, wOwner, w)
+			var wGroup = themedProp(field.CheckboxGroup, root, wOwner, w)
 			if wGroup == group {
-				w.Properties[property.Value] = ""
+				w.Properties[field.Value] = ""
 			}
 		}
 
-		widget.Properties[property.Value] = "v"
+		widget.Properties[field.Value] = "v"
 	}
 }

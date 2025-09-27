@@ -5,31 +5,19 @@ import (
 	"unicode"
 
 	"pure-kit/engine/utility/collection"
+	"pure-kit/engine/utility/flag"
+	"pure-kit/engine/utility/naming/casing"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/random"
 	txt "pure-kit/engine/utility/text"
 )
 
-type Naming int
-
-const (
-	RaNDomCasE Naming = 1 << iota
-	lower
-	UPPER
-	camelCase
-	PascalCase
-	Sentence_case
-	PiNgPoNg_CaSe
-	pOnGpInG_cAsE
-	Separated
-)
-
-func Apply(text string, naming Naming, divider string) string {
+func Apply(text string, naming int, divider string) string {
 	if divider == "" {
 		divider = ""
 	}
 
-	if naming == RaNDomCasE {
+	if naming == casing.Random {
 		var result = txt.NewBuilder()
 		var randBool = random.Range(0, 1, number.NaN()) < 0.5
 		for _, r := range text {
@@ -50,22 +38,22 @@ func Apply(text string, naming Naming, divider string) string {
 
 	if len(words) == 1 &&
 		divider != "" &&
-		(hasFlag(detectedNaming, camelCase) || hasFlag(detectedNaming, PascalCase)) {
+		(flag.IsOn(detectedNaming, casing.Camel) || flag.IsOn(detectedNaming, casing.Pascal)) {
 		words = txt.Split(addDivCamelPascal(words[0], divider), divider)
 	}
 
 	for i := range words {
 		word := words[i]
 
-		if hasFlag(naming, lower) {
+		if flag.IsOn(naming, casing.Lower) {
 			word = txt.LowerCase(word)
 		}
 
-		if hasFlag(naming, UPPER) {
+		if flag.IsOn(naming, casing.Upper) {
 			word = txt.UpperCase(word)
 		}
 
-		if hasFlag(naming, camelCase) {
+		if flag.IsOn(naming, casing.Camel) {
 			if i == 0 {
 				word = txt.LowerCase(word)
 			} else {
@@ -73,11 +61,11 @@ func Apply(text string, naming Naming, divider string) string {
 			}
 		}
 
-		if hasFlag(naming, PascalCase) {
+		if flag.IsOn(naming, casing.Pascal) {
 			word = capitalize(word)
 		}
 
-		if hasFlag(naming, Sentence_case) {
+		if flag.IsOn(naming, casing.Sentence) {
 			if i == 0 {
 				word = capitalize(word)
 			} else {
@@ -85,7 +73,7 @@ func Apply(text string, naming Naming, divider string) string {
 			}
 		}
 
-		if hasFlag(naming, PiNgPoNg_CaSe) {
+		if flag.IsOn(naming, casing.Pingpong) {
 			var builder = txt.NewBuilder()
 			var isUpper = true
 			for _, c := range word {
@@ -99,7 +87,7 @@ func Apply(text string, naming Naming, divider string) string {
 			word = builder.ToText()
 		}
 
-		if hasFlag(naming, pOnGpInG_cAsE) {
+		if flag.IsOn(naming, casing.Pongping) {
 			var builder = txt.NewBuilder()
 			var isLower = true
 			for _, c := range word {
@@ -118,19 +106,19 @@ func Apply(text string, naming Naming, divider string) string {
 
 	return collection.ToText(words, divider)
 }
-func Detect(text string) (naming Naming, separator string) {
+func Detect(text string) (naming int, separator string) {
 	if txt.Trim(text) == "" {
-		return RaNDomCasE, ""
+		return casing.Random, ""
 	}
 
-	var detectedNaming = RaNDomCasE
+	var detectedNaming = casing.Random
 	var divider = ""
 	var words = []string{text}
 	var re = regexp.MustCompile(`[^a-zA-Z0-9]`)
 	var match = re.FindString(text)
 	if match != "" {
 		divider = string(match[0])
-		detectedNaming |= Separated
+		detectedNaming |= casing.Separated
 		words = txt.Split(text, divider)
 	}
 
@@ -141,25 +129,25 @@ func Detect(text string) (naming Naming, separator string) {
 	}
 
 	if isAllLower(inputNoDivider) {
-		detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-		detectedNaming |= lower
+		detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+		detectedNaming |= casing.Lower
 		return detectedNaming, divider
 	}
 	if isAllUpper(inputNoDivider) {
-		detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-		detectedNaming |= UPPER
+		detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+		detectedNaming |= casing.Upper
 		return detectedNaming, divider
 	}
 
 	if len(words) == 1 {
 		var runes = []rune(text)
 		if unicode.IsLower(runes[0]) && containsUpper(runes[1:]) {
-			detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-			detectedNaming |= camelCase
+			detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+			detectedNaming |= casing.Camel
 		}
 		if unicode.IsUpper(runes[0]) && containsUpper(runes[1:]) {
-			detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-			detectedNaming |= PascalCase
+			detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+			detectedNaming |= casing.Pascal
 		}
 		return detectedNaming, divider
 	}
@@ -195,24 +183,24 @@ func Detect(text string) (naming Naming, separator string) {
 	}
 
 	if soFarCamel {
-		detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-		detectedNaming |= camelCase
+		detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+		detectedNaming |= casing.Camel
 	}
 	if soFarPascal {
-		detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-		detectedNaming |= PascalCase
+		detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+		detectedNaming |= casing.Pascal
 	}
 	if soFarSentence {
-		detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-		detectedNaming |= Sentence_case
+		detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+		detectedNaming |= casing.Sentence
 	}
 	if soFarPing {
-		detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-		detectedNaming |= PiNgPoNg_CaSe
+		detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+		detectedNaming |= casing.Pingpong
 	}
 	if soFarPong {
-		detectedNaming = removeFlag(detectedNaming, RaNDomCasE)
-		detectedNaming |= pOnGpInG_cAsE
+		detectedNaming = flag.TurnOff(detectedNaming, casing.Random)
+		detectedNaming |= casing.Pongping
 	}
 
 	return detectedNaming, divider
@@ -300,10 +288,4 @@ func addDivCamelPascal(text, div string) string {
 		result.WriteSymbol(runes[i])
 	}
 	return result.ToText()
-}
-func hasFlag(value Naming, flag Naming) bool {
-	return value&flag != 0
-}
-func removeFlag(value Naming, flag Naming) Naming {
-	return value &^ flag
 }

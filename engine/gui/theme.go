@@ -2,7 +2,7 @@ package gui
 
 import (
 	"encoding/xml"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 )
 
 type theme struct {
@@ -12,5 +12,5 @@ type theme struct {
 }
 
 func Theme(id string, properties ...string) string {
-	return "<Theme " + property.Id + "=\"" + id + "\"" + extraProps(properties...) + " />"
+	return "<Theme " + field.Id + "=\"" + id + "\"" + extraProps(properties...) + " />"
 }

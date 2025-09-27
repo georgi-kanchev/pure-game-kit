@@ -6,17 +6,8 @@ import (
 	"pure-kit/engine/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
-)
 
-type State byte
-
-const (
-	Floating State = iota
-	FloatingBorderless
-	Fullscreen
-	FullscreenBorderless
-	Maximized
-	Minimized
+	st "pure-kit/engine/window/state"
 )
 
 var Title = path.RemoveExtension(path.LastElement(path.Executable()))
@@ -60,21 +51,23 @@ func Close() {
 	rl.CloseWindow()
 }
 
-func ApplyState(state State) {
+func ApplyState(state int) {
+	tryCreate()
+
 	var currentState = CurrentState()
 	if currentState == state {
 		return
 	}
 
-	if state == Minimized {
+	if state == st.Minimized {
 		rl.MinimizeWindow()
 		return
 	}
 
-	if state == Fullscreen {
+	if state == st.Fullscreen {
 		rl.RestoreWindow()
 
-		if currentState == FullscreenBorderless || currentState == FloatingBorderless {
+		if currentState == st.FullscreenBorderless || currentState == st.FloatingBorderless {
 			rl.ToggleBorderlessWindowed()
 		}
 
@@ -87,25 +80,27 @@ func ApplyState(state State) {
 	}
 
 	// restore to windowed
-	if currentState == Fullscreen {
+	if currentState == st.Fullscreen {
 		rl.ToggleFullscreen()
 	}
-	if currentState == FullscreenBorderless || currentState == FloatingBorderless {
+	if currentState == st.FullscreenBorderless || currentState == st.FloatingBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
 	rl.RestoreWindow()
 
 	// after resotre
-	if state == FullscreenBorderless || state == FloatingBorderless {
+	if state == st.FullscreenBorderless || state == st.FloatingBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
-	if state == FullscreenBorderless || state == Maximized {
+	if state == st.FullscreenBorderless || state == st.Maximized {
 		rl.MaximizeWindow()
 	}
 
 }
 
 func MoveToMonitor(monitor int) {
+	tryCreate()
+
 	var wasMax = rl.IsWindowMaximized()
 	if wasMax {
 		rl.RestoreWindow()
@@ -119,6 +114,8 @@ func MoveToMonitor(monitor int) {
 }
 
 func SetIcon(assetId string) {
+	tryCreate()
+
 	var texture, fullTexture = internal.Textures[assetId]
 	var texX, texY float32 = 0.0, 0.0
 
@@ -161,7 +158,7 @@ func Size() (width, height int) {
 func Monitors() (info []string, current int) {
 	var count = rl.GetMonitorCount()
 	info = make([]string, count)
-	for i := 0; i < count; i++ {
+	for i := range count {
 		var refreshRate = rl.GetMonitorRefreshRate(i)
 		var name = rl.GetMonitorName(i)
 		var w, h = rl.GetMonitorWidth(i), rl.GetMonitorHeight(i)
@@ -170,29 +167,29 @@ func Monitors() (info []string, current int) {
 	return info, rl.GetCurrentMonitor()
 }
 
-func CurrentState() State {
+func CurrentState() int {
 	var fs = rl.IsWindowFullscreen()
 	var bor = rl.IsWindowState(rl.FlagBorderlessWindowedMode)
 	var max = rl.IsWindowMaximized()
 	var min = rl.IsWindowMinimized()
 
 	if min {
-		return Minimized
+		return st.Minimized
 	}
 	if fs && !bor && !max {
-		return Fullscreen
+		return st.Fullscreen
 	}
 	if !fs && bor && max {
-		return FullscreenBorderless
+		return st.FullscreenBorderless
 	}
 	if !fs && bor && !max {
-		return FloatingBorderless
+		return st.FloatingBorderless
 	}
 	if !fs && !bor && max {
-		return Maximized
+		return st.Maximized
 	}
 
-	return Floating
+	return st.Floating
 }
 
 func IsHovered() bool {

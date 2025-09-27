@@ -1,4 +1,4 @@
-package property
+package field
 
 const (
 	Class   = "class"   // [widget]

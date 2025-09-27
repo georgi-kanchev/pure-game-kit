@@ -3,8 +3,6 @@ package is
 import (
 	"fmt"
 	"pure-kit/engine/utility/collection"
-
-	"golang.org/x/exp/constraints"
 )
 
 func AnyOf[T comparable](value T, values ...T) bool  { return collection.Contains(values, value) }
@@ -21,8 +19,4 @@ func AllOf[T comparable](value T, values ...T) bool {
 
 func TypeOf(value any) string {
 	return fmt.Sprintf("%T", value)
-}
-
-func BitFlag[T constraints.Integer](value, flag T) bool {
-	return value&flag == flag
 }

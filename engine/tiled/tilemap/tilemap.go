@@ -6,21 +6,9 @@ import (
 	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/internal"
+	p "pure-kit/engine/tiled/property"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
-)
-
-const (
-	PropertyName            = "name"
-	PropertyClass           = "class"
-	PropertyTileColumns     = "columns"
-	PropertyTileRows        = "rows"
-	PropertyTileWidth       = "tileWidth"
-	PropertyTileHeight      = "tileHeight"
-	PropertyParallaxX       = "parallaxX"
-	PropertyParallaxY       = "parallaxY"
-	PropertyInfinite        = "infinite"
-	PropertyBackgroundColor = "backgroundColor"
 )
 
 func Property(mapId, property string) string {
@@ -30,25 +18,25 @@ func Property(mapId, property string) string {
 	}
 
 	switch property {
-	case PropertyName:
+	case p.MapName:
 		return data.Name
-	case PropertyClass:
+	case p.MapClass:
 		return data.Class
-	case PropertyTileWidth:
+	case p.MapTileWidth:
 		return text.New(data.TileWidth)
-	case PropertyTileHeight:
+	case p.MapTileHeight:
 		return text.New(data.TileHeight)
-	case PropertyTileColumns:
+	case p.MapColumns:
 		return text.New(data.Width)
-	case PropertyTileRows:
+	case p.MapRows:
 		return text.New(data.Height)
-	case PropertyParallaxX:
+	case p.MapParallaxX:
 		return text.New(data.ParallaxOriginX)
-	case PropertyParallaxY:
+	case p.MapParallaxY:
 		return text.New(data.ParallaxOriginY)
-	case PropertyInfinite:
+	case p.MapInfinite:
 		return text.New(data.Infinite)
-	case PropertyBackgroundColor:
+	case p.MapBackgroundColor:
 		return text.New(color(data.BackgroundColor))
 	}
 

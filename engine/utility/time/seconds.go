@@ -4,21 +4,11 @@ import (
 	"fmt"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/collection"
+	"pure-kit/engine/utility/flag"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/time/unit"
 	"time"
 )
-
-type Unit byte
-
-const (
-	Day Unit = 1 << iota
-	Hour
-	Minute
-	Second
-	Millisecond
-)
-
-type Conversion int
 
 //=================================================================
 // setters
@@ -28,13 +18,13 @@ func SetScale(scale float32) { internal.TimeScale = scale }
 //=================================================================
 // getters
 
-func AsClock24(seconds float32, divider string, units Unit) string {
+func AsClock24(seconds float32, divider string, units int) string {
 	var ts = time.Duration(seconds * float32(time.Second))
 	return formatTimeParts(ts, divider, units, false, false)
 }
-func AsClock12(seconds float32, divider string, units Unit, AM_PM bool) string {
+func AsClock12(seconds float32, divider string, units int, amPm bool) string {
 	var ts = time.Duration(seconds * float32(time.Second))
-	return formatTimeParts(ts, divider, units, true, AM_PM)
+	return formatTimeParts(ts, divider, units, true, amPm)
 }
 
 func Scale() float32                { return internal.TimeScale }
@@ -65,7 +55,7 @@ func FromWeeks(weeks float32) float32               { return weeks * 604800 }
 //=================================================================
 // private
 
-func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amPm bool) string {
+func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm bool) string {
 	var parts []string
 	var counter = 0
 
@@ -76,13 +66,13 @@ func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amP
 		return ""
 	}
 
-	if units&Day != 0 {
+	if flag.IsOn(units, unit.Day) {
 		var val = int(ts.Hours() / 24)
 		parts = append(parts, fmt.Sprintf("%02d", val))
 		counter++
 	}
 
-	if units&Hour != 0 {
+	if flag.IsOn(units, unit.Hour) {
 		var sep = conditionalSep()
 		var val int
 		if is12Hour {
@@ -95,24 +85,24 @@ func formatTimeParts(ts time.Duration, divider string, units Unit, is12Hour, amP
 		counter++
 	}
 
-	if units&Minute != 0 {
+	if flag.IsOn(units, unit.Minute) {
 		var sep = conditionalSep()
 		var val = int((ts % time.Hour) / time.Minute)
 		parts = append(parts, sep+fmt.Sprintf("%02d", val))
 		counter++
 	}
 
-	if units&Second != 0 {
+	if flag.IsOn(units, unit.Second) {
 		var sep = conditionalSep()
 		var val = int((ts % time.Minute) / time.Second)
 		parts = append(parts, sep+fmt.Sprintf("%02d", val))
 		counter++
 	}
 
-	if units&Millisecond != 0 {
+	if flag.IsOn(units, unit.Millisecond) {
 		var val = int((ts % time.Second) / time.Millisecond)
 		var dot = ""
-		if units&Second != 0 {
+		if flag.IsOn(units, unit.Second) {
 			dot = "."
 		}
 		var sep = ""

@@ -9,9 +9,12 @@ import (
 	"pure-kit/engine/tiled/tilemap"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
+	"pure-kit/engine/window/state"
 )
 
 func Tiled() {
+	window.ApplyState(state.Fullscreen)
+
 	var cam = graphics.NewCamera(4)
 	var layer1, layer2, objs, t1, g1, g2 = reload()
 	var grid1, grid2 = g1.All(), g2.All()

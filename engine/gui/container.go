@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	p "pure-kit/engine/gui/property"
+	p "pure-kit/engine/gui/field"
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/input/mouse"

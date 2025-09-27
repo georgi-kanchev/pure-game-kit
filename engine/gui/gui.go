@@ -4,7 +4,7 @@ import (
 	"pure-kit/engine/data/storage"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/gui/dynamic"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 	"pure-kit/engine/input/mouse"
 	b "pure-kit/engine/input/mouse/button"
 	"pure-kit/engine/input/mouse/cursor"
@@ -79,11 +79,11 @@ func NewElements(elements ...string) *GUI {
 
 	// container is missing on top, add root container
 	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
-		result += "\n\t<Container " + property.Id + "=\"root\" " +
-			property.X + "=\"" + dynamic.CameraLeftX + "\" " +
-			property.Y + "=\"" + dynamic.CameraTopY + "\" " +
-			property.Width + "=\"" + dynamic.CameraWidth + "\" " +
-			property.Height + "=\"" + dynamic.CameraHeight + "\">"
+		result += "\n\t<Container " + field.Id + "=\"root\" " +
+			field.X + "=\"" + dynamic.CameraLeftX + "\" " +
+			field.Y + "=\"" + dynamic.CameraTopY + "\" " +
+			field.Width + "=\"" + dynamic.CameraWidth + "\" " +
+			field.Height + "=\"" + dynamic.CameraHeight + "\">"
 	}
 
 	for i, v := range elements {
@@ -124,10 +124,10 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
-		var ox = text.New(dyn(nil, c.Properties[property.X], "0"))
-		var oy = text.New(dyn(nil, c.Properties[property.Y], "0"))
-		var ow = text.New(dyn(nil, c.Properties[property.Width], "0"))
-		var oh = text.New(dyn(nil, c.Properties[property.Height], "0"))
+		var ox = text.New(dyn(nil, c.Properties[field.X], "0"))
+		var oy = text.New(dyn(nil, c.Properties[field.Y], "0"))
+		var ow = text.New(dyn(nil, c.Properties[field.Width], "0"))
+		var oh = text.New(dyn(nil, c.Properties[field.Height], "0"))
 		ownerX, ownerY = ox, oy // caching dynamic owner/container props
 		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
 
@@ -154,19 +154,19 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 }
 
 // works for widgets & containers
-func (gui *GUI) SetProperty(id, property string, value string) {
+func (gui *GUI) SetField(id, field string, value string) {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
 	var t, hasT = gui.root.Themes[id]
 
 	if hasW {
-		w.Properties[property] = value
+		w.Properties[field] = value
 	}
 	if hasC {
-		c.Properties[property] = value
+		c.Properties[field] = value
 	}
 	if hasT {
-		t.Properties[property] = value
+		t.Properties[field] = value
 	}
 }
 
@@ -174,20 +174,20 @@ func (gui *GUI) SetProperty(id, property string, value string) {
 // getters
 
 // works for widgets & containers
-func (gui *GUI) Property(id, property string) string {
+func (gui *GUI) Field(id, field string) string {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
 	var t, hasT = gui.root.Themes[id]
 
 	if hasW {
 		var owner = gui.root.Containers[w.OwnerId]
-		return themedProp(property, gui.root, owner, w)
+		return themedProp(field, gui.root, owner, w)
 	}
 	if hasC {
-		return c.Properties[property]
+		return c.Properties[field]
 	}
 	if hasT {
-		return t.Properties[property]
+		return t.Properties[field]
 	}
 
 	return ""
@@ -296,7 +296,7 @@ func themedProp(prop string, root *root, c *container, w *widget) string {
 	}
 	if c != nil {
 		cSelf, hasC = c.Properties[prop]
-		cTheme, hasCt = root.Themes[c.Properties[property.ThemeId]]
+		cTheme, hasCt = root.Themes[c.Properties[field.ThemeId]]
 	}
 
 	if w != nil {

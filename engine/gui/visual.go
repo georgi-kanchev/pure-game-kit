@@ -2,7 +2,7 @@ package gui
 
 import (
 	"pure-kit/engine/graphics"
-	p "pure-kit/engine/gui/property"
+	p "pure-kit/engine/gui/field"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 )

@@ -2,21 +2,9 @@ package tileset
 
 import (
 	"pure-kit/engine/internal"
+	p "pure-kit/engine/tiled/property"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
-)
-
-const (
-	PropertyName       = "name"
-	PropertyClass      = "class"
-	PropertyTileWidth  = "width"
-	PropertyTileHeight = "height"
-	PropertyTileCount  = "count"
-	PropertyColumns    = "columns"
-	PropertySpacing    = "spacing"
-	PropertyOffsetX    = "offsetX"
-	PropertyOffsetY    = "offsetY"
-	PropertyAtlasId    = "atlasId"
 )
 
 func Property(tilesetId, property string) string {
@@ -26,25 +14,25 @@ func Property(tilesetId, property string) string {
 	}
 
 	switch property {
-	case PropertyName:
+	case p.TilesetName:
 		return data.Name
-	case PropertyClass:
+	case p.TilesetClass:
 		return data.Class
-	case PropertyTileWidth:
+	case p.TilesetTileWidth:
 		return text.New(data.TileWidth)
-	case PropertyTileHeight:
+	case p.TilesetTileHeight:
 		return text.New(data.TileHeight)
-	case PropertyTileCount:
+	case p.TilesetTileCount:
 		return text.New(data.TileCount)
-	case PropertyColumns:
+	case p.TilesetColumns:
 		return text.New(data.Columns)
-	case PropertySpacing:
+	case p.TilesetSpacing:
 		return text.New(data.Spacing)
-	case PropertyOffsetX:
+	case p.TilesetOffsetX:
 		return text.New(data.Offset.X)
-	case PropertyOffsetY:
+	case p.TilesetOffsetY:
 		return text.New(data.Offset.Y)
-	case PropertyAtlasId:
+	case p.TilesetAtlasId:
 		return data.AtlasId
 	}
 

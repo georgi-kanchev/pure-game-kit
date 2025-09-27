@@ -3,7 +3,7 @@ package gui
 import (
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/input/mouse/cursor"
 	"pure-kit/engine/utility/number"
@@ -27,12 +27,12 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 	if condition.TrueOnce(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget
 		tooltipAt = time.RealRuntime()
-		var tooltipId = themedProp(property.TooltipId, root, c, widget)
+		var tooltipId = themedProp(field.TooltipId, root, c, widget)
 		tooltip = root.Widgets[tooltipId]
 
 		if tooltip != nil {
-			var text = themedProp(property.TooltipText, root, c, widget)
-			tooltip.Properties[property.Text] = text
+			var text = themedProp(field.TooltipText, root, c, widget)
+			tooltip.Properties[field.Text] = text
 
 			if text != "" {
 				mouse.SetCursor(cursor.Hand)
@@ -48,13 +48,13 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	if tooltip == nil || tooltipForWidget == nil || time.RealRuntime() < tooltipAt+0.5 {
 		return
 	}
-	if tooltip.Properties[property.Text] == "" || !tooltipForWidget.isFocused(root, cam) {
+	if tooltip.Properties[field.Text] == "" || !tooltipForWidget.isFocused(root, cam) {
 		return
 	}
 
 	var camW, camH = cam.Size()
-	var width = parseNum(dyn(c, tooltip.Properties[property.Width], "500"), 500)
-	var margin = parseNum(themedProp(property.TooltipMargin, root, c, tooltip), 50)
+	var width = parseNum(dyn(c, tooltip.Properties[field.Width], "500"), 500)
+	var margin = parseNum(themedProp(field.TooltipMargin, root, c, tooltip), 50)
 	tooltip.Width, tooltip.Height = width-margin, camH
 
 	setupVisualsText(root, tooltip, true)

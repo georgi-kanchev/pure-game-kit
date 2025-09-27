@@ -3,7 +3,7 @@ package gui
 import (
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/input/mouse"
@@ -60,7 +60,7 @@ func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 }
 func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
-	var margin = parseNum(themedProp(property.InputFieldMargin, root, owner, widget), 30)
+	var margin = parseNum(themedProp(field.InputFieldMargin, root, owner, widget), 30)
 
 	if keyboard.IsComboPressedOnce(key.LeftControl, key.A) ||
 		keyboard.IsComboPressedOnce(key.RightControl, key.A) {
@@ -78,7 +78,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var anyInput = mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0
 	var focused = widget.isFocused(root, cam)
 	var meTyping = typingIn == widget // each input field should disable its own typing
-	var text = txt.Remove(themedProp(property.Text, root, owner, widget), "\n")
+	var text = txt.Remove(themedProp(field.Text, root, owner, widget), "\n")
 
 	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyPressedOnce(key.Escape)) {
 		typingIn = nil
@@ -103,7 +103,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 	var isPlaceholder = false
 	if text == "" {
-		var placeholder = themedProp(property.InputFieldPlaceholder, root, owner, widget)
+		var placeholder = themedProp(field.InputFieldPlaceholder, root, owner, widget)
 		placeholder = txt.Remove(defaultValue(placeholder, "Type..."), "\n")
 		setupText(margin, root, widget, false) // don't skip when empty!
 		reusableTextBox.Text = placeholder
@@ -322,12 +322,12 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	cursorTime = 0
 	scrollX = 0
 	typingIn = allInputFields[(myIndex+1)%total]
-	var text = txt.Remove(themedProp(property.Text, root, owner, typingIn), "\n")
+	var text = txt.Remove(themedProp(field.Text, root, owner, typingIn), "\n")
 	indexCursor = len(text)
 	indexSelect = indexCursor
 	frame = int(time.FrameCount()) // only once per frame
 
-	var margin = parseNum(themedProp(property.InputFieldMargin, root, owner, typingIn), 30)
+	var margin = parseNum(themedProp(field.InputFieldMargin, root, owner, typingIn), 30)
 	setupText(margin, root, typingIn, true)
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
 		reusableTextBox.Text = ""
@@ -394,6 +394,6 @@ func wordIndex(text string, left bool) int {
 
 }
 func setText(widget *widget, text string) {
-	widget.Properties[property.Text] = text
+	widget.Properties[field.Text] = text
 	reusableTextBox.Text = text
 }

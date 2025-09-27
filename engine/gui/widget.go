@@ -3,7 +3,7 @@ package gui
 import (
 	"encoding/xml"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 )
 
 type widget struct {
@@ -18,7 +18,7 @@ type widget struct {
 }
 
 func newWidget(class, id string, properties ...string) string {
-	return "<Widget " + property.Class + "=\"" + class + "\" " + property.Id + "=\"" + id + "\"" +
+	return "<Widget " + field.Class + "=\"" + class + "\" " + field.Id + "=\"" + id + "\"" +
 		extraProps(properties...) + " />"
 }
 
@@ -32,11 +32,11 @@ func (widget *widget) isFocused(root *root, cam *graphics.Camera) bool {
 	return wFocused == widget && wWasHovered == widget && widget.isHovered(root.Containers[widget.OwnerId], cam)
 }
 func (widget *widget) isDisabled(owner *container) bool {
-	var _, disabled = widget.Properties[property.Disabled]
+	var _, disabled = widget.Properties[field.Disabled]
 	var ownerDisabled = false
 
 	if owner != nil {
-		_, ownerDisabled = owner.Properties[property.Disabled]
+		_, ownerDisabled = owner.Properties[field.Disabled]
 	}
 
 	return disabled || ownerDisabled

@@ -3,7 +3,7 @@ package gui
 import (
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/input/mouse"
@@ -24,31 +24,31 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 
 	var escape = keyboard.IsKeyPressedOnce(key.Escape)
 	if mouse.IsAnyButtonPressedOnce() || mouse.Scroll() != 0 || !window.IsHovered() || escape {
-		var containerId = themedProp(property.MenuContainerId, root, owner, widget)
+		var containerId = themedProp(field.MenuContainerId, root, owner, widget)
 		var c, has = root.Containers[containerId]
 		if escape || (has && !c.isFocused(cam)) {
-			c.Properties[property.Hidden] = "+"
+			c.Properties[field.Hidden] = "+"
 		}
 	}
 
 	if root.ButtonClickedOnce(widget.Id, cam) {
-		var containerId = themedProp(property.MenuContainerId, root, owner, widget)
+		var containerId = themedProp(field.MenuContainerId, root, owner, widget)
 		var c, has = root.Containers[containerId]
 		if !has {
 			return
 		}
 
-		c.Properties[property.Hidden] = condition.If(c.Properties[property.Hidden] == "", "+", "")
-		c.Properties[property.X] = text.New(widget.X)
-		c.Properties[property.Y] = text.New(widget.Y + widget.Height)
+		c.Properties[field.Hidden] = condition.If(c.Properties[field.Hidden] == "", "+", "")
+		c.Properties[field.X] = text.New(widget.X)
+		c.Properties[field.Y] = text.New(widget.Y + widget.Height)
 
 		c.X = widget.X
 		c.Y = widget.Y + widget.Height
 
 		var _, camH = cam.Size()
-		var h = parseNum(themedProp(property.Height, root, c, nil), 0)
+		var h = parseNum(themedProp(field.Height, root, c, nil), 0)
 		if c.Y+h > camH/2 {
-			c.Properties[property.Y] = text.New(widget.Y - h)
+			c.Properties[field.Y] = text.New(widget.Y - h)
 			c.Y = widget.Y - h
 		}
 	}

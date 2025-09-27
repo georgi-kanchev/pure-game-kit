@@ -2,8 +2,8 @@ package number
 
 import "math"
 
-const MaximumInt = 2147483647
-const MinimumInt = -MaximumInt
+const MaxInt = 2147483647
+const MinInt = -MaxInt
 
 func Biggest(number, target float32, other ...float32) float32 {
 	var max = number

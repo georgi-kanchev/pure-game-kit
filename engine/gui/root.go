@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui/property"
+	"pure-kit/engine/gui/field"
 	k "pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	m "pure-kit/engine/input/mouse"
@@ -27,7 +27,7 @@ type root struct {
 func (root *root) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
 	var owner = root.Containers[widget.OwnerId]
-	var hotkey = key.FromName(themedProp(property.ButtonHotkey, root, owner, widget))
+	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
 	var focus = widget.isFocused(root, camera) && wPressedOn == widget
 	var input = k.IsKeyPressedOnce(hotkey) || (focus && m.IsButtonReleasedOnce(b.Left))
 
@@ -41,7 +41,7 @@ func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera)
 
 	var focus = widget.isFocused(root, camera)
 	var owner = root.Containers[widget.OwnerId]
-	var hotkey = key.FromName(themedProp(property.ButtonHotkey, root, owner, widget))
+	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
 	var first = k.IsKeyPressedOnce(hotkey) || (focus && m.IsButtonPressedOnce(b.Left))
 	var tick = time.RealRuntime() > wPressedAt+0.5
 	var inputHold = k.IsKeyPressed(hotkey) || (focus && wPressedOn == widget && m.IsButtonPressed(b.Left))
