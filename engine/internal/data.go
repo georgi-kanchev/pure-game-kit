@@ -24,15 +24,11 @@ type Sequence struct {
 	Steps        []Step
 	CurrentIndex int
 }
-
 type StateMachine struct {
 	States       []func()
 	CurrentIndex int
 }
-
-type Step interface {
-	Continue() bool
-}
+type Step interface{ Continue() bool }
 
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)

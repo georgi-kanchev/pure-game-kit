@@ -19,6 +19,8 @@ consistent error handling + logging, console & file
 [√] renames, improvements, restructure
 [√] numbers - new Animate + AlmostEquals funcs
 [√] mouse - new CursorDelta func
+[√] tiled - animated tiles & shapes
+[√] tiled - some code restructure
 
 [70] [Wed] [24-09-2025]
 [√] less package dependencies everywhere, more code goes through the engine, wrappers etc

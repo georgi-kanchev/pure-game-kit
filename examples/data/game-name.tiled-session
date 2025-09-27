@@ -21,11 +21,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 1.5,
+            "scale": 5.5,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 129.33333333333331,
-                "y": 81.66666666666666
+                "x": 63.81818181818183,
+                "y": 59.72727272727273
             }
         },
         "map.tmx": {
@@ -33,15 +33,15 @@
                 6
             ],
             "expandedObjectLayers": [
-                11,
                 6,
+                11,
                 2
             ],
-            "scale": 16,
-            "selectedLayer": 5,
+            "scale": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 552.3125,
-                "y": 22.15625
+                "x": 426,
+                "y": 67.125
             }
         },
         "map.tmx#atlas": {
@@ -57,7 +57,7 @@
             "scaleInEditor": 5.5
         }
     },
-    "frame.defaultDuration": 400,
+    "frame.defaultDuration": 200,
     "last.imagePath": "/home/gojur/code/pure-kit/examples/data",
     "last.objectTemplatePath": "/home/gojur/code/pure-kit/examples/data",
     "last.objectTypesPath": "C:/Users/PC/Desktop/tiled/structure.xml",

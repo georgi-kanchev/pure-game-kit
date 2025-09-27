@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.11.2" name="objects" tilewidth="16" tileheight="16" tilecount="544" columns="16">
  <image source="objects.png" width="256" height="544"/>
+ <tile id="142">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="6" y="4" width="5" height="5"/>
+  </objectgroup>
+ </tile>
  <tile id="198">
   <objectgroup draworder="index" id="2">
    <object id="1" name="spawn-point" x="5" y="5">
@@ -10,7 +15,7 @@
   </objectgroup>
   <animation>
    <frame tileid="142" duration="200"/>
-   <frame tileid="143" duration="400"/>
+   <frame tileid="143" duration="200"/>
   </animation>
  </tile>
  <tile id="230">

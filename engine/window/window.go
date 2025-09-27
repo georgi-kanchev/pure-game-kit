@@ -229,6 +229,7 @@ func tryCreate() {
 	tryUpdateProperties()
 	IsOpen = true
 	terminate = false
+	MoveToMonitor(0)
 }
 
 func tryUpdateProperties() {

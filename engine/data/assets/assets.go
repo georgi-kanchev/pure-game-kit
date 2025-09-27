@@ -34,7 +34,8 @@ func tryInitShader() {
 }
 
 func getIdPath(p string) (id, absolutePath string) {
-	absolutePath = path.New(path.Folder(path.Executable()), p)
-	id = path.RemoveExtension(path.LastElement(absolutePath))
+	var root = path.Folder(path.Executable())
+	absolutePath = path.New(root, p)
+	id = path.RemoveExtension(p)
 	return
 }

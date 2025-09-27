@@ -38,9 +38,9 @@ func LoadTiledTileset(tsxFilePath string) []string {
 		SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 	}
 
-	tileset.MappedTiles = map[int]internal.TilesetTile{}
+	tileset.MappedTiles = map[int]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
-		tileset.MappedTiles[tile.Id] = tile
+		tileset.MappedTiles[tile.Id] = &tile
 	}
 
 	return resultIds

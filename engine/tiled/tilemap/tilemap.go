@@ -2,11 +2,12 @@ package tilemap
 
 import (
 	"pure-kit/engine/data/path"
+	"pure-kit/engine/execution/flow"
 	"pure-kit/engine/geometry"
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/internal"
 	p "pure-kit/engine/tiled/property"
+	"pure-kit/engine/tiled/tileset"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
 )
@@ -69,12 +70,16 @@ func LayerTiles(mapId, layerNameOrId string) []*graphics.Sprite {
 			continue
 		}
 
-		var tileId = text.New(curTileset.AtlasId, "[", tile-curTileset.FirstTileId, "]")
+		var id = tile - curTileset.FirstTileId
+		var tileId = text.New(curTileset.AtlasId, "[", id, "]")
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
 		var x = float32(j)*float32(mapData.TileWidth) + mapData.WorldX
 		var y = float32(i)*float32(mapData.TileHeight) + mapData.WorldY
 		var sprite = graphics.NewSprite(tileId, x, y)
 
+		tryAnimateTile(text.New(curTileset.AtlasId, "/", id), curTileset, id, func(tileId int) {
+			sprite.AssetId = text.New(curTileset.AtlasId, "[", tileId, "]")
+		})
 		sprite.Width, sprite.Height = float32(mapData.TileWidth), float32(mapData.TileHeight)
 		sprite.PivotX, sprite.PivotY = 0, 0
 		result = append(result, &sprite)
@@ -107,27 +112,22 @@ func LayerTilesShapeGrid(mapId, layerNameOrId, objectNameOrClass string) *geomet
 		}
 		id-- // 0 in map means empty but 0 is actually a valid tile in the tileset
 
-		var currentTileset = currentTileset(tilesets, id)
-		id -= currentTileset.FirstTileId - 1 // same as id
-		var tile, has = currentTileset.MappedTiles[id]
-		if !has {
+		var curTileset = currentTileset(tilesets, id)
+		id -= curTileset.FirstTileId - 1 // same as id
+		var tile, _ = curTileset.MappedTiles[id]
+		if tile == nil || len(tile.CollisionLayers) == 0 {
 			continue
 		}
 
-		if len(tile.CollisionLayers) == 0 {
-			continue
-		}
-		var objs = tile.CollisionLayers[0].Objects
 		var x, y = number.Index1DToIndexes2D(i, mapData.Width, mapData.Height)
 		x += int(mapData.WorldX) / mapData.TileWidth
 		y += int(mapData.WorldY) / mapData.TileHeight
 
-		var shapes = findAndParseShapes(objs, objectNameOrClass)
-		for _, shape := range shapes {
-			shape.X -= float32(mapData.TileWidth) / 2
-			shape.Y -= float32(mapData.TileHeight) / 2
-		}
-		result.SetAtCell(x, y, shapes...)
+		tryAnimateTile(text.New(curTileset.AtlasId, "/", id, "-shapes"), curTileset, id, func(tileId int) {
+			result.SetAtCell(x, y, tileset.TileShapes(curTileset.AtlasId, tileId, objectNameOrClass)...)
+		})
+
+		result.SetAtCell(x, y, tileset.TileShapes(curTileset.AtlasId, id, objectNameOrClass)...)
 	}
 	return result
 }
@@ -217,42 +217,27 @@ func currentTileset(usedTilesets []*internal.Tileset, tile int) *internal.Tilese
 	}
 	return curTileset
 }
-
-func findAndParseShapes(objs []*internal.LayerObject, objNameOrClass string) []*geometry.Shape {
-	var result = []*geometry.Shape{}
-	for _, obj := range objs {
-		if objNameOrClass != "" && obj.Name != objNameOrClass && obj.Class != objNameOrClass {
-			continue
-		}
-
-		var ptsData = ""
-		if obj.PolygonTile != nil {
-			ptsData = obj.PolygonTile.Points
-		}
-		if obj.Polygon != nil {
-			ptsData = obj.Polygon.Points
-		}
-		if ptsData == "" {
-			var w, h = obj.Width, obj.Height
-			ptsData = text.New(0, ",", 0, " ", w, ",", 0, " ", w, ",", h, " ", 0, ",", h)
-		}
-
-		var corners = [][2]float32{}
-		var pts = text.Split(ptsData, " ")
-		for _, pt := range pts {
-			var xy = text.Split(pt, ",")
-			if len(xy) == 2 {
-				var x, y = text.ToNumber(xy[0]), text.ToNumber(xy[1])
-				x, y = point.RotateAroundPoint(x, y, 0, 0, obj.Rotation)
-				corners = append(corners, [2]float32{x, y})
-			}
-		}
-
-		var shape = geometry.NewShapeCorners(corners...)
-		shape.X, shape.Y = obj.X, obj.Y
-		result = append(result, shape)
+func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, onFrameChange func(tileId int)) {
+	var objTile = curTileset.MappedTiles[tilesetTile]
+	if objTile == nil || objTile.Animation == nil {
+		return
 	}
-	return result
+
+	var animIds = tileset.TileAnimationTileIds(curTileset.AtlasId, tilesetTile)
+	if len(animIds) == 0 {
+		return
+	}
+
+	var animDurs = tileset.TileAnimationDurations(curTileset.AtlasId, tilesetTile)
+	var steps = []flow.Step{}
+	for stepIndex := range animIds {
+		steps = append(steps, flow.Do(func() { onFrameChange(animIds[stepIndex]) }))
+		steps = append(steps, flow.WaitForDelay(animDurs[stepIndex])) // frame delay
+	}
+	steps = append(steps, flow.Do(func() { flow.GoToStep(name, 0) })) // loop forever
+
+	flow.NewSequence(name, steps...)
+	flow.Start(name)
 }
 
 func color(hex string) uint {

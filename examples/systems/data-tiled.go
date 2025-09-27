@@ -7,17 +7,16 @@ import (
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/tiled/tilemap"
+	"pure-kit/engine/tiled/tileset"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
-	"pure-kit/engine/window/state"
 )
 
 func Tiled() {
-	window.ApplyState(state.Fullscreen)
-
 	var cam = graphics.NewCamera(4)
 	var layer1, layer2, objs, t1, g1, g2 = reload()
-	var grid1, grid2 = g1.All(), g2.All()
+
+	var tileCol = tileset.TileShapes("examples/data/atlas", 8, "")
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -28,22 +27,23 @@ func Tiled() {
 		cam.DrawSprites(objs...)
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
-		for _, shape := range grid1 {
+		for _, shape := range g1.All() {
 			var cellX, cellY = g1.Cell(shape)
 			_, _ = cellX, cellY
 			cam.DrawLinesPath(0.5, color.Red, shape.CornerPoints()...)
 		}
-		for _, shape := range grid2 {
+		for _, shape := range g2.All() {
 			var cellX, cellY = g2.Cell(shape)
 			_, _ = cellX, cellY
 			cam.DrawLinesPath(0.5, color.Red, shape.CornerPoints()...)
 		}
 
-		if keyboard.IsKeyPressedOnce(key.F5) {
-			cam.Zoom = 1
+		for _, shape := range tileCol {
+			cam.DrawLinesPath(0.5, color.White, shape.CornerPoints()...)
+		}
 
+		if keyboard.IsKeyPressedOnce(key.F5) {
 			layer1, layer2, objs, t1, g1, g2 = reload()
-			grid1, grid2 = g1.All(), g2.All()
 		}
 	}
 }
