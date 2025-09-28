@@ -7,16 +7,13 @@ import (
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/tiled/tilemap"
-	"pure-kit/engine/tiled/tileset"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
 )
 
 func Tiled() {
 	var cam = graphics.NewCamera(4)
-	var layer1, layer2, objs, t1, g1, g2 = reload()
-
-	var tileCol = tileset.TileShapes("examples/data/atlas", 8, "")
+	var layer1, layer2, objs, t1, pts, g1, g2 = reload()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -38,17 +35,17 @@ func Tiled() {
 			cam.DrawLinesPath(0.5, color.Red, shape.CornerPoints()...)
 		}
 
-		for _, shape := range tileCol {
-			cam.DrawLinesPath(0.5, color.White, shape.CornerPoints()...)
+		for _, pt := range pts {
+			cam.DrawCircle(pt[0], pt[1], 5, color.White)
 		}
 
 		if keyboard.IsKeyPressedOnce(key.F5) {
-			layer1, layer2, objs, t1, g1, g2 = reload()
+			layer1, layer2, objs, t1, pts, g1, g2 = reload()
 		}
 	}
 }
 
-func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, g1, g2 *geometry.ShapeGrid) {
+func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, pts [][2]float32, g1, g2 *geometry.ShapeGrid) {
 	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
 	assets.LoadTiledTileset("examples/data/atlas.tsx")
 	assets.LoadTiledTileset("examples/data/objects.tsx")
@@ -58,5 +55,6 @@ func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, g1, g2 *geometry.Sha
 	t1 = tilemap.LayerTiles(mapIds[1], "1")
 	g1 = tilemap.LayerTilesShapeGrid("examples/data/desert", "3", "")
 	g2 = tilemap.LayerTilesShapeGrid("examples/data/map", "3", "")
+	pts = tilemap.LayerTilesPoints("examples/data/map", "3", "")
 	return
 }

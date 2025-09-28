@@ -21,6 +21,7 @@ consistent error handling + logging, console & file
 [√] mouse - new CursorDelta func
 [√] tiled - animated tiles & shapes
 [√] tiled - some code restructure
+[√] tiled - tile points
 
 [70] [Wed] [24-09-2025]
 [√] less package dependencies everywhere, more code goes through the engine, wrappers etc

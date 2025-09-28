@@ -59,7 +59,7 @@ func TileProperty(tilesetId string, tileId int, property string) string {
 	}
 	return ""
 }
-func TileShapeProperty(tilesetId string, tileId int, shapeNameClassOrId, property string) string {
+func TileObjectProperty(tilesetId string, tileId int, shapeNameClassOrId, property string) string {
 	var obj = getObj(tilesetId, tileId, shapeNameClassOrId)
 	if obj == nil {
 		return ""
@@ -72,7 +72,7 @@ func TileShapeProperty(tilesetId string, tileId int, shapeNameClassOrId, propert
 	}
 	return ""
 }
-func TileShapes(tilesetId string, tileId int, shapeNameOrClass string) []*geometry.Shape {
+func TileObjectShapes(tilesetId string, tileId int, shapeNameOrClass string) []*geometry.Shape {
 	var shapes = []*geometry.Shape{}
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
@@ -80,6 +80,7 @@ func TileShapes(tilesetId string, tileId int, shapeNameOrClass string) []*geomet
 	}
 
 	var objs = tile.CollisionLayers[0].Objects
+	var tileset = internal.TiledTilesets[tilesetId]
 	for _, obj := range objs {
 		if shapeNameOrClass != "" && obj.Name != shapeNameOrClass && obj.Class != shapeNameOrClass {
 			continue
@@ -106,16 +107,30 @@ func TileShapes(tilesetId string, tileId int, shapeNameOrClass string) []*geomet
 			}
 		}
 		var shape = geometry.NewShapeCorners(corners...)
-		shape.X, shape.Y = obj.X, obj.Y
+		shape.X = obj.X - float32(tileset.TileWidth)/2
+		shape.Y = obj.Y - float32(tileset.TileHeight)/2
 		shapes = append(shapes, shape)
 	}
 
-	var tileset = internal.TiledTilesets[tilesetId]
-	for _, shape := range shapes {
-		shape.X -= float32(tileset.TileWidth) / 2
-		shape.Y -= float32(tileset.TileHeight) / 2
-	}
 	return shapes
+}
+func TileObjectPoints(tilesetId string, tileId int, shapeNameOrClass string) [][2]float32 {
+	var points = [][2]float32{}
+	var tile = getTile(tilesetId, tileId)
+	if tile == nil {
+		return points
+	}
+	var objs = tile.CollisionLayers[0].Objects
+	for _, obj := range objs {
+		if obj.Width != 0 && obj.Height != 0 {
+			continue
+		}
+
+		if shapeNameOrClass == "" || obj.Name == shapeNameOrClass || obj.Class == shapeNameOrClass {
+			points = append(points, [2]float32{obj.X, obj.Y})
+		}
+	}
+	return points
 }
 func TileAnimationTileIds(tilesetId string, tileId int) (frameTileIds []int) {
 	var tile = getTile(tilesetId, tileId)

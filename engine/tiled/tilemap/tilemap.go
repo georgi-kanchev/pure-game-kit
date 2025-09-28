@@ -94,41 +94,32 @@ func LayerTiles(mapId, layerNameOrId string) []*graphics.Sprite {
 func LayerTilesShapeGrid(mapId, layerNameOrId, objectNameOrClass string) *geometry.ShapeGrid {
 	var mapData, has = internal.TiledMaps[mapId]
 	if !has {
-		return &geometry.ShapeGrid{}
-	}
-
-	var wantedLayer = findLayerTiles(mapData, layerNameOrId)
-	if wantedLayer == nil {
-		return &geometry.ShapeGrid{}
+		return nil
 	}
 
 	var result = geometry.NewShapeGrid(mapData.TileWidth, mapData.TileHeight)
-	var tilesets = usedTilesets(mapData)
-	var tileIds = getTileIds(mapData, tilesets, wantedLayer)
-
-	for i, id := range tileIds {
-		if id == 0 {
-			continue
-		}
-		id-- // 0 in map means empty but 0 is actually a valid tile in the tileset
-
-		var curTileset = currentTileset(tilesets, id)
-		id -= curTileset.FirstTileId - 1 // same as id
-		var tile, _ = curTileset.MappedTiles[id]
-		if tile == nil || len(tile.CollisionLayers) == 0 {
-			continue
-		}
-
-		var x, y = number.Index1DToIndexes2D(i, mapData.Width, mapData.Height)
-		x += int(mapData.WorldX) / mapData.TileWidth
-		y += int(mapData.WorldY) / mapData.TileHeight
-
+	forEachTile(mapId, layerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
 		tryAnimateTile(text.New(curTileset.AtlasId, "/", id, "-shapes"), curTileset, id, func(tileId int) {
-			result.SetAtCell(x, y, tileset.TileShapes(curTileset.AtlasId, tileId, objectNameOrClass)...)
+			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, tileId, objectNameOrClass)...)
 		})
 
-		result.SetAtCell(x, y, tileset.TileShapes(curTileset.AtlasId, id, objectNameOrClass)...)
-	}
+		result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, id, objectNameOrClass)...)
+	})
+	return result
+}
+func LayerTilesPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
+	var result = [][2]float32{}
+
+	forEachTile(mapId, layerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
+		var pts = tileset.TileObjectPoints(curTileset.AtlasId, id, objectNameOrClass)
+		for i := range pts {
+			pts[i][0] += float32(x) * float32(tw)
+			pts[i][1] += float32(y) * float32(th)
+		}
+
+		result = append(result, pts...)
+	})
+
 	return result
 }
 
@@ -238,6 +229,40 @@ func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, 
 
 	flow.NewSequence(name, steps...)
 	flow.Start(name)
+}
+func forEachTile(mapId, layerNameOrId string, do func(x, y, tw, th, id int, curTileset *internal.Tileset)) {
+	var mapData, has = internal.TiledMaps[mapId]
+	if !has {
+		return
+	}
+
+	var wantedLayer = findLayerTiles(mapData, layerNameOrId)
+	if wantedLayer == nil {
+		return
+	}
+
+	var tilesets = usedTilesets(mapData)
+	var tileIds = getTileIds(mapData, tilesets, wantedLayer)
+
+	for i, id := range tileIds {
+		if id == 0 {
+			continue
+		}
+		id-- // 0 in map means empty but 0 is actually a valid tile in the tileset
+
+		var curTileset = currentTileset(tilesets, id)
+		id -= curTileset.FirstTileId - 1 // same as id
+		var tile, _ = curTileset.MappedTiles[id]
+		if tile == nil || len(tile.CollisionLayers) == 0 {
+			continue
+		}
+
+		var x, y = number.Index1DToIndexes2D(i, mapData.Width, mapData.Height)
+		x += int(mapData.WorldX) / mapData.TileWidth
+		y += int(mapData.WorldY) / mapData.TileHeight
+
+		do(x, y, mapData.TileWidth, mapData.TileHeight, id, curTileset)
+	}
 }
 
 func color(hex string) uint {
