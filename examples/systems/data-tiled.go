@@ -1,11 +1,13 @@
 package example
 
 import (
+	"fmt"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/geometry"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
+	"pure-kit/engine/tiled/property"
 	"pure-kit/engine/tiled/tilemap"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/window"
@@ -49,12 +51,16 @@ func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, pts [][2]float32, g1
 	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
 	assets.LoadTiledTileset("examples/data/atlas.tsx")
 	assets.LoadTiledTileset("examples/data/objects.tsx")
-	layer1 = tilemap.LayerTiles(mapIds[0], "1")
-	layer2 = tilemap.LayerTiles(mapIds[0], "3")
-	objs = tilemap.LayerTiles(mapIds[1], "3")
-	t1 = tilemap.LayerTiles(mapIds[1], "1")
-	g1 = tilemap.LayerTilesShapeGrid("examples/data/desert", "3", "")
-	g2 = tilemap.LayerTilesShapeGrid("examples/data/map", "3", "")
-	pts = tilemap.LayerTilesPoints("examples/data/map", "3", "")
+	layer1 = tilemap.LayerSprites(mapIds[0], "1")
+	layer2 = tilemap.LayerSprites(mapIds[0], "3")
+	objs = tilemap.LayerSprites(mapIds[1], "3")
+	t1 = tilemap.LayerSprites(mapIds[1], "1")
+	g1 = tilemap.LayerShapeGrid("examples/data/desert", "3", "")
+	g2 = tilemap.LayerShapeGrid("examples/data/map", "3", "")
+	pts = tilemap.LayerPoints("examples/data/map", "3", "")
+
+	var id = tilemap.LayerProperty("examples/data/desert", "4", property.LayerColor)
+	fmt.Printf("id: %v\n", id)
+
 	return
 }

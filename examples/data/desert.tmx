@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="7" nextobjectid="9">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="11">
  <properties>
   <property name="test" type="int" value="111"/>
  </properties>
@@ -53,7 +53,10 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="4" name="Objects">
+ <imagelayer id="7" name="Image Layer 1" offsetx="62" offsety="264">
+  <image source="objects.png" width="256" height="544"/>
+ </imagelayer>
+ <objectgroup color="#aa55ff" id="4" name="Objects">
   <object id="1" name="cut-throat" x="70" y="-107" width="48" height="80">
    <properties>
     <property name="damage" type="float" value="35"/>
@@ -66,5 +69,7 @@
    </properties>
   </object>
   <object id="8" x="224" y="16" width="16" height="16"/>
+  <object id="9" template="poly.tx" x="113" y="12"/>
+  <object id="10" name="sprite" gid="1" x="154" y="24" width="16" height="16"/>
  </objectgroup>
 </map>

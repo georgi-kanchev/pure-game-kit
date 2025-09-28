@@ -2,28 +2,28 @@ package internal
 
 type Layer struct {
 	Identity
-	Tint       string      `xml:"tintcolor,attr"`
-	Opacity    float32     `xml:"opacity,attr"`
-	Visible    string      `xml:"visible,attr"`
-	Locked     bool        `xml:"locked,attr"`
-	OffsetX    float32     `xml:"offsetx,attr"`
-	OffsetY    float32     `xml:"offsety,attr"`
-	ParallaxX  float32     `xml:"parallaxx,attr"`
-	ParallaxY  float32     `xml:"parallaxy,attr"`
-	Properties []*Property `xml:"properties>property"`
+	Tint       string     `xml:"tintcolor,attr"`
+	Opacity    float32    `xml:"opacity,attr"`
+	Visible    string     `xml:"visible,attr"`
+	Locked     bool       `xml:"locked,attr"`
+	OffsetX    float32    `xml:"offsetx,attr"`
+	OffsetY    float32    `xml:"offsety,attr"`
+	ParallaxX  float32    `xml:"parallaxx,attr"`
+	ParallaxY  float32    `xml:"parallaxy,attr"`
+	Properties []Property `xml:"properties>property"`
 }
 
 type LayerGroup struct {
 	Layer
-	LayersTiles   []*LayerTiles   `xml:"layer"`
-	LayersObjects []*LayerObjects `xml:"objectgroup"`
-	LayersImages  []*LayerImage   `xml:"imagelayer"`
+	LayersTiles   []LayerTiles   `xml:"layer"`
+	LayersObjects []LayerObjects `xml:"objectgroup"`
+	LayersImages  []LayerImage   `xml:"imagelayer"`
 }
 
 // =================================================================
 type LayerTiles struct {
 	Layer
-	TileData *LayerTilesData `xml:"data"`
+	TileData LayerTilesData `xml:"data"`
 
 	Tiles []int
 }
@@ -35,31 +35,32 @@ type LayerTilesData struct {
 // =================================================================
 type LayerImage struct {
 	Layer
-	RepeatX bool          `xml:"repeatx,attr"`
-	RepeatY bool          `xml:"repeaty,attr"`
-	Image   *TilesetImage `xml:"image"`
+	RepeatX bool         `xml:"repeatx,attr"`
+	RepeatY bool         `xml:"repeaty,attr"`
+	Image   TilesetImage `xml:"image"`
 }
 
 // =================================================================
 type LayerObjects struct {
 	Layer
-	DrawOrder string         `xml:"draworder,attr"`
-	Color     string         `xml:"color,attr"`
-	Objects   []*LayerObject `xml:"object"`
+	DrawOrder string        `xml:"draworder,attr"`
+	Color     string        `xml:"color,attr"`
+	Objects   []LayerObject `xml:"object"`
 }
 type LayerObject struct {
 	Identity
-	Width       float32             `xml:"width,attr"`
-	Height      float32             `xml:"height,attr"`
-	X           float32             `xml:"x,attr"`
-	Y           float32             `xml:"y,attr"`
-	Rotation    float32             `xml:"rotation,attr"`
-	Visible     string              `xml:"visible,attr"`
-	Template    string              `xml:"template,attr"`
-	Text        *LayerObjectText    `xml:"text"`
-	Polygon     *LayerObjectPolygon `xml:"polygon"`
-	PolygonTile *LayerObjectPolygon `xml:"polyline"`
-	Properties  []*Property         `xml:"properties>property"`
+	Width       float32            `xml:"width,attr"`
+	Height      float32            `xml:"height,attr"`
+	X           float32            `xml:"x,attr"`
+	Y           float32            `xml:"y,attr"`
+	Rotation    float32            `xml:"rotation,attr"`
+	Visible     string             `xml:"visible,attr"`
+	Template    string             `xml:"template,attr"`
+	Gid         int                `xml:"gid,attr"`
+	Text        LayerObjectText    `xml:"text"`
+	Polygon     LayerObjectPolygon `xml:"polygon"`
+	PolygonTile LayerObjectPolygon `xml:"polyline"`
+	Properties  []Property         `xml:"properties>property"`
 }
 type LayerObjectPolygon struct {
 	Points string `xml:"points,attr"`
@@ -80,5 +81,5 @@ type LayerObjectText struct {
 
 // =================================================================
 type Template struct {
-	Object *LayerObject `xml:"object"`
+	Object LayerObject `xml:"object"`
 }

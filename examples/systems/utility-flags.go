@@ -5,14 +5,14 @@ import (
 	"pure-kit/engine/utility/flag"
 )
 
-const ( // ....DCBA
-	A byte = 1 << iota // ....---+
-	B                  // ....--+-
-	C                  // ....-+--
-	D                  // ....+---
-)
-
 func Flags() {
+	const ( // ....DCBA
+		A byte = 1 << iota // ....---+
+		B                  // ....--+-
+		C                  // ....-+--
+		D                  // ....+---
+	)
+
 	var value byte                // ....----
 	value = flag.TurnOn(value, B) // ....--+-
 	value = flag.TurnOn(value, A) // ....--++

@@ -14,18 +14,18 @@
             "scaleInEditor": 8
         },
         "atlas.tsx": {
-            "scaleInDock": 2,
-            "scaleInEditor": 4
+            "scaleInDock": 1.5,
+            "scaleInEditor": 3
         },
         "desert.tmx": {
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 5.5,
-            "selectedLayer": 2,
+            "scale": 2,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 70.00000000000001,
-                "y": 59.72727272727273
+                "x": 130.5,
+                "y": 23.75
             }
         },
         "map.tmx": {
@@ -33,15 +33,15 @@
                 6
             ],
             "expandedObjectLayers": [
+                2,
                 6,
-                11,
-                2
+                11
             ],
             "scale": 4,
-            "selectedLayer": 1,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 114.75,
-                "y": 172.625
+                "x": 569,
+                "y": 81.125
             }
         },
         "map.tmx#atlas": {
@@ -54,7 +54,7 @@
         },
         "objects.tsx": {
             "scaleInDock": 5.5,
-            "scaleInEditor": 3
+            "scaleInEditor": 2
         }
     },
     "frame.defaultDuration": 200,

@@ -64,13 +64,12 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		var w, h = s.Width, s.Height
-		var repX, repY = float32(texW), float32(texH)
 		if s.TextureRepeat {
-			repX, repY = repX*(w*scX), repY*(h*scY)
+			texW, texH = int(w*scX), int(h*scY)
 		}
 		texX, texY = texX+s.TextureScrollX, texY+s.TextureScrollY
 
-		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: repX, Height: repY}
+		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
 		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w) * scX, Height: float32(h) * scY}
 
 		// raylib doesn't seem to have negative width/height???

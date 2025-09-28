@@ -1,8 +1,8 @@
 package assets
 
-func LoadDefaultAtlasUI(smooth bool) (atlasId string, tileIds []string, boxIds []string) {
+func LoadDefaultAtlasUI() (atlasId string, tileIds []string, boxIds []string) {
 	const symbol = "!"
-	var tex = loadTexture(symbol, ui, smooth)
+	var tex = loadTexture(symbol, ui)
 	var id = SetTextureAtlas(tex, 16, 16, 0)
 	var t = []string{
 		"out1-tl", "out1-t", "out1-tr", "out2-tl", "out2-t", "out2-tr", "out3-tl", "out3-t", "out3-tr",

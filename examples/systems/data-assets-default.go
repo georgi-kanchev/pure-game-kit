@@ -13,36 +13,29 @@ func DefaultAssetRetro() {
 	runDefaultAssetDisplay(0.9, 8, 1, 26, 21, assets.LoadDefaultAtlasRetro)
 }
 func DefaultAssetIcons() {
-	var function = func() (string, []string) { return assets.LoadDefaultAtlasIcons(true) }
-	runDefaultAssetDisplay(0.7, 50, 0, 22, 13, function)
+	runDefaultAssetDisplay(0.7, 50, 0, 22, 13, assets.LoadDefaultAtlasIcons)
 }
 func DefaultAssetCursors() {
-	var function = func() (string, []string) { return assets.LoadDefaultAtlasCursors(true) }
-	runDefaultAssetDisplay(0.9, 32, 0, 19, 8, function)
+	runDefaultAssetDisplay(0.9, 32, 0, 19, 8, assets.LoadDefaultAtlasCursors)
 }
 func DefaultAssetInput() {
-	var function = func() (string, []string) { return assets.LoadDefaultAtlasInput(true) }
-	runDefaultAssetDisplay(0.9, 50, 0, 17, 6, function)
+	runDefaultAssetDisplay(0.9, 50, 0, 17, 6, assets.LoadDefaultAtlasInput)
 }
 func DefaultAssetPatterns() {
-	var function = func() (string, []string) { return assets.LoadDefaultAtlasPatterns(true) }
-	runDefaultAssetDisplay(0.7, 64, 1, 12, 7, function)
+	runDefaultAssetDisplay(0.7, 64, 1, 12, 7, assets.LoadDefaultAtlasPatterns)
 }
 func DefaultAssetFont() {
-	var function = func() (string, []string) { return "", []string{} }
-	runDefaultAssetDisplay(0.7, 1024, 0, 0, 0, function)
+	runDefaultAssetDisplay(0.7, 1024, 0, 0, 0, func() (string, []string) { return "", []string{} })
 }
 func DefaultAssetTexture() {
 	assets.LoadDefaultTexture()
-	var function = func() (string, []string) { return "", []string{} }
-	runDefaultAssetDisplay(0.7, 256, 0, 0, 0, function)
+	runDefaultAssetDisplay(0.7, 256, 0, 0, 0, func() (string, []string) { return "", []string{} })
 }
 func DefaultAssetUI() {
-	var function = func() (string, []string) {
-		var a, b, _ = assets.LoadDefaultAtlasUI(false)
+	runDefaultAssetDisplay(0.7, 16, 0, 9, 8, func() (string, []string) {
+		var a, b, _ = assets.LoadDefaultAtlasUI()
 		return a, b
-	}
-	runDefaultAssetDisplay(0.7, 16, 0, 9, 8, function)
+	})
 }
 
 //=================================================================

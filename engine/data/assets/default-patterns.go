@@ -4,9 +4,9 @@ import (
 	"pure-kit/engine/utility/text"
 )
 
-func LoadDefaultAtlasPatterns(smooth bool) (atlasId string, tileIds []string) {
+func LoadDefaultAtlasPatterns() (atlasId string, tileIds []string) {
 	const symbol = "&"
-	var tex = loadTexture(symbol, patterns, smooth)
+	var tex = loadTexture(symbol, patterns)
 	var id = SetTextureAtlas(tex, 64, 64, 1)
 	var ids = []string{}
 

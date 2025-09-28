@@ -10,6 +10,7 @@ import (
 	"pure-kit/engine/tiled/tileset"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
+	"strconv"
 )
 
 func Property(mapId, property string) string {
@@ -49,20 +50,86 @@ func Property(mapId, property string) string {
 	return ""
 }
 
-func LayerTiles(mapId, layerNameOrId string) []*graphics.Sprite {
-	var mapData, has = internal.TiledMaps[mapId]
-	if !has {
-		return []*graphics.Sprite{}
+func LayerProperty(mapId, layerNameOrId, property string) string {
+	var mapData, _ = internal.TiledMaps[mapId]
+	var tiles, objs, imgs, layer = findLayer(mapData, layerNameOrId)
+	if mapData == nil || layer == nil {
+		return ""
 	}
 
-	var wantedLayer = findLayerTiles(mapData, layerNameOrId)
-	if wantedLayer == nil {
+	switch property {
+	case p.LayerName:
+		return layer.Name
+	case p.LayerClass:
+		return layer.Class
+	case p.LayerVisible:
+		return layer.Visible
+	case p.LayerLocked:
+		return text.New(layer.Locked)
+	case p.LayerOpacity:
+		return text.New(layer.Opacity)
+	case p.LayerTint:
+		return text.New(color(layer.Tint))
+	case p.LayerOffsetX:
+		return text.New(layer.OffsetX)
+	case p.LayerOffsetY:
+		return text.New(layer.OffsetY)
+	case p.LayerParallaxX:
+		return text.New(layer.ParallaxX)
+	case p.LayerParallaxY:
+		return text.New(layer.ParallaxY)
+	//=================================================================
+	case p.LayerColor:
+		return text.New(color(objs.Color))
+	case p.LayerDrawOrder:
+		return text.New(objs.DrawOrder)
+	//=================================================================
+	case p.LayerImage:
+		return text.New(imgs.Image.Source)
+	case p.LayerTransparentColor:
+		return text.New(imgs.Image.TransparentColor)
+	case p.LayerRepeatX:
+		return text.New(imgs.RepeatX)
+	case p.LayerRepeatY:
+		return text.New(imgs.RepeatY)
+	case p.LayerWidth:
+		return text.New(imgs.Image.Width)
+	case p.LayerHeight:
+		return text.New(imgs.Image.Height)
+	}
+
+	for _, prop := range tiles.Properties {
+		if prop.Name == property {
+			return prop.Value
+		}
+	}
+	return ""
+}
+func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) int {
+	var mapData, _ = internal.TiledMaps[mapId]
+	var wantedLayer, _, _, _ = findLayer(mapData, layerNameOrId)
+	if mapData == nil || wantedLayer == nil {
+		return 0
+	}
+
+	cellX -= int(mapData.WorldX) / mapData.TileWidth
+	cellY -= int(mapData.WorldY) / mapData.TileHeight
+	var cellIndex = number.Indexes2DToIndex1D(cellY, cellX, mapData.Width, mapData.Height)
+	var tilesets = usedTilesets(mapData)
+	var tilesIds = getTileIds(mapData, tilesets, wantedLayer)
+	var tileId = tilesIds[cellIndex]
+	return tileId - 1 // 0 in map means empty but 0 is actually a valid tile in the tileset
+}
+func LayerSprites(mapId, layerNameOrId string) []*graphics.Sprite {
+	var mapData, _ = internal.TiledMaps[mapId]
+	var tileLayer, _, _, _ = findLayer(mapData, layerNameOrId)
+	if mapData == nil || tileLayer == nil {
 		return []*graphics.Sprite{}
 	}
 
 	var result = make([]*graphics.Sprite, 0, mapData.Width*mapData.Height)
 	var usedTilesets = usedTilesets(mapData)
-	var tileIds = getTileIds(mapData, usedTilesets, wantedLayer)
+	var tileIds = getTileIds(mapData, usedTilesets, tileLayer)
 
 	for index, tile := range tileIds {
 		var curTileset = currentTileset(usedTilesets, tile)
@@ -88,17 +155,15 @@ func LayerTiles(mapId, layerNameOrId string) []*graphics.Sprite {
 	return result
 }
 
-// note:
-//
-//	objectNameOrClass == "" // include all objects within all tiles
-func LayerTilesShapeGrid(mapId, layerNameOrId, objectNameOrClass string) *geometry.ShapeGrid {
-	var mapData, has = internal.TiledMaps[mapId]
-	if !has {
+// empty objectNameOrClass includes all objects within all tiles
+func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometry.ShapeGrid {
+	var mapData, _ = internal.TiledMaps[mapId]
+	if mapData == nil {
 		return nil
 	}
 
 	var result = geometry.NewShapeGrid(mapData.TileWidth, mapData.TileHeight)
-	forEachTile(mapId, layerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
+	forEachTile(mapId, tileLayerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
 		tryAnimateTile(text.New(curTileset.AtlasId, "/", id, "-shapes"), curTileset, id, func(tileId int) {
 			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, tileId, objectNameOrClass)...)
 		})
@@ -107,7 +172,9 @@ func LayerTilesShapeGrid(mapId, layerNameOrId, objectNameOrClass string) *geomet
 	})
 	return result
 }
-func LayerTilesPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
+
+// empty objectNameOrClass includes all objects within all tiles
+func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 	var result = [][2]float32{}
 
 	forEachTile(mapId, layerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
@@ -161,23 +228,43 @@ func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *
 	return layer.Tiles
 }
 
-func findLayerTiles(data *internal.Map, layerNameOrId string) *internal.LayerTiles {
-	var wantedLayer *internal.LayerTiles
-	for _, layer := range data.LayersTiles {
-		if layer.Name == layerNameOrId || layer.Id == int(text.ToNumber(layerNameOrId)) {
-			wantedLayer = &layer
-			break
-		}
+func findLayer(data *internal.Map, layerNameOrId string) (
+	*internal.LayerTiles, *internal.LayerObjects, *internal.LayerImage, *internal.Layer) {
+	if data == nil {
+		return nil, nil, nil, nil
 	}
+
+	var layerTiles = data.LayersTiles
+	var layerObjs = data.LayersObjects
+	var layerImgs = data.LayersImages
+
 	for _, group := range data.Groups {
-		for _, layer := range group.LayersTiles {
-			if layer.Name == layerNameOrId || layer.Id == int(text.ToNumber(layerNameOrId)) {
-				wantedLayer = layer
-				break
-			}
+		layerTiles = append(layerTiles, group.LayersTiles...)
+		layerObjs = append(layerObjs, group.LayersObjects...)
+		layerImgs = append(layerImgs, group.LayersImages...)
+	}
+
+	for _, layer := range layerTiles {
+		if layerHas(&layer.Layer, layerNameOrId) {
+			return &layer, nil, nil, &layer.Layer
 		}
 	}
-	return wantedLayer
+	for _, layer := range layerObjs {
+		if layerHas(&layer.Layer, layerNameOrId) {
+			return nil, &layer, nil, &layer.Layer
+		}
+	}
+	for _, layer := range layerImgs {
+		if layerHas(&layer.Layer, layerNameOrId) {
+			return nil, nil, &layer, &layer.Layer
+		}
+	}
+
+	return nil, nil, nil, nil
+}
+func layerHas(layer *internal.Layer, layerNameOrId string) bool {
+	return layer.Name == layerNameOrId || layer.Id == int(text.ToNumber(layerNameOrId))
+
 }
 func usedTilesets(data *internal.Map) []*internal.Tileset {
 	var usedTilesets = make([]*internal.Tileset, len(data.Tilesets))
@@ -210,7 +297,7 @@ func currentTileset(usedTilesets []*internal.Tileset, tile int) *internal.Tilese
 }
 func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, onFrameChange func(tileId int)) {
 	var objTile = curTileset.MappedTiles[tilesetTile]
-	if objTile == nil || objTile.Animation == nil {
+	if objTile == nil || len(objTile.Animation.Frames) == 0 {
 		return
 	}
 
@@ -231,18 +318,14 @@ func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, 
 	flow.Start(name)
 }
 func forEachTile(mapId, layerNameOrId string, do func(x, y, tw, th, id int, curTileset *internal.Tileset)) {
-	var mapData, has = internal.TiledMaps[mapId]
-	if !has {
-		return
-	}
-
-	var wantedLayer = findLayerTiles(mapData, layerNameOrId)
-	if wantedLayer == nil {
+	var mapData, _ = internal.TiledMaps[mapId]
+	var tiles, _, _, _ = findLayer(mapData, layerNameOrId)
+	if mapData == nil || tiles == nil {
 		return
 	}
 
 	var tilesets = usedTilesets(mapData)
-	var tileIds = getTileIds(mapData, tilesets, wantedLayer)
+	var tileIds = getTileIds(mapData, tilesets, tiles)
 
 	for i, id := range tileIds {
 		if id == 0 {
@@ -274,5 +357,10 @@ func color(hex string) uint {
 		return 0
 	}
 
-	return text.ToUint(trimmed)
+	var value, err = strconv.ParseUint(trimmed, 16, 32)
+	if err != nil {
+		return 0
+	}
+
+	return uint(value)
 }

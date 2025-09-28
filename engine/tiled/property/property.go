@@ -22,4 +22,25 @@ const (
 	TilesetOffsetX    = "offsetX"
 	TilesetOffsetY    = "offsetY"
 	TilesetAtlasId    = "atlasId"
+
+	LayerName      = "name"
+	LayerClass     = "class"
+	LayerVisible   = "visible"
+	LayerLocked    = "locked"
+	LayerOpacity   = "opacity"
+	LayerTint      = "tint"
+	LayerOffsetX   = "offsetX"
+	LayerOffsetY   = "offsetY"
+	LayerParallaxX = "parallaxX"
+	LayerParallaxY = "parallaxY"
+
+	LayerColor     = "color"
+	LayerDrawOrder = "drawOrder"
+
+	LayerImage            = "image"
+	LayerTransparentColor = "transparentColor"
+	LayerRepeatX          = "repeatX"
+	LayerRepeatY          = "repeatY"
+	LayerWidth            = "width"
+	LayerHeight           = "height"
 )

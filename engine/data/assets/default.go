@@ -8,7 +8,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func loadTexture(id, b64 string, smooth bool) string {
+func loadTexture(id, b64 string) string {
 	tryCreateWindow()
 
 	var _, has = internal.Textures[id]
@@ -19,10 +19,6 @@ func loadTexture(id, b64 string, smooth bool) string {
 	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
 	var image = rl.LoadImageFromMemory(".png", decompressed, int32(len(decompressed)))
 	var tex = rl.LoadTextureFromImage(image)
-
-	if smooth {
-		rl.SetTextureFilter(tex, rl.FilterBilinear)
-	}
 
 	internal.Textures[id] = &tex
 	rl.UnloadImage(image)

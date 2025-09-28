@@ -16,8 +16,8 @@ func GUIs() {
 	window.IsVSynced = false
 
 	var cam = graphics.NewCamera(1)
-	var atlas, icons = assets.LoadDefaultAtlasIcons(true)
-	var _, ids, box = assets.LoadDefaultAtlasUI(true)
+	var atlas, icons = assets.LoadDefaultAtlasIcons()
+	var _, ids, box = assets.LoadDefaultAtlasUI()
 	var hud = gui.NewElements(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, "300", f.Height, "100", f.GapX, "20", f.GapY, "20",

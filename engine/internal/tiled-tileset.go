@@ -51,11 +51,11 @@ type TilesetImage struct {
 // =================================================================
 
 type TilesetTile struct {
-	Identity                              // no name
-	Probability     float32               `xml:"probability,attr"`
-	CollisionLayers []LayerObjects        `xml:"objectgroup"`
-	Animation       *TilesetTileAnimation `xml:"animation"`
-	Properties      []Property            `xml:"properties>property"`
+	Identity                             // no name
+	Probability     float32              `xml:"probability,attr"`
+	CollisionLayers []LayerObjects       `xml:"objectgroup"`
+	Animation       TilesetTileAnimation `xml:"animation"`
+	Properties      []Property           `xml:"properties>property"`
 }
 type TilesetTileAnimation struct {
 	Frames []TilesetTileFrame `xml:"frame"`

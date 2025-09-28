@@ -59,6 +59,31 @@ func TileProperty(tilesetId string, tileId int, property string) string {
 	}
 	return ""
 }
+func TileAnimationTileIds(tilesetId string, tileId int) (frameTileIds []int) {
+	var tile = getTile(tilesetId, tileId)
+	if tile == nil {
+		return []int{}
+	}
+
+	var result = make([]int, len(tile.Animation.Frames))
+	for i, frame := range tile.Animation.Frames {
+		result[i] = frame.TileId
+	}
+	return result
+}
+func TileAnimationDurations(tilesetId string, tileId int) (frameDurations []float32) {
+	var tile = getTile(tilesetId, tileId)
+	if tile == nil {
+		return []float32{}
+	}
+
+	var result = make([]float32, len(tile.Animation.Frames))
+	for i, frame := range tile.Animation.Frames {
+		result[i] = float32(frame.Duration) / 1000 // ms -> sec
+	}
+	return result
+}
+
 func TileObjectProperty(tilesetId string, tileId int, shapeNameClassOrId, property string) string {
 	var obj = getObj(tilesetId, tileId, shapeNameClassOrId)
 	if obj == nil {
@@ -86,10 +111,10 @@ func TileObjectShapes(tilesetId string, tileId int, shapeNameOrClass string) []*
 			continue
 		}
 		var ptsData = ""
-		if obj.PolygonTile != nil {
+		if obj.PolygonTile.Points != "" {
 			ptsData = obj.PolygonTile.Points
 		}
-		if obj.Polygon != nil {
+		if obj.Polygon.Points != "" {
 			ptsData = obj.Polygon.Points
 		}
 		if ptsData == "" {
@@ -132,30 +157,6 @@ func TileObjectPoints(tilesetId string, tileId int, shapeNameOrClass string) [][
 	}
 	return points
 }
-func TileAnimationTileIds(tilesetId string, tileId int) (frameTileIds []int) {
-	var tile = getTile(tilesetId, tileId)
-	if tile == nil {
-		return []int{}
-	}
-
-	var result = make([]int, len(tile.Animation.Frames))
-	for i, frame := range tile.Animation.Frames {
-		result[i] = frame.TileId
-	}
-	return result
-}
-func TileAnimationDurations(tilesetId string, tileId int) (frameDurations []float32) {
-	var tile = getTile(tilesetId, tileId)
-	if tile == nil {
-		return []float32{}
-	}
-
-	var result = make([]float32, len(tile.Animation.Frames))
-	for i, frame := range tile.Animation.Frames {
-		result[i] = float32(frame.Duration) / 1000 // ms -> sec
-	}
-	return result
-}
 
 //=================================================================
 // private
@@ -177,11 +178,11 @@ func getObj(tilesetId string, tileId int, shapeNameClassOrId string) *internal.L
 	var layer = tile.CollisionLayers[0]
 	for _, obj := range layer.Objects {
 		if obj.Name == shapeNameClassOrId || obj.Class == shapeNameClassOrId {
-			return obj
+			return &obj
 		}
 		var id = text.ToNumber(shapeNameClassOrId)
 		if !number.IsNaN(id) && obj.Id == int(id) {
-			return obj
+			return &obj
 		}
 	}
 	return nil

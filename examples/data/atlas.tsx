@@ -19,6 +19,16 @@
    </object>
   </objectgroup>
  </tile>
+ <tile id="9">
+  <objectgroup draworder="index" id="2">
+   <object id="2" template="poly.tx" x="8" y="0">
+    <properties>
+     <property name="not" value="no"/>
+    </properties>
+    <polygon points="0,0 8,8.53333 7.11111,16 1.77778,9.6 -3.55556,13.3333 -8,5.86667"/>
+   </object>
+  </objectgroup>
+ </tile>
  <tile id="110">
   <objectgroup draworder="index" id="2">
    <object id="1" x="5" y="4">

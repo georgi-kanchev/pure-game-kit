@@ -9,7 +9,7 @@ import (
 
 func Boxes() {
 	var cam = graphics.NewCamera(1)
-	var _, _, b = assets.LoadDefaultAtlasUI(true)
+	var _, _, b = assets.LoadDefaultAtlasUI()
 	var box = graphics.NewBox(b[0], 0, 0)
 	box.PivotX, box.PivotY = 0, 0
 	box.EdgeLeft = 100

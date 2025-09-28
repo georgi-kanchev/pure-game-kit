@@ -15,7 +15,7 @@ func Animations() {
 		"[w]", "[o]", "[r]", "[l]", "[d]", "[!]", "")
 	var cam = graphics.NewCamera(3)
 	var sprite = graphics.NewSprite("", 0, 0)
-	assets.LoadDefaultAtlasInput(true)
+	assets.LoadDefaultAtlasInput()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
