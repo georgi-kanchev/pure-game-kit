@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"pure-kit/engine/utility/number"
+
 	"strconv"
 	"strings"
 	"unicode"
@@ -21,19 +22,32 @@ func (builder *Builder) Clear()                  { builder.buffer.Reset() }
 func (builder *Builder) ToText() string          { return builder.buffer.String() }
 
 func New(elements ...any) string {
+	const th, dec = " ", "."
 	var result = ""
 	for _, e := range elements {
 		switch v := e.(type) {
 		case string:
 			result += v
 		case int:
-			result += strconv.Itoa(v)
+			result += number.Format(int64(v), th, dec)
+		case int16:
+			result += number.Format(int64(v), th, dec)
+		case int32:
+			result += number.Format(int64(v), th, dec)
 		case int64:
-			result += strconv.FormatInt(v, 10)
-		case float64:
-			result += strconv.FormatFloat(v, 'f', -1, 64)
+			result += number.Format(v, th, dec)
+		case uint:
+			result += number.Format(uint64(v), th, dec)
+		case uint16:
+			result += number.Format(uint64(v), th, dec)
+		case uint32:
+			result += number.Format(uint64(v), th, dec)
+		case uint64:
+			result += number.Format(v, th, dec)
 		case float32:
-			result += strconv.FormatFloat(float64(v), 'f', -1, 32)
+			result += number.Format(float64(v), th, dec)
+		case float64:
+			result += number.Format(v, th, dec)
 		case fmt.Stringer:
 			result += v.String()
 		default:
@@ -111,7 +125,7 @@ func Fit(text string, maxLength int) string {
 	var textRunes = []rune(text)
 	var indicatorLen = len([]rune(indicator))
 	var textLen = len(textRunes)
-	var absMax = number.UnsignInt(maxLength)
+	var absMax = number.Unsign(maxLength)
 	var trimLen = absMax - indicatorLen
 
 	if maxLength > 0 && textLen > int(maxLength) {
@@ -168,7 +182,7 @@ func ByteSize(byteSize int) string {
 		div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.1f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
+	return fmt.Sprintf("%.3f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }
 func Calculate(mathExpression string) float32 {
 	mathExpression = Remove(mathExpression, " ")

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "atlas.tsx",
+    "activeFile": "desert.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -21,11 +21,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 2,
-            "selectedLayer": 0,
+            "scale": 5.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 130.5,
-                "y": 23.75
+                "x": 162.54545454545456,
+                "y": 25.545454545454547
             }
         },
         "map.tmx": {
@@ -53,8 +53,8 @@
             "scaleInEditor": 4
         },
         "objects.tsx": {
-            "scaleInDock": 5.5,
-            "scaleInEditor": 2
+            "scaleInDock": 1.5,
+            "scaleInEditor": 3
         }
     },
     "frame.defaultDuration": 200,
@@ -79,9 +79,9 @@
     "property.type": "string",
     "recentFiles": [
         "map.tmx",
+        "atlas.tsx",
         "objects.tsx",
-        "desert.tmx",
-        "atlas.tsx"
+        "desert.tmx"
     ],
     "textEdit.monospace": false,
     "tileset.embedInMap": false,

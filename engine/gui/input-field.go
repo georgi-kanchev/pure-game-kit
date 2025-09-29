@@ -147,7 +147,7 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 
 	if keyboard.IsKeyPressedOnce(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow) {
 		cursorTime = 0
-		indexCursor = condition.If(ctrl, wordIndex(text, true), number.BiggestInt(indexCursor-1, 0))
+		indexCursor = condition.If(ctrl, wordIndex(text, true), number.Biggest(indexCursor-1, 0))
 
 		if !shift {
 			indexSelect = indexCursor
@@ -160,7 +160,7 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 	}
 	if keyboard.IsKeyPressedOnce(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow) {
 		cursorTime = 0
-		indexCursor = condition.If(ctrl, wordIndex(text, false), number.SmallestInt(length, indexCursor+1))
+		indexCursor = condition.If(ctrl, wordIndex(text, false), number.Smallest(length, indexCursor+1))
 
 		if !shift {
 			indexSelect = indexCursor
@@ -369,9 +369,9 @@ func wordIndex(text string, left bool) int {
 		return length
 	}
 
-	var symbolIndex = number.LimitInt(indexCursor, 0, length-1)
+	var symbolIndex = number.Limit(indexCursor, 0, length-1)
 	if left {
-		symbolIndex = number.LimitInt(indexCursor-1, 0, length-1)
+		symbolIndex = number.Limit(indexCursor-1, 0, length-1)
 	}
 
 	var isSpace = text[symbolIndex] == ' '

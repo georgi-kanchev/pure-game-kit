@@ -1,20 +1,22 @@
 // TODO:
-add debug profile for memory usage
-example for texture areas, whole texture + all area rects + hover & name
-tiled scenes loading
-drawing tilemaps - https://wareya.github.io/webtyler/
+tiled auto-tiling & terrain? - https://wareya.github.io/webtyler/
+audio - sounds, music, playlists
+gui, sounds
 
 // TODO LONGTERM:
 shader effects, port?
-audio - sounds, music, playlists
-gui, sounds
-data/storage?
 GPU particles?
-lua scripts
+modding support & lua? scripts
 LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[73] [Mon] [29-09-2025]
+[√] debug - printing memory stats
+[√] number - using all types through generic
+[√] number - restructure
+[√] number - format, also used in text & time
+
 [72] [Sun] [28-09-2025]
 [√] tiled - fixes + reusing more code
 [√] tiled - layer props

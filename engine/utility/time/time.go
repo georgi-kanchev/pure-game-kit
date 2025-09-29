@@ -1,11 +1,11 @@
 package time
 
 import (
-	"fmt"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/collection"
 	"pure-kit/engine/utility/flag"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/text"
 	"pure-kit/engine/utility/time/unit"
 	"time"
 )
@@ -58,7 +58,6 @@ func FromWeeks(weeks float32) float32               { return weeks * 604800 }
 func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm bool) string {
 	var parts []string
 	var counter = 0
-
 	var conditionalSep = func() string {
 		if counter > 0 {
 			return divider
@@ -68,7 +67,8 @@ func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm
 
 	if flag.IsOn(units, unit.Day) {
 		var val = int(ts.Hours() / 24)
-		parts = append(parts, fmt.Sprintf("%02d", val))
+		var str = text.PadRight(number.Format(val, " ", "."), 2, "0")
+		parts = append(parts, str)
 		counter++
 	}
 
@@ -77,25 +77,25 @@ func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm
 		var val int
 		if is12Hour {
 			var h = int((ts % (24 * time.Hour)) / time.Hour)
-			val = int(number.Wrap(float32(h), 12))
+			val = int(number.Wrap(float32(h), 0, 12))
 		} else {
 			val = int((ts % (24 * time.Hour)) / time.Hour)
 		}
-		parts = append(parts, sep+fmt.Sprintf("%02d", val))
+		parts = append(parts, sep+text.New(val))
 		counter++
 	}
 
 	if flag.IsOn(units, unit.Minute) {
 		var sep = conditionalSep()
 		var val = int((ts % time.Hour) / time.Minute)
-		parts = append(parts, sep+fmt.Sprintf("%02d", val))
+		parts = append(parts, sep+text.New(val))
 		counter++
 	}
 
 	if flag.IsOn(units, unit.Second) {
 		var sep = conditionalSep()
 		var val = int((ts % time.Minute) / time.Second)
-		parts = append(parts, sep+fmt.Sprintf("%02d", val))
+		parts = append(parts, sep+text.New(val))
 		counter++
 	}
 
@@ -109,7 +109,7 @@ func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm
 		if dot == "" && counter > 0 {
 			sep = divider
 		}
-		parts = append(parts, sep+dot+fmt.Sprintf("%03d", val))
+		parts = append(parts, sep+dot+text.New(val))
 		counter++
 	}
 

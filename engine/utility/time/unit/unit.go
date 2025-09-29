@@ -6,4 +6,7 @@ const (
 	Minute
 	Second
 	Millisecond
+	All   = Day | Hour | Minute | Second | Millisecond
+	Clock = Hour | Minute | Second
+	Timer = Minute | Second | Millisecond
 )

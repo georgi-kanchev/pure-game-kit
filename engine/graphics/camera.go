@@ -162,12 +162,12 @@ func (camera *Camera) update() {
 	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*float32(camera.PivotX)
 	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*float32(camera.PivotY)
 
-	var mx = number.BiggestInt(camera.MaskX, camera.ScreenX)
-	var my = number.BiggestInt(camera.MaskY, camera.ScreenY)
+	var mx = number.Biggest(camera.MaskX, camera.ScreenX)
+	var my = number.Biggest(camera.MaskY, camera.ScreenY)
 	var maxW = camera.ScreenX + camera.ScreenWidth - mx
 	var maxH = camera.ScreenY + camera.ScreenHeight - my
-	var mw = number.SmallestInt(camera.MaskWidth, maxW)
-	var mh = number.SmallestInt(camera.MaskHeight, maxH)
+	var mw = number.Smallest(camera.MaskWidth, maxW)
+	var mh = number.Smallest(camera.MaskHeight, maxH)
 
 	maskX, maskY, maskW, maskH = mx, my, mw, mh
 }
@@ -204,10 +204,10 @@ func (camera *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
 	var sblx, sbly = camera.PointToScreen(blx, bly)
 	var mtlx, mtly = camera.MaskX, camera.MaskY
 	var mbrx, mbry = camera.MaskX + camera.MaskWidth, camera.MaskY + camera.MaskHeight
-	var minX = number.SmallestInt(stlx, strx, sbrx, sblx)
-	var maxX = number.BiggestInt(stlx, strx, sbrx, sblx)
-	var minY = number.SmallestInt(stly, stry, sbry, sbly)
-	var maxY = number.BiggestInt(stly, stry, sbry, sbly)
+	var minX = number.Smallest(stlx, strx, sbrx, sblx)
+	var maxX = number.Biggest(stlx, strx, sbrx, sblx)
+	var minY = number.Smallest(stly, stry, sbry, sbly)
+	var maxY = number.Biggest(stly, stry, sbry, sbly)
 
 	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
 }

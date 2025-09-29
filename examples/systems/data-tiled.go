@@ -7,9 +7,10 @@ import (
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/input/keyboard"
 	"pure-kit/engine/input/keyboard/key"
-	"pure-kit/engine/tiled/property"
 	"pure-kit/engine/tiled/tilemap"
 	"pure-kit/engine/utility/color"
+	"pure-kit/engine/utility/time"
+	"pure-kit/engine/utility/time/unit"
 	"pure-kit/engine/window"
 )
 
@@ -41,6 +42,10 @@ func Tiled() {
 			cam.DrawCircle(pt[0], pt[1], 5, color.White)
 		}
 
+		if keyboard.IsKeyPressedOnce(key.A) {
+			fmt.Printf("%v\n", time.AsClock24(187368730, ":", unit.All))
+		}
+
 		if keyboard.IsKeyPressedOnce(key.F5) {
 			layer1, layer2, objs, t1, pts, g1, g2 = reload()
 		}
@@ -58,9 +63,6 @@ func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, pts [][2]float32, g1
 	g1 = tilemap.LayerShapeGrid("examples/data/desert", "3", "")
 	g2 = tilemap.LayerShapeGrid("examples/data/map", "3", "")
 	pts = tilemap.LayerPoints("examples/data/map", "3", "")
-
-	var id = tilemap.LayerProperty("examples/data/desert", "4", property.LayerColor)
-	fmt.Printf("id: %v\n", id)
 
 	return
 }

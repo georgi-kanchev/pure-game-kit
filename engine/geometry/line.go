@@ -19,7 +19,7 @@ func (line *Line) Angle() float32 {
 	return angle.BetweenPoints(line.Ax, line.Ay, line.Bx, line.By)
 }
 func (line *Line) Normal() float32 {
-	return number.Wrap(line.Angle()-90, 360)
+	return number.Wrap(line.Angle()-90, 0, 360)
 }
 func (line *Line) Length() float32 {
 	return point.DistanceToPoint(line.Ax, line.Ay, line.Bx, line.By)

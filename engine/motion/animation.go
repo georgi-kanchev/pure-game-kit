@@ -25,7 +25,7 @@ func (sequence *Animation[T]) SetDuration(seconds float32) {
 	sequence.ItemsPerSecond = float32(len(sequence.Items)) / seconds
 }
 func (sequence *Animation[T]) SetIndex(index int) {
-	index = number.LimitInt(index, 0, len(sequence.Items)-1)
+	index = number.Limit(index, 0, len(sequence.Items)-1)
 	var newTime = float32(index) / sequence.ItemsPerSecond
 	sequence.startTime = time.Runtime() - newTime
 }

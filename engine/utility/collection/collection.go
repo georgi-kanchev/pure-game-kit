@@ -244,8 +244,8 @@ func Take[T any](collection []T, start, end int) []T {
 		return nil
 	}
 
-	start = number.WrapInt(start, n)
-	end = number.WrapInt(end, n)
+	start = number.Wrap(start, 0, n)
+	end = number.Wrap(end, 0, n)
 	if start > end {
 		start, end = end, start
 	}
@@ -273,7 +273,7 @@ func Rotate[T any](collection2D [][]T, direction int) [][]T {
 		return collection2D
 	}
 
-	if number.UnsignInt(direction)%4 == 0 {
+	if number.Unsign(direction)%4 == 0 {
 		return collection2D
 	}
 

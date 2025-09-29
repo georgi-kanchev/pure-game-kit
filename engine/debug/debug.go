@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"pure-kit/engine/data/path"
+	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
 	"runtime"
 	"runtime/pprof"
@@ -215,4 +216,48 @@ func ProfileCPU(seconds float32) {
 
 		open.Start()
 	}()
+}
+
+func PrintMemoryUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	// Basic memory usage
+	fmt.Printf("\nMemory:\n")
+	fmt.Printf("UsedNow = %v (current heap in use)\n", text.ByteSize(int(m.Alloc)))
+	fmt.Printf("UsedTotal = %v (total allocated since start)\n", text.ByteSize(int(m.TotalAlloc)))
+	fmt.Printf("FromOS = %v (memory reserved from OS)\n", text.ByteSize(int(m.Sys)))
+
+	// Heap breakdown
+	fmt.Printf("\nHeap:\n")
+	fmt.Printf("Used = %v \n", text.ByteSize(int(m.HeapAlloc)))
+	fmt.Printf("Reserved = %v \n", text.ByteSize(int(m.HeapSys)))
+	fmt.Printf("Idle = %v (not used but still reserved)\n", text.ByteSize(int(m.HeapIdle)))
+	fmt.Printf("Active = %v (actively in use)\n", text.ByteSize(int(m.HeapInuse)))
+	fmt.Printf("Released = %v (given back to OS)\n", text.ByteSize(int(m.HeapReleased)))
+
+	// Object allocations
+	fmt.Printf("\nObject:\n")
+	fmt.Printf("Allocs = %v (objects allocated)\n", number.Format(m.Mallocs, " ", "."))
+	fmt.Printf("Frees = %v (objects freed)\n", number.Format(m.Frees, " ", "."))
+	fmt.Printf("Live = %v (currently alive)\n", number.Format(m.HeapObjects, " ", "."))
+
+	// Garbage collection
+	fmt.Printf("\nGarbage Collection:\n")
+	fmt.Printf("Total = %v (total collections)\n", m.NumGC)
+	fmt.Printf("Forced = %v (manual triggers)\n", m.NumForcedGC)
+	fmt.Printf("Next = %v (target heap size of the next GC)\n", text.ByteSize(int(m.NextGC)))
+	fmt.Printf("PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
+
+	if m.LastGC == 0 {
+		fmt.Printf("SinceLast = never\n")
+	} else {
+		fmt.Printf("SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
+	}
+
+	// Stacks and other
+	fmt.Printf("\nStack:\n")
+	fmt.Printf("Used = %v\n", text.ByteSize(int(m.StackInuse)))
+	fmt.Printf("Reserved = %v\n", text.ByteSize(int(m.StackSys)))
+	fmt.Printf("Other = %v (misc runtime overhead)\n", text.ByteSize(int(m.OtherSys)))
 }

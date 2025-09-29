@@ -17,10 +17,10 @@ const (
 )
 
 func ToRadians(degrees float32) float32 {
-	return number.Wrap(degrees, 360) * (math.Pi / 180)
+	return number.Wrap(degrees, 0, 360) * (math.Pi / 180)
 }
 func FromRadians(radians float32) float32 {
-	return number.Wrap(radians*(180/math.Pi), 360)
+	return number.Wrap(radians*(180/math.Pi), 0, 360)
 }
 
 func Rotate(angle, target, speed float32) float32 {
@@ -29,11 +29,11 @@ func Rotate(angle, target, speed float32) float32 {
 	}
 
 	// wrap both angles to [0, 360)
-	angle = number.Wrap(angle, 360)
-	target = number.Wrap(target, 360)
+	angle = number.Wrap(angle, 0, 360)
+	target = number.Wrap(target, 0, 360)
 
 	// Shortest signed difference from angle to target
-	var diff = number.Wrap(target-angle+180, 360) - 180
+	var diff = number.Wrap(target-angle+180, 0, 360) - 180
 	var checkedSpeed = speed
 
 	// Snap if within rotation threshold or just over 360 wraparound
@@ -43,13 +43,13 @@ func Rotate(angle, target, speed float32) float32 {
 
 	// Rotate in shortest direction
 	if diff > 0 {
-		return number.Wrap(angle+checkedSpeed, 360)
+		return number.Wrap(angle+checkedSpeed, 0, 360)
 	}
-	return number.Wrap(angle-checkedSpeed, 360)
+	return number.Wrap(angle-checkedSpeed, 0, 360)
 }
 func Face(angle, target, progress float32) float32 {
-	angle = number.Wrap(angle, 360)
-	target = number.Wrap(target, 360)
+	angle = number.Wrap(angle, 0, 360)
+	target = number.Wrap(target, 0, 360)
 
 	var diff = target - angle
 	if diff <= -180 {
@@ -59,11 +59,11 @@ func Face(angle, target, progress float32) float32 {
 	}
 
 	var interpolated = angle + diff*progress
-	return number.Wrap(interpolated, 360)
+	return number.Wrap(interpolated, 0, 360)
 }
 
 func IsBehind(angle, target float32) bool {
-	var diff = number.Wrap(angle-target, 360)
+	var diff = number.Wrap(angle-target, 0, 360)
 	switch {
 	case diff >= 0 && diff < 180:
 		return false
@@ -85,7 +85,7 @@ func IsWithin(angle, lower, upper float32) bool {
 }
 
 func Distance(angle, target float32) float32 {
-	var diff = number.Wrap(target-angle, 360)
+	var diff = number.Wrap(target-angle, 0, 360)
 	if diff < -180 {
 		diff += 360
 	} else if diff >= 180 {
@@ -103,17 +103,17 @@ func Limit(angle, lower, upper float32) float32 {
 	return angle
 }
 func Reflect(angle, surfaceAngle float32) float32 {
-	return number.Wrap(2*surfaceAngle-angle+180, 360)
+	return number.Wrap(2*surfaceAngle-angle+180, 0, 360)
 }
 func Reverse(angle float32) float32 {
-	return number.Wrap(angle-180, 360)
+	return number.Wrap(angle-180, 0, 360)
 }
 
 func BetweenPoints(x, y, targetX, targetY float32) float32 {
 	var dx = targetX - x
 	var dy = targetY - y
 	var rad = float32(math.Atan2(float64(dy), float64(dx)))
-	return number.Wrap(FromRadians(rad), 360)
+	return number.Wrap(FromRadians(rad), 0, 360)
 }
 
 func FromDirection(x, y float32) float32 {
