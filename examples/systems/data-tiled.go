@@ -16,15 +16,33 @@ import (
 
 func Tiled() {
 	var cam = graphics.NewCamera(4)
-	var layer1, layer2, objs, t1, pts, g1, g2 = reload()
+	var l1, l2, objs, t1, img []*graphics.Sprite
+	var pts [][2]float32
+	var g1, g2 *geometry.ShapeGrid
+	var reload = func() {
+		var mapIds = assets.LoadTiledWorld("examples/data/world.world")
+		var grass, desert = mapIds[0], mapIds[1]
+		assets.LoadTiledTileset("examples/data/atlas.tsx")
+		assets.LoadTiledTileset("examples/data/objects.tsx")
+		l1 = tilemap.LayerSprites(grass, "1")
+		l2 = tilemap.LayerSprites(grass, "3")
+		objs = tilemap.LayerSprites(desert, "3")
+		t1 = tilemap.LayerSprites(desert, "1")
+		g1 = tilemap.LayerShapeGrid(desert, "3", "")
+		g2 = tilemap.LayerShapeGrid(grass, "3", "")
+		pts = tilemap.LayerPoints(grass, "3", "")
+		img = tilemap.LayerSprites(desert, "7")
+	}
+	reload()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DragAndZoom()
-		cam.DrawSprites(layer1...)
-		cam.DrawSprites(layer2...)
+		cam.DrawSprites(l1...)
+		cam.DrawSprites(l2...)
 		cam.DrawSprites(t1...)
 		cam.DrawSprites(objs...)
+		cam.DrawSprites(img...)
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
 		for _, shape := range g1.All() {
@@ -47,22 +65,7 @@ func Tiled() {
 		}
 
 		if keyboard.IsKeyPressedOnce(key.F5) {
-			layer1, layer2, objs, t1, pts, g1, g2 = reload()
+			reload()
 		}
 	}
-}
-
-func reload() (layer1, layer2, objs, t1 []*graphics.Sprite, pts [][2]float32, g1, g2 *geometry.ShapeGrid) {
-	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
-	assets.LoadTiledTileset("examples/data/atlas.tsx")
-	assets.LoadTiledTileset("examples/data/objects.tsx")
-	layer1 = tilemap.LayerSprites(mapIds[0], "1")
-	layer2 = tilemap.LayerSprites(mapIds[0], "3")
-	objs = tilemap.LayerSprites(mapIds[1], "3")
-	t1 = tilemap.LayerSprites(mapIds[1], "1")
-	g1 = tilemap.LayerShapeGrid("examples/data/desert", "3", "")
-	g2 = tilemap.LayerShapeGrid("examples/data/map", "3", "")
-	pts = tilemap.LayerPoints("examples/data/map", "3", "")
-
-	return
 }

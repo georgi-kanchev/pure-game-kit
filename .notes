@@ -16,6 +16,7 @@ consistent error handling + logging, console & file
 [√] number - using all types through generic
 [√] number - restructure
 [√] number - format, also used in text & time
+[√] tiled - img layers
 
 [72] [Sun] [28-09-2025]
 [√] tiled - fixes + reusing more code

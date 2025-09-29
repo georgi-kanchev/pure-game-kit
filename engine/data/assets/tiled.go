@@ -10,28 +10,26 @@ import (
 	"pure-kit/engine/utility/text"
 )
 
-func LoadTiledTileset(tsxFilePath string) []string {
-	var resultIds = []string{}
+func LoadTiledTileset(tsxFilePath string) string {
 	var tileset *internal.Tileset
 	var id = path.RemoveExtension(tsxFilePath)
 
 	storage.FromFileXML(tsxFilePath, &tileset)
 	if tileset == nil {
-		return resultIds
+		return ""
 	}
-
-	resultIds = append(resultIds, id)
-	internal.TiledTilesets[id] = tileset
 
 	var texturePath = path.New(path.Folder(tsxFilePath), tileset.Image.Source)
 	var textureIds = LoadTextures(texturePath)
 	if len(textureIds) == 0 {
-		return resultIds
+		return ""
 	}
 
 	var atlasId = SetTextureAtlas(textureIds[0], tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
 	var w, h = tileset.Columns, tileset.TileCount / tileset.Columns
+
 	tileset.AtlasId = atlasId
+	internal.TiledTilesets[id] = tileset
 
 	for id := range w * h {
 		var x, y = number.Index1DToIndexes2D(id, w, h)
@@ -49,7 +47,7 @@ func LoadTiledTileset(tsxFilePath string) []string {
 		}
 	}
 
-	return resultIds
+	return id
 }
 
 func LoadTiledWorld(worldFilePath string) (tilemapIds []string) {
@@ -77,31 +75,26 @@ func LoadTiledWorld(worldFilePath string) (tilemapIds []string) {
 			continue
 		}
 
-		resultIds = append(resultIds, mapIds...)
-		for _, mapId := range mapIds {
-			var mp, _ = internal.TiledMaps[mapId]
-			mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
-		}
+		resultIds = append(resultIds, mapIds)
+		var mp, _ = internal.TiledMaps[mapIds]
+		mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
 	}
 
 	return resultIds
 }
-func LoadTiledMap(tmxFilePath string) []string {
-	var resultIds = []string{}
+func LoadTiledMap(tmxFilePath string) string {
 	var mapData *internal.Map
 	var name = path.RemoveExtension(tmxFilePath)
 
 	storage.FromFileXML(tmxFilePath, &mapData)
 	if mapData == nil {
-		return resultIds
+		return ""
 	}
 
 	mapData.Name = path.LastElement(name)
 	mapData.Directory = path.Folder(tmxFilePath)
 	internal.TiledMaps[name] = mapData
-	resultIds = append(resultIds, name)
-
-	return resultIds
+	return name
 }
 
 func UnloadTiledWorld(worldFilePath string) {

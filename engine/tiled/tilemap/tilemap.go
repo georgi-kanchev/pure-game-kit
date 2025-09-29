@@ -2,6 +2,7 @@ package tilemap
 
 import (
 	"pure-kit/engine/data/path"
+	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/execution/flow"
 	"pure-kit/engine/geometry"
 	"pure-kit/engine/graphics"
@@ -52,7 +53,7 @@ func Property(mapId, property string) string {
 
 func LayerProperty(mapId, layerNameOrId, property string) string {
 	var mapData, _ = internal.TiledMaps[mapId]
-	var tiles, objs, imgs, layer = findLayer(mapData, layerNameOrId)
+	var _, objs, img, layer = findLayer(mapData, layerNameOrId)
 	if mapData == nil || layer == nil {
 		return ""
 	}
@@ -85,20 +86,20 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 		return text.New(objs.DrawOrder)
 	//=================================================================
 	case p.LayerImage:
-		return text.New(imgs.Image.Source)
+		return text.New(img.Image.Source)
 	case p.LayerTransparentColor:
-		return text.New(imgs.Image.TransparentColor)
+		return text.New(img.Image.TransparentColor)
 	case p.LayerRepeatX:
-		return text.New(imgs.RepeatX)
+		return text.New(img.RepeatX)
 	case p.LayerRepeatY:
-		return text.New(imgs.RepeatY)
+		return text.New(img.RepeatY)
 	case p.LayerWidth:
-		return text.New(imgs.Image.Width)
+		return text.New(img.Image.Width)
 	case p.LayerHeight:
-		return text.New(imgs.Image.Height)
+		return text.New(img.Image.Height)
 	}
 
-	for _, prop := range tiles.Properties {
+	for _, prop := range layer.Properties {
 		if prop.Name == property {
 			return prop.Value
 		}
@@ -122,14 +123,29 @@ func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) int {
 }
 func LayerSprites(mapId, layerNameOrId string) []*graphics.Sprite {
 	var mapData, _ = internal.TiledMaps[mapId]
-	var tileLayer, _, _, _ = findLayer(mapData, layerNameOrId)
-	if mapData == nil || tileLayer == nil {
+	var tiles, objs, img, _ = findLayer(mapData, layerNameOrId)
+	if mapData == nil {
+		return []*graphics.Sprite{}
+	}
+
+	if img != nil {
+		var assetId = path.New(mapData.Directory, path.RemoveExtension(img.Image.Source))
+		var sprite = graphics.NewSprite(assetId, mapData.WorldX+img.OffsetX, mapData.WorldY+img.OffsetY)
+		sprite.PivotX, sprite.PivotY = 0, 0
+		return []*graphics.Sprite{&sprite}
+	}
+
+	if objs != nil {
+
+	}
+
+	if tiles == nil {
 		return []*graphics.Sprite{}
 	}
 
 	var result = make([]*graphics.Sprite, 0, mapData.Width*mapData.Height)
 	var usedTilesets = usedTilesets(mapData)
-	var tileIds = getTileIds(mapData, usedTilesets, tileLayer)
+	var tileIds = getTileIds(mapData, usedTilesets, tiles)
 
 	for index, tile := range tileIds {
 		var curTileset = currentTileset(usedTilesets, tile)
@@ -163,14 +179,14 @@ func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometr
 	}
 
 	var result = geometry.NewShapeGrid(mapData.TileWidth, mapData.TileHeight)
-	forEachTile(mapId, tileLayerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
+	var success = forEachTile(mapId, tileLayerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
 		tryAnimateTile(text.New(curTileset.AtlasId, "/", id, "-shapes"), curTileset, id, func(tileId int) {
 			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, tileId, objectNameOrClass)...)
 		})
 
 		result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, id, objectNameOrClass)...)
 	})
-	return result
+	return condition.If(success, result, nil)
 }
 
 // empty objectNameOrClass includes all objects within all tiles
@@ -317,11 +333,11 @@ func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, 
 	flow.NewSequence(name, steps...)
 	flow.Start(name)
 }
-func forEachTile(mapId, layerNameOrId string, do func(x, y, tw, th, id int, curTileset *internal.Tileset)) {
+func forEachTile(mapId, layerNameOrId string, do func(x, y, tw, th, id int, curTileset *internal.Tileset)) bool {
 	var mapData, _ = internal.TiledMaps[mapId]
 	var tiles, _, _, _ = findLayer(mapData, layerNameOrId)
 	if mapData == nil || tiles == nil {
-		return
+		return false
 	}
 
 	var tilesets = usedTilesets(mapData)
@@ -346,6 +362,7 @@ func forEachTile(mapId, layerNameOrId string, do func(x, y, tw, th, id int, curT
 
 		do(x, y, mapData.TileWidth, mapData.TileHeight, id, curTileset)
 	}
+	return true
 }
 
 func color(hex string) uint {

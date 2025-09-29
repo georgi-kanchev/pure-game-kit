@@ -33,15 +33,15 @@
                 6
             ],
             "expandedObjectLayers": [
-                2,
                 6,
+                2,
                 11
             ],
             "scale": 4,
             "selectedLayer": 5,
             "viewCenter": {
                 "x": 569,
-                "y": 81.125
+                "y": 80.875
             }
         },
         "map.tmx#atlas": {
