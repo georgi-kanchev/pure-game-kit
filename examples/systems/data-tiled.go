@@ -16,8 +16,8 @@ import (
 
 func Tiled() {
 	var cam = graphics.NewCamera(4)
-	var l1, l2, objs, t1, img []*graphics.Sprite
-	var pts [][2]float32
+	var l1, l2, tObjs, t1, img, objs []*graphics.Sprite
+	var pts, pts2 [][2]float32
 	var g1, g2 *geometry.ShapeGrid
 	var reload = func() {
 		var mapIds = assets.LoadTiledWorld("examples/data/world.world")
@@ -26,12 +26,14 @@ func Tiled() {
 		assets.LoadTiledTileset("examples/data/objects.tsx")
 		l1 = tilemap.LayerSprites(grass, "1")
 		l2 = tilemap.LayerSprites(grass, "3")
-		objs = tilemap.LayerSprites(desert, "3")
+		tObjs = tilemap.LayerSprites(desert, "3")
 		t1 = tilemap.LayerSprites(desert, "1")
 		g1 = tilemap.LayerShapeGrid(desert, "3", "")
 		g2 = tilemap.LayerShapeGrid(grass, "3", "")
-		pts = tilemap.LayerPoints(grass, "3", "")
+		pts = tilemap.LayerPoints(desert, "3", "")
 		img = tilemap.LayerSprites(desert, "7")
+		objs = tilemap.LayerSprites(desert, "4")
+		pts2 = tilemap.LayerPoints(grass, "3", "")
 	}
 	reload()
 
@@ -41,8 +43,9 @@ func Tiled() {
 		cam.DrawSprites(l1...)
 		cam.DrawSprites(l2...)
 		cam.DrawSprites(t1...)
-		cam.DrawSprites(objs...)
+		cam.DrawSprites(tObjs...)
 		cam.DrawSprites(img...)
+		cam.DrawSprites(objs...)
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
 		for _, shape := range g1.All() {
@@ -57,7 +60,10 @@ func Tiled() {
 		}
 
 		for _, pt := range pts {
-			cam.DrawCircle(pt[0], pt[1], 5, color.White)
+			cam.DrawCircle(pt[0], pt[1], 2, color.White)
+		}
+		for _, pt := range pts2 {
+			cam.DrawCircle(pt[0], pt[1], 2, color.Red)
 		}
 
 		if keyboard.IsKeyPressedOnce(key.A) {

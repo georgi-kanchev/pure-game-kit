@@ -55,6 +55,7 @@ type LayerObject struct {
 	Y           float32            `xml:"y,attr"`
 	Rotation    float32            `xml:"rotation,attr"`
 	Visible     string             `xml:"visible,attr"`
+	Locked      bool               `xml:"locked,attr"`
 	Template    string             `xml:"template,attr"`
 	Gid         int                `xml:"gid,attr"`
 	Text        LayerObjectText    `xml:"text"`
@@ -83,3 +84,5 @@ type LayerObjectText struct {
 type Template struct {
 	Object LayerObject `xml:"object"`
 }
+
+const FlipX, FlipY = 0x80000000, 0x40000000

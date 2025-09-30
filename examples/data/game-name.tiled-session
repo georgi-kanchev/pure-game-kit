@@ -21,11 +21,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 5.5,
+            "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 162.54545454545456,
-                "y": 25.545454545454547
+                "x": 37.333333333333314,
+                "y": 77.66666666666666
             }
         },
         "map.tmx": {
@@ -34,14 +34,14 @@
             ],
             "expandedObjectLayers": [
                 6,
-                2,
-                11
+                11,
+                2
             ],
-            "scale": 4,
-            "selectedLayer": 5,
+            "scale": 2,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 569,
-                "y": 80.875
+                "x": 483.5,
+                "y": 142.25
             }
         },
         "map.tmx#atlas": {

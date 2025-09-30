@@ -43,4 +43,18 @@ const (
 	LayerRepeatY          = "repeatY"
 	LayerWidth            = "width"
 	LayerHeight           = "height"
+
+	ObjectName     = "name"
+	ObjectTemplate = "template"
+	ObjectClass    = "class"
+	ObjectVisible  = "visible"
+	ObjectLocked   = "locked"
+	ObjectX        = "x"
+	ObjectY        = "y"
+	ObjectWidth    = "width"
+	ObjectHeight   = "height"
+	ObjectRotation = "rotation"
+	ObjectFlipX    = "flipX"
+	ObjectFlipY    = "flipY"
+	ObjectTileId   = "tileId"
 )

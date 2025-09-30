@@ -1,10 +1,12 @@
 package tileset
 
 import (
+	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/geometry"
 	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
 	p "pure-kit/engine/tiled/property"
+	"pure-kit/engine/utility/flag"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
 )
@@ -84,10 +86,40 @@ func TileAnimationDurations(tilesetId string, tileId int) (frameDurations []floa
 	return result
 }
 
-func TileObjectProperty(tilesetId string, tileId int, shapeNameClassOrId, property string) string {
-	var obj = getObj(tilesetId, tileId, shapeNameClassOrId)
+func TileObjectProperty(tilesetId string, tileId int, objectNameClassOrId, property string) string {
+	var obj = getObj(tilesetId, tileId, objectNameClassOrId)
 	if obj == nil {
 		return ""
+	}
+
+	switch property {
+	case p.ObjectName:
+		return obj.Name
+	case p.ObjectClass:
+		return obj.Class
+	case p.ObjectTemplate:
+		return obj.Template
+	case p.ObjectVisible:
+		return condition.If(obj.Visible == "", "true", "false")
+	case p.ObjectLocked:
+		return text.New(obj.Locked)
+	case p.ObjectX:
+		return text.New(obj.X)
+	case p.ObjectY:
+		return text.New(obj.Y)
+	case p.ObjectWidth:
+		return text.New(obj.Width)
+	case p.ObjectHeight:
+		return text.New(obj.Height)
+	case p.ObjectRotation:
+		return text.New(obj.Rotation)
+	case p.ObjectFlipX:
+		return text.New(flag.IsOn(obj.Gid, internal.FlipX))
+	case p.ObjectFlipY:
+		return text.New(flag.IsOn(obj.Gid, internal.FlipY))
+	case p.ObjectTileId:
+		var id = flag.TurnOff(obj.Gid, internal.FlipX)
+		return text.New(flag.TurnOff(id, internal.FlipY))
 	}
 
 	for _, prop := range obj.Properties {
@@ -97,7 +129,7 @@ func TileObjectProperty(tilesetId string, tileId int, shapeNameClassOrId, proper
 	}
 	return ""
 }
-func TileObjectShapes(tilesetId string, tileId int, shapeNameOrClass string) []*geometry.Shape {
+func TileObjectShapes(tilesetId string, tileId int, objectNameOrClass string) []*geometry.Shape {
 	var shapes = []*geometry.Shape{}
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
@@ -107,7 +139,7 @@ func TileObjectShapes(tilesetId string, tileId int, shapeNameOrClass string) []*
 	var objs = tile.CollisionLayers[0].Objects
 	var tileset = internal.TiledTilesets[tilesetId]
 	for _, obj := range objs {
-		if shapeNameOrClass != "" && obj.Name != shapeNameOrClass && obj.Class != shapeNameOrClass {
+		if objectNameOrClass != "" && obj.Name != objectNameOrClass && obj.Class != objectNameOrClass {
 			continue
 		}
 		var ptsData = ""
@@ -139,7 +171,7 @@ func TileObjectShapes(tilesetId string, tileId int, shapeNameOrClass string) []*
 
 	return shapes
 }
-func TileObjectPoints(tilesetId string, tileId int, shapeNameOrClass string) [][2]float32 {
+func TileObjectPoints(tilesetId string, tileId int, objectNameOrClass string) [][2]float32 {
 	var points = [][2]float32{}
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
@@ -147,11 +179,11 @@ func TileObjectPoints(tilesetId string, tileId int, shapeNameOrClass string) [][
 	}
 	var objs = tile.CollisionLayers[0].Objects
 	for _, obj := range objs {
-		if obj.Width != 0 && obj.Height != 0 {
+		var isPoint = obj.Width == 0 && obj.Height == 0 && obj.Polygon.Points == ""
+		if !isPoint {
 			continue
 		}
-
-		if shapeNameOrClass == "" || obj.Name == shapeNameOrClass || obj.Class == shapeNameOrClass {
+		if objectNameOrClass == "" || obj.Name == objectNameOrClass || obj.Class == objectNameOrClass {
 			points = append(points, [2]float32{obj.X, obj.Y})
 		}
 	}
@@ -169,7 +201,7 @@ func getTile(tilesetId string, tileId int) *internal.TilesetTile {
 
 	return nil
 }
-func getObj(tilesetId string, tileId int, shapeNameClassOrId string) *internal.LayerObject {
+func getObj(tilesetId string, tileId int, objectNameOrId string) *internal.LayerObject {
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
 		return nil
@@ -177,10 +209,10 @@ func getObj(tilesetId string, tileId int, shapeNameClassOrId string) *internal.L
 
 	var layer = tile.CollisionLayers[0]
 	for _, obj := range layer.Objects {
-		if obj.Name == shapeNameClassOrId || obj.Class == shapeNameClassOrId {
+		if obj.Name == objectNameOrId {
 			return &obj
 		}
-		var id = text.ToNumber(shapeNameClassOrId)
+		var id = text.ToNumber(objectNameOrId)
 		if !number.IsNaN(id) && obj.Id == int(id) {
 			return &obj
 		}

@@ -27,3 +27,7 @@ func Start(sequenceName string) {
 func End(sequenceName string) {
 	GoToStep(sequenceName, -1)
 }
+func Exists(sequenceName string) bool {
+	var _, has = internal.Flows[sequenceName]
+	return has
+}

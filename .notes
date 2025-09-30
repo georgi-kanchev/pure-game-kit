@@ -1,5 +1,7 @@
 // TODO:
-tiled auto-tiling & terrain? - https://wareya.github.io/webtyler/
+tiled layer shapes
+tiled animation on/off/is funcs
+
 audio - sounds, music, playlists
 gui, sounds
 
@@ -11,12 +13,16 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[74] [Tue] [30-09-2025]
+[√] tiled - img layers
+[√] tiled - obj layers tiles & points - shapes remaining
+[√] tiled - fixes
+
 [73] [Mon] [29-09-2025]
 [√] debug - printing memory stats
 [√] number - using all types through generic
 [√] number - restructure
 [√] number - format, also used in text & time
-[√] tiled - img layers
 
 [72] [Sun] [28-09-2025]
 [√] tiled - fixes + reusing more code

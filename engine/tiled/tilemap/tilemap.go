@@ -9,6 +9,7 @@ import (
 	"pure-kit/engine/internal"
 	p "pure-kit/engine/tiled/property"
 	"pure-kit/engine/tiled/tileset"
+	"pure-kit/engine/utility/flag"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
 	"strconv"
@@ -64,7 +65,7 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 	case p.LayerClass:
 		return layer.Class
 	case p.LayerVisible:
-		return layer.Visible
+		return condition.If(layer.Visible == "", "true", "false")
 	case p.LayerLocked:
 		return text.New(layer.Locked)
 	case p.LayerOpacity:
@@ -136,7 +137,27 @@ func LayerSprites(mapId, layerNameOrId string) []*graphics.Sprite {
 	}
 
 	if objs != nil {
+		var result = []*graphics.Sprite{}
+		var usedTilesets = usedTilesets(mapData)
+		for _, obj := range objs.Objects {
+			if obj.Gid == 0 {
+				continue
+			}
 
+			var id = flag.TurnOff(obj.Gid, internal.FlipX)
+			id = flag.TurnOff(id, internal.FlipY)
+			var curTileset = currentTileset(usedTilesets, id)
+			var assetId = text.New(curTileset.AtlasId, "[", id-curTileset.FirstTileId, "]")
+			var sprite = graphics.NewSprite(assetId, mapData.WorldX+obj.X, mapData.WorldY+obj.Y)
+			sprite.X += float32(mapData.TileWidth) / 2
+			sprite.Y -= float32(mapData.TileHeight) / 2
+			sprite.Width, sprite.Height = float32(mapData.TileWidth), float32(mapData.TileHeight)
+			sprite.ScaleX = condition.If(flag.IsOn(obj.Gid, internal.FlipX), float32(-1), 1)
+			sprite.ScaleY = condition.If(flag.IsOn(obj.Gid, internal.FlipY), float32(-1), 1)
+
+			result = append(result, &sprite)
+		}
+		return result
 	}
 
 	if tiles == nil {
@@ -171,6 +192,53 @@ func LayerSprites(mapId, layerNameOrId string) []*graphics.Sprite {
 	return result
 }
 
+func LayerObjectProperty(mapId, layerNameOrId, objectNameOrId, property string) string {
+	var obj = getObj(mapId, layerNameOrId, objectNameOrId)
+	if obj == nil {
+		return ""
+	}
+
+	switch property {
+	case p.ObjectName:
+		return obj.Name
+	case p.ObjectClass:
+		return obj.Class
+	case p.ObjectTemplate:
+		return obj.Template
+	case p.ObjectVisible:
+		return condition.If(obj.Visible == "", "true", "false")
+	case p.ObjectLocked:
+		return text.New(obj.Locked)
+	case p.ObjectX:
+		return text.New(obj.X)
+	case p.ObjectY:
+		return text.New(obj.Y)
+	case p.ObjectWidth:
+		return text.New(obj.Width)
+	case p.ObjectHeight:
+		return text.New(obj.Height)
+	case p.ObjectRotation:
+		return text.New(obj.Rotation)
+	case p.ObjectFlipX:
+		return text.New(flag.IsOn(obj.Gid, internal.FlipX))
+	case p.ObjectFlipY:
+		return text.New(flag.IsOn(obj.Gid, internal.FlipY))
+	case p.ObjectTileId:
+		var id = flag.TurnOff(obj.Gid, internal.FlipX)
+		id = flag.TurnOff(id, internal.FlipY)
+		var mapData, _ = internal.TiledMaps[mapId]
+		var current = currentTileset(usedTilesets(mapData), id)
+		return text.New(id - current.FirstTileId)
+	}
+
+	for _, prop := range obj.Properties {
+		if prop.Name == property {
+			return prop.Value
+		}
+	}
+	return ""
+}
+
 // empty objectNameOrClass includes all objects within all tiles
 func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometry.ShapeGrid {
 	var mapData, _ = internal.TiledMaps[mapId]
@@ -179,7 +247,7 @@ func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometr
 	}
 
 	var result = geometry.NewShapeGrid(mapData.TileWidth, mapData.TileHeight)
-	var success = forEachTile(mapId, tileLayerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
+	var success = forEachTile(mapId, tileLayerNameOrId, func(x, y, id int, curTileset *internal.Tileset) {
 		tryAnimateTile(text.New(curTileset.AtlasId, "/", id, "-shapes"), curTileset, id, func(tileId int) {
 			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, tileId, objectNameOrClass)...)
 		})
@@ -192,16 +260,32 @@ func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometr
 // empty objectNameOrClass includes all objects within all tiles
 func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 	var result = [][2]float32{}
-
-	forEachTile(mapId, layerNameOrId, func(x, y, tw, th, id int, curTileset *internal.Tileset) {
+	var success = forEachTile(mapId, layerNameOrId, func(x, y, id int, curTileset *internal.Tileset) {
 		var pts = tileset.TileObjectPoints(curTileset.AtlasId, id, objectNameOrClass)
-		for i := range pts {
-			pts[i][0] += float32(x) * float32(tw)
-			pts[i][1] += float32(y) * float32(th)
+
+		if flow.Exists(text.New(curTileset.AtlasId, "/", id)) {
+			return // skipping any points of animated tiles
 		}
 
+		for i := range pts {
+			pts[i][0] += float32(x) * float32(curTileset.TileWidth)
+			pts[i][1] += float32(y) * float32(curTileset.TileHeight)
+		}
 		result = append(result, pts...)
 	})
+
+	if !success {
+		var mapData, _ = internal.TiledMaps[mapId]
+		var _, objs, _, _ = findLayer(mapData, layerNameOrId)
+		if mapData != nil && objs != nil {
+			for _, obj := range objs.Objects {
+				if obj.Width == 0 && obj.Height == 0 && obj.Polygon.Points == "" {
+					result = append(result, [2]float32{mapData.WorldX + obj.X, mapData.WorldY + obj.Y})
+				}
+			}
+		}
+
+	}
 
 	return result
 }
@@ -333,7 +417,7 @@ func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, 
 	flow.NewSequence(name, steps...)
 	flow.Start(name)
 }
-func forEachTile(mapId, layerNameOrId string, do func(x, y, tw, th, id int, curTileset *internal.Tileset)) bool {
+func forEachTile(mapId, layerNameOrId string, do func(x, y, id int, curTileset *internal.Tileset)) bool {
 	var mapData, _ = internal.TiledMaps[mapId]
 	var tiles, _, _, _ = findLayer(mapData, layerNameOrId)
 	if mapData == nil || tiles == nil {
@@ -360,9 +444,30 @@ func forEachTile(mapId, layerNameOrId string, do func(x, y, tw, th, id int, curT
 		x += int(mapData.WorldX) / mapData.TileWidth
 		y += int(mapData.WorldY) / mapData.TileHeight
 
-		do(x, y, mapData.TileWidth, mapData.TileHeight, id, curTileset)
+		do(x, y, id, curTileset)
 	}
 	return true
+}
+func getObj(mapId, layerNameOrId, objectNameOrId string) *internal.LayerObject {
+	var mapData, _ = internal.TiledMaps[mapId]
+	if mapData == nil {
+		return nil
+	}
+	var _, objs, _, _ = findLayer(mapData, layerNameOrId)
+	if objs == nil {
+		return nil
+	}
+
+	for _, obj := range objs.Objects {
+		if obj.Name == objectNameOrId {
+			return &obj
+		}
+		var id = text.ToNumber(objectNameOrId)
+		if !number.IsNaN(id) && obj.Id == int(id) {
+			return &obj
+		}
+	}
+	return nil
 }
 
 func color(hex string) uint {
