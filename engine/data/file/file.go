@@ -9,7 +9,7 @@ import (
 	"pure-kit/engine/data/path"
 )
 
-func Exists(filePath string) bool {
+func IsExisting(filePath string) bool {
 	var info, err = os.Stat(filePath)
 	return err == nil && !info.IsDir()
 }
@@ -22,7 +22,7 @@ func ByteSize(filePath string) int64 {
 	return info.Size()
 }
 func TimeOfLastEdit(filePath string) (year, month, day, minute int) {
-	if !Exists(filePath) {
+	if !IsExisting(filePath) {
 		return 0, 0, 0, 0
 	}
 
@@ -59,7 +59,7 @@ func SaveText(filePath, content string) bool {
 	return SaveBytes(filePath, []byte(content))
 }
 func SaveTextAppend(filePath string, content string) bool {
-	if !Exists(filePath) {
+	if !IsExisting(filePath) {
 		return false
 	}
 
@@ -74,7 +74,7 @@ func SaveTextAppend(filePath string, content string) bool {
 }
 
 func Delete(filePath string) bool {
-	if !Exists(filePath) {
+	if !IsExisting(filePath) {
 		return false
 	}
 	var err = os.Remove(filePath)
@@ -83,7 +83,7 @@ func Delete(filePath string) bool {
 func Rename(filePath, newName string) bool {
 	var newFilePath = path.New(path.Folder(filePath), newName)
 
-	if !Exists(filePath) || Exists(newFilePath) {
+	if !IsExisting(filePath) || IsExisting(newFilePath) {
 		return false
 	}
 
@@ -93,7 +93,7 @@ func Rename(filePath, newName string) bool {
 func Move(filePath, toFolderPath string) bool {
 	var info, err = os.Stat(toFolderPath)
 	var folderExists = err == nil && info.IsDir()
-	if !Exists(filePath) || !folderExists {
+	if !IsExisting(filePath) || !folderExists {
 		return false
 	}
 	return Rename(filePath, path.New(toFolderPath, filePath))

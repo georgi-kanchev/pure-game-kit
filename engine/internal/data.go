@@ -21,12 +21,9 @@ type Atlas struct {
 }
 
 type Sequence struct {
-	Steps        []Step
-	CurrentIndex int
-}
-type StateMachine struct {
-	States       []func()
-	CurrentIndex int
+	Steps                []Step
+	CurrIndex, PrevIndex int
+	StepStartedAt        float32
 }
 type Step interface{ Continue() bool }
 
@@ -42,7 +39,6 @@ var ShaderText = rl.Shader{}
 
 var Flows = make(map[string]*Sequence)
 var FlowSignals = []string{}
-var States = make(map[string]*StateMachine)
 
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
@@ -102,22 +98,20 @@ func AssetSize(assetId string) (width, height int) {
 //=================================================================
 // private
 
-// state machines from engine/execution/states
-func updateStates() {
-	for _, v := range States {
-		if v.CurrentIndex >= 0 && v.CurrentIndex < len(v.States) {
-			v.States[v.CurrentIndex]()
-		}
-	}
-}
-
 // flows from engine/execution/flow
 func updateFlows() {
 	for _, v := range Flows {
-		var prev = v.CurrentIndex // this checks if we changed index inside the step itself, skip increment if so
-		var keepGoing = v.CurrentIndex >= 0 && v.CurrentIndex < len(v.Steps) && v.Steps[v.CurrentIndex].Continue()
-		if keepGoing && prev == v.CurrentIndex {
-			v.CurrentIndex++
+		if v.PrevIndex != v.CurrIndex {
+			v.StepStartedAt = Runtime
+		}
+		v.PrevIndex = v.CurrIndex
+
+		var prev = v.CurrIndex // this checks if we changed index inside the step itself, skip increment if so
+		var validIndex = v.CurrIndex >= 0 && v.CurrIndex < len(v.Steps)
+		var keepGoing = validIndex && v.Steps[v.CurrIndex].Continue()
+
+		if keepGoing && prev == v.CurrIndex {
+			v.CurrIndex++
 		}
 	}
 }

@@ -6,7 +6,7 @@ import (
 	"pure-kit/engine/data/path"
 )
 
-func Exists(folderPath string) bool {
+func IsExisting(folderPath string) bool {
 	var info, err = os.Stat(folderPath)
 	return err == nil && info.IsDir()
 }
@@ -32,7 +32,7 @@ func ByteSize(folderPath string) int64 {
 	return totalSize
 }
 func TimeOfLastEdit(folderPath string) (year, month, day, minute int) {
-	if !Exists(folderPath) {
+	if !IsExisting(folderPath) {
 		return 0, 0, 0, 0
 	}
 
@@ -53,7 +53,7 @@ func Create(folderPath string) bool {
 	return os.MkdirAll(folderPath, 0755) == nil // 0755 is the file permission: rwxr-xr-x
 }
 func Delete(folderPath string) bool {
-	if !Exists(folderPath) {
+	if !IsExisting(folderPath) {
 		return false
 	}
 	return os.RemoveAll(folderPath) == nil
@@ -70,14 +70,14 @@ func DeleteContents(folderPath string) bool {
 func Rename(folderPath, newName string) bool {
 	var newPath = path.New(path.Folder(folderPath), newName)
 
-	if !Exists(folderPath) || Exists(newPath) {
+	if !IsExisting(folderPath) || IsExisting(newPath) {
 		return false
 	}
 
 	return os.Rename(folderPath, newPath) == nil
 }
 func MoveContents(fromFolderPath, toFolderPath string) bool {
-	if !Exists(fromFolderPath) || !Exists(toFolderPath) {
+	if !IsExisting(fromFolderPath) || !IsExisting(toFolderPath) {
 		return false
 	}
 
@@ -135,7 +135,7 @@ func MoveContents(fromFolderPath, toFolderPath string) bool {
 	return true
 }
 func CopyContents(fromFolderPath, toFolderPath string) bool {
-	if !Exists(fromFolderPath) || !Exists(toFolderPath) {
+	if !IsExisting(fromFolderPath) || !IsExisting(toFolderPath) {
 		return false
 	}
 
@@ -184,7 +184,7 @@ func CopyContents(fromFolderPath, toFolderPath string) bool {
 }
 
 func Content(folderPath string) []string {
-	if !Exists(folderPath) {
+	if !IsExisting(folderPath) {
 		return []string{}
 	}
 
@@ -200,7 +200,7 @@ func Content(folderPath string) []string {
 	return names
 }
 func Files(folderPath string) []string {
-	if !Exists(folderPath) {
+	if !IsExisting(folderPath) {
 		return []string{}
 	}
 
@@ -218,7 +218,7 @@ func Files(folderPath string) []string {
 	return files
 }
 func Folders(folderPath string) []string {
-	if !Exists(folderPath) {
+	if !IsExisting(folderPath) {
 		return []string{}
 	}
 

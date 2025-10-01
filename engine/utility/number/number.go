@@ -7,13 +7,10 @@ import (
 	"strings"
 )
 
-const MaxInt = 2147483647
-const MinInt = -MaxInt
-
 type Number interface{ Float | Integer }
-type Float interface{ float32 | float64 }
+type Float interface{ ~float32 | ~float64 }
 type Integer interface {
-	int | int8 | int16 | int32 | int64 | uint | uint8 | uint16 | uint32 | uint64
+	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
 func Format[T Number](number T, thousandsDivider, decimalDivider string) string {
@@ -215,6 +212,69 @@ func Distribute[T Number](amount int, a, b T) []T {
 		result[int(i-1)] = a + T(i)*spacing
 	}
 	return result
+}
+
+func ValueMinimum[T Number]() T {
+	var v T
+	switch any(v).(type) {
+	case int:
+		return any(math.MinInt).(T)
+	case int8:
+		return any(math.MinInt8).(T)
+	case int16:
+		return any(math.MinInt16).(T)
+	case int32:
+		return any(math.MinInt32).(T)
+	case int64:
+		return any(math.MinInt64).(T)
+	case uint:
+		return any(0).(T)
+	case uint8:
+		return any(0).(T)
+	case uint16:
+		return any(0).(T)
+	case uint32:
+		return any(0).(T)
+	case uint64:
+		return any(0).(T)
+	case float32:
+		return any(-math.MaxFloat32).(T)
+	case float64:
+		return any(-math.MaxFloat64).(T)
+	default:
+		return 0
+	}
+}
+func ValueMaximum[T Number]() T {
+	var v T
+	switch any(v).(type) {
+	case int:
+		return any(math.MaxInt).(T)
+	case int8:
+		return any(math.MaxInt8).(T)
+	case int16:
+		return any(math.MaxInt16).(T)
+	case int32:
+		return any(math.MaxInt32).(T)
+	case int64:
+		return any(math.MaxInt64).(T)
+	case uint:
+		return any(uint(math.MaxUint)).(T)
+	case uint8:
+		return any(math.MaxUint8).(T)
+	case uint16:
+		return any(math.MaxUint16).(T)
+	case uint32:
+		return any(math.MaxUint32).(T)
+	case uint64:
+		return any(uint64(math.MaxUint64)).(T)
+	case float32:
+		return any(math.MaxFloat32).(T)
+	case float64:
+		return any(math.MaxFloat64).(T)
+	default:
+		return 0
+	}
 }
 
 //=================================================================

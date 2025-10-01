@@ -15,7 +15,7 @@ func LoadSounds(filePath string) []string {
 	var id, absolutePath = getIdPath(filePath)
 	var _, has = internal.Sounds[id]
 
-	if has || !file.Exists(absolutePath) {
+	if has || !file.IsExisting(absolutePath) {
 		return result
 	}
 

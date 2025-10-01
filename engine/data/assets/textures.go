@@ -14,7 +14,7 @@ func LoadTextures(filePath string) []string {
 	var id, absolutePath = getIdPath(filePath)
 	var tex, has = internal.Textures[id]
 
-	if !file.Exists(absolutePath) {
+	if !file.IsExisting(absolutePath) {
 		return result
 	}
 

@@ -9,7 +9,7 @@ type StepSignal struct {
 	signal string
 }
 
-func WaitForSignal(signal string) *StepSignal {
+func NowWaitForSignal(signal string) *StepSignal {
 	return &StepSignal{signal: signal}
 }
 

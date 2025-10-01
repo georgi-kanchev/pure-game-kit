@@ -19,7 +19,6 @@ func Update() {
 	updateData()
 	updateTimers()
 	updateFlows()
-	updateStates()
 	updateKeysAndButtons()
 }
 

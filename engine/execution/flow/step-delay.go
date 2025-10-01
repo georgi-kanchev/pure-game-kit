@@ -6,7 +6,7 @@ type StepDelay struct {
 	startTime, delay float32
 }
 
-func WaitForDelay(seconds float32) *StepDelay {
+func NowWaitForDelay(seconds float32) *StepDelay {
 	return &StepDelay{delay: seconds, startTime: -1}
 }
 

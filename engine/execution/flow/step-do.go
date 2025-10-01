@@ -4,7 +4,7 @@ type StepDo struct {
 	action func()
 }
 
-func Do(action func()) *StepDo {
+func NowDo(action func()) *StepDo {
 	return &StepDo{action: action}
 }
 

@@ -13,6 +13,10 @@ LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[75] [Wed] [01-10-2025]
+[√] execution - flow sequence improvements
+[√] renames Exists -> IsExisting
+
 [74] [Tue] [30-09-2025]
 [√] tiled - img layers
 [√] tiled - obj layers tiles & points - shapes remaining

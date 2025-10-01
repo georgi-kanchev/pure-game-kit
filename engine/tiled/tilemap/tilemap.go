@@ -263,7 +263,7 @@ func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 	var success = forEachTile(mapId, layerNameOrId, func(x, y, id int, curTileset *internal.Tileset) {
 		var pts = tileset.TileObjectPoints(curTileset.AtlasId, id, objectNameOrClass)
 
-		if flow.Exists(text.New(curTileset.AtlasId, "/", id)) {
+		if flow.IsExisting(text.New(curTileset.AtlasId, "/", id)) {
 			return // skipping any points of animated tiles
 		}
 
@@ -409,13 +409,12 @@ func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, 
 	var animDurs = tileset.TileAnimationDurations(curTileset.AtlasId, tilesetTile)
 	var steps = []flow.Step{}
 	for stepIndex := range animIds {
-		steps = append(steps, flow.Do(func() { onFrameChange(animIds[stepIndex]) }))
-		steps = append(steps, flow.WaitForDelay(animDurs[stepIndex])) // frame delay
+		steps = append(steps, flow.NowDo(func() { onFrameChange(animIds[stepIndex]) }))
+		steps = append(steps, flow.NowWaitForDelay(animDurs[stepIndex])) // frame delay
 	}
-	steps = append(steps, flow.Do(func() { flow.GoToStep(name, 0) })) // loop forever
+	steps = append(steps, flow.NowDo(func() { flow.GoToStep(name, 0) })) // loop forever
 
-	flow.NewSequence(name, steps...)
-	flow.Start(name)
+	flow.NewSequence(name, true, steps...)
 }
 func forEachTile(mapId, layerNameOrId string, do func(x, y, id int, curTileset *internal.Tileset)) bool {
 	var mapData, _ = internal.TiledMaps[mapId]
