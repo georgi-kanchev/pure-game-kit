@@ -66,16 +66,4 @@
    <object id="1" x="0" y="0" width="9" height="16"/>
   </objectgroup>
  </tile>
- <tile id="139">
-  <animation>
-   <frame tileid="110" duration="100"/>
-   <frame tileid="111" duration="100"/>
-   <frame tileid="112" duration="200"/>
-   <frame tileid="133" duration="100"/>
-   <frame tileid="154" duration="100"/>
-   <frame tileid="153" duration="100"/>
-   <frame tileid="152" duration="100"/>
-   <frame tileid="131" duration="100"/>
-  </animation>
- </tile>
 </tileset>

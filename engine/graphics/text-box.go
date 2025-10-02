@@ -179,7 +179,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 				continue // use as zerospace character or skip anyway
 			}
 
-			if curX+charSize.X > t.Width {
+			if curX+charSize.X > t.Width+1 {
 				skip = true
 			}
 

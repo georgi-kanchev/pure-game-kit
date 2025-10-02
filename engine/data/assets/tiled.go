@@ -4,6 +4,7 @@ import (
 	"pure-kit/engine/data/path"
 	"pure-kit/engine/data/storage"
 	"pure-kit/engine/execution/condition"
+	"pure-kit/engine/execution/flow"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/collection"
 	"pure-kit/engine/utility/number"
@@ -33,7 +34,7 @@ func LoadTiledTileset(tsxFilePath string) string {
 
 	for id := range w * h {
 		var x, y = number.Index1DToIndexes2D(id, w, h)
-		var rectId = text.New(atlasId, "[", id, "]")
+		var rectId = text.New(atlasId, "/", id)
 		SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 	}
 
@@ -45,6 +46,29 @@ func LoadTiledTileset(tsxFilePath string) string {
 		if len(tile.CollisionLayers) > 0 {
 			tryTemplate(tile.CollisionLayers, path.Folder(tsxFilePath))
 		}
+
+		if len(tile.Animation.Frames) == 0 {
+			continue
+		} // animated tiles
+
+		var frame = 0
+		var name = text.New(atlasId, "/", tile.Id)
+		flow.NewSequence(name, true,
+			flow.NowDoLoop(number.ValueMaximum[int](), func(i int) {
+				var timer = flow.CurrentStepTimer(name)
+				var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
+				if timer > float32(dur) {
+					var newId = tile.Animation.Frames[frame].TileId
+					var x, y = number.Index1DToIndexes2D(newId, w, h) // new tile id coords
+					SetTextureAtlasTile(atlasId, name, float32(x), float32(y), 1, 1, 0, false)
+					flow.GoToNextStep(name)
+					frame++
+					frame = frame % len(tile.Animation.Frames)
+				}
+			}),
+			flow.NowDo(func() {
+				flow.Run(name)
+			}))
 	}
 
 	return id
@@ -119,7 +143,7 @@ func UnloadTiledTileset(tilesetId string) {
 // private
 var cachedTemplates = map[string]*internal.Template{}
 
-func tryTemplate(layer []internal.LayerObjects, directory string) {
+func tryTemplate(layer []*internal.LayerObjects, directory string) {
 	var objs = layer[0].Objects
 	for i, o := range objs {
 		if o.Template == "" {

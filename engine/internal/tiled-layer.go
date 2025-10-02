@@ -15,9 +15,9 @@ type Layer struct {
 
 type LayerGroup struct {
 	Layer
-	LayersTiles   []LayerTiles   `xml:"layer"`
-	LayersObjects []LayerObjects `xml:"objectgroup"`
-	LayersImages  []LayerImage   `xml:"imagelayer"`
+	LayersTiles   []*LayerTiles   `xml:"layer"`
+	LayersObjects []*LayerObjects `xml:"objectgroup"`
+	LayersImages  []*LayerImage   `xml:"imagelayer"`
 }
 
 // =================================================================

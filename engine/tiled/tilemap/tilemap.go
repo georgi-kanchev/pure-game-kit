@@ -3,16 +3,16 @@ package tilemap
 import (
 	"pure-kit/engine/data/path"
 	"pure-kit/engine/execution/condition"
-	"pure-kit/engine/execution/flow"
 	"pure-kit/engine/geometry"
+	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/internal"
 	p "pure-kit/engine/tiled/property"
 	"pure-kit/engine/tiled/tileset"
+	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/flag"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/text"
-	"strconv"
 )
 
 func Property(mapId, property string) string {
@@ -41,7 +41,7 @@ func Property(mapId, property string) string {
 	case p.MapInfinite:
 		return text.New(data.Infinite)
 	case p.MapBackgroundColor:
-		return text.New(color(data.BackgroundColor))
+		return text.New(col(data.BackgroundColor))
 	}
 
 	for _, v := range data.Properties {
@@ -71,7 +71,7 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 	case p.LayerOpacity:
 		return text.New(layer.Opacity)
 	case p.LayerTint:
-		return text.New(color(layer.Tint))
+		return text.New(col(layer.Tint))
 	case p.LayerOffsetX:
 		return text.New(layer.OffsetX)
 	case p.LayerOffsetY:
@@ -82,7 +82,7 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 		return text.New(layer.ParallaxY)
 	//=================================================================
 	case p.LayerColor:
-		return text.New(color(objs.Color))
+		return text.New(col(objs.Color))
 	case p.LayerDrawOrder:
 		return text.New(objs.DrawOrder)
 	//=================================================================
@@ -107,6 +107,7 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 	}
 	return ""
 }
+
 func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) int {
 	var mapData, _ = internal.TiledMaps[mapId]
 	var wantedLayer, _, _, _ = findLayer(mapData, layerNameOrId)
@@ -120,80 +121,12 @@ func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) int {
 	var tilesets = usedTilesets(mapData)
 	var tilesIds = getTileIds(mapData, tilesets, wantedLayer)
 	var tileId = tilesIds[cellIndex]
-	return tileId - 1 // 0 in map means empty but 0 is actually a valid tile in the tileset
-}
-func LayerSprites(mapId, layerNameOrId string) []*graphics.Sprite {
-	var mapData, _ = internal.TiledMaps[mapId]
-	var tiles, objs, img, _ = findLayer(mapData, layerNameOrId)
-	if mapData == nil {
-		return []*graphics.Sprite{}
-	}
-
-	if img != nil {
-		var assetId = path.New(mapData.Directory, path.RemoveExtension(img.Image.Source))
-		var sprite = graphics.NewSprite(assetId, mapData.WorldX+img.OffsetX, mapData.WorldY+img.OffsetY)
-		sprite.PivotX, sprite.PivotY = 0, 0
-		return []*graphics.Sprite{&sprite}
-	}
-
-	if objs != nil {
-		var result = []*graphics.Sprite{}
-		var usedTilesets = usedTilesets(mapData)
-		for _, obj := range objs.Objects {
-			if obj.Gid == 0 {
-				continue
-			}
-
-			var id = flag.TurnOff(obj.Gid, internal.FlipX)
-			id = flag.TurnOff(id, internal.FlipY)
-			var curTileset = currentTileset(usedTilesets, id)
-			var assetId = text.New(curTileset.AtlasId, "[", id-curTileset.FirstTileId, "]")
-			var sprite = graphics.NewSprite(assetId, mapData.WorldX+obj.X, mapData.WorldY+obj.Y)
-			sprite.X += float32(mapData.TileWidth) / 2
-			sprite.Y -= float32(mapData.TileHeight) / 2
-			sprite.Width, sprite.Height = float32(mapData.TileWidth), float32(mapData.TileHeight)
-			sprite.ScaleX = condition.If(flag.IsOn(obj.Gid, internal.FlipX), float32(-1), 1)
-			sprite.ScaleY = condition.If(flag.IsOn(obj.Gid, internal.FlipY), float32(-1), 1)
-
-			result = append(result, &sprite)
-		}
-		return result
-	}
-
-	if tiles == nil {
-		return []*graphics.Sprite{}
-	}
-
-	var result = make([]*graphics.Sprite, 0, mapData.Width*mapData.Height)
-	var usedTilesets = usedTilesets(mapData)
-	var tileIds = getTileIds(mapData, usedTilesets, tiles)
-
-	for index, tile := range tileIds {
-		var curTileset = currentTileset(usedTilesets, tile)
-		if curTileset == nil {
-			continue
-		}
-
-		var id = tile - curTileset.FirstTileId
-		var tileId = text.New(curTileset.AtlasId, "[", id, "]")
-		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
-		var x = float32(j)*float32(mapData.TileWidth) + mapData.WorldX
-		var y = float32(i)*float32(mapData.TileHeight) + mapData.WorldY
-		var sprite = graphics.NewSprite(tileId, x, y)
-
-		tryAnimateTile(text.New(curTileset.AtlasId, "/", id), curTileset, id, func(tileId int) {
-			sprite.AssetId = text.New(curTileset.AtlasId, "[", tileId, "]")
-		})
-		sprite.Width, sprite.Height = float32(mapData.TileWidth), float32(mapData.TileHeight)
-		sprite.PivotX, sprite.PivotY = 0, 0
-		result = append(result, &sprite)
-	}
-
-	return result
+	var curTileset = currentTileset(tilesets, tileId)
+	return tileId - curTileset.FirstTileId
 }
 
-func LayerObjectProperty(mapId, layerNameOrId, objectNameOrId, property string) string {
-	var obj = getObj(mapId, layerNameOrId, objectNameOrId)
+func LayerObjectProperty(mapId, layerNameOrId, objectNameClassOrId, property string) string {
+	var obj = getObj(mapId, layerNameOrId, objectNameClassOrId)
 	if obj == nil {
 		return ""
 	}
@@ -238,8 +171,140 @@ func LayerObjectProperty(mapId, layerNameOrId, objectNameOrId, property string) 
 	}
 	return ""
 }
+func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.Sprite {
+	var mapData, _ = internal.TiledMaps[mapId]
+	var tiles, objs, img, _ = findLayer(mapData, layerNameOrId)
+	if mapData == nil {
+		return []*graphics.Sprite{}
+	}
+
+	if img != nil {
+		var assetId = path.New(mapData.Directory, path.RemoveExtension(img.Image.Source))
+		var sprite = graphics.NewSprite(assetId, mapData.WorldX+img.OffsetX, mapData.WorldY+img.OffsetY)
+		sprite.PivotX, sprite.PivotY = 0, 0
+		return []*graphics.Sprite{&sprite}
+	}
+
+	if objs != nil {
+		var result = []*graphics.Sprite{}
+		var usedTilesets = usedTilesets(mapData)
+		for _, obj := range objs.Objects {
+			if objectNameClassOrId != "" && obj.Name != objectNameClassOrId && obj.Class != objectNameClassOrId &&
+				text.New(obj.Id) != objectNameClassOrId {
+				continue
+			}
+			if obj.Gid == 0 {
+				continue
+			}
+
+			var id = flag.TurnOff(obj.Gid, internal.FlipX)
+			id = flag.TurnOff(id, internal.FlipY)
+			var curTileset = currentTileset(usedTilesets, id)
+			var assetId = text.New(curTileset.AtlasId, "/", id-curTileset.FirstTileId)
+			var sprite = graphics.NewSprite(assetId, mapData.WorldX+obj.X, mapData.WorldY+obj.Y)
+			sprite.X += float32(mapData.TileWidth)/2 + objs.OffsetX
+			sprite.Y = sprite.Y - float32(mapData.TileHeight)/2 + objs.OffsetY
+			sprite.Width, sprite.Height = float32(mapData.TileWidth), float32(mapData.TileHeight)
+			sprite.ScaleX = condition.If(flag.IsOn(obj.Gid, internal.FlipX), float32(-1), 1)
+			sprite.ScaleY = condition.If(flag.IsOn(obj.Gid, internal.FlipY), float32(-1), 1)
+			sprite.Angle = obj.Rotation
+
+			result = append(result, &sprite)
+		}
+		return result
+	}
+
+	if tiles == nil {
+		return []*graphics.Sprite{}
+	}
+
+	var result = make([]*graphics.Sprite, 0, mapData.Width*mapData.Height)
+	var usedTilesets = usedTilesets(mapData)
+	var tileIds = getTileIds(mapData, usedTilesets, tiles)
+
+	for index, tile := range tileIds {
+		var curTileset = currentTileset(usedTilesets, tile)
+		if curTileset == nil {
+			continue
+		}
+
+		var id = tile - curTileset.FirstTileId
+		var tileId = text.New(curTileset.AtlasId, "/", id)
+		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
+		var x = float32(j)*float32(mapData.TileWidth) + mapData.WorldX + tiles.OffsetX
+		var y = float32(i)*float32(mapData.TileHeight) + mapData.WorldY + tiles.OffsetY
+		var sprite = graphics.NewSprite(tileId, x, y)
+		sprite.Width, sprite.Height = float32(mapData.TileWidth), float32(mapData.TileHeight)
+		sprite.PivotX, sprite.PivotY = 0, 0
+		result = append(result, &sprite)
+	}
+
+	return result
+}
+func LayerTexts(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.TextBox {
+	var mapData, _ = internal.TiledMaps[mapId]
+	var _, objs, _, _ = findLayer(mapData, layerNameOrId)
+	var result = []*graphics.TextBox{}
+	if mapData == nil {
+		return result
+	}
+
+	if objs != nil {
+		for _, obj := range objs.Objects {
+			if objectNameClassOrId != "" && obj.Name != objectNameClassOrId && obj.Class != objectNameClassOrId &&
+				text.New(obj.Id) != objectNameClassOrId {
+				continue
+			}
+			if obj.Text.Value == "" {
+				continue
+			}
+
+			var textbox = graphics.NewTextBox("", obj.X, obj.Y, obj.Text.Value)
+			textbox.X += mapData.WorldX + objs.OffsetX
+			textbox.Y += mapData.WorldY + objs.OffsetY
+			textbox.Width, textbox.Height = float32(obj.Width), float32(obj.Height)
+			textbox.Color = color.White
+			textbox.LineHeight = float32(obj.Text.FontSize)
+			textbox.PivotX, textbox.PivotY = 0, 0
+
+			if obj.Text.Color != "" {
+				textbox.Color = col(obj.Text.Color)
+			}
+			if obj.Text.FontSize == 0 {
+				textbox.LineHeight = float32(mapData.TileHeight)
+			}
+			if obj.Text.Bold {
+				textbox.Thickness = 0.75
+			}
+
+			switch obj.Text.AlignX {
+			case "center":
+				textbox.AlignmentX = 0.5
+			case "right":
+				textbox.AlignmentX = 1
+			}
+
+			switch obj.Text.AlignY {
+			case "center":
+				textbox.AlignmentY = 0.5
+			case "bottom":
+				textbox.AlignmentY = 1
+			}
+
+			result = append(result, &textbox)
+		}
+	}
+
+	return result
+}
 
 // empty objectNameOrClass includes all objects within all tiles
+//
+// accepts only tile layers, ignores the rest
+//
+// layer offset snaps the shapes to the nearest cell (the grid does not move) -
+// it is best to snap the layer offset to the tile size (in Tiled)
+// so that the tile sprites and the tile shapes match visually
 func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometry.ShapeGrid {
 	var mapData, _ = internal.TiledMaps[mapId]
 	if mapData == nil {
@@ -247,241 +312,105 @@ func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometr
 	}
 
 	var result = geometry.NewShapeGrid(mapData.TileWidth, mapData.TileHeight)
-	var success = forEachTile(mapId, tileLayerNameOrId, func(x, y, id int, curTileset *internal.Tileset) {
-		tryAnimateTile(text.New(curTileset.AtlasId, "/", id, "-shapes"), curTileset, id, func(tileId int) {
-			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, tileId, objectNameOrClass)...)
+	var success = forEachTile(
+		mapId, tileLayerNameOrId, func(x, y, id int, layer *internal.LayerTiles, curTileset *internal.Tileset) {
+			x += int(number.Round(layer.OffsetX/float32(curTileset.TileWidth), 0))
+			y += int(number.Round(layer.OffsetY/float32(curTileset.TileHeight), 0))
+			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, id, objectNameOrClass)...)
 		})
-
-		result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, id, objectNameOrClass)...)
-	})
 	return condition.If(success, result, nil)
+}
+
+// empty objectNameOrClass includes all objects within all tiles
+func LayerShapes(mapId, layerNameOrId, objectNameClassOrId string) []*geometry.Shape {
+	var mapData, _ = internal.TiledMaps[mapId]
+	var result = []*geometry.Shape{}
+	if mapData == nil {
+		return result
+	}
+
+	var tiles, objs, img, _ = findLayer(mapData, layerNameOrId)
+
+	if img != nil {
+		var shape = geometry.NewShapeRectangle(float32(img.Image.Width), float32(img.Image.Height), 0, 0)
+		shape.X, shape.Y = mapData.WorldX+img.OffsetX, mapData.WorldY+img.OffsetY
+		return []*geometry.Shape{shape}
+	}
+	if tiles != nil {
+		return LayerShapeGrid(mapId, layerNameOrId, objectNameClassOrId).All()
+	}
+	if objs == nil {
+		return result
+	}
+
+	for _, obj := range objs.Objects {
+		if objectNameClassOrId != "" && obj.Name != objectNameClassOrId && obj.Class != objectNameClassOrId &&
+			text.New(obj.Id) != objectNameClassOrId {
+			continue
+		}
+		var ptsData = ""
+		if obj.PolygonTile.Points != "" {
+			ptsData = obj.PolygonTile.Points
+		}
+		if obj.Polygon.Points != "" {
+			ptsData = obj.Polygon.Points
+		}
+		if ptsData == "" {
+			var w, h = obj.Width, obj.Height
+			ptsData = text.New(0, ",", 0, " ", w, ",", 0, " ", w, ",", h, " ", 0, ",", h)
+		}
+		var corners = [][2]float32{}
+		var pts = text.Split(ptsData, " ")
+		for _, pt := range pts {
+			var xy = text.Split(pt, ",")
+			if len(xy) == 2 {
+				var x, y = text.ToNumber(xy[0]), text.ToNumber(xy[1])
+				x, y = point.RotateAroundPoint(x, y, 0, 0, obj.Rotation)
+				corners = append(corners, [2]float32{x, y})
+			}
+		}
+		var shape = geometry.NewShapeCorners(corners...)
+		shape.X = obj.X + mapData.WorldX + objs.OffsetX
+		shape.Y = obj.Y + mapData.WorldY + objs.OffsetY
+
+		if obj.Gid != 0 {
+			shape.Y -= float32(mapData.TileHeight)
+		}
+
+		result = append(result, shape)
+	}
+
+	return result
 }
 
 // empty objectNameOrClass includes all objects within all tiles
 func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 	var result = [][2]float32{}
-	var success = forEachTile(mapId, layerNameOrId, func(x, y, id int, curTileset *internal.Tileset) {
-		var pts = tileset.TileObjectPoints(curTileset.AtlasId, id, objectNameOrClass)
+	var mapData, _ = internal.TiledMaps[mapId]
+	if mapData == nil {
+		return result
+	}
 
-		if flow.IsExisting(text.New(curTileset.AtlasId, "/", id)) {
-			return // skipping any points of animated tiles
-		}
-
-		for i := range pts {
-			pts[i][0] += float32(x) * float32(curTileset.TileWidth)
-			pts[i][1] += float32(y) * float32(curTileset.TileHeight)
-		}
-		result = append(result, pts...)
-	})
+	var success = forEachTile(
+		mapId, layerNameOrId, func(x, y, id int, layer *internal.LayerTiles, curTileset *internal.Tileset) {
+			var pts = tileset.TileObjectPoints(curTileset.AtlasId, id, objectNameOrClass)
+			for i := range pts {
+				pts[i][0] += float32(x)*float32(curTileset.TileWidth) + layer.OffsetX
+				pts[i][1] += float32(y)*float32(curTileset.TileHeight) + layer.OffsetY
+			}
+			result = append(result, pts...)
+		})
 
 	if !success {
-		var mapData, _ = internal.TiledMaps[mapId]
 		var _, objs, _, _ = findLayer(mapData, layerNameOrId)
-		if mapData != nil && objs != nil {
+		if objs != nil {
 			for _, obj := range objs.Objects {
 				if obj.Width == 0 && obj.Height == 0 && obj.Polygon.Points == "" {
 					result = append(result, [2]float32{mapData.WorldX + obj.X, mapData.WorldY + obj.Y})
 				}
 			}
 		}
-
 	}
 
 	return result
-}
-
-//=================================================================
-// private
-
-func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *internal.LayerTiles) []int {
-	if layer.Tiles != nil {
-		return layer.Tiles // fast return if cached
-	} // cache otherwise
-
-	var tileData = text.Trim(layer.TileData.Tiles)
-	var rows = text.Split(tileData, "\n")
-	layer.Tiles = make([]int, mapData.Width*mapData.Height)
-
-	for i := 0; i < mapData.Height; i++ {
-		var row = rows[i]
-		if text.EndsWith(row, ",") {
-			row = row[:len(row)-1]
-		}
-
-		var columns = text.Split(row, ",")
-		for j := 0; j < mapData.Width; j++ {
-			var tile = int(text.ToNumber(columns[j]))
-			if tile == 0 {
-				continue
-			}
-
-			var curTileset = currentTileset(usedTilesets, tile)
-			if curTileset == nil {
-				continue
-			}
-
-			var index = number.Indexes2DToIndex1D(i, j, mapData.Width, mapData.Height)
-			layer.Tiles[index] = tile
-		}
-	}
-
-	return layer.Tiles
-}
-
-func findLayer(data *internal.Map, layerNameOrId string) (
-	*internal.LayerTiles, *internal.LayerObjects, *internal.LayerImage, *internal.Layer) {
-	if data == nil {
-		return nil, nil, nil, nil
-	}
-
-	var layerTiles = data.LayersTiles
-	var layerObjs = data.LayersObjects
-	var layerImgs = data.LayersImages
-
-	for _, group := range data.Groups {
-		layerTiles = append(layerTiles, group.LayersTiles...)
-		layerObjs = append(layerObjs, group.LayersObjects...)
-		layerImgs = append(layerImgs, group.LayersImages...)
-	}
-
-	for _, layer := range layerTiles {
-		if layerHas(&layer.Layer, layerNameOrId) {
-			return &layer, nil, nil, &layer.Layer
-		}
-	}
-	for _, layer := range layerObjs {
-		if layerHas(&layer.Layer, layerNameOrId) {
-			return nil, &layer, nil, &layer.Layer
-		}
-	}
-	for _, layer := range layerImgs {
-		if layerHas(&layer.Layer, layerNameOrId) {
-			return nil, nil, &layer, &layer.Layer
-		}
-	}
-
-	return nil, nil, nil, nil
-}
-func layerHas(layer *internal.Layer, layerNameOrId string) bool {
-	return layer.Name == layerNameOrId || layer.Id == int(text.ToNumber(layerNameOrId))
-
-}
-func usedTilesets(data *internal.Map) []*internal.Tileset {
-	var usedTilesets = make([]*internal.Tileset, len(data.Tilesets))
-
-	for i, tileset := range data.Tilesets {
-		if tileset.Source != "" {
-			var tilesetId = path.New(data.Directory, tileset.Source)
-			tilesetId = path.RemoveExtension(path.LastElement(tilesetId))
-			tilesetId = path.New(data.Directory, tilesetId)
-			usedTilesets[i] = internal.TiledTilesets[tilesetId]
-			if usedTilesets[i] != nil {
-				usedTilesets[i].FirstTileId = tileset.FirstTileId
-			}
-			continue
-		}
-
-		usedTilesets[i] = &tileset
-	}
-	return usedTilesets
-}
-func currentTileset(usedTilesets []*internal.Tileset, tile int) *internal.Tileset {
-	var curTileset = usedTilesets[0]
-	for i := len(usedTilesets) - 1; i >= 0; i-- {
-		if usedTilesets[i] != nil && tile > usedTilesets[i].FirstTileId {
-			curTileset = usedTilesets[i]
-			break
-		}
-	}
-	return curTileset
-}
-func tryAnimateTile(name string, curTileset *internal.Tileset, tilesetTile int, onFrameChange func(tileId int)) {
-	var objTile = curTileset.MappedTiles[tilesetTile]
-	if objTile == nil || len(objTile.Animation.Frames) == 0 {
-		return
-	}
-
-	var animIds = tileset.TileAnimationTileIds(curTileset.AtlasId, tilesetTile)
-	if len(animIds) == 0 {
-		return
-	}
-
-	var animDurs = tileset.TileAnimationDurations(curTileset.AtlasId, tilesetTile)
-	var steps = []flow.Step{}
-	for stepIndex := range animIds {
-		steps = append(steps, flow.NowDo(func() { onFrameChange(animIds[stepIndex]) }))
-		steps = append(steps, flow.NowWaitForDelay(animDurs[stepIndex])) // frame delay
-	}
-	steps = append(steps, flow.NowDo(func() { flow.GoToStep(name, 0) })) // loop forever
-
-	flow.NewSequence(name, true, steps...)
-}
-func forEachTile(mapId, layerNameOrId string, do func(x, y, id int, curTileset *internal.Tileset)) bool {
-	var mapData, _ = internal.TiledMaps[mapId]
-	var tiles, _, _, _ = findLayer(mapData, layerNameOrId)
-	if mapData == nil || tiles == nil {
-		return false
-	}
-
-	var tilesets = usedTilesets(mapData)
-	var tileIds = getTileIds(mapData, tilesets, tiles)
-
-	for i, id := range tileIds {
-		if id == 0 {
-			continue
-		}
-		id-- // 0 in map means empty but 0 is actually a valid tile in the tileset
-
-		var curTileset = currentTileset(tilesets, id)
-		id -= curTileset.FirstTileId - 1 // same as id
-		var tile, _ = curTileset.MappedTiles[id]
-		if tile == nil || len(tile.CollisionLayers) == 0 {
-			continue
-		}
-
-		var x, y = number.Index1DToIndexes2D(i, mapData.Width, mapData.Height)
-		x += int(mapData.WorldX) / mapData.TileWidth
-		y += int(mapData.WorldY) / mapData.TileHeight
-
-		do(x, y, id, curTileset)
-	}
-	return true
-}
-func getObj(mapId, layerNameOrId, objectNameOrId string) *internal.LayerObject {
-	var mapData, _ = internal.TiledMaps[mapId]
-	if mapData == nil {
-		return nil
-	}
-	var _, objs, _, _ = findLayer(mapData, layerNameOrId)
-	if objs == nil {
-		return nil
-	}
-
-	for _, obj := range objs.Objects {
-		if obj.Name == objectNameOrId {
-			return &obj
-		}
-		var id = text.ToNumber(objectNameOrId)
-		if !number.IsNaN(id) && obj.Id == int(id) {
-			return &obj
-		}
-	}
-	return nil
-}
-
-func color(hex string) uint {
-	var trimmed = hex[1:]
-
-	if len(trimmed) == 6 {
-		trimmed += "FF"
-	} else if len(trimmed) != 8 {
-		return 0
-	}
-
-	var value, err = strconv.ParseUint(trimmed, 16, 32)
-	if err != nil {
-		return 0
-	}
-
-	return uint(value)
 }

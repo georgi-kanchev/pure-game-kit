@@ -1,7 +1,4 @@
 // TODO:
-tiled layer shapes
-tiled animation on/off/is funcs
-
 audio - sounds, music, playlists
 gui, sounds
 
@@ -16,6 +13,11 @@ consistent error handling + logging, console & file
 [75] [Wed] [01-10-2025]
 [√] execution - flow sequence improvements
 [√] renames Exists -> IsExisting
+[√] graphics - textbox right align hiding symbols bug fix
+[√] tiled - new approach to animated tiles handled by tileset, shapes no longer animate, new functions
+[√] tiled - object layer texts & shapes
+[√] tiled - fixedlayer tileIds cache not being used due to layers not being pointers
+[√] tiled - fixed layer offsetx, layer offsety not being applied
 
 [74] [Tue] [30-09-2025]
 [√] tiled - img layers
