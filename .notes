@@ -12,6 +12,7 @@ consistent error handling + logging, console & file
 // DONE:
 [77] [Mon] [06-10-2025]
 [√] execution - script API tweaks
+[√] example - execution scripts
 
 [76] [Sun] [05-10-2025]
 [√] execution - lua scripting for modding
