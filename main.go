@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	example.Tiled()
+	example.Scripts()
 }

@@ -1,15 +1,18 @@
 // TODO:
 audio - sounds, music, playlists
 gui, sounds
+lua scripts - compiler allow & autocomplete the added go funcs
 
 // TODO LONGTERM:
 shader effects, port?
 GPU particles?
-modding support & lua? scripts
 LAN?
 consistent error handling + logging, console & file
 
 // DONE:
+[76] [Sun] [05-10-2025]
+[√] execution - lua scripting for modding
+
 [75] [Wed] [01-10-2025]
 [√] execution - flow sequence improvements
 [√] renames Exists -> IsExisting
