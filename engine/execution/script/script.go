@@ -18,37 +18,6 @@ func New() *Script {
 	return &Script{state: state}
 }
 
-func (script *Script) Close() {
-	script.state.Close()
-}
-
-func (script *Script) ExecuteCode(code string) {
-	script.state.DoString(code)
-}
-func (script *Script) ExecuteFile(path string) {
-	script.state.DoFile(path)
-}
-
-func (script *Script) ExecuteFunction(functionName string, parameters ...any) any {
-	var fn = script.state.GetGlobal(functionName)
-	if fn.Type() != lua.LTFunction {
-		return nil // function not found
-	}
-
-	var luaArgs = make([]lua.LValue, len(parameters))
-	for i, arg := range parameters {
-		luaArgs[i] = valueToLuaType(script.state, arg)
-	}
-
-	var err = script.state.CallByParam(lua.P{Fn: fn, NRet: 1, Protect: true}, luaArgs...)
-	if err != nil {
-		return nil // failed to call function
-	}
-
-	var ret = script.state.Get(-1)
-	script.state.Pop(1)
-	return luaToGoValue(ret)
-}
 func (s *Script) AddFunction(functionName string, function any) {
 	var rv = reflect.ValueOf(function)
 	var rt = rv.Type()
@@ -94,6 +63,33 @@ func (s *Script) AddFunction(functionName string, function any) {
 	}
 
 	s.state.SetGlobal(functionName, s.state.NewFunction(luaFn))
+}
+func (script *Script) ExecuteCode(code string) {
+	script.state.DoString(code)
+}
+func (script *Script) ExecuteFunction(functionName string, parameters ...any) any {
+	var fn = script.state.GetGlobal(functionName)
+	if fn.Type() != lua.LTFunction {
+		return nil // function not found
+	}
+
+	var luaArgs = make([]lua.LValue, len(parameters))
+	for i, arg := range parameters {
+		luaArgs[i] = valueToLuaType(script.state, arg)
+	}
+
+	var err = script.state.CallByParam(lua.P{Fn: fn, NRet: 1, Protect: true}, luaArgs...)
+	if err != nil {
+		return nil // failed to call function
+	}
+
+	var ret = script.state.Get(-1)
+	script.state.Pop(1)
+	return luaToGoValue(ret)
+}
+
+func (script *Script) Close() {
+	script.state.Close()
 }
 
 // =================================================================
