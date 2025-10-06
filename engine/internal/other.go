@@ -1,8 +1,28 @@
 package internal
 
-import txt "pure-kit/engine/utility/text"
+import (
+	"os"
+	"path/filepath"
+	txt "pure-kit/engine/utility/text"
+)
 
 const Placeholder = '╌'
+
+func ExecutablePath() string {
+	var path, err = os.Executable()
+	if err != nil {
+		return ""
+	}
+	return path
+}
+
+func MakeAbsolutePath(path string) string {
+	var root = filepath.Dir(ExecutablePath())
+	if txt.Contains(path, root) {
+		return path
+	}
+	return filepath.Join(root, path)
+}
 
 func ReplaceQuotedStrings(text string, quote, placeholder rune) (replaced string, originals []string) {
 	var result = txt.NewBuilder()

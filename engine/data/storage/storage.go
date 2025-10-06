@@ -5,10 +5,12 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+	"pure-kit/engine/internal"
 )
 
-func FromFileJSON(filePath string, structInstance any) {
-	var file, err = os.Open(filePath)
+func FromFileJSON(path string, structInstance any) {
+	path = internal.MakeAbsolutePath(path)
+	var file, err = os.Open(path)
 	if err != nil {
 		fmt.Printf("Failed to open JSON file: %v\n", err)
 		return
@@ -21,8 +23,9 @@ func FromFileJSON(filePath string, structInstance any) {
 		fmt.Printf("Failed to decode JSON file: %v\n", err2)
 	}
 }
-func FromFileXML(filePath string, structInstance any) {
-	var file, err = os.Open(filePath)
+func FromFileXML(path string, structInstance any) {
+	path = internal.MakeAbsolutePath(path)
+	var file, err = os.Open(path)
 	if err != nil {
 		fmt.Printf("Failed to open XML file: %v\n", err)
 		return

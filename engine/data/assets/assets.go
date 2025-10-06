@@ -3,6 +3,7 @@ package assets
 import (
 	"pure-kit/engine/data/path"
 	"pure-kit/engine/internal"
+	"pure-kit/engine/utility/text"
 	"pure-kit/engine/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -33,9 +34,8 @@ func tryInitShader() {
 	}
 }
 
-func getIdPath(p string) (id, absolutePath string) {
-	var root = path.Folder(path.Executable())
-	absolutePath = path.New(root, p)
-	id = path.RemoveExtension(p)
-	return
+func getIdPath(p string) string {
+	var root = path.Folder(path.Executable()) + path.Divider()
+	var result = path.RemoveExtension(text.Remove(p, root))
+	return result
 }

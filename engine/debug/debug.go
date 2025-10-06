@@ -19,11 +19,8 @@ import (
 )
 
 func PrintLinesOfCode() {
-	directory := path.Folder(path.Executable())
-	cmd := exec.Command("bash", "-c",
-		fmt.Sprintf(`find "%s" -name "*.go" -type f -exec wc -l {} +`, directory),
-	)
-
+	var directory = path.Folder(path.Executable())
+	var cmd = exec.Command("bash", "-c", fmt.Sprintf(`find "%s" -name "*.go" -type f -exec wc -l {} +`, directory))
 	var cmdOut bytes.Buffer
 	cmd.Stdout = &cmdOut
 	cmd.Stderr = &cmdOut
@@ -31,24 +28,24 @@ func PrintLinesOfCode() {
 		return
 	}
 
-	results := make(map[string]int)
-	scanner := bufio.NewScanner(&cmdOut)
+	var results = make(map[string]int)
+	var scanner = bufio.NewScanner(&cmdOut)
 	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		parts := strings.Fields(line)
+		var line = strings.TrimSpace(scanner.Text())
+		var parts = strings.Fields(line)
 		if len(parts) < 2 {
 			continue
 		}
-		count := text.ToNumber(parts[0])
-		path := parts[1]
-		rel, _ := filepath.Rel(directory, path)
+		var count = text.ToNumber(parts[0])
+		var path = parts[1]
+		var rel, _ = filepath.Rel(directory, path)
 		results[rel] = int(count)
 	}
 
-	dirTotals := make(map[string]int)
+	var dirTotals = make(map[string]int)
 	for path, count := range results {
 		dirTotals[path] = count
-		dir := filepath.Dir(path)
+		var dir = filepath.Dir(path)
 		for dir != path {
 			dirTotals[dir] += count
 			dir = filepath.Dir(dir)
@@ -76,8 +73,8 @@ func PrintLinesOfCode() {
 			connector = "└"
 		}
 
-		name := filepath.Base(path)
-		displayCount := ""
+		var name = filepath.Base(path)
+		var displayCount = ""
 		if _, ok := results[path]; ok {
 			displayCount = fmt.Sprintf("%d", dirTotals[path])
 		} else {
@@ -99,7 +96,7 @@ func PrintLinesOfCode() {
 		sort.Strings(children)
 
 		for i, c := range children {
-			newPrefix := prefix
+			var newPrefix = prefix
 			if isLast {
 				newPrefix += "  "
 			} else {
@@ -125,21 +122,21 @@ func PrintLinesOfCode() {
 
 func PrintDependencies() {
 	var out strings.Builder
-	cmd := exec.Command("go", "list", "-f", "{{.ImportPath}} -> {{.Imports}}", "./...")
+	var cmd = exec.Command("go", "list", "-f", "{{.ImportPath}} -> {{.Imports}}", "./...")
 	var cmdOut bytes.Buffer
 	cmd.Stdout = &cmdOut
 	cmd.Run()
 
-	lines := strings.Split(strings.TrimSpace(cmdOut.String()), "\n")
-	deps := make(map[string][]string)
+	var lines = strings.Split(strings.TrimSpace(cmdOut.String()), "\n")
+	var deps = make(map[string][]string)
 
 	for _, line := range lines {
-		parts := strings.Split(line, "->")
+		var parts = strings.Split(line, "->")
 		if len(parts) != 2 {
 			continue
 		}
-		pkg := strings.TrimSpace(parts[0])
-		imports := strings.Fields(strings.TrimSpace(parts[1]))
+		var pkg = strings.TrimSpace(parts[0])
+		var imports = strings.Fields(strings.TrimSpace(parts[1]))
 		deps[pkg] = imports
 	}
 
@@ -150,8 +147,8 @@ func PrintDependencies() {
 	sort.Strings(pkgs)
 
 	for _, pkg := range pkgs {
+		var imports = deps[pkg]
 		fmt.Fprintf(&out, "%s\n", pkg)
-		imports := deps[pkg]
 		sort.Strings(imports)
 		for _, imp := range imports {
 			imp = text.Remove(imp, "[", "]")
@@ -205,16 +202,7 @@ func ProfileCPU(seconds float32) {
 
 		log.Println("SVG generated at", svgFile)
 
-		var open *exec.Cmd
-
-		switch runtime.GOOS {
-		case "windows":
-			open = exec.Command("rundll32", "url.dll,FileProtocolHandler", svgFile)
-		case "linux":
-			open = exec.Command("xdg-open", svgFile)
-		}
-
-		open.Start()
+		exec.Command("xdg-open", svgFile).Start()
 	}()
 }
 

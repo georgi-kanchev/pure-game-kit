@@ -11,16 +11,17 @@ import (
 	"pure-kit/engine/utility/text"
 )
 
-func LoadTiledTileset(tsxFilePath string) string {
+func LoadTiledTileset(filePath string) string {
 	var tileset *internal.Tileset
-	var id = path.RemoveExtension(tsxFilePath)
+	var id = path.RemoveExtension(filePath)
 
-	storage.FromFileXML(tsxFilePath, &tileset)
+	filePath = internal.MakeAbsolutePath(filePath)
+	storage.FromFileXML(filePath, &tileset)
 	if tileset == nil {
 		return ""
 	}
 
-	var texturePath = path.New(path.Folder(tsxFilePath), tileset.Image.Source)
+	var texturePath = path.New(path.Folder(filePath), tileset.Image.Source)
 	var textureIds = LoadTextures(texturePath)
 	if len(textureIds) == 0 {
 		return ""
@@ -44,7 +45,7 @@ func LoadTiledTileset(tsxFilePath string) string {
 
 		// detect templates
 		if len(tile.CollisionLayers) > 0 {
-			tryTemplate(tile.CollisionLayers, path.Folder(tsxFilePath))
+			tryTemplate(tile.CollisionLayers, path.Folder(filePath))
 		}
 
 		if len(tile.Animation.Frames) == 0 {
@@ -73,18 +74,18 @@ func LoadTiledTileset(tsxFilePath string) string {
 
 	return id
 }
-
-func LoadTiledWorld(worldFilePath string) (tilemapIds []string) {
+func LoadTiledWorld(filePath string) (tilemapIds []string) {
+	filePath = internal.MakeAbsolutePath(filePath)
 	var resultIds = []string{}
 	var world *internal.World
 
-	storage.FromFileJSON(worldFilePath, &world)
+	storage.FromFileJSON(filePath, &world)
 	if world == nil {
 		return resultIds
 	}
 
-	world.Directory = path.Folder(worldFilePath)
-	world.Name = path.RemoveExtension(path.LastElement(worldFilePath))
+	world.Directory = path.Folder(filePath)
+	world.Name = path.RemoveExtension(path.LastElement(filePath))
 
 	for _, m := range world.Maps {
 		var mapPath = path.New(world.Directory, m.FileName)
@@ -111,19 +112,21 @@ func LoadTiledWorld(worldFilePath string) (tilemapIds []string) {
 
 	return resultIds
 }
-func LoadTiledMap(tmxFilePath string) string {
+func LoadTiledMap(filePath string) string {
+	var absolutePath = internal.MakeAbsolutePath(filePath)
 	var mapData *internal.Map
-	var name = path.RemoveExtension(tmxFilePath)
 
-	storage.FromFileXML(tmxFilePath, &mapData)
+	storage.FromFileXML(absolutePath, &mapData)
 	if mapData == nil {
 		return ""
 	}
 
-	mapData.Name = path.LastElement(name)
-	mapData.Directory = path.Folder(tmxFilePath)
-	internal.TiledMaps[name] = mapData
-	return name
+	var root = path.Folder(path.Executable()) + path.Divider()
+	var id = path.RemoveExtension(text.Remove(filePath, root))
+	mapData.Name = path.LastElement(path.RemoveExtension(filePath))
+	mapData.Directory = path.Folder(absolutePath)
+	internal.TiledMaps[id] = mapData
+	return id
 }
 
 func UnloadTiledWorld(worldFilePath string) {

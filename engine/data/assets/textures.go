@@ -8,13 +8,14 @@ import (
 )
 
 func LoadTextures(filePath string) []string {
+	filePath = internal.MakeAbsolutePath(filePath)
 	tryCreateWindow()
 
 	var result = []string{}
-	var id, absolutePath = getIdPath(filePath)
+	var id = getIdPath(filePath)
 	var tex, has = internal.Textures[id]
 
-	if !file.IsExisting(absolutePath) {
+	if !file.IsExisting(filePath) {
 		return result
 	}
 
@@ -22,7 +23,7 @@ func LoadTextures(filePath string) []string {
 		rl.UnloadTexture(*tex)
 	}
 
-	var texture = rl.LoadTexture(absolutePath)
+	var texture = rl.LoadTexture(filePath)
 
 	if texture.Width != 0 {
 		internal.Textures[id] = &texture

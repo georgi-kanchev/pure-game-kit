@@ -6,27 +6,31 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"pure-kit/engine/data/path"
+	ph "pure-kit/engine/data/path"
+	"pure-kit/engine/internal"
 )
 
-func IsExisting(filePath string) bool {
-	var info, err = os.Stat(filePath)
+func IsExisting(path string) bool {
+	path = internal.MakeAbsolutePath(path)
+	var info, err = os.Stat(path)
 	return err == nil && !info.IsDir()
 }
-func ByteSize(filePath string) int64 {
-	var info, err = os.Stat(filePath)
+func ByteSize(path string) int64 {
+	path = internal.MakeAbsolutePath(path)
+	var info, err = os.Stat(path)
 	if err != nil {
 		return 0
 	}
 
 	return info.Size()
 }
-func TimeOfLastEdit(filePath string) (year, month, day, minute int) {
-	if !IsExisting(filePath) {
+func TimeOfLastEdit(path string) (year, month, day, minute int) {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return 0, 0, 0, 0
 	}
 
-	var info, err = os.Stat(filePath)
+	var info, err = os.Stat(path)
 	if err != nil {
 		return 0, 0, 0, 0
 	}
@@ -39,27 +43,31 @@ func TimeOfLastEdit(filePath string) (year, month, day, minute int) {
 	return
 }
 
-func LoadBytes(filePath string) []byte {
-	var data, err = os.ReadFile(filePath)
+func LoadBytes(path string) []byte {
+	path = internal.MakeAbsolutePath(path)
+	var data, err = os.ReadFile(path)
 	if err != nil {
-		fmt.Printf("Failed to read file '%s': %v\n", filePath, err)
+		fmt.Printf("Failed to read file '%s': %v\n", path, err)
 		return []byte{}
 	}
 	return data
 }
-func LoadText(filePath string) string {
-	return string(LoadBytes(filePath))
+func LoadText(path string) string {
+	path = internal.MakeAbsolutePath(path)
+	return string(LoadBytes(path))
 }
 
-func SaveBytes(filePath string, content []byte) bool {
-	var err = os.WriteFile(filePath, content, 0644) // 0644 is the file permission: rw-r--r--
+func SaveBytes(path string, content []byte) bool {
+	path = internal.MakeAbsolutePath(path)
+	var err = os.WriteFile(path, content, 0644) // 0644 is the file permission: rw-r--r--
 	return err == nil
 }
-func SaveText(filePath, content string) bool {
-	return SaveBytes(filePath, []byte(content))
+func SaveText(path, content string) bool {
+	return SaveBytes(path, []byte(content))
 }
-func SaveTextAppend(filePath string, content string) bool {
-	if !IsExisting(filePath) {
+func SaveTextAppend(path string, content string) bool {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return false
 	}
 
@@ -73,39 +81,45 @@ func SaveTextAppend(filePath string, content string) bool {
 	return err2 == nil
 }
 
-func Delete(filePath string) bool {
-	if !IsExisting(filePath) {
+func Delete(path string) bool {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return false
 	}
-	var err = os.Remove(filePath)
+	var err = os.Remove(path)
 	return err == nil
 }
-func Rename(filePath, newName string) bool {
-	var newFilePath = path.New(path.Folder(filePath), newName)
+func Rename(path, newName string) bool {
+	path = internal.MakeAbsolutePath(path)
+	var newpath = ph.New(ph.Folder(path), newName)
 
-	if !IsExisting(filePath) || IsExisting(newFilePath) {
+	if !IsExisting(path) || IsExisting(newpath) {
 		return false
 	}
 
-	var err = os.Rename(filePath, newFilePath)
+	var err = os.Rename(path, newpath)
 	return err == nil
 }
-func Move(filePath, toFolderPath string) bool {
+func Move(path, toFolderPath string) bool {
+	path = internal.MakeAbsolutePath(path)
+	toFolderPath = internal.MakeAbsolutePath(toFolderPath)
 	var info, err = os.Stat(toFolderPath)
 	var folderExists = err == nil && info.IsDir()
-	if !IsExisting(filePath) || !folderExists {
+	if !IsExisting(path) || !folderExists {
 		return false
 	}
-	return Rename(filePath, path.New(toFolderPath, filePath))
+	return Rename(path, ph.New(toFolderPath, path))
 }
-func Copy(filePath, toFolderPath string) bool {
-	var srcFile, err = os.Open(filePath)
+func Copy(path, toFolderPath string) bool {
+	path = internal.MakeAbsolutePath(path)
+	toFolderPath = internal.MakeAbsolutePath(toFolderPath)
+	var srcFile, err = os.Open(path)
 	if err != nil {
 		return false
 	}
 	defer srcFile.Close()
 
-	var destFile, err2 = os.Create(path.New(toFolderPath, filePath))
+	var destFile, err2 = os.Create(ph.New(toFolderPath, path))
 	if err2 != nil {
 		return false
 	}

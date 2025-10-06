@@ -1,6 +1,7 @@
 package script
 
 import (
+	"pure-kit/engine/data/file"
 	"pure-kit/engine/utility/text"
 	"reflect"
 
@@ -86,6 +87,9 @@ func (script *Script) ExecuteFunction(functionName string, parameters ...any) an
 	var ret = script.state.Get(-1)
 	script.state.Pop(1)
 	return luaToGoValue(ret)
+}
+func (script *Script) ExecuteFile(path string) {
+	script.ExecuteCode(file.LoadText(path))
 }
 
 func (script *Script) Close() {

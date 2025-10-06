@@ -3,40 +3,45 @@ package folder
 import (
 	"io"
 	"os"
-	"pure-kit/engine/data/path"
+	ph "pure-kit/engine/data/path"
+	"pure-kit/engine/internal"
 )
 
-func IsExisting(folderPath string) bool {
-	var info, err = os.Stat(folderPath)
+func IsExisting(path string) bool {
+	path = internal.MakeAbsolutePath(path)
+	var info, err = os.Stat(path)
 	return err == nil && info.IsDir()
 }
-func IsEmpty(folderPath string) bool {
-	return len(Content(folderPath)) == 0
+func IsEmpty(path string) bool {
+	path = internal.MakeAbsolutePath(path)
+	return len(Content(path)) == 0
 }
-func ByteSize(folderPath string) int64 {
+func ByteSize(path string) int64 {
+	path = internal.MakeAbsolutePath(path)
 	var totalSize int64
 
-	var files = Files(folderPath)
+	var files = Files(path)
 	for _, file := range files {
-		var info, err = os.Stat(path.New(folderPath, file))
+		var info, err = os.Stat(ph.New(path, file))
 		if err == nil {
 			totalSize += info.Size()
 		}
 	}
 
-	var folders = Folders(folderPath)
+	var folders = Folders(path)
 	for _, sub := range folders {
-		totalSize += ByteSize(path.New(folderPath, sub))
+		totalSize += ByteSize(ph.New(path, sub))
 	}
 
 	return totalSize
 }
-func TimeOfLastEdit(folderPath string) (year, month, day, minute int) {
-	if !IsExisting(folderPath) {
+func TimeOfLastEdit(path string) (year, month, day, minute int) {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return 0, 0, 0, 0
 	}
 
-	var info, err = os.Stat(folderPath)
+	var info, err = os.Stat(path)
 	if err != nil {
 		return 0, 0, 0, 0
 	}
@@ -49,43 +54,49 @@ func TimeOfLastEdit(folderPath string) (year, month, day, minute int) {
 	return
 }
 
-func Create(folderPath string) bool {
-	return os.MkdirAll(folderPath, 0755) == nil // 0755 is the file permission: rwxr-xr-x
+func Create(path string) bool {
+	path = internal.MakeAbsolutePath(path)
+	return os.MkdirAll(path, 0755) == nil // 0755 is the file permission: rwxr-xr-x
 }
-func Delete(folderPath string) bool {
-	if !IsExisting(folderPath) {
+func Delete(path string) bool {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return false
 	}
-	return os.RemoveAll(folderPath) == nil
+	return os.RemoveAll(path) == nil
 }
-func DeleteContents(folderPath string) bool {
-	if !Delete(folderPath) {
+func DeleteContents(path string) bool {
+	path = internal.MakeAbsolutePath(path)
+	if !Delete(path) {
 		return false
 	}
-	if !Create(folderPath) {
+	if !Create(path) {
 		return false
 	}
 	return true
 }
-func Rename(folderPath, newName string) bool {
-	var newPath = path.New(path.Folder(folderPath), newName)
+func Rename(path, newName string) bool {
+	path = internal.MakeAbsolutePath(path)
+	var newPath = ph.New(ph.Folder(path), newName)
 
-	if !IsExisting(folderPath) || IsExisting(newPath) {
+	if !IsExisting(path) || IsExisting(newPath) {
 		return false
 	}
 
-	return os.Rename(folderPath, newPath) == nil
+	return os.Rename(path, newPath) == nil
 }
-func MoveContents(fromFolderPath, toFolderPath string) bool {
-	if !IsExisting(fromFolderPath) || !IsExisting(toFolderPath) {
+func MoveContents(fromPath, toPath string) bool {
+	fromPath = internal.MakeAbsolutePath(fromPath)
+	toPath = internal.MakeAbsolutePath(toPath)
+	if !IsExisting(fromPath) || !IsExisting(toPath) {
 		return false
 	}
 
-	var files = Files(fromFolderPath)
+	var files = Files(fromPath)
 	for _, file := range files {
-		var srcPath = path.New(fromFolderPath, file)
-		var destPath = path.New(toFolderPath, file)
-		var err = os.MkdirAll(path.Folder(destPath), 0755)
+		var srcPath = ph.New(fromPath, file)
+		var destPath = ph.New(toPath, file)
+		var err = os.MkdirAll(ph.Folder(destPath), 0755)
 		if err != nil {
 			return false
 		}
@@ -118,10 +129,10 @@ func MoveContents(fromFolderPath, toFolderPath string) bool {
 		}
 	}
 
-	var folders = Folders(fromFolderPath)
+	var folders = Folders(fromPath)
 	for _, sub := range folders {
-		var srcSub = path.New(fromFolderPath, sub)
-		var destSub = path.New(toFolderPath, sub)
+		var srcSub = ph.New(fromPath, sub)
+		var destSub = ph.New(toPath, sub)
 
 		var err = os.MkdirAll(destSub, 0755)
 		if err != nil {
@@ -134,15 +145,17 @@ func MoveContents(fromFolderPath, toFolderPath string) bool {
 
 	return true
 }
-func CopyContents(fromFolderPath, toFolderPath string) bool {
-	if !IsExisting(fromFolderPath) || !IsExisting(toFolderPath) {
+func CopyContents(fromPath, toPath string) bool {
+	fromPath = internal.MakeAbsolutePath(fromPath)
+	toPath = internal.MakeAbsolutePath(toPath)
+	if !IsExisting(fromPath) || !IsExisting(toPath) {
 		return false
 	}
 
-	var files = Files(fromFolderPath)
+	var files = Files(fromPath)
 	for _, file := range files {
-		var srcPath = path.New(fromFolderPath, file)
-		var destPath = path.New(toFolderPath, file)
+		var srcPath = ph.New(fromPath, file)
+		var destPath = ph.New(toPath, file)
 		var srcFile, err = os.Open(srcPath)
 		if err != nil {
 			return false
@@ -150,7 +163,7 @@ func CopyContents(fromFolderPath, toFolderPath string) bool {
 
 		defer srcFile.Close()
 
-		var err2 = os.MkdirAll(path.Folder(destPath), 0755)
+		var err2 = os.MkdirAll(ph.Folder(destPath), 0755)
 		if err2 != nil {
 			return false
 		}
@@ -167,10 +180,10 @@ func CopyContents(fromFolderPath, toFolderPath string) bool {
 		}
 	}
 
-	var folders = Folders(fromFolderPath)
+	var folders = Folders(fromPath)
 	for _, sub := range folders {
-		var srcSub = path.New(fromFolderPath, sub)
-		var destSub = path.New(toFolderPath, sub)
+		var srcSub = ph.New(fromPath, sub)
+		var destSub = ph.New(toPath, sub)
 		var err = os.MkdirAll(destSub, 0755)
 		if err != nil {
 			return false
@@ -183,12 +196,13 @@ func CopyContents(fromFolderPath, toFolderPath string) bool {
 	return true
 }
 
-func Content(folderPath string) []string {
-	if !IsExisting(folderPath) {
+func Content(path string) []string {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return []string{}
 	}
 
-	var entries, err = os.ReadDir(folderPath)
+	var entries, err = os.ReadDir(path)
 	if err != nil {
 		return []string{}
 	}
@@ -199,12 +213,13 @@ func Content(folderPath string) []string {
 	}
 	return names
 }
-func Files(folderPath string) []string {
-	if !IsExisting(folderPath) {
+func Files(path string) []string {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return []string{}
 	}
 
-	var entries, err = os.ReadDir(folderPath)
+	var entries, err = os.ReadDir(path)
 	if err != nil {
 		return []string{}
 	}
@@ -217,12 +232,13 @@ func Files(folderPath string) []string {
 	}
 	return files
 }
-func Folders(folderPath string) []string {
-	if !IsExisting(folderPath) {
+func Folders(path string) []string {
+	path = internal.MakeAbsolutePath(path)
+	if !IsExisting(path) {
 		return []string{}
 	}
 
-	var entries, err = os.ReadDir(folderPath)
+	var entries, err = os.ReadDir(path)
 	if err != nil {
 		return []string{}
 	}

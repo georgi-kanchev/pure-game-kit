@@ -13,6 +13,7 @@ consistent error handling + logging, console & file
 [77] [Mon] [06-10-2025]
 [√] execution - script API tweaks
 [√] example - execution scripts
+[√] data/assets/tiled/script - relative and absolute path fuckery fixed
 
 [76] [Sun] [05-10-2025]
 [√] execution - lua scripting for modding

@@ -1,8 +1,8 @@
 package path
 
 import (
-	"os"
 	"path/filepath"
+	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/text"
 )
 
@@ -10,25 +10,23 @@ func New(elements ...string) string {
 	return filepath.Join(elements...)
 }
 
-func Separator() string {
+func Divider() string {
 	return string(filepath.Separator)
 }
 
 func Executable() string {
-	var execPath, err = os.Executable()
-	if err != nil {
-		return ""
-	}
-	return execPath
+	return internal.ExecutablePath()
 }
 
 func IsDirectory(path string) bool {
+	path = internal.MakeAbsolutePath(path)
 	if text.EndsWith(path, string(filepath.Separator)) {
 		return true
 	}
 	return Extension(path) == ""
 }
 func IsFile(path string) bool {
+	path = internal.MakeAbsolutePath(path)
 	return Extension(path) != ""
 }
 

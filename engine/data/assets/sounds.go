@@ -8,18 +8,19 @@ import (
 )
 
 func LoadSounds(filePath string) []string {
+	filePath = internal.MakeAbsolutePath(filePath)
 	tryCreateWindow()
 	tryInitAudio()
 
 	var result = []string{}
-	var id, absolutePath = getIdPath(filePath)
+	var id = getIdPath(filePath)
 	var _, has = internal.Sounds[id]
 
-	if has || !file.IsExisting(absolutePath) {
+	if has || !file.IsExisting(filePath) {
 		return result
 	}
 
-	var sound = rl.LoadSound(absolutePath)
+	var sound = rl.LoadSound(filePath)
 
 	if sound.FrameCount != 0 {
 		internal.Sounds[id] = &sound
