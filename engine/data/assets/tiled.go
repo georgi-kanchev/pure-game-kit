@@ -43,8 +43,7 @@ func LoadTiledTileset(filePath string) string {
 	for _, tile := range tileset.Tiles {
 		tileset.MappedTiles[tile.Id] = &tile
 
-		// detect templates
-		if len(tile.CollisionLayers) > 0 {
+		if len(tile.CollisionLayers) > 0 { // detect templates
 			tryTemplate(tile.CollisionLayers, path.Folder(filePath))
 		}
 
@@ -54,22 +53,22 @@ func LoadTiledTileset(filePath string) string {
 
 		var frame = 0
 		var name = text.New(atlasId, "/", tile.Id)
-		flow.NewSequence(name, true,
-			flow.NowDoLoop(number.ValueMaximum[int](), func(i int) {
-				var timer = flow.CurrentStepTimer(name)
+		var seq *flow.Sequence
+		seq = flow.NewSequence(true,
+			flow.NowDoLoop(number.ValueMaximum[int](), func(int) {
+				var timer = seq.CurrentStepTimer()
 				var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
 				if timer > float32(dur) {
 					var newId = tile.Animation.Frames[frame].TileId
 					var x, y = number.Index1DToIndexes2D(newId, w, h) // new tile id coords
 					SetTextureAtlasTile(atlasId, name, float32(x), float32(y), 1, 1, 0, false)
-					flow.GoToNextStep(name)
+					seq.GoToNextStep()
 					frame++
 					frame = frame % len(tile.Animation.Frames)
 				}
 			}),
-			flow.NowDo(func() {
-				flow.Run(name)
-			}))
+			flow.NowDo(seq.Run))
+		tile.Sequence = seq
 	}
 
 	return id

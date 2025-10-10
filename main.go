@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	example.Multiplayer()
+	example.Flows()
 }

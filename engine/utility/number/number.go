@@ -269,7 +269,7 @@ func ValueMaximum[T Number]() T {
 	case uint64:
 		return any(uint64(math.MaxUint64)).(T)
 	case float32:
-		return any(math.MaxFloat32).(T)
+		return any(float32(math.MaxFloat32)).(T)
 	case float64:
 		return any(math.MaxFloat64).(T)
 	default:

@@ -6,6 +6,8 @@ import (
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/execution/flow"
 	"pure-kit/engine/graphics"
+	"pure-kit/engine/input/keyboard"
+	"pure-kit/engine/input/keyboard/key"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/window"
@@ -18,19 +20,33 @@ func Flows() {
 	var text = ""
 	var timerInt = 0
 
-	flow.NewSequence("flow-a", true,
+	var b = flow.NewSequence(false,
+		flow.NowWaitForDelay(1),
+		flow.NowDo(func() {
+			node.Color = color.Azure
+			text = "Flow B: step 1"
+		}),
+		flow.NowWaitForDelay(1),
+		flow.NowDo(func() {
+			node.Color = color.Green
+			text = "Flow B: step 2"
+		}))
+
+	var a *flow.Sequence
+	a = flow.NewSequence(true,
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.Angle = 45
-			flow.Run("flow-b")
+			b.Run()
 			text = "Flow A: step 1"
 		}),
-		flow.NowWaitForFlow("flow-b"),
+		flow.NowWaitForSequence(b),
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.Angle = 0
 			text = "Flow A: step 2"
 		}),
+		flow.NowWaitForSignal("W press"),
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.ScaleX, node.ScaleY = 3, 3
@@ -40,7 +56,7 @@ func Flows() {
 			fmt.Printf("loop i: %v\n", i)
 		}),
 		flow.NowDoLoop(number.ValueMaximum[int](), func(i int) {
-			var timer = flow.CurrentStepTimer("flow-a")
+			var timer = a.CurrentStepTimer()
 			timerInt = int(timer)
 			if timer == 0 {
 				fmt.Printf("5 second timer started\n")
@@ -52,24 +68,11 @@ func Flows() {
 
 			if timer > 5 {
 				fmt.Printf("5 seconds timer ended\n")
-				flow.GoToNextStep("flow-a")
+				a.GoToNextStep()
 			}
 		}),
 		flow.NowDo(func() {
-			flow.Run("flow-a")
-		}),
-	)
-
-	flow.NewSequence("flow-b", false,
-		flow.NowWaitForDelay(1),
-		flow.NowDo(func() {
-			node.Color = color.Azure
-			text = "Flow B: step 1"
-		}),
-		flow.NowWaitForDelay(1),
-		flow.NowDo(func() {
-			node.Color = color.Green
-			text = "Flow B: step 2"
+			a.Run()
 		}),
 	)
 
@@ -79,5 +82,9 @@ func Flows() {
 		cam.DrawNodes(&node)
 		cam.PivotX, cam.PivotY = 0, 0
 		cam.DrawText(font, text, 0, 0, 200, color.White)
+
+		if keyboard.IsKeyPressedOnce(key.W) {
+			a.Signal("W press")
+		}
 	}
 }

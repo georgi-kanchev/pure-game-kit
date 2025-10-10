@@ -20,13 +20,6 @@ type Atlas struct {
 	Gap int
 }
 
-type Sequence struct {
-	Steps                []Step
-	CurrIndex, PrevIndex int
-	StepStartedAt        float32
-}
-type Step interface{ Continue() bool }
-
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
@@ -36,9 +29,6 @@ var Fonts = make(map[string]*rl.Font)
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 var ShaderText = rl.Shader{}
-
-var Flows = make(map[string]*Sequence)
-var FlowSignals = []string{}
 
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
@@ -97,24 +87,6 @@ func AssetSize(assetId string) (width, height int) {
 
 //=================================================================
 // private
-
-// flows from engine/execution/flow
-func updateFlows() {
-	for _, v := range Flows {
-		if v.PrevIndex != v.CurrIndex {
-			v.StepStartedAt = Runtime
-		}
-		v.PrevIndex = v.CurrIndex
-
-		var prev = v.CurrIndex // this checks if we changed index inside the step itself, skip increment if so
-		var validIndex = v.CurrIndex >= 0 && v.CurrIndex < len(v.Steps)
-		var keepGoing = validIndex && v.Steps[v.CurrIndex].Continue()
-
-		if keepGoing && prev == v.CurrIndex {
-			v.CurrIndex++
-		}
-	}
-}
 
 // timers from engine/execution/flow
 func updateTimers() {

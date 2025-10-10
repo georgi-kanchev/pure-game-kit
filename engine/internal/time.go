@@ -18,7 +18,6 @@ var CallFor = make(map[float32][]func(remaining float32))
 func Update() {
 	updateData()
 	updateTimers()
-	updateFlows()
 	updateKeysAndButtons()
 }
 

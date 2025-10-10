@@ -10,7 +10,7 @@ func NowWaitForDelay(seconds float32) *StepDelay {
 	return &StepDelay{delay: seconds, startTime: -1}
 }
 
-func (step *StepDelay) Continue() bool {
+func (step *StepDelay) Continue(*Sequence) bool {
 	var runtime = time.Runtime()
 
 	if step.startTime < 0 {

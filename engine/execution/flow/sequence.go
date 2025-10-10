@@ -1,68 +1,76 @@
 package flow
 
 import (
+	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
 	"pure-kit/engine/utility/time"
 )
 
-type Step = internal.Step
+type Sequence struct {
+	steps                []Step
+	currIndex, prevIndex int
+	stepStartedAt        float32
+	signals              []string
+}
 
-func NewSequence(name string, runInstantly bool, steps ...Step) {
-	internal.Flows[name] = &internal.Sequence{Steps: steps, CurrIndex: -1}
-	Run(name)
+type Step interface{ Continue(*Sequence) bool }
+
+func NewSequence(runInstantly bool, steps ...Step) *Sequence {
+	var result = &Sequence{steps: steps, currIndex: -1}
+	if runInstantly {
+		result.Run()
+	}
+	return result
 }
 
 //=================================================================
 
-func Run(sequenceName string) {
-	GoToStep(sequenceName, 0)
+func (sequence *Sequence) Run() {
+	sequence.GoToStep(0)
+	condition.CallFor(number.ValueMaximum[float32](), sequence.update)
 }
-func Stop(sequenceName string) {
-	GoToStep(sequenceName, -1)
-}
-
-func Signal(signal string) {
-	internal.FlowSignals = append(internal.FlowSignals, signal)
-}
-func GoToStep(sequenceName string, step int) {
-	var seq, has = internal.Flows[sequenceName]
-	if has {
-		seq.CurrIndex = step
-	}
-}
-func GoToNextStep(sequenceName string) {
-	var seq, has = internal.Flows[sequenceName]
-	if has {
-		seq.CurrIndex++
-	}
+func (sequence *Sequence) Stop() {
+	sequence.GoToStep(-1)
 }
 
-func IsRunning(sequenceName string) bool {
-	var seq, has = internal.Flows[sequenceName]
-	if has && number.IsBetween(seq.CurrIndex, 0, len(seq.Steps), true, false) {
-		return true
-	}
-	return false
+func (sequence *Sequence) Signal(signal string) {
+	sequence.signals = append(sequence.signals, signal)
 }
-func IsExisting(sequenceName string) bool {
-	var _, has = internal.Flows[sequenceName]
-	return has
+func (sequence *Sequence) GoToStep(step int) {
+	sequence.currIndex = step
+}
+func (sequence *Sequence) GoToNextStep() {
+	sequence.currIndex++
 }
 
-func CurrentStep(sequenceName string) int {
-	var seq, has = internal.Flows[sequenceName]
-	if !has {
-		return -1
-	}
-	return seq.CurrIndex
+func (sequence *Sequence) IsRunning() bool {
+	return number.IsBetween(sequence.currIndex, 0, len(sequence.steps), true, false)
+}
+
+func (sequence *Sequence) CurrentStep() int {
+	return sequence.currIndex
 }
 
 // useful for time tracking a continuously looping step
-func CurrentStepTimer(sequenceName string) float32 {
-	var seq, has = internal.Flows[sequenceName]
-	if !has {
-		return number.NaN()
+func (sequence *Sequence) CurrentStepTimer() float32 {
+	return time.Runtime() - sequence.stepStartedAt
+}
+
+//=================================================================
+// private
+
+func (sequence *Sequence) update(float32) {
+	if sequence.prevIndex != sequence.currIndex {
+		sequence.stepStartedAt = internal.Runtime
 	}
-	return time.Runtime() - seq.StepStartedAt
+	sequence.prevIndex = sequence.currIndex
+
+	var prev = sequence.currIndex // this checks if we changed index inside the step itself, skip increment if so
+	var validIndex = sequence.currIndex >= 0 && sequence.currIndex < len(sequence.steps)
+	var keepGoing = validIndex && sequence.steps[sequence.currIndex].Continue(sequence)
+
+	if keepGoing && prev == sequence.currIndex {
+		sequence.currIndex++
+	}
 }

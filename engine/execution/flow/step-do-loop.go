@@ -9,7 +9,7 @@ func NowDoLoop(times int, action func(i int)) *StepLoop {
 	return &StepLoop{times: times, action: action}
 }
 
-func (step *StepLoop) Continue() bool {
+func (step *StepLoop) Continue(*Sequence) bool {
 	if step.curr >= step.times {
 		step.curr = 0
 		return true

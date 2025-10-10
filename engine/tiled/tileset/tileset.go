@@ -91,8 +91,8 @@ func TileAnimate(tilesetId string, tileId int, animate bool) {
 	var tile = getTile(tilesetId, tileId)
 	if tile != nil {
 		var tileset, _ = internal.TiledTilesets[tilesetId]
-		var name = text.New(tileset.AtlasId, "/", tile.Id)
-		flow.GoToStep(name, condition.If(animate, 0, -1))
+		var seq = tile.Sequence.(*flow.Sequence)
+		seq.GoToStep(condition.If(animate, 0, -1))
 
 		if !animate { // disabling animation resets the tile to original one
 			var w, h = tileset.Columns, tileset.TileCount / tileset.Columns
@@ -104,12 +104,7 @@ func TileAnimate(tilesetId string, tileId int, animate bool) {
 }
 func TileIsAnimated(tilesetId string, tileId int) bool {
 	var tile = getTile(tilesetId, tileId)
-	if tile != nil {
-		var tileset, _ = internal.TiledTilesets[tilesetId]
-		var name = text.New(tileset.AtlasId, "/", tile.Id)
-		return flow.IsExisting(name)
-	}
-	return false
+	return tile != nil && tile.Sequence != nil
 }
 
 func TileObjectProperty(tilesetId string, tileId int, objectNameClassOrId, property string) string {

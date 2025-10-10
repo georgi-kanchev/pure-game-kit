@@ -56,6 +56,9 @@ type TilesetTile struct {
 	CollisionLayers []*LayerObjects      `xml:"objectgroup"`
 	Animation       TilesetTileAnimation `xml:"animation"`
 	Properties      []Property           `xml:"properties>property"`
+
+	// animation sequence from engine/flow - any to avoid circular dependency with internal -> flow -> internal
+	Sequence any
 }
 type TilesetTileAnimation struct {
 	Frames []TilesetTileFrame `xml:"frame"`
