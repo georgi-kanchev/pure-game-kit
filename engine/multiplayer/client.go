@@ -12,18 +12,18 @@ import (
 )
 
 type Client struct {
-	myId         int64
+	myId         int
 	conn         *net.Conn
 	pingResponse chan struct{} // channel to receive the server connection pong to our ping
 }
 
-func NewClient(ip string, onMessage func(fromId int64, message string)) *Client {
+func NewClient(ip string, onMessage func(fromId, tag int, message string)) *Client {
 	var conn, err = net.Dial("tcp", ip+":"+port)
 	if err != nil {
 		return nil
 	}
 	var client = &Client{conn: &conn, myId: -1, pingResponse: make(chan struct{}, 1)}
-	onMessage(0, con.ClientJoined+" "+ip+":"+port)
+	onMessage(0, con.MeJoined, ip+":"+port)
 
 	go func() {
 		var scanner = bufio.NewScanner(conn)
@@ -32,22 +32,25 @@ func NewClient(ip string, onMessage func(fromId int64, message string)) *Client 
 				return // we already left
 			}
 
-			var parts = strings.SplitN(scanner.Text(), divider, 2)
-			if len(parts) != 2 {
+			var parts = strings.SplitN(scanner.Text(), divider, 3)
+			if len(parts) != 3 {
 				continue
 			}
 
-			if parts[0] == "0" && text.Contains(parts[1], pong) {
-				client.myId, _ = strconv.ParseInt(strings.SplitN(parts[1], " ", 2)[1], 10, 64)
+			var fromId, _ = strconv.ParseInt(parts[0], 10, 64)
+			var tag, _ = strconv.ParseInt(parts[1], 10, 64)
+			var msg = parts[2]
+
+			if fromId == 0 && tag == pong {
+				var myNewId, _ = strconv.ParseInt(msg, 10, 64)
+				client.myId = int(myNewId)
 				client.pingResponse <- struct{}{}
 				continue // server responded to our ping with a pong, we are still connected (all good)
-			}
-			if parts[0] == "0" && parts[1] == con.ServerStopped {
+			} else if fromId == 0 && tag == con.ServerStopped {
 				client.Leave() // server stopped, so we leave (to not drop)
 			}
 
-			var fromId, _ = strconv.ParseInt(parts[0], 10, 64)
-			onMessage(fromId, parts[1])
+			onMessage(int(fromId), int(tag), msg)
 		}
 	}()
 
@@ -57,7 +60,7 @@ func NewClient(ip string, onMessage func(fromId int64, message string)) *Client 
 				return // we already left
 			}
 
-			client.SendToServer(ping)
+			client.send(true, 0, ping, "")
 
 			select {
 			case <-client.pingResponse: // pong received, we are still connected
@@ -66,7 +69,7 @@ func NewClient(ip string, onMessage func(fromId int64, message string)) *Client 
 					return // we already left, do not send ~dropped
 				}
 
-				onMessage(0, con.ClientDropped)
+				onMessage(0, con.MeDropped, "")
 				client.Leave()
 				return
 			}
@@ -76,18 +79,18 @@ func NewClient(ip string, onMessage func(fromId int64, message string)) *Client 
 	return client
 }
 
-func (client *Client) Id() int64 {
+func (client *Client) Id() int {
 	return client.myId
 }
 
-func (client *Client) SendToServer(message string) {
-	fmt.Fprintln(*client.conn, text.New(0, divider, message))
+func (client *Client) SendToServer(tag int, message string) {
+	client.send(false, 0, tag, message)
 }
-func (client *Client) SendToAll(message string) {
-	fmt.Fprintln(*client.conn, text.New(-1, divider, message))
+func (client *Client) SendToAll(tag int, message string) {
+	client.send(false, -1, tag, message)
 }
-func (client *Client) SendToClient(clientId uint64, message string) {
-	fmt.Fprintln(*client.conn, text.New(clientId, divider, message))
+func (client *Client) SendToClient(clientId, tag int, message string) {
+	client.send(false, clientId, tag, message)
 }
 
 func (client *Client) Leave() {
@@ -96,4 +99,15 @@ func (client *Client) Leave() {
 		client.conn = nil
 		client.myId = -1
 	}
+}
+
+//=================================================================
+// private
+
+func (client *Client) send(internally bool, toId, tag int, message string) {
+	if (!internally && tag < 0) || client.conn == nil {
+		return
+	}
+
+	fmt.Fprintln(*client.conn, text.New(toId, divider, tag, divider, message))
 }

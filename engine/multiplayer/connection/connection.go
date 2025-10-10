@@ -1,12 +1,13 @@
 package connection
 
 const (
-	Tag = "▶"
+	ServerStarted = -1
+	ServerStopped = -2
 
-	ServerStarted = Tag + "started"
-	ServerStopped = Tag + "stopped"
+	MeJoined  = -3
+	MeDropped = -4
 
-	ClientJoined  = Tag + "joined"
-	ClientLeft    = Tag + "left"
-	ClientDropped = Tag + "dropped"
+	ClientJoined  = -5
+	ClientLeft    = -6
+	ClientDropped = -7 // losing connection or no longer being able to reach server
 )
