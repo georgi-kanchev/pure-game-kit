@@ -9,6 +9,10 @@ GPU particles?
 consistent error handling + logging, console & file
 
 // DONE:
+[80] [Sun] [12-10-2025]
+[√] assets + tiled - fixed windows paths, ids are always '/' now, not '\\'
+[√] flow - fixed added SetSteps method to Sequence cuz most steps need pointer to it and it's not yet created in the constructor
+
 [79] [Fri] [10-10-2025]
 [√] multiplayer - added message tags
 [√] execution - flow sequences are now structs & no longer stored in internal

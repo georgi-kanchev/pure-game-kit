@@ -88,6 +88,7 @@ func usedTilesets(data *internal.Map) []*internal.Tileset {
 		if tileset.Source != "" {
 			var root = path.Folder(path.Executable()) + path.Divider()
 			var tilesetId = text.Remove(path.New(data.Directory, tileset.Source), root)
+			tilesetId = text.Replace(tilesetId, "\\", "/")
 			tilesetId = path.RemoveExtension(tilesetId)
 			usedTilesets[i] = internal.TiledTilesets[tilesetId]
 			if usedTilesets[i] != nil {

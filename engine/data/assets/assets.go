@@ -37,5 +37,6 @@ func tryInitShader() {
 func getIdPath(p string) string {
 	var root = path.Folder(path.Executable()) + path.Divider()
 	var result = path.RemoveExtension(text.Remove(p, root))
+	result = text.Replace(result, "\\", "/")
 	return result
 }

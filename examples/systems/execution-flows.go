@@ -20,7 +20,8 @@ func Flows() {
 	var text = ""
 	var timerInt = 0
 
-	var b = flow.NewSequence(false,
+	var b = flow.NewSequence()
+	b.SetSteps(false,
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.Color = color.Azure
@@ -32,8 +33,8 @@ func Flows() {
 			text = "Flow B: step 2"
 		}))
 
-	var a *flow.Sequence
-	a = flow.NewSequence(true,
+	var a = flow.NewSequence()
+	a.SetSteps(true,
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.Angle = 45

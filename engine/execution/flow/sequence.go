@@ -16,12 +16,16 @@ type Sequence struct {
 
 type Step interface{ Continue(*Sequence) bool }
 
-func NewSequence(runInstantly bool, steps ...Step) *Sequence {
-	var result = &Sequence{steps: steps, currIndex: -1}
+func NewSequence() *Sequence {
+	return &Sequence{}
+}
+func (sequence *Sequence) SetSteps(runInstantly bool, steps ...Step) {
+	sequence.currIndex = -1
+	sequence.steps = steps
+
 	if runInstantly {
-		result.Run()
+		sequence.Run()
 	}
-	return result
 }
 
 //=================================================================

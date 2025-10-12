@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	example.Flows()
+	example.Tiled()
 }

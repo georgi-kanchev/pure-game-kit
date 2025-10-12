@@ -53,8 +53,8 @@ func LoadTiledTileset(filePath string) string {
 
 		var frame = 0
 		var name = text.New(atlasId, "/", tile.Id)
-		var seq *flow.Sequence
-		seq = flow.NewSequence(true,
+		var seq = flow.NewSequence()
+		seq.SetSteps(true,
 			flow.NowDoLoop(number.ValueMaximum[int](), func(int) {
 				var timer = seq.CurrentStepTimer()
 				var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
@@ -121,7 +121,7 @@ func LoadTiledMap(filePath string) string {
 	}
 
 	var root = path.Folder(path.Executable()) + path.Divider()
-	var id = path.RemoveExtension(text.Remove(filePath, root))
+	var id = text.Replace(path.RemoveExtension(text.Remove(filePath, root)), "\\", "/")
 	mapData.Name = path.LastElement(path.RemoveExtension(filePath))
 	mapData.Directory = path.Folder(absolutePath)
 	internal.TiledMaps[id] = mapData
