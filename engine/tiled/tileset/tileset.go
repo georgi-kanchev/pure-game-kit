@@ -5,11 +5,11 @@ import (
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/execution/flow"
 	"pure-kit/engine/geometry"
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
 	p "pure-kit/engine/tiled/property"
 	"pure-kit/engine/utility/flag"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/point"
 	"pure-kit/engine/utility/text"
 )
 

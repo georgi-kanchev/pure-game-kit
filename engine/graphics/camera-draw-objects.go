@@ -1,9 +1,9 @@
 package graphics
 
 import (
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )

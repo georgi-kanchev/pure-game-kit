@@ -1,9 +1,9 @@
 package graphics
 
 import (
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -99,9 +99,13 @@ func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]
 	}
 	camera.end()
 }
-func (camera *Camera) DrawCircle(x, y, radius float32, color uint) {
+func (camera *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 	camera.begin()
-	rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(color))
+	if len(colors) == 1 {
+		rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(colors[0]))
+	} else if len(colors) == 2 {
+		rl.DrawCircleGradient(int32(x), int32(y), radius, rl.GetColor(colors[0]), rl.GetColor(colors[1]))
+	}
 	camera.end()
 }
 func (camera *Camera) DrawEllipse(x, y, width, height float32, color uint) {
@@ -150,12 +154,11 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	camera.DrawRectangle(tlx, tly, thickness, height+thickness*2, angle, color)
 	camera.end()
 }
-func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color uint) {
+func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, colors ...uint) {
 	if !camera.isAreaVisible(x, y, width, height, angle) {
 		return
 	}
 
-	camera.begin()
 	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
 
 	// raylib doesn't seem to have negative width/height???
@@ -168,8 +171,26 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, color ui
 		rect.Height *= -1
 	}
 
-	rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(color))
+	if len(colors) == 1 {
+		camera.begin()
+		rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(colors[0]))
+		camera.end()
+		return // draw regular rect with one provided color
+	}
+
+	for len(colors) < 4 { // if fewer than 4 colors, pad with last provided color
+		colors = append(colors, colors[len(colors)-1])
+	}
+
+	var tl, tr = rl.GetColor(colors[0]), rl.GetColor(colors[1])
+	var br, bl = rl.GetColor(colors[2]), rl.GetColor(colors[3])
+	var prevAng = camera.Angle
+	camera.Angle = angle
+	camera.begin()
+	rect.X, rect.Y = point.RotateAroundPoint(rect.X, rect.Y, camera.X, camera.Y, -angle)
+	rl.DrawRectangleGradientEx(rect, tl, bl, br, tr)
 	camera.end()
+	camera.Angle = prevAng
 }
 
 func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {

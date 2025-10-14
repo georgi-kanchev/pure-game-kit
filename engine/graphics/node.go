@@ -1,10 +1,10 @@
 package graphics
 
 import (
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/point"
 )
 
 type Node struct {

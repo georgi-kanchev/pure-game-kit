@@ -9,6 +9,10 @@ GPU particles?
 consistent error handling + logging, console & file
 
 // DONE:
+[81] [Tue] [14-10-2025]
+[√] geometry - point moved to utility
+[√] graphics - camera draw gradient rect & circle
+
 [80] [Sun] [12-10-2025]
 [√] assets + tiled - fixed windows paths, ids are always '/' now, not '\\'
 [√] flow - fixed added SetSteps method to Sequence cuz most steps need pointer to it and it's not yet created in the constructor

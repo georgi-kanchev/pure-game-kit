@@ -1,9 +1,9 @@
 package geometry
 
 import (
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/point"
 )
 
 type Shape struct {

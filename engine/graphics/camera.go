@@ -1,12 +1,12 @@
 package graphics
 
 import (
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/input/mouse"
 	"pure-kit/engine/input/mouse/button"
 	"pure-kit/engine/internal"
 	"pure-kit/engine/utility/angle"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/point"
 	"pure-kit/engine/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"

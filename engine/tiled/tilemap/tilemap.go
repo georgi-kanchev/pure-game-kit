@@ -4,7 +4,6 @@ import (
 	"pure-kit/engine/data/path"
 	"pure-kit/engine/execution/condition"
 	"pure-kit/engine/geometry"
-	"pure-kit/engine/geometry/point"
 	"pure-kit/engine/graphics"
 	"pure-kit/engine/internal"
 	p "pure-kit/engine/tiled/property"
@@ -12,6 +11,7 @@ import (
 	"pure-kit/engine/utility/color"
 	"pure-kit/engine/utility/flag"
 	"pure-kit/engine/utility/number"
+	"pure-kit/engine/utility/point"
 	"pure-kit/engine/utility/text"
 )
 
