@@ -1,7 +1,7 @@
 package assets
 
-func LoadDefaultSoundsUI() [10]string {
-	var soundIds = [10]string{
+func LoadDefaultSoundsUI() []string {
+	var soundIds = []string{
 		loadSound("~on", on),
 		loadSound("~off", off),
 		loadSound("~in", in),

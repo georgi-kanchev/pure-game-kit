@@ -9,6 +9,9 @@ GPU particles?
 consistent error handling + logging, console & file
 
 // DONE:
+[82] [Wed] [15-10-2025]
+[√] audio - started
+
 [81] [Tue] [14-10-2025]
 [√] geometry - point moved to utility
 [√] graphics - camera draw gradient rect & circle

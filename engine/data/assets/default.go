@@ -30,13 +30,19 @@ func loadSound(id, b64 string) string {
 
 	var _, has = internal.Sounds[id]
 	if has {
-		UnloadSounds(id)
+		UnloadSound(id)
 	}
 
 	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
 	var wave = rl.LoadWaveFromMemory(".mp3", decompressed, int32(len(decompressed)))
 	var sound = rl.LoadSoundFromWave(wave)
-	internal.Sounds[id] = &sound
+	var instances = make([]*rl.Sound, 10) // maximum of 10 playing at once
+	instances[0] = &sound
+	for i := 1; i < len(instances); i++ {
+		var instance = rl.LoadSoundAlias(sound)
+		instances[i] = &instance
+	}
+	internal.Sounds[id] = instances
 	rl.UnloadWave(wave)
 
 	return id

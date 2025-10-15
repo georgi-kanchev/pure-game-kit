@@ -19,6 +19,7 @@ func Update() {
 	updateData()
 	updateTimers()
 	updateKeysAndButtons()
+	updateMusic()
 }
 
 //=================================================================

@@ -26,7 +26,7 @@ var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)
-var Sounds = make(map[string]*rl.Sound)
+var Sounds = make(map[string][]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 var ShaderText = rl.Shader{}
 
@@ -153,5 +153,11 @@ func checkKeyRange(from, to int) {
 		if rl.IsKeyReleased(int32(i)) {
 			Keys = collection.Remove(Keys, i)
 		}
+	}
+}
+
+func updateMusic() {
+	for _, v := range Music {
+		rl.UpdateMusicStream(*v)
 	}
 }
