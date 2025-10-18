@@ -1,8 +1,9 @@
 // TODO:
-gui, sounds
+gui sounds
 lua scripts - compiler allow & autocomplete the added go funcs
 
 // TODO LONGTERM:
+alpha blending, additive, multiply
 shader effects, port?
 GPU particles?
 consistent error handling + logging, console & file
