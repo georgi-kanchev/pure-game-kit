@@ -26,9 +26,10 @@ var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)
-var Sounds = make(map[string][]*rl.Sound)
-var Music = make(map[string]*rl.Music)
 var ShaderText = rl.Shader{}
+
+var Sounds = make(map[string]*rl.Sound)
+var Music = make(map[string]*rl.Music)
 
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
@@ -42,8 +43,6 @@ var AnyButtonPressedOnce = false
 var AnyButtonReleasedOnce = false
 
 var WindowReady = false
-
-var prevCursor int
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
@@ -87,6 +86,8 @@ func AssetSize(assetId string) (width, height int) {
 
 //=================================================================
 // private
+
+var prevCursor int
 
 // timers from engine/execution/flow
 func updateTimers() {

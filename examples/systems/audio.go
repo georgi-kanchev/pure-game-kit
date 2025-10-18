@@ -1,7 +1,6 @@
 package example
 
 import (
-	"fmt"
 	"pure-kit/engine/audio"
 	"pure-kit/engine/data/assets"
 	"pure-kit/engine/input/keyboard"
@@ -10,25 +9,20 @@ import (
 )
 
 func Audio() {
-	var ui = assets.LoadDefaultSoundsUI()
-	var asset = assets.LoadMusic("examples/data/music.ogg")
-	var music = audio.New(asset)
-	var woop = audio.New(ui[0])
-	var hoop = audio.New(ui[4])
+	var sounds = assets.LoadDefaultSoundsUI()
+	var m1 = assets.LoadMusic("examples/data/souls.ogg")
+	// var m2 = assets.LoadSound("examples/data/music2.ogg")
+	var music = audio.New(sounds[0])
 
 	for window.KeepOpen() {
 		if keyboard.IsKeyPressedOnce(key.A) {
 			music.Play()
 		}
 		if keyboard.IsKeyPressedOnce(key.S) {
-			fmt.Printf("woop.IsPlaying(): %v\n", music.IsPlaying())
+			music.AssetId = m1
 		}
 		if keyboard.IsKeyPressedOnce(key.D) {
-			woop.Play()
+			music.Volume = 0.5
 		}
-		if keyboard.IsKeyPressedOnce(key.W) {
-			hoop.Play()
-		}
-		fmt.Printf("hoop.IsPlaying(): %v\n", hoop.IsPlaying())
 	}
 }

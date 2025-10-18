@@ -36,49 +36,45 @@ func loadSound(id, b64 string) string {
 	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
 	var wave = rl.LoadWaveFromMemory(".mp3", decompressed, int32(len(decompressed)))
 	var sound = rl.LoadSoundFromWave(wave)
-	var instances = make([]*rl.Sound, 10) // maximum of 10 playing at once
-	instances[0] = &sound
-	for i := 1; i < len(instances); i++ {
-		var instance = rl.LoadSoundAlias(sound)
-		instances[i] = &instance
-	}
-	internal.Sounds[id] = instances
+	internal.Sounds[id] = &sound
 	rl.UnloadWave(wave)
 
 	return id
 }
 
-// func printSoundBase64(path string) {
-// 	if path == "" {
-// 		return
-// 	}
-// 	var raw = file.LoadBytes(path)
-// 	var compressed = file.Compress(raw)
-// 	var b64 = text.ToBase64(string(compressed))
-// 	print(b64)
-// }
-// func printFontBase64(path string) {
-// 	if path == "" {
-// 		return
-// 	}
-// 	var bytes = file.LoadBytes(path)
-// 	var compressed = file.Compress(bytes)
-// 	var b64 = text.ToBase64(string(compressed))
-// 	print(b64)
-// }
-// func printImageBase64(path string) {
-// 	if path == "" {
-// 		return
-// 	}
-// 	var img = rl.LoadImage(path)
-// 	var bytes = rl.ExportImageToMemory(*img, ".png")
-// 	var compressed = file.Compress(bytes)
-// 	var b64 = text.ToBase64(string(compressed))
-// 	print(b64)
-// }
+/*
+func printSoundBase64(path string) {
+	if path == "" {
+		return
+	}
+	var raw = file.LoadBytes(path)
+	var compressed = file.Compress(raw)
+	var b64 = text.ToBase64(string(compressed))
+	print(b64)
+}
+func printFontBase64(path string) {
+	if path == "" {
+		return
+	}
+	var bytes = file.LoadBytes(path)
+	var compressed = file.Compress(bytes)
+	var b64 = text.ToBase64(string(compressed))
+	print(b64)
+}
+func printImageBase64(path string) {
+	if path == "" {
+		return
+	}
+	var img = rl.LoadImage(path)
+	var bytes = rl.ExportImageToMemory(*img, ".png")
+	var compressed = file.Compress(bytes)
+	var b64 = text.ToBase64(string(compressed))
+	print(b64)
+}
 
-// func Main() {
-// 	printSoundBase64("")
-// 	printFontBase64("")
-// 	printImageBase64("default-ui.png")
-// }
+func Main() {
+	printSoundBase64("")
+	printFontBase64("")
+	printImageBase64("default-ui.png")
+}
+*/
