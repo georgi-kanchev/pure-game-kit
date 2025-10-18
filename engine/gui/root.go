@@ -24,7 +24,7 @@ type root struct {
 	Widgets      map[string]*widget
 }
 
-func (root *root) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
+func (root *root) IsButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
 	var owner = root.Containers[widget.OwnerId]
 	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
@@ -33,7 +33,7 @@ func (root *root) ButtonClickedOnce(buttonId string, camera *graphics.Camera) bo
 
 	return exists && input
 }
-func (root *root) ButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
+func (root *root) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
 	if !exists {
 		return false

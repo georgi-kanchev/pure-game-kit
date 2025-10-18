@@ -18,11 +18,11 @@ func Button(id string, properties ...string) string {
 //=================================================================
 // getters
 
-func (gui *GUI) ButtonOnClickOnce(buttonId string, camera *graphics.Camera) bool {
-	return gui.root.ButtonClickedOnce(buttonId, camera)
+func (gui *GUI) IsButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
+	return gui.root.IsButtonClickedOnce(buttonId, camera)
 }
-func (gui *GUI) ButtonOnClickAndHold(buttonId string, camera *graphics.Camera) bool {
-	return gui.root.ButtonClickedAndHeld(buttonId, camera)
+func (gui *GUI) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
+	return gui.root.IsButtonClickedAndHeld(buttonId, camera)
 }
 
 //=================================================================

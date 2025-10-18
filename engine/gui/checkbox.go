@@ -21,7 +21,7 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 
 	button(cam, root, widget)
 
-	if root.ButtonClickedOnce(widget.Id, cam) {
+	if root.IsButtonClickedOnce(widget.Id, cam) {
 		widget.Properties[field.Value] = condition.If(widget.Properties[field.Value] == "", "v", "")
 
 		var group = themedProp(field.CheckboxGroup, root, owner, widget)

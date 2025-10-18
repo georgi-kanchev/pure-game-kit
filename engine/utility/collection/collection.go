@@ -171,7 +171,7 @@ func ShiftItems[T comparable](collection []T, offset int, wrap bool, items ...T)
 	}
 	ShiftIndexes(collection, offset, wrap, indexes...)
 }
-func Surface[T comparable](collection []T, items []T) {
+func ShiftToEnd[T comparable](collection []T, items []T) {
 	if len(items) == 0 {
 		return
 	}
@@ -189,7 +189,7 @@ func Surface[T comparable](collection []T, items []T) {
 		collection = append(collection, block)
 	}
 }
-func Sink[T comparable](collection []T, items []T) {
+func ShiftToFront[T comparable](collection []T, items []T) {
 	if len(items) == 0 || len(collection) == 0 {
 		return
 	}

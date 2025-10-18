@@ -9,14 +9,15 @@ import (
 )
 
 type Audio struct {
-	AssetId                  string
-	Volume, Pitch, LeftRight float32
-	IsLooping, IsPaused      bool
+	AssetId string
+	Volume, Pitch, LeftRight,
+	FadeIn, FadeOut float32
+	IsLooping, IsPaused bool
 
 	prevAssetId string
 	prevPitch, prevLeftRight,
 	prevTime float32
-	prevPause bool
+	prevPause, finishedOnce bool
 
 	time, duration float32
 
@@ -28,12 +29,14 @@ type Audio struct {
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
 
 func New(assetId string) *Audio {
-	var audio = &Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRight: 0.5}
+	var audio = &Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRight: 0.5, prevLeftRight: number.NaN()}
 	condition.CallFor(number.ValueMaximum[float32](), audio.update)
 	return audio
 }
 
 func (audio *Audio) Play() {
+	audio.tryReload()
+
 	var sound, _ = internal.Sounds[audio.AssetId]
 	var music, _ = internal.Music[audio.AssetId]
 
@@ -45,6 +48,8 @@ func (audio *Audio) Play() {
 	}
 }
 func (audio *Audio) IsPlaying() bool {
+	audio.tryReload()
+
 	var sound, _ = internal.Sounds[audio.AssetId]
 	var music, _ = internal.Music[audio.AssetId]
 
@@ -55,18 +60,12 @@ func (audio *Audio) IsPlaying() bool {
 	}
 	return false
 }
+func (audio *Audio) IsFinishedOnce() bool {
+	return audio.finishedOnce
+}
 
 func (audio *Audio) Time() (current, duration float32) {
-	var sound, _ = internal.Sounds[audio.AssetId]
-	var music, _ = internal.Music[audio.AssetId]
-
-	if music != nil {
-		return rl.GetMusicTimePlayed(*music), audio.duration // cached upon AssetId change
-	}
-	if audio.instance != nil && sound != nil {
-		return audio.time, audio.duration
-	}
-	return number.NaN(), number.NaN()
+	return audio.time, audio.duration
 }
 
 //=================================================================
@@ -76,8 +75,6 @@ func (audio *Audio) Time() (current, duration float32) {
 func (audio *Audio) update(float32) {
 	var sound, _ = internal.Sounds[audio.AssetId]
 	var music, _ = internal.Music[audio.AssetId]
-	var prevSound, _ = internal.Sounds[audio.prevAssetId]
-	var prevMusic, _ = internal.Music[audio.prevAssetId]
 
 	if sound == nil && music == nil {
 		if audio.instance != nil { // sound data was unloaded but we're still pointing to it, clear up
@@ -87,45 +84,32 @@ func (audio *Audio) update(float32) {
 		return
 	}
 
-	// stop & cleanup
-	if sound != prevSound {
-		audio.duration = 0
-		if prevSound != nil && audio.instance != nil {
-			rl.UnloadSoundAlias(*audio.instance)
-		}
-	}
-	if music != prevMusic {
-		audio.duration = 0
-		if prevMusic != nil {
-			rl.StopMusicStream(*prevMusic)
-		}
-	}
+	audio.tryReload()
 
 	// current time cache
 	if audio.instance != nil && sound != nil {
 		audio.time = currentTime(audio.instance.Stream)
 	} else if music != nil {
-		audio.time = currentTime(music.Stream)
+		audio.time = rl.GetMusicTimePlayed(*music)
 	}
 
-	// assetId
-	if sound != nil && audio.AssetId != audio.prevAssetId {
-		var newInstance = rl.LoadSoundAlias(*sound)
-		audio.instance = &newInstance // load & set the new instance
-		audio.time = 0
-		audio.duration = float32(sound.FrameCount) / float32(sound.Stream.SampleRate)
+	// fade
+	var fadeIn = number.Limit(number.Map(audio.time, 0, audio.FadeIn, 0, 1), 0, 1)
+	var fadeOut = number.Limit(number.Map(audio.time, audio.duration-audio.FadeOut, audio.duration, 1, 0), 0, 1)
+	if audio.FadeIn <= 0 {
+		fadeIn = 1
 	}
-	if music != nil && audio.AssetId != audio.prevAssetId {
-		audio.time = 0
-		audio.duration = rl.GetMusicTimeLength(*music)
+	if audio.FadeOut <= 0 {
+		fadeOut = 1
 	}
 
 	// volume
+	var volume = audio.Volume * VolumeSound * Volume * fadeIn * fadeOut
 	if sound != nil && audio.instance != nil {
-		audio.instance.Stream.Buffer.Volume = audio.Volume * VolumeSound * Volume
+		audio.instance.Stream.Buffer.Volume = volume
 	}
 	if music != nil {
-		music.Stream.Buffer.Volume = audio.Volume * VolumeMusic * Volume
+		music.Stream.Buffer.Volume = volume
 	}
 
 	// pitch
@@ -138,15 +122,20 @@ func (audio *Audio) update(float32) {
 
 	// leftRight
 	if sound != nil && audio.instance != nil && audio.LeftRight != audio.prevLeftRight {
-		rl.SetSoundPan(*audio.instance, audio.LeftRight)
+		rl.SetSoundPan(*audio.instance, 1-audio.LeftRight)
 	}
 	if music != nil && audio.LeftRight != audio.prevLeftRight {
-		rl.SetMusicPan(*music, audio.LeftRight)
+		rl.SetMusicPan(*music, 1-audio.LeftRight)
 	}
 
 	// loop
-	if audio.IsLooping && audio.time < audio.prevTime {
-		audio.Play()
+	audio.finishedOnce = false
+	if audio.time < audio.prevTime {
+		if audio.IsLooping {
+			audio.Play()
+		} else {
+			audio.finishedOnce = true
+		}
 	}
 
 	// pause
@@ -165,7 +154,6 @@ func (audio *Audio) update(float32) {
 		}
 	}
 
-	audio.prevAssetId = audio.AssetId
 	audio.prevLeftRight = audio.LeftRight
 	audio.prevPitch = audio.Pitch
 	audio.prevPause = audio.IsPaused
@@ -177,4 +165,38 @@ func currentTime(stream rl.AudioStream) float32 {
 	var cur = stream.Buffer.FrameCursorPos
 	var rate = stream.SampleRate
 	return float32(processed)/float32(rate) + float32(cur)/float32(rate)
+}
+
+func (audio *Audio) tryReload() {
+	var sound, _ = internal.Sounds[audio.AssetId]
+	var music, _ = internal.Music[audio.AssetId]
+	var prevSound, _ = internal.Sounds[audio.prevAssetId]
+	var prevMusic, _ = internal.Music[audio.prevAssetId]
+
+	// stop & cleanup
+	if sound != prevSound {
+		audio.duration = 0
+		if prevSound != nil && audio.instance != nil {
+			rl.UnloadSoundAlias(*audio.instance)
+		}
+	}
+	if music != prevMusic {
+		audio.duration = 0
+		if prevMusic != nil {
+			rl.StopMusicStream(*prevMusic)
+		}
+	}
+	// assetId
+	if sound != nil && audio.AssetId != audio.prevAssetId {
+		var newInstance = rl.LoadSoundAlias(*sound)
+		audio.instance = &newInstance // load & set the new instance
+		audio.time = 0
+		audio.duration = float32(sound.FrameCount) / float32(sound.Stream.SampleRate)
+	}
+	if music != nil && audio.AssetId != audio.prevAssetId {
+		audio.time = 0
+		audio.duration = rl.GetMusicTimeLength(*music)
+	}
+
+	audio.prevAssetId = audio.AssetId
 }

@@ -31,7 +31,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 		}
 	}
 
-	if root.ButtonClickedOnce(widget.Id, cam) {
+	if root.IsButtonClickedOnce(widget.Id, cam) {
 		var containerId = themedProp(field.MenuContainerId, root, owner, widget)
 		var c, has = root.Containers[containerId]
 		if !has {

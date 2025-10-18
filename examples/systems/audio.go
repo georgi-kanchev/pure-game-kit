@@ -9,20 +9,24 @@ import (
 )
 
 func Audio() {
-	var sounds = assets.LoadDefaultSoundsUI()
-	var m1 = assets.LoadMusic("examples/data/souls.ogg")
-	// var m2 = assets.LoadSound("examples/data/music2.ogg")
-	var music = audio.New(sounds[0])
+	var m1 = assets.LoadSound("examples/data/music2.ogg")
+	var m2 = assets.LoadSound("examples/data/souls.ogg")
+	var music = audio.New(m2)
+
+	music.FadeIn = 1
+	music.FadeOut = 1
 
 	for window.KeepOpen() {
 		if keyboard.IsKeyPressedOnce(key.A) {
 			music.Play()
 		}
 		if keyboard.IsKeyPressedOnce(key.S) {
-			music.AssetId = m1
+			music.LeftRight = 0
 		}
-		if keyboard.IsKeyPressedOnce(key.D) {
-			music.Volume = 0.5
+
+		if music.IsFinishedOnce() {
+			music.AssetId = m1
+			music.Play()
 		}
 	}
 }

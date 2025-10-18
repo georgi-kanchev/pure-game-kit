@@ -10,6 +10,7 @@ consistent error handling + logging, console & file
 
 // DONE:
 [83] [Sat] [18-10-2025]
+[√] audio - fixes + fade in/out
 [√] audio - finished
 
 [82] [Wed] [15-10-2025]
