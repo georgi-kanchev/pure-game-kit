@@ -3,30 +3,45 @@ package color
 import (
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/random"
+	"pure-game-kit/utility/text"
+	"strconv"
 )
 
 var (
-	Transparent = RGBA(0, 0, 0, 0)   // 0, 0, 0, 0 (RGBA)
-	Black       = RGB(0, 0, 0)       // 0, 0, 0, 255 (RGBA)
-	Gray        = RGB(127, 127, 127) // 127, 127, 127, 255 (RGBA)
-	White       = RGB(255, 255, 255) // 255, 255, 255, 255 (RGBA)
-	Red         = RGB(255, 0, 0)     // 255, 0, 0, 255 (RGBA)
-	Green       = RGB(0, 255, 0)     // 0, 255, 0, 255 (RGBA)
-	Blue        = RGB(0, 0, 255)     // 0, 0, 255, 255 (RGBA)
-	Pink        = RGB(255, 105, 180) // 255, 105, 108, 255 (RGBA)
-	Magenta     = RGB(255, 0, 255)   // 255, 0, 255, 255 (RGBA)
-	Violet      = RGB(143, 0, 255)   // 143, 0, 255, 255 (RGBA)
-	Purple      = RGB(75, 0, 130)    // 75, 0, 130, 255 (RGBA)
-	Yellow      = RGB(255, 255, 0)   // 255, 255, 0, 255 (RGBA)
-	Orange      = RGB(255, 127, 80)  // 255, 127, 80, 255 (RGBA)
-	Brown       = RGB(150, 105, 25)  // 150, 105, 25, 255 (RGBA)
-	Cyan        = RGB(0, 255, 255)   // 0, 255, 255, 255 (RGBA)
-	Azure       = RGB(0, 127, 255)   // 0, 127, 255, 255 (RGBA)
+	Transparent = RGBA(0, 0, 0, 0)
+	Black       = RGB(0, 0, 0)
+	Gray        = RGB(127, 127, 127)
+	White       = RGB(255, 255, 255)
+	Red         = RGB(255, 0, 0)
+	Green       = RGB(0, 255, 0)
+	Blue        = RGB(0, 0, 255)
+	Pink        = RGB(255, 105, 180)
+	Magenta     = RGB(255, 0, 255)
+	Violet      = RGB(143, 0, 255)
+	Purple      = RGB(75, 0, 130)
+	Yellow      = RGB(255, 255, 0)
+	Orange      = RGB(255, 127, 80)
+	Brown       = RGB(150, 105, 25)
+	Cyan        = RGB(0, 255, 255)
+	Azure       = RGB(0, 127, 255)
 )
 
 func Channels(color uint) (r, g, b, a byte) { return colorToRGBA(color) }
 func RGB(r, g, b byte) uint                 { return colorFromRGBA(r, g, b, 255) }
 func RGBA(r, g, b, a byte) uint             { return colorFromRGBA(r, g, b, a) }
+func Hex(hex string) uint {
+	var r, g, b, a uint64
+	hex = text.Remove(hex, "#")
+	if text.Length(hex) >= 6 {
+		r, _ = strconv.ParseUint(hex[0:2], 16, 8)
+		g, _ = strconv.ParseUint(hex[2:4], 16, 8)
+		b, _ = strconv.ParseUint(hex[4:6], 16, 8)
+		a = 255
+	} else if text.Length(hex) == 8 {
+		a, _ = strconv.ParseUint(hex[6:8], 16, 8)
+	}
+	return RGBA(byte(r), byte(g), byte(b), byte(a))
+}
 
 func RandomBright() uint {
 	var r = randomByteRange(127, 255)

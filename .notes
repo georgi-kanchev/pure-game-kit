@@ -1,8 +1,5 @@
 // TODO:
 gui sounds
-lua scripts - compiler allow & autocomplete the added go funcs
-
-// TODO LONGTERM:
 alpha blending, additive, multiply
 shader effects, port?
 simple particles, port?
@@ -11,6 +8,7 @@ consistent error handling + logging, console & file
 // DONE:
 [84] [Sun] [19-10-2025]
 [√] renamed project + restructure
+[√] color - from hex
 
 [83] [Sat] [18-10-2025]
 [√] audio - fixes + fade in/out
