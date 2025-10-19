@@ -12,9 +12,6 @@ import (
 )
 
 func GUIs() {
-	window.TargetFrameRate = 0
-	window.IsVSynced = false
-
 	var cam = graphics.NewCamera(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons()
 	var _, ids, box = assets.LoadDefaultAtlasUI()
@@ -66,7 +63,7 @@ func GUIs() {
 			f.GapY, "20", f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
 			f.AssetId, box[9]),
 		// ======================================================
-		gui.Container("panel", d.CameraLeftX+"+10", d.CameraBottomY+"-650", d.CameraWidth+"-20", "650",
+		gui.Container("panel", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "650",
 			f.ThemeId, "button", f.GapX, "40", f.GapY, "20"),
 		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
 		// ======================================================
@@ -145,8 +142,6 @@ func GUIs() {
 		gui.Container("tooltips", "", "", "", "", f.ThemeId, "button", f.Hidden, "+"),
 		gui.Tooltip("tooltip", f.AssetId, box[7], f.Width, "700", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5"),
 	)
-	cam.Angle = 45
-
 	assets.LoadDefaultFont()
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
@@ -154,8 +149,6 @@ func GUIs() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
-
-		cam.DragAndZoom()
 
 		var grab = hud.DragOnGrab()
 		if grab != "" {

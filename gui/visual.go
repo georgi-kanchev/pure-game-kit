@@ -14,9 +14,9 @@ func Visual(id string, properties ...string) string {
 //=================================================================
 // private
 
-var reusableTextBox graphics.TextBox = graphics.TextBox{}
-var reusableSprite graphics.Sprite = graphics.Sprite{}
-var reusableNineslice graphics.Box = graphics.Box{}
+var textBox graphics.TextBox = graphics.TextBox{}
+var sprite graphics.Sprite = graphics.Sprite{}
+var box graphics.Box = graphics.Box{}
 
 func setupVisualsTextured(root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
@@ -33,22 +33,22 @@ func setupVisualsTextured(root *root, widget *widget) {
 		var offY = parseNum(dyn(owner, widget.Properties[p.OffsetY], "0"), 0)
 
 		if has {
-			reusableNineslice.X, reusableNineslice.Y = widget.X+offX, widget.Y+offY
-			reusableNineslice.AssetId = assetId
-			reusableNineslice.Color = col
-			reusableNineslice.ScaleX, reusableNineslice.ScaleY = 1, 1
-			reusableNineslice.Width, reusableNineslice.Height = widget.Width, widget.Height
-			reusableNineslice.EdgeLeft, reusableNineslice.EdgeRight = cLeft, cRight
-			reusableNineslice.EdgeTop, reusableNineslice.EdgeBottom = cTop, cBottom
-			reusableNineslice.PivotX, reusableNineslice.PivotY = 0, 0
+			box.X, box.Y = widget.X+offX, widget.Y+offY
+			box.AssetId = assetId
+			box.Color = col
+			box.ScaleX, box.ScaleY = 1, 1
+			box.Width, box.Height = widget.Width, widget.Height
+			box.EdgeLeft, box.EdgeRight = cLeft, cRight
+			box.EdgeTop, box.EdgeBottom = cTop, cBottom
+			box.PivotX, box.PivotY = 0, 0
 		} else {
-			reusableSprite.X, reusableSprite.Y = widget.X+offX, widget.Y+offY
-			reusableSprite.PivotX, reusableSprite.PivotY = 0, 0
-			reusableSprite.AssetId = assetId
-			reusableSprite.Color = col
-			reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
-			reusableSprite.TextureRepeat = false
-			reusableSprite.Width, reusableSprite.Height = widget.Width, widget.Height
+			sprite.X, sprite.Y = widget.X+offX, widget.Y+offY
+			sprite.PivotX, sprite.PivotY = 0, 0
+			sprite.AssetId = assetId
+			sprite.Color = col
+			sprite.ScaleX, sprite.ScaleY = 1, 1
+			sprite.TextureRepeat = false
+			sprite.Width, sprite.Height = widget.Width, widget.Height
 		}
 
 	}
@@ -63,25 +63,25 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	var disabled = widget.isDisabled(owner)
 	var offX = parseNum(dyn(owner, widget.Properties[p.OffsetX], "0"), 0)
 	var offY = parseNum(dyn(owner, widget.Properties[p.OffsetY], "0"), 0)
-	reusableTextBox.ScaleX, reusableTextBox.ScaleY = 1, 1
-	reusableTextBox.X, reusableTextBox.Y = widget.X+offX, widget.Y+offY
-	reusableTextBox.EmbeddedColorsTag = '`'
-	reusableTextBox.EmbeddedAssetsTag = '^'
-	reusableTextBox.EmbeddedThicknessesTag = '*'
-	reusableTextBox.Text = text
-	reusableTextBox.WordWrap = defaultValue(themedProp(p.TextWordWrap, root, owner, widget), "on") == "on"
-	reusableTextBox.PivotX, reusableTextBox.PivotY = 0, 0
-	reusableTextBox.FontId = themedProp(p.TextFontId, root, owner, widget)
-	reusableTextBox.LineHeight = parseNum(themedProp(p.TextLineHeight, root, owner, widget), 60)
-	reusableTextBox.LineGap = parseNum(themedProp(p.TextLineGap, root, owner, widget), 0)
-	reusableTextBox.SymbolGap = parseNum(themedProp(p.TextSymbolGap, root, owner, widget), 0.2)
-	reusableTextBox.AlignmentX = parseNum(themedProp(p.TextAlignmentX, root, owner, widget), 0)
-	reusableTextBox.AlignmentY = parseNum(themedProp(p.TextAlignmentY, root, owner, widget), 0)
-	reusableTextBox.Width, reusableTextBox.Height = widget.Width, widget.Height
+	textBox.ScaleX, textBox.ScaleY = 1, 1
+	textBox.X, textBox.Y = widget.X+offX, widget.Y+offY
+	textBox.EmbeddedColorsTag = '`'
+	textBox.EmbeddedAssetsTag = '^'
+	textBox.EmbeddedThicknessesTag = '*'
+	textBox.Text = text
+	textBox.WordWrap = defaultValue(themedProp(p.TextWordWrap, root, owner, widget), "on") == "on"
+	textBox.PivotX, textBox.PivotY = 0, 0
+	textBox.FontId = themedProp(p.TextFontId, root, owner, widget)
+	textBox.LineHeight = parseNum(themedProp(p.TextLineHeight, root, owner, widget), 60)
+	textBox.LineGap = parseNum(themedProp(p.TextLineGap, root, owner, widget), 0)
+	textBox.SymbolGap = parseNum(themedProp(p.TextSymbolGap, root, owner, widget), 0.2)
+	textBox.AlignmentX = parseNum(themedProp(p.TextAlignmentX, root, owner, widget), 0)
+	textBox.AlignmentY = parseNum(themedProp(p.TextAlignmentY, root, owner, widget), 0)
+	textBox.Width, textBox.Height = widget.Width, widget.Height
 
-	reusableTextBox.EmbeddedAssetsTag =
+	textBox.EmbeddedAssetsTag =
 		rune(defaultValue(themedProp(p.TextEmbeddedAssetsTag, root, owner, widget), "^")[0])
-	reusableTextBox.EmbeddedAssetIds = []string{
+	textBox.EmbeddedAssetIds = []string{
 		themedProp(p.TextEmbeddedAssetId1, root, owner, widget),
 		themedProp(p.TextEmbeddedAssetId2, root, owner, widget),
 		themedProp(p.TextEmbeddedAssetId3, root, owner, widget),
@@ -89,9 +89,9 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 		themedProp(p.TextEmbeddedAssetId5, root, owner, widget),
 	}
 
-	reusableTextBox.EmbeddedColorsTag =
+	textBox.EmbeddedColorsTag =
 		rune(defaultValue(themedProp(p.TextEmbeddedColorsTag, root, owner, widget), "`")[0])
-	reusableTextBox.EmbeddedColors = []uint{
+	textBox.EmbeddedColors = []uint{
 		parseColor(themedProp(p.TextEmbeddedColor1, root, owner, widget), disabled),
 		parseColor(themedProp(p.TextEmbeddedColor2, root, owner, widget), disabled),
 		parseColor(themedProp(p.TextEmbeddedColor3, root, owner, widget), disabled),
@@ -99,9 +99,9 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 		parseColor(themedProp(p.TextEmbeddedColor5, root, owner, widget), disabled),
 	}
 
-	reusableTextBox.EmbeddedThicknessesTag =
+	textBox.EmbeddedThicknessesTag =
 		rune(defaultValue(themedProp(p.TextEmbeddedThicknessesTag, root, owner, widget), "*")[0])
-	reusableTextBox.EmbeddedThicknesses = []float32{
+	textBox.EmbeddedThicknesses = []float32{
 		parseNum(themedProp(p.TextEmbeddedThickness1, root, owner, widget), 0.5),
 		parseNum(themedProp(p.TextEmbeddedThickness2, root, owner, widget), 0.5),
 		parseNum(themedProp(p.TextEmbeddedThickness3, root, owner, widget), 0.5),
@@ -119,18 +119,18 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 	if assetId != "" {
 		var _, has = internal.Boxes[assetId]
 		if has {
-			cam.DrawBoxes(&reusableNineslice)
+			cam.DrawBoxes(&box)
 		} else {
-			cam.DrawSprites(&reusableSprite)
+			cam.DrawSprites(&sprite)
 		}
 
 	} else {
 		cam.DrawRectangle(widget.X, widget.Y, widget.Width, widget.Height, 0, col)
 	}
 
-	if reusableTextBox.Text != "" {
+	if textBox.Text != "" {
 		var mx, my, mw, mh = cam.MaskX, cam.MaskY, cam.MaskWidth, cam.MaskHeight
-		if maskText {
+		if maskText { // used for inputbox mask
 			var x, y = cam.PointToScreen(widget.X+textMargin, widget.Y+textMargin/2)
 			var xw, yh = cam.PointToScreen(widget.X+widget.Width-textMargin, widget.Y+widget.Height-textMargin/2)
 			xw = number.Limit(xw, cam.MaskX, cam.MaskX+cam.MaskWidth)
@@ -147,21 +147,24 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		var disabled = widget.isDisabled(owner)
 		var outlineCol = themedProp(p.TextColorOutline, root, owner, widget)
 		if outlineCol != "" {
-			reusableTextBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
-			reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
-			reusableTextBox.Color = parseColor(outlineCol, disabled)
-			cam.DrawTextBoxes(&reusableTextBox)
+			textBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
+			textBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
+			textBox.Color = parseColor(outlineCol, disabled)
+			cam.DrawTextBoxes(&textBox)
 		}
 
 		var c = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled || fadeText)
-		reusableTextBox.Color = c
-		reusableTextBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
-		reusableTextBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
-		cam.DrawTextBoxes(&reusableTextBox)
+		textBox.Color = c
+		textBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
+		textBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
+		cam.DrawTextBoxes(&textBox)
+
 		cam.Mask(mx, my, mw, mh)
 	}
 
 	if frameSz != 0 && frameCol != 0 {
 		cam.DrawFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, frameSz, frameCol)
 	}
+
+	textBox.Text = "" // skip any further texts unless they are setuped beforehand
 }

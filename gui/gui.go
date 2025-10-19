@@ -286,39 +286,39 @@ func extraProps(props ...string) string {
 func themedProp(prop string, root *root, c *container, w *widget) string {
 	// priority for widget: widget -> widget theme -> container theme
 
-	var wSelf, cSelf = "", ""
-	var wTheme, cTheme *theme
-	var hasW, hasC, hasWt, hasCt = false, false, false, false
+	var widgetSelf, containerSelf = "", ""
+	var widgetTheme, containerTheme *theme
+	var hasWidget, hasContainer, hasWidgetTheme, hasContainerTheme = false, false, false, false
 
 	if w != nil {
-		wSelf, hasW = w.Properties[prop]
-		wTheme, hasWt = root.Themes[w.ThemeId]
+		widgetSelf, hasWidget = w.Properties[prop]
+		widgetTheme, hasWidgetTheme = root.Themes[w.ThemeId]
 	}
 	if c != nil {
-		cSelf, hasC = c.Properties[prop]
-		cTheme, hasCt = root.Themes[c.Properties[field.ThemeId]]
+		containerSelf, hasContainer = c.Properties[prop]
+		containerTheme, hasContainerTheme = root.Themes[c.Properties[field.ThemeId]]
 	}
 
 	if w != nil {
-		if hasW {
-			return wSelf
+		if hasWidget {
+			return widgetSelf
 		}
-		if hasWt {
-			return wTheme.Properties[prop]
+		if hasWidgetTheme {
+			return widgetTheme.Properties[prop]
 		}
-		if hasCt {
-			return cTheme.Properties[prop]
+		if hasContainerTheme {
+			return containerTheme.Properties[prop]
 		}
-		if hasC {
-			return cSelf
+		if hasContainer {
+			return containerSelf
 		}
 	}
 
-	if hasC {
-		return cSelf
+	if hasContainer {
+		return containerSelf
 	}
-	if hasCt {
-		return cTheme.Properties[prop]
+	if hasContainerTheme {
+		return containerTheme.Properties[prop]
 	}
 
 	return ""

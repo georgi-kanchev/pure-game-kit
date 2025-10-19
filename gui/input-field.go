@@ -41,22 +41,22 @@ var typingIn *widget
 var indexCursor, indexSelect int
 var cursorTime, scrollX, textMargin float32
 var symbolXs []float32 = []float32{}
-var maskText = false
+var maskText = false // used for inputbox mask
 var frame = 0
 
 func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 	setupVisualsText(root, widget, skipEmpty)
-	reusableTextBox.AlignmentX, reusableTextBox.AlignmentY = 0, 0
-	reusableTextBox.Width = 9999
-	reusableTextBox.Height = widget.Height - margin
-	reusableTextBox.LineHeight = widget.Height - margin
+	textBox.AlignmentX, textBox.AlignmentY = 0, 0
+	textBox.Width = 9999
+	textBox.Height = widget.Height - margin
+	textBox.LineHeight = widget.Height - margin
 	var scroll = condition.If(typingIn == widget, scrollX, 0)
-	reusableTextBox.X = reusableTextBox.X + margin - scroll
-	reusableTextBox.Y += margin / 2
-	reusableTextBox.Text = txt.Remove(reusableTextBox.Text, "\n")
-	reusableTextBox.EmbeddedAssetsTag = 0
-	reusableTextBox.EmbeddedColorsTag = 0
-	reusableTextBox.EmbeddedThicknessesTag = 0
+	textBox.X = textBox.X + margin - scroll
+	textBox.Y += margin / 2
+	textBox.Text = txt.Remove(textBox.Text, "\n")
+	textBox.EmbeddedAssetsTag = 0
+	textBox.EmbeddedColorsTag = 0
+	textBox.EmbeddedThicknessesTag = 0
 }
 func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
@@ -106,7 +106,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		var placeholder = themedProp(field.InputFieldPlaceholder, root, owner, widget)
 		placeholder = txt.Remove(defaultValue(placeholder, "Type..."), "\n")
 		setupText(margin, root, widget, false) // don't skip when empty!
-		reusableTextBox.Text = placeholder
+		textBox.Text = placeholder
 		isPlaceholder = true
 	}
 
@@ -123,7 +123,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 			ax, bx = bx, ax
 		}
 
-		cam.DrawRectangle(ax, reusableTextBox.Y, bx-ax, reusableTextBox.Height, 0, color.Azure)
+		cam.DrawRectangle(ax, textBox.Y, bx-ax, textBox.Height, 0, color.Azure)
 	})
 	maskText = false
 
@@ -133,7 +133,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 	if typingIn == widget && cursorTime < 0.5 {
 		var x = cursorX(margin, widget)
-		cam.DrawLine(x, reusableTextBox.Y, x, reusableTextBox.Y+reusableTextBox.Height, 5, color.Black)
+		cam.DrawLine(x, textBox.Y, x, textBox.Y+textBox.Height, 5, color.Black)
 	}
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
 }
@@ -265,7 +265,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		remove(condition.If(ctrl, indexCursor-wordIndex(text, true), 1), 0)
 
 		// scrolls left when empty space appears on the right (if possible)
-		var textWidth, _ = reusableTextBox.TextMeasure(reusableTextBox.Text)
+		var textWidth, _ = textBox.TextMeasure(textBox.Text)
 		var textRight = (left - scrollX) + textWidth
 		if indexCursor > 0 && textRight < right {
 			scrollX -= right - textRight
@@ -330,22 +330,22 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	var margin = parseNum(themedProp(field.InputFieldMargin, root, owner, typingIn), 30)
 	setupText(margin, root, typingIn, true)
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
-		reusableTextBox.Text = ""
+		textBox.Text = ""
 	}
 	calculateXs(cam)
 }
 
 func calculateXs(cam *graphics.Camera) {
-	var textLength = txt.Length(reusableTextBox.Text)
+	var textLength = txt.Length(textBox.Text)
 	symbolXs = []float32{}
 
 	for i := range textLength {
-		var x, _, _, _, _ = reusableTextBox.TextSymbol(cam, i)
+		var x, _, _, _, _ = textBox.TextSymbol(cam, i)
 		symbolXs = append(symbolXs, x+scrollX)
 	}
 	if len(symbolXs) > 0 {
-		var w, _ = reusableTextBox.TextMeasure(reusableTextBox.Text)
-		symbolXs = append(symbolXs, reusableTextBox.X+w+scrollX)
+		var w, _ = textBox.TextMeasure(textBox.Text)
+		symbolXs = append(symbolXs, textBox.X+w+scrollX)
 	}
 
 	if indexSelect > textLength {
@@ -395,5 +395,5 @@ func wordIndex(text string, left bool) int {
 }
 func setText(widget *widget, text string) {
 	widget.Properties[field.Text] = text
-	reusableTextBox.Text = text
+	textBox.Text = text
 }

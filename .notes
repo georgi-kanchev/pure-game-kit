@@ -9,6 +9,8 @@ consistent error handling + logging, console & file
 [84] [Sun] [19-10-2025]
 [√] renamed project + restructure
 [√] color - from hex
+[√] text - New no longer provides space into the thousands separator in number.Format
+[√] gui - reusable textbox not being properly skipped sometimes, breaking colors & masks
 
 [83] [Sat] [18-10-2025]
 [√] audio - fixes + fade in/out

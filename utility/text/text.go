@@ -22,7 +22,7 @@ func (builder *Builder) Clear()                  { builder.buffer.Reset() }
 func (builder *Builder) ToText() string          { return builder.buffer.String() }
 
 func New(elements ...any) string {
-	const th, dec = " ", "."
+	const th, dec = "", "."
 	var result = ""
 	for _, e := range elements {
 		switch v := e.(type) {

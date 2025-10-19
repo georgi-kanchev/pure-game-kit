@@ -85,11 +85,11 @@ func drawDraggable(draggable *widget, root *root, cam *graphics.Camera) {
 		drawW = drawH * assetRatio
 	}
 
-	reusableSprite.AssetId = assetId
-	reusableSprite.X, reusableSprite.Y = draggable.DragX, draggable.DragY
-	reusableSprite.Width, reusableSprite.Height = drawW*scale, drawH*scale
-	reusableSprite.Color = parseColor(col, disabled)
-	reusableSprite.PivotX, reusableSprite.PivotY = 0.5, 0.5
-	reusableSprite.ScaleX, reusableSprite.ScaleY = scale, scale
-	cam.DrawSprites(&reusableSprite)
+	sprite.AssetId = assetId
+	sprite.X, sprite.Y = draggable.DragX, draggable.DragY
+	sprite.Width, sprite.Height = drawW*scale, drawH*scale
+	sprite.Color = parseColor(col, disabled)
+	sprite.PivotX, sprite.PivotY = 0.5, 0.5
+	sprite.ScaleX, sprite.ScaleY = scale, scale
+	cam.DrawSprites(&sprite)
 }

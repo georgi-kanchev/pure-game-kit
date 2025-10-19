@@ -59,21 +59,21 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 
 	setupVisualsText(root, tooltip, true)
 
-	var lines = reusableTextBox.TextLines()
-	var lh = reusableTextBox.LineHeight
-	var textH = float32(len(lines)*int(lh+reusableTextBox.LineGap)) + lh
-	reusableTextBox.Height = textH
-	reusableTextBox.X = tooltipForWidget.X + tooltipForWidget.Width/2 - reusableTextBox.Width/2
-	reusableTextBox.Y = tooltipForWidget.Y - textH
-	reusableTextBox.X = number.Limit(reusableTextBox.X, -camW/2, camW/2-width)
-	reusableTextBox.Y = number.Limit(reusableTextBox.Y, -camH/2, camH/2-textH)
-	tooltip.X, tooltip.Y, tooltip.Width, tooltip.Height = reusableTextBox.X, reusableTextBox.Y, width, textH
+	var lines = textBox.TextLines()
+	var lh = textBox.LineHeight
+	var textH = float32(len(lines)*int(lh+textBox.LineGap)) + lh
+	textBox.Height = textH
+	textBox.X = tooltipForWidget.X + tooltipForWidget.Width/2 - textBox.Width/2
+	textBox.Y = tooltipForWidget.Y - textH
+	textBox.X = number.Limit(textBox.X, -camW/2, camW/2-width)
+	textBox.Y = number.Limit(textBox.Y, -camH/2, camH/2-textH)
+	tooltip.X, tooltip.Y, tooltip.Width, tooltip.Height = textBox.X, textBox.Y, width, textH
 
-	reusableTextBox.X += margin / 2
+	textBox.X += margin / 2
 
 	if tooltip.Y+tooltip.Height > tooltipForWidget.Y+2 { // margin of error 2 pixels
 		tooltip.Y = tooltipForWidget.Y + tooltipForWidget.Height
-		reusableTextBox.Y = tooltip.Y
+		textBox.Y = tooltip.Y
 	}
 
 	setupVisualsTextured(root, tooltip)
