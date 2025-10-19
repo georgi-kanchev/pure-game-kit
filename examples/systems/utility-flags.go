@@ -2,7 +2,7 @@ package example
 
 import (
 	"fmt"
-	"pure-kit/engine/utility/flag"
+	"pure-game-kit/utility/flag"
 )
 
 func Flags() {

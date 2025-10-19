@@ -1,12 +1,12 @@
 package example
 
 import (
-	"pure-kit/engine/data/assets"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/input/keyboard"
-	"pure-kit/engine/input/keyboard/key"
-	"pure-kit/engine/motion"
-	"pure-kit/engine/window"
+	"pure-game-kit/data/assets"
+	"pure-game-kit/graphics"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
+	"pure-game-kit/motion"
+	"pure-game-kit/window"
 )
 
 func Animations() {

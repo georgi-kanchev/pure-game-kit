@@ -2,13 +2,13 @@ package example
 
 import (
 	"fmt"
-	"pure-kit/engine/data/assets"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/gui"
-	d "pure-kit/engine/gui/dynamic"
-	f "pure-kit/engine/gui/field"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/window"
+	"pure-game-kit/data/assets"
+	"pure-game-kit/graphics"
+	"pure-game-kit/gui"
+	d "pure-game-kit/gui/dynamic"
+	f "pure-game-kit/gui/field"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/window"
 )
 
 func GUIs() {

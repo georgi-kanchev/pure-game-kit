@@ -1,4 +1,4 @@
-module pure-kit
+module pure-game-kit
 
 go 1.24.3
 

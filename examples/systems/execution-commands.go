@@ -2,7 +2,7 @@ package example
 
 import (
 	"fmt"
-	"pure-kit/engine/execution/command"
+	"pure-game-kit/execution/command"
 )
 
 func Commands() {

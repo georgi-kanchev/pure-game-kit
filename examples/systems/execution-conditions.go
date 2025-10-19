@@ -1,11 +1,11 @@
 package example
 
 import (
-	"pure-kit/engine/execution/condition"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/text"
-	"pure-kit/engine/window"
+	"pure-game-kit/execution/condition"
+	"pure-game-kit/graphics"
+	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/text"
+	"pure-game-kit/window"
 )
 
 func Conditions() {

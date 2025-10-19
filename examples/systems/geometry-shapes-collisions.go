@@ -1,14 +1,14 @@
 package example
 
 import (
-	"pure-kit/engine/geometry"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/input/keyboard"
-	"pure-kit/engine/input/keyboard/key"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/direction"
-	"pure-kit/engine/utility/time"
-	"pure-kit/engine/window"
+	"pure-game-kit/geometry"
+	"pure-game-kit/graphics"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/direction"
+	"pure-game-kit/utility/time"
+	"pure-game-kit/window"
 )
 
 func Collisions() {

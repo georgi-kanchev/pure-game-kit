@@ -1,12 +1,12 @@
 package example
 
 import (
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/input/mouse"
-	b "pure-kit/engine/input/mouse/button"
-	"pure-kit/engine/input/mouse/cursor"
-	"pure-kit/engine/utility/time"
-	"pure-kit/engine/window"
+	"pure-game-kit/graphics"
+	"pure-game-kit/input/mouse"
+	b "pure-game-kit/input/mouse/button"
+	"pure-game-kit/input/mouse/cursor"
+	"pure-game-kit/utility/time"
+	"pure-game-kit/window"
 )
 
 func Mouse() {

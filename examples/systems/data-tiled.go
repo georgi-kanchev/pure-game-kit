@@ -1,15 +1,15 @@
 package example
 
 import (
-	"pure-kit/engine/data/assets"
-	"pure-kit/engine/geometry"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/input/keyboard"
-	"pure-kit/engine/input/keyboard/key"
-	"pure-kit/engine/tiled/tilemap"
-	"pure-kit/engine/tiled/tileset"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/window"
+	"pure-game-kit/data/assets"
+	"pure-game-kit/geometry"
+	"pure-game-kit/graphics"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
+	"pure-game-kit/tiled/tilemap"
+	"pure-game-kit/tiled/tileset"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/window"
 )
 
 func Tiled() {

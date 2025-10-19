@@ -1,12 +1,12 @@
 package example
 
 import (
-	"pure-kit/engine/data/assets"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/number"
-	"pure-kit/engine/utility/time"
-	"pure-kit/engine/window"
+	"pure-game-kit/data/assets"
+	"pure-game-kit/graphics"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/time"
+	"pure-game-kit/window"
 )
 
 func Texts() {

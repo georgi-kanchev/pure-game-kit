@@ -2,8 +2,8 @@ package example
 
 import (
 	"fmt"
-	"pure-kit/engine/execution/script"
-	"pure-kit/engine/utility/text"
+	"pure-game-kit/execution/script"
+	"pure-game-kit/utility/text"
 )
 
 func Scripts() {

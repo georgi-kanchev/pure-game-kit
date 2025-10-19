@@ -1,11 +1,11 @@
 package example
 
 import (
-	"pure-kit/engine/execution/condition"
-	"pure-kit/engine/geometry"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/window"
+	"pure-game-kit/execution/condition"
+	"pure-game-kit/geometry"
+	"pure-game-kit/graphics"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/window"
 )
 
 func Lines() {

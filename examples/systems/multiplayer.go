@@ -1,9 +1,9 @@
 package example
 
 import (
-	"pure-kit/engine/multiplayer"
-	"pure-kit/engine/multiplayer/connection"
-	"pure-kit/engine/utility/text"
+	"pure-game-kit/multiplayer"
+	"pure-game-kit/multiplayer/connection"
+	"pure-game-kit/utility/text"
 	"time"
 )
 

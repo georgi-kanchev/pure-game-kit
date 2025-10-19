@@ -2,15 +2,15 @@ package example
 
 import (
 	"fmt"
-	"pure-kit/engine/data/assets"
-	"pure-kit/engine/execution/condition"
-	"pure-kit/engine/execution/flow"
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/input/keyboard"
-	"pure-kit/engine/input/keyboard/key"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/utility/number"
-	"pure-kit/engine/window"
+	"pure-game-kit/data/assets"
+	"pure-game-kit/execution/condition"
+	"pure-game-kit/execution/flow"
+	"pure-game-kit/graphics"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/number"
+	"pure-game-kit/window"
 )
 
 func Flows() {

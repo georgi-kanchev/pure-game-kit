@@ -1,11 +1,11 @@
 package example
 
 import (
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/motion"
-	"pure-kit/engine/motion/curves"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/window"
+	"pure-game-kit/graphics"
+	"pure-game-kit/motion"
+	"pure-game-kit/motion/curves"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/window"
 )
 
 func Tweens() {

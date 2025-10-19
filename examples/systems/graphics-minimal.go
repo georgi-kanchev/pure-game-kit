@@ -1,9 +1,9 @@
 package example
 
 import (
-	"pure-kit/engine/graphics"
-	"pure-kit/engine/utility/color"
-	"pure-kit/engine/window"
+	"pure-game-kit/graphics"
+	"pure-game-kit/utility/color"
+	"pure-game-kit/window"
 )
 
 func Minimal() {
