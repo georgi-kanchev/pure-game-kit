@@ -16,8 +16,10 @@ import (
 type root struct {
 	XmlName       xml.Name     `xml:"GUI"`
 	XmlContainers []*container `xml:"Container"`
-	XmlScale      string       `xml:"scale,attr"`
+	XmlScale      float32      `xml:"scale,attr"`
+	XmlVolume     float32      `xml:"volume,attr"`
 
+	Volume       float32
 	ContainerIds []string
 	Themes       map[string]*theme
 	Containers   map[string]*container

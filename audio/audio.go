@@ -39,12 +39,17 @@ func (audio *Audio) Play() {
 
 	var sound, _ = internal.Sounds[audio.AssetId]
 	var music, _ = internal.Music[audio.AssetId]
+	var volume = audio.volume()
 
 	audio.IsPaused = false
 	if audio.instance != nil && sound != nil {
 		rl.PlaySound(*audio.instance)
+		audio.instance.Stream.Buffer.Volume = volume
+	} else if audio.instance != nil && sound == nil {
+		audio.instance = nil
 	} else if music != nil {
 		rl.PlayMusicStream(*music)
+		music.Stream.Buffer.Volume = volume
 	}
 }
 func (audio *Audio) IsPlaying() bool {
@@ -55,6 +60,8 @@ func (audio *Audio) IsPlaying() bool {
 
 	if audio.instance != nil && sound != nil {
 		return rl.IsSoundPlaying(*audio.instance)
+	} else if audio.instance != nil && sound == nil {
+		audio.instance = nil
 	} else if music != nil {
 		return rl.IsMusicStreamPlaying(*music)
 	}
@@ -93,18 +100,8 @@ func (audio *Audio) update(float32) {
 		audio.time = rl.GetMusicTimePlayed(*music)
 	}
 
-	// fade
-	var fadeIn = number.Limit(number.Map(audio.time, 0, audio.FadeIn, 0, 1), 0, 1)
-	var fadeOut = number.Limit(number.Map(audio.time, audio.duration-audio.FadeOut, audio.duration, 1, 0), 0, 1)
-	if audio.FadeIn <= 0 {
-		fadeIn = 1
-	}
-	if audio.FadeOut <= 0 {
-		fadeOut = 1
-	}
-
 	// volume
-	var volume = audio.Volume * VolumeSound * Volume * fadeIn * fadeOut
+	var volume = audio.volume()
 	if sound != nil && audio.instance != nil {
 		audio.instance.Stream.Buffer.Volume = volume
 	}
@@ -158,6 +155,19 @@ func (audio *Audio) update(float32) {
 	audio.prevPitch = audio.Pitch
 	audio.prevPause = audio.IsPaused
 	audio.prevTime = audio.time
+}
+
+func (audio *Audio) volume() float32 {
+	var fadeIn = number.Limit(number.Map(audio.time, 0, audio.FadeIn, 0, 1), 0, 1)
+	var fadeOut = number.Limit(number.Map(audio.time, audio.duration-audio.FadeOut, audio.duration, 1, 0), 0, 1)
+	if audio.FadeIn <= 0 {
+		fadeIn = 1
+	}
+	if audio.FadeOut <= 0 {
+		fadeOut = 1
+	}
+
+	return audio.Volume * VolumeSound * Volume * fadeIn * fadeOut
 }
 
 func currentTime(stream rl.AudioStream) float32 {

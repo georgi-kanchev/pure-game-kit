@@ -24,6 +24,7 @@ type container struct {
 	ScrollX, ScrollY float32
 	Properties map[string]string
 	Widgets    []string
+	WasHidden  bool
 }
 
 func Container(id, x, y, width, height string, properties ...string) string {

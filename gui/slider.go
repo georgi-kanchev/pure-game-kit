@@ -25,7 +25,9 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 		widget.Height /= 2
 		widget.Y += widget.Height / 2
 	}
+	btnSounds = false
 	button(cam, root, widget)
+	btnSounds = true
 	if assetId == "" {
 		widget.Y -= widget.Height / 2
 		widget.Height *= 2
@@ -40,6 +42,14 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 	var handleY = widget.Y - (handleWidth)/3
 	var value = parseNum(widget.Properties[field.Value], 0)
 	var step = parseNum(themedProp(field.SliderStep, root, owner, widget), 0)
+
+	if value != widget.PrevValue && !sound.IsPlaying() {
+		sound.AssetId = defaultValue(themedProp(field.SliderSound, root, owner, widget), "~slider")
+		sound.Volume = root.Volume
+		sound.Play()
+	}
+
+	widget.PrevValue = value
 
 	if step > 0 {
 		var stepPx = (widget.Width - handleWidth) * step
@@ -59,7 +69,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 
 	if wPressedOn == widget {
 		var mx, _ = cam.MousePosition()
-		value = number.Map(mx, widget.X, widget.X+widget.Width-handleWidth, 0, 1)
+		value = number.Map(mx, widget.X+handleWidth/2, widget.X+widget.Width-handleWidth/2, 0, 1)
 		value = widget.setSliderValue(value, root)
 	}
 

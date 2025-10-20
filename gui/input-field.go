@@ -41,7 +41,8 @@ var typingIn *widget
 var indexCursor, indexSelect int
 var cursorTime, scrollX, textMargin float32
 var symbolXs []float32 = []float32{}
-var maskText = false // used for inputbox mask
+var maskText = false       // used for inputbox mask
+var simulateRemove = false // used to delete text when typing
 var frame = 0
 
 func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
@@ -249,9 +250,14 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		indexCursor -= back
 		indexSelect = indexCursor
 		calculateXs(cam)
+
+		var owner = root.Containers[widget.OwnerId]
+		sound.AssetId = defaultValue(themedProp(field.InputFieldSoundErase, root, owner, widget), "~erase")
+		sound.Volume = root.Volume
+		sound.Play()
 	}
 
-	if keyboard.IsKeyPressedOnce(key.Backspace) || keyboard.IsKeyPressedOnce(key.Delete) {
+	if keyboard.IsKeyPressedOnce(key.Backspace) || keyboard.IsKeyPressedOnce(key.Delete) || simulateRemove {
 		if indexSelect < indexCursor {
 			remove(indexCursor-indexSelect, 0)
 			return
@@ -283,6 +289,13 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 		return text
 	}
 
+	if indexCursor != indexSelect { // text is selected, we should remove it and then type
+		simulateRemove = true
+		tryRemove(cam, text, root, widget, margin)
+		text = textBox.Text
+		simulateRemove = false
+	}
+
 	if txt.Length(text) == 0 {
 		text = input
 		setText(widget, text)
@@ -290,6 +303,12 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	} else {
 		text = text[:indexCursor] + input + text[indexCursor:]
 	}
+
+	var owner = root.Containers[widget.OwnerId]
+	sound.AssetId = defaultValue(themedProp(field.InputFieldSoundType, root, owner, widget), "~write")
+	sound.Volume = root.Volume
+	sound.Play()
+
 	setText(widget, text)
 	indexCursor += txt.Length(input)
 	indexSelect = indexCursor

@@ -24,6 +24,7 @@ const (
 
 	TooltipId     = "tooltipId"     // [widget] [theme]
 	TooltipMargin = "tooltipMargin" // [widget] [theme]
+	TooltipSound  = "tooltipSound"  // [widget] [theme] default: "~popup"
 	Color         = "color"         // [widget] [theme] example: "255 0 0 255"
 	FrameColor    = "frameColor"    // [widget] [theme] example: "255 0 0 255"
 	FrameSize     = "frameSize"     // [widget] [theme] positive outward, negative inward
@@ -70,20 +71,29 @@ const (
 	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
 	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
 	ButtonHotkey         = "buttonHotkey"         // [widget] [theme]
+	ButtonSoundPress     = "buttonSoundPress"     // [widget] [theme] default: "~press"
+	ButtonSoundRelease   = "buttonSoundRelease"   // [widget] [theme] default: "~release"
 
 	SliderStep          = "sliderStep"          // [widget] [theme] step <= 0 hides indicators, example: "-0.1", "0.2"
 	SliderStepAssetId   = "sliderStepAssetId"   // [widget] [theme]
 	SliderHandleAssetId = "sliderHandleAssetId" // [widget] [theme]
+	SliderSound         = "sliderSound"         // [widget] [theme] default: "~slider"
 
-	CheckboxThemeId = "checkboxThemeId" // [widget] [theme]
-	CheckboxGroup   = "checkboxGroup"   // [widget] [theme]
+	CheckboxThemeId  = "checkboxThemeId"  // [widget] [theme]
+	CheckboxGroup    = "checkboxGroup"    // [widget] [theme]
+	CheckboxSoundOn  = "checkboxSoundOn"  // [widget] [theme] default: "~on"
+	CheckboxSoundOff = "checkboxSoundOff" // [widget] [theme] default: "~off"
 
 	MenuContainerId = "menuContainerId" // [widget] [theme]
+	MenuSound       = "menuSound"       // [widget] [theme] default: "~popup"
 
 	InputFieldMargin      = "inputFieldMargin"      // [widget] [theme] default: "30"
 	InputFieldPlaceholder = "inputFieldPlaceholder" // [widget] [theme] default: "Type..."
+	InputFieldSoundType   = "inputFieldSoundType"   // [widget] [theme] default: "~write"
+	InputFieldSoundErase  = "inputFieldSoundErase"  // [widget] [theme] default: "~erase"
 
 	DraggableSpriteId    = "draggableSpriteId"    // [widget] [theme]
 	DraggableSpriteColor = "draggableSpriteColor" // [widget] [theme] default: "255 255 255 255"
 	DraggableSpriteScale = "draggableSpriteScale" // [widget] [theme] default: "1"
+	DraggableSoundCancel = "draggableSoundCancel" // [widget] [theme] default: "~error"
 )

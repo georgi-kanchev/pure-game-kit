@@ -20,6 +20,7 @@ func Tooltip(id string, properties ...string) string {
 var tooltip *widget
 var tooltipForWidget *widget
 var tooltipAt float32
+var tooltipVisible, tooltipWasVisible = false, false
 
 func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Camera) {
 	var hov = widget.isFocused(root, cam)
@@ -45,10 +46,20 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 	}
 }
 func drawTooltip(root *root, c *container, cam *graphics.Camera) {
-	if tooltip == nil || tooltipForWidget == nil || time.RealRuntime() < tooltipAt+0.5 {
-		return
+	defer func() { tooltipWasVisible = tooltipVisible }()
+
+	var owner = root.Containers[tooltipForWidget.OwnerId]
+	var hidden = tooltip == nil || tooltipForWidget == nil || time.RealRuntime() < tooltipAt+0.5 ||
+		tooltip.Properties[field.Text] == "" || !tooltipForWidget.isFocused(root, cam)
+	tooltipVisible = !hidden
+
+	if !tooltipWasVisible && tooltipVisible {
+		sound.AssetId = defaultValue(themedProp(field.TooltipSound, root, owner, tooltipForWidget), "~popup")
+		sound.Volume = root.Volume
+		sound.Play()
 	}
-	if tooltip.Properties[field.Text] == "" || !tooltipForWidget.isFocused(root, cam) {
+
+	if hidden {
 		return
 	}
 

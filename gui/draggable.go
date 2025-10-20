@@ -18,31 +18,21 @@ func Draggable(id string, properties ...string) string {
 // getters
 
 func (gui *GUI) DragOnGrab() (draggableId string) {
-	var result = condition.TrueOnce(wPressedOn != nil && wPressedOn.Class == "draggable", ";;;;draggg-start")
-	if result {
-		var owner = gui.root.Containers[wPressedOn.OwnerId]
-		if themedProp(field.DraggableSpriteId, gui.root, owner, wPressedOn) == "" {
-			return ""
-		}
-		return wPressedOn.Id
-	}
-	return ""
-
+	return onGrab(gui.root)
 }
+
 func (gui *GUI) DragOnDrop() (grabId, dropId string) {
-	var left = mouse.IsButtonReleasedOnce(b.Left)
-	if wPressedOn != nil && wPressedOn.Class == "draggable" && left {
-		if wFocused == nil || wFocused.Class == "draggable" {
-			return wPressedOn.Id, wFocused.Id
-		}
-
-		return wPressedOn.Id, ""
-	}
-	return "", ""
+	return onDrop(gui.root)
 }
+
 func (gui *GUI) DragCancel() {
 	if wPressedOn != nil && wPressedOn.Class == "draggable" {
 		wPressedOn = nil
+
+		var owner = gui.root.Containers[wPressedOn.OwnerId]
+		sound.AssetId = defaultValue(themedProp(field.DraggableSoundCancel, gui.root, owner, wPressedOn), "~error")
+		sound.Volume = gui.root.Volume
+		sound.Play()
 	}
 }
 
@@ -61,10 +51,10 @@ func draggable(cam *graphics.Camera, root *root, widget *widget) {
 	button(cam, root, widget)
 }
 
-func drawDraggable(draggable *widget, root *root, cam *graphics.Camera) {
-	var owner = root.Containers[draggable.OwnerId]
-	var assetId = defaultValue(themedProp(field.DraggableSpriteId, root, owner, draggable), ";;;;;")
-	var scale = parseNum(themedProp(field.DraggableSpriteScale, root, owner, draggable), 1)
+func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
+	var owner = root.Containers[widget.OwnerId]
+	var assetId = defaultValue(themedProp(field.DraggableSpriteId, root, owner, widget), "")
+	var scale = parseNum(themedProp(field.DraggableSpriteScale, root, owner, widget), 1)
 
 	if assetId == "" {
 		return
@@ -72,24 +62,57 @@ func drawDraggable(draggable *widget, root *root, cam *graphics.Camera) {
 
 	var w, h = assets.Size(assetId)
 	var assetRatio = w / h
-	var spriteRatio = draggable.Width / draggable.Height
+	var spriteRatio = widget.Width / widget.Height
 	var drawW, drawH float32
-	var disabled = draggable.isDisabled(owner)
-	var col = defaultValue(themedProp(field.DraggableSpriteColor, root, owner, draggable), "255 255 255")
+	var disabled = widget.isDisabled(owner)
+	var col = defaultValue(themedProp(field.DraggableSpriteColor, root, owner, widget), "255 255 255")
 
 	if assetRatio > spriteRatio {
-		drawW = draggable.Width
+		drawW = widget.Width
 		drawH = drawW / assetRatio
 	} else {
-		drawH = draggable.Height
+		drawH = widget.Height
 		drawW = drawH * assetRatio
 	}
 
 	sprite.AssetId = assetId
-	sprite.X, sprite.Y = draggable.DragX, draggable.DragY
+	sprite.X, sprite.Y = widget.DragX, widget.DragY
 	sprite.Width, sprite.Height = drawW*scale, drawH*scale
 	sprite.Color = parseColor(col, disabled)
 	sprite.PivotX, sprite.PivotY = 0.5, 0.5
 	sprite.ScaleX, sprite.ScaleY = scale, scale
 	cam.DrawSprites(&sprite)
+}
+
+func onDrop(root *root) (string, string) {
+	var left = mouse.IsButtonReleasedOnce(b.Left)
+	if wPressedOn != nil && wPressedOn.Class == "draggable" && left {
+		var owner = root.Containers[wPressedOn.OwnerId]
+		var assetId = defaultValue(themedProp(field.DraggableSpriteId, root, owner, wPressedOn), "")
+		if assetId == "" {
+			return wPressedOn.Id, ""
+		}
+
+		sound.Volume = root.Volume
+		defer sound.Play()
+		if wFocused == nil || wFocused.Class == "draggable" {
+			sound.AssetId = defaultValue(themedProp(field.ButtonSoundRelease, root, owner, wPressedOn), "~release")
+			return wPressedOn.Id, wFocused.Id
+		}
+
+		sound.AssetId = defaultValue(themedProp(field.DraggableSoundCancel, root, owner, wPressedOn), "~error")
+		return wPressedOn.Id, ""
+	}
+	return "", ""
+}
+func onGrab(root *root) string {
+	var result = condition.TrueOnce(wPressedOn != nil && wPressedOn.Class == "draggable", ";;;;draggg-start")
+	if result {
+		var owner = root.Containers[wPressedOn.OwnerId]
+		if themedProp(field.DraggableSpriteId, root, owner, wPressedOn) == "" {
+			return ""
+		}
+		return wPressedOn.Id
+	}
+	return ""
 }

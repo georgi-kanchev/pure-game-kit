@@ -31,6 +31,7 @@ func (gui *GUI) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera)
 var wPressedOn *widget
 var wPressedAt float32
 var buttonColor uint
+var btnSounds = true
 
 func button(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
@@ -51,12 +52,18 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 		if themeHover != "" {
 			widget.ThemeId = themeHover
 		}
-		tryPress(m.IsButtonPressed(b.Left), m.IsButtonPressedOnce(b.Left), themePress, widget)
+		tryPress(m.IsButtonPressed(b.Left), m.IsButtonPressedOnce(b.Left), btnSounds, themePress, widget, root, owner)
 	}
 
 	if typingIn == nil { // no hotkeys while typing
 		var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
-		tryPress(k.IsKeyPressed(hotkey), k.IsKeyPressedOnce(hotkey), themePress, widget)
+		tryPress(k.IsKeyPressed(hotkey), k.IsKeyPressedOnce(hotkey), btnSounds, themePress, widget, root, owner)
+
+		if btnSounds && root.IsButtonClickedOnce(widget.Id, cam) {
+			sound.AssetId = defaultValue(themedProp(field.ButtonSoundPress, root, owner, widget), "~release")
+			sound.Volume = root.Volume
+			sound.Play()
+		}
 	}
 
 	setupVisualsTextured(root, widget)
@@ -66,11 +73,16 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	widget.ThemeId = prev
 }
 
-func tryPress(press, once bool, themePress string, widget *widget) {
+func tryPress(press, once, sounds bool, themePress string, widget *widget, root *root, owner *container) {
 	if press && wPressedOn == widget && themePress != "" {
 		widget.ThemeId = themePress
 	}
 	if once {
+		if sounds {
+			sound.AssetId = defaultValue(themedProp(field.ButtonSoundPress, root, owner, widget), "~press")
+			sound.Volume = root.Volume
+			sound.Play()
+		}
 		wPressedOn = widget
 		wPressedAt = time.RealRuntime()
 	}

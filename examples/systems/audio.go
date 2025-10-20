@@ -21,7 +21,7 @@ func Audio() {
 			music.Play()
 		}
 		if keyboard.IsKeyPressedOnce(key.S) {
-			music.LeftRight = 0
+			music.AssetId = ""
 		}
 
 		if music.IsFinishedOnce() {

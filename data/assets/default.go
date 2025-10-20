@@ -34,7 +34,7 @@ func loadSound(id, b64 string) string {
 	}
 
 	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
-	var wave = rl.LoadWaveFromMemory(".mp3", decompressed, int32(len(decompressed)))
+	var wave = rl.LoadWaveFromMemory(".ogg", decompressed, int32(len(decompressed)))
 	var sound = rl.LoadSoundFromWave(wave)
 	internal.Sounds[id] = &sound
 	rl.UnloadWave(wave)
@@ -73,8 +73,8 @@ func printImageBase64(path string) {
 }
 
 func Main() {
-	printSoundBase64("")
-	printFontBase64("")
-	printImageBase64("default-ui.png")
+	printSoundBase64("popup.ogg")
+	// printFontBase64("")
+	// printImageBase64("default-ui.png")
 }
 */

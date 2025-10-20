@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"pure-game-kit/audio"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/dynamic"
@@ -16,8 +17,9 @@ import (
 // https://showcase.primefaces.org - basic default browser widgets showcase (scroll down to forms on the left)
 
 type GUI struct {
-	Scale float32
-	root  *root
+	Scale  float32
+	Volume float32
+	root   *root
 }
 
 func NewXML(xmlData string) *GUI {
@@ -32,6 +34,7 @@ func NewXML(xmlData string) *GUI {
 		var cId = c.XmlProps[0].Value
 		c.Widgets = make([]string, len(c.XmlWidgets))
 		c.Properties = make(map[string]string, len(c.XmlProps))
+		c.WasHidden = true
 
 		for _, xmlProp := range c.XmlProps {
 			c.Properties[xmlProp.Name.Local] = xmlProp.Value
@@ -71,11 +74,12 @@ func NewXML(xmlData string) *GUI {
 		gui.root.ContainerIds = append(gui.root.ContainerIds, cId)
 	}
 
-	gui.Scale = text.ToNumber(gui.root.XmlScale)
+	gui.Scale = gui.root.XmlScale
+	gui.Volume = gui.root.XmlVolume
 	return &gui
 }
 func NewElements(elements ...string) *GUI {
-	var result = "<GUI scale=\"1\">"
+	var result = "<GUI scale=\"1\" volume=\"1\">"
 
 	// container is missing on top, add root container
 	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
@@ -112,6 +116,8 @@ func NewElements(elements ...string) *GUI {
 func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
 	var containers = gui.root.ContainerIds
+
+	gui.root.Volume = gui.Volume
 
 	reset(camera, gui) // keep order of variables & reset
 
@@ -219,6 +225,7 @@ func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 //=================================================================
 // private
 
+var sound *audio.Audio = audio.New("")
 var mouseX, mouseY, prevMouseX, prevMouseY float32
 var wFocused, wHovered, wWasHovered *widget
 var cFocused, cHovered, cWasHovered *container

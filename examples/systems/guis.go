@@ -91,7 +91,7 @@ func GUIs() {
 		gui.Visual("slider1-100", f.ThemeId, "label", f.Text, "100", f.TextLineHeight, "50", f.GapX, "710",
 			f.Width, "80", f.Height, "50", f.TextAlignmentX, "0.5"),
 		gui.Slider("slider2", f.AssetId, box[10], f.BoxEdgeTop, "0", f.BoxEdgeBottom, "0", f.NewRow, "",
-			f.Width, "820", f.Height, "40"),
+			f.Width, "820", f.Height, "40", f.SliderStep, "0"),
 		gui.Visual("slider2-0", f.ThemeId, "label", f.Text, "0", f.TextLineHeight, "50", f.NewRow, "50",
 			f.Width, "50", f.Height, "50", f.TextAlignmentX, "0.5"),
 		gui.Visual("slider2-100", f.ThemeId, "label", f.Text, "100", f.TextLineHeight, "50", f.GapX, "710",
@@ -143,6 +143,7 @@ func GUIs() {
 		gui.Tooltip("tooltip", f.AssetId, box[7], f.Width, "700", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5"),
 	)
 	assets.LoadDefaultFont()
+	assets.LoadDefaultSoundsUI()
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
 

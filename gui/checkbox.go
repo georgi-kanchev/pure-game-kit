@@ -17,18 +17,24 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var on = themedProp(field.CheckboxThemeId, root, owner, widget)
 	var off = themedProp(field.ThemeId, root, owner, widget)
-	widget.ThemeId = condition.If(widget.Properties[field.Value] == "", off, on)
+	var isOff = widget.Properties[field.Value] == ""
+	widget.ThemeId = condition.If(isOff, off, on)
 
 	button(cam, root, widget)
 
 	if root.IsButtonClickedOnce(widget.Id, cam) {
-		widget.Properties[field.Value] = condition.If(widget.Properties[field.Value] == "", "v", "")
-
 		var group = themedProp(field.CheckboxGroup, root, owner, widget)
+		widget.Properties[field.Value] = condition.If(isOff, "v", "")
+		var soundId = condition.If(isOff, "~on", "~off")
+		sound.AssetId = defaultValue(themedProp(field.ButtonSoundPress, root, owner, widget), soundId)
+		sound.Volume = root.Volume
+		defer sound.Play()
+
 		if group == "" {
 			return
 		}
 
+		sound.AssetId = "~on"
 		for _, w := range root.Widgets {
 			var wOwner = root.Containers[w.OwnerId]
 			var wGroup = themedProp(field.CheckboxGroup, root, wOwner, w)
