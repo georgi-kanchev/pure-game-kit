@@ -5,6 +5,9 @@ simple particles, port?
 consistent error handling + logging, console & file
 
 // DONE:
+[85] [Tue] [21-10-2025]
+updated go version
+
 [84] [Sun] [19-10-2025]
 renamed project + restructure
 color - from hex
