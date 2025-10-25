@@ -254,15 +254,14 @@ func Take[T any](collection []T, start, end int) []T {
 	copy(result, collection[start:end])
 	return result
 }
-func Join[T any](collection []T, otherCollections ...[]T) []T {
-	var totalLen = len(collection)
-	for _, arr := range otherCollections {
+func Join[T any](collections ...[]T) []T {
+	var totalLen = len(collections)
+	for _, arr := range collections {
 		totalLen += len(arr)
 	}
 
 	var result = make([]T, 0, totalLen)
-	result = append(result, collection...)
-	for _, arr := range otherCollections {
+	for _, arr := range collections {
 		result = append(result, arr...)
 	}
 	return result

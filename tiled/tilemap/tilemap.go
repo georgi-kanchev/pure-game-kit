@@ -238,9 +238,16 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
 		var x = float32(j)*float32(mapData.TileWidth) + mapData.WorldX + tiles.OffsetX
 		var y = float32(i)*float32(mapData.TileHeight) + mapData.WorldY + tiles.OffsetY
-		var sprite = graphics.NewSprite(tileId, x, y)
-		sprite.Width, sprite.Height = float32(mapData.TileWidth), float32(mapData.TileHeight)
+		var sprite = graphics.NewSprite(tileId, 0, 0)
+
+		sprite.Width, sprite.Height = float32(curTileset.TileWidth), float32(curTileset.TileHeight)
 		sprite.PivotX, sprite.PivotY = 0, 0
+
+		x += float32(curTileset.Offset.X)
+		y += float32(curTileset.Offset.Y)
+		y -= sprite.Height / 2
+		sprite.X, sprite.Y = x, y
+
 		result = append(result, &sprite)
 	}
 

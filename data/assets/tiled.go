@@ -103,7 +103,10 @@ func LoadTiledWorld(filePath string) (tilemapIds []string) {
 		var mp, _ = internal.TiledMaps[mapIds]
 		mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
 
-		tryTemplate(mp.LayersObjects, world.Directory)
+		if mp.LayersObjects != nil {
+			tryTemplate(mp.LayersObjects, world.Directory)
+		}
+
 		for _, grp := range mp.Groups {
 			tryTemplate(grp.LayersObjects, world.Directory)
 		}
