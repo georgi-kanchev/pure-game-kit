@@ -85,19 +85,19 @@ func usedTilesets(data *internal.Map) []*internal.Tileset {
 	var usedTilesets = make([]*internal.Tileset, len(data.Tilesets))
 
 	for i, tileset := range data.Tilesets {
-		if tileset.Source != "" {
-			var root = path.Folder(path.Executable()) + path.Divider()
-			var tilesetId = text.Remove(path.New(data.Directory, tileset.Source), root)
-			tilesetId = text.Replace(tilesetId, "\\", "/")
-			tilesetId = path.RemoveExtension(tilesetId)
-			usedTilesets[i] = internal.TiledTilesets[tilesetId]
-			if usedTilesets[i] != nil {
-				usedTilesets[i].FirstTileId = tileset.FirstTileId
-			}
+		if tileset.Source == "" {
 			continue
 		}
 
-		usedTilesets[i] = &tileset
+		var root = path.Folder(path.Executable()) + path.Divider()
+		var tilesetId = text.Remove(path.New(data.Directory, tileset.Source), root)
+		tilesetId = text.Replace(tilesetId, "\\", "/")
+		tilesetId = path.RemoveExtension(tilesetId)
+		usedTilesets[i] = internal.TiledTilesets[tilesetId]
+
+		if usedTilesets[i] != nil {
+			usedTilesets[i].FirstTileId = tileset.FirstTileId
+		}
 	}
 	return usedTilesets
 }

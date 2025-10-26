@@ -15,7 +15,7 @@ import (
 func Tiled() {
 	var font = assets.LoadDefaultFont()
 	var cam = graphics.NewCamera(4)
-	var l1, l2, tObjs, t1, img, objs []*graphics.Sprite
+	var l1, l2, tObjs, t1, img, objs, terr []*graphics.Sprite
 	var texts []*graphics.TextBox
 	var pts, pts2, pts3 [][2]float32
 	var g1, g2 *geometry.ShapeGrid
@@ -23,8 +23,6 @@ func Tiled() {
 	var reload = func() {
 		var mapIds = assets.LoadTiledWorld("examples/data/world.world")
 		var grass, desert = mapIds[0], mapIds[1]
-		assets.LoadTiledTileset("examples/data/atlas.tsx")
-		assets.LoadTiledTileset("examples/data/objects.tsx")
 		l1 = tilemap.LayerSprites(grass, "1", "")
 		l2 = tilemap.LayerSprites(grass, "3", "")
 		tObjs = tilemap.LayerSprites(desert, "3", "")
@@ -39,6 +37,7 @@ func Tiled() {
 		pts3 = tilemap.LayerPoints(grass, "Collision", "")
 		imgShapes = tilemap.LayerShapes(desert, "7", "")
 		texts = tilemap.LayerTexts(grass, "Collision", "")
+		terr = tilemap.LayerSprites(mapIds[2], "Tile Layer 1", "")
 
 		for _, text := range texts {
 			text.FontId = font
@@ -55,8 +54,9 @@ func Tiled() {
 		cam.DrawSprites(tObjs...)
 		cam.DrawSprites(img...)
 		cam.DrawSprites(objs...)
+		cam.DrawSprites(terr...)
 		cam.DrawTextBoxes(texts...)
-		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
+		cam.DrawGrid(0.5, 32, 32, color.Darken(color.Gray, 0.5))
 
 		for _, shape := range g1.All() {
 			var cellX, cellY = g1.Cell(shape)

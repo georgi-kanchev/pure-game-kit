@@ -52,6 +52,8 @@ type TilesetImage struct {
 
 type TilesetTile struct {
 	Identity                             // no name
+	TextureId       string               // used when not in atlas
+	Image           *TilesetImage        `xml:"image"`
 	Probability     float32              `xml:"probability,attr"`
 	CollisionLayers []*LayerObjects      `xml:"objectgroup"`
 	Animation       TilesetTileAnimation `xml:"animation"`

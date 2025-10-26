@@ -14,6 +14,7 @@ import (
 func LoadTiledTileset(filePath string) string {
 	var tileset *internal.Tileset
 	var id = path.RemoveExtension(filePath)
+	var w, h = 0, 0
 
 	filePath = internal.MakeAbsolutePath(filePath)
 	storage.FromFileXML(filePath, &tileset)
@@ -21,24 +22,21 @@ func LoadTiledTileset(filePath string) string {
 		return ""
 	}
 
-	var texturePath = path.New(path.Folder(filePath), tileset.Image.Source)
-	var textureIds = LoadTextures(texturePath)
-	if len(textureIds) == 0 {
-		return ""
+	if tileset.Image.Source != "" {
+		var textureIds = LoadTextures(path.New(path.Folder(filePath), tileset.Image.Source))
+		var atlasId = SetTextureAtlas(textureIds[0], tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
+
+		tileset.AtlasId = atlasId
+		w, h = tileset.Columns, tileset.TileCount/tileset.Columns
+
+		for id := range w * h {
+			var x, y = number.Index1DToIndexes2D(id, w, h)
+			var rectId = text.New(atlasId, "/", id)
+			SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
+		}
 	}
 
-	var atlasId = SetTextureAtlas(textureIds[0], tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
-	var w, h = tileset.Columns, tileset.TileCount / tileset.Columns
-
-	tileset.AtlasId = atlasId
 	internal.TiledTilesets[id] = tileset
-
-	for id := range w * h {
-		var x, y = number.Index1DToIndexes2D(id, w, h)
-		var rectId = text.New(atlasId, "/", id)
-		SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
-	}
-
 	tileset.MappedTiles = map[int]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
 		tileset.MappedTiles[tile.Id] = &tile
@@ -47,13 +45,24 @@ func LoadTiledTileset(filePath string) string {
 			tryTemplate(tile.CollisionLayers, path.Folder(filePath))
 		}
 
+		if tileset.Image.Source == "" && tile.Image.Source != "" {
+			tile.TextureId = LoadTextures(path.New(path.Folder(filePath), tile.Image.Source))[0]
+		}
+
 		if len(tile.Animation.Frames) == 0 {
 			continue
 		} // animated tiles
 
+		if tileset.Image.Source == "" { // tiles are images, not in atlas
+			w, h = tile.Image.Width, tile.Image.Height
+		}
+
 		var frame = 0
-		var name = text.New(atlasId, "/", tile.Id)
+		var id = text.Remove(filePath, path.LastPart(filePath))
+		var name = text.New(id, "/", tile.Id)
 		var seq = flow.NewSequence()
+
+		tile.Sequence = seq
 		seq.SetSteps(true,
 			flow.NowDoLoop(number.ValueMaximum[int](), func(int) {
 				var timer = seq.CurrentStepTimer()
@@ -61,14 +70,13 @@ func LoadTiledTileset(filePath string) string {
 				if timer > float32(dur) {
 					var newId = tile.Animation.Frames[frame].TileId
 					var x, y = number.Index1DToIndexes2D(newId, w, h) // new tile id coords
-					SetTextureAtlasTile(atlasId, name, float32(x), float32(y), 1, 1, 0, false)
+					SetTextureAtlasTile(id, name, float32(x), float32(y), 1, 1, 0, false)
 					seq.GoToNextStep()
 					frame++
 					frame = frame % len(tile.Animation.Frames)
 				}
 			}),
 			flow.NowDo(seq.Run))
-		tile.Sequence = seq
 	}
 
 	return id
@@ -84,11 +92,11 @@ func LoadTiledWorld(filePath string) (tilemapIds []string) {
 	}
 
 	world.Directory = path.Folder(filePath)
-	world.Name = path.RemoveExtension(path.LastElement(filePath))
+	world.Name = path.RemoveExtension(path.LastPart(filePath))
 
 	for _, m := range world.Maps {
 		var mapPath = path.New(world.Directory, m.FileName)
-		var name = path.RemoveExtension(path.LastElement(mapPath))
+		var name = path.RemoveExtension(path.LastPart(mapPath))
 
 		if collection.Contains(resultIds, name) {
 			continue
@@ -125,9 +133,14 @@ func LoadTiledMap(filePath string) string {
 
 	var root = path.Folder(path.Executable()) + path.Divider()
 	var id = text.Replace(path.RemoveExtension(text.Remove(filePath, root)), "\\", "/")
-	mapData.Name = path.LastElement(path.RemoveExtension(filePath))
+	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
 	mapData.Directory = path.Folder(absolutePath)
 	internal.TiledMaps[id] = mapData
+
+	for _, t := range mapData.Tilesets {
+		LoadTiledTileset(text.Remove(path.New(mapData.Directory, t.Source), root))
+	}
+
 	return id
 }
 

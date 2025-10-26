@@ -10,7 +10,7 @@ import (
 	st "pure-game-kit/window/state"
 )
 
-var Title = path.RemoveExtension(path.LastElement(path.Executable()))
+var Title = path.RemoveExtension(path.LastPart(path.Executable()))
 var Color uint = 0
 var IsVSynced = false
 var IsAntialiased = false

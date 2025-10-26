@@ -5,6 +5,10 @@ simple particles, port?
 consistent error handling + logging, console & file
 
 // DONE:
+[87] [Sun] [26-10-2025]
+tiled - more fixes
+tiled - support for image per tile instead of atlas
+
 [86] [Sat] [25-10-2025]
 tiled - fixes
 

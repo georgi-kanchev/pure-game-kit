@@ -30,7 +30,7 @@ func IsFile(path string) bool {
 	return Extension(path) != ""
 }
 
-func LastElement(path string) string {
+func LastPart(path string) string {
 	return filepath.Base(path)
 }
 func Folder(path string) string {
