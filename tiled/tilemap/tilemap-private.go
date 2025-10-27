@@ -1,7 +1,10 @@
 package tilemap
 
 import (
+	"bytes"
+	"encoding/binary"
 	"pure-game-kit/data/path"
+	"pure-game-kit/data/storage"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
@@ -14,6 +17,22 @@ func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *
 	} // cache otherwise
 
 	var tileData = text.Trim(layer.TileData.Tiles)
+
+	if layer.TileData.Encoding == "base64" {
+		var b64 = text.FromBase64(text.Trim(tileData))
+		var data = []byte{}
+
+		switch layer.TileData.Compression {
+		case "gzip":
+			data = storage.DecompressGZIP([]byte(b64))
+		case "zlib":
+			data = storage.DecompressZLIB([]byte(b64))
+		}
+
+		var tiles = bytesToTiles(data)
+		_ = tiles
+	}
+
 	var rows = text.Split(tileData, "\n")
 	layer.Tiles = make([]int, mapData.Width*mapData.Height)
 
@@ -177,4 +196,19 @@ func col(hex string) uint {
 	}
 
 	return uint(value)
+}
+
+func bytesToTiles(data []byte) []uint32 {
+	if len(data)%4 != 0 {
+		return nil
+	}
+
+	var numElements = len(data) / 4
+	var result = make([]uint32, numElements)
+	var reader = bytes.NewReader(data)
+	var err = binary.Read(reader, binary.LittleEndian, &result)
+	if err != nil {
+		return nil
+	}
+	return result
 }

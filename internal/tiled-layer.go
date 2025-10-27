@@ -28,8 +28,9 @@ type LayerTiles struct {
 	Tiles []int
 }
 type LayerTilesData struct {
-	Encoding string `xml:"encoding,attr"`
-	Tiles    string `xml:",chardata"`
+	Encoding    string `xml:"encoding,attr"`
+	Compression string `xml:"compression,attr"`
+	Tiles       string `xml:",chardata"`
 }
 
 // =================================================================

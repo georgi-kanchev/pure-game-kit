@@ -16,7 +16,7 @@
         "atlas.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 2,
-            "scaleInEditor": 3
+            "scaleInEditor": 1
         },
         "desert.tmx": {
             "expandedObjectLayers": [
@@ -25,14 +25,14 @@
             "scale": 0.125,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 2232,
-                "y": 1356
+                "x": 2624,
+                "y": 1364
             }
         },
         "images.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 3
+            "scaleInEditor": 1
         },
         "map.tmx": {
             "expandedGroupLayers": [
@@ -40,13 +40,13 @@
             ],
             "expandedObjectLayers": [
                 11,
-                6,
-                2
+                2,
+                6
             ],
             "scale": 1,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 833,
+                "x": 882,
                 "y": 246.5
             }
         },
@@ -61,7 +61,7 @@
         "objects.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1,
-            "scaleInEditor": 3
+            "scaleInEditor": 1
         },
         "sizes.tsx": {
             "dynamicWrapping": true,
@@ -69,11 +69,11 @@
             "scaleInEditor": 1
         },
         "terrain.tmx": {
-            "scale": 0.33,
+            "scale": 0.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 427.27272727272737,
-                "y": 274.24242424242414
+                "x": 290,
+                "y": 353
             }
         }
     },
@@ -100,13 +100,13 @@
     "project": "game-name.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "sizes.tsx",
         "map.tmx",
         "desert.tmx",
         "atlas.tsx",
         "objects.tsx",
         "images.tsx",
-        "terrain.tmx"
+        "terrain.tmx",
+        "sizes.tsx"
     ],
     "textEdit.monospace": false,
     "tileset.embedInMap": false,

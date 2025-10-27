@@ -122,7 +122,8 @@ func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) int {
 	var tilesIds = getTileIds(mapData, tilesets, wantedLayer)
 	var tileId = tilesIds[cellIndex]
 	var curTileset = currentTileset(tilesets, tileId)
-	return tileId - curTileset.FirstTileId
+	// doesn't handle tile pose
+	return int(tileId - curTileset.FirstTileId)
 }
 
 func LayerObjectProperty(mapId, layerNameOrId, objectNameClassOrId, property string) string {

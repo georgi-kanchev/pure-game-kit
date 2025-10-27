@@ -1,7 +1,7 @@
 package text
 
 import (
-	"encoding/base64"
+	b64 "encoding/base64"
 	"fmt"
 	"pure-game-kit/utility/number"
 
@@ -162,10 +162,10 @@ func TrimRight(text string) string {
 }
 
 func ToBase64(text string) string {
-	return base64.StdEncoding.EncodeToString([]byte(text))
+	return b64.StdEncoding.EncodeToString([]byte(text))
 }
-func FromBase64(textBase64 string) string {
-	var decodedBytes, err = base64.StdEncoding.DecodeString(textBase64)
+func FromBase64(base64 string) string {
+	var decodedBytes, err = b64.StdEncoding.DecodeString(base64)
 	if err != nil {
 		return ""
 	}

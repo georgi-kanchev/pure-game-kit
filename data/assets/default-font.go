@@ -1,12 +1,12 @@
 package assets
 
 import (
-	"pure-game-kit/data/file"
+	"pure-game-kit/data/storage"
 	"pure-game-kit/utility/text"
 )
 
 func LoadDefaultFont() (fontId string) {
-	loadFont("", 49, file.Decompress([]byte(text.FromBase64(font))))
+	loadFont("", 49, storage.DecompressGZIP([]byte(text.FromBase64(font))))
 	return ""
 }
 

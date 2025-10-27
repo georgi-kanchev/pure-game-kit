@@ -1,7 +1,7 @@
 package assets
 
 import (
-	"pure-game-kit/data/file"
+	"pure-game-kit/data/storage"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
 
@@ -16,7 +16,7 @@ func loadTexture(id, b64 string) string {
 		UnloadTextures(id)
 	}
 
-	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
+	var decompressed = storage.DecompressGZIP([]byte(text.FromBase64(b64)))
 	var image = rl.LoadImageFromMemory(".png", decompressed, int32(len(decompressed)))
 	var tex = rl.LoadTextureFromImage(image)
 
@@ -33,7 +33,7 @@ func loadSound(id, b64 string) string {
 		UnloadSound(id)
 	}
 
-	var decompressed = file.Decompress([]byte(text.FromBase64(b64)))
+	var decompressed = storage.DecompressGZIP([]byte(text.FromBase64(b64)))
 	var wave = rl.LoadWaveFromMemory(".ogg", decompressed, int32(len(decompressed)))
 	var sound = rl.LoadSoundFromWave(wave)
 	internal.Sounds[id] = &sound

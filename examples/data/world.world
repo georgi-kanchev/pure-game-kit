@@ -16,8 +16,8 @@
         },
         {
             "fileName": "terrain.tmx",
-            "height": 0,
-            "width": 0,
+            "height": 640,
+            "width": 640,
             "x": 640,
             "y": 0
         }

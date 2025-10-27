@@ -1,9 +1,13 @@
 package storage
 
 import (
+	"bytes"
+	"compress/gzip"
+	"compress/zlib"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
 	"pure-game-kit/internal"
 )
@@ -67,4 +71,65 @@ func ToXML(structPointer any) string {
 		return ""
 	}
 	return string(data)
+}
+
+func CompressZLIB(data []byte) []byte {
+	var buf bytes.Buffer
+	var gw = zlib.NewWriter(&buf)
+	var _, err = gw.Write(data)
+
+	if err != nil {
+		return data
+	}
+
+	if err := gw.Close(); err != nil {
+		return data
+	}
+	return buf.Bytes()
+}
+func DecompressZLIB(data []byte) []byte {
+	var buf = bytes.NewReader(data)
+	var gr, err = zlib.NewReader(buf)
+
+	if err != nil {
+		return data
+	}
+	defer gr.Close()
+
+	var result, err2 = io.ReadAll(gr)
+	if err2 != nil {
+		return data
+	}
+	return result
+
+}
+func CompressGZIP(data []byte) []byte {
+	var buf bytes.Buffer
+	var gw = gzip.NewWriter(&buf)
+	var _, err = gw.Write(data)
+
+	if err != nil {
+		return data
+	}
+
+	if err := gw.Close(); err != nil {
+		return data
+	}
+	return buf.Bytes()
+}
+func DecompressGZIP(data []byte) []byte {
+	var buf = bytes.NewReader(data)
+	var gr, err = gzip.NewReader(buf)
+
+	if err != nil {
+		return data
+	}
+	defer gr.Close()
+
+	var result, err2 = io.ReadAll(gr)
+	if err2 != nil {
+		return data
+	}
+	return result
+
 }
