@@ -108,7 +108,7 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 	return ""
 }
 
-func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) int {
+func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) uint32 {
 	var mapData, _ = internal.TiledMaps[mapId]
 	var wantedLayer, _, _, _ = findLayer(mapData, layerNameOrId)
 	if mapData == nil || wantedLayer == nil {
@@ -122,8 +122,12 @@ func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) int {
 	var tilesIds = getTileIds(mapData, tilesets, wantedLayer)
 	var tileId = tilesIds[cellIndex]
 	var curTileset = currentTileset(tilesets, tileId)
-	// doesn't handle tile pose
-	return int(tileId - curTileset.FirstTileId)
+	tileId -= curTileset.FirstTileId
+	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](28))
+	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](29))
+	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](30))
+	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](31))
+	return tileId
 }
 
 func LayerObjectProperty(mapId, layerNameOrId, objectNameClassOrId, property string) string {
@@ -235,29 +239,36 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		}
 
 		var id = tile - curTileset.FirstTileId
+		var ang, w, h = GetTileOrientation(id, float32(curTileset.TileWidth), float32(curTileset.TileHeight))
+		id = flag.TurnOff(id, flag.FromBit[uint32](28))
+		id = flag.TurnOff(id, flag.FromBit[uint32](29))
+		id = flag.TurnOff(id, flag.FromBit[uint32](30))
+		id = flag.TurnOff(id, flag.FromBit[uint32](31))
 		var tileId = text.New(curTileset.AtlasId, "/", id)
-		var w, h = float32(curTileset.TileWidth), float32(curTileset.TileHeight)
-		var px, py float32 = 0, 0
+		var px, py float32 = 0.5, 0.5
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
+		var offX, offY = w / 2, h / 2
 
 		if curTileset.AtlasId == "" {
 			var tileObj = curTileset.MappedTiles[id]
 			tileId = tileObj.TextureId
 			w, h = float32(tileObj.Image.Width), float32(tileObj.Image.Height)
 			px, py = 0, 1
-			i += 1 // ??
+			offX, offY = 0, 0
+			i += 1
 		}
 
 		var x = float32(j)*float32(mapData.TileWidth) + mapData.WorldX + tiles.OffsetX
 		var y = float32(i)*float32(mapData.TileHeight) + mapData.WorldY + tiles.OffsetY
 		var sprite = graphics.NewSprite(tileId, 0, 0)
 
+		sprite.Angle = ang
 		sprite.Width, sprite.Height = w, h
 		sprite.PivotX, sprite.PivotY = px, py
 
 		x += float32(curTileset.Offset.X)
 		y += float32(curTileset.Offset.Y)
-		sprite.X, sprite.Y = x, y
+		sprite.X, sprite.Y = x+offX, y+offY
 
 		result = append(result, &sprite)
 	}
@@ -335,8 +346,8 @@ func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometr
 	}
 
 	var result = geometry.NewShapeGrid(mapData.TileWidth, mapData.TileHeight)
-	var success = forEachTile(
-		mapId, tileLayerNameOrId, func(x, y, id int, layer *internal.LayerTiles, curTileset *internal.Tileset) {
+	var success = forEachTile(mapId, tileLayerNameOrId,
+		func(x, y int, id uint32, layer *internal.LayerTiles, curTileset *internal.Tileset) {
 			x += int(number.Round(layer.OffsetX/float32(curTileset.TileWidth), 0))
 			y += int(number.Round(layer.OffsetY/float32(curTileset.TileHeight), 0))
 			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, id, objectNameOrClass)...)
@@ -414,8 +425,8 @@ func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 		return result
 	}
 
-	var success = forEachTile(
-		mapId, layerNameOrId, func(x, y, id int, layer *internal.LayerTiles, curTileset *internal.Tileset) {
+	var success = forEachTile(mapId, layerNameOrId,
+		func(x, y int, id uint32, layer *internal.LayerTiles, curTileset *internal.Tileset) {
 			var pts = tileset.TileObjectPoints(curTileset.AtlasId, id, objectNameOrClass)
 			for i := range pts {
 				pts[i][0] += float32(x)*float32(curTileset.TileWidth) + layer.OffsetX

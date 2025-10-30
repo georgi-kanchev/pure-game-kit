@@ -21,3 +21,7 @@ func Toggle[T constraints.Integer](allFlags, flag T) T {
 func TurnOff[T constraints.Integer](allFlags, flag T) T {
 	return allFlags &^ flag
 }
+
+func FromBit[T constraints.Integer](bitPosition int) T {
+	return 1 << bitPosition
+}

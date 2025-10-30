@@ -37,7 +37,7 @@ func LoadTiledTileset(filePath string) string {
 	}
 
 	internal.TiledTilesets[id] = tileset
-	tileset.MappedTiles = map[int]*internal.TilesetTile{}
+	tileset.MappedTiles = map[uint32]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
 		tileset.MappedTiles[tile.Id] = &tile
 
@@ -69,7 +69,7 @@ func LoadTiledTileset(filePath string) string {
 				var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
 				if timer > float32(dur) {
 					var newId = tile.Animation.Frames[frame].TileId
-					var x, y = number.Index1DToIndexes2D(newId, w, h) // new tile id coords
+					var x, y = number.Index1DToIndexes2D(newId, uint32(w), uint32(h)) // new tile id coords
 					SetTextureAtlasTile(id, name, float32(x), float32(y), 1, 1, 0, false)
 					seq.GoToNextStep()
 					frame++

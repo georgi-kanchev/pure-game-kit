@@ -50,7 +50,7 @@ func Property(tilesetId, property string) string {
 	return ""
 }
 
-func TileProperty(tilesetId string, tileId int, property string) string {
+func TileProperty(tilesetId string, tileId uint32, property string) string {
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
 		return ""
@@ -63,19 +63,19 @@ func TileProperty(tilesetId string, tileId int, property string) string {
 	}
 	return ""
 }
-func TileAnimationTileIds(tilesetId string, tileId int) (frameTileIds []int) {
+func TileAnimationTileIds(tilesetId string, tileId uint32) (frameTileIds []uint32) {
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
-		return []int{}
+		return []uint32{}
 	}
 
-	var result = make([]int, len(tile.Animation.Frames))
+	var result = make([]uint32, len(tile.Animation.Frames))
 	for i, frame := range tile.Animation.Frames {
 		result[i] = frame.TileId
 	}
 	return result
 }
-func TileAnimationDurations(tilesetId string, tileId int) (frameDurations []float32) {
+func TileAnimationDurations(tilesetId string, tileId uint32) (frameDurations []float32) {
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
 		return []float32{}
@@ -87,7 +87,7 @@ func TileAnimationDurations(tilesetId string, tileId int) (frameDurations []floa
 	}
 	return result
 }
-func TileAnimate(tilesetId string, tileId int, animate bool) {
+func TileAnimate(tilesetId string, tileId uint32, animate bool) {
 	var tile = getTile(tilesetId, tileId)
 	if tile != nil {
 		var tileset, _ = internal.TiledTilesets[tilesetId]
@@ -96,18 +96,18 @@ func TileAnimate(tilesetId string, tileId int, animate bool) {
 
 		if !animate { // disabling animation resets the tile to original one
 			var w, h = tileset.Columns, tileset.TileCount / tileset.Columns
-			var x, y = number.Index1DToIndexes2D(tile.Id, w, h)
+			var x, y = number.Index1DToIndexes2D(tile.Id, uint32(w), uint32(h))
 			var rectId = text.New(tileset.AtlasId, "/", tile.Id)
 			assets.SetTextureAtlasTile(tileset.AtlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 		}
 	}
 }
-func TileIsAnimated(tilesetId string, tileId int) bool {
+func TileIsAnimated(tilesetId string, tileId uint32) bool {
 	var tile = getTile(tilesetId, tileId)
 	return tile != nil && tile.Sequence != nil
 }
 
-func TileObjectProperty(tilesetId string, tileId int, objectNameClassOrId, property string) string {
+func TileObjectProperty(tilesetId string, tileId uint32, objectNameClassOrId, property string) string {
 	var obj = getObj(tilesetId, tileId, objectNameClassOrId)
 	if obj == nil {
 		return ""
@@ -150,7 +150,7 @@ func TileObjectProperty(tilesetId string, tileId int, objectNameClassOrId, prope
 	}
 	return ""
 }
-func TileObjectShapes(tilesetId string, tileId int, objectNameClassOrId string) []*geometry.Shape {
+func TileObjectShapes(tilesetId string, tileId uint32, objectNameClassOrId string) []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
@@ -193,7 +193,7 @@ func TileObjectShapes(tilesetId string, tileId int, objectNameClassOrId string) 
 
 	return result
 }
-func TileObjectPoints(tilesetId string, tileId int, objectNameClassOrId string) [][2]float32 {
+func TileObjectPoints(tilesetId string, tileId uint32, objectNameClassOrId string) [][2]float32 {
 	var points = [][2]float32{}
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
@@ -216,7 +216,7 @@ func TileObjectPoints(tilesetId string, tileId int, objectNameClassOrId string) 
 //=================================================================
 // private
 
-func getTile(tilesetId string, tileId int) *internal.TilesetTile {
+func getTile(tilesetId string, tileId uint32) *internal.TilesetTile {
 	var data, has = internal.TiledTilesets[tilesetId]
 	if has {
 		return data.MappedTiles[tileId]
@@ -224,7 +224,7 @@ func getTile(tilesetId string, tileId int) *internal.TilesetTile {
 
 	return nil
 }
-func getObj(tilesetId string, tileId int, objectNameClassOrId string) *internal.LayerObject {
+func getObj(tilesetId string, tileId uint32, objectNameClassOrId string) *internal.LayerObject {
 	var tile = getTile(tilesetId, tileId)
 	if tile == nil {
 		return nil

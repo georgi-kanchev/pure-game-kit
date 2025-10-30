@@ -24,7 +24,7 @@ type Property struct {
 }
 
 type Identity struct {
-	Id    int    `xml:"id,attr"`
+	Id    uint32 `xml:"id,attr"`
 	Name  string `xml:"name,attr"`
 	Class string `xml:"class,attr"`
 }

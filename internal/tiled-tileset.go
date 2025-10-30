@@ -6,7 +6,7 @@ type Tileset struct {
 	Source          string                 `xml:"source,attr"`
 	Version         string                 `xml:"version,attr"`
 	TiledVersion    string                 `xml:"tiledversion,attr"`
-	FirstTileId     int                    `xml:"firstgid,attr"`
+	FirstTileId     uint32                 `xml:"firstgid,attr"`
 	TileWidth       int                    `xml:"tilewidth,attr"`
 	TileHeight      int                    `xml:"tileheight,attr"`
 	TileCount       int                    `xml:"tilecount,attr"`
@@ -24,7 +24,7 @@ type Tileset struct {
 	Image           TilesetImage           `xml:"image"`
 	Properties      []Property             `xml:"properties>property"`
 
-	MappedTiles map[int]*TilesetTile
+	MappedTiles map[uint32]*TilesetTile
 }
 type TilesetOffset struct {
 	X int `xml:"x,attr"`
@@ -66,6 +66,6 @@ type TilesetTileAnimation struct {
 	Frames []TilesetTileFrame `xml:"frame"`
 }
 type TilesetTileFrame struct {
-	TileId   int `xml:"tileid,attr"`
-	Duration int `xml:"duration,attr"`
+	TileId   uint32 `xml:"tileid,attr"`
+	Duration int    `xml:"duration,attr"`
 }

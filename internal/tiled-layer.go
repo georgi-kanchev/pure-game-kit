@@ -25,7 +25,7 @@ type LayerTiles struct {
 	Layer
 	TileData LayerTilesData `xml:"data"`
 
-	Tiles []int
+	Tiles []uint32
 }
 type LayerTilesData struct {
 	Encoding    string `xml:"encoding,attr"`
@@ -58,7 +58,7 @@ type LayerObject struct {
 	Visible     string             `xml:"visible,attr"`
 	Locked      bool               `xml:"locked,attr"`
 	Template    string             `xml:"template,attr"`
-	Gid         int                `xml:"gid,attr"`
+	Gid         uint32             `xml:"gid,attr"`
 	Text        LayerObjectText    `xml:"text"`
 	Polygon     LayerObjectPolygon `xml:"polygon"`
 	PolygonTile LayerObjectPolygon `xml:"polyline"`
@@ -86,4 +86,4 @@ type Template struct {
 	Object LayerObject `xml:"object"`
 }
 
-const FlipX, FlipY = 0x80000000, 0x40000000
+const FlipX, FlipY, FlipDiag = 0x80000000, 0x40000000, 0x20000000

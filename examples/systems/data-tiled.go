@@ -56,7 +56,7 @@ func Tiled() {
 		cam.DrawSprites(objs...)
 		cam.DrawSprites(terr...)
 		cam.DrawTextBoxes(texts...)
-		cam.DrawGrid(0.5, 32, 32, color.Darken(color.Gray, 0.5))
+		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
 		for _, shape := range g1.All() {
 			var cellX, cellY = g1.Cell(shape)

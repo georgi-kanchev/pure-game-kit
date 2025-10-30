@@ -6,12 +6,13 @@ import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/flag"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 	"strconv"
 )
 
-func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *internal.LayerTiles) []int {
+func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *internal.LayerTiles) []uint32 {
 	if layer.Tiles != nil {
 		return layer.Tiles // fast return if cached
 	} // cache otherwise
@@ -29,12 +30,12 @@ func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *
 			data = storage.DecompressZLIB([]byte(b64))
 		}
 
-		var tiles = bytesToTiles(data)
-		_ = tiles
+		layer.Tiles = bytesToTiles(data)
+		return layer.Tiles
 	}
 
 	var rows = text.Split(tileData, "\n")
-	layer.Tiles = make([]int, mapData.Width*mapData.Height)
+	layer.Tiles = make([]uint32, mapData.Width*mapData.Height)
 
 	for i := 0; i < mapData.Height; i++ {
 		var row = rows[i]
@@ -44,7 +45,7 @@ func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *
 
 		var columns = text.Split(row, ",")
 		for j := 0; j < mapData.Width; j++ {
-			var tile = int(text.ToNumber(columns[j]))
+			var tile = uint32(text.ToNumber(columns[j]))
 			if tile == 0 {
 				continue
 			}
@@ -97,7 +98,7 @@ func findLayer(data *internal.Map, layerNameOrId string) (
 	return nil, nil, nil, nil
 }
 func layerHas(layer *internal.Layer, layerNameOrId string) bool {
-	return layer.Name == layerNameOrId || layer.Id == int(text.ToNumber(layerNameOrId))
+	return layer.Name == layerNameOrId || layer.Id == uint32(text.ToNumber(layerNameOrId))
 
 }
 func usedTilesets(data *internal.Map) []*internal.Tileset {
@@ -120,7 +121,7 @@ func usedTilesets(data *internal.Map) []*internal.Tileset {
 	}
 	return usedTilesets
 }
-func currentTileset(usedTilesets []*internal.Tileset, tile int) *internal.Tileset {
+func currentTileset(usedTilesets []*internal.Tileset, tile uint32) *internal.Tileset {
 	var curTileset = usedTilesets[0]
 	for i := len(usedTilesets) - 1; i >= 0; i-- {
 		if usedTilesets[i] != nil && tile > usedTilesets[i].FirstTileId {
@@ -131,7 +132,7 @@ func currentTileset(usedTilesets []*internal.Tileset, tile int) *internal.Tilese
 	return curTileset
 }
 func forEachTile(mapId, layerNameOrId string,
-	do func(x, y, id int, layer *internal.LayerTiles, curTileset *internal.Tileset)) bool {
+	do func(x, y int, id uint32, layer *internal.LayerTiles, curTileset *internal.Tileset)) bool {
 	var mapData, _ = internal.TiledMaps[mapId]
 	var tiles, _, _, _ = findLayer(mapData, layerNameOrId)
 	if mapData == nil || tiles == nil {
@@ -211,4 +212,33 @@ func bytesToTiles(data []byte) []uint32 {
 		return nil
 	}
 	return result
+}
+
+func GetTileOrientation(tileId uint32, w, h float32) (angle float32, newW, newH float32) {
+	var flipH = flag.IsOn(tileId, internal.FlipX)
+	var flipV = flag.IsOn(tileId, internal.FlipY)
+	var flipDiag = flag.IsOn(tileId, internal.FlipDiag)
+
+	angle = 0.0
+	newW, newH = w, h
+
+	if flipH && !flipV && flipDiag {
+		angle = 90
+	} else if flipH && flipV && !flipDiag {
+		angle = 180
+	} else if !flipH && flipV && flipDiag {
+		angle = 270
+	} else if flipH && !flipV && !flipDiag {
+		newW = -w
+	} else if flipH && flipV && flipDiag {
+		newW = -w
+		angle = 90
+	} else if !flipH && flipV && !flipDiag {
+		newW = -w
+		angle = 180
+	} else if !flipH && !flipV && flipDiag {
+		newW = -w
+		angle = 270
+	}
+	return angle, newW, newH
 }

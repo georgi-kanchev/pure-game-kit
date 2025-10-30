@@ -357,7 +357,7 @@ func NaN() float32 {
 //=================================================================
 // int only
 
-func Indexes2DToIndex1D(x, y, width, height int) int {
+func Indexes2DToIndex1D[T Integer](x, y, width, height T) T {
 	var result = x*width + y
 	var max = width * height
 	if result < 0 {
@@ -367,7 +367,7 @@ func Indexes2DToIndex1D(x, y, width, height int) int {
 	}
 	return result
 }
-func Index1DToIndexes2D(index, width, height int) (int, int) {
+func Index1DToIndexes2D[T Integer](index, width, height T) (T, T) {
 	var max = width * height
 	if index < 0 {
 		index = 0
