@@ -45,18 +45,19 @@ func getTileIds(mapData *internal.Map, usedTilesets []*internal.Tileset, layer *
 
 		var columns = text.Split(row, ",")
 		for j := 0; j < mapData.Width; j++ {
-			var tile = uint32(text.ToNumber(columns[j]))
+			var tile = text.ToNumber[uint32](columns[j])
 			if tile == 0 {
 				continue
 			}
 
-			var curTileset = currentTileset(usedTilesets, tile)
+			var unoriented = flag.TurnOff(tile, internal.Flips)
+			var curTileset = currentTileset(usedTilesets, unoriented)
 			if curTileset == nil {
 				continue
 			}
 
 			var index = number.Indexes2DToIndex1D(i, j, mapData.Width, mapData.Height)
-			layer.Tiles[index] = tile
+			layer.Tiles[index] = uint32(tile)
 		}
 	}
 
@@ -98,7 +99,7 @@ func findLayer(data *internal.Map, layerNameOrId string) (
 	return nil, nil, nil, nil
 }
 func layerHas(layer *internal.Layer, layerNameOrId string) bool {
-	return layer.Name == layerNameOrId || layer.Id == uint32(text.ToNumber(layerNameOrId))
+	return layer.Name == layerNameOrId || layer.Id == text.ToNumber[uint32](layerNameOrId)
 
 }
 func usedTilesets(data *internal.Map) []*internal.Tileset {
@@ -214,7 +215,7 @@ func bytesToTiles(data []byte) []uint32 {
 	return result
 }
 
-func GetTileOrientation(tileId uint32, w, h float32) (angle float32, newW, newH float32) {
+func getTileOrientation(tileId uint32, w, h float32) (angle float32, newW, newH float32) {
 	var flipH = flag.IsOn(tileId, internal.FlipX)
 	var flipV = flag.IsOn(tileId, internal.FlipY)
 	var flipDiag = flag.IsOn(tileId, internal.FlipDiag)

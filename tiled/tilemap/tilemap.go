@@ -121,13 +121,9 @@ func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) uint32 {
 	var tilesets = usedTilesets(mapData)
 	var tilesIds = getTileIds(mapData, tilesets, wantedLayer)
 	var tileId = tilesIds[cellIndex]
-	var curTileset = currentTileset(tilesets, tileId)
-	tileId -= curTileset.FirstTileId
-	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](28))
-	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](29))
-	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](30))
-	tileId = flag.TurnOff(tileId, flag.FromBit[uint32](31))
-	return tileId
+	var unoriented = flag.TurnOff(tileId, internal.Flips)
+	var curTileset = currentTileset(tilesets, unoriented)
+	return unoriented - curTileset.FirstTileId
 }
 
 func LayerObjectProperty(mapId, layerNameOrId, objectNameClassOrId, property string) string {
@@ -233,17 +229,14 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 	var tileIds = getTileIds(mapData, usedTilesets, tiles)
 
 	for index, tile := range tileIds {
-		var curTileset = currentTileset(usedTilesets, tile)
+		var unoriented = flag.TurnOff(tile, internal.Flips)
+		var curTileset = currentTileset(usedTilesets, unoriented)
 		if curTileset == nil {
 			continue
 		}
 
-		var id = tile - curTileset.FirstTileId
-		var ang, w, h = GetTileOrientation(id, float32(curTileset.TileWidth), float32(curTileset.TileHeight))
-		id = flag.TurnOff(id, flag.FromBit[uint32](28))
-		id = flag.TurnOff(id, flag.FromBit[uint32](29))
-		id = flag.TurnOff(id, flag.FromBit[uint32](30))
-		id = flag.TurnOff(id, flag.FromBit[uint32](31))
+		var ang, w, h = getTileOrientation(tile, float32(curTileset.TileWidth), float32(curTileset.TileHeight))
+		var id = unoriented - curTileset.FirstTileId
 		var tileId = text.New(curTileset.AtlasId, "/", id)
 		var px, py float32 = 0.5, 0.5
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
@@ -252,10 +245,36 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		if curTileset.AtlasId == "" {
 			var tileObj = curTileset.MappedTiles[id]
 			tileId = tileObj.TextureId
-			w, h = float32(tileObj.Image.Width), float32(tileObj.Image.Height)
+			w = float32(tileObj.Image.Width * condition.If(w < 0, -1, 1))
+			h = float32(tileObj.Image.Height * condition.If(h < 0, -1, 1))
 			px, py = 0, 1
 			offX, offY = 0, 0
-			i += 1
+			i++
+
+			switch ang {
+			case 90:
+				offY -= w
+			case 180:
+				offX += w
+				offY -= h
+			case 270:
+				offX += h
+			}
+
+			if ang == 90 && w < 0 {
+				offX = w
+				offY = 0
+			} else if ang == 270 && w < 0 {
+				offX = w + h
+				offY = w
+			}
+		}
+
+		if w < 0 {
+			offX -= w
+		}
+		if h < 0 {
+			offY -= h
 		}
 
 		var x = float32(j)*float32(mapData.TileWidth) + mapData.WorldX + tiles.OffsetX
@@ -398,7 +417,7 @@ func LayerShapes(mapId, layerNameOrId, objectNameClassOrId string) []*geometry.S
 		for _, pt := range pts {
 			var xy = text.Split(pt, ",")
 			if len(xy) == 2 {
-				var x, y = text.ToNumber(xy[0]), text.ToNumber(xy[1])
+				var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
 				x, y = point.RotateAroundPoint(x, y, 0, 0, obj.Rotation)
 				corners = append(corners, [2]float32{x, y})
 			}

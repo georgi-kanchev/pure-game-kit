@@ -376,16 +376,16 @@ func dyn(owner *container, value string, defaultValue string) string {
 
 func parseColor(value string, disabled ...bool) uint {
 	var rgba = text.Split(value, " ")
-	var r, g, b, a uint64
+	var r, g, b, a byte
 
 	if len(rgba) == 3 || len(rgba) == 4 {
-		r = uint64(text.ToNumber(rgba[0]))
-		g = uint64(text.ToNumber(rgba[1]))
-		b = uint64(text.ToNumber(rgba[2]))
+		r = text.ToNumber[byte](rgba[0])
+		g = text.ToNumber[byte](rgba[1])
+		b = text.ToNumber[byte](rgba[2])
 		a = 255
 	}
 	if len(rgba) == 4 {
-		a = uint64(text.ToNumber(rgba[3]))
+		a = text.ToNumber[byte](rgba[3])
 	}
 
 	if len(disabled) == 1 && disabled[0] {
@@ -395,7 +395,7 @@ func parseColor(value string, disabled ...bool) uint {
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
 }
 func parseNum(value string, defaultValue float32) float32 {
-	var v = text.ToNumber(value)
+	var v = text.ToNumber[float32](value)
 	if number.IsNaN(v) {
 		return defaultValue
 	}

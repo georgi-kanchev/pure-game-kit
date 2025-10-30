@@ -86,4 +86,5 @@ type Template struct {
 	Object LayerObject `xml:"object"`
 }
 
-const FlipX, FlipY, FlipDiag = 0x80000000, 0x40000000, 0x20000000
+const FlipX, FlipY, FlipDiag, FlipUnused uint32 = 0x80000000, 0x40000000, 0x20000000, 0x10000000
+const Flips = FlipX | FlipY | FlipDiag | FlipUnused

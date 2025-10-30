@@ -180,7 +180,7 @@ func TileObjectShapes(tilesetId string, tileId uint32, objectNameClassOrId strin
 		for _, pt := range pts {
 			var xy = text.Split(pt, ",")
 			if len(xy) == 2 {
-				var x, y = text.ToNumber(xy[0]), text.ToNumber(xy[1])
+				var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
 				x, y = point.RotateAroundPoint(x, y, 0, 0, obj.Rotation)
 				corners = append(corners, [2]float32{x, y})
 			}

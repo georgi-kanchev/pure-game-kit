@@ -3,6 +3,7 @@ package text
 import (
 	b64 "encoding/base64"
 	"fmt"
+	"math"
 	"pure-game-kit/utility/number"
 
 	"strconv"
@@ -56,12 +57,38 @@ func New(elements ...any) string {
 	}
 	return result
 }
-func ToNumber(text string) float32 {
-	var result, err = strconv.ParseFloat(text, 32)
-	if err != nil {
-		return number.NaN()
+func ToNumber[T number.Number](text string) T {
+	var zero T
+
+	switch any(zero).(type) {
+	case float32:
+		var result, err = strconv.ParseFloat(text, 32)
+		if err != nil {
+			return T(number.NaN())
+		}
+		return T(result)
+	case float64:
+		var result, err = strconv.ParseFloat(text, 64)
+		if err != nil {
+			return T(math.NaN())
+		}
+		return T(result)
+	case int, int8, int16, int32, int64:
+		result, err := strconv.ParseInt(text, 10, 64)
+		if err != nil {
+			return zero
+		}
+		return T(result)
+	case uint, uint8, uint16, uint32, uint64:
+		result, err := strconv.ParseUint(text, 10, 64)
+		if err != nil {
+			return zero
+		}
+		return T(result)
+
+	default:
+		return zero
 	}
-	return float32(result)
 }
 
 func ToInt(text string) int {
@@ -252,7 +279,7 @@ func Calculate(mathExpression string) float32 {
 		}
 		var numStr = expr[start:*i]
 		(*i)--
-		return ToNumber(numStr)
+		return ToNumber[float32](numStr)
 	}
 
 	for i := 0; i < len(mathExpression); i++ {
