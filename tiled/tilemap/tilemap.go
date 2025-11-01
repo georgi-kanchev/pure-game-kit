@@ -184,7 +184,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		var assetId = text.Remove(path.New(mapData.Directory, path.RemoveExtension(img.Image.Source)), root)
 		var sprite = graphics.NewSprite(assetId, mapData.WorldX+img.OffsetX, mapData.WorldY+img.OffsetY)
 		sprite.PivotX, sprite.PivotY = 0, 0
-		return []*graphics.Sprite{&sprite}
+		return []*graphics.Sprite{sprite}
 	}
 
 	if objs != nil {
@@ -215,7 +215,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 			sprite.ScaleY = condition.If(flag.IsOn(obj.Gid, internal.FlipY), float32(-1), 1)
 			sprite.Angle = obj.Rotation
 
-			result = append(result, &sprite)
+			result = append(result, sprite)
 		}
 		return result
 	}
@@ -289,7 +289,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		y += float32(curTileset.Offset.Y)
 		sprite.X, sprite.Y = x+offX, y+offY
 
-		result = append(result, &sprite)
+		result = append(result, sprite)
 	}
 
 	return result

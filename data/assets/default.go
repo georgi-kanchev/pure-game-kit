@@ -13,7 +13,7 @@ func loadTexture(id, b64 string) string {
 
 	var _, has = internal.Textures[id]
 	if has {
-		UnloadTextures(id)
+		UnloadTexture(id)
 	}
 
 	var decompressed = storage.DecompressGZIP([]byte(text.FromBase64(b64)))

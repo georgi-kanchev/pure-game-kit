@@ -207,7 +207,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 				endShader()
 				camera.update()
-				camera.DrawSprites(&sprite)
+				camera.DrawSprites(sprite)
 				beginShader(t, s.Thickness)
 				continue
 			}
@@ -235,7 +235,7 @@ func drawSlice(camera *Camera, parent *Node, x, y, w, h float32, id string, colo
 	reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
 	reusableSprite.Color = color
 
-	camera.DrawSprites(&reusableSprite)
+	camera.DrawSprites(reusableSprite)
 }
 
 func beginShader(t *TextBox, thick float32) {

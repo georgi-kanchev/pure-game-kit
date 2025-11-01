@@ -23,8 +23,8 @@ func LoadTiledTileset(filePath string) string {
 	}
 
 	if tileset.Image.Source != "" {
-		var textureIds = LoadTextures(path.New(path.Folder(filePath), tileset.Image.Source))
-		var atlasId = SetTextureAtlas(textureIds[0], tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
+		var textureId = LoadTexture(path.New(path.Folder(filePath), tileset.Image.Source))
+		var atlasId = SetTextureAtlas(textureId, tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
 
 		tileset.AtlasId = atlasId
 		w, h = tileset.Columns, tileset.TileCount/tileset.Columns
@@ -46,7 +46,7 @@ func LoadTiledTileset(filePath string) string {
 		}
 
 		if tileset.Image.Source == "" && tile.Image.Source != "" {
-			tile.TextureId = LoadTextures(path.New(path.Folder(filePath), tile.Image.Source))[0]
+			tile.TextureId = LoadTexture(path.New(path.Folder(filePath), tile.Image.Source))
 		}
 
 		if len(tile.Animation.Frames) == 0 {

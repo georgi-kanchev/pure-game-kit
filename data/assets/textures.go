@@ -7,11 +7,11 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadTextures(filePath string) []string {
+func LoadTexture(filePath string) string {
 	filePath = internal.MakeAbsolutePath(filePath)
 	tryCreateWindow()
 
-	var result = []string{}
+	var result = ""
 	var id = getIdPath(filePath)
 	var tex, has = internal.Textures[id]
 
@@ -27,12 +27,12 @@ func LoadTextures(filePath string) []string {
 
 	if texture.Width != 0 {
 		internal.Textures[id] = &texture
-		result = append(result, id)
+		result = id
 	}
 
 	return result
 }
-func UnloadTextures(textureId string) {
+func UnloadTexture(textureId string) {
 	var tex, has = internal.Textures[textureId]
 	delete(internal.Textures, textureId)
 	RemoveTextureAtlases(textureId)

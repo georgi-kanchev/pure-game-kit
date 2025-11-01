@@ -8,7 +8,8 @@ type Box struct {
 }
 
 func NewBox(assetId string, x, y float32) Box {
-	var result = Box{Sprite: NewSprite(assetId, x, y)}
+	var sprite = NewSprite(assetId, x, y)
+	var result = Box{Sprite: *sprite}
 	var slices, has = internal.Boxes[assetId]
 
 	if !has {
