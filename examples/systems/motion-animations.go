@@ -21,7 +21,7 @@ func Animations() {
 		cam.SetScreenAreaToWindow()
 
 		sprite.AssetId = *animation.CurrentItem()
-		cam.DrawSprites(&sprite)
+		cam.DrawSprites(sprite)
 
 		if keyboard.IsKeyPressedOnce(key.A) {
 			animation.SetTime(3.8)

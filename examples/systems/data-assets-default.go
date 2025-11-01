@@ -73,7 +73,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		var imx, imy = int(mx / fullSz), int(my / fullSz)
 		var index = number.Limit(number.Indexes2DToIndex1D(imy, imx, int(w), int(h)), 0, len(tileIds)-1)
 
-		camera.DrawSprites(&sprite)
+		camera.DrawSprites(sprite)
 
 		if !sprite.IsHovered(camera) {
 			continue
