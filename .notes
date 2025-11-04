@@ -13,6 +13,7 @@ assets - Size now works with Tiled Tilesets & Maps, as well as Music & Sounds
 storage - error logging
 utility - Format now forces . for decimal separator and optional space for thousands
 easings - replaced raylib with internal implementation
+graphics - draw polygon
 
 [91] [Mon] [03-11-2025]
 path - going back to relative instead of absolute, windows problems -_-
