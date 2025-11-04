@@ -17,14 +17,14 @@ func Audio() {
 	music.FadeOut = 1
 
 	for window.KeepOpen() {
-		if keyboard.IsKeyPressedOnce(key.A) {
+		if keyboard.IsKeyJustPressed(key.A) {
 			music.Play()
 		}
-		if keyboard.IsKeyPressedOnce(key.S) {
+		if keyboard.IsKeyJustPressed(key.S) {
 			music.AssetId = ""
 		}
 
-		if music.IsFinishedOnce() {
+		if music.IsJustFinished() {
 			music.AssetId = m1
 			music.Play()
 		}

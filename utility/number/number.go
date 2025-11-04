@@ -13,13 +13,11 @@ type Integer interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
-func Format[T Number](number T, thousandsDivider, decimalDivider string) string {
+func Format[T Number](number T, divideThousands bool) string {
 	var str string
 
 	switch v := any(number).(type) {
-	case int, int8, int16, int32, int64:
-		str = fmt.Sprintf("%d", v)
-	case uint, uint8, uint16, uint32, uint64:
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
 		str = fmt.Sprintf("%d", v)
 	case float32:
 		str = strconv.FormatFloat(float64(v), 'f', -1, 32)
@@ -34,14 +32,14 @@ func Format[T Number](number T, thousandsDivider, decimalDivider string) string 
 	var result = ""
 	var n = len(intPart)
 	for i, c := range intPart {
-		if i > 0 && (n-i)%3 == 0 {
-			result += thousandsDivider
+		if i > 0 && (n-i)%3 == 0 && divideThousands {
+			result += " "
 		}
 		result += string(c)
 	}
 
 	if len(parts) == 2 {
-		result += decimalDivider
+		result += "."
 		result += parts[1]
 	}
 

@@ -45,7 +45,7 @@ func CallFor(seconds float32, function func(remaining float32)) {
 	internal.CallFor[t] = append(internal.CallFor[t], function)
 }
 
-func TrueUponChange[T comparable](pointer *T) bool {
+func JustChanged[T comparable](pointer *T) bool {
 	var current = *pointer
 
 	var prev, has = trueChanges[pointer]
@@ -56,7 +56,7 @@ func TrueUponChange[T comparable](pointer *T) bool {
 
 	return false
 }
-func TrueOnce(condition bool, key any) bool {
+func JustTurnedTrue(condition bool, key any) bool {
 	var prev = trueOnce[key]
 	trueOnce[key] = condition
 	return !prev && condition

@@ -237,17 +237,17 @@ var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               //
 var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache
 
 func reset(camera *graphics.Camera, gui *GUI) {
-	if mouse.IsButtonPressedOnce(b.Left) {
+	if mouse.IsButtonJustPressed(b.Left) {
 		wPressedOn = nil
 		tooltip = nil
 		cPressedOnScrollH = nil
 		cPressedOnScrollV = nil
 	}
-	if mouse.IsButtonReleasedOnce(b.Left) {
+	if mouse.IsButtonJustReleased(b.Left) {
 		cPressedOnScrollH = nil
 		cPressedOnScrollV = nil
 	}
-	if mouse.IsButtonReleasedOnce(b.Middle) {
+	if mouse.IsButtonJustReleased(b.Middle) {
 		cMiddlePressed = nil
 	}
 
@@ -265,7 +265,7 @@ func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
 	camera.X, camera.Y = prevX, prevY             // also x y
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
-	if mouse.IsButtonReleasedOnce(b.Left) {
+	if mouse.IsButtonJustReleased(b.Left) {
 		wPressedOn = nil
 		tooltip = nil
 	}

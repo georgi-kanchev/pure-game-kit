@@ -85,7 +85,7 @@ func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
 }
 
 func onDrop(root *root) (string, string) {
-	var left = mouse.IsButtonReleasedOnce(b.Left)
+	var left = mouse.IsButtonJustReleased(b.Left)
 	if wPressedOn != nil && wPressedOn.Class == "draggable" && left {
 		var owner = root.Containers[wPressedOn.OwnerId]
 		var assetId = defaultValue(themedProp(field.DraggableSpriteId, root, owner, wPressedOn), "")
@@ -106,7 +106,7 @@ func onDrop(root *root) (string, string) {
 	return "", ""
 }
 func onGrab(root *root) string {
-	var result = condition.TrueOnce(wPressedOn != nil && wPressedOn.Class == "draggable", ";;;;draggg-start")
+	var result = condition.JustTurnedTrue(wPressedOn != nil && wPressedOn.Class == "draggable", ";;;;draggg-start")
 	if result {
 		var owner = root.Containers[wPressedOn.OwnerId]
 		if themedProp(field.DraggableSpriteId, root, owner, wPressedOn) == "" {

@@ -21,8 +21,8 @@ type Audio struct {
 
 	time, duration float32
 
-	// this is field does not contain the sound data
-	// it's in internal.Sounds which this instance just uses (raylib alias)
+	// this field does not contain the sound data
+	// it's in internal.Sounds which this instance just uses  as raylib alias
 	instance *rl.Sound
 }
 
@@ -67,7 +67,7 @@ func (audio *Audio) IsPlaying() bool {
 	}
 	return false
 }
-func (audio *Audio) IsFinishedOnce() bool {
+func (audio *Audio) IsJustFinished() bool {
 	return audio.finishedOnce
 }
 

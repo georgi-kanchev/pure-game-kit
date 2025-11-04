@@ -84,7 +84,7 @@ func LoadTiledWorld(filePath string) (tilemapIds []string) {
 	var world *internal.World
 
 	storage.FromFileJSON(filePath, &world)
-	if world == nil {
+	if world == nil { // error is handled above
 		return resultIds
 	}
 

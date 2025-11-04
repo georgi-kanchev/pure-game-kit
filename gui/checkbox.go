@@ -22,7 +22,7 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 
 	button(cam, root, widget)
 
-	if root.IsButtonClickedOnce(widget.Id, cam) {
+	if root.IsButtonJustClicked(widget.Id, cam) {
 		var group = themedProp(field.CheckboxGroup, root, owner, widget)
 		widget.Properties[field.Value] = condition.If(isOff, "v", "")
 		var soundId = condition.If(isOff, "~on", "~off")

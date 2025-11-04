@@ -6,15 +6,15 @@ import (
 	"compress/zlib"
 	"encoding/json"
 	"encoding/xml"
-	"fmt"
 	"io"
 	"os"
+	"pure-game-kit/debug"
 )
 
 func FromFileJSON(path string, structInstance any) {
 	var file, err = os.Open(path)
 	if err != nil {
-		fmt.Printf("Failed to open JSON file: %v\n", err)
+		debug.LogError("Failed to open JSON file: \"", path, "\"\n", err)
 		return
 	}
 	defer file.Close()
@@ -22,13 +22,13 @@ func FromFileJSON(path string, structInstance any) {
 	var decoder = json.NewDecoder(file)
 	var err2 = decoder.Decode(structInstance)
 	if err2 != nil {
-		fmt.Printf("Failed to decode JSON file: %v\n", err2)
+		debug.LogError("Failed to decode JSON file: \"", path, "\"\n", err2)
 	}
 }
 func FromFileXML(path string, structInstance any) {
 	var file, err = os.Open(path)
 	if err != nil {
-		fmt.Printf("Failed to open XML file: %v\n", err)
+		debug.LogError("Failed to open XML file: \"", path, "\"\n", err)
 		return
 	}
 	defer file.Close()
@@ -36,27 +36,27 @@ func FromFileXML(path string, structInstance any) {
 	var decoder = xml.NewDecoder(file)
 	var err2 = decoder.Decode(structInstance)
 	if err2 != nil {
-		fmt.Printf("Failed to decode XML file: %v\n", err2)
+		debug.LogError("Failed to decode XML file: \"", path, "\"\n", err2)
 	}
 }
 
 func FromJSON(jsonData string, structInstance any) {
 	var err = json.Unmarshal([]byte(jsonData), structInstance)
 	if err != nil {
-		fmt.Printf("Failed to unmarshal JSON: %v\n", err)
+		debug.LogError("Failed to populate struct instance with JSON data!\n", err)
 	}
 }
 func FromXML(xmlData string, structInstance any) {
 	var err = xml.Unmarshal([]byte(xmlData), structInstance)
 	if err != nil {
-		fmt.Printf("Failed to unmarshal XML: %v\n", err)
+		debug.LogError("Failed to populate struct instance with XML data!\n", err)
 	}
 }
 
 func ToJSON(structPointer any) string {
 	var data, err = json.MarshalIndent(structPointer, "", "  ") // pretty print
 	if err != nil {
-		fmt.Printf("Failed to marshal JSON: %v\n", err)
+		debug.LogError("Failed to create JSON data from struct instance!\n", err)
 		return ""
 	}
 	return string(data)
@@ -64,7 +64,7 @@ func ToJSON(structPointer any) string {
 func ToXML(structPointer any) string {
 	var data, err = xml.MarshalIndent(structPointer, "", "  ") // pretty print
 	if err != nil {
-		fmt.Printf("Failed to marshal XML: %v\n", err)
+		debug.LogError("Failed to create XML data from struct instance!\n", err)
 		return ""
 	}
 	return string(data)
@@ -74,12 +74,10 @@ func CompressZLIB(data []byte) []byte {
 	var buf bytes.Buffer
 	var gw = zlib.NewWriter(&buf)
 	var _, err = gw.Write(data)
+	var err2 = gw.Close()
 
-	if err != nil {
-		return data
-	}
-
-	if err := gw.Close(); err != nil {
+	if err != nil || err2 != nil {
+		debug.LogError("Failed to compress data with ZLIB!\n", err)
 		return data
 	}
 	return buf.Bytes()
@@ -87,14 +85,11 @@ func CompressZLIB(data []byte) []byte {
 func DecompressZLIB(data []byte) []byte {
 	var buf = bytes.NewReader(data)
 	var gr, err = zlib.NewReader(buf)
-
-	if err != nil {
-		return data
-	}
-	defer gr.Close()
-
 	var result, err2 = io.ReadAll(gr)
-	if err2 != nil {
+	var err3 = gr.Close()
+
+	if err != nil || err2 != nil || err3 != nil {
+		debug.LogError("Failed to decompress data with ZLIB!\n", err)
 		return data
 	}
 	return result
@@ -104,12 +99,10 @@ func CompressGZIP(data []byte) []byte {
 	var buf bytes.Buffer
 	var gw = gzip.NewWriter(&buf)
 	var _, err = gw.Write(data)
+	var err2 = gw.Close()
 
-	if err != nil {
-		return data
-	}
-
-	if err := gw.Close(); err != nil {
+	if err != nil || err2 != nil {
+		debug.LogError("Failed to compress data with GZIP!\n", err)
 		return data
 	}
 	return buf.Bytes()
@@ -117,14 +110,11 @@ func CompressGZIP(data []byte) []byte {
 func DecompressGZIP(data []byte) []byte {
 	var buf = bytes.NewReader(data)
 	var gr, err = gzip.NewReader(buf)
-
-	if err != nil {
-		return data
-	}
-	defer gr.Close()
-
 	var result, err2 = io.ReadAll(gr)
-	if err2 != nil {
+	var err3 = gr.Close()
+
+	if err != nil || err2 != nil || err3 != nil {
+		debug.LogError("Failed to compress data with GZIP!\n", err)
 		return data
 	}
 	return result

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"math"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
 
@@ -20,6 +21,10 @@ type Atlas struct {
 	Gap int
 }
 
+var WindowReady = false
+
+//=================================================================
+
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
@@ -34,6 +39,8 @@ var Music = make(map[string]*rl.Music)
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
 
+//=================================================================
+
 var Cursor int
 var Input = ""
 var Keys = []int{}
@@ -41,8 +48,6 @@ var KeysPrev = []int{}
 var Buttons = []int{}
 var AnyButtonPressedOnce = false
 var AnyButtonReleasedOnce = false
-
-var WindowReady = false
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
@@ -79,6 +84,25 @@ func AssetSize(assetId string) (width, height int) {
 	var font, hasFont = Fonts[assetId]
 	if hasFont {
 		return int(font.Texture.Width), int(font.Texture.Height)
+	}
+
+	var tileset, hasTileset = TiledTilesets[assetId]
+	if hasTileset {
+		return int(tileset.Columns), int(tileset.TileCount / tileset.Columns)
+	}
+
+	var tiledMap, hasMap = TiledMaps[assetId]
+	if hasMap {
+		return int(tiledMap.Width), int(tiledMap.Height)
+	}
+
+	var sound, hasSound = Sounds[assetId]
+	if hasSound {
+		return audioDuration(sound.FrameCount, &sound.Stream)
+	}
+	var music, hasMusic = Music[assetId]
+	if hasMusic {
+		return audioDuration(music.FrameCount, &music.Stream)
 	}
 
 	return
@@ -161,4 +185,9 @@ func updateMusic() {
 	for _, v := range Music {
 		rl.UpdateMusicStream(*v)
 	}
+}
+func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, milliseconds int) {
+	seconds = int(float32(frameCount) / float32(stream.SampleRate))
+	milliseconds = int(math.Mod(float64(seconds), 1.0) * 1000)
+	return
 }

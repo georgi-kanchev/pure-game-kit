@@ -22,13 +22,13 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	button(cam, root, widget)
 
-	var escape = keyboard.IsKeyPressedOnce(key.Escape)
-	var anyButton = mouse.IsAnyButtonPressedOnce() && !widget.isHovered(owner, cam)
+	var escape = keyboard.IsKeyJustPressed(key.Escape)
+	var anyButton = mouse.IsAnyButtonJustPressed() && !widget.isHovered(owner, cam)
 	var containerId = themedProp(field.MenuContainerId, root, owner, widget)
 	var c, has = root.Containers[containerId]
 	var visible = c.Properties[field.Hidden] == ""
 
-	if has && root.IsButtonClickedOnce(widget.Id, cam) {
+	if has && root.IsButtonJustClicked(widget.Id, cam) {
 		c.Properties[field.Hidden] = condition.If(visible, "+", "")
 		c.Properties[field.X] = text.New(widget.X)
 		c.Properties[field.Y] = text.New(widget.Y + widget.Height)

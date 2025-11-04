@@ -20,16 +20,16 @@ func Keyboard() {
 		cam.PivotX, cam.PivotY = 0, 0
 		text += keyboard.Input()
 
-		if (keyboard.IsKeyPressedOnce(key.Backspace) || keyboard.IsKeyHeld(key.Backspace)) &&
+		if (keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace)) &&
 			len(text) > 0 {
 			var runes = []rune(text)
 			text = string(runes[:len(runes)-1])
 		}
-		if keyboard.IsKeyPressedOnce(key.Enter) || keyboard.IsKeyHeld(key.Enter) {
+		if keyboard.IsKeyJustPressed(key.Enter) || keyboard.IsKeyHeld(key.Enter) {
 			text += "\n"
 		}
 
-		if keyboard.IsAnyKeyPressedOnce() {
+		if keyboard.IsAnyKeyJustPressed() {
 			fmt.Printf("%v\n", "hello, world")
 		}
 

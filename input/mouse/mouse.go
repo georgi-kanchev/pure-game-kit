@@ -37,19 +37,19 @@ func ButtonsPressed() []int {
 func IsButtonPressed(button int) bool {
 	return rl.IsMouseButtonDown(rl.MouseButton(button))
 }
-func IsButtonPressedOnce(button int) bool {
+func IsButtonJustPressed(button int) bool {
 	return rl.IsMouseButtonPressed(rl.MouseButton(button))
 }
-func IsButtonReleasedOnce(button int) bool {
+func IsButtonJustReleased(button int) bool {
 	return rl.IsMouseButtonReleased(rl.MouseButton(button))
 }
 
 func IsAnyButtonPressed() bool {
 	return len(internal.Buttons) > 0
 }
-func IsAnyButtonPressedOnce() bool {
+func IsAnyButtonJustPressed() bool {
 	return internal.AnyButtonPressedOnce
 }
-func IsAnyButtonReleasedOnce() bool {
+func IsAnyButtonJustReleased() bool {
 	return internal.AnyButtonReleasedOnce
 }

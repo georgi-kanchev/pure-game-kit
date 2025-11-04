@@ -18,8 +18,8 @@ func Button(id string, properties ...string) string {
 //=================================================================
 // getters
 
-func (gui *GUI) IsButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
-	return gui.root.IsButtonClickedOnce(buttonId, camera)
+func (gui *GUI) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
+	return gui.root.IsButtonJustClicked(buttonId, camera)
 }
 func (gui *GUI) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
 	return gui.root.IsButtonClickedAndHeld(buttonId, camera)
@@ -52,14 +52,14 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 		if themeHover != "" {
 			widget.ThemeId = themeHover
 		}
-		tryPress(m.IsButtonPressed(b.Left), m.IsButtonPressedOnce(b.Left), btnSounds, themePress, widget, root, owner)
+		tryPress(m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left), btnSounds, themePress, widget, root, owner)
 	}
 
 	if typingIn == nil { // no hotkeys while typing
 		var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
-		tryPress(k.IsKeyPressed(hotkey), k.IsKeyPressedOnce(hotkey), btnSounds, themePress, widget, root, owner)
+		tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, widget, root, owner)
 
-		if btnSounds && root.IsButtonClickedOnce(widget.Id, cam) {
+		if btnSounds && root.IsButtonJustClicked(widget.Id, cam) {
 			sound.AssetId = defaultValue(themedProp(field.ButtonSoundPress, root, owner, widget), "~release")
 			sound.Volume = root.Volume
 			sound.Play()

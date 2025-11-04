@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
@@ -16,16 +17,30 @@ import (
 	"time"
 )
 
-func LogInfo(message string) {
-	saveTextAppend("logs.txt", "[>] "+message+"\n")
+var PrintLogs = false
+var LogPrints = false
+
+func Log(message ...any) {
+	appendFile(elements(message...) + "\n")
+
+	if PrintLogs {
+		Print(message...)
+	}
 }
-func LogWarning(message string) {
-	saveTextAppend("logs.txt", "[*] "+callInfo(message)+"\n")
+func LogWarning(message ...any) {
+	appendFile("\nWarning!\n" + callInfo(elements(message...)) + "\n")
 }
-func LogError(message string) {
-	saveTextAppend("logs.txt", "[!] "+callInfo(message)+"\n")
+func LogError(message ...any) {
+	appendFile("\nERROR!\n" + callInfo(elements(message...)) + "\n")
 }
 
+func Print(message ...any) {
+	fmt.Println(elements(message...))
+
+	if LogPrints {
+		Log(message...)
+	}
+}
 func PrintLinesOfCode() {
 	var directory, _ = os.Getwd()
 	var cmd = exec.Command("bash", "-c", fmt.Sprintf(`find "%s" -name "*.go" -type f -exec wc -l {} +`, directory))
@@ -260,6 +275,8 @@ func ProfileCPU(seconds float32) {
 //=================================================================
 // private
 
+var logFile = ""
+
 func callInfo(message string) string {
 	const maxDepth = 32
 	var pcs = make([]uintptr, maxDepth)
@@ -282,27 +299,21 @@ func callInfo(message string) string {
 
 	return sb.String()
 }
-
-// copied from data/file
-func saveTextAppend(path string, content string) {
-	if !isExisting(path) {
-		os.WriteFile(path, []byte(content), 0644)
+func appendFile(content string) {
+	if logFile == "" {
+		os.MkdirAll("logs", 0755)
+		logFile = path.Join("logs", time.Now().Format("01-02-2006_15-04-05")+".txt")
+		os.WriteFile(logFile, []byte(content), 0644)
 		return
 	}
 
-	var file, err = os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
+	var file, err = os.OpenFile(logFile, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return
 	}
 	defer file.Close()
 
 	file.WriteString(content)
-}
-
-// copied from data/file
-func isExisting(path string) bool {
-	var info, err = os.Stat(path)
-	return err == nil && !info.IsDir()
 }
 
 // copied from utility/text
@@ -317,4 +328,22 @@ func byteSize(byteSize int) string {
 		exp++
 	}
 	return fmt.Sprintf("%.3f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
+}
+
+// mostly copies utility/text.New() and utility/number.Format()
+func elements(elements ...any) string {
+	var result = ""
+	for _, e := range elements {
+		switch v := e.(type) {
+		case string:
+			result += v
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+			result += fmt.Sprintf("%d", v)
+		case fmt.Stringer:
+			result += v.String()
+		default:
+			result += fmt.Sprint(v) // fallback for any other type
+		}
+	}
+	return result
 }

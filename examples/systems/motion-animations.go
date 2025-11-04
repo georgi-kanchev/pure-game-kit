@@ -23,7 +23,7 @@ func Animations() {
 		sprite.AssetId = *animation.CurrentItem()
 		cam.DrawSprites(sprite)
 
-		if keyboard.IsKeyPressedOnce(key.A) {
+		if keyboard.IsKeyJustPressed(key.A) {
 			animation.SetTime(3.8)
 		}
 	}

@@ -25,7 +25,7 @@ var tooltipVisible, tooltipWasVisible = false, false
 func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Camera) {
 	var hov = widget.isFocused(root, cam)
 
-	if condition.TrueOnce(hov, ";;hoverrr-"+widget.Id) {
+	if condition.JustTurnedTrue(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget
 		tooltipAt = time.RealRuntime()
 		var tooltipId = themedProp(field.TooltipId, root, c, widget)
@@ -40,7 +40,7 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 			}
 		}
 	}
-	if widget == tooltipForWidget && condition.TrueOnce(!hov, ";;unhoverrr-"+widget.Id) {
+	if widget == tooltipForWidget && condition.JustTurnedTrue(!hov, ";;unhoverrr-"+widget.Id) {
 		tooltipForWidget = nil
 		tooltip = nil
 	}

@@ -63,7 +63,7 @@ func Flows() {
 				fmt.Printf("5 second timer started\n")
 			}
 
-			if timerInt > 0 && condition.TrueUponChange(&timerInt) {
+			if timerInt > 0 && condition.JustChanged(&timerInt) {
 				fmt.Printf("timer: %v\n", timer)
 			}
 
@@ -84,7 +84,7 @@ func Flows() {
 		cam.PivotX, cam.PivotY = 0, 0
 		cam.DrawText(font, text, 0, 0, 200, color.White)
 
-		if keyboard.IsKeyPressedOnce(key.W) {
+		if keyboard.IsKeyJustPressed(key.W) {
 			a.Signal("W press")
 		}
 	}

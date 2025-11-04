@@ -26,12 +26,12 @@ type root struct {
 	Widgets      map[string]*widget
 }
 
-func (root *root) IsButtonClickedOnce(buttonId string, camera *graphics.Camera) bool {
+func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
 	var owner = root.Containers[widget.OwnerId]
 	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
 	var focus = widget.isFocused(root, camera) && wPressedOn == widget
-	var input = k.IsKeyPressedOnce(hotkey) || (focus && m.IsButtonReleasedOnce(b.Left))
+	var input = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustReleased(b.Left))
 
 	return exists && input
 }
@@ -44,7 +44,7 @@ func (root *root) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camer
 	var focus = widget.isFocused(root, camera)
 	var owner = root.Containers[widget.OwnerId]
 	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
-	var first = k.IsKeyPressedOnce(hotkey) || (focus && m.IsButtonPressedOnce(b.Left))
+	var first = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustPressed(b.Left))
 	var tick = time.RealRuntime() > wPressedAt+0.5
 	var inputHold = k.IsKeyPressed(hotkey) || (focus && wPressedOn == widget && m.IsButtonPressed(b.Left))
 	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId, "-", hotkey)) && tick

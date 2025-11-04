@@ -21,17 +21,17 @@ func IsKeyHeld(key int) bool {
 	return rl.IsKeyPressedRepeat(int32(key))
 }
 
-func IsKeyPressedOnce(key int) bool {
+func IsKeyJustPressed(key int) bool {
 	return rl.IsKeyPressed(int32(key))
 }
-func IsKeyReleasedOnce(key int) bool {
+func IsKeyJustReleased(key int) bool {
 	return rl.IsKeyReleased(int32(key))
 }
 
 func IsAnyKeyPressed() bool {
 	return len(internal.Keys) > 0
 }
-func IsAnyKeyPressedOnce() bool {
+func IsAnyKeyJustPressed() bool {
 	for _, k := range internal.Keys {
 		if !collection.Contains(internal.KeysPrev, k) {
 			return true
@@ -39,7 +39,7 @@ func IsAnyKeyPressedOnce() bool {
 	}
 	return false
 }
-func IsAnyKeyReleasedOnce() bool {
+func IsAnyKeyJustReleased() bool {
 	for _, k := range internal.KeysPrev {
 		if !collection.Contains(internal.Keys, k) {
 			return true
@@ -48,8 +48,8 @@ func IsAnyKeyReleasedOnce() bool {
 	return false
 }
 
-func IsComboPressedOnce(keys ...int) bool {
-	return combo(keys) && IsKeyPressedOnce(keys[len(keys)-1])
+func IsComboJustPressed(keys ...int) bool {
+	return combo(keys) && IsKeyJustPressed(keys[len(keys)-1])
 }
 func IsComboHeld(keys ...int) bool {
 	return combo(keys) && IsKeyHeld(keys[len(keys)-1])

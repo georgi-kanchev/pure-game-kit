@@ -5,14 +5,22 @@ simple particles, port?
 consistent error handling + logging, console & file
 
 // DONE:
-[101] [Mon] [03-11-2025]
+[92] [Tue] [04-11-2025]
+git ignore logs
+renamed Once bool checks with Just
+debug - finished logging, warnings, errors, printing + fixes
+assets - Size now works with Tiled Tilesets & Maps, as well as Music & Sounds
+storage - error logging
+utility - Format now forces . for decimal separator and optional space for thousands
+
+[91] [Mon] [03-11-2025]
 path - going back to relative instead of absolute, windows problems -_-
 debug - way to log info, warnings & errors to a file
 
-[100] [Sat] [01-11-2025]
+[90] [Sat] [01-11-2025]
 pointer fixes + renames
 
-[99] [Thu] [30-10-2025]
+[89] [Thu] [30-10-2025]
 tiled - tile flip + rotate
 
 [88] [Mon] [27-10-2025]

@@ -20,7 +20,7 @@ func Mouse() {
 		if mouse.IsButtonPressed(b.Left) {
 			node.Angle -= time.FrameDelta() * 60
 		}
-		if mouse.IsButtonReleasedOnce(b.Left) {
+		if mouse.IsButtonJustReleased(b.Left) {
 			node.Angle = 0
 		}
 

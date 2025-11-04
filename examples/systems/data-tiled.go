@@ -86,14 +86,14 @@ func Tiled() {
 			cam.DrawCircle(pt[0], pt[1], 2, color.Purple)
 		}
 
-		if keyboard.IsKeyPressedOnce(key.A) {
+		if keyboard.IsKeyJustPressed(key.A) {
 			tileset.TileAnimate("examples/data/objects", 198, false)
 		}
-		if keyboard.IsKeyPressedOnce(key.S) {
+		if keyboard.IsKeyJustPressed(key.S) {
 			tileset.TileAnimate("examples/data/objects", 198, true)
 		}
 
-		if keyboard.IsKeyPressedOnce(key.F5) {
+		if keyboard.IsKeyJustPressed(key.F5) {
 			reload()
 		}
 	}

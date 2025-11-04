@@ -23,32 +23,35 @@ func (builder *Builder) Clear()                  { builder.buffer.Reset() }
 func (builder *Builder) ToText() string          { return builder.buffer.String() }
 
 func New(elements ...any) string {
-	const th, dec = "", "."
 	var result = ""
 	for _, e := range elements {
 		switch v := e.(type) {
 		case string:
 			result += v
 		case int:
-			result += number.Format(int64(v), th, dec)
+			result += number.Format(int64(v), false)
+		case int8:
+			result += number.Format(int64(v), false)
 		case int16:
-			result += number.Format(int64(v), th, dec)
+			result += number.Format(int64(v), false)
 		case int32:
-			result += number.Format(int64(v), th, dec)
+			result += number.Format(int64(v), false)
 		case int64:
-			result += number.Format(v, th, dec)
+			result += number.Format(v, false)
 		case uint:
-			result += number.Format(uint64(v), th, dec)
+			result += number.Format(uint64(v), false)
+		case uint8:
+			result += number.Format(uint64(v), false)
 		case uint16:
-			result += number.Format(uint64(v), th, dec)
+			result += number.Format(uint64(v), false)
 		case uint32:
-			result += number.Format(uint64(v), th, dec)
+			result += number.Format(uint64(v), false)
 		case uint64:
-			result += number.Format(v, th, dec)
+			result += number.Format(v, false)
 		case float32:
-			result += number.Format(float64(v), th, dec)
+			result += number.Format(float64(v), false)
 		case float64:
-			result += number.Format(v, th, dec)
+			result += number.Format(v, false)
 		case fmt.Stringer:
 			result += v.String()
 		default:

@@ -67,7 +67,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	if c.isHovered(cam) {
 		cHovered = c
 	}
-	if c.isFocused(cam) && mouse.IsButtonPressedOnce(b.Middle) {
+	if c.isFocused(cam) && mouse.IsButtonJustPressed(b.Middle) {
 		cMiddlePressed = c
 	}
 
@@ -175,7 +175,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			wFocused = nil
 			mouse.SetCursor(cursor.Hand)
 
-			if mouse.IsButtonPressedOnce(b.Left) {
+			if mouse.IsButtonJustPressed(b.Left) {
 				cPressedOnScrollV = c
 			}
 		}
@@ -205,7 +205,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			wFocused = nil
 			mouse.SetCursor(cursor.Hand)
 
-			if mouse.IsButtonPressedOnce(b.Left) {
+			if mouse.IsButtonJustPressed(b.Left) {
 				cPressedOnScrollH = c
 			}
 		}
