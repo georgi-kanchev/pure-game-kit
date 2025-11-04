@@ -62,9 +62,9 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		sprite.ScaleY *= scale
 
 		if w == 0 && h == 0 {
-			sprite.Width, sprite.Height = aw, ah
+			sprite.Width, sprite.Height = float32(aw), float32(ah)
 		} else {
-			aw, ah = tileSize, tileSize
+			aw, ah = int(tileSize), int(tileSize)
 		}
 
 		var mx, my = sprite.MousePosition(camera)
@@ -84,11 +84,11 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			aw, ah = assets.Size(txt)
 
 			if w != 0 || h != 0 {
-				aw, ah = tileSize, tileSize
+				aw, ah = int(tileSize), int(tileSize)
 			}
 		}
 
-		camera.DrawFrame(mmx, mmy, aw*sprite.ScaleX, ah*sprite.ScaleY, 0, 6, color.Cyan)
+		camera.DrawFrame(mmx, mmy, float32(aw)*sprite.ScaleX, float32(ah)*sprite.ScaleY, 0, 6, color.Cyan)
 
 		var info = text.New(
 			"id: '", txt, "'",

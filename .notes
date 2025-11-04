@@ -2,16 +2,17 @@
 alpha blending, additive, multiply
 shader effects, port?
 simple particles, port?
-consistent error handling + logging, console & file
 
 // DONE:
 [92] [Tue] [04-11-2025]
 git ignore logs
 renamed Once bool checks with Just
 debug - finished logging, warnings, errors, printing + fixes
+logging errors & warnings
 assets - Size now works with Tiled Tilesets & Maps, as well as Music & Sounds
 storage - error logging
 utility - Format now forces . for decimal separator and optional space for thousands
+easings - replaced raylib with internal implementation
 
 [91] [Mon] [03-11-2025]
 path - going back to relative instead of absolute, windows problems -_-

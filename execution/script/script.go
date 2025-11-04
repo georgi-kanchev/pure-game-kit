@@ -1,7 +1,7 @@
 package script
 
 import (
-	"pure-game-kit/data/file"
+	"pure-game-kit/debug"
 	"pure-game-kit/utility/text"
 	"reflect"
 
@@ -65,13 +65,18 @@ func (s *Script) AddFunction(functionName string, function any) {
 
 	s.state.SetGlobal(functionName, s.state.NewFunction(luaFn))
 }
-func (script *Script) ExecuteCode(code string) {
-	script.state.DoString(code)
+func (script *Script) ExecuteCode(code string) bool {
+	var err = script.state.DoString(code)
+	if err != nil {
+		debug.LogError("Failed to execute code!\n", err)
+	}
+	return err == nil
 }
 func (script *Script) ExecuteFunction(functionName string, parameters ...any) any {
 	var fn = script.state.GetGlobal(functionName)
 	if fn.Type() != lua.LTFunction {
-		return nil // function not found
+		debug.LogError("Failed to find function: \"", functionName, "\"")
+		return nil
 	}
 
 	var luaArgs = make([]lua.LValue, len(parameters))
@@ -81,15 +86,13 @@ func (script *Script) ExecuteFunction(functionName string, parameters ...any) an
 
 	var err = script.state.CallByParam(lua.P{Fn: fn, NRet: 1, Protect: true}, luaArgs...)
 	if err != nil {
-		return nil // failed to call function
+		debug.LogError("Failed to call function: \"", functionName, "\"\n", err)
+		return nil
 	}
 
 	var ret = script.state.Get(-1)
 	script.state.Pop(1)
 	return luaToGoValue(ret)
-}
-func (script *Script) ExecuteFile(path string) {
-	script.ExecuteCode(file.LoadText(path))
 }
 
 func (script *Script) Close() {

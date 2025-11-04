@@ -1,9 +1,9 @@
 package folder
 
 import (
-	"io"
 	"os"
 	ph "pure-game-kit/data/path"
+	"pure-game-kit/debug"
 )
 
 func IsExisting(path string) bool {
@@ -33,11 +33,13 @@ func ByteSize(path string) int64 {
 }
 func TimeOfLastEdit(path string) (year, month, day, minute int) {
 	if !IsExisting(path) {
+		debug.LogError("Failed to find folder: \"", path, "\"")
 		return 0, 0, 0, 0
 	}
 
 	var info, err = os.Stat(path)
 	if err != nil {
+		debug.LogError("Failed to read folder: \"", path, "\"\n", err)
 		return 0, 0, 0, 0
 	}
 
@@ -49,9 +51,68 @@ func TimeOfLastEdit(path string) (year, month, day, minute int) {
 	return
 }
 
-func Create(path string) bool {
-	return os.MkdirAll(path, 0755) == nil // 0755 is the file permission: rwxr-xr-x
+func Content(path string) []string {
+	if !IsExisting(path) {
+		return []string{}
+	}
+
+	var entries, err = os.ReadDir(path)
+	if err != nil {
+		return []string{}
+	}
+
+	var names []string
+	for _, entry := range entries {
+		names = append(names, entry.Name())
+	}
+	return names
 }
+func Files(path string) []string {
+	if !IsExisting(path) {
+		return []string{}
+	}
+
+	var entries, err = os.ReadDir(path)
+	if err != nil {
+		return []string{}
+	}
+
+	var files []string
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			files = append(files, entry.Name())
+		}
+	}
+	return files
+}
+func Folders(path string) []string {
+	if !IsExisting(path) {
+		return []string{}
+	}
+
+	var entries, err = os.ReadDir(path)
+	if err != nil {
+		return []string{}
+	}
+
+	var folders []string
+	for _, entry := range entries {
+		if entry.IsDir() {
+			folders = append(folders, entry.Name())
+		}
+	}
+	return folders
+}
+
+func Create(path string) bool {
+	var err = os.MkdirAll(path, 0755)
+	if err != nil {
+		debug.LogError("Failed to create folders: \"", path, "\"")
+	}
+	return err == nil
+}
+
+/*
 func Delete(path string) bool {
 	if !IsExisting(path) {
 		return false
@@ -182,56 +243,4 @@ func CopyContents(fromPath, toPath string) bool {
 
 	return true
 }
-
-func Content(path string) []string {
-	if !IsExisting(path) {
-		return []string{}
-	}
-
-	var entries, err = os.ReadDir(path)
-	if err != nil {
-		return []string{}
-	}
-
-	var names []string
-	for _, entry := range entries {
-		names = append(names, entry.Name())
-	}
-	return names
-}
-func Files(path string) []string {
-	if !IsExisting(path) {
-		return []string{}
-	}
-
-	var entries, err = os.ReadDir(path)
-	if err != nil {
-		return []string{}
-	}
-
-	var files []string
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			files = append(files, entry.Name())
-		}
-	}
-	return files
-}
-func Folders(path string) []string {
-	if !IsExisting(path) {
-		return []string{}
-	}
-
-	var entries, err = os.ReadDir(path)
-	if err != nil {
-		return []string{}
-	}
-
-	var folders []string
-	for _, entry := range entries {
-		if entry.IsDir() {
-			folders = append(folders, entry.Name())
-		}
-	}
-	return folders
-}
+*/

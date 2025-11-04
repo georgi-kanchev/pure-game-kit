@@ -61,7 +61,7 @@ func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
 	}
 
 	var w, h = assets.Size(assetId)
-	var assetRatio = w / h
+	var assetRatio = float32(w) / float32(h)
 	var spriteRatio = widget.Width / widget.Height
 	var drawW, drawH float32
 	var disabled = widget.isDisabled(owner)

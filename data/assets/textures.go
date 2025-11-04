@@ -2,6 +2,7 @@ package assets
 
 import (
 	"pure-game-kit/data/file"
+	"pure-game-kit/debug"
 	"pure-game-kit/internal"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -15,6 +16,7 @@ func LoadTexture(filePath string) string {
 	var tex, has = internal.Textures[id]
 
 	if !file.IsExisting(filePath) {
+		debug.LogError("Failed to find image file: \"", filePath, "\"")
 		return result
 	}
 
@@ -27,6 +29,8 @@ func LoadTexture(filePath string) string {
 	if texture.Width != 0 {
 		internal.Textures[id] = &texture
 		result = id
+	} else {
+		debug.LogError("Failed to load image file: \"", filePath, "\"")
 	}
 
 	return result

@@ -16,7 +16,7 @@ func LoadTiledTileset(filePath string) string {
 	var w, h = 0, 0
 
 	storage.FromFileXML(filePath, &tileset)
-	if tileset == nil {
+	if tileset == nil { // error is in storage
 		return ""
 	}
 
@@ -84,7 +84,7 @@ func LoadTiledWorld(filePath string) (tilemapIds []string) {
 	var world *internal.World
 
 	storage.FromFileJSON(filePath, &world)
-	if world == nil { // error is handled above
+	if world == nil { // error is in storage
 		return resultIds
 	}
 
@@ -123,7 +123,7 @@ func LoadTiledMap(filePath string) string {
 	var mapData *internal.Map
 
 	storage.FromFileXML(filePath, &mapData)
-	if mapData == nil {
+	if mapData == nil { // error is in storage
 		return ""
 	}
 

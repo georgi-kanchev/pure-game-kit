@@ -1,5 +1,7 @@
 package debug
 
+// this package shouldn't have any engine dependencies
+// because every other package should be able to use it (avoid circular dependency)
 import (
 	"bufio"
 	"bytes"
@@ -17,20 +19,26 @@ import (
 	"time"
 )
 
+var LoggingDisabled = false
 var PrintLogs = false
 var LogPrints = false
 
 func Log(message ...any) {
-	appendFile(elements(message...) + "\n")
+	if LoggingDisabled {
+		return
+	}
+
+	appendFile("\n" + elements(message...))
 
 	if PrintLogs {
 		Print(message...)
 	}
 }
-func LogWarning(message ...any) {
-	appendFile("\nWarning!\n" + callInfo(elements(message...)) + "\n")
-}
 func LogError(message ...any) {
+	if LoggingDisabled {
+		return
+	}
+
 	appendFile("\nERROR!\n" + callInfo(elements(message...)) + "\n")
 }
 

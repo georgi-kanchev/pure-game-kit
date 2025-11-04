@@ -8,9 +8,11 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func Size(assetId string) (width, height float32) {
-	var w, h = internal.AssetSize(assetId)
-	return float32(w), float32(h)
+func Size(assetId string) (width, height int) {
+	return internal.AssetSize(assetId)
+}
+func IsLoaded(assetId string) bool {
+	return internal.IsLoaded(assetId)
 }
 
 //=================================================================

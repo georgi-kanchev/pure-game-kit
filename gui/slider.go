@@ -34,9 +34,10 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	var _, h = assets.Size(assetId)
-	var ratio = widget.Height / h
+	var ratio = widget.Height / float32(h)
 	var handleAssetId = themedProp(field.SliderHandleAssetId, root, owner, widget)
-	var handleWidth, handleHeight = assets.Size(handleAssetId)
+	var hw, hh = assets.Size(handleAssetId)
+	var handleWidth, handleHeight = float32(hw), float32(hh)
 	handleWidth *= ratio
 	handleHeight *= ratio
 	var handleY = widget.Y - (handleWidth)/3

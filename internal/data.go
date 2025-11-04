@@ -51,7 +51,7 @@ var AnyButtonReleasedOnce = false
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
-	width, height = 0, 0
+	width, height = -1, -1
 
 	if hasTexture {
 		return int(texture.Width), int(texture.Height)
@@ -65,18 +65,14 @@ func AssetSize(assetId string) (width, height int) {
 
 	var box, hasBox = Boxes[assetId]
 	if hasBox {
-		w, h := 0, 0
+		var w, h = 0, 0
 		for _, id := range box {
 			if id == "" {
 				continue
 			}
 			var curW, curH = AssetSize(id)
-			if curW > w {
-				w = curW
-			}
-			if curH > h {
-				h = curH
-			}
+			w = number.Biggest(curW, h)
+			h = number.Biggest(curH, h)
 		}
 		return w, h
 	}
@@ -106,6 +102,11 @@ func AssetSize(assetId string) (width, height int) {
 	}
 
 	return
+}
+
+func IsLoaded(assetId string) bool {
+	var w, h = AssetSize(assetId)
+	return w != -1 && h != -1
 }
 
 //=================================================================

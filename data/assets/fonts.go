@@ -2,6 +2,7 @@ package assets
 
 import (
 	"pure-game-kit/data/file"
+	"pure-game-kit/debug"
 	"pure-game-kit/internal"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -10,15 +11,20 @@ import (
 func LoadFont(size int, filePath string) []string {
 	var result = []string{}
 	var id = getIdPath(filePath)
-	var _, has = internal.Fonts[id]
 
-	if has || !file.IsExisting(filePath) {
+	if !file.IsExisting(filePath) {
+		debug.LogError("Failed to find font file: \"", filePath, "\"")
 		return result
 	}
 
 	var bytes = file.LoadBytes(filePath)
-	loadFont(id, size, bytes)
-	result = append(result, id)
+	var success = loadFont(id, size, bytes)
+
+	if success {
+		result = append(result, id)
+	} else {
+		debug.LogError("Failed to load font file: \"", filePath, "\"")
+	}
 
 	return result
 }
@@ -67,7 +73,7 @@ void main()
     finalColor = fill;
 }`
 
-func loadFont(id string, size int, bytes []byte) {
+func loadFont(id string, size int, bytes []byte) bool {
 	tryCreateWindow()
 	tryInitShader()
 
@@ -84,6 +90,8 @@ func loadFont(id string, size int, bytes []byte) {
 	if font.BaseSize != 0 {
 		internal.Fonts[id] = &font
 	}
+
+	return font.BaseSize != 0
 }
 
 func uniqueRunes(str string) []rune {

@@ -1,6 +1,7 @@
 package command
 
 import (
+	"pure-game-kit/debug"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
 )
@@ -33,6 +34,7 @@ func Execute(command string) (output string) {
 
 	var execution, has = commands[name]
 	if !has {
+		debug.LogError("Command not found: \"", command, "\"")
 		return ""
 	}
 

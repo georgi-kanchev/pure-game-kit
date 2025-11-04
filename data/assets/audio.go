@@ -2,6 +2,7 @@ package assets
 
 import (
 	"pure-game-kit/data/file"
+	"pure-game-kit/debug"
 	"pure-game-kit/internal"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -13,9 +14,9 @@ func LoadSound(filePath string) string {
 
 	var result = ""
 	var id = getIdPath(filePath)
-	var _, has = internal.Sounds[id]
 
-	if has || !file.IsExisting(filePath) {
+	if !file.IsExisting(filePath) {
+		debug.LogError("Failed to find audio file: \"", filePath, "\"")
 		return result
 	}
 
@@ -23,6 +24,8 @@ func LoadSound(filePath string) string {
 	if sound.FrameCount != 0 {
 		internal.Sounds[id] = &sound
 		result = id
+	} else {
+		debug.LogError("Failed to load audio file: \"", filePath, "\"")
 	}
 
 	return result
@@ -33,9 +36,9 @@ func LoadMusic(filePath string) string {
 
 	var result = ""
 	var id = getIdPath(filePath)
-	var _, has = internal.Music[id]
 
-	if has || !file.IsExisting(filePath) {
+	if !file.IsExisting(filePath) {
+		debug.LogError("Failed to find audio file: \"", filePath, "\"")
 		return result
 	}
 
@@ -44,6 +47,8 @@ func LoadMusic(filePath string) string {
 		music.Looping = false
 		internal.Music[id] = &music
 		result = id
+	} else {
+		debug.LogError("Failed to load audio file: \"", filePath, "\"")
 	}
 
 	return result
