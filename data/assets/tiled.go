@@ -13,10 +13,8 @@ import (
 
 func LoadTiledTileset(filePath string) string {
 	var tileset *internal.Tileset
-	var id = path.RemoveExtension(filePath)
 	var w, h = 0, 0
 
-	filePath = internal.MakeAbsolutePath(filePath)
 	storage.FromFileXML(filePath, &tileset)
 	if tileset == nil {
 		return ""
@@ -36,7 +34,7 @@ func LoadTiledTileset(filePath string) string {
 		}
 	}
 
-	internal.TiledTilesets[id] = tileset
+	internal.TiledTilesets[filePath] = tileset
 	tileset.MappedTiles = map[uint32]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
 		tileset.MappedTiles[tile.Id] = &tile
@@ -79,10 +77,9 @@ func LoadTiledTileset(filePath string) string {
 			flow.NowDo(seq.Run))
 	}
 
-	return id
+	return filePath
 }
 func LoadTiledWorld(filePath string) (tilemapIds []string) {
-	filePath = internal.MakeAbsolutePath(filePath)
 	var resultIds = []string{}
 	var world *internal.World
 
@@ -123,22 +120,20 @@ func LoadTiledWorld(filePath string) (tilemapIds []string) {
 	return resultIds
 }
 func LoadTiledMap(filePath string) string {
-	var absolutePath = internal.MakeAbsolutePath(filePath)
 	var mapData *internal.Map
 
-	storage.FromFileXML(absolutePath, &mapData)
+	storage.FromFileXML(filePath, &mapData)
 	if mapData == nil {
 		return ""
 	}
 
-	var root = path.Folder(path.Executable()) + path.Divider()
-	var id = text.Replace(path.RemoveExtension(text.Remove(filePath, root)), "\\", "/")
+	var id = text.Replace(filePath, "\\", "/")
 	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
-	mapData.Directory = path.Folder(absolutePath)
+	mapData.Directory = path.Folder(filePath)
 	internal.TiledMaps[id] = mapData
 
 	for _, t := range mapData.Tilesets {
-		LoadTiledTileset(text.Remove(path.New(mapData.Directory, t.Source), root))
+		LoadTiledTileset(path.New(mapData.Directory, t.Source))
 	}
 
 	return id

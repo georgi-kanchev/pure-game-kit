@@ -180,8 +180,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 	}
 
 	if img != nil {
-		var root = path.Folder(path.Executable()) + path.Divider()
-		var assetId = text.Remove(path.New(mapData.Directory, path.RemoveExtension(img.Image.Source)), root)
+		var assetId = path.New(mapData.Directory, img.Image.Source)
 		var sprite = graphics.NewSprite(assetId, mapData.WorldX+img.OffsetX, mapData.WorldY+img.OffsetY)
 		sprite.PivotX, sprite.PivotY = 0, 0
 		return []*graphics.Sprite{sprite}

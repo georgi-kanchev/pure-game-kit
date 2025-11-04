@@ -8,7 +8,6 @@ import (
 )
 
 func LoadTexture(filePath string) string {
-	filePath = internal.MakeAbsolutePath(filePath)
 	tryCreateWindow()
 
 	var result = ""

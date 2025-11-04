@@ -9,11 +9,9 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"pure-game-kit/internal"
 )
 
 func FromFileJSON(path string, structInstance any) {
-	path = internal.MakeAbsolutePath(path)
 	var file, err = os.Open(path)
 	if err != nil {
 		fmt.Printf("Failed to open JSON file: %v\n", err)
@@ -28,7 +26,6 @@ func FromFileJSON(path string, structInstance any) {
 	}
 }
 func FromFileXML(path string, structInstance any) {
-	path = internal.MakeAbsolutePath(path)
 	var file, err = os.Open(path)
 	if err != nil {
 		fmt.Printf("Failed to open XML file: %v\n", err)

@@ -2,7 +2,6 @@ package path
 
 import (
 	"path/filepath"
-	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
 )
 
@@ -14,19 +13,13 @@ func Divider() string {
 	return string(filepath.Separator)
 }
 
-func Executable() string {
-	return internal.ExecutablePath()
-}
-
 func IsDirectory(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	if text.EndsWith(path, string(filepath.Separator)) {
 		return true
 	}
 	return Extension(path) == ""
 }
 func IsFile(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	return Extension(path) != ""
 }
 

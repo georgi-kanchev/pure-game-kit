@@ -5,6 +5,10 @@ simple particles, port?
 consistent error handling + logging, console & file
 
 // DONE:
+[101] [Mon] [03-11-2025]
+path - going back to relative instead of absolute, windows problems -_-
+debug - way to log info, warnings & errors to a file
+
 [100] [Sat] [01-11-2025]
 pointer fixes + renames
 

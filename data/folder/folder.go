@@ -4,20 +4,16 @@ import (
 	"io"
 	"os"
 	ph "pure-game-kit/data/path"
-	"pure-game-kit/internal"
 )
 
 func IsExisting(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	var info, err = os.Stat(path)
 	return err == nil && info.IsDir()
 }
 func IsEmpty(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	return len(Content(path)) == 0
 }
 func ByteSize(path string) int64 {
-	path = internal.MakeAbsolutePath(path)
 	var totalSize int64
 
 	var files = Files(path)
@@ -36,7 +32,6 @@ func ByteSize(path string) int64 {
 	return totalSize
 }
 func TimeOfLastEdit(path string) (year, month, day, minute int) {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
 		return 0, 0, 0, 0
 	}
@@ -55,18 +50,15 @@ func TimeOfLastEdit(path string) (year, month, day, minute int) {
 }
 
 func Create(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	return os.MkdirAll(path, 0755) == nil // 0755 is the file permission: rwxr-xr-x
 }
 func Delete(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
 		return false
 	}
 	return os.RemoveAll(path) == nil
 }
 func DeleteContents(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	if !Delete(path) {
 		return false
 	}
@@ -76,7 +68,6 @@ func DeleteContents(path string) bool {
 	return true
 }
 func Rename(path, newName string) bool {
-	path = internal.MakeAbsolutePath(path)
 	var newPath = ph.New(ph.Folder(path), newName)
 
 	if !IsExisting(path) || IsExisting(newPath) {
@@ -86,8 +77,6 @@ func Rename(path, newName string) bool {
 	return os.Rename(path, newPath) == nil
 }
 func MoveContents(fromPath, toPath string) bool {
-	fromPath = internal.MakeAbsolutePath(fromPath)
-	toPath = internal.MakeAbsolutePath(toPath)
 	if !IsExisting(fromPath) || !IsExisting(toPath) {
 		return false
 	}
@@ -146,8 +135,6 @@ func MoveContents(fromPath, toPath string) bool {
 	return true
 }
 func CopyContents(fromPath, toPath string) bool {
-	fromPath = internal.MakeAbsolutePath(fromPath)
-	toPath = internal.MakeAbsolutePath(toPath)
 	if !IsExisting(fromPath) || !IsExisting(toPath) {
 		return false
 	}
@@ -197,7 +184,6 @@ func CopyContents(fromPath, toPath string) bool {
 }
 
 func Content(path string) []string {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
 		return []string{}
 	}
@@ -214,7 +200,6 @@ func Content(path string) []string {
 	return names
 }
 func Files(path string) []string {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
 		return []string{}
 	}
@@ -233,7 +218,6 @@ func Files(path string) []string {
 	return files
 }
 func Folders(path string) []string {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
 		return []string{}
 	}

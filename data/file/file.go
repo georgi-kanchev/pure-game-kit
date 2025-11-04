@@ -1,20 +1,16 @@
 package file
 
 import (
-	"fmt"
 	"io"
 	"os"
 	ph "pure-game-kit/data/path"
-	"pure-game-kit/internal"
 )
 
 func IsExisting(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	var info, err = os.Stat(path)
 	return err == nil && !info.IsDir()
 }
 func ByteSize(path string) int64 {
-	path = internal.MakeAbsolutePath(path)
 	var info, err = os.Stat(path)
 	if err != nil {
 		return 0
@@ -23,7 +19,6 @@ func ByteSize(path string) int64 {
 	return info.Size()
 }
 func TimeOfLastEdit(path string) (year, month, day, minute int) {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
 		return 0, 0, 0, 0
 	}
@@ -42,34 +37,29 @@ func TimeOfLastEdit(path string) (year, month, day, minute int) {
 }
 
 func LoadBytes(path string) []byte {
-	path = internal.MakeAbsolutePath(path)
 	var data, err = os.ReadFile(path)
 	if err != nil {
-		fmt.Printf("Failed to read file '%s': %v\n", path, err)
 		return []byte{}
 	}
 	return data
 }
 func LoadText(path string) string {
-	path = internal.MakeAbsolutePath(path)
 	return string(LoadBytes(path))
 }
 
 func SaveBytes(path string, content []byte) bool {
-	path = internal.MakeAbsolutePath(path)
-	var err = os.WriteFile(path, content, 0644) // 0644 is the file permission: rw-r--r--
-	return err == nil
+	return os.WriteFile(path, content, 0644) == nil // 0644 is the file permission: rw-r--r--
 }
 func SaveText(path, content string) bool {
 	return SaveBytes(path, []byte(content))
 }
 func SaveTextAppend(path string, content string) bool {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
-		return false
+		SaveText(path, content)
+		return true
 	}
 
-	var file, err = os.OpenFile("example.txt", os.O_APPEND|os.O_WRONLY, 0644)
+	var file, err = os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
 		return false
 	}
@@ -80,7 +70,6 @@ func SaveTextAppend(path string, content string) bool {
 }
 
 func Delete(path string) bool {
-	path = internal.MakeAbsolutePath(path)
 	if !IsExisting(path) {
 		return false
 	}
@@ -88,7 +77,6 @@ func Delete(path string) bool {
 	return err == nil
 }
 func Rename(path, newName string) bool {
-	path = internal.MakeAbsolutePath(path)
 	var newpath = ph.New(ph.Folder(path), newName)
 
 	if !IsExisting(path) || IsExisting(newpath) {
@@ -99,8 +87,6 @@ func Rename(path, newName string) bool {
 	return err == nil
 }
 func Move(path, toFolderPath string) bool {
-	path = internal.MakeAbsolutePath(path)
-	toFolderPath = internal.MakeAbsolutePath(toFolderPath)
 	var info, err = os.Stat(toFolderPath)
 	var folderExists = err == nil && info.IsDir()
 	if !IsExisting(path) || !folderExists {
@@ -109,8 +95,6 @@ func Move(path, toFolderPath string) bool {
 	return Rename(path, ph.New(toFolderPath, path))
 }
 func Copy(path, toFolderPath string) bool {
-	path = internal.MakeAbsolutePath(path)
-	toFolderPath = internal.MakeAbsolutePath(toFolderPath)
 	var srcFile, err = os.Open(path)
 	if err != nil {
 		return false

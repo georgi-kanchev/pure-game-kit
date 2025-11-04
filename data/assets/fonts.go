@@ -8,7 +8,6 @@ import (
 )
 
 func LoadFont(size int, filePath string) []string {
-	filePath = internal.MakeAbsolutePath(filePath)
 	var result = []string{}
 	var id = getIdPath(filePath)
 	var _, has = internal.Fonts[id]

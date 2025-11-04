@@ -8,18 +8,28 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"pure-game-kit/data/path"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 	"runtime"
 	"runtime/pprof"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
 
+func LogInfo(message string) {
+	saveTextAppend("logs.txt", text.New("[>] ", message, "\n"))
+}
+func LogWarning(message string) {
+	saveTextAppend("logs.txt", text.New("[*] ", callInfo(message), "\n"))
+}
+func LogError(message string) {
+	saveTextAppend("logs.txt", text.New("[!] ", callInfo(message), "\n"))
+}
+
 func PrintLinesOfCode() {
-	var directory = path.Folder(path.Executable())
+	var directory, _ = os.Getwd()
 	var cmd = exec.Command("bash", "-c", fmt.Sprintf(`find "%s" -name "*.go" -type f -exec wc -l {} +`, directory))
 	var cmdOut bytes.Buffer
 	cmd.Stdout = &cmdOut
@@ -36,7 +46,7 @@ func PrintLinesOfCode() {
 		if len(parts) < 2 {
 			continue
 		}
-		var count = text.ToNumber[int](parts[0])
+		var count, _ = strconv.ParseInt(parts[0], 10, 32)
 		var path = parts[1]
 		var rel, _ = filepath.Rel(directory, path)
 		results[rel] = int(count)
@@ -119,7 +129,6 @@ func PrintLinesOfCode() {
 
 	fmt.Print(out.String())
 }
-
 func PrintDependencies() {
 	var out strings.Builder
 	var cmd = exec.Command("go", "list", "-f", "{{.ImportPath}} -> {{.Imports}}", "./...")
@@ -158,6 +167,49 @@ func PrintDependencies() {
 	}
 
 	fmt.Print(out.String())
+}
+func PrintMemoryUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
+	// Basic memory usage
+	fmt.Printf("\nMemory:\n")
+	fmt.Printf("UsedNow = %v (current heap in use)\n", text.ByteSize(int(m.Alloc)))
+	fmt.Printf("UsedTotal = %v (total allocated since start)\n", text.ByteSize(int(m.TotalAlloc)))
+	fmt.Printf("FromOS = %v (memory reserved from OS)\n", text.ByteSize(int(m.Sys)))
+
+	// Heap breakdown
+	fmt.Printf("\nHeap:\n")
+	fmt.Printf("Used = %v \n", text.ByteSize(int(m.HeapAlloc)))
+	fmt.Printf("Reserved = %v \n", text.ByteSize(int(m.HeapSys)))
+	fmt.Printf("Idle = %v (not used but still reserved)\n", text.ByteSize(int(m.HeapIdle)))
+	fmt.Printf("Active = %v (actively in use)\n", text.ByteSize(int(m.HeapInuse)))
+	fmt.Printf("Released = %v (given back to OS)\n", text.ByteSize(int(m.HeapReleased)))
+
+	// Object allocations
+	fmt.Printf("\nObject:\n")
+	fmt.Printf("Allocs = %v (objects allocated)\n", number.Format(m.Mallocs, " ", "."))
+	fmt.Printf("Frees = %v (objects freed)\n", number.Format(m.Frees, " ", "."))
+	fmt.Printf("Live = %v (currently alive)\n", number.Format(m.HeapObjects, " ", "."))
+
+	// Garbage collection
+	fmt.Printf("\nGarbage Collection:\n")
+	fmt.Printf("Total = %v (total collections)\n", m.NumGC)
+	fmt.Printf("Forced = %v (manual triggers)\n", m.NumForcedGC)
+	fmt.Printf("Next = %v (target heap size of the next GC)\n", text.ByteSize(int(m.NextGC)))
+	fmt.Printf("PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
+
+	if m.LastGC == 0 {
+		fmt.Printf("SinceLast = never\n")
+	} else {
+		fmt.Printf("SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
+	}
+
+	// Stacks and other
+	fmt.Printf("\nStack:\n")
+	fmt.Printf("Used = %v\n", text.ByteSize(int(m.StackInuse)))
+	fmt.Printf("Reserved = %v\n", text.ByteSize(int(m.StackSys)))
+	fmt.Printf("Other = %v (misc runtime overhead)\n", text.ByteSize(int(m.OtherSys)))
 }
 
 func ProfileCPU(seconds float32) {
@@ -206,46 +258,47 @@ func ProfileCPU(seconds float32) {
 	}()
 }
 
-func PrintMemoryUsage() {
-	var m runtime.MemStats
-	runtime.ReadMemStats(&m)
+//=================================================================
+// private
 
-	// Basic memory usage
-	fmt.Printf("\nMemory:\n")
-	fmt.Printf("UsedNow = %v (current heap in use)\n", text.ByteSize(int(m.Alloc)))
-	fmt.Printf("UsedTotal = %v (total allocated since start)\n", text.ByteSize(int(m.TotalAlloc)))
-	fmt.Printf("FromOS = %v (memory reserved from OS)\n", text.ByteSize(int(m.Sys)))
+func callInfo(message string) string {
+	const maxDepth = 32
+	var pcs = make([]uintptr, maxDepth)
+	var n = runtime.Callers(3, pcs)
+	var frames = runtime.CallersFrames(pcs[:n])
+	var sb strings.Builder
+	sb.WriteString(message)
 
-	// Heap breakdown
-	fmt.Printf("\nHeap:\n")
-	fmt.Printf("Used = %v \n", text.ByteSize(int(m.HeapAlloc)))
-	fmt.Printf("Reserved = %v \n", text.ByteSize(int(m.HeapSys)))
-	fmt.Printf("Idle = %v (not used but still reserved)\n", text.ByteSize(int(m.HeapIdle)))
-	fmt.Printf("Active = %v (actively in use)\n", text.ByteSize(int(m.HeapInuse)))
-	fmt.Printf("Released = %v (given back to OS)\n", text.ByteSize(int(m.HeapReleased)))
+	for {
+		var frame, more = frames.Next()
+		var fileName = filepath.Base(frame.File)
+		var funcName = text.Split(frame.Function, ".")[1]
 
-	// Object allocations
-	fmt.Printf("\nObject:\n")
-	fmt.Printf("Allocs = %v (objects allocated)\n", number.Format(m.Mallocs, " ", "."))
-	fmt.Printf("Frees = %v (objects freed)\n", number.Format(m.Frees, " ", "."))
-	fmt.Printf("Live = %v (currently alive)\n", number.Format(m.HeapObjects, " ", "."))
+		sb.WriteString(text.New("\n\tat [", fileName, "] ", funcName, "() { line ", frame.Line, " }"))
 
-	// Garbage collection
-	fmt.Printf("\nGarbage Collection:\n")
-	fmt.Printf("Total = %v (total collections)\n", m.NumGC)
-	fmt.Printf("Forced = %v (manual triggers)\n", m.NumForcedGC)
-	fmt.Printf("Next = %v (target heap size of the next GC)\n", text.ByteSize(int(m.NextGC)))
-	fmt.Printf("PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
-
-	if m.LastGC == 0 {
-		fmt.Printf("SinceLast = never\n")
-	} else {
-		fmt.Printf("SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
+		if !more || fileName == "main.go" && funcName == "main" {
+			break
+		}
 	}
 
-	// Stacks and other
-	fmt.Printf("\nStack:\n")
-	fmt.Printf("Used = %v\n", text.ByteSize(int(m.StackInuse)))
-	fmt.Printf("Reserved = %v\n", text.ByteSize(int(m.StackSys)))
-	fmt.Printf("Other = %v (misc runtime overhead)\n", text.ByteSize(int(m.OtherSys)))
+	return sb.String()
+}
+
+func saveTextAppend(path string, content string) {
+	if !isExisting(path) {
+		os.WriteFile(path, []byte(content), 0644)
+		return
+	}
+
+	var file, err = os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer file.Close()
+
+	file.WriteString(content)
+}
+func isExisting(path string) bool {
+	var info, err = os.Stat(path)
+	return err == nil && !info.IsDir()
 }

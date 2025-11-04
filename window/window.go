@@ -1,7 +1,6 @@
 package window
 
 import (
-	"pure-game-kit/data/path"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
 
@@ -10,7 +9,7 @@ import (
 	st "pure-game-kit/window/state"
 )
 
-var Title = path.RemoveExtension(path.LastPart(path.Executable()))
+var Title = "game"
 var Color uint = 0
 var IsVSynced = false
 var IsAntialiased = false

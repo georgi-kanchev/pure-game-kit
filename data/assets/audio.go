@@ -8,7 +8,6 @@ import (
 )
 
 func LoadSound(filePath string) string {
-	filePath = internal.MakeAbsolutePath(filePath)
 	tryCreateWindow()
 	tryInitAudio()
 
@@ -29,7 +28,6 @@ func LoadSound(filePath string) string {
 	return result
 }
 func LoadMusic(filePath string) string {
-	filePath = internal.MakeAbsolutePath(filePath)
 	tryCreateWindow()
 	tryInitAudio()
 
