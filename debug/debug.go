@@ -8,8 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/text"
 	"runtime"
 	"runtime/pprof"
 	"sort"
@@ -19,13 +17,13 @@ import (
 )
 
 func LogInfo(message string) {
-	saveTextAppend("logs.txt", text.New("[>] ", message, "\n"))
+	saveTextAppend("logs.txt", "[>] "+message+"\n")
 }
 func LogWarning(message string) {
-	saveTextAppend("logs.txt", text.New("[*] ", callInfo(message), "\n"))
+	saveTextAppend("logs.txt", "[*] "+callInfo(message)+"\n")
 }
 func LogError(message string) {
-	saveTextAppend("logs.txt", text.New("[!] ", callInfo(message), "\n"))
+	saveTextAppend("logs.txt", "[!] "+callInfo(message)+"\n")
 }
 
 func PrintLinesOfCode() {
@@ -160,7 +158,8 @@ func PrintDependencies() {
 		fmt.Fprintf(&out, "%s\n", pkg)
 		sort.Strings(imports)
 		for _, imp := range imports {
-			imp = text.Remove(imp, "[", "]")
+			imp = strings.ReplaceAll(imp, "[", "")
+			imp = strings.ReplaceAll(imp, "]", "")
 			fmt.Fprintf(&out, "\t%s\n", imp)
 		}
 		fmt.Fprintln(&out)
@@ -174,29 +173,29 @@ func PrintMemoryUsage() {
 
 	// Basic memory usage
 	fmt.Printf("\nMemory:\n")
-	fmt.Printf("UsedNow = %v (current heap in use)\n", text.ByteSize(int(m.Alloc)))
-	fmt.Printf("UsedTotal = %v (total allocated since start)\n", text.ByteSize(int(m.TotalAlloc)))
-	fmt.Printf("FromOS = %v (memory reserved from OS)\n", text.ByteSize(int(m.Sys)))
+	fmt.Printf("UsedNow = %v (current heap in use)\n", byteSize(int(m.Alloc)))
+	fmt.Printf("UsedTotal = %v (total allocated since start)\n", byteSize(int(m.TotalAlloc)))
+	fmt.Printf("FromOS = %v (memory reserved from OS)\n", byteSize(int(m.Sys)))
 
 	// Heap breakdown
 	fmt.Printf("\nHeap:\n")
-	fmt.Printf("Used = %v \n", text.ByteSize(int(m.HeapAlloc)))
-	fmt.Printf("Reserved = %v \n", text.ByteSize(int(m.HeapSys)))
-	fmt.Printf("Idle = %v (not used but still reserved)\n", text.ByteSize(int(m.HeapIdle)))
-	fmt.Printf("Active = %v (actively in use)\n", text.ByteSize(int(m.HeapInuse)))
-	fmt.Printf("Released = %v (given back to OS)\n", text.ByteSize(int(m.HeapReleased)))
+	fmt.Printf("Used = %v \n", byteSize(int(m.HeapAlloc)))
+	fmt.Printf("Reserved = %v \n", byteSize(int(m.HeapSys)))
+	fmt.Printf("Idle = %v (not used but still reserved)\n", byteSize(int(m.HeapIdle)))
+	fmt.Printf("Active = %v (actively in use)\n", byteSize(int(m.HeapInuse)))
+	fmt.Printf("Released = %v (given back to OS)\n", byteSize(int(m.HeapReleased)))
 
 	// Object allocations
 	fmt.Printf("\nObject:\n")
-	fmt.Printf("Allocs = %v (objects allocated)\n", number.Format(m.Mallocs, " ", "."))
-	fmt.Printf("Frees = %v (objects freed)\n", number.Format(m.Frees, " ", "."))
-	fmt.Printf("Live = %v (currently alive)\n", number.Format(m.HeapObjects, " ", "."))
+	fmt.Printf("Allocs = %v (objects allocated)\n", m.Mallocs)
+	fmt.Printf("Frees = %v (objects freed)\n", m.Frees)
+	fmt.Printf("Live = %v (currently alive)\n", m.HeapObjects)
 
 	// Garbage collection
 	fmt.Printf("\nGarbage Collection:\n")
 	fmt.Printf("Total = %v (total collections)\n", m.NumGC)
 	fmt.Printf("Forced = %v (manual triggers)\n", m.NumForcedGC)
-	fmt.Printf("Next = %v (target heap size of the next GC)\n", text.ByteSize(int(m.NextGC)))
+	fmt.Printf("Next = %v (target heap size of the next GC)\n", byteSize(int(m.NextGC)))
 	fmt.Printf("PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
 
 	if m.LastGC == 0 {
@@ -207,9 +206,9 @@ func PrintMemoryUsage() {
 
 	// Stacks and other
 	fmt.Printf("\nStack:\n")
-	fmt.Printf("Used = %v\n", text.ByteSize(int(m.StackInuse)))
-	fmt.Printf("Reserved = %v\n", text.ByteSize(int(m.StackSys)))
-	fmt.Printf("Other = %v (misc runtime overhead)\n", text.ByteSize(int(m.OtherSys)))
+	fmt.Printf("Used = %v\n", byteSize(int(m.StackInuse)))
+	fmt.Printf("Reserved = %v\n", byteSize(int(m.StackSys)))
+	fmt.Printf("Other = %v (misc runtime overhead)\n", byteSize(int(m.OtherSys)))
 }
 
 func ProfileCPU(seconds float32) {
@@ -272,9 +271,9 @@ func callInfo(message string) string {
 	for {
 		var frame, more = frames.Next()
 		var fileName = filepath.Base(frame.File)
-		var funcName = text.Split(frame.Function, ".")[1]
+		var funcName = strings.Split(frame.Function, ".")[1]
 
-		sb.WriteString(text.New("\n\tat [", fileName, "] ", funcName, "() { line ", frame.Line, " }"))
+		sb.WriteString(fmt.Sprintf("\n\tat [%s] %s() { %d }", fileName, funcName, frame.Line))
 
 		if !more || fileName == "main.go" && funcName == "main" {
 			break
@@ -284,6 +283,7 @@ func callInfo(message string) string {
 	return sb.String()
 }
 
+// copied from data/file
 func saveTextAppend(path string, content string) {
 	if !isExisting(path) {
 		os.WriteFile(path, []byte(content), 0644)
@@ -298,7 +298,23 @@ func saveTextAppend(path string, content string) {
 
 	file.WriteString(content)
 }
+
+// copied from data/file
 func isExisting(path string) bool {
 	var info, err = os.Stat(path)
 	return err == nil && !info.IsDir()
+}
+
+// copied from utility/text
+func byteSize(byteSize int) string {
+	const unit = 1024
+	if byteSize < unit {
+		return fmt.Sprintf("%d B", byteSize)
+	}
+	var div, exp = int(unit), 0
+	for n := byteSize / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.3f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }
