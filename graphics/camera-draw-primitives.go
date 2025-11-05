@@ -208,7 +208,12 @@ func (camera *Camera) DrawShape(color uint, points ...[2]float32) {
 		var v1 = rl.NewVector2(tri[0][0], tri[0][1])
 		var v2 = rl.NewVector2(tri[1][0], tri[1][1])
 		var v3 = rl.NewVector2(tri[2][0], tri[2][1])
-		rl.DrawTriangle(v3, v2, v1, rl.GetColor(color))
+
+		if !isClockwise(tri) {
+			v1, v3 = v3, v1
+		}
+
+		rl.DrawTriangle(v1, v2, v3, rl.GetColor(color))
 	}
 }
 
@@ -326,6 +331,11 @@ func area(points [][2]float32) float32 {
 		a += points[i][0]*points[j][1] - points[j][0]*points[i][1]
 	}
 	return a / 2
+}
+func isClockwise(points [3][2]float32) bool {
+	var p = points
+	var area = (p[1][0]-p[0][0])*(p[2][1]-p[0][1]) - (p[2][0]-p[0][0])*(p[1][1]-p[0][1])
+	return area < 0 // negative => clockwise
 }
 func isEar(points [][2]float32, verts []int, i1, i2, i3 int, ccw bool) bool {
 	var p1, p2, p3 = points[i1], points[i2], points[i3]

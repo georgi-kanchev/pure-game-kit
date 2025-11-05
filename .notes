@@ -4,6 +4,9 @@ shader effects, port?
 simple particles, port?
 
 // DONE:
+[93] [Wed] [05-11-2025]
+graphics - fixed draw polygon to work with clockwise & counterclockwise triangles
+
 [92] [Tue] [04-11-2025]
 git ignore logs
 renamed Once bool checks with Just

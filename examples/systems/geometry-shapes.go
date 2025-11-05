@@ -11,13 +11,14 @@ import (
 
 func Shapes() {
 	var cam = graphics.NewCamera(1)
-	var shape = geometry.NewShapeCorners(
-		[2]float32{},
-		[2]float32{50, -20},
-		[2]float32{100, 0},
-		[2]float32{0, 100},
-		[2]float32{50, 120},
-		[2]float32{100, 100})
+	var shape = geometry.NewShapeCorners([][2]float32{
+		{0, 0},
+		{50, -20},
+		{100, 0},
+		{0, 100},
+		{50, 120},
+		{100, 100},
+	}...)
 	var triangle = geometry.NewShapeCorners([2]float32{}, [2]float32{100, 100}, [2]float32{-100, 100})
 	var rectangle = geometry.NewShapeRectangle(700, 500, 0.5, 0.5)
 	var circle = geometry.NewShapeSides(500, 16)
