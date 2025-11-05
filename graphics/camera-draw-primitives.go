@@ -2,6 +2,7 @@ package graphics
 
 import (
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 
@@ -192,12 +193,18 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, colors .
 	camera.end()
 	camera.Angle = prevAng
 }
+
+// for convex + concave, non-self-intersacting shapes
 func (camera *Camera) DrawShape(color uint, points ...[2]float32) {
 	camera.begin()
 	defer camera.end()
 	if len(points) < 3 {
 		return
 	}
+
+	if points[0] == points[len(points)-1] {
+		points = collection.RemoveAt(points, len(points)-1)
+	} // remove repeated start if present
 
 	var triangles = triangulate(points)
 	if len(triangles) == 0 {
@@ -215,6 +222,27 @@ func (camera *Camera) DrawShape(color uint, points ...[2]float32) {
 
 		rl.DrawTriangle(v1, v2, v3, rl.GetColor(color))
 	}
+}
+
+// for convex shapes
+func (camera *Camera) DrawShapeFast(color uint, points ...[2]float32) {
+	camera.begin()
+	defer camera.end()
+
+	if len(points) < 3 {
+		return
+	}
+
+	var vectors = make([]rl.Vector2, len(points))
+	for i, p := range points {
+		vectors[i] = rl.NewVector2(p[0], p[1])
+	}
+
+	if area(points) >= 0 {
+		collection.Reverse(vectors)
+	}
+
+	rl.DrawTriangleFan(vectors, rl.GetColor(color))
 }
 
 func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {

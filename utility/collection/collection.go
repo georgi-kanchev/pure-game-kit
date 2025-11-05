@@ -38,13 +38,14 @@ func Remove[T comparable](collection []T, items ...T) []T {
 }
 func RemoveAt[T any](collection []T, indexes ...int) []T {
 	// Sort indexes descending so deletion doesn't affect subsequent indices
+	var copy = Clone(collection)
 	slices.SortFunc(indexes, func(a, b int) int { return b - a })
 	for _, index := range indexes {
-		if index >= 0 && index < len(collection) {
-			collection = slices.Delete(collection, index, index+1)
+		if index >= 0 && index < len(copy) {
+			copy = slices.Delete(copy, index, index+1)
 		}
 	}
-	return collection
+	return copy
 }
 
 func IndexOf[T comparable](collection []T, value T) int {
