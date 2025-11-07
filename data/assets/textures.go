@@ -39,7 +39,6 @@ func LoadTexture(filePath string) string {
 func UnloadTexture(textureId string) {
 	var tex, has = internal.Textures[textureId]
 	delete(internal.Textures, textureId)
-	RemoveTextureAtlases(textureId)
 
 	if has {
 		rl.UnloadTexture(*tex)
