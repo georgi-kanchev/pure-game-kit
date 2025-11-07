@@ -89,6 +89,13 @@ func Tiled() {
 			tileset.TileAnimate("examples/data/objects", 198, true)
 		}
 
+		if keyboard.IsKeyJustPressed(key.Y) {
+			assets.UnloadTexture("examples/data/objects")
+		}
+		if keyboard.IsKeyJustPressed(key.T) {
+			assets.LoadTexture("examples/data/objects.png")
+		}
+
 		if keyboard.IsKeyJustPressed(key.F5) {
 			reload()
 		}

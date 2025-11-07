@@ -12,6 +12,7 @@ type Sequence struct {
 	currIndex, prevIndex int
 	stepStartedAt        float32
 	signals              []string
+	hasPump              bool
 }
 
 type Step interface{ Continue(*Sequence) bool }
@@ -32,7 +33,11 @@ func (sequence *Sequence) SetSteps(runInstantly bool, steps ...Step) {
 
 func (sequence *Sequence) Run() {
 	sequence.GoToStep(0)
-	condition.CallFor(number.ValueMaximum[float32](), sequence.update)
+
+	if !sequence.hasPump {
+		sequence.hasPump = true
+		condition.CallFor(number.ValueMaximum[float32](), sequence.update)
+	}
 }
 func (sequence *Sequence) Stop() {
 	sequence.GoToStep(-1)

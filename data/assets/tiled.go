@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/execution/condition"
-	"pure-game-kit/execution/flow"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
@@ -25,7 +24,6 @@ func LoadTiledTileset(filePath string) string {
 		var atlasId = SetTextureAtlas(textureId, tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
 
 		tileset.AtlasId = atlasId
-		internal.TiledTilesets[tileset.AtlasId] = tileset
 		w, h = tileset.Columns, tileset.TileCount/tileset.Columns
 
 		for id := range w * h {
@@ -34,8 +32,11 @@ func LoadTiledTileset(filePath string) string {
 			SetTextureAtlasTile(tileset.AtlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 		}
 
+	} else {
+		tileset.AtlasId = path.RemoveExtension(filePath)
 	}
 
+	internal.TiledTilesets[tileset.AtlasId] = tileset
 	tileset.MappedTiles = map[uint32]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
 		tileset.MappedTiles[tile.Id] = &tile
@@ -58,23 +59,32 @@ func LoadTiledTileset(filePath string) string {
 
 		var frame = 0
 		var name = text.New(tileset.AtlasId, "/", tile.Id)
-		var seq = flow.NewSequence()
+		var totalAnimDuration float32
+		for _, f := range tile.Animation.Frames {
+			totalAnimDuration += float32(f.Duration) / 1000
+		}
 
-		tile.Sequence = seq
-		seq.SetSteps(true,
-			flow.NowDoLoop(number.ValueMaximum[int](), func(int) {
-				var timer = seq.CurrentStepTimer()
-				var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
-				if timer > float32(dur) {
-					var newId = tile.Animation.Frames[frame].TileId
-					var x, y = number.Index1DToIndexes2D(newId, uint32(w), uint32(h)) // new tile id coords
-					SetTextureAtlasTile(tileset.AtlasId, name, float32(x), float32(y), 1, 1, 0, false)
-					seq.GoToNextStep()
-					frame++
-					frame = frame % len(tile.Animation.Frames)
-				}
-			}),
-			flow.NowDo(seq.Run))
+		var tileTime = totalAnimDuration
+		tileset.AnimatedTiles = append(tileset.AnimatedTiles, &tile)
+		tile.IsAnimating = true
+		tile.Update = func() {
+			if !tile.IsAnimating {
+				return
+			}
+
+			var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
+			tileTime += internal.Delta
+			if tileTime > float32(dur) {
+				tileTime = 0
+				var newId = tile.Animation.Frames[frame].TileId
+				var x, y = number.Index1DToIndexes2D(newId, uint32(w), uint32(h)) // new tile id coords
+				SetTextureAtlasTile(tileset.AtlasId, name, float32(x), float32(y), 1, 1, 0, false)
+				frame++
+				frame = frame % len(tile.Animation.Frames)
+			}
+		}
+
+		_ = 0
 	}
 
 	return filePath
@@ -132,7 +142,7 @@ func LoadTiledMap(filePath string) string {
 	mapData.Directory = path.Folder(filePath)
 	internal.TiledMaps[id] = mapData
 
-	for _, t := range mapData.Tilesets { // embedded tilesets
+	for _, t := range mapData.Tilesets {
 		LoadTiledTileset(path.New(mapData.Directory, t.Source))
 	}
 
@@ -149,6 +159,20 @@ func UnloadTiledMap(tilemapId string) {
 	delete(internal.TiledMaps, tilemapId)
 }
 func UnloadTiledTileset(tilesetId string) {
+	var tileset, has = internal.TiledTilesets[tilesetId]
+	if !has {
+		return
+	}
+
+	for _, v := range tileset.Tiles {
+		if v.TextureId != "" {
+			UnloadTexture(v.TextureId)
+		}
+	}
+	if tileset.AtlasId != "" {
+		UnloadTexture(tileset.AtlasId)
+	}
+
 	delete(internal.TiledTilesets, tilesetId)
 }
 

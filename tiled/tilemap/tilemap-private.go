@@ -240,3 +240,21 @@ func getTileOrientation(tileId uint32, w, h float32) (angle float32, newW, newH 
 	}
 	return angle, newW, newH
 }
+
+func tileRenderSize(w, h float32, mapData *internal.Map, tileset *internal.Tileset) (float32, float32) {
+	var ratioW, ratioH float32 = 1, 1
+	if w > h {
+		ratioH = h / w
+	} else {
+		ratioW = w / h
+	}
+
+	if tileset.TileRenderSize == "grid" {
+		w, h = float32(mapData.TileWidth), float32(mapData.TileHeight)
+	}
+	if tileset.FillMode == "preserve-aspect-fit" {
+		w *= ratioW
+		h *= ratioH
+	}
+	return w, h
+}

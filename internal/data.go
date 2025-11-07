@@ -192,3 +192,11 @@ func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, millisec
 	milliseconds = int(math.Mod(float64(seconds), 1.0) * 1000)
 	return
 }
+
+func updateAnimatedTiles() {
+	for _, tileset := range TiledTilesets {
+		for _, tile := range tileset.AnimatedTiles {
+			tile.Update()
+		}
+	}
+}

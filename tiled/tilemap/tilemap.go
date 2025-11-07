@@ -180,7 +180,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 	}
 
 	if img != nil {
-		var assetId = path.New(mapData.Directory, img.Image.Source)
+		var assetId = path.RemoveExtension(path.New(mapData.Directory, img.Image.Source))
 		var sprite = graphics.NewSprite(assetId, mapData.WorldX+img.OffsetX, mapData.WorldY+img.OffsetY)
 		sprite.PivotX, sprite.PivotY = 0, 0
 		return []*graphics.Sprite{sprite}
@@ -234,21 +234,28 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 			continue
 		}
 
-		var ang, w, h = getTileOrientation(tile, float32(curTileset.TileWidth), float32(curTileset.TileHeight))
+		var width, height = float32(curTileset.TileWidth), float32(curTileset.TileHeight)
+		width, height = tileRenderSize(width, height, mapData, curTileset)
+		var ang, w, h = getTileOrientation(tile, width, height)
 		var id = unoriented - curTileset.FirstTileId
 		var tileId = text.New(curTileset.AtlasId, "/", id)
 		var px, py float32 = 0.5, 0.5
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
 		var offX, offY = w / 2, h / 2
 
-		if curTileset.AtlasId == "" {
+		if curTileset.Image.Source == "" {
 			var tileObj = curTileset.MappedTiles[id]
 			tileId = tileObj.TextureId
 			w = float32(tileObj.Image.Width * condition.If(w < 0, -1, 1))
 			h = float32(tileObj.Image.Height * condition.If(h < 0, -1, 1))
+			w, h = tileRenderSize(w, h, mapData, curTileset)
 			px, py = 0, 1
 			offX, offY = 0, 0
 			i++
+
+			if curTileset.FillMode == "preserve-aspect-fit" {
+				offX = float32(mapData.TileWidth)/2 - w/2
+			}
 
 			switch ang {
 			case 90:
@@ -411,17 +418,18 @@ func LayerShapes(mapId, layerNameOrId, objectNameClassOrId string) []*geometry.S
 			var w, h = obj.Width, obj.Height
 			ptsData = text.New(0, ",", 0, " ", w, ",", 0, " ", w, ",", h, " ", 0, ",", h)
 		}
-		var corners = [][2]float32{}
+		var points = [][2]float32{}
 		var pts = text.Split(ptsData, " ")
 		for _, pt := range pts {
 			var xy = text.Split(pt, ",")
 			if len(xy) == 2 {
 				var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
 				x, y = point.RotateAroundPoint(x, y, 0, 0, obj.Rotation)
-				corners = append(corners, [2]float32{x, y})
+				points = append(points, [2]float32{x, y})
 			}
 		}
-		var shape = geometry.NewShapeCorners(corners...)
+
+		var shape = geometry.NewShapeCorners(points...)
 		shape.X = obj.X + mapData.WorldX + objs.OffsetX
 		shape.Y = obj.Y + mapData.WorldY + objs.OffsetY
 

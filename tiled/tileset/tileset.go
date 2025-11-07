@@ -3,7 +3,6 @@ package tileset
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/execution/condition"
-	"pure-game-kit/execution/flow"
 	"pure-game-kit/geometry"
 	"pure-game-kit/internal"
 	p "pure-game-kit/tiled/property"
@@ -91,8 +90,7 @@ func TileAnimate(tilesetId string, tileId uint32, animate bool) {
 	var tile = getTile(tilesetId, tileId)
 	if tile != nil {
 		var tileset, _ = internal.TiledTilesets[tilesetId]
-		var seq = tile.Sequence.(*flow.Sequence)
-		seq.GoToStep(condition.If(animate, 0, -1))
+		tile.IsAnimating = animate
 
 		if !animate { // disabling animation resets the tile to original one
 			var w, h = tileset.Columns, tileset.TileCount / tileset.Columns
@@ -104,7 +102,7 @@ func TileAnimate(tilesetId string, tileId uint32, animate bool) {
 }
 func TileIsAnimated(tilesetId string, tileId uint32) bool {
 	var tile = getTile(tilesetId, tileId)
-	return tile != nil && tile.Sequence != nil
+	return tile != nil && tile.Update != nil
 }
 
 func TileObjectProperty(tilesetId string, tileId uint32, objectNameClassOrId, property string) string {

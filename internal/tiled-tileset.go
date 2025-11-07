@@ -24,7 +24,8 @@ type Tileset struct {
 	Image           TilesetImage           `xml:"image"`
 	Properties      []Property             `xml:"properties>property"`
 
-	MappedTiles map[uint32]*TilesetTile
+	MappedTiles   map[uint32]*TilesetTile
+	AnimatedTiles []*TilesetTile
 }
 type TilesetOffset struct {
 	X int `xml:"x,attr"`
@@ -59,8 +60,8 @@ type TilesetTile struct {
 	Animation       TilesetTileAnimation `xml:"animation"`
 	Properties      []Property           `xml:"properties>property"`
 
-	// animation sequence from engine/flow - any to avoid circular dependency with internal -> flow -> internal
-	Sequence any
+	IsAnimating bool
+	Update      func() // update loop for animations, pumped from internal
 }
 type TilesetTileAnimation struct {
 	Frames []TilesetTileFrame `xml:"frame"`
