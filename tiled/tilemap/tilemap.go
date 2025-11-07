@@ -373,7 +373,7 @@ func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometr
 	return condition.If(success, result, nil)
 }
 
-// empty objectNameOrClass includes all objects within all tiles
+// empty objectNameOrClass includes all objects within all tiles/layer
 func LayerShapes(mapId, layerNameOrId, objectNameClassOrId string) []*geometry.Shape {
 	var mapData, _ = internal.TiledMaps[mapId]
 	var result = []*geometry.Shape{}
@@ -401,8 +401,8 @@ func LayerShapes(mapId, layerNameOrId, objectNameClassOrId string) []*geometry.S
 			continue
 		}
 		var ptsData = ""
-		if obj.PolygonTile.Points != "" {
-			ptsData = obj.PolygonTile.Points
+		if obj.Polyline.Points != "" {
+			ptsData = obj.Polyline.Points
 		}
 		if obj.Polygon.Points != "" {
 			ptsData = obj.Polygon.Points
@@ -425,7 +425,7 @@ func LayerShapes(mapId, layerNameOrId, objectNameClassOrId string) []*geometry.S
 		shape.X = obj.X + mapData.WorldX + objs.OffsetX
 		shape.Y = obj.Y + mapData.WorldY + objs.OffsetY
 
-		if obj.Gid != 0 {
+		if obj.Gid != 0 { // adjust tile object pivot
 			shape.Y -= float32(mapData.TileHeight)
 		}
 
@@ -435,7 +435,7 @@ func LayerShapes(mapId, layerNameOrId, objectNameClassOrId string) []*geometry.S
 	return result
 }
 
-// empty objectNameOrClass includes all objects within all tiles
+// empty objectNameOrClass includes all objects within all tiles/layer
 func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 	var result = [][2]float32{}
 	var mapData, _ = internal.TiledMaps[mapId]
@@ -453,16 +453,19 @@ func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 			result = append(result, pts...)
 		})
 
-	if !success {
-		var _, objs, _, _ = findLayer(mapData, layerNameOrId)
-		if objs != nil {
-			for _, obj := range objs.Objects {
-				if obj.Width == 0 && obj.Height == 0 && obj.Polygon.Points == "" {
-					result = append(result, [2]float32{mapData.WorldX + obj.X, mapData.WorldY + obj.Y})
-				}
-			}
-		}
+	if success {
+		return result
 	}
 
+	var _, objs, _, _ = findLayer(mapData, layerNameOrId)
+	if objs == nil {
+		return result
+	}
+
+	for _, obj := range objs.Objects {
+		if obj.Width == 0 && obj.Height == 0 && obj.Polygon.Points == "" && obj.Polyline.Points == "" {
+			result = append(result, [2]float32{mapData.WorldX + obj.X, mapData.WorldY + obj.Y})
+		}
+	}
 	return result
 }

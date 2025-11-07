@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="14" nextobjectid="77">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="14" nextobjectid="78">
  <editorsettings>
   <chunksize width="15" height="15"/>
  </editorsettings>
@@ -74,6 +74,9 @@
    </object>
    <object id="39" x="283" y="139">
     <polygon points="0,0 12,10 2,10 0,21 -9,11"/>
+   </object>
+   <object id="77" x="214" y="160">
+    <polyline points="0,0 -6,16 10,32 -6,48 26,64"/>
    </object>
   </objectgroup>
  </group>

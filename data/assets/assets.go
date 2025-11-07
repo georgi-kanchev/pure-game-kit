@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"pure-game-kit/data/path"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
 	"pure-game-kit/window"
@@ -36,5 +37,7 @@ func tryInitShader() {
 }
 
 func getIdPath(p string) string {
-	return text.Replace(p, "\\", "/")
+	p = text.Replace(p, "\\", "/")
+	p = path.RemoveExtension(p)
+	return p
 }

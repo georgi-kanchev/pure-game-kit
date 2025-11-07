@@ -25,16 +25,17 @@ func LoadTiledTileset(filePath string) string {
 		var atlasId = SetTextureAtlas(textureId, tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
 
 		tileset.AtlasId = atlasId
+		internal.TiledTilesets[tileset.AtlasId] = tileset
 		w, h = tileset.Columns, tileset.TileCount/tileset.Columns
 
 		for id := range w * h {
 			var x, y = number.Index1DToIndexes2D(id, w, h)
 			var rectId = text.New(atlasId, "/", id)
-			SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
+			SetTextureAtlasTile(tileset.AtlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 		}
+
 	}
 
-	internal.TiledTilesets[filePath] = tileset
 	tileset.MappedTiles = map[uint32]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
 		tileset.MappedTiles[tile.Id] = &tile
@@ -49,15 +50,14 @@ func LoadTiledTileset(filePath string) string {
 
 		if len(tile.Animation.Frames) == 0 {
 			continue
-		} // animated tiles
+		} // animated tiles below
 
-		if tileset.Image.Source == "" { // tiles are images, not in atlas
+		if tileset.Image.Source == "" { // tiles are separate images, not in atlas
 			w, h = tile.Image.Width, tile.Image.Height
 		}
 
 		var frame = 0
-		var id = text.Remove(filePath, path.LastPart(filePath))
-		var name = text.New(id, "/", tile.Id)
+		var name = text.New(tileset.AtlasId, "/", tile.Id)
 		var seq = flow.NewSequence()
 
 		tile.Sequence = seq
@@ -68,7 +68,7 @@ func LoadTiledTileset(filePath string) string {
 				if timer > float32(dur) {
 					var newId = tile.Animation.Frames[frame].TileId
 					var x, y = number.Index1DToIndexes2D(newId, uint32(w), uint32(h)) // new tile id coords
-					SetTextureAtlasTile(id, name, float32(x), float32(y), 1, 1, 0, false)
+					SetTextureAtlasTile(tileset.AtlasId, name, float32(x), float32(y), 1, 1, 0, false)
 					seq.GoToNextStep()
 					frame++
 					frame = frame % len(tile.Animation.Frames)
@@ -132,7 +132,7 @@ func LoadTiledMap(filePath string) string {
 	mapData.Directory = path.Folder(filePath)
 	internal.TiledMaps[id] = mapData
 
-	for _, t := range mapData.Tilesets {
+	for _, t := range mapData.Tilesets { // embedded tilesets
 		LoadTiledTileset(path.New(mapData.Directory, t.Source))
 	}
 
@@ -179,8 +179,7 @@ func tryTemplate(layer []*internal.LayerObjects, directory string) {
 		newObj.Class = condition.If(o.Class != "", o.Class, newObj.Class)
 		newObj.Visible = condition.If(o.Visible != "", o.Visible, newObj.Visible)
 		newObj.Polygon.Points = condition.If(o.Polygon.Points != "", o.Polygon.Points, newObj.Polygon.Points)
-		newObj.PolygonTile.Points =
-			condition.If(o.PolygonTile.Points != "", o.PolygonTile.Points, newObj.PolygonTile.Points)
+		newObj.Polyline.Points = condition.If(o.Polyline.Points != "", o.Polyline.Points, newObj.Polyline.Points)
 
 		for _, prop := range o.Properties {
 			var has, p = hasProp(prop.Name, newObj.Properties)

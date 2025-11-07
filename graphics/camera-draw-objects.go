@@ -63,6 +63,10 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 			texW, texH = int(texture.Width), int(texture.Height)
 		}
 
+		if texture == nil {
+			return
+		}
+
 		var w, h = s.Width, s.Height
 		if s.TextureRepeat {
 			texW, texH = int(w*scX), int(h*scY)

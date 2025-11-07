@@ -59,13 +59,9 @@ func Tiled() {
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
 		for _, shape := range g1.All() {
-			var cellX, cellY = g1.Cell(shape)
-			_, _ = cellX, cellY
 			cam.DrawLinesPath(0.5, color.Red, shape.CornerPoints()...)
 		}
 		for _, shape := range g2.All() {
-			var cellX, cellY = g2.Cell(shape)
-			_, _ = cellX, cellY
 			cam.DrawLinesPath(0.5, color.Red, shape.CornerPoints()...)
 		}
 

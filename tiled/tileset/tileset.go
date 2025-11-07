@@ -165,8 +165,8 @@ func TileObjectShapes(tilesetId string, tileId uint32, objectNameClassOrId strin
 			continue
 		}
 		var ptsData = ""
-		if obj.PolygonTile.Points != "" {
-			ptsData = obj.PolygonTile.Points
+		if obj.Polyline.Points != "" {
+			ptsData = obj.Polyline.Points
 		}
 		if obj.Polygon.Points != "" {
 			ptsData = obj.Polygon.Points

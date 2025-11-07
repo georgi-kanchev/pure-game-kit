@@ -2,6 +2,7 @@ package assets
 
 import (
 	"pure-game-kit/data/file"
+	"pure-game-kit/data/path"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
 
@@ -59,10 +60,12 @@ func SetTextureArea(textureId, areaId string, x, y, width, height, rotations int
 
 	if has && areaId != "" {
 		var atlas = internal.Atlas{TextureId: textureId, CellWidth: 1, CellHeight: 1}
+		textureId = path.RemoveExtension(textureId)
 
 		var cx, cy, cw, ch = float32(x), float32(y), float32(width), float32(height)
-		var rect = internal.AtlasRect{
-			CellX: cx, CellY: cy, CountX: cw, CountY: ch, AtlasId: textureId, Rotations: rotations, Flip: flip}
+		var rect = internal.AtlasRect{CellX: cx, CellY: cy, CountX: cw, CountY: ch,
+			AtlasId: textureId, Rotations: rotations, Flip: flip}
+
 		internal.Atlases[textureId] = atlas
 		internal.AtlasRects[areaId] = rect
 		return textureId
@@ -75,6 +78,7 @@ func SetTextureAtlas(textureId string, cellWidth, cellHeight, cellGap int) strin
 
 	if has {
 		var atlas = internal.Atlas{TextureId: textureId, CellWidth: cellWidth, CellHeight: cellHeight, Gap: cellGap}
+		textureId = path.RemoveExtension(textureId)
 		internal.Atlases[textureId] = atlas
 		return textureId
 	}

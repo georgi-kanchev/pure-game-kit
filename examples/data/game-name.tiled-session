@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "map.tmx",
+    "activeFile": "desert.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -22,11 +22,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 3,
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 336.66666666666663,
-                "y": 139.5
+                "x": 274.5,
+                "y": -3.25
             }
         },
         "images.tsx": {
@@ -40,14 +40,14 @@
             ],
             "expandedObjectLayers": [
                 2,
-                11,
-                6
+                6,
+                11
             ],
-            "scale": 8,
+            "scale": 4,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 44,
-                "y": 23.3125
+                "x": 515.75,
+                "y": 141.375
             }
         },
         "map.tmx#atlas": {
@@ -60,7 +60,7 @@
         },
         "objects.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 23,
+            "scaleInDock": 8,
             "scaleInEditor": 1
         },
         "sizes.tsx": {
@@ -72,8 +72,8 @@
             "scale": 8,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -596,
-                "y": 23.3125
+                "x": -590.875,
+                "y": 23.0625
             }
         }
     },
@@ -100,12 +100,12 @@
     "project": "game-name.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "map.tmx",
         "terrain.tmx",
         "images.tsx",
         "objects.tsx",
         "atlas.tsx",
         "desert.tmx",
-        "map.tmx",
         "sizes.tsx"
     ],
     "textEdit.monospace": false,
