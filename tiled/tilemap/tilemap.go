@@ -205,7 +205,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 				continue
 			}
 
-			var assetId = text.New(curTileset.AtlasId, "/", id-curTileset.FirstTileId)
+			var assetId = path.New(curTileset.AtlasId, text.New(id-curTileset.FirstTileId))
 			var sprite = graphics.NewSprite(assetId, mapData.WorldX+obj.X, mapData.WorldY+obj.Y)
 			sprite.X += float32(mapData.TileWidth)/2 + objs.OffsetX
 			sprite.Y = sprite.Y - float32(mapData.TileHeight)/2 + objs.OffsetY
@@ -238,7 +238,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		width, height = tileRenderSize(width, height, mapData, curTileset)
 		var ang, w, h = getTileOrientation(tile, width, height)
 		var id = unoriented - curTileset.FirstTileId
-		var tileId = text.New(path.Folder(curTileset.AtlasId), "/", curTileset.Image.Source, "/", id)
+		var tileId = path.New(path.Folder(curTileset.AtlasId), curTileset.Image.Source, text.New(id))
 		var px, py float32 = 0.5, 0.5
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
 		var offX, offY = w / 2, h / 2

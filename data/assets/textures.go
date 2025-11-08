@@ -12,8 +12,7 @@ func LoadTexture(filePath string) string {
 	tryCreateWindow()
 
 	var result = ""
-	var id = getIdPath(filePath)
-	var tex, has = internal.Textures[id]
+	var tex, has = internal.Textures[filePath]
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find image file: \"", filePath, "\"")
@@ -27,8 +26,8 @@ func LoadTexture(filePath string) string {
 	var texture = rl.LoadTexture(filePath)
 
 	if texture.Width != 0 {
-		internal.Textures[id] = &texture
-		result = id
+		internal.Textures[filePath] = &texture
+		result = filePath
 	} else {
 		debug.LogError("Failed to load image file: \"", filePath, "\"")
 	}
@@ -129,9 +128,10 @@ func SetTextureAtlasTile(atlasId, tileId string, cellX, cellY, countX, countY fl
 	var _, has = internal.Atlases[atlasId]
 
 	if has && tileId != "" {
-		var texRect = internal.AtlasRect{
-			AtlasId: atlasId, CellX: cellX, CellY: cellY, CountX: countX, CountY: countY,
-			Rotations: rotations, Flip: flip}
+		var texRect = internal.AtlasRect{AtlasId: atlasId,
+			CellX: cellX, CellY: cellY, CountX: countX, CountY: countY,
+			Rotations: rotations, Flip: flip,
+		}
 		internal.AtlasRects[tileId] = texRect
 		return tileId
 	}
@@ -158,6 +158,6 @@ func RemoveTextureAtlases(atlasId string) {
 func RemoveTextureAtlasTiles(tileId string) {
 	delete(internal.AtlasRects, tileId)
 }
-func RemoveTextureBoxes(nineSliceId string) {
-	delete(internal.Boxes, nineSliceId)
+func RemoveTextureBoxes(boxId string) {
+	delete(internal.Boxes, boxId)
 }

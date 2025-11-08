@@ -1,13 +1,23 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"name": "Debug",
-			"type": "go",
-			"request": "launch",
-			"mode": "debug",
-			"program": "main.go",
-			"args": []
-		},
-	],
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "args": []
+        },
+        {
+            "name": "Debug Windows (Wine automated)",
+            "type": "go",
+            "request": "attach",
+            "mode": "remote",
+            "host": "127.0.0.1",
+            "port": 2345,
+            "preLaunchTask": "start-wine-dlv",
+            "showLog": true
+        }
+    ]
 }

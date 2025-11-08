@@ -29,7 +29,7 @@ func LoadTiledTileset(filePath string) string {
 
 		for id := range w * h {
 			var x, y = number.Index1DToIndexes2D(id, w, h)
-			var rectId = text.New(atlasId, "/", id)
+			var rectId = path.New(atlasId, text.New(id))
 			SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 		}
 	}
@@ -56,8 +56,8 @@ func LoadTiledTileset(filePath string) string {
 		}
 
 		var frame = 0
-		var atlasId = text.New(path.Folder(tileset.AtlasId), "/", tileset.Image.Source)
-		var tileId = text.New(atlasId, "/", tile.Id)
+		var atlasId = path.New(path.Folder(tileset.AtlasId), tileset.Image.Source)
+		var tileId = path.New(atlasId, text.New(tile.Id))
 		var totalAnimDuration float32
 		for _, f := range tile.Animation.Frames {
 			totalAnimDuration += float32(f.Duration) / 1000
@@ -134,16 +134,15 @@ func LoadTiledMap(filePath string) string {
 		return ""
 	}
 
-	var id = text.Replace(filePath, "\\", "/")
 	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
 	mapData.Directory = path.Folder(filePath)
-	internal.TiledMaps[id] = mapData
+	internal.TiledMaps[filePath] = mapData
 
 	for _, t := range mapData.Tilesets {
 		LoadTiledTileset(path.New(mapData.Directory, t.Source))
 	}
 
-	return id
+	return filePath
 }
 
 func UnloadTiledWorld(worldFilePath string) {

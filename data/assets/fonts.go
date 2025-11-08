@@ -10,7 +10,6 @@ import (
 
 func LoadFont(size int, filePath string) []string {
 	var result = []string{}
-	var id = getIdPath(filePath)
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find font file: \"", filePath, "\"")
@@ -18,10 +17,10 @@ func LoadFont(size int, filePath string) []string {
 	}
 
 	var bytes = file.LoadBytes(filePath)
-	var success = loadFont(id, size, bytes)
+	var success = loadFont(filePath, size, bytes)
 
 	if success {
-		result = append(result, id)
+		result = append(result, filePath)
 	} else {
 		debug.LogError("Failed to load font file: \"", filePath, "\"")
 	}

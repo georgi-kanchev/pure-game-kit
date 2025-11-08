@@ -2,6 +2,7 @@ package tileset
 
 import (
 	"pure-game-kit/data/assets"
+	"pure-game-kit/data/path"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/geometry"
 	"pure-game-kit/internal"
@@ -95,7 +96,7 @@ func TileAnimate(tilesetId string, tileId uint32, animate bool) {
 		if !animate { // disabling animation resets the tile to original one
 			var w, h = tileset.Columns, tileset.TileCount / tileset.Columns
 			var x, y = number.Index1DToIndexes2D(tile.Id, uint32(w), uint32(h))
-			var rectId = text.New(tileset.AtlasId, "/", tile.Id)
+			var rectId = path.New(tileset.AtlasId, text.New(tile.Id))
 			assets.SetTextureAtlasTile(tileset.AtlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 		}
 	}

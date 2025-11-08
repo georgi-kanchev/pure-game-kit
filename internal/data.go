@@ -4,6 +4,7 @@ import (
 	"math"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -106,6 +107,10 @@ func AssetSize(assetId string) (width, height int) {
 func IsLoaded(assetId string) bool {
 	var w, h = AssetSize(assetId)
 	return w != -1 && h != -1
+}
+
+func Path(path string) string {
+	return strings.ReplaceAll(path, "\\", "/")
 }
 
 //=================================================================

@@ -13,7 +13,6 @@ func LoadSound(filePath string) string {
 	tryInitAudio()
 
 	var result = ""
-	var id = getIdPath(filePath)
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")
@@ -22,8 +21,8 @@ func LoadSound(filePath string) string {
 
 	var sound = rl.LoadSound(filePath)
 	if sound.FrameCount != 0 {
-		internal.Sounds[id] = &sound
-		result = id
+		internal.Sounds[filePath] = &sound
+		result = filePath
 	} else {
 		debug.LogError("Failed to load audio file: \"", filePath, "\"")
 	}
@@ -35,7 +34,6 @@ func LoadMusic(filePath string) string {
 	tryInitAudio()
 
 	var result = ""
-	var id = getIdPath(filePath)
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")
@@ -45,8 +43,8 @@ func LoadMusic(filePath string) string {
 	var music = rl.LoadMusicStream(filePath)
 	if music.FrameCount != 0 {
 		music.Looping = false
-		internal.Music[id] = &music
-		result = id
+		internal.Music[filePath] = &music
+		result = filePath
 	} else {
 		debug.LogError("Failed to load audio file: \"", filePath, "\"")
 	}

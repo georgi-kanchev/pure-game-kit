@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
@@ -310,7 +309,7 @@ func callInfo(message string) string {
 func appendFile(content string) {
 	if logFile == "" {
 		os.MkdirAll("logs", 0755)
-		logFile = path.Join("logs", time.Now().Format("01-02-2006_15-04-05")+".txt")
+		logFile = filepath.Join("logs", time.Now().Format("01-02-2006_15-04-05")+".txt")
 		os.WriteFile(logFile, []byte(content), 0644)
 		return
 	}
