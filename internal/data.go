@@ -26,18 +26,17 @@ var WindowReady = false
 //=================================================================
 
 var Textures = make(map[string]*rl.Texture2D)
+var Sounds = make(map[string]*rl.Sound)
+var Music = make(map[string]*rl.Music)
+var TiledTilesets = make(map[string]*Tileset)
+var TiledMaps = make(map[string]*Map)
+
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)
 var ShaderText = rl.Shader{}
-
-var Sounds = make(map[string]*rl.Sound)
-var Music = make(map[string]*rl.Music)
-
-var TiledTilesets = make(map[string]*Tileset)
-var TiledMaps = make(map[string]*Map)
 
 //=================================================================
 

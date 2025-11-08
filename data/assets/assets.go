@@ -1,7 +1,6 @@
 package assets
 
 import (
-	"pure-game-kit/data/path"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
 	"pure-game-kit/window"
@@ -14,6 +13,21 @@ func Size(assetId string) (width, height int) {
 }
 func IsLoaded(assetId string) bool {
 	return internal.IsLoaded(assetId)
+}
+
+func UnloadAll() {
+	UnloadAllTextures()
+	UnloadAllSounds()
+	UnloadAllMusic()
+	UnloadAllTiledMaps()
+	UnloadAllTiledTilesets()
+}
+func ReloadAll() {
+	ReloadAllTextures()
+	ReloadAllSounds()
+	ReloadAllMusic()
+	ReloadAllTiledMaps()
+	ReloadAllTiledTilesets()
 }
 
 //=================================================================
@@ -38,6 +52,6 @@ func tryInitShader() {
 
 func getIdPath(p string) string {
 	p = text.Replace(p, "\\", "/")
-	p = path.RemoveExtension(p)
+	// p = path.RemoveExtension(p)
 	return p
 }

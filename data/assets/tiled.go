@@ -19,21 +19,19 @@ func LoadTiledTileset(filePath string) string {
 		return ""
 	}
 
+	tileset.AtlasId = filePath
+
 	if tileset.Image.Source != "" {
 		var textureId = LoadTexture(path.New(path.Folder(filePath), tileset.Image.Source))
 		var atlasId = SetTextureAtlas(textureId, tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
 
-		tileset.AtlasId = atlasId
 		w, h = tileset.Columns, tileset.TileCount/tileset.Columns
 
 		for id := range w * h {
 			var x, y = number.Index1DToIndexes2D(id, w, h)
 			var rectId = text.New(atlasId, "/", id)
-			SetTextureAtlasTile(tileset.AtlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
+			SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
 		}
-
-	} else {
-		tileset.AtlasId = path.RemoveExtension(filePath)
 	}
 
 	internal.TiledTilesets[tileset.AtlasId] = tileset
@@ -58,7 +56,8 @@ func LoadTiledTileset(filePath string) string {
 		}
 
 		var frame = 0
-		var name = text.New(tileset.AtlasId, "/", tile.Id)
+		var atlasId = text.New(path.Folder(tileset.AtlasId), "/", tileset.Image.Source)
+		var tileId = text.New(atlasId, "/", tile.Id)
 		var totalAnimDuration float32
 		for _, f := range tile.Animation.Frames {
 			totalAnimDuration += float32(f.Duration) / 1000
@@ -78,13 +77,11 @@ func LoadTiledTileset(filePath string) string {
 				tileTime = 0
 				var newId = tile.Animation.Frames[frame].TileId
 				var x, y = number.Index1DToIndexes2D(newId, uint32(w), uint32(h)) // new tile id coords
-				SetTextureAtlasTile(tileset.AtlasId, name, float32(x), float32(y), 1, 1, 0, false)
+				SetTextureAtlasTile(atlasId, tileId, float32(x), float32(y), 1, 1, 0, false)
 				frame++
 				frame = frame % len(tile.Animation.Frames)
 			}
 		}
-
-		_ = 0
 	}
 
 	return filePath
@@ -174,6 +171,28 @@ func UnloadTiledTileset(tilesetId string) {
 	}
 
 	delete(internal.TiledTilesets, tilesetId)
+}
+
+func ReloadAllTiledMaps() {
+	for id := range internal.TiledMaps {
+		LoadTiledMap(id)
+	}
+}
+func ReloadAllTiledTilesets() {
+	for id := range internal.TiledTilesets {
+		LoadTiledTileset(id)
+	}
+}
+
+func UnloadAllTiledMaps() {
+	for id := range internal.TiledMaps {
+		UnloadTiledMap(id)
+	}
+}
+func UnloadAllTiledTilesets() {
+	for id := range internal.TiledTilesets {
+		UnloadTiledTileset(id)
+	}
 }
 
 // =================================================================

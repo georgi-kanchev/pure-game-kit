@@ -54,6 +54,17 @@ func LoadMusic(filePath string) string {
 	return result
 }
 
+func ReloadAllSounds() {
+	for id := range internal.Sounds {
+		LoadSound(id)
+	}
+}
+func ReloadAllMusic() {
+	for id := range internal.Music {
+		LoadMusic(id)
+	}
+}
+
 func UnloadSound(soundId string) {
 	var sound, has = internal.Sounds[soundId]
 
@@ -68,5 +79,16 @@ func UnloadMusic(musicId string) {
 	if has {
 		delete(internal.Music, musicId)
 		rl.UnloadMusicStream(*music)
+	}
+}
+
+func UnloadAllSounds() {
+	for id := range internal.Sounds {
+		UnloadSound(id)
+	}
+}
+func UnloadAllMusic() {
+	for id := range internal.Music {
+		UnloadMusic(id)
 	}
 }

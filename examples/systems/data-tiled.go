@@ -2,7 +2,6 @@ package example
 
 import (
 	"pure-game-kit/data/assets"
-	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
@@ -15,35 +14,27 @@ import (
 func Tiled() {
 	var font = assets.LoadDefaultFont()
 	var cam = graphics.NewCamera(4)
-	var l1, l2, tObjs, t1, img, objs, terr []*graphics.Sprite
-	var texts []*graphics.TextBox
-	var pts, pts2, pts3 [][2]float32
-	var g1, g2 *geometry.ShapeGrid
-	var shapes, imgShapes []*geometry.Shape
-	var reload = func() {
-		var mapIds = assets.LoadTiledWorld("examples/data/world.world")
-		var grass, desert = mapIds[0], mapIds[1]
-		l1 = tilemap.LayerSprites(grass, "1", "")
-		l2 = tilemap.LayerSprites(grass, "3", "")
-		tObjs = tilemap.LayerSprites(desert, "3", "")
-		t1 = tilemap.LayerSprites(desert, "1", "")
-		g1 = tilemap.LayerShapeGrid(desert, "3", "")
-		g2 = tilemap.LayerShapeGrid(grass, "3", "")
-		pts = tilemap.LayerPoints(desert, "3", "")
-		img = tilemap.LayerSprites(desert, "7", "")
-		objs = tilemap.LayerSprites(desert, "4", "")
-		pts2 = tilemap.LayerPoints(grass, "3", "")
-		shapes = tilemap.LayerShapes(grass, "Collision", "")
-		pts3 = tilemap.LayerPoints(grass, "Collision", "")
-		imgShapes = tilemap.LayerShapes(desert, "7", "")
-		texts = tilemap.LayerTexts(grass, "Collision", "")
-		terr = tilemap.LayerSprites(mapIds[2], "Tile Layer 1", "")
+	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
+	var grass, desert = mapIds[0], mapIds[1]
+	var l1 = tilemap.LayerSprites(grass, "1", "")
+	var l2 = tilemap.LayerSprites(grass, "3", "")
+	var tObjs = tilemap.LayerSprites(desert, "3", "")
+	var t1 = tilemap.LayerSprites(desert, "1", "")
+	var g1 = tilemap.LayerShapeGrid(desert, "3", "")
+	var g2 = tilemap.LayerShapeGrid(grass, "3", "")
+	var pts = tilemap.LayerPoints(desert, "3", "")
+	var img = tilemap.LayerSprites(desert, "7", "")
+	var objs = tilemap.LayerSprites(desert, "4", "")
+	var pts2 = tilemap.LayerPoints(grass, "3", "")
+	var shapes = tilemap.LayerShapes(grass, "Collision", "")
+	var pts3 = tilemap.LayerPoints(grass, "Collision", "")
+	var imgShapes = tilemap.LayerShapes(desert, "7", "")
+	var texts = tilemap.LayerTexts(grass, "Collision", "")
+	var terr = tilemap.LayerSprites(mapIds[2], "Tile Layer 1", "")
 
-		for _, text := range texts {
-			text.FontId = font
-		}
+	for _, text := range texts {
+		text.FontId = font
 	}
-	reload()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -89,15 +80,8 @@ func Tiled() {
 			tileset.TileAnimate("examples/data/objects", 198, true)
 		}
 
-		if keyboard.IsKeyJustPressed(key.Y) {
-			assets.UnloadTexture("examples/data/objects")
-		}
-		if keyboard.IsKeyJustPressed(key.T) {
-			assets.LoadTexture("examples/data/objects.png")
-		}
-
 		if keyboard.IsKeyJustPressed(key.F5) {
-			reload()
+			assets.ReloadAll()
 		}
 	}
 }

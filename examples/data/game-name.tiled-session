@@ -22,11 +22,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 8,
-            "selectedLayer": 2,
+            "scale": 4,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 343,
-                "y": 13.1875
+                "x": -87.5,
+                "y": 166.625
             }
         },
         "images.tsx": {
@@ -40,8 +40,8 @@
             ],
             "expandedObjectLayers": [
                 6,
-                2,
-                11
+                11,
+                2
             ],
             "scale": 4,
             "selectedLayer": 1,
@@ -60,7 +60,7 @@
         },
         "objects.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 8,
+            "scaleInDock": 1.5,
             "scaleInEditor": 1
         },
         "sizes.tsx": {
@@ -72,8 +72,8 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -459.5,
-                "y": 45.125
+                "x": -449.25,
+                "y": 44.875
             }
         }
     },
