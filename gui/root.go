@@ -28,6 +28,10 @@ type root struct {
 
 func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]
+	if !exists {
+		return false
+	}
+
 	var owner = root.Containers[widget.OwnerId]
 	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
 	var focus = widget.isFocused(root, camera) && wPressedOn == widget

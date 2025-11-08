@@ -12,7 +12,7 @@ import (
 func Animations() {
 	var animation = motion.NewAnimation(2, true,
 		"[h]", "[e]", "[l]", "[l]", "[o]", "[,]", "[space]",
-		"[w]", "[o]", "[r]", "[l]", "[d]", "[!]", "")
+		"[w]", "[o]", "[r]", "[l]", "[d]", "[!]", "----")
 	var cam = graphics.NewCamera(3)
 	var sprite = graphics.NewSprite("", 0, 0)
 	assets.LoadDefaultAtlasInput()

@@ -246,8 +246,8 @@ func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, m
 		maxY = condition.If(widget.Y+widget.Height > maxY, widget.Y+widget.Height, maxY)
 	}
 	minX -= gapX
-	maxX += gapX + scrollSize
+	maxX += gapX
 	minY -= gapY
-	maxY += gapY + scrollSize
+	maxY += gapY
 	return
 }

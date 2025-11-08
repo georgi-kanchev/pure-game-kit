@@ -17,7 +17,7 @@ func Mouse() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		if mouse.IsButtonPressed(b.Left) {
+		if node.IsHovered(cam) && mouse.IsButtonPressed(b.Left) {
 			node.Angle -= time.FrameDelta() * 60
 		}
 		if mouse.IsButtonJustReleased(b.Left) {

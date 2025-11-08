@@ -9,7 +9,7 @@ import (
 )
 
 func Tweens() {
-	var cam = graphics.NewCamera(2)
+	var cam = graphics.NewCamera(1)
 	var angle = motion.NewTween(45).
 		GoTo(2, curves.EaseBounceOut, 360).
 		GoTo(3, func(progress float32) float32 {

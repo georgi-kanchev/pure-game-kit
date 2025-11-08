@@ -61,10 +61,8 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	}
 
 	var disabled = widget.isDisabled(owner)
-	var offX = parseNum(dyn(owner, widget.Properties[p.OffsetX], "0"), 0)
-	var offY = parseNum(dyn(owner, widget.Properties[p.OffsetY], "0"), 0)
 	textBox.ScaleX, textBox.ScaleY = 1, 1
-	textBox.X, textBox.Y = widget.X+offX, widget.Y+offY
+	textBox.X, textBox.Y = widget.X, widget.Y
 	textBox.EmbeddedColorsTag = '`'
 	textBox.EmbeddedAssetsTag = '^'
 	textBox.EmbeddedThicknessesTag = '*'
@@ -147,10 +145,13 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		var disabled = widget.isDisabled(owner)
 		var outlineCol = themedProp(p.TextColorOutline, root, owner, widget)
 		if outlineCol != "" {
+			var embeddedColors = textBox.EmbeddedColors
+			textBox.EmbeddedColors = []uint{}
 			textBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
 			textBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
 			textBox.Color = parseColor(outlineCol, disabled)
 			cam.DrawTextBoxes(&textBox)
+			textBox.EmbeddedColors = embeddedColors
 		}
 
 		var c = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled || fadeText)

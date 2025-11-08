@@ -10,7 +10,7 @@ import (
 )
 
 func ShapesGrids() {
-	var cam = graphics.NewCamera(1)
+	var cam = graphics.NewCamera(2)
 	var grid = geometry.NewShapeGrid(32, 32)
 	var shape = geometry.NewShapeCorners(
 		[2]float32{},
@@ -28,7 +28,7 @@ func ShapesGrids() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-
+		cam.DragAndZoom()
 		cam.DrawGrid(1, 32, 32, color.Red)
 
 		var mx, my = cam.MousePosition()

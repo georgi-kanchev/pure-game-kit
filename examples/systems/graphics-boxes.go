@@ -27,7 +27,6 @@ func Boxes() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawGrid(1, 100, 100, color.Red)
 		cam.DrawBoxes(&box, &bar)
 
 		var mx, my = box.MousePosition(cam)

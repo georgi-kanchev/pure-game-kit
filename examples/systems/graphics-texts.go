@@ -35,13 +35,7 @@ func Texts() {
 
 		textBox.Thickness = float32(0.5 + a/2)
 
-		var mx, my = textBox.MousePosition(cam)
-		// var symbols = symbols.Count(textBox.TextSymbols())
-		// for i := range symbols {
-		// 	var x, y, w, h, a = textBox.TextSymbol(&cam, i)
-		// 	cam.DrawRectangle(x, y, w, h, a, color.Brown)
-		// }
 		cam.DrawTextBoxes(&textBox)
-		textBox.Width, textBox.Height = mx, my
+		textBox.Width, textBox.Height = textBox.MousePosition(cam)
 	}
 }

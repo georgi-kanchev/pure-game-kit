@@ -6,7 +6,7 @@ import (
 	"pure-game-kit/window"
 )
 
-func Minimal() {
+func MinimalRender() {
 	var cam = graphics.NewCamera(1)
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
