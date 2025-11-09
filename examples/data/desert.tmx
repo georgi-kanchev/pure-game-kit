@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="13">
  <properties>
+  <property name="boolean" type="bool" value="false"/>
+  <property name="color" type="color" value="#ffaa0000"/>
+  <property name="dddd" type="object" value="9"/>
+  <property name="ff" type="float" value="0"/>
+  <property name="fffff" type="class" propertytype="player"/>
+  <property name="fil" type="file" value="../../../../untitled.mp4"/>
   <property name="test" type="int" value="111"/>
  </properties>
  <tileset firstgid="1" source="atlas.tsx"/>

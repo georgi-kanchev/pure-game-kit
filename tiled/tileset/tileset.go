@@ -28,8 +28,6 @@ func Property(tilesetId, property string) string {
 		return text.New(data.TileWidth)
 	case p.TilesetTileHeight:
 		return text.New(data.TileHeight)
-	case p.TilesetTileCount:
-		return text.New(data.TileCount)
 	case p.TilesetColumns:
 		return text.New(data.Columns)
 	case p.TilesetSpacing:
@@ -39,7 +37,7 @@ func Property(tilesetId, property string) string {
 	case p.TilesetOffsetY:
 		return text.New(data.Offset.Y)
 	case p.TilesetAtlasId:
-		return data.AtlasId
+		return data.AssetId
 	}
 
 	for _, v := range data.Properties {
@@ -96,8 +94,8 @@ func TileAnimate(tilesetId string, tileId uint32, animate bool) {
 		if !animate { // disabling animation resets the tile to original one
 			var w, h = tileset.Columns, tileset.TileCount / tileset.Columns
 			var x, y = number.Index1DToIndexes2D(tile.Id, uint32(w), uint32(h))
-			var rectId = path.New(tileset.AtlasId, text.New(tile.Id))
-			assets.SetTextureAtlasTile(tileset.AtlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
+			var rectId = path.New(tileset.AssetId, text.New(tile.Id))
+			assets.SetTextureAtlasTile(tileset.AssetId, rectId, float32(x), float32(y), 1, 1, 0, false)
 		}
 	}
 }

@@ -7,8 +7,11 @@
     <polygon points="0,0 -1,0 -7,3 -8,4 -10,8 -10,9 0,9"/>
    </object>
    <object id="2" x="8" y="0" width="8" height="8"/>
-   <object id="3" x="6" y="2" width="5" height="9" rotation="34.6505">
+   <object id="3" x="4" y="3" width="5" height="9" rotation="31.65">
     <ellipse/>
+   </object>
+   <object id="4" x="3" y="3">
+    <point/>
    </object>
   </objectgroup>
  </tile>

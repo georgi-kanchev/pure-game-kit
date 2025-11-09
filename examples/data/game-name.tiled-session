@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "desert.tmx",
+    "activeFile": "objects.tsx",
     "expandedProjectPaths": [
         "."
     ],
@@ -16,38 +16,38 @@
         "atlas.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 4,
-            "scaleInEditor": 1
+            "scaleInEditor": 3
         },
         "desert.tmx": {
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 4,
+            "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": -87.5,
-                "y": 166.625
+                "x": -220.66666666666666,
+                "y": 165.5
             }
         },
         "images.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 3
         },
         "map.tmx": {
             "expandedGroupLayers": [
                 6
             ],
             "expandedObjectLayers": [
-                6,
+                2,
                 11,
-                2
+                6
             ],
-            "scale": 4,
+            "scale": 0.75,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 515.75,
-                "y": 141.375
+                "x": 647.9999999999999,
+                "y": 303.33333333333326
             }
         },
         "map.tmx#atlas": {
@@ -61,7 +61,7 @@
         "objects.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1.5,
-            "scaleInEditor": 1
+            "scaleInEditor": 3
         },
         "sizes.tsx": {
             "dynamicWrapping": true,
@@ -72,8 +72,8 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -449.25,
-                "y": 44.875
+                "x": -426.75,
+                "y": 44.625
             }
         }
     },
@@ -98,14 +98,14 @@
         "terrain.tmx"
     ],
     "project": "game-name.tiled-project",
-    "property.type": "string",
+    "property.type": "file",
     "recentFiles": [
         "map.tmx",
+        "desert.tmx",
+        "atlas.tsx",
         "terrain.tmx",
         "images.tsx",
         "objects.tsx",
-        "atlas.tsx",
-        "desert.tmx",
         "sizes.tsx"
     ],
     "textEdit.monospace": false,

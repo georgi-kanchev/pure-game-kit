@@ -19,7 +19,7 @@ func LoadTiledTileset(filePath string) string {
 		return ""
 	}
 
-	tileset.AtlasId = filePath
+	tileset.AssetId = filePath
 
 	if tileset.Image.Source != "" {
 		var textureId = LoadTexture(path.New(path.Folder(filePath), tileset.Image.Source))
@@ -34,7 +34,7 @@ func LoadTiledTileset(filePath string) string {
 		}
 	}
 
-	internal.TiledTilesets[tileset.AtlasId] = tileset
+	internal.TiledTilesets[tileset.AssetId] = tileset
 	tileset.MappedTiles = map[uint32]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
 		tileset.MappedTiles[tile.Id] = &tile
@@ -56,7 +56,7 @@ func LoadTiledTileset(filePath string) string {
 		}
 
 		var frame = 0
-		var atlasId = path.New(path.Folder(tileset.AtlasId), tileset.Image.Source)
+		var atlasId = path.New(path.Folder(tileset.AssetId), tileset.Image.Source)
 		var tileId = path.New(atlasId, text.New(tile.Id))
 		var totalAnimDuration float32
 		for _, f := range tile.Animation.Frames {
@@ -165,8 +165,8 @@ func UnloadTiledTileset(tilesetId string) {
 			UnloadTexture(v.TextureId)
 		}
 	}
-	if tileset.AtlasId != "" {
-		UnloadTexture(tileset.AtlasId)
+	if tileset.AssetId != "" {
+		UnloadTexture(tileset.AssetId)
 	}
 
 	delete(internal.TiledTilesets, tilesetId)

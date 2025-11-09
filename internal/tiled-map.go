@@ -19,12 +19,12 @@ type Map struct {
 	NextObjectID    int             `xml:"nextobjectid,attr"`
 	OutputChunkSize MapChunkSize    `xml:"editorsettings>chunksize"`
 	BackgroundColor string          `xml:"backgroundcolor,attr"`
-	Tilesets        []Tileset       `xml:"tileset"`
+	Tilesets        []*Tileset      `xml:"tileset"`
 	Groups          []*LayerGroup   `xml:"group"`
 	LayersTiles     []*LayerTiles   `xml:"layer"`
 	LayersObjects   []*LayerObjects `xml:"objectgroup"`
 	LayersImages    []*LayerImage   `xml:"imagelayer"`
-	Properties      []Property      `xml:"properties>property"`
+	Properties      []*Property     `xml:"properties>property"`
 }
 
 type MapChunkSize struct {

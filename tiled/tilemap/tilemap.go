@@ -205,7 +205,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 				continue
 			}
 
-			var assetId = path.New(curTileset.AtlasId, text.New(id-curTileset.FirstTileId))
+			var assetId = path.New(curTileset.AssetId, text.New(id-curTileset.FirstTileId))
 			var sprite = graphics.NewSprite(assetId, mapData.WorldX+obj.X, mapData.WorldY+obj.Y)
 			sprite.X += float32(mapData.TileWidth)/2 + objs.OffsetX
 			sprite.Y = sprite.Y - float32(mapData.TileHeight)/2 + objs.OffsetY
@@ -238,7 +238,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		width, height = tileRenderSize(width, height, mapData, curTileset)
 		var ang, w, h = getTileOrientation(tile, width, height)
 		var id = unoriented - curTileset.FirstTileId
-		var tileId = path.New(path.Folder(curTileset.AtlasId), curTileset.Image.Source, text.New(id))
+		var tileId = path.New(path.Folder(curTileset.AssetId), curTileset.Image.Source, text.New(id))
 		var px, py float32 = 0.5, 0.5
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)
 		var offX, offY = w / 2, h / 2
@@ -375,7 +375,7 @@ func LayerShapeGrid(mapId, tileLayerNameOrId, objectNameOrClass string) *geometr
 		func(x, y int, id uint32, layer *internal.LayerTiles, curTileset *internal.Tileset) {
 			x += int(number.Round(layer.OffsetX/float32(curTileset.TileWidth), 0))
 			y += int(number.Round(layer.OffsetY/float32(curTileset.TileHeight), 0))
-			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AtlasId, id, objectNameOrClass)...)
+			result.SetAtCell(x, y, tileset.TileObjectShapes(curTileset.AssetId, id, objectNameOrClass)...)
 		})
 	return condition.If(success, result, nil)
 }
@@ -453,7 +453,7 @@ func LayerPoints(mapId, layerNameOrId, objectNameOrClass string) [][2]float32 {
 
 	var success = forEachTile(mapId, layerNameOrId,
 		func(x, y int, id uint32, layer *internal.LayerTiles, curTileset *internal.Tileset) {
-			var pts = tileset.TileObjectPoints(curTileset.AtlasId, id, objectNameOrClass)
+			var pts = tileset.TileObjectPoints(curTileset.AssetId, id, objectNameOrClass)
 			for i := range pts {
 				pts[i][0] += float32(x)*float32(curTileset.TileWidth) + layer.OffsetX
 				pts[i][1] += float32(y)*float32(curTileset.TileHeight) + layer.OffsetY

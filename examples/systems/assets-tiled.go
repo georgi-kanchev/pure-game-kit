@@ -3,14 +3,26 @@ package example
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
-	"pure-game-kit/input/keyboard"
-	"pure-game-kit/input/keyboard/key"
-	"pure-game-kit/tiled/tilemap"
-	"pure-game-kit/tiled/tileset"
+	"pure-game-kit/tiled"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/window"
 )
 
+func Tiled() {
+	var cam = graphics.NewCamera(4)
+	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
+	var mapGrass = tiled.NewMap(mapIds[1])
+
+	_ = mapGrass
+
+	for window.KeepOpen() {
+		cam.SetScreenAreaToWindow()
+		cam.DragAndZoom()
+		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
+	}
+}
+
+/*
 func Tiled() {
 	var font = assets.LoadDefaultFont()
 	var cam = graphics.NewCamera(4)
@@ -85,3 +97,4 @@ func Tiled() {
 		}
 	}
 }
+*/

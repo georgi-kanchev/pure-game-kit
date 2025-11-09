@@ -2,27 +2,27 @@ package internal
 
 type Tileset struct {
 	Identity
-	AtlasId         string
-	Source          string                 `xml:"source,attr"`
-	Version         string                 `xml:"version,attr"`
-	TiledVersion    string                 `xml:"tiledversion,attr"`
-	FirstTileId     uint32                 `xml:"firstgid,attr"`
-	TileWidth       int                    `xml:"tilewidth,attr"`
-	TileHeight      int                    `xml:"tileheight,attr"`
-	TileCount       int                    `xml:"tilecount,attr"`
-	Columns         int                    `xml:"columns,attr"`
-	Spacing         int                    `xml:"spacing,attr"`
-	Margin          int                    `xml:"margin,attr"`
-	ObjectAlignment string                 `xml:"objectalignment,attr"`
-	TileRenderSize  string                 `xml:"tilerendersize,attr"`
-	BackgroundColor string                 `xml:"backgroundcolor,attr"`
-	FillMode        string                 `xml:"fillmode,attr"`
-	Offset          TilesetOffset          `xml:"tileoffset"`
-	Grid            TilesetGrid            `xml:"grid"`
-	Transformations TilesetTransformations `xml:"transformations"`
-	Tiles           []TilesetTile          `xml:"tile"`
-	Image           TilesetImage           `xml:"image"`
-	Properties      []Property             `xml:"properties>property"`
+	AssetId, FilePath string
+	Source            string                 `xml:"source,attr"`
+	Version           string                 `xml:"version,attr"`
+	TiledVersion      string                 `xml:"tiledversion,attr"`
+	FirstTileId       uint32                 `xml:"firstgid,attr"`
+	TileWidth         int                    `xml:"tilewidth,attr"`
+	TileHeight        int                    `xml:"tileheight,attr"`
+	TileCount         int                    `xml:"tilecount,attr"`
+	Columns           int                    `xml:"columns,attr"`
+	Spacing           int                    `xml:"spacing,attr"`
+	Margin            int                    `xml:"margin,attr"`
+	ObjectAlignment   string                 `xml:"objectalignment,attr"`
+	TileRenderSize    string                 `xml:"tilerendersize,attr"`
+	BackgroundColor   string                 `xml:"backgroundcolor,attr"`
+	FillMode          string                 `xml:"fillmode,attr"`
+	Offset            TilesetOffset          `xml:"tileoffset"`
+	Grid              TilesetGrid            `xml:"grid"`
+	Transformations   TilesetTransformations `xml:"transformations"`
+	Tiles             []TilesetTile          `xml:"tile"`
+	Image             TilesetImage           `xml:"image"`
+	Properties        []*Property            `xml:"properties>property"`
 
 	MappedTiles   map[uint32]*TilesetTile
 	AnimatedTiles []*TilesetTile
@@ -55,10 +55,10 @@ type TilesetTile struct {
 	Identity                             // no name
 	TextureId       string               // used when not in atlas
 	Image           *TilesetImage        `xml:"image"`
-	Probability     float32              `xml:"probability,attr"`
+	Probability     string               `xml:"probability,attr"`
 	CollisionLayers []*LayerObjects      `xml:"objectgroup"`
 	Animation       TilesetTileAnimation `xml:"animation"`
-	Properties      []Property           `xml:"properties>property"`
+	Properties      []*Property          `xml:"properties>property"`
 
 	IsAnimating bool
 	Update      func() // update loop for animations, pumped from internal

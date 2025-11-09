@@ -94,15 +94,6 @@ func ToNumber[T number.Number](text string) T {
 	}
 }
 
-func ToInt(text string) int {
-	var result, _ = strconv.ParseInt(text, 10, 32)
-	return int(result)
-}
-func ToUint(text string) uint {
-	var result, _ = strconv.ParseUint(text, 10, 32)
-	return uint(result)
-}
-
 func PadLeftAndRight(text string, length int, pad string) string {
 	var textLen = Length(text)
 	var spaces = length - textLen
