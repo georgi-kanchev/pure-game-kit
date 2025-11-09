@@ -3,10 +3,8 @@ package graphics
 import (
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/button"
-	"pure-game-kit/internal"
 	"pure-game-kit/utility/angle"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/point"
 	"pure-game-kit/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -143,81 +141,4 @@ func (camera *Camera) PointFromPivot(pivotX, pivotY float32) (x, y float32) {
 	var scrX, scrY = camera.PointToScreen(0, 0)
 	camera.PivotX, camera.PivotY = prevX, prevY
 	return camera.PointFromScreen(scrX, scrY)
-}
-
-//=================================================================
-// private
-
-var rlCam = rl.Camera2D{}
-var maskX, maskY, maskW, maskH int
-
-// call before draw to update camera but use screen space instead of camera space
-func (camera *Camera) update() {
-	tryRecreateWindow()
-
-	rlCam.Target.X = float32(camera.X)
-	rlCam.Target.Y = float32(camera.Y)
-	rlCam.Rotation = float32(camera.Angle)
-	rlCam.Zoom = float32(camera.Zoom)
-	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*float32(camera.PivotX)
-	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*float32(camera.PivotY)
-
-	var mx = number.Biggest(camera.MaskX, camera.ScreenX)
-	var my = number.Biggest(camera.MaskY, camera.ScreenY)
-	var maxW = camera.ScreenX + camera.ScreenWidth - mx
-	var maxH = camera.ScreenY + camera.ScreenHeight - my
-	var mw = number.Smallest(camera.MaskWidth, maxW)
-	var mh = number.Smallest(camera.MaskHeight, maxH)
-
-	maskX, maskY, maskW, maskH = mx, my, mw, mh
-}
-
-// call before draw to update camera and use camera space
-func (camera *Camera) begin() {
-	camera.update()
-	if camera.Batch {
-		return
-	}
-
-	rl.BeginMode2D(rlCam)
-	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
-}
-
-// call after draw to get back to using screen space
-func (camera *Camera) end() {
-	if camera.Batch {
-		return
-	}
-
-	rl.EndScissorMode()
-	rl.EndMode2D()
-}
-
-func (camera *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
-	var tlx, tly = x, y
-	var trx, try = point.MoveAtAngle(tlx, tly, angle, width)
-	var brx, bry = point.MoveAtAngle(trx, try, angle+90, height)
-	var blx, bly = point.MoveAtAngle(tlx, tly, angle+90, height)
-	var stlx, stly = camera.PointToScreen(tlx, tly)
-	var strx, stry = camera.PointToScreen(trx, try)
-	var sbrx, sbry = camera.PointToScreen(brx, bry)
-	var sblx, sbly = camera.PointToScreen(blx, bly)
-	var mtlx, mtly = camera.MaskX, camera.MaskY
-	var mbrx, mbry = camera.MaskX + camera.MaskWidth, camera.MaskY + camera.MaskHeight
-	var minX = number.Smallest(stlx, strx, sbrx, sblx)
-	var maxX = number.Biggest(stlx, strx, sbrx, sblx)
-	var minY = number.Smallest(stly, stry, sbry, sbly)
-	var maxY = number.Biggest(stly, stry, sbry, sbly)
-
-	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
-}
-
-func tryRecreateWindow() {
-	if internal.WindowReady {
-		return
-	}
-
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
 }
