@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
@@ -31,7 +32,11 @@ func Shapes() {
 	var star = [][2]float32{
 		{600 + 300, 100}, {600 + 350, 200}, {600 + 450, 200}, {600 + 370, 260},
 		{600 + 400, 360}, {600 + 300, 300}, {600 + 200, 360}, {600 + 230, 260},
-		{600 + 150, 200}, {600 + 250, 200}, {600 + 300, 100}}
+		{600 + 150, 200}, {600 + 250, 200}, {600 + 300, 100}, {number.NaN(), number.NaN()},
+		{300, 100}, {350, 200}, {450, 200}, {370, 260},
+		{400, 360}, {300, 300}, {200, 360}, {230, 260},
+		{150, 200}, {250, 200}, {300, 100},
+	}
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -46,17 +51,17 @@ func Shapes() {
 
 		var crossPoints = circle.CrossPointsWithShapes(shape)
 
-		cam.DrawShape(color.Darken(color.Violet, 0.5), star...)
-		cam.DrawLinesPath(8, color.Violet, star...)
-
-		cam.DrawShapeFast(color.Darken(colCircle, 0.5), circle.CornerPoints()...)
+		cam.DrawShapesFast(color.Darken(colCircle, 0.5), circle.CornerPoints()...)
 		cam.DrawLinesPath(8, colCircle, circle.CornerPoints()...)
-		cam.DrawShapeFast(color.Darken(colRect, 0.5), rectangle.CornerPoints()...)
+		cam.DrawShapesFast(color.Darken(colRect, 0.5), rectangle.CornerPoints()...)
 		cam.DrawLinesPath(8, colRect, rectangle.CornerPoints()...)
-		cam.DrawShapeFast(color.Darken(color.White, 0.5), triangle.CornerPoints()...)
+		cam.DrawShapesFast(color.Darken(color.White, 0.5), triangle.CornerPoints()...)
 		cam.DrawLinesPath(8, color.White, triangle.CornerPoints()...)
 
 		cam.DrawLinesPath(8, colShape, shape.CornerPoints()...)
+
+		cam.DrawShapes(color.Darken(color.Violet, 0.5), star...)
+		cam.DrawLinesPath(8, color.Violet, star...)
 
 		for _, v := range crossPoints {
 			cam.DrawCircle(v[0], v[1], 16, color.Green)

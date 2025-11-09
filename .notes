@@ -4,6 +4,9 @@ shader effects, port?
 simple particles, port?
 
 // DONE:
+[96] [Sun] [09-11-2025]
+graphics - camera draw shapes separated by NaN, NaN, lines path already work like that, skipping NaN
+
 [95] [Sat] [08-11-2025]
 assets - ids are file paths now because of hot reloading
 assets - added a way to unload & reload all assets

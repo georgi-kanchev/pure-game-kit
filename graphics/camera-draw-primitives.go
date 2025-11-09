@@ -91,12 +91,14 @@ func (camera *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 	rl.DrawLineEx(rl.Vector2{X: ax, Y: ay}, rl.Vector2{X: bx, Y: by}, thickness, rl.GetColor(color))
 	camera.end()
 }
+
+// multiple line paths can be separated by a [NaN, NaN]
 func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float32) {
 	camera.begin()
 	for i := 1; i < len(points); i++ {
-		rl.DrawLineEx(
-			rl.Vector2{X: points[i-1][0], Y: points[i-1][1]},
-			rl.Vector2{X: points[i][0], Y: points[i][1]}, thickness, rl.GetColor(color))
+		var a = rl.Vector2{X: points[i-1][0], Y: points[i-1][1]}
+		var b = rl.Vector2{X: points[i][0], Y: points[i][1]}
+		rl.DrawLineEx(a, b, thickness, rl.GetColor(color))
 	}
 	camera.end()
 }
@@ -194,55 +196,66 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, colors .
 	camera.Angle = prevAng
 }
 
-// for convex + concave, non-self-intersacting shapes
-func (camera *Camera) DrawShape(color uint, points ...[2]float32) {
+// works with convex + concave (non-self-intersacting) shapes
+//
+// multiple shapes can be separated by a [NaN, NaN]
+func (camera *Camera) DrawShapes(color uint, points ...[2]float32) {
 	camera.begin()
 	defer camera.end()
-	if len(points) < 3 {
-		return
-	}
 
-	if points[0] == points[len(points)-1] {
-		points = collection.RemoveAt(points, len(points)-1)
-	} // remove repeated start if present
-
-	var triangles = triangulate(points)
-	if len(triangles) == 0 {
-		return
-	}
-
-	for _, tri := range triangles {
-		var v1 = rl.NewVector2(tri[0][0], tri[0][1])
-		var v2 = rl.NewVector2(tri[1][0], tri[1][1])
-		var v3 = rl.NewVector2(tri[2][0], tri[2][1])
-
-		if !isClockwise(tri) {
-			v1, v3 = v3, v1
+	var shapes = separateShapes(points)
+	for _, shape := range shapes {
+		if len(shape) < 3 {
+			return
 		}
 
-		rl.DrawTriangle(v1, v2, v3, rl.GetColor(color))
+		if shape[0] == shape[len(shape)-1] {
+			shape = collection.RemoveAt(shape, len(shape)-1)
+		} // remove repeated start if present
+
+		var triangles = triangulate(shape)
+		if len(triangles) == 0 {
+			return
+		}
+
+		for _, tri := range triangles {
+			var v1 = rl.NewVector2(tri[0][0], tri[0][1])
+			var v2 = rl.NewVector2(tri[1][0], tri[1][1])
+			var v3 = rl.NewVector2(tri[2][0], tri[2][1])
+
+			if !isClockwise(tri) {
+				v1, v3 = v3, v1
+			}
+
+			rl.DrawTriangle(v1, v2, v3, rl.GetColor(color))
+		}
 	}
 }
 
-// for convex shapes
-func (camera *Camera) DrawShapeFast(color uint, points ...[2]float32) {
+// works with convex shapes only
+//
+// multiple shapes can be separated by a [NaN, NaN] point
+func (camera *Camera) DrawShapesFast(color uint, points ...[2]float32) {
 	camera.begin()
 	defer camera.end()
 
-	if len(points) < 3 {
-		return
-	}
+	var shapes = separateShapes(points)
+	for _, shape := range shapes {
+		if len(shape) < 3 {
+			return
+		}
 
-	var vectors = make([]rl.Vector2, len(points))
-	for i, p := range points {
-		vectors[i] = rl.NewVector2(p[0], p[1])
-	}
+		var vectors = make([]rl.Vector2, len(shape))
+		for i, p := range shape {
+			vectors[i] = rl.NewVector2(p[0], p[1])
+		}
 
-	if area(points) >= 0 {
-		collection.Reverse(vectors)
-	}
+		if area(shape) >= 0 {
+			collection.Reverse(vectors)
+		}
 
-	rl.DrawTriangleFan(vectors, rl.GetColor(color))
+		rl.DrawTriangleFan(vectors, rl.GetColor(color))
+	}
 }
 
 func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
@@ -400,4 +413,27 @@ func pointInTriangle(p, a, b, c [2]float32) bool {
 	var v = (dot00*dot12 - dot01*dot02) * invDenom
 
 	return (u >= 0) && (v >= 0) && (u+v <= 1)
+}
+
+func separateShapes(points [][2]float32) [][][2]float32 {
+	var result [][][2]float32
+	var current = [][2]float32{}
+
+	for _, p := range points {
+		if number.IsNaN(p[0]) || number.IsNaN(p[1]) {
+			if len(current) > 0 { // finish current shape and start a new one
+				result = append(result, current)
+				current = [][2]float32{}
+			}
+			continue
+		}
+
+		current = append(current, p)
+	}
+
+	if len(current) > 0 { // add the last shape if it has points
+		result = append(result, current)
+	}
+
+	return result
 }
