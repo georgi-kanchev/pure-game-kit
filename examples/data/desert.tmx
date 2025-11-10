@@ -5,7 +5,6 @@
   <property name="color" type="color" value="#ffaa0000"/>
   <property name="dddd" type="object" value="9"/>
   <property name="ff" type="float" value="0"/>
-  <property name="fffff" type="class" propertytype="player"/>
   <property name="fil" type="file" value="../../../../untitled.mp4"/>
   <property name="test" type="int" value="111"/>
  </properties>

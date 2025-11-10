@@ -19,7 +19,7 @@ import (
 )
 
 var LoggingDisabled = false
-var PrintLogs = false
+var PrintLogs = true
 var LogPrints = false
 
 func Log(message ...any) {

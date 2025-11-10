@@ -7,11 +7,12 @@ import (
 )
 
 type Tileset struct {
+	Project    *Project
 	Properties map[string]any
 	Tiles      []*Tile
 }
 
-func NewTileset(tilesetId string) *Tileset {
+func NewTileset(tilesetId string, project *Project) *Tileset {
 	var data, _ = internal.TiledTilesets[tilesetId]
 	if data == nil {
 		debug.LogError("Failed to create tileset: \"", tilesetId, "\"\nNo data is loaded with this tileset id.")
@@ -19,15 +20,15 @@ func NewTileset(tilesetId string) *Tileset {
 	}
 
 	var result = Tileset{}
-	result.initProperties(data)
-	result.initTiles(data)
+	result.initProperties(data, project)
+	result.initTiles(data, project)
 	return &result
 }
 
 //=================================================================
 // private
 
-func (t *Tileset) initProperties(data *internal.Tileset) {
+func (t *Tileset) initProperties(data *internal.Tileset, project *Project) {
 	t.Properties = make(map[string]any)
 	t.Properties[property.TilesetName] = data.Name
 	t.Properties[property.TilesetClass] = data.Class
@@ -40,13 +41,13 @@ func (t *Tileset) initProperties(data *internal.Tileset) {
 	t.Properties[property.TilesetSpacing] = data.Spacing
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(prop)
+		t.Properties[prop.Name] = parseProperty(prop, project)
 	}
 }
-func (t *Tileset) initTiles(data *internal.Tileset) {
+func (t *Tileset) initTiles(data *internal.Tileset, project *Project) {
 	t.Tiles = make([]*Tile, len(data.Tiles))
 
 	for i, tile := range data.Tiles {
-		t.Tiles[i] = NewTile(data.AssetId, tile.Id)
+		t.Tiles[i] = NewTile(data.AssetId, tile.Id, project)
 	}
 }

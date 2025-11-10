@@ -8,12 +8,13 @@ import (
 )
 
 type Map struct {
+	Project    *Project
 	Properties map[string]any
 	Tilesets   []*Tileset
 	Layers     []*Layer
 }
 
-func NewMap(mapId string) *Map {
+func NewMap(mapId string, project *Project) *Map {
 	var data, _ = internal.TiledMaps[mapId]
 	if data == nil {
 		debug.LogError("Failed to create map: \"", mapId, "\"\nNo data is loaded with this map id.")
@@ -21,16 +22,15 @@ func NewMap(mapId string) *Map {
 	}
 
 	var result = Map{}
-	result.initProperties(data)
-	result.initTilesets(data)
-
+	result.initProperties(data, project)
+	result.initTilesets(data, project)
 	return &result
 }
 
 //=================================================================
 // private
 
-func (m *Map) initProperties(data *internal.Map) {
+func (m *Map) initProperties(data *internal.Map, project *Project) {
 	m.Properties = make(map[string]any)
 	m.Properties[property.MapName] = data.Name
 	m.Properties[property.MapClass] = data.Class
@@ -46,13 +46,13 @@ func (m *Map) initProperties(data *internal.Map) {
 	m.Properties[property.MapWorldY] = data.WorldY
 
 	for _, prop := range data.Properties {
-		m.Properties[prop.Name] = parseProperty(prop)
+		m.Properties[prop.Name] = parseProperty(prop, project)
 	}
 }
-func (m *Map) initTilesets(data *internal.Map) {
+func (m *Map) initTilesets(data *internal.Map, project *Project) {
 	m.Tilesets = make([]*Tileset, len(data.Tilesets))
 
 	for i, t := range data.Tilesets {
-		m.Tilesets[i] = NewTileset(path.New(data.Directory, t.Source))
+		m.Tilesets[i] = NewTileset(path.New(data.Directory, t.Source), project)
 	}
 }

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "objects.tsx",
+    "activeFile": "map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -16,7 +16,7 @@
         "atlas.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 4,
-            "scaleInEditor": 3
+            "scaleInEditor": 2
         },
         "desert.tmx": {
             "expandedObjectLayers": [
@@ -25,29 +25,29 @@
             "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": -220.66666666666666,
+                "x": -220.66666666666663,
                 "y": 165.5
             }
         },
         "images.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 3
+            "scaleInEditor": 2
         },
         "map.tmx": {
             "expandedGroupLayers": [
                 6
             ],
             "expandedObjectLayers": [
+                6,
                 2,
-                11,
-                6
+                11
             ],
-            "scale": 0.75,
-            "selectedLayer": 1,
+            "scale": 5.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 647.9999999999999,
-                "y": 303.33333333333326
+                "x": 209.8181818181818,
+                "y": 154.09090909090912
             }
         },
         "map.tmx#atlas": {
@@ -61,7 +61,7 @@
         "objects.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1.5,
-            "scaleInEditor": 3
+            "scaleInEditor": 2
         },
         "sizes.tsx": {
             "dynamicWrapping": true,
@@ -72,19 +72,21 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -426.75,
-                "y": 44.625
+                "x": -406.25,
+                "y": 44.125
             }
         }
     },
     "frame.defaultDuration": 200,
+    "last.exportedFilePath": "/home/gojur/Desktop",
     "last.imagePath": "/home/gojur/code/pure-game-kit/examples/data/tiles",
     "last.objectTemplatePath": "/home/gojur/code/pure-kit/examples/data",
-    "last.objectTypesPath": "C:/Users/PC/Desktop/tiled/structure.xml",
+    "last.objectTypesPath": "/home/gojur/Desktop/propertytypes.json",
     "last.worldFilePath": "/home/gojur/code/pure-game-kit/examples/data",
     "loadedWorlds": [
         "/home/gojur/code/pure-game-kit/examples/data/world.world"
     ],
+    "map.lastUsedExportFilter": "Tiled map files (*.tmx *.xml)",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 256,
     "map.tileWidth": 256,
@@ -98,14 +100,14 @@
         "terrain.tmx"
     ],
     "project": "game-name.tiled-project",
-    "property.type": "file",
+    "property.type": "player",
     "recentFiles": [
-        "map.tmx",
-        "desert.tmx",
-        "atlas.tsx",
         "terrain.tmx",
         "images.tsx",
         "objects.tsx",
+        "atlas.tsx",
+        "desert.tmx",
+        "map.tmx",
         "sizes.tsx"
     ],
     "textEdit.monospace": false,

@@ -31,6 +31,7 @@ var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
+var TiledProjects = make(map[string]*Project)
 
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)

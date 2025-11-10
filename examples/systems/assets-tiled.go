@@ -11,7 +11,9 @@ import (
 func Tiled() {
 	var cam = graphics.NewCamera(4)
 	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
-	var mapGrass = tiled.NewMap(mapIds[1])
+	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
+	var project = tiled.NewProject(projectId)
+	var mapGrass = tiled.NewMap(mapIds[1], project)
 
 	_ = mapGrass
 

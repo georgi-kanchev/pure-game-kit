@@ -3,7 +3,6 @@ package tiled
 import (
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/color"
-	"pure-game-kit/utility/text"
 )
 
 func defaultText(value, defaultValue string) string {
@@ -12,22 +11,23 @@ func defaultText(value, defaultValue string) string {
 	}
 	return value
 }
-func parseProperty(prop *internal.Property) any {
+func parseProperty(prop *internal.Property, project *Project) any {
+	var value = prop.Value
+
 	switch prop.Type {
-	case "float":
-		return text.ToNumber[float32](prop.Value)
-	case "int", "object":
-		return text.ToNumber[int](prop.Value)
-	case "bool":
-		return prop.Value == "true"
 	case "color":
 		return color.Hex(prop.Value)
 	case "class":
-		var result = make(map[string]any, len(prop.Properties))
-		for _, p := range prop.Properties {
-			result[p.Name] = parseProperty(p)
-		}
-		return ""
+		// var class, hasClass = project.Classes[prop.CustomType]
+		// if hasClass {
+		// 	for n, v := range class.(map[string]any) {
+		// 		var _, hasMember = value.(map[string]any)[n]
+		// 		if !hasMember { // fill default member values, skip overwritten ones
+		// 			value.(map[string]any)[n] = v
+		// 		}
+		// 	}
+		// }
+		return value
 	}
-	return prop.Value
+	return value
 }

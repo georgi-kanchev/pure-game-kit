@@ -15,8 +15,8 @@ func LoadTiledTileset(filePath string) string {
 	var w, h = 0, 0
 
 	storage.FromFileXML(filePath, &tileset)
-	if tileset == nil { // error is in storage
-		return ""
+	if tileset == nil {
+		return "" // error is in storage
 	}
 
 	tileset.AssetId = filePath
@@ -91,8 +91,8 @@ func LoadTiledWorld(filePath string) (tilemapIds []string) {
 	var world *internal.World
 
 	storage.FromFileJSON(filePath, &world)
-	if world == nil { // error is in storage
-		return resultIds
+	if world == nil {
+		return resultIds // error is in storage
 	}
 
 	world.Directory = path.Folder(filePath)
@@ -130,8 +130,8 @@ func LoadTiledMap(filePath string) string {
 	var mapData *internal.Map
 
 	storage.FromFileXML(filePath, &mapData)
-	if mapData == nil { // error is in storage
-		return ""
+	if mapData == nil {
+		return "" // error is in storage
 	}
 
 	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
@@ -142,6 +142,17 @@ func LoadTiledMap(filePath string) string {
 		LoadTiledTileset(path.New(mapData.Directory, t.Source))
 	}
 
+	return filePath
+}
+func LoadTiledProject(filePath string) string {
+	var data *internal.Project
+
+	storage.FromFileJSON(filePath, &data)
+	if data == nil {
+		return "" // error is in storage
+	}
+
+	internal.TiledProjects[filePath] = data
 	return filePath
 }
 

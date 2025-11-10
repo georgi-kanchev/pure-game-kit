@@ -8,8 +8,43 @@
         "."
     ],
     "properties": [
+        {
+            "name": "enumVals",
+            "propertytype": "enum",
+            "type": "int",
+            "value": 12
+        },
+        {
+            "name": "playplayer",
+            "propertytype": "player",
+            "type": "class",
+            "value": {
+                "health": 33.5
+            }
+        },
+        {
+            "name": "strrrr",
+            "propertytype": "",
+            "type": "string",
+            "value": "hi"
+        }
     ],
     "propertyTypes": [
+        {
+            "id": 5,
+            "name": "enum",
+            "storageType": "int",
+            "type": "enum",
+            "values": [
+                "enum_1",
+                "enum_2",
+                "enum_3",
+                "enum_4",
+                "enum_5",
+                "enum_6"
+            ],
+            "valuesAsFlags": true
+        },
         {
             "color": "#ffaa00ff",
             "drawFill": true,

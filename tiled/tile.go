@@ -8,13 +8,14 @@ import (
 )
 
 type Tile struct {
+	Project    *Project
 	Properties map[string]any
 	Objects    []*Object
 
 	IsAnimating bool
 }
 
-func NewTile(tilesetId string, tileId uint32) *Tile {
+func NewTile(tilesetId string, tileId uint32, project *Project) *Tile {
 	var data, _ = internal.TiledTilesets[tilesetId]
 	if data == nil {
 		debug.LogError("Failed to create tile: \"", tilesetId, "/", tileId, "\"\n",
@@ -30,14 +31,14 @@ func NewTile(tilesetId string, tileId uint32) *Tile {
 	}
 
 	var result = Tile{}
-	result.initProperties(data, tileData)
+	result.initProperties(data, tileData, project)
 	return &result
 }
 
 //=================================================================
 // private
 
-func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.TilesetTile) {
+func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.TilesetTile, project *Project) {
 	var w, h = tilesetData.TileWidth, tilesetData.TileHeight
 	if data.Image != nil {
 		w, h = data.Image.Width, data.Image.Height
@@ -51,6 +52,6 @@ func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.Tile
 	t.Properties[property.TileHeight] = h
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(prop)
+		t.Properties[prop.Name] = parseProperty(prop, project)
 	}
 }
