@@ -40,11 +40,11 @@ func Property(tilesetId, property string) string {
 		return data.AssetId
 	}
 
-	for _, v := range data.Properties {
-		if v.Name == property {
-			return v.Value
-		}
-	}
+	// for _, v := range data.Properties {
+	// 	if v.Name == property {
+	// 		return v.Value
+	// 	}
+	// }
 	return ""
 }
 
@@ -54,11 +54,11 @@ func TileProperty(tilesetId string, tileId uint32, property string) string {
 		return ""
 	}
 
-	for _, prop := range tile.Properties {
-		if prop.Name == property {
-			return prop.Value
-		}
-	}
+	// for _, prop := range tile.Properties {
+	// 	if prop.Name == property {
+	// 		return prop.Value
+	// 	}
+	// }
 	return ""
 }
 func TileAnimationTileIds(tilesetId string, tileId uint32) (frameTileIds []uint32) {
@@ -140,11 +140,11 @@ func TileObjectProperty(tilesetId string, tileId uint32, objectNameClassOrId, pr
 		return text.New(flag.TurnOff(id, internal.FlipY))
 	}
 
-	for _, prop := range obj.Properties {
-		if prop.Name == property {
-			return prop.Value
-		}
-	}
+	// for _, prop := range obj.Properties {
+	// 	if prop.Name == property {
+	// 		return prop.Value
+	// 	}
+	// }
 	return ""
 }
 func TileObjectShapes(tilesetId string, tileId uint32, objectNameClassOrId string) []*geometry.Shape {

@@ -30,15 +30,15 @@ func NewTile(tilesetId string, tileId uint32, project *Project) *Tile {
 		return nil
 	}
 
-	var result = Tile{}
-	result.initProperties(data, tileData, project)
+	var result = Tile{Project: project}
+	result.initProperties(data, tileData)
 	return &result
 }
 
 //=================================================================
 // private
 
-func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.TilesetTile, project *Project) {
+func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.TilesetTile) {
 	var w, h = tilesetData.TileWidth, tilesetData.TileHeight
 	if data.Image != nil {
 		w, h = data.Image.Width, data.Image.Height
@@ -47,11 +47,11 @@ func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.Tile
 	t.Properties = make(map[string]any)
 	t.Properties[property.TileId] = data.Id
 	t.Properties[property.TileClass] = data.Class
-	t.Properties[property.TileProbability] = text.ToNumber[float32](defaultText(data.Probability, "1"))
+	t.Properties[property.TileProbability] = text.ToNumber[float32](defaultValueText(data.Probability, "1"))
 	t.Properties[property.TileWidth] = w
 	t.Properties[property.TileHeight] = h
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(prop, project)
+		t.Properties[prop.Name] = parseProperty(prop, t.Project)
 	}
 }

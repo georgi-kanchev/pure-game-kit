@@ -21,16 +21,16 @@ func NewMap(mapId string, project *Project) *Map {
 		return nil
 	}
 
-	var result = Map{}
-	result.initProperties(data, project)
-	result.initTilesets(data, project)
+	var result = Map{Project: project}
+	result.initProperties(data)
+	result.initTilesets(data)
 	return &result
 }
 
 //=================================================================
 // private
 
-func (m *Map) initProperties(data *internal.Map, project *Project) {
+func (m *Map) initProperties(data *internal.Map) {
 	m.Properties = make(map[string]any)
 	m.Properties[property.MapName] = data.Name
 	m.Properties[property.MapClass] = data.Class
@@ -46,13 +46,13 @@ func (m *Map) initProperties(data *internal.Map, project *Project) {
 	m.Properties[property.MapWorldY] = data.WorldY
 
 	for _, prop := range data.Properties {
-		m.Properties[prop.Name] = parseProperty(prop, project)
+		m.Properties[prop.Name] = parseProperty(prop, m.Project)
 	}
 }
-func (m *Map) initTilesets(data *internal.Map, project *Project) {
+func (m *Map) initTilesets(data *internal.Map) {
 	m.Tilesets = make([]*Tileset, len(data.Tilesets))
 
 	for i, t := range data.Tilesets {
-		m.Tilesets[i] = NewTileset(path.New(data.Directory, t.Source), project)
+		m.Tilesets[i] = NewTileset(path.New(data.Directory, t.Source), m.Project)
 	}
 }

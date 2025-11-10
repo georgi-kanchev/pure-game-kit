@@ -5,29 +5,34 @@ import (
 	"pure-game-kit/utility/color"
 )
 
-func defaultText(value, defaultValue string) string {
+func defaultValueText(value, defaultValue string) string {
 	if value == "" {
 		return defaultValue
 	}
 	return value
 }
 func parseProperty(prop *internal.Property, project *Project) any {
-	var value = prop.Value
-
 	switch prop.Type {
 	case "color":
 		return color.Hex(prop.Value)
 	case "class":
-		// var class, hasClass = project.Classes[prop.CustomType]
-		// if hasClass {
-		// 	for n, v := range class.(map[string]any) {
-		// 		var _, hasMember = value.(map[string]any)[n]
-		// 		if !hasMember { // fill default member values, skip overwritten ones
-		// 			value.(map[string]any)[n] = v
-		// 		}
-		// 	}
-		// }
-		return value
+		var class, hasClass = project.Classes[prop.CustomType]
+		if !hasClass {
+			return prop.Value
+		}
+
+		var classMembers = class.(map[string]any)
+		var result = make(map[string]any, len(classMembers))
+		for n, v := range classMembers {
+			result[n] = v
+
+			for _, prop := range prop.Properties {
+				if prop.Name == n {
+					result[prop.Name] = parseProperty(prop, project)
+				}
+			}
+		}
+		return result
 	}
-	return value
+	return prop.Value
 }

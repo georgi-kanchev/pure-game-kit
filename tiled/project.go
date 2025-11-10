@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
+	"pure-game-kit/utility/color"
 )
 
 type Project struct {
@@ -30,9 +31,9 @@ func NewProject(projectId string) *Project {
 func (p *Project) initProperties(data *internal.Project) {
 	p.Properties = make(map[string]any)
 
-	// for _, prop := range data.Properties {
-	// p.Properties[prop.Name] = parseProperty(propToProject(prop), p)
-	// }
+	for _, prop := range data.Properties {
+		p.Properties[prop.Name] = p.parseProjectProperty(prop)
+	}
 }
 func (p *Project) initClasses(data *internal.Project) {
 	p.Classes = make(map[string]any, len(data.CustomTypes))
@@ -53,4 +54,31 @@ func (p *Project) initClasses(data *internal.Project) {
 		}
 
 	}
+}
+
+func (p *Project) parseProjectProperty(prop *internal.ProjectProperty) any {
+	switch prop.Type {
+	case "color":
+		return color.Hex(prop.Value.(string))
+	case "class":
+		var class, hasClass = p.Classes[prop.CustomType]
+		if !hasClass {
+			return prop.Value
+		}
+
+		var classMembers = class.(map[string]any)
+		var result = make(map[string]any, len(classMembers))
+		for n, v := range classMembers {
+			var members = prop.Value.(map[string]any)
+			var m, hasMember = members[n]
+			if hasMember {
+				result[n] = m
+				continue
+			}
+
+			result[n] = v
+		}
+		return result
+	}
+	return prop.Value
 }

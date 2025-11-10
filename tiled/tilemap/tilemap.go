@@ -44,11 +44,11 @@ func Property(mapId, property string) string {
 		return text.New(col(data.BackgroundColor))
 	}
 
-	for _, v := range data.Properties {
-		if v.Name == property {
-			return v.Value
-		}
-	}
+	// for _, v := range data.Properties {
+	// 	if v.Name == property {
+	// 		return v.Value
+	// 	}
+	// }
 	return ""
 }
 
@@ -100,11 +100,11 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 		return text.New(img.Image.Height)
 	}
 
-	for _, prop := range layer.Properties {
-		if prop.Name == property {
-			return prop.Value
-		}
-	}
+	// for _, prop := range layer.Properties {
+	// 	if prop.Name == property {
+	// 		return prop.Value
+	// 	}
+	// }
 	return ""
 }
 
@@ -165,11 +165,11 @@ func LayerObjectProperty(mapId, layerNameOrId, objectNameClassOrId, property str
 		return text.New(id - current.FirstTileId)
 	}
 
-	for _, prop := range obj.Properties {
-		if prop.Name == property {
-			return prop.Value
-		}
-	}
+	// for _, prop := range obj.Properties {
+	// 	if prop.Name == property {
+	// 		return prop.Value
+	// 	}
+	// }
 	return ""
 }
 func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.Sprite {

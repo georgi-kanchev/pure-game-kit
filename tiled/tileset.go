@@ -19,16 +19,16 @@ func NewTileset(tilesetId string, project *Project) *Tileset {
 		return nil
 	}
 
-	var result = Tileset{}
-	result.initProperties(data, project)
-	result.initTiles(data, project)
+	var result = Tileset{Project: project}
+	result.initProperties(data)
+	result.initTiles(data)
 	return &result
 }
 
 //=================================================================
 // private
 
-func (t *Tileset) initProperties(data *internal.Tileset, project *Project) {
+func (t *Tileset) initProperties(data *internal.Tileset) {
 	t.Properties = make(map[string]any)
 	t.Properties[property.TilesetName] = data.Name
 	t.Properties[property.TilesetClass] = data.Class
@@ -41,13 +41,13 @@ func (t *Tileset) initProperties(data *internal.Tileset, project *Project) {
 	t.Properties[property.TilesetSpacing] = data.Spacing
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(prop, project)
+		t.Properties[prop.Name] = parseProperty(prop, t.Project)
 	}
 }
-func (t *Tileset) initTiles(data *internal.Tileset, project *Project) {
+func (t *Tileset) initTiles(data *internal.Tileset) {
 	t.Tiles = make([]*Tile, len(data.Tiles))
 
 	for i, tile := range data.Tiles {
-		t.Tiles[i] = NewTile(data.AssetId, tile.Id, project)
+		t.Tiles[i] = NewTile(data.AssetId, tile.Id, t.Project)
 	}
 }

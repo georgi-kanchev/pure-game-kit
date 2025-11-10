@@ -6,6 +6,11 @@
   <property name="dddd" type="object" value="9"/>
   <property name="ff" type="float" value="0"/>
   <property name="fil" type="file" value="../../../../untitled.mp4"/>
+  <property name="playyyy" type="class" propertytype="player">
+   <properties>
+    <property name="health" type="float" value="33.5"/>
+   </properties>
+  </property>
   <property name="test" type="int" value="111"/>
  </properties>
  <tileset firstgid="1" source="atlas.tsx"/>
