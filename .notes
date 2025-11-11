@@ -8,6 +8,8 @@ simple particles, port?
 small restructure
 shape - separated private into own file to keep low line count
 shape - added ellipse constructor
+tiled - tile objects points + props
+tiled - caching tilesets in project for maps to reuse
 
 [97] [Mon] [10-11-2025]
 tiled - map, tileset, tile props, project props + classes

@@ -13,9 +13,11 @@ func Tiled() {
 	var mapIds = assets.LoadTiledWorld("examples/data/world.world")
 	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
 	var project = tiled.NewProject(projectId)
-	var mapGrass = tiled.NewMap(mapIds[1], project)
+	var grass = tiled.NewMap(mapIds[0], project)
+	var desert = tiled.NewMap(mapIds[1], project)
 
-	_ = mapGrass
+	_ = grass
+	_ = desert
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()

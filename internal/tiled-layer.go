@@ -62,6 +62,8 @@ type LayerObject struct {
 	Text       LayerObjectText    `xml:"text"`
 	Polygon    LayerObjectPolygon `xml:"polygon"`
 	Polyline   LayerObjectPolygon `xml:"polyline"`
+	Ellipse    *struct{}          `xml:"ellipse"`
+	Point      *struct{}          `xml:"point"`
 	Properties []Property         `xml:"properties>property"`
 }
 type LayerObjectPolygon struct {

@@ -23,6 +23,10 @@ func parseProperty(prop *internal.Property, project *Project) any {
 	case "color":
 		return color.Hex(prop.Value)
 	case "class":
+		if project == nil {
+			return prop.Value
+		}
+
 		var class, hasClass = project.Classes[prop.CustomType]
 		if !hasClass {
 			return prop.Value

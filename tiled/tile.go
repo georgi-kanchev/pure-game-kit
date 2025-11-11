@@ -32,12 +32,11 @@ func newTile(tilesetId string, tileId uint32, project *Project) *Tile {
 
 	var result = Tile{Project: project}
 	result.initProperties(data, tileData)
-	result.initObjects(data, tileData)
+	result.initObjects(tileData)
 	return &result
 }
 
 //=================================================================
-// private
 
 func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.TilesetTile) {
 	var w, h = tilesetData.TileWidth, tilesetData.TileHeight
@@ -56,7 +55,7 @@ func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.Tile
 		t.Properties[prop.Name] = parseProperty(prop, t.Project)
 	}
 }
-func (t *Tile) initObjects(tilesetData *internal.Tileset, data *internal.TilesetTile) {
+func (t *Tile) initObjects(data *internal.TilesetTile) {
 	if len(data.CollisionLayers) > 0 {
 		var objs = data.CollisionLayers[0].Objects
 		t.Objects = make([]*Object, len(objs))

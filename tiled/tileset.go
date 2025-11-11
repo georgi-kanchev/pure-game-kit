@@ -19,14 +19,25 @@ func newTileset(tilesetId string, project *Project) *Tileset {
 		return nil
 	}
 
+	if project != nil {
+		var cache, hasCache = project.UniqueTilesets[tilesetId]
+		if hasCache { // maps in the same project will try to reuse tilesets instead of load them
+			return cache
+		}
+	}
+
 	var result = Tileset{Project: project}
 	result.initProperties(data)
 	result.initTiles(data)
+
+	if project != nil {
+		project.UniqueTilesets[tilesetId] = &result
+	}
+
 	return &result
 }
 
 //=================================================================
-// private
 
 func (t *Tileset) initProperties(data *internal.Tileset) {
 	t.Properties = make(map[string]any)

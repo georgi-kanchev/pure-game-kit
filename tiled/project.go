@@ -8,8 +8,9 @@ import (
 )
 
 type Project struct {
-	Properties map[string]any
-	Classes    map[string]any
+	Properties     map[string]any
+	Classes        map[string]any      // a collection of custom properties that anything in the project can use
+	UniqueTilesets map[string]*Tileset // maps in the same project will try to reuse these instead of loading them
 }
 
 func NewProject(projectId string) *Project {
@@ -19,7 +20,7 @@ func NewProject(projectId string) *Project {
 		return nil
 	}
 
-	var result = Project{}
+	var result = Project{UniqueTilesets: map[string]*Tileset{}}
 	result.initClasses(data)
 	result.initProperties(data)
 	return &result
