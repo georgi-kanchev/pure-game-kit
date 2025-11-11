@@ -82,7 +82,11 @@
   <object id="9" template="poly.tx" name="NOT" x="112.5" y="12">
    <polygon points="0,0 17.5,16 15.5556,30 3.88889,18 -7.77778,25 -17.5,11"/>
   </object>
-  <object id="10" name="sprite" gid="1" x="32" y="32" width="16" height="16"/>
+  <object id="10" name="sprite" gid="1" x="32" y="32" width="16" height="16">
+   <properties>
+    <property name="my-bush" type="object" value="11"/>
+   </properties>
+  </object>
   <object id="11" gid="567" x="48" y="32" width="16" height="16"/>
   <object id="12" name="point" x="105" y="110">
    <point/>

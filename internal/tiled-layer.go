@@ -13,11 +13,16 @@ type Layer struct {
 	Properties []Property `xml:"properties>property"`
 }
 
-type LayerGroup struct {
-	Layer
+type Layers struct {
+	Groups        []*LayerGroup   `xml:"group"`
 	LayersTiles   []*LayerTiles   `xml:"layer"`
 	LayersObjects []*LayerObjects `xml:"objectgroup"`
 	LayersImages  []*LayerImage   `xml:"imagelayer"`
+}
+
+type LayerGroup struct {
+	Layer
+	Layers
 }
 
 // =================================================================

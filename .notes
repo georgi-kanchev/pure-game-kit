@@ -1,4 +1,6 @@
 // TODO:
+tiled real object pointer properties
+
 alpha blending, additive, multiply
 shader effects, port?
 simple particles, port?
@@ -10,6 +12,7 @@ shape - separated private into own file to keep low line count
 shape - added ellipse constructor
 tiled - tile objects points + props
 tiled - caching tilesets in project for maps to reuse
+tiled - started layers
 
 [97] [Mon] [10-11-2025]
 tiled - map, tileset, tile props, project props + classes
