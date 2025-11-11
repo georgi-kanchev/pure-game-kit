@@ -1,6 +1,4 @@
 // TODO:
-tiled project loading to parse custom classes
-
 alpha blending, additive, multiply
 shader effects, port?
 simple particles, port?
@@ -8,6 +6,8 @@ simple particles, port?
 // DONE:
 [98] [Tue] [11-11-2025]
 small restructure
+shape - separated private into own file to keep low line count
+shape - added ellipse constructor
 
 [97] [Mon] [10-11-2025]
 tiled - map, tileset, tile props, project props + classes
