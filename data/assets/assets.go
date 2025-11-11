@@ -7,13 +7,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func Size(assetId string) (width, height int) {
-	return internal.AssetSize(assetId)
-}
-func IsLoaded(assetId string) bool {
-	return internal.IsLoaded(assetId)
-}
-
 func UnloadAll() {
 	UnloadAllTextures()
 	UnloadAllSounds()
@@ -27,6 +20,15 @@ func ReloadAll() {
 	ReloadAllMusic()
 	ReloadAllTiledMaps()
 	ReloadAllTiledTilesets()
+}
+
+//=================================================================
+
+func Size(assetId string) (width, height int) {
+	return internal.AssetSize(assetId)
+}
+func IsLoaded(assetId string) bool {
+	return internal.IsLoaded(assetId)
 }
 
 //=================================================================

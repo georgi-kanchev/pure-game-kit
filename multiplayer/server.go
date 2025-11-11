@@ -55,6 +55,8 @@ func NewServer(onMessage func(fromId, toId, tag int, message string)) *Server {
 	return server
 }
 
+//=================================================================
+
 func (server *Server) SendToClient(clientId, tag int, message string) {
 	server.sendToClient(false, 0, clientId, tag, message)
 }

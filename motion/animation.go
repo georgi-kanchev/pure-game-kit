@@ -19,7 +19,6 @@ func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animatio
 }
 
 //=================================================================
-// setters
 
 func (sequence *Animation[T]) SetDuration(seconds float32) {
 	sequence.ItemsPerSecond = float32(len(sequence.Items)) / seconds
@@ -34,7 +33,6 @@ func (sequence *Animation[T]) SetTime(seconds float32) {
 }
 
 //=================================================================
-// getters
 
 func (sequence *Animation[T]) CurrentItem() *T {
 	return &sequence.Items[sequence.CurrentIndex()]

@@ -105,7 +105,6 @@ func NewElements(elements ...string) *GUI {
 }
 
 // =================================================================
-// setters
 
 func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
@@ -171,7 +170,6 @@ func (gui *GUI) SetField(id, field string, value string) {
 }
 
 //=================================================================
-// getters
 
 // works for widgets & containers
 func (gui *GUI) Field(id, field string) string {

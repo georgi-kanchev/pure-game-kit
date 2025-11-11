@@ -15,7 +15,6 @@ func Draggable(id string, properties ...string) string {
 }
 
 //=================================================================
-// getters
 
 func (gui *GUI) DragOnGrab() (draggableId string) {
 	return onGrab(gui.root)

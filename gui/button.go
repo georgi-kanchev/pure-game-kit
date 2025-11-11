@@ -16,7 +16,6 @@ func Button(id string, properties ...string) string {
 }
 
 //=================================================================
-// getters
 
 func (gui *GUI) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
 	return gui.root.IsButtonJustClicked(buttonId, camera)

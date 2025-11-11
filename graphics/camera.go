@@ -45,7 +45,6 @@ func NewCamera(zoom float32) *Camera {
 }
 
 //=================================================================
-// setters
 
 func (camera *Camera) DragAndZoom() {
 	var dx, dy = mouse.CursorDelta()
@@ -77,7 +76,6 @@ func (camera *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
 }
 
 //=================================================================
-// getters
 
 func (camera *Camera) IsHovered() bool {
 	var mousePos = rl.GetMousePosition()

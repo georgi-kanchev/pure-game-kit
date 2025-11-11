@@ -34,7 +34,6 @@ func NewTween(startingItems ...float32) *Tween {
 }
 
 //=================================================================
-// setters
 
 func (tween *Tween) Restart() {
 	tween.currIndex = 0
@@ -53,7 +52,6 @@ func (tween *Tween) Restart() {
 }
 
 //=================================================================
-// getters
 
 func (chain *Tween) GoTo(duration float32, easing func(progress float32) float32, targets ...float32) *Tween {
 	if len(chain.tweens) == 0 {

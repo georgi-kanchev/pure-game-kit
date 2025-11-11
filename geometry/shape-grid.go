@@ -14,7 +14,6 @@ func NewShapeGrid(cellWidth, cellHeight int) *ShapeGrid {
 }
 
 //=================================================================
-// setters
 
 func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
 	var key = [2]int{x, y}
@@ -29,7 +28,6 @@ func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
 }
 
 //=================================================================
-// getters
 
 func (shapeGrid *ShapeGrid) Cell(shape *Shape) (cellX, cellY int) {
 	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)

@@ -36,7 +36,6 @@ func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
 }
 
 //=================================================================
-// getters
 
 func (textBox *TextBox) TextMeasure(text string) (width, height float32) {
 	var size = rl.MeasureTextEx(*textBox.font(), text, textBox.LineHeight+textBox.gapLines(), textBox.gapSymbols())

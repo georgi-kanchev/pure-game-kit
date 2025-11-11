@@ -11,12 +11,10 @@ import (
 )
 
 //=================================================================
-// setters
 
 func SetScale(scale float32) { internal.TimeScale = scale }
 
 //=================================================================
-// getters
 
 func AsClock24(seconds float32, divider string, units int) string {
 	var ts = time.Duration(seconds * float32(time.Second))

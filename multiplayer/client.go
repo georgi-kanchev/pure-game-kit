@@ -79,9 +79,13 @@ func NewClient(ip string, onMessage func(fromId, tag int, message string)) *Clie
 	return client
 }
 
+//=================================================================
+
 func (client *Client) Id() int {
 	return client.myId
 }
+
+//=================================================================
 
 func (client *Client) SendToServer(tag int, message string) {
 	client.send(false, 0, tag, message)

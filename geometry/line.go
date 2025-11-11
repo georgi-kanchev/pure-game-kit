@@ -13,7 +13,6 @@ func NewLine(ax, ay, bx, by float32) Line {
 }
 
 //=================================================================
-// getters
 
 func (line *Line) Angle() float32 {
 	return angle.BetweenPoints(line.Ax, line.Ay, line.Bx, line.By)

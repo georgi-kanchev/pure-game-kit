@@ -17,7 +17,6 @@ var TargetFrameRate byte = 60
 var IsOpen = false
 
 //=================================================================
-// setters
 
 func Recreate() {
 	Close()
@@ -148,7 +147,6 @@ func SetIcon(assetId string) {
 }
 
 //=================================================================
-// getters
 
 func Size() (width, height int) {
 	return rl.GetScreenWidth(), rl.GetScreenHeight()

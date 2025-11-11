@@ -21,7 +21,6 @@ func InputField(id string, properties ...string) string {
 }
 
 //=================================================================
-// getters
 
 func (gui *GUI) InputFieldIsTyping() (inputFieldId string) {
 	if typingIn != nil {

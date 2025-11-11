@@ -47,7 +47,6 @@ func NewShapeRectangle(width, height, pivotX, pivotY float32) *Shape {
 }
 
 //=================================================================
-// getters
 
 func (shape *Shape) CornerPoints() [][2]float32 {
 	var result = make([][2]float32, len(shape.corners))

@@ -34,6 +34,8 @@ func New(assetId string) *Audio {
 	return audio
 }
 
+//=================================================================
+
 func (audio *Audio) Play() {
 	audio.tryReload()
 
@@ -52,6 +54,9 @@ func (audio *Audio) Play() {
 		music.Stream.Buffer.Volume = volume
 	}
 }
+
+//=================================================================
+
 func (audio *Audio) IsPlaying() bool {
 	audio.tryReload()
 

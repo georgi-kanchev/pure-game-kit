@@ -22,7 +22,6 @@ func NewNode(x, y float32) Node {
 }
 
 //=================================================================
-// setters
 
 func (node *Node) CameraFit(camera *Camera) {
 	var x, y = camera.PointFromScreen(
@@ -68,7 +67,6 @@ func (node *Node) CameraStretch(camera *Camera) {
 }
 
 //=================================================================
-// getters
 
 func (node *Node) TransformToCamera() (cx, cy, cAngle, cScaleX, cScaleY float32) {
 	var w, h = node.Width, node.Height

@@ -6,8 +6,11 @@ shader effects, port?
 simple particles, port?
 
 // DONE:
-[97] [Mon] [10-11-2025]
+[98] [Tue] [11-11-2025]
+small restructure
 
+[97] [Mon] [10-11-2025]
+tiled - map, tileset, tile props, project props + classes
 
 [96] [Sun] [09-11-2025]
 graphics - camera draw shapes separated by NaN, NaN, lines path already work like that, skipping NaN

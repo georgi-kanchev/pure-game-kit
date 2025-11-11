@@ -7,7 +7,6 @@ import (
 )
 
 //=================================================================
-// setters
 
 func SetCursorVisibility(visible bool) {
 	if visible {
@@ -21,7 +20,6 @@ func SetCursor(cursor int) {
 }
 
 //=================================================================
-// getters
 
 func CursorDelta() (x, y float32) {
 	var delta = rl.GetMouseDelta()
