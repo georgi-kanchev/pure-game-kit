@@ -15,7 +15,7 @@ type Tile struct {
 	IsAnimating bool
 }
 
-func NewTile(tilesetId string, tileId uint32, project *Project) *Tile {
+func newTile(tilesetId string, tileId uint32, project *Project) *Tile {
 	var data, _ = internal.TiledTilesets[tilesetId]
 	if data == nil {
 		debug.LogError("Failed to create tile: \"", tilesetId, "/", tileId, "\"\n",
@@ -32,6 +32,7 @@ func NewTile(tilesetId string, tileId uint32, project *Project) *Tile {
 
 	var result = Tile{Project: project}
 	result.initProperties(data, tileData)
+	result.initObjects(data, tileData)
 	return &result
 }
 
@@ -53,5 +54,14 @@ func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.Tile
 
 	for _, prop := range data.Properties {
 		t.Properties[prop.Name] = parseProperty(prop, t.Project)
+	}
+}
+func (t *Tile) initObjects(tilesetData *internal.Tileset, data *internal.TilesetTile) {
+	if len(data.CollisionLayers) > 0 {
+		var objs = data.CollisionLayers[0].Objects
+		t.Objects = make([]*Object, len(objs))
+		for i, obj := range objs {
+			t.Objects[i] = newObject(obj, t.Project)
+		}
 	}
 }

@@ -16,11 +16,11 @@ type WorldMap struct {
 }
 
 type Property struct {
-	Name       string      `xml:"name,attr"`
-	Type       string      `xml:"type,attr"`
-	CustomType string      `xml:"propertytype,attr"`
-	Value      string      `xml:"value,attr"`
-	Properties []*Property `xml:"properties>property"`
+	Name       string     `xml:"name,attr"`
+	Type       string     `xml:"type,attr"`
+	CustomType string     `xml:"propertytype,attr"`
+	Value      string     `xml:"value,attr"`
+	Properties []Property `xml:"properties>property"`
 }
 
 type Identity struct {

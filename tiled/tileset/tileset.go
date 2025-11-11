@@ -231,7 +231,7 @@ func getObj(tilesetId string, tileId uint32, objectNameClassOrId string) *intern
 	for _, obj := range layer.Objects {
 		if obj.Name == objectNameClassOrId || obj.Class == objectNameClassOrId ||
 			text.New(obj.Id) == objectNameClassOrId {
-			return &obj
+			return obj
 		}
 	}
 	return nil

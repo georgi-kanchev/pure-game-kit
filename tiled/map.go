@@ -53,6 +53,6 @@ func (m *Map) initTilesets(data *internal.Map) {
 	m.Tilesets = make([]*Tileset, len(data.Tilesets))
 
 	for i, t := range data.Tilesets {
-		m.Tilesets[i] = NewTileset(path.New(data.Directory, t.Source), m.Project)
+		m.Tilesets[i] = newTileset(path.New(data.Directory, t.Source), m.Project)
 	}
 }

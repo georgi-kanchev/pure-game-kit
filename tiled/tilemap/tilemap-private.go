@@ -174,7 +174,7 @@ func getObj(mapId, layerNameOrId, objectNameClassOrId string) *internal.LayerObj
 	for _, obj := range objs.Objects {
 		if obj.Name == objectNameClassOrId || obj.Class == objectNameClassOrId ||
 			text.New(obj.Id) == objectNameClassOrId {
-			return &obj
+			return obj
 		}
 	}
 	return nil

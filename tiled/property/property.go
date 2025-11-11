@@ -63,7 +63,7 @@ const (
 	ObjectWidth    = "width"
 	ObjectHeight   = "height"
 	ObjectRotation = "rotation"
+	ObjectTileId   = "tileId"
 	ObjectFlipX    = "flipX"
 	ObjectFlipY    = "flipY"
-	ObjectTileId   = "tileId"
 )

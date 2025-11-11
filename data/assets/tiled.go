@@ -243,7 +243,7 @@ func tryTemplate(layer []*internal.LayerObjects, directory string) {
 			}
 		}
 
-		layer[0].Objects[i] = newObj
+		layer[0].Objects[i] = &newObj
 	}
 }
 

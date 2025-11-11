@@ -44,9 +44,9 @@ type LayerImage struct {
 // =================================================================
 type LayerObjects struct {
 	Layer
-	DrawOrder string        `xml:"draworder,attr"`
-	Color     string        `xml:"color,attr"`
-	Objects   []LayerObject `xml:"object"`
+	DrawOrder string         `xml:"draworder,attr"`
+	Color     string         `xml:"color,attr"`
+	Objects   []*LayerObject `xml:"object"`
 }
 type LayerObject struct {
 	Identity

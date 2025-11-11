@@ -12,7 +12,7 @@ type Tileset struct {
 	Tiles      []*Tile
 }
 
-func NewTileset(tilesetId string, project *Project) *Tileset {
+func newTileset(tilesetId string, project *Project) *Tileset {
 	var data, _ = internal.TiledTilesets[tilesetId]
 	if data == nil {
 		debug.LogError("Failed to create tileset: \"", tilesetId, "\"\nNo data is loaded with this tileset id.")
@@ -48,6 +48,6 @@ func (t *Tileset) initTiles(data *internal.Tileset) {
 	t.Tiles = make([]*Tile, len(data.Tiles))
 
 	for i, tile := range data.Tiles {
-		t.Tiles[i] = NewTile(data.AssetId, tile.Id, t.Project)
+		t.Tiles[i] = newTile(data.AssetId, tile.Id, t.Project)
 	}
 }
