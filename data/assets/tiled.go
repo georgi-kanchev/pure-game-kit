@@ -3,7 +3,6 @@ package assets
 import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
-	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
@@ -86,7 +85,7 @@ func LoadTiledTileset(filePath string) string {
 
 	return filePath
 }
-func LoadTiledWorld(filePath string) (tilemapIds []string) {
+func LoadTiledWorld(filePath string) (mapIds []string) {
 	var resultIds = []string{}
 	var world *internal.World
 
@@ -119,7 +118,7 @@ func LoadTiledWorld(filePath string) (tilemapIds []string) {
 			tryTemplate(mp.LayersObjects, world.Directory)
 		}
 
-		for _, grp := range mp.Groups {
+		for _, grp := range mp.LayersGroups {
 			tryTemplate(grp.LayersObjects, world.Directory)
 		}
 	}
@@ -141,6 +140,8 @@ func LoadTiledMap(filePath string) string {
 	for _, t := range mapData.Tilesets {
 		LoadTiledTileset(path.New(mapData.Directory, t.Source))
 	}
+
+	tryCacheLayerTileIds(mapData, &mapData.Layers)
 
 	return filePath
 }
@@ -203,55 +204,4 @@ func UnloadAllTiledTilesets() {
 	for id := range internal.TiledTilesets {
 		UnloadTiledTileset(id)
 	}
-}
-
-// =================================================================
-// private
-var cachedTemplates = map[string]*internal.Template{}
-
-func tryTemplate(layer []*internal.LayerObjects, directory string) {
-	var objs = layer[0].Objects
-	for i, o := range objs {
-		if o.Template == "" {
-			continue
-		}
-
-		var path = path.New(directory, o.Template)
-		var template, _ = cachedTemplates[path]
-		if template == nil {
-			storage.FromFileXML(path, &template)
-			cachedTemplates[path] = template
-		}
-
-		var newObj = template.Object
-		newObj.X, newObj.Y = o.X, o.Y
-		newObj.Width = condition.If(o.Width != 0, o.Width, newObj.Width)
-		newObj.Height = condition.If(o.Height != 0, o.Height, newObj.Height)
-		newObj.Rotation = condition.If(o.Rotation != 0, o.Rotation, newObj.Rotation)
-		newObj.Name = condition.If(o.Name != "", o.Name, newObj.Name)
-		newObj.Class = condition.If(o.Class != "", o.Class, newObj.Class)
-		newObj.Visible = condition.If(o.Visible != "", o.Visible, newObj.Visible)
-		newObj.Polygon.Points = condition.If(o.Polygon.Points != "", o.Polygon.Points, newObj.Polygon.Points)
-		newObj.Polyline.Points = condition.If(o.Polyline.Points != "", o.Polyline.Points, newObj.Polyline.Points)
-
-		for _, prop := range o.Properties {
-			var has, p = hasProp(prop.Name, newObj.Properties)
-			if has { // obj overwrites a template property
-				prop.Value = p.Value
-			} else { // obj adds a new property not present in the template
-				newObj.Properties = append(newObj.Properties, prop)
-			}
-		}
-
-		layer[0].Objects[i] = &newObj
-	}
-}
-
-func hasProp(name string, props []internal.Property) (bool, internal.Property) {
-	for _, prop := range props {
-		if prop.Name == name {
-			return true, prop
-		}
-	}
-	return false, internal.Property{}
 }

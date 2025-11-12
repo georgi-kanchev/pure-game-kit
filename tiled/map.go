@@ -24,7 +24,7 @@ func NewMap(mapId string, project *Project) *Map {
 	var result = Map{Project: project, Layers: []*Layer{}}
 	result.initProperties(data)
 	result.initTilesets(data)
-	result.initLayers(&data.Layers)
+	result.initLayers(data.Directory, &data.Layers)
 	return &result
 }
 
@@ -57,7 +57,7 @@ func (m *Map) initTilesets(data *internal.Map) {
 		m.Tilesets[i] = newTileset(path.New(data.Directory, t.Source), m.Project)
 	}
 }
-func (m *Map) initLayers(layers *internal.Layers) {
+func (m *Map) initLayers(directory string, layers *internal.Layers) {
 	for _, layer := range layers.LayersTiles {
 		m.Layers = append(m.Layers, newLayerTiles(layer, m.Project))
 	}
@@ -65,9 +65,10 @@ func (m *Map) initLayers(layers *internal.Layers) {
 		m.Layers = append(m.Layers, newLayerObjects(layer, m.Project))
 	}
 	for _, layer := range layers.LayersImages {
-		m.Layers = append(m.Layers, newLayerImage(layer, m.Project))
+		m.Layers = append(m.Layers, newLayerImage(directory, layer, m.Project))
 	}
-	for _, group := range layers.Groups {
-		m.initLayers(&group.Layers)
+	for _, group := range layers.LayersGroups {
+		m.Layers = append(m.Layers, newLayerGroup(group, m.Project))
+		m.initLayers(directory, &group.Layers)
 	}
 }

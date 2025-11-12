@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "desert.tmx",
+    "activeFile": "map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -15,8 +15,8 @@
         },
         "atlas.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 4,
-            "scaleInEditor": 2
+            "scaleInDock": 1,
+            "scaleInEditor": 3
         },
         "desert.tmx": {
             "expandedObjectLayers": [
@@ -25,17 +25,18 @@
             "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 62.999999999999986,
+                "x": 63,
                 "y": 50.83333333333333
             }
         },
         "images.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
-            "scaleInEditor": 2
+            "scaleInEditor": 0.5
         },
         "map.tmx": {
             "expandedGroupLayers": [
+                14,
                 6
             ],
             "expandedObjectLayers": [
@@ -44,10 +45,10 @@
                 11
             ],
             "scale": 5.5,
-            "selectedLayer": 2,
+            "selectedLayer": 1,
             "viewCenter": {
                 "x": 370,
-                "y": 66.81818181818181
+                "y": 66.63636363636363
             }
         },
         "map.tmx#atlas": {
@@ -61,7 +62,7 @@
         "objects.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1.5,
-            "scaleInEditor": 2
+            "scaleInEditor": 3
         },
         "sizes.tsx": {
             "dynamicWrapping": true,
@@ -72,8 +73,8 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -385.75,
-                "y": 43.625
+                "x": -375.5,
+                "y": 43.375
             }
         }
     },
@@ -102,12 +103,12 @@
     "project": "game-name.tiled-project",
     "property.type": "object",
     "recentFiles": [
-        "map.tmx",
         "terrain.tmx",
         "images.tsx",
         "objects.tsx",
         "atlas.tsx",
         "desert.tmx",
+        "map.tmx",
         "sizes.tsx"
     ],
     "textEdit.monospace": false,

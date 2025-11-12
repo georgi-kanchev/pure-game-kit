@@ -26,6 +26,7 @@ func newObject(data *internal.LayerObject, project *Project) *Object {
 func (t *Object) initProperties(data *internal.LayerObject) {
 	t.Properties = make(map[string]any)
 	t.Properties[property.ObjectId] = data.Id
+	t.Properties[property.ObjectClass] = data.Class
 	t.Properties[property.ObjectTemplate] = data.Template
 	t.Properties[property.ObjectName] = data.Name
 	t.Properties[property.ObjectVisible] = data.Visible != "false"

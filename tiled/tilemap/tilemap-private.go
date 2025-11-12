@@ -74,7 +74,7 @@ func findLayer(data *internal.Map, layerNameOrId string) (
 	var layerObjs = data.LayersObjects
 	var layerImgs = data.LayersImages
 
-	for _, group := range data.Groups {
+	for _, group := range data.LayersGroups {
 		layerTiles = append(layerTiles, group.LayersTiles...)
 		layerObjs = append(layerObjs, group.LayersObjects...)
 		layerImgs = append(layerImgs, group.LayersImages...)
