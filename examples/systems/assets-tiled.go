@@ -19,10 +19,18 @@ func Tiled() {
 	_ = grass
 	_ = desert
 
+	var sprites = []*graphics.Sprite{}
+	for _, obj := range desert.Layers[2].Objects {
+		sprites = append(sprites, obj.Sprite())
+	}
+
+	assets.LoadDefaultTexture()
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DragAndZoom()
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
+
+		cam.DrawSprites(sprites...)
 	}
 }
 

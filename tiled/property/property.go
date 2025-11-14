@@ -30,6 +30,7 @@ const (
 	TileWidth       = "width"
 	TileHeight      = "height"
 	TileProbability = "probability"
+	TileImage       = "image"
 
 	LayerName      = "name"
 	LayerClass     = "class"

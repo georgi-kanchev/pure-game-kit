@@ -1,6 +1,9 @@
 package tiled
 
 import (
+	"pure-game-kit/data/path"
+	"pure-game-kit/execution/condition"
+	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
 	"pure-game-kit/utility/flag"
@@ -9,13 +12,70 @@ import (
 )
 
 type Object struct {
-	Project    *Project
 	Properties map[string]any
 	Points     [][2]float32
+
+	OwnerTile  *Tile
+	OwnerLayer *Layer
 }
 
-func newObject(data *internal.LayerObject, project *Project) *Object {
-	var result = Object{Project: project}
+func (object *Object) Sprite() *graphics.Sprite {
+	var tileId = object.Properties[property.ObjectTileId]
+	var worldX, worldY float32 = 0, 0
+	var offsetX, offsetY float32 = 0, 0
+	var curTileset *Tileset = nil
+	var firstId uint32 = 1
+	var assetId = ""
+	var x = object.Properties[property.ObjectX].(float32)
+	var y = object.Properties[property.ObjectY].(float32)
+	var w = object.Properties[property.ObjectWidth].(float32)
+	var h = object.Properties[property.ObjectHeight].(float32)
+	var originX, originY float32 = w / 2, -h / 2
+	var ang = object.Properties[property.ObjectRotation].(float32)
+	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
+	id = flag.TurnOff(id, internal.FlipY)
+
+	if object.OwnerLayer != nil {
+		curTileset, firstId = currentTileset(object.OwnerLayer.OwnerMap.Tilesets, id)
+		worldX = object.OwnerLayer.OwnerMap.Properties[property.MapWorldX].(float32)
+		worldY = object.OwnerLayer.OwnerMap.Properties[property.MapWorldY].(float32)
+	} else if object.OwnerTile == nil {
+		curTileset = object.OwnerTile.OwnerTileset
+		offsetX = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetX].(float32)
+		offsetY = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetY].(float32)
+	}
+
+	if curTileset != nil {
+		var asset, hasAsset = curTileset.Properties[property.TilesetAtlasId]
+		originX, originY = w/2, h/2
+
+		if hasAsset {
+			assetId = path.New(asset.(string), text.New(id-firstId))
+		} else {
+			for _, tile := range curTileset.Tiles {
+				var id = tile.Properties[property.TileId].(uint32)
+				if id == tileId.(uint32)-firstId {
+					assetId = tile.Properties[property.TileImage].(string)
+					break
+				}
+			}
+		}
+	}
+
+	var sprite = graphics.NewSprite(assetId, worldX+x, worldY+y)
+	sprite.X += originX + offsetX
+	sprite.Y = sprite.Y - originY + offsetY
+	sprite.Width, sprite.Height = w, h
+	sprite.ScaleX = condition.If(flag.IsOn(tileId.(uint32), internal.FlipX), float32(-1), 1)
+	sprite.ScaleY = condition.If(flag.IsOn(tileId.(uint32), internal.FlipY), float32(-1), 1)
+	sprite.Angle = ang
+	return sprite
+}
+
+//=================================================================
+
+func newObject(data *internal.LayerObject, ownerTile *Tile, ownerLayer *Layer) *Object {
+	var result = Object{OwnerTile: ownerTile, OwnerLayer: ownerLayer}
 	result.initProperties(data)
 	result.initPoints(data)
 	return &result
@@ -40,8 +100,15 @@ func (t *Object) initProperties(data *internal.LayerObject) {
 	t.Properties[property.ObjectFlipX] = flag.IsOn(data.Gid, internal.FlipX)
 	t.Properties[property.ObjectFlipY] = flag.IsOn(data.Gid, internal.FlipY)
 
+	var owner *Project = nil
+	if t.OwnerLayer != nil {
+		owner = t.OwnerLayer.OwnerMap.Project
+	} else if t.OwnerTile == nil {
+		owner = t.OwnerTile.OwnerTileset.Project
+	}
+
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(&prop, t.Project)
+		t.Properties[prop.Name] = parseProperty(&prop, owner)
 	}
 }
 func (t *Object) initPoints(data *internal.LayerObject) {

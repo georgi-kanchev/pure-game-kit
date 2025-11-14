@@ -3,6 +3,7 @@ package internal
 type Map struct {
 	Name, Directory string
 	WorldX, WorldY  float32
+	FirstTileIds    []uint32
 	Version         string       `xml:"version,attr"`
 	TiledVersion    string       `xml:"tiledversion,attr"`
 	Class           string       `xml:"class,attr"`

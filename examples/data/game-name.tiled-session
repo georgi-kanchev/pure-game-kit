@@ -22,11 +22,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 3,
+            "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 63,
-                "y": 50.83333333333333
+                "x": -21.33333333333337,
+                "y": 100.33333333333334
             }
         },
         "images.tsx": {
@@ -36,19 +36,19 @@
         },
         "map.tmx": {
             "expandedGroupLayers": [
-                14,
-                6
+                6,
+                14
             ],
             "expandedObjectLayers": [
-                2,
                 6,
+                2,
                 11
             ],
-            "scale": 5.5,
+            "scale": 11,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 370,
-                "y": 66.63636363636363
+                "x": 378.2727272727273,
+                "y": 39.5
             }
         },
         "map.tmx#atlas": {
@@ -73,8 +73,8 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": -375.5,
-                "y": 43.375
+                "x": -264.75,
+                "y": 36.875
             }
         }
     },

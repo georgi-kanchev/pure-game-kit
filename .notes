@@ -1,11 +1,15 @@
 // TODO:
 tiled real object pointer properties
+tiled skip loading tilesets multiple times per world
 
 alpha blending, additive, multiply
 shader effects, port?
 simple particles, port?
 
 // DONE:
+[100] [Fri] [14-11-2025]
+tiled - sprite objects
+
 [99] [Wed] [12-11-2025]
 tiled - layers parsed, no sprite/geometry process yet but data is mostly ready for it
 

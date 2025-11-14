@@ -10,7 +10,7 @@ import (
 type Map struct {
 	Project    *Project
 	Properties map[string]any
-	Tilesets   []*Tileset
+	Tilesets   map[*Tileset]uint32
 	Layers     []*Layer
 }
 
@@ -51,24 +51,25 @@ func (m *Map) initProperties(data *internal.Map) {
 	}
 }
 func (m *Map) initTilesets(data *internal.Map) {
-	m.Tilesets = make([]*Tileset, len(data.Tilesets))
+	m.Tilesets = make(map[*Tileset]uint32, len(data.Tilesets))
 
 	for i, t := range data.Tilesets {
-		m.Tilesets[i] = newTileset(path.New(data.Directory, t.Source), m.Project)
+		var tileset = newTileset(path.New(data.Directory, t.Source), m.Project)
+		m.Tilesets[tileset] = data.FirstTileIds[i]
 	}
 }
 func (m *Map) initLayers(directory string, layers *internal.Layers) {
 	for _, layer := range layers.LayersTiles {
-		m.Layers = append(m.Layers, newLayerTiles(layer, m.Project))
+		m.Layers = append(m.Layers, newLayerTiles(layer, m))
 	}
 	for _, layer := range layers.LayersObjects {
-		m.Layers = append(m.Layers, newLayerObjects(layer, m.Project))
+		m.Layers = append(m.Layers, newLayerObjects(layer, m))
 	}
 	for _, layer := range layers.LayersImages {
-		m.Layers = append(m.Layers, newLayerImage(directory, layer, m.Project))
+		m.Layers = append(m.Layers, newLayerImage(directory, layer, m))
 	}
 	for _, group := range layers.LayersGroups {
-		m.Layers = append(m.Layers, newLayerGroup(group, m.Project))
+		m.Layers = append(m.Layers, newLayerGroup(group, m))
 		m.initLayers(directory, &group.Layers)
 	}
 }

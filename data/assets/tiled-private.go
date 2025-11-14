@@ -129,17 +129,13 @@ func usedTilesets(data *internal.Map) []*internal.Tileset {
 
 		var tilesetId = path.New(data.Directory, tileset.Source)
 		usedTilesets[i] = internal.TiledTilesets[tilesetId]
-
-		if usedTilesets[i] != nil {
-			usedTilesets[i].FirstTileId = tileset.FirstTileId
-		}
 	}
 	return usedTilesets
 }
 func currentTileset(usedTilesets []*internal.Tileset, tile uint32) *internal.Tileset {
 	var curTileset = usedTilesets[0]
 	for i := len(usedTilesets) - 1; i >= 0; i-- {
-		if usedTilesets[i] != nil && tile > usedTilesets[i].FirstTileId {
+		if usedTilesets[i] != nil && tile > 0 { //usedTilesets[i].FirstTileId {
 			curTileset = usedTilesets[i]
 			break
 		}

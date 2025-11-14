@@ -10,30 +10,38 @@ import (
 )
 
 type Layer struct {
-	Project    *Project
 	Properties map[string]any
 	TileIds    []uint32  // used by Tile Layers only
 	Objects    []*Object // used by Object Layers only
+
+	OwnerMap *Map
 }
 
-func newLayerTiles(data *internal.LayerTiles, project *Project) *Layer {
-	var layer = Layer{Project: project, TileIds: collection.Clone(data.Tiles)}
+//=================================================================
+
+func (layer *Layer) Sprites() {
+}
+
+//=================================================================
+
+func newLayerTiles(data *internal.LayerTiles, owner *Map) *Layer {
+	var layer = Layer{TileIds: collection.Clone(data.Tiles), OwnerMap: owner}
 	layer.initProperties(&data.Layer, nil, nil, "")
 	return &layer
 }
-func newLayerObjects(data *internal.LayerObjects, project *Project) *Layer {
-	var layer = Layer{Project: project}
+func newLayerObjects(data *internal.LayerObjects, owner *Map) *Layer {
+	var layer = Layer{OwnerMap: owner}
 	layer.initProperties(&data.Layer, data, nil, "")
 	layer.initObjects(data)
 	return &layer
 }
-func newLayerImage(directory string, data *internal.LayerImage, project *Project) *Layer {
-	var layer = Layer{Project: project}
+func newLayerImage(directory string, data *internal.LayerImage, owner *Map) *Layer {
+	var layer = Layer{OwnerMap: owner}
 	layer.initProperties(&data.Layer, nil, data, directory)
 	return &layer
 }
-func newLayerGroup(data *internal.LayerGroup, project *Project) *Layer {
-	var layer = Layer{Project: project}
+func newLayerGroup(data *internal.LayerGroup, owner *Map) *Layer {
+	var layer = Layer{OwnerMap: owner}
 	layer.initProperties(&data.Layer, nil, nil, "")
 	return &layer
 }
@@ -68,12 +76,12 @@ func (t *Layer) initProperties(
 	}
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(&prop, t.Project)
+		t.Properties[prop.Name] = parseProperty(&prop, t.OwnerMap.Project)
 	}
 }
 func (t *Layer) initObjects(data *internal.LayerObjects) {
 	t.Objects = make([]*Object, len(data.Objects))
 	for i, obj := range data.Objects {
-		t.Objects[i] = newObject(obj, t.Project)
+		t.Objects[i] = newObject(obj, nil, t)
 	}
 }

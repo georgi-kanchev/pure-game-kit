@@ -122,8 +122,8 @@ func LayerTileId(mapId, layerNameOrId string, cellX, cellY int) uint32 {
 	var tilesIds = getTileIds(mapData, tilesets, wantedLayer)
 	var tileId = tilesIds[cellIndex]
 	var unoriented = flag.TurnOff(tileId, internal.Flips)
-	var curTileset = currentTileset(tilesets, unoriented)
-	return unoriented - curTileset.FirstTileId
+	//var curTileset = currentTileset(tilesets, unoriented)
+	return unoriented - 0 //curTileset.FirstTileId
 }
 
 func LayerObjectProperty(mapId, layerNameOrId, objectNameClassOrId, property string) string {
@@ -160,9 +160,9 @@ func LayerObjectProperty(mapId, layerNameOrId, objectNameClassOrId, property str
 	case p.ObjectTileId:
 		var id = flag.TurnOff(obj.Gid, internal.FlipX)
 		id = flag.TurnOff(id, internal.FlipY)
-		var mapData, _ = internal.TiledMaps[mapId]
-		var current = currentTileset(usedTilesets(mapData), id)
-		return text.New(id - current.FirstTileId)
+		// var mapData, _ = internal.TiledMaps[mapId]
+		// var current = currentTileset(usedTilesets(mapData), id)
+		return text.New(id - 0) //current.FirstTileId)
 	}
 
 	// for _, prop := range obj.Properties {
@@ -205,7 +205,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 				continue
 			}
 
-			var assetId = path.New(curTileset.AssetId, text.New(id-curTileset.FirstTileId))
+			var assetId = path.New(curTileset.AssetId, text.New(id-0)) //curTileset.FirstTileId))
 			var sprite = graphics.NewSprite(assetId, mapData.WorldX+obj.X, mapData.WorldY+obj.Y)
 			sprite.X += float32(mapData.TileWidth)/2 + objs.OffsetX
 			sprite.Y = sprite.Y - float32(mapData.TileHeight)/2 + objs.OffsetY
@@ -237,7 +237,7 @@ func LayerSprites(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.
 		var width, height = float32(curTileset.TileWidth), float32(curTileset.TileHeight)
 		width, height = tileRenderSize(width, height, mapData, curTileset)
 		var ang, w, h = getTileOrientation(tile, width, height)
-		var id = unoriented - curTileset.FirstTileId
+		var id = unoriented - 0 //curTileset.FirstTileId
 		var tileId = path.New(path.Folder(curTileset.AssetId), curTileset.Image.Source, text.New(id))
 		var px, py float32 = 0.5, 0.5
 		var j, i = number.Index1DToIndexes2D(index, mapData.Width, mapData.Height)

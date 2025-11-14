@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="13">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="16" tileheight="16" infinite="0" nextlayerid="8" nextobjectid="16">
  <properties>
   <property name="boolean" type="bool" value="false"/>
   <property name="color" type="color" value="#ffaa0000"/>
@@ -15,6 +15,7 @@
  </properties>
  <tileset firstgid="1" source="atlas.tsx"/>
  <tileset firstgid="337" source="objects.tsx"/>
+ <tileset firstgid="881" source="images.tsx"/>
  <layer id="1" name="Tile Layer 1" width="20" height="20">
   <data encoding="csv">
 30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,
@@ -67,29 +68,13 @@
   <image source="objects.png" width="256" height="544"/>
  </imagelayer>
  <objectgroup color="#aa55ff" id="4" name="Objects">
-  <object id="1" name="cut-throat" x="70" y="-107" width="48" height="80">
-   <properties>
-    <property name="damage" type="float" value="35"/>
-   </properties>
-  </object>
-  <object id="5" name="sword" x="6" y="-104" width="42" height="38">
-   <properties>
-    <property name="my-spell" value="cut-throat"/>
-    <property name="my-spell-by-id" type="int" value="1"/>
-   </properties>
-  </object>
-  <object id="8" x="183" y="74" width="16" height="16"/>
-  <object id="9" template="poly.tx" name="NOT" x="112.5" y="12">
-   <polygon points="0,0 17.5,16 15.5556,30 3.88889,18 -7.77778,25 -17.5,11"/>
-  </object>
   <object id="10" name="sprite" gid="1" x="32" y="32" width="16" height="16">
    <properties>
     <property name="my-bush" type="object" value="11"/>
    </properties>
   </object>
   <object id="11" gid="567" x="48" y="32" width="16" height="16"/>
-  <object id="12" name="point" x="105" y="110">
-   <point/>
-  </object>
+  <object id="13" gid="950" x="16" y="76" width="40" height="28"/>
+  <object id="14" x="64" y="32" width="16" height="16"/>
  </objectgroup>
 </map>

@@ -114,7 +114,7 @@ func usedTilesets(data *internal.Map) []*internal.Tileset {
 		usedTilesets[i] = internal.TiledTilesets[tilesetId]
 
 		if usedTilesets[i] != nil {
-			usedTilesets[i].FirstTileId = tileset.FirstTileId
+			// usedTilesets[i].FirstTileId = tileset.FirstTileId
 		}
 	}
 	return usedTilesets
@@ -122,7 +122,7 @@ func usedTilesets(data *internal.Map) []*internal.Tileset {
 func currentTileset(usedTilesets []*internal.Tileset, tile uint32) *internal.Tileset {
 	var curTileset = usedTilesets[0]
 	for i := len(usedTilesets) - 1; i >= 0; i-- {
-		if usedTilesets[i] != nil && tile > usedTilesets[i].FirstTileId {
+		if usedTilesets[i] != nil && tile > 0 { //usedTilesets[i].FirstTileId {
 			curTileset = usedTilesets[i]
 			break
 		}
@@ -147,7 +147,7 @@ func forEachTile(mapId, layerNameOrId string,
 		id-- // 0 in map means empty but 0 is actually a valid tile in the tileset
 
 		var curTileset = currentTileset(tilesets, id)
-		id -= curTileset.FirstTileId - 1 // same as id
+		//id -= curTileset.FirstTileId - 1 // same as id
 		var tile, _ = curTileset.MappedTiles[id]
 		if tile == nil || len(tile.CollisionLayers) == 0 {
 			continue

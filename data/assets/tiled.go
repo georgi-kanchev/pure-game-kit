@@ -135,10 +135,16 @@ func LoadTiledMap(filePath string) string {
 
 	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
 	mapData.Directory = path.Folder(filePath)
+	mapData.FirstTileIds = make([]uint32, len(mapData.Tilesets))
 	internal.TiledMaps[filePath] = mapData
 
-	for _, t := range mapData.Tilesets {
+	for i, t := range mapData.Tilesets {
 		LoadTiledTileset(path.New(mapData.Directory, t.Source))
+
+		// the tileset has no concept of first tile ids, it's a map concept
+		// even though it's a tileset field (because of map embedded tilesets)
+		mapData.FirstTileIds[i] = t.FirstTileId // so store it in map
+		t.FirstTileId = 0                       // and zero it out in tileset to prevent any confusion
 	}
 
 	tryCacheLayerTileIds(mapData, &mapData.Layers)
