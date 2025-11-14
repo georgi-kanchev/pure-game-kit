@@ -74,7 +74,7 @@
    </properties>
   </object>
   <object id="11" gid="567" x="48" y="32" width="16" height="16"/>
-  <object id="13" gid="950" x="16" y="76" width="40" height="28"/>
+  <object id="13" gid="950" x="16" y="80" width="40" height="28"/>
   <object id="14" x="64" y="32" width="16" height="16"/>
  </objectgroup>
 </map>

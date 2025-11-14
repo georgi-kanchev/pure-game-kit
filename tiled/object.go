@@ -23,6 +23,7 @@ func (object *Object) Sprite() *graphics.Sprite {
 	var tileId = object.Properties[property.ObjectTileId]
 	var worldX, worldY float32 = 0, 0
 	var offsetX, offsetY float32 = 0, 0
+	var pivotY float32 = 0
 	var curTileset *Tileset = nil
 	var firstId uint32 = 1
 	var assetId = ""
@@ -30,8 +31,9 @@ func (object *Object) Sprite() *graphics.Sprite {
 	var y = object.Properties[property.ObjectY].(float32)
 	var w = object.Properties[property.ObjectWidth].(float32)
 	var h = object.Properties[property.ObjectHeight].(float32)
-	var originX, originY float32 = w / 2, -h / 2
 	var ang = object.Properties[property.ObjectRotation].(float32)
+	var flipX, flipY = flag.IsOn(tileId.(uint32), internal.FlipX), flag.IsOn(tileId.(uint32), internal.FlipY)
+	var flipOffX, flipOffY = condition.If(flipX, w, 0), condition.If(flipY, -h, 0)
 	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
 	id = flag.TurnOff(id, internal.FlipY)
 
@@ -47,7 +49,7 @@ func (object *Object) Sprite() *graphics.Sprite {
 
 	if curTileset != nil {
 		var asset, hasAsset = curTileset.Properties[property.TilesetAtlasId]
-		originX, originY = w/2, h/2
+		pivotY = 1
 
 		if hasAsset {
 			assetId = path.New(asset.(string), text.New(id-firstId))
@@ -62,12 +64,11 @@ func (object *Object) Sprite() *graphics.Sprite {
 		}
 	}
 
-	var sprite = graphics.NewSprite(assetId, worldX+x, worldY+y)
-	sprite.X += originX + offsetX
-	sprite.Y = sprite.Y - originY + offsetY
+	var sprite = graphics.NewSprite(assetId, worldX+offsetX+x+flipOffX, worldY+offsetY+y+flipOffY)
 	sprite.Width, sprite.Height = w, h
-	sprite.ScaleX = condition.If(flag.IsOn(tileId.(uint32), internal.FlipX), float32(-1), 1)
-	sprite.ScaleY = condition.If(flag.IsOn(tileId.(uint32), internal.FlipY), float32(-1), 1)
+	sprite.ScaleX = condition.If(flipX, float32(-1), 1)
+	sprite.ScaleY = condition.If(flipY, float32(-1), 1)
+	sprite.PivotX, sprite.PivotY = 0, pivotY
 	sprite.Angle = ang
 	return sprite
 }
