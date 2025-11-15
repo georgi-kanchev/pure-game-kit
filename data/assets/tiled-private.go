@@ -28,7 +28,7 @@ func tryTemplate(layer []*internal.LayerObjects, directory string) {
 			cachedTemplates[path] = template
 		}
 
-		var newObj = template.Object
+		var newObj = *template.Object // copy
 		newObj.X, newObj.Y = o.X, o.Y
 		newObj.Width = condition.If(o.Width != 0, o.Width, newObj.Width)
 		newObj.Height = condition.If(o.Height != 0, o.Height, newObj.Height)
@@ -36,8 +36,13 @@ func tryTemplate(layer []*internal.LayerObjects, directory string) {
 		newObj.Name = condition.If(o.Name != "", o.Name, newObj.Name)
 		newObj.Class = condition.If(o.Class != "", o.Class, newObj.Class)
 		newObj.Visible = condition.If(o.Visible != "", o.Visible, newObj.Visible)
-		newObj.Polygon.Points = condition.If(o.Polygon.Points != "", o.Polygon.Points, newObj.Polygon.Points)
-		newObj.Polyline.Points = condition.If(o.Polyline.Points != "", o.Polyline.Points, newObj.Polyline.Points)
+
+		if o.Polygon != nil {
+			newObj.Polygon.Points = o.Polygon.Points
+		}
+		if o.Polyline != nil {
+			newObj.Polyline.Points = o.Polyline.Points
+		}
 
 		for _, prop := range o.Properties {
 			var has, p = hasProp(prop.Name, newObj.Properties)
@@ -52,13 +57,13 @@ func tryTemplate(layer []*internal.LayerObjects, directory string) {
 	}
 }
 
-func hasProp(name string, props []internal.Property) (bool, internal.Property) {
+func hasProp(name string, props []*internal.Property) (bool, *internal.Property) {
 	for _, prop := range props {
 		if prop.Name == name {
 			return true, prop
 		}
 	}
-	return false, internal.Property{}
+	return false, nil
 }
 
 func tryCacheLayerTileIds(data *internal.Map, layers *internal.Layers) {

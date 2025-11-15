@@ -3,8 +3,11 @@ package tiled
 import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/debug"
+	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
+	"pure-game-kit/utility/number"
+	"slices"
 )
 
 type Tileset struct {
@@ -12,6 +15,26 @@ type Tileset struct {
 	Properties map[string]any
 	Tiles      []*Tile
 }
+
+func (tileset *Tileset) Sprites() []*graphics.Sprite {
+	var sprites = []*graphics.Sprite{}
+	var columns = tileset.Properties[property.TilesetColumns].(int)
+	var x, y float32 = 0, 0
+	for i, tile := range tileset.Tiles {
+		var sprite = tile.Sprite()
+		x += sprite.Width
+		if i%columns == 0 {
+			x = 0
+			y += sprite.Height
+		}
+
+		sprite.X, sprite.Y = x, y-sprite.Height
+		sprites = append(sprites, sprite)
+	}
+	return sprites
+}
+
+//=================================================================
 
 func newTileset(tilesetId string, project *Project) *Tileset {
 	var data, _ = internal.TiledTilesets[tilesetId]
@@ -40,35 +63,64 @@ func newTileset(tilesetId string, project *Project) *Tileset {
 
 //=================================================================
 
-func (t *Tileset) initProperties(data *internal.Tileset) {
+func (tileset *Tileset) initProperties(data *internal.Tileset) {
 	var rows = 0
 	if data.Columns != 0 {
 		rows = data.TileCount / data.Columns
 	}
 
-	t.Properties = make(map[string]any)
-	t.Properties[property.TilesetName] = data.Name
-	t.Properties[property.TilesetClass] = data.Class
-	t.Properties[property.TilesetTileWidth] = data.TileWidth
-	t.Properties[property.TilesetTileHeight] = data.TileHeight
-	t.Properties[property.TilesetColumns] = data.Columns
-	t.Properties[property.TilesetRows] = rows
-	t.Properties[property.TilesetOffsetX] = data.Offset.X
-	t.Properties[property.TilesetOffsetY] = data.Offset.Y
-	t.Properties[property.TilesetSpacing] = data.Spacing
+	tileset.Properties = make(map[string]any)
+	tileset.Properties[property.TilesetName] = data.Name
+	tileset.Properties[property.TilesetClass] = data.Class
+	tileset.Properties[property.TilesetTileWidth] = data.TileWidth
+	tileset.Properties[property.TilesetTileHeight] = data.TileHeight
+	tileset.Properties[property.TilesetColumns] = data.Columns
+	tileset.Properties[property.TilesetRows] = rows
+	tileset.Properties[property.TilesetSpacing] = data.Spacing
+	tileset.Properties[property.TilesetOffsetX] = 0
+	tileset.Properties[property.TilesetOffsetY] = 0
 
-	if data.Image.Source != "" {
-		t.Properties[property.TilesetAtlasId] = path.New(path.Folder(data.AssetId), data.Image.Source)
+	if data.Offset != nil {
+		tileset.Properties[property.TilesetOffsetX] = data.Offset.X
+		tileset.Properties[property.TilesetOffsetY] = data.Offset.Y
+	}
+
+	if data.Image != nil {
+		tileset.Properties[property.TilesetAtlasId] = path.New(path.Folder(data.AssetId), data.Image.Source)
 	}
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(prop, t.Project)
+		tileset.Properties[prop.Name] = parseProperty(prop, tileset.Project)
 	}
 }
-func (t *Tileset) initTiles(data *internal.Tileset) {
-	t.Tiles = make([]*Tile, len(data.Tiles))
+func (tileset *Tileset) initTiles(data *internal.Tileset) {
+	var tiles = map[uint32]*Tile{}
+	var keys = make([]uint32, 0, data.TileCount)
+	tileset.Tiles = make([]*Tile, data.TileCount)
 
-	for i, tile := range data.Tiles {
-		t.Tiles[i] = newTile(data.AssetId, tile.Id, t)
+	for _, tile := range data.Tiles {
+		keys = append(keys, tile.Id)
+		tiles[tile.Id] = newTile(data.AssetId, tile.Id, tileset)
+	}
+
+	if data.Columns != 0 {
+		var cols, rows = data.Columns, data.TileCount / data.Columns
+		for i := range cols {
+			for j := range rows {
+				var tileId = uint32(number.Indexes2DToIndex1D(i, j, rows, data.Columns))
+				if tiles[tileId] == nil {
+					keys = append(keys, tileId)
+					tiles[tileId] = newTile(data.AssetId, tileId, tileset)
+				}
+			}
+		}
+	}
+
+	slices.Sort(keys)
+
+	var i = 0
+	for _, key := range keys {
+		tileset.Tiles[i] = tiles[key]
+		i++
 	}
 }

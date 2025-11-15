@@ -38,7 +38,8 @@ func (object *Object) Sprite() *graphics.Sprite {
 	id = flag.TurnOff(id, internal.FlipY)
 
 	if object.OwnerLayer != nil {
-		curTileset, firstId = currentTileset(object.OwnerLayer.OwnerMap.Tilesets, id)
+		var ownerMap = object.OwnerLayer.OwnerMap
+		curTileset, firstId = currentTileset(ownerMap.Tilesets, ownerMap.TilesetsFirstTileIds, id)
 		worldX = object.OwnerLayer.OwnerMap.Properties[property.MapWorldX].(float32)
 		worldY = object.OwnerLayer.OwnerMap.Properties[property.MapWorldY].(float32)
 	} else if object.OwnerTile == nil {
@@ -84,40 +85,40 @@ func newObject(data *internal.LayerObject, ownerTile *Tile, ownerLayer *Layer) *
 
 //=================================================================
 
-func (t *Object) initProperties(data *internal.LayerObject) {
-	t.Properties = make(map[string]any)
-	t.Properties[property.ObjectId] = data.Id
-	t.Properties[property.ObjectClass] = data.Class
-	t.Properties[property.ObjectTemplate] = data.Template
-	t.Properties[property.ObjectName] = data.Name
-	t.Properties[property.ObjectVisible] = data.Visible != "false"
-	t.Properties[property.ObjectLocked] = data.Locked
-	t.Properties[property.ObjectX] = data.X
-	t.Properties[property.ObjectY] = data.Y
-	t.Properties[property.ObjectWidth] = data.Width
-	t.Properties[property.ObjectHeight] = data.Height
-	t.Properties[property.ObjectRotation] = data.Rotation
-	t.Properties[property.ObjectTileId] = data.Gid
-	t.Properties[property.ObjectFlipX] = flag.IsOn(data.Gid, internal.FlipX)
-	t.Properties[property.ObjectFlipY] = flag.IsOn(data.Gid, internal.FlipY)
+func (object *Object) initProperties(data *internal.LayerObject) {
+	object.Properties = make(map[string]any)
+	object.Properties[property.ObjectId] = data.Id
+	object.Properties[property.ObjectClass] = data.Class
+	object.Properties[property.ObjectTemplate] = data.Template
+	object.Properties[property.ObjectName] = data.Name
+	object.Properties[property.ObjectVisible] = data.Visible != "false"
+	object.Properties[property.ObjectLocked] = data.Locked
+	object.Properties[property.ObjectX] = data.X
+	object.Properties[property.ObjectY] = data.Y
+	object.Properties[property.ObjectWidth] = data.Width
+	object.Properties[property.ObjectHeight] = data.Height
+	object.Properties[property.ObjectRotation] = data.Rotation
+	object.Properties[property.ObjectTileId] = data.Gid
+	object.Properties[property.ObjectFlipX] = flag.IsOn(data.Gid, internal.FlipX)
+	object.Properties[property.ObjectFlipY] = flag.IsOn(data.Gid, internal.FlipY)
 
 	var owner *Project = nil
-	if t.OwnerLayer != nil {
-		owner = t.OwnerLayer.OwnerMap.Project
-	} else if t.OwnerTile == nil {
-		owner = t.OwnerTile.OwnerTileset.Project
+	if object.OwnerLayer != nil {
+		owner = object.OwnerLayer.OwnerMap.Project
+	} else if object.OwnerTile == nil {
+		owner = object.OwnerTile.OwnerTileset.Project
 	}
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(&prop, owner)
+		object.Properties[prop.Name] = parseProperty(prop, owner)
 	}
 }
-func (t *Object) initPoints(data *internal.LayerObject) {
+func (object *Object) initPoints(data *internal.LayerObject) {
 	var ptsData = ""
-	if data.Polyline.Points != "" {
+	if data.Polyline != nil {
 		ptsData = data.Polyline.Points
 	}
-	if data.Polygon.Points != "" {
+	if data.Polygon != nil {
 		ptsData = data.Polygon.Points
 	}
 	if ptsData == "" {
@@ -154,5 +155,5 @@ func (t *Object) initPoints(data *internal.LayerObject) {
 		}
 	}
 
-	t.Points = points
+	object.Points = points
 }

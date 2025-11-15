@@ -20,7 +20,7 @@ func LoadTiledTileset(filePath string) string {
 
 	tileset.AssetId = filePath
 
-	if tileset.Image.Source != "" {
+	if tileset.Image != nil {
 		var textureId = LoadTexture(path.New(path.Folder(filePath), tileset.Image.Source))
 		var atlasId = SetTextureAtlas(textureId, tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
 
@@ -36,21 +36,21 @@ func LoadTiledTileset(filePath string) string {
 	internal.TiledTilesets[tileset.AssetId] = tileset
 	tileset.MappedTiles = map[uint32]*internal.TilesetTile{}
 	for _, tile := range tileset.Tiles {
-		tileset.MappedTiles[tile.Id] = &tile
+		tileset.MappedTiles[tile.Id] = tile
 
 		if len(tile.CollisionLayers) > 0 { // detect templates
 			tryTemplate(tile.CollisionLayers, path.Folder(filePath))
 		}
 
-		if tileset.Image.Source == "" && tile.Image.Source != "" {
+		if tileset.Image == nil && tile.Image != nil {
 			tile.TextureId = LoadTexture(path.New(path.Folder(filePath), tile.Image.Source))
 		}
 
-		if len(tile.Animation.Frames) == 0 {
+		if tile.Animation == nil {
 			continue
 		} // animated tiles below
 
-		if tileset.Image.Source == "" { // tiles are separate images, not in atlas
+		if tileset.Image == nil { // tiles are separate images, not in atlas
 			w, h = tile.Image.Width, tile.Image.Height
 		}
 
@@ -63,7 +63,7 @@ func LoadTiledTileset(filePath string) string {
 		}
 
 		var tileTime = totalAnimDuration
-		tileset.AnimatedTiles = append(tileset.AnimatedTiles, &tile)
+		tileset.AnimatedTiles = append(tileset.AnimatedTiles, tile)
 		tile.IsAnimating = true
 		tile.Update = func() {
 			if !tile.IsAnimating {

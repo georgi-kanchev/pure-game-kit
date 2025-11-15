@@ -3,6 +3,7 @@ package tiled
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/data/path"
+	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
 	"pure-game-kit/utility/collection"
@@ -19,7 +20,12 @@ type Layer struct {
 
 //=================================================================
 
-func (layer *Layer) Sprites() {
+func (layer *Layer) Sprites() []*graphics.Sprite {
+	var result = []*graphics.Sprite{}
+	for _, obj := range layer.Objects {
+		result = append(result, obj.Sprite())
+	}
+	return result
 }
 
 //=================================================================
@@ -68,7 +74,7 @@ func (t *Layer) initProperties(
 		t.Properties[property.LayerDrawOrder] = objs.DrawOrder
 	}
 
-	if img != nil {
+	if img != nil && img.Image != nil {
 		t.Properties[property.LayerImage] = assets.LoadTexture(path.New(dir, img.Image.Source))
 		t.Properties[property.LayerTransparentColor] = color.Hex(img.Image.TransparentColor)
 		t.Properties[property.LayerRepeatX] = img.RepeatX
@@ -76,7 +82,7 @@ func (t *Layer) initProperties(
 	}
 
 	for _, prop := range data.Properties {
-		t.Properties[prop.Name] = parseProperty(&prop, t.OwnerMap.Project)
+		t.Properties[prop.Name] = parseProperty(prop, t.OwnerMap.Project)
 	}
 }
 func (t *Layer) initObjects(data *internal.LayerObjects) {

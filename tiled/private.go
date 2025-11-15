@@ -47,10 +47,11 @@ func parseProperty(prop *internal.Property, project *Project) any {
 	}
 	return prop.Value
 }
-func currentTileset(tilesets map[*Tileset]uint32, tile uint32) (tileset *Tileset, firstId uint32) {
+func currentTileset(tilesets []*Tileset, firstIds []uint32, tile uint32) (tileset *Tileset, firstId uint32) {
 	var result *Tileset
 	var bestFirstId uint32 = 0
-	for tileset, firstId := range tilesets {
+	for i, tileset := range tilesets {
+		var firstId = firstIds[i]
 		if firstId <= tile && firstId >= bestFirstId {
 			bestFirstId = firstId
 			result = tileset
