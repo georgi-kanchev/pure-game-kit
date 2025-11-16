@@ -1,16 +1,18 @@
 package assets
 
+import "pure-game-kit/internal"
+
 func LoadDefaultSoundsUI() []string {
 	var soundIds = []string{
-		loadSound("~press", press),
-		loadSound("~release", release),
-		loadSound("~on", on),
-		loadSound("~off", off),
-		loadSound("~write", write),
-		loadSound("~erase", erase),
-		loadSound("~slider", slider),
-		loadSound("~popup", popup),
-		loadSound("~error", oops),
+		loadSound(internal.DefaultSoundsUI+"press", press),
+		loadSound(internal.DefaultSoundsUI+"release", release),
+		loadSound(internal.DefaultSoundsUI+"on", on),
+		loadSound(internal.DefaultSoundsUI+"off", off),
+		loadSound(internal.DefaultSoundsUI+"write", write),
+		loadSound(internal.DefaultSoundsUI+"erase", erase),
+		loadSound(internal.DefaultSoundsUI+"slider", slider),
+		loadSound(internal.DefaultSoundsUI+"popup", popup),
+		loadSound(internal.DefaultSoundsUI+"error", oops),
 	}
 
 	return soundIds

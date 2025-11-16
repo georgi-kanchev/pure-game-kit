@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"maps"
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/internal"
@@ -9,7 +10,97 @@ import (
 	"pure-game-kit/utility/text"
 )
 
+func LoadTiledProject(filePath string) string {
+	tryCreateWindow()
+
+	var _, has = internal.TiledProjects[filePath]
+	if has {
+		return filePath
+	}
+
+	var data *internal.Project
+	storage.FromFileJSON(filePath, &data)
+	if data == nil {
+		return "" // error is in storage
+	}
+
+	internal.TiledProjects[filePath] = data
+	return filePath
+}
+func LoadTiledMapsFromWorld(filePath string) (mapIds []string) {
+	tryCreateWindow()
+
+	var resultIds = []string{}
+	var world *internal.World
+
+	storage.FromFileJSON(filePath, &world)
+	if world == nil {
+		return resultIds // error is in storage
+	}
+
+	world.Directory = path.Folder(filePath)
+	world.Name = path.RemoveExtension(path.LastPart(filePath))
+
+	for _, m := range world.Maps {
+		var mapId = LoadTiledMap(path.New(world.Directory, m.FileName))
+
+		if !collection.Contains(resultIds, mapId) {
+			resultIds = append(resultIds, mapId)
+		}
+
+		var mp, _ = internal.TiledMaps[mapId]
+		mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
+	}
+
+	return resultIds
+}
+func LoadTiledMap(filePath string) string {
+	tryCreateWindow()
+
+	var _, has = internal.TiledMaps[filePath]
+	if has {
+		return filePath
+	}
+
+	var mapData *internal.Map
+	storage.FromFileXML(filePath, &mapData)
+	if mapData == nil {
+		return "" // error is in storage
+	}
+
+	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
+	mapData.Directory = path.Folder(filePath)
+	mapData.FirstTileIds = make([]uint32, len(mapData.Tilesets))
+	internal.TiledMaps[filePath] = mapData
+
+	for i, t := range mapData.Tilesets {
+		LoadTiledTileset(path.New(mapData.Directory, t.Source))
+
+		// the tileset has no concept of first tile ids, it's a map concept
+		// even though it's a tileset field (because of map embedded tilesets)
+		mapData.FirstTileIds[i] = t.FirstTileId // so store it in map
+		t.FirstTileId = 0                       // and zero it out in tileset to prevent any confusion
+	}
+
+	tryCacheLayerTileIds(mapData, &mapData.Layers)
+
+	if mapData.LayersObjects != nil {
+		tryTemplate(mapData.LayersObjects, mapData.Directory)
+	}
+	for _, grp := range mapData.LayersGroups {
+		tryTemplate(grp.LayersObjects, mapData.Directory)
+	}
+
+	return filePath
+}
 func LoadTiledTileset(filePath string) string {
+	tryCreateWindow()
+
+	var _, has = internal.TiledTilesets[filePath]
+	if has {
+		return filePath
+	}
+
 	var tileset *internal.Tileset
 	var w, h = 0, 0
 
@@ -85,86 +176,9 @@ func LoadTiledTileset(filePath string) string {
 
 	return filePath
 }
-func LoadTiledWorld(filePath string) (mapIds []string) {
-	var resultIds = []string{}
-	var world *internal.World
 
-	storage.FromFileJSON(filePath, &world)
-	if world == nil {
-		return resultIds // error is in storage
-	}
-
-	world.Directory = path.Folder(filePath)
-	world.Name = path.RemoveExtension(path.LastPart(filePath))
-
-	for _, m := range world.Maps {
-		var mapPath = path.New(world.Directory, m.FileName)
-		var name = path.RemoveExtension(path.LastPart(mapPath))
-
-		if collection.Contains(resultIds, name) {
-			continue
-		}
-
-		var mapIds = LoadTiledMap(mapPath)
-		if len(mapIds) == 0 {
-			continue
-		}
-
-		resultIds = append(resultIds, mapIds)
-		var mp, _ = internal.TiledMaps[mapIds]
-		mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
-
-		if mp.LayersObjects != nil {
-			tryTemplate(mp.LayersObjects, world.Directory)
-		}
-
-		for _, grp := range mp.LayersGroups {
-			tryTemplate(grp.LayersObjects, world.Directory)
-		}
-	}
-
-	return resultIds
-}
-func LoadTiledMap(filePath string) string {
-	var mapData *internal.Map
-
-	storage.FromFileXML(filePath, &mapData)
-	if mapData == nil {
-		return "" // error is in storage
-	}
-
-	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
-	mapData.Directory = path.Folder(filePath)
-	mapData.FirstTileIds = make([]uint32, len(mapData.Tilesets))
-	internal.TiledMaps[filePath] = mapData
-
-	for i, t := range mapData.Tilesets {
-		LoadTiledTileset(path.New(mapData.Directory, t.Source))
-
-		// the tileset has no concept of first tile ids, it's a map concept
-		// even though it's a tileset field (because of map embedded tilesets)
-		mapData.FirstTileIds[i] = t.FirstTileId // so store it in map
-		t.FirstTileId = 0                       // and zero it out in tileset to prevent any confusion
-	}
-
-	tryCacheLayerTileIds(mapData, &mapData.Layers)
-
-	return filePath
-}
-func LoadTiledProject(filePath string) string {
-	var data *internal.Project
-
-	storage.FromFileJSON(filePath, &data)
-	if data == nil {
-		return "" // error is in storage
-	}
-
-	internal.TiledProjects[filePath] = data
-	return filePath
-}
-
-func UnloadTiledWorld(worldFilePath string) {
-	var ids = LoadTiledWorld(worldFilePath)
+func UnloadTiledMapsFromWorld(worldFilePath string) {
+	var ids = LoadTiledMapsFromWorld(worldFilePath)
 	for _, id := range ids {
 		UnloadTiledMap(id)
 	}
@@ -189,16 +203,8 @@ func UnloadTiledTileset(tilesetId string) {
 
 	delete(internal.TiledTilesets, tilesetId)
 }
-
-func ReloadAllTiledMaps() {
-	for id := range internal.TiledMaps {
-		LoadTiledMap(id)
-	}
-}
-func ReloadAllTiledTilesets() {
-	for id := range internal.TiledTilesets {
-		LoadTiledTileset(id)
-	}
+func UnloadTiledProject(projectId string) {
+	delete(internal.TiledProjects, projectId)
 }
 
 func UnloadAllTiledMaps() {
@@ -209,5 +215,32 @@ func UnloadAllTiledMaps() {
 func UnloadAllTiledTilesets() {
 	for id := range internal.TiledTilesets {
 		UnloadTiledTileset(id)
+	}
+}
+func UnloadAllTiledProjects() {
+	for id := range internal.TiledProjects {
+		UnloadTiledProject(id)
+	}
+}
+
+func ReloadAllTiledMaps() {
+	var loaded = maps.Keys(internal.TiledMaps)
+	UnloadAllTiledMaps()
+	for id := range loaded {
+		LoadTiledMap(id)
+	}
+}
+func ReloadAllTiledTilesets() {
+	var loaded = maps.Keys(internal.TiledTilesets)
+	UnloadAllTiledTilesets()
+	for id := range loaded {
+		LoadTiledTileset(id)
+	}
+}
+func ReloadAllTiledProjects() {
+	var loaded = maps.Keys(internal.TiledProjects)
+	UnloadAllTiledProjects()
+	for id := range loaded {
+		LoadTiledProject(id)
 	}
 }

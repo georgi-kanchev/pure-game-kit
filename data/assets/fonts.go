@@ -8,29 +8,32 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadFont(size int, filePath string) []string {
-	var result = []string{}
+func LoadFont(size int, filePath string) string {
+	tryCreateWindow()
+
+	var _, has = internal.Fonts[filePath]
+	if has {
+		return filePath
+	}
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find font file: \"", filePath, "\"")
-		return result
+		return ""
 	}
 
 	var bytes = file.LoadBytes(filePath)
 	var success = loadFont(filePath, size, bytes)
 
-	if success {
-		result = append(result, filePath)
-	} else {
+	if !success {
 		debug.LogError("Failed to load font file: \"", filePath, "\"")
+		return ""
 	}
-
-	return result
+	return filePath
 }
 func UnloadFont(fontId string) {
 	var font, has = internal.Fonts[fontId]
 
-	if has {
+	if has && !isDefault(fontId) {
 		delete(internal.Fonts, fontId)
 		rl.UnloadFont(*font)
 	}

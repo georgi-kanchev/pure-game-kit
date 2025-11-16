@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"maps"
 	"pure-game-kit/data/file"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
@@ -11,40 +12,36 @@ import (
 func LoadTexture(filePath string) string {
 	tryCreateWindow()
 
-	var result = ""
-	var tex, has = internal.Textures[filePath]
+	var _, has = internal.Textures[filePath]
+	if has {
+		return filePath
+	}
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find image file: \"", filePath, "\"")
-		return result
-	}
-
-	if has { // hot reloading?
-		rl.UnloadTexture(*tex)
+		return ""
 	}
 
 	var texture = rl.LoadTexture(filePath)
-
-	if texture.Width != 0 {
-		internal.Textures[filePath] = &texture
-		result = filePath
-	} else {
+	if texture.Width == 0 {
 		debug.LogError("Failed to load image file: \"", filePath, "\"")
+		return ""
 	}
-
-	return result
+	internal.Textures[filePath] = &texture
+	return filePath
 }
 func UnloadTexture(textureId string) {
 	var tex, has = internal.Textures[textureId]
-	delete(internal.Textures, textureId)
-
-	if has {
+	if has && !isDefault(textureId) {
+		delete(internal.Textures, textureId)
 		rl.UnloadTexture(*tex)
 	}
 }
 
 func ReloadAllTextures() {
-	for id := range internal.Textures {
+	var loaded = maps.Keys(internal.Textures)
+	UnloadAllTextures()
+	for id := range loaded {
 		LoadTexture(id)
 	}
 }
@@ -147,6 +144,10 @@ func RemoveTextureAreas(areaId string) {
 	RemoveTextureAtlasTiles(areaId)
 }
 func RemoveTextureAtlases(atlasId string) {
+	if isDefault(atlasId) {
+		return
+	}
+
 	delete(internal.Atlases, atlasId)
 
 	for i, a := range internal.AtlasRects {
@@ -156,8 +157,12 @@ func RemoveTextureAtlases(atlasId string) {
 	}
 }
 func RemoveTextureAtlasTiles(tileId string) {
-	delete(internal.AtlasRects, tileId)
+	if !isDefault(tileId) {
+		delete(internal.AtlasRects, tileId)
+	}
 }
 func RemoveTextureBoxes(boxId string) {
-	delete(internal.Boxes, boxId)
+	if !isDefault(boxId) {
+		delete(internal.Boxes, boxId)
+	}
 }

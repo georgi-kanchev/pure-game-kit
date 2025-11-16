@@ -1,8 +1,9 @@
 package assets
 
+import "pure-game-kit/internal"
+
 func LoadDefaultAtlasIcons() (atlasId string, tileIds []string) {
-	const symbol = "@"
-	var tex = loadTexture(symbol, icons)
+	var tex = loadTexture(internal.DefaultIcons, icons)
 	var id = SetTextureAtlas(tex, 50, 50, 0)
 	var ids = []string{
 		"club", "spade", "diamond1", "heart", "heart-broken", "shape",
@@ -38,7 +39,7 @@ func LoadDefaultAtlasIcons() (atlasId string, tileIds []string) {
 
 	for i := range ids {
 		if ids[i] != "" {
-			ids[i] = symbol + ids[i]
+			ids[i] = internal.DefaultIcons + ids[i]
 		}
 	}
 	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)

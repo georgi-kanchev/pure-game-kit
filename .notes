@@ -2,11 +2,19 @@
 tiled real object pointer properties
 tiled skip loading tilesets multiple times per world
 
+grid pathfinding
+off-grid navmesh pathfinding
 alpha blending, additive, multiply
 shader effects, port?
 simple particles, port?
 
 // DONE:
+[102] [Sun] [16-11-2025]
+text - New func added struct & *struct + number improvement
+number - Format func added same improvement
+assets - tweaks to loading, return values, tryCreateWindow, default assets, reloading, unloading etc
+assets - decided against load queue, better done game-side
+
 [101] [Sat] [15-11-2025]
 tiled/assets - pointers instead of structs everywhere
 tiled - tiles & tilesets sprites

@@ -1,17 +1,17 @@
 package assets
 
 import (
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
 )
 
 func LoadDefaultAtlasPatterns() (atlasId string, tileIds []string) {
-	const symbol = "&"
-	var tex = loadTexture(symbol, patterns)
+	var tex = loadTexture(internal.DefaultPatterns, patterns)
 	var id = SetTextureAtlas(tex, 64, 64, 1)
 	var ids = []string{}
 
 	for i := range 84 {
-		ids = append(ids, symbol+text.New(i))
+		ids = append(ids, internal.DefaultPatterns+text.New(i))
 	}
 	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
 	return id, tiles

@@ -13,26 +13,26 @@ type Integer interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64
 }
 
-func Format[T Number](number T, divideThousands bool) string {
-	var str string
-
+func Format[T Number](number T) string {
 	switch v := any(number).(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-		str = fmt.Sprintf("%d", v)
+		return fmt.Sprintf("%d", v)
 	case float32:
-		str = strconv.FormatFloat(float64(v), 'f', -1, 32)
+		return strconv.FormatFloat(float64(v), 'f', -1, 32)
 	case float64:
-		str = strconv.FormatFloat(v, 'f', -1, 64)
+		return strconv.FormatFloat(v, 'f', -1, 64)
 	default:
-		str = fmt.Sprint(v) // Fallback just in case
+		return fmt.Sprint(v) // fallback
 	}
-
+}
+func SeparateThousands[T Number](number T) string {
+	var str = Format(number)
 	var parts = strings.SplitN(str, ".", 2)
 	var intPart = parts[0]
 	var result = ""
 	var n = len(intPart)
 	for i, c := range intPart {
-		if i > 0 && (n-i)%3 == 0 && divideThousands {
+		if i > 0 && (n-i)%3 == 0 {
 			result += " "
 		}
 		result += string(c)
@@ -42,7 +42,6 @@ func Format[T Number](number T, divideThousands bool) string {
 		result += "."
 		result += parts[1]
 	}
-
 	return result
 }
 

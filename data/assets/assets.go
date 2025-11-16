@@ -2,6 +2,7 @@ package assets
 
 import (
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/text"
 	"pure-game-kit/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -13,6 +14,7 @@ func UnloadAll() {
 	UnloadAllMusic()
 	UnloadAllTiledMaps()
 	UnloadAllTiledTilesets()
+	UnloadAllTiledProjects()
 }
 func ReloadAll() {
 	ReloadAllTextures()
@@ -20,6 +22,7 @@ func ReloadAll() {
 	ReloadAllMusic()
 	ReloadAllTiledMaps()
 	ReloadAllTiledTilesets()
+	ReloadAllTiledProjects()
 }
 
 //=================================================================
@@ -32,6 +35,7 @@ func IsLoaded(assetId string) bool {
 }
 
 //=================================================================
+// private
 // private
 
 func tryCreateWindow() {
@@ -49,4 +53,8 @@ func tryInitShader() {
 	if internal.ShaderText.ID == 0 {
 		internal.ShaderText = rl.LoadShaderFromMemory("", frag)
 	}
+}
+
+func isDefault(id string) bool {
+	return !text.Contains(id, ".") // files have '.' in them (folder/name.extension) but default asset ids don't
 }

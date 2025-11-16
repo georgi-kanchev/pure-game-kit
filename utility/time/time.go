@@ -65,7 +65,7 @@ func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm
 
 	if flag.IsOn(units, unit.Day) {
 		var val = int(ts.Hours() / 24)
-		var str = text.PadRight(number.Format(val, true), 2, "0")
+		var str = text.PadRight(number.Format(val), 2, "0")
 		parts = append(parts, str)
 		counter++
 	}

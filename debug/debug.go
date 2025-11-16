@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"runtime/pprof"
 	"sort"
@@ -337,19 +338,36 @@ func byteSize(byteSize int) string {
 	return fmt.Sprintf("%.3f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }
 
-// mostly copies utility/text.New() and utility/number.Format()
+// copied from utility/text.New()
 func elements(elements ...any) string {
 	var result = ""
 	for _, e := range elements {
 		switch v := e.(type) {
 		case string:
 			result += v
-		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64:
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
 			result += fmt.Sprintf("%d", v)
+		case float32:
+			result += strconv.FormatFloat(float64(v), 'f', -1, 32)
+		case float64:
+			result += strconv.FormatFloat(v, 'f', -1, 64)
 		case fmt.Stringer:
 			result += v.String()
 		default:
-			result += fmt.Sprint(v) // fallback for any other type
+			var value = reflect.ValueOf(e)
+			var valueType = value.Type()
+
+			if valueType.Kind() == reflect.Struct {
+				result += fmt.Sprintf("%+v", e) // struct
+				continue
+			}
+
+			if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
+				result += fmt.Sprintf("%+v", value.Elem().Interface()) // pointer to struct
+				continue
+			}
+
+			result += fmt.Sprint(e) // fallback
 		}
 	}
 	return result

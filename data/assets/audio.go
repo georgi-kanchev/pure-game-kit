@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"maps"
 	"pure-game-kit/data/file"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
@@ -12,61 +13,54 @@ func LoadSound(filePath string) string {
 	tryCreateWindow()
 	tryInitAudio()
 
-	var result = ""
+	var _, has = internal.Sounds[filePath]
+	if has {
+		return filePath
+	}
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")
-		return result
+		return ""
 	}
 
 	var sound = rl.LoadSound(filePath)
-	if sound.FrameCount != 0 {
-		internal.Sounds[filePath] = &sound
-		result = filePath
-	} else {
+	if sound.FrameCount == 0 {
 		debug.LogError("Failed to load audio file: \"", filePath, "\"")
+		return ""
 	}
 
-	return result
+	internal.Sounds[filePath] = &sound
+	return filePath
 }
 func LoadMusic(filePath string) string {
 	tryCreateWindow()
 	tryInitAudio()
 
-	var result = ""
+	var _, has = internal.Music[filePath]
+	if has {
+		return filePath
+	}
 
 	if !file.IsExisting(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")
-		return result
+		return ""
 	}
 
 	var music = rl.LoadMusicStream(filePath)
-	if music.FrameCount != 0 {
-		music.Looping = false
-		internal.Music[filePath] = &music
-		result = filePath
-	} else {
+	if music.FrameCount == 0 {
 		debug.LogError("Failed to load audio file: \"", filePath, "\"")
+		return ""
 	}
 
-	return result
-}
-
-func ReloadAllSounds() {
-	for id := range internal.Sounds {
-		LoadSound(id)
-	}
-}
-func ReloadAllMusic() {
-	for id := range internal.Music {
-		LoadMusic(id)
-	}
+	music.Looping = false
+	internal.Music[filePath] = &music
+	return filePath
 }
 
 func UnloadSound(soundId string) {
 	var sound, has = internal.Sounds[soundId]
 
-	if has {
+	if has && !isDefault(soundId) {
 		delete(internal.Sounds, soundId)
 		rl.UnloadSound(*sound)
 	}
@@ -77,6 +71,21 @@ func UnloadMusic(musicId string) {
 	if has {
 		delete(internal.Music, musicId)
 		rl.UnloadMusicStream(*music)
+	}
+}
+
+func ReloadAllSounds() {
+	var loaded = maps.Keys(internal.Sounds)
+	UnloadAllSounds()
+	for id := range loaded {
+		LoadSound(id)
+	}
+}
+func ReloadAllMusic() {
+	var loaded = maps.Keys(internal.Music)
+	UnloadAllMusic()
+	for id := range loaded {
+		LoadMusic(id)
 	}
 }
 

@@ -1,8 +1,9 @@
 package assets
 
+import "pure-game-kit/internal"
+
 func LoadDefaultAtlasCursors() (atlasId string, tileIds []string) {
-	const symbol = "^"
-	var tex = loadTexture(symbol, cursors)
+	var tex = loadTexture(internal.DefaultCursors, cursors)
 	var id = SetTextureAtlas(tex, 32, 32, 0)
 	var ids = []string{
 		"pointer1", "pointer2", "pointer3", "pointer4", "pointer5", "pointer6", "pointer7", "pointer8",
@@ -27,7 +28,7 @@ func LoadDefaultAtlasCursors() (atlasId string, tileIds []string) {
 
 	for i := range ids {
 		if ids[i] != "" {
-			ids[i] = symbol + ids[i]
+			ids[i] = internal.DefaultCursors + ids[i]
 		}
 	}
 	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)

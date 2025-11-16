@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"pure-game-kit/utility/number"
+	"reflect"
 
 	"strconv"
 	"strings"
@@ -28,34 +29,29 @@ func New(elements ...any) string {
 		switch v := e.(type) {
 		case string:
 			result += v
-		case int:
-			result += number.Format(int64(v), false)
-		case int8:
-			result += number.Format(int64(v), false)
-		case int16:
-			result += number.Format(int64(v), false)
-		case int32:
-			result += number.Format(int64(v), false)
-		case int64:
-			result += number.Format(v, false)
-		case uint:
-			result += number.Format(uint64(v), false)
-		case uint8:
-			result += number.Format(uint64(v), false)
-		case uint16:
-			result += number.Format(uint64(v), false)
-		case uint32:
-			result += number.Format(uint64(v), false)
-		case uint64:
-			result += number.Format(v, false)
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+			result += fmt.Sprintf("%d", v)
 		case float32:
-			result += number.Format(float64(v), false)
+			result += strconv.FormatFloat(float64(v), 'f', -1, 32)
 		case float64:
-			result += number.Format(v, false)
+			result += strconv.FormatFloat(v, 'f', -1, 64)
 		case fmt.Stringer:
 			result += v.String()
 		default:
-			result += fmt.Sprint(v) // fallback for any other type
+			var value = reflect.ValueOf(e)
+			var valueType = value.Type()
+
+			if valueType.Kind() == reflect.Struct {
+				result += fmt.Sprintf("%+v", e) // struct
+				continue
+			}
+
+			if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
+				result += fmt.Sprintf("%+v", value.Elem().Interface()) // pointer to struct
+				continue
+			}
+
+			result += fmt.Sprint(e) // fallback
 		}
 	}
 	return result

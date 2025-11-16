@@ -40,6 +40,17 @@ var Boxes = make(map[string][9]string)
 var Fonts = make(map[string]*rl.Font)
 var ShaderText = rl.Shader{}
 
+const DefaultFont = ""
+const DefaultTexture = ""
+const DefaultCursors = "^"
+const DefaultIcons = "@"
+const DefaultInputLeft = "["
+const DefaultInputRight = "]"
+const DefaultPatterns = "&"
+const DefaultRetroAtlas = "#"
+const DefaultUI = "!"
+const DefaultSoundsUI = "~"
+
 //=================================================================
 
 var Cursor int
@@ -49,6 +60,8 @@ var KeysPrev = []int{}
 var Buttons = []int{}
 var AnyButtonPressedOnce = false
 var AnyButtonReleasedOnce = false
+
+//=================================================================
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
@@ -175,6 +188,18 @@ func updateKeysAndButtons() {
 		Buttons = []int{}
 	}
 }
+func updateMusic() {
+	for _, v := range Music {
+		rl.UpdateMusicStream(*v)
+	}
+}
+func updateAnimatedTiles() {
+	for _, tileset := range TiledTilesets {
+		for _, tile := range tileset.AnimatedTiles {
+			tile.Update()
+		}
+	}
+}
 
 func checkKeyRange(from, to int) {
 	for i := from; i < to+1; i++ {
@@ -187,21 +212,8 @@ func checkKeyRange(from, to int) {
 	}
 }
 
-func updateMusic() {
-	for _, v := range Music {
-		rl.UpdateMusicStream(*v)
-	}
-}
 func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, milliseconds int) {
 	seconds = int(float32(frameCount) / float32(stream.SampleRate))
 	milliseconds = int(math.Mod(float64(seconds), 1.0) * 1000)
 	return
-}
-
-func updateAnimatedTiles() {
-	for _, tileset := range TiledTilesets {
-		for _, tile := range tileset.AnimatedTiles {
-			tile.Update()
-		}
-	}
 }
