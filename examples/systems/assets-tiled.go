@@ -25,7 +25,6 @@ func Tiled() {
 
 	var sprites = desert.Tilesets[0].Sprites()
 
-	assets.LoadDefaultTexture()
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DragAndZoom()

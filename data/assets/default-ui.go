@@ -1,9 +1,7 @@
 package assets
 
-import "pure-game-kit/internal"
-
 func LoadDefaultAtlasUI() (atlasId string, tileIds []string, boxIds []string) {
-	var tex = loadTexture(internal.DefaultUI, ui)
+	var tex = loadTexture(defaultUI, ui)
 	var id = SetTextureAtlas(tex, 16, 16, 0)
 	var t = []string{
 		"out1-tl", "out1-t", "out1-tr", "out2-tl", "out2-t", "out2-tr", "out3-tl", "out3-t", "out3-tr",
@@ -18,26 +16,26 @@ func LoadDefaultAtlasUI() (atlasId string, tileIds []string, boxIds []string) {
 
 	for i := range t {
 		if t[i] != "" {
-			t[i] = internal.DefaultUI + t[i]
+			t[i] = defaultUI + t[i]
 		}
 	}
 	var tiles = SetTextureAtlasTiles(id, 0, 0, t...)
 	boxIds = []string{
-		SetTextureBox(internal.DefaultUI+"out1", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[18], t[19], t[20]}),
-		SetTextureBox(internal.DefaultUI+"out1-", [9]string{t[27], t[28], t[29], t[9], t[10], t[11], t[18], t[19], t[20]}),
-		SetTextureBox(internal.DefaultUI+"out1+", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[36], t[37], t[38]}),
-		SetTextureBox(internal.DefaultUI+"out2", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[21], t[22], t[23]}),
-		SetTextureBox(internal.DefaultUI+"out2-", [9]string{t[30], t[31], t[32], t[12], t[13], t[14], t[21], t[22], t[23]}),
-		SetTextureBox(internal.DefaultUI+"out2+", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[39], t[40], t[41]}),
-		SetTextureBox(internal.DefaultUI+"out3", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[24], t[25], t[26]}),
-		SetTextureBox(internal.DefaultUI+"out3-", [9]string{t[33], t[34], t[35], t[15], t[16], t[17], t[24], t[25], t[26]}),
-		SetTextureBox(internal.DefaultUI+"out3+", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[42], t[43], t[44]}),
-		SetTextureBox(internal.DefaultUI+"in", [9]string{t[45], t[46], t[47], t[54], t[55], t[56], t[63], t[64], t[65]}),
-		SetTextureBox(internal.DefaultUI+"step", [9]string{"", "", "", t[48], t[58], t[50], "", "", ""}),
-		SetTextureBox(internal.DefaultUI+"bar", [9]string{"", "", "", t[57], t[58], t[59], "", "", ""}),
-		SetTextureBox(internal.DefaultUI+"divider", [9]string{"", "", "", t[66], t[67], t[68], "", "", ""}),
-		SetTextureBox(internal.DefaultUI+"circle", [9]string{t[51], "", t[52], "", "", "", t[60], "", t[61]}),
-		SetTextureAtlasTile(id, internal.DefaultUI+"handle", 8, 6, 1, 2, 0, false),
+		SetTextureBox(defaultUI+"out1", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[18], t[19], t[20]}),
+		SetTextureBox(defaultUI+"out1-", [9]string{t[27], t[28], t[29], t[9], t[10], t[11], t[18], t[19], t[20]}),
+		SetTextureBox(defaultUI+"out1+", [9]string{t[0], t[1], t[2], t[9], t[10], t[11], t[36], t[37], t[38]}),
+		SetTextureBox(defaultUI+"out2", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[21], t[22], t[23]}),
+		SetTextureBox(defaultUI+"out2-", [9]string{t[30], t[31], t[32], t[12], t[13], t[14], t[21], t[22], t[23]}),
+		SetTextureBox(defaultUI+"out2+", [9]string{t[3], t[4], t[5], t[12], t[13], t[14], t[39], t[40], t[41]}),
+		SetTextureBox(defaultUI+"out3", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[24], t[25], t[26]}),
+		SetTextureBox(defaultUI+"out3-", [9]string{t[33], t[34], t[35], t[15], t[16], t[17], t[24], t[25], t[26]}),
+		SetTextureBox(defaultUI+"out3+", [9]string{t[6], t[7], t[8], t[15], t[16], t[17], t[42], t[43], t[44]}),
+		SetTextureBox(defaultUI+"in", [9]string{t[45], t[46], t[47], t[54], t[55], t[56], t[63], t[64], t[65]}),
+		SetTextureBox(defaultUI+"step", [9]string{"", "", "", t[48], t[58], t[50], "", "", ""}),
+		SetTextureBox(defaultUI+"bar", [9]string{"", "", "", t[57], t[58], t[59], "", "", ""}),
+		SetTextureBox(defaultUI+"divider", [9]string{"", "", "", t[66], t[67], t[68], "", "", ""}),
+		SetTextureBox(defaultUI+"circle", [9]string{t[51], "", t[52], "", "", "", t[60], "", t[61]}),
+		SetTextureAtlasTile(id, defaultUI+"handle", 8, 6, 1, 2, 0, false),
 	}
 
 	return id, tiles, boxIds

@@ -38,6 +38,17 @@ func IsLoaded(assetId string) bool {
 // private
 // private
 
+const defaultFont = ""
+const defaultTexture = ""
+const defaultCursors = "^"
+const defaultIcons = "@"
+const defaultInputLeft = "["
+const defaultInputRight = "]"
+const defaultPatterns = "&"
+const defaultRetroAtlas = "#"
+const defaultUI = "!"
+const defaultSoundsUI = "~"
+
 func tryCreateWindow() {
 	if !rl.IsWindowReady() {
 		window.Recreate()

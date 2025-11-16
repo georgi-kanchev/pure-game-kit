@@ -1,9 +1,7 @@
 package assets
 
-import "pure-game-kit/internal"
-
 func LoadDefaultAtlasRetro() (atlasId string, tileIds []string) {
-	var tex = loadTexture(internal.DefaultRetroAtlas, retro)
+	var tex = loadTexture(defaultRetroAtlas, retro)
 	var id = SetTextureAtlas(tex, 8, 8, 1)
 	var ids = []string{
 		"empty", "shade1", "shade2", "shade3", "shade4", "shade5", "shade6", "shade7", "shade8", "shade9", "full",
@@ -71,7 +69,7 @@ func LoadDefaultAtlasRetro() (atlasId string, tileIds []string) {
 
 	for i := range ids {
 		if ids[i] != "" {
-			ids[i] = internal.DefaultRetroAtlas + ids[i]
+			ids[i] = defaultRetroAtlas + ids[i]
 		}
 	}
 	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)

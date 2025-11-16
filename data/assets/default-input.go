@@ -1,9 +1,7 @@
 package assets
 
-import "pure-game-kit/internal"
-
 func LoadDefaultAtlasInput() (atlasId string, tileIds []string) {
-	var tex = loadTexture(internal.DefaultInputLeft+internal.DefaultInputRight, input)
+	var tex = loadTexture(defaultInputLeft+defaultInputRight, input)
 	var id = SetTextureAtlas(tex, 50, 50, 0)
 	var ids = []string{
 		"escape", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "f10", "f11", "f12", "print", "pause",
@@ -18,7 +16,7 @@ func LoadDefaultAtlasInput() (atlasId string, tileIds []string) {
 
 	for i := range ids {
 		if ids[i] != "" {
-			ids[i] = internal.DefaultInputLeft + ids[i] + internal.DefaultInputRight
+			ids[i] = defaultInputLeft + ids[i] + defaultInputRight
 		}
 	}
 	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)

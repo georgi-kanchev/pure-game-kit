@@ -40,17 +40,6 @@ var Boxes = make(map[string][9]string)
 var Fonts = make(map[string]*rl.Font)
 var ShaderText = rl.Shader{}
 
-const DefaultFont = ""
-const DefaultTexture = ""
-const DefaultCursors = "^"
-const DefaultIcons = "@"
-const DefaultInputLeft = "["
-const DefaultInputRight = "]"
-const DefaultPatterns = "&"
-const DefaultRetroAtlas = "#"
-const DefaultUI = "!"
-const DefaultSoundsUI = "~"
-
 //=================================================================
 
 var Cursor int
