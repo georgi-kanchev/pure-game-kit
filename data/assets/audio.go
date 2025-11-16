@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/data/file"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
+	"slices"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -75,16 +76,16 @@ func UnloadMusic(musicId string) {
 }
 
 func ReloadAllSounds() {
-	var loaded = maps.Keys(internal.Sounds)
+	var loaded = slices.Collect(maps.Keys(internal.Sounds))
 	UnloadAllSounds()
-	for id := range loaded {
+	for _, id := range loaded {
 		LoadSound(id)
 	}
 }
 func ReloadAllMusic() {
-	var loaded = maps.Keys(internal.Music)
+	var loaded = slices.Collect(maps.Keys(internal.Music))
 	UnloadAllMusic()
-	for id := range loaded {
+	for _, id := range loaded {
 		LoadMusic(id)
 	}
 }

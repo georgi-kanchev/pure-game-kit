@@ -4,6 +4,8 @@ import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/debug"
 	"pure-game-kit/graphics"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/tiled"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/window"
@@ -31,6 +33,11 @@ func Tiled() {
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
 		cam.DrawSprites(sprites...)
+		cam.DrawText("", "Testing, testing...", 0, 0, 32, color.White)
+
+		if keyboard.IsKeyJustPressed(key.A) {
+			assets.ReloadAll()
+		}
 	}
 }
 

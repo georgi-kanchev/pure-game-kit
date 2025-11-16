@@ -8,6 +8,7 @@ import (
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
+	"slices"
 )
 
 func LoadTiledProject(filePath string) string {
@@ -224,23 +225,23 @@ func UnloadAllTiledProjects() {
 }
 
 func ReloadAllTiledMaps() {
-	var loaded = maps.Keys(internal.TiledMaps)
+	var loaded = slices.Collect(maps.Keys(internal.TiledMaps))
 	UnloadAllTiledMaps()
-	for id := range loaded {
+	for _, id := range loaded {
 		LoadTiledMap(id)
 	}
 }
 func ReloadAllTiledTilesets() {
-	var loaded = maps.Keys(internal.TiledTilesets)
+	var loaded = slices.Collect(maps.Keys(internal.TiledTilesets))
 	UnloadAllTiledTilesets()
-	for id := range loaded {
+	for _, id := range loaded {
 		LoadTiledTileset(id)
 	}
 }
 func ReloadAllTiledProjects() {
-	var loaded = maps.Keys(internal.TiledProjects)
+	var loaded = slices.Collect(maps.Keys(internal.TiledProjects))
 	UnloadAllTiledProjects()
-	for id := range loaded {
+	for _, id := range loaded {
 		LoadTiledProject(id)
 	}
 }
