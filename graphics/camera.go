@@ -48,7 +48,7 @@ func NewCamera(zoom float32) *Camera {
 
 func (camera *Camera) DragAndZoom() {
 	var dx, dy = mouse.CursorDelta()
-	camera.Zoom *= 1 + 0.05*float32(mouse.Scroll())
+	camera.Zoom *= 1 + 0.001*float32(mouse.ScrollSmooth())
 
 	if mouse.IsButtonPressed(button.Middle) {
 		var rad = angle.ToRadians(-camera.Angle)

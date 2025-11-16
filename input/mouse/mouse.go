@@ -25,8 +25,11 @@ func CursorDelta() (x, y float32) {
 	var delta = rl.GetMouseDelta()
 	return delta.X, delta.Y
 }
-func Scroll() int {
-	return int(rl.GetMouseWheelMoveV().Y)
+func Scroll() float32 {
+	return rl.GetMouseWheelMoveV().Y
+}
+func ScrollSmooth() float32 {
+	return internal.SmoothScroll
 }
 func ButtonsPressed() []int {
 	return internal.Buttons

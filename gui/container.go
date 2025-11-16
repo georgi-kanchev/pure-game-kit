@@ -39,7 +39,7 @@ func Container(id, x, y, width, height string, properties ...string) string {
 //=================================================================
 // private
 
-const scrollSize, scrollSpeed = 20, 100
+const scrollSize = 20
 
 var cMiddlePressed *container
 var cPressedOnScrollH *container
@@ -158,13 +158,13 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 	var mx, my = cam.MousePosition()
 	var focused = c.isFocused(cam)
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
-	var scroll = mouse.Scroll()
+	var scroll = mouse.ScrollSmooth()
 
 	if minX < c.X || maxX > c.X+c.Width {
 		var w = c.Width / (maxX - minX) * c.Width
 
 		if scroll != 0 && focused && shift {
-			c.ScrollX -= float32(scroll) * scrollSpeed
+			c.ScrollX -= float32(scroll)
 		}
 		if c == cMiddlePressed {
 			c.ScrollX -= mx - c.prevMouseX
@@ -194,7 +194,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		var h = (c.Height / (maxY - minY)) * c.Height
 
 		if scroll != 0 && focused && !shift {
-			c.ScrollY -= float32(scroll) * scrollSpeed
+			c.ScrollY -= float32(scroll)
 		}
 		if c == cMiddlePressed {
 			c.ScrollY -= my - c.prevMouseY

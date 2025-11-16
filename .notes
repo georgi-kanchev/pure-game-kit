@@ -14,6 +14,7 @@ text - New func added struct & *struct + number improvement
 number - Format func added same improvement
 assets - tweaks to loading, return values, tryCreateWindow, default assets, reloading, unloading etc
 assets - decided against load queue, better done game-side
+input/camera/gui - smooth scrolling
 
 [101] [Sat] [15-11-2025]
 tiled/assets - pointers instead of structs everywhere

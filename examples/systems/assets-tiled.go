@@ -2,7 +2,6 @@ package example
 
 import (
 	"pure-game-kit/data/assets"
-	"pure-game-kit/debug"
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
@@ -12,9 +11,6 @@ import (
 )
 
 func Tiled() {
-	var sprite = graphics.NewSprite("test", 32, 412)
-	debug.Print(sprite)
-
 	var cam = graphics.NewCamera(4)
 	var mapIds = assets.LoadTiledMapsFromWorld("examples/data/world.world")
 	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
