@@ -3,6 +3,7 @@ package tiled
 import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/debug"
+	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
 )
@@ -27,6 +28,16 @@ func NewMap(mapId string, project *Project) *Map {
 	result.initTilesets(data)
 	result.initLayers(data.Directory, &data.Layers)
 	return &result
+}
+
+//=================================================================
+
+func (Map *Map) Sprites() []*graphics.Sprite {
+	var result = []*graphics.Sprite{}
+	for _, layer := range Map.Layers {
+		result = append(result, layer.Sprites()...)
+	}
+	return result
 }
 
 //=================================================================

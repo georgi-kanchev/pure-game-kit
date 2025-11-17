@@ -1,14 +1,17 @@
 // TODO:
 tiled real object pointer properties
-tiled skip loading tilesets multiple times per world
 
 grid pathfinding
 off-grid navmesh pathfinding
 alpha blending, additive, multiply
+shape/sprite shadow draw
 shader effects, port?
 simple particles, port?
 
 // DONE:
+[103] [Mon] [17-11-2025]
+tiled - map sprites from layers
+
 [102] [Sun] [16-11-2025]
 text - New func added struct & *struct + number improvement
 number - Format func added same improvement
