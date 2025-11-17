@@ -61,15 +61,15 @@
    <object id="4" x="237" y="245" width="26.4179" height="5.86871" rotation="331.198"/>
    <object id="5" x="260" y="232" width="31" height="6"/>
    <object id="6" x="283" y="236" width="8" height="45"/>
-   <object id="7" x="238.78" y="265.52" width="30.0045" height="20" rotation="328.387"/>
+   <object id="7" x="236" y="267" width="30.0045" height="20" rotation="328.91"/>
    <object id="8" x="255" y="265" width="29" height="14"/>
    <object id="34" x="11" y="32" width="98" height="63">
     <text fontfamily="Jupiteroid" pixelsize="9" wrap="1" color="#ff0000" bold="1" kerning="0" halign="right" valign="center">The uppercase and lowercase forms of the 24 letters are:</text>
    </object>
-   <object id="35" x="256" y="176">
+   <object id="35" x="272" y="176">
     <polygon points="0,0 16,16 0,16"/>
    </object>
-   <object id="36" x="231" y="162" width="18" height="32">
+   <object id="36" x="240" y="160" width="18" height="32">
     <ellipse/>
    </object>
    <object id="37" x="263" y="163">
@@ -112,6 +112,6 @@
   <object id="72" template="rock.tx" x="17" y="176"/>
   <object id="73" gid="567" x="184" y="40" width="16" height="16"/>
   <object id="74" x="152" y="86" width="18" height="23"/>
-  <object id="76" x="544" y="16" width="16" height="16"/>
+  <object id="76" x="167" y="54" width="16" height="16"/>
  </objectgroup>
 </map>

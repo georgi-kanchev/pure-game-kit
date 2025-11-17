@@ -18,7 +18,7 @@ var CallFor = make(map[float32][]func(remaining float32))
 func Update() {
 	updateTimeData()
 	updateTimers()
-	updatInput()
+	updateInput()
 	updateMusic()
 	updateAnimatedTiles()
 }

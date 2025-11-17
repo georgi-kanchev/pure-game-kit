@@ -43,7 +43,7 @@ var ShaderText = rl.Shader{}
 //=================================================================
 
 var Cursor int
-var SmoothScroll float32
+var MouseDeltaX, MouseDeltaY, SmoothScroll float32
 var Input = ""
 var Keys = []int{}
 var KeysPrev = []int{}
@@ -143,7 +143,7 @@ func updateTimers() {
 }
 
 // keys & buttons + scroll from engine/input/keyboard & mouse
-func updatInput() {
+func updateInput() {
 	AnyButtonPressedOnce = false
 	AnyButtonReleasedOnce = false
 	for i := range 7 {
@@ -162,11 +162,14 @@ func updatInput() {
 	}
 	prevCursor = Cursor
 
-	var raw = rl.GetMouseWheelMoveV().Y
-	const scrollAccel = 600.0 // how much each scroll impulse affects momentum
-	const scrollDecay = 8.0   // how fast it slows down
-	SmoothScroll += raw * scrollAccel * Delta
+	var delta = rl.GetMouseDelta()
+	MouseDeltaX, MouseDeltaY = delta.X, delta.Y
+
+	const scrollAccel, scrollDecay = 600.0, 8.0
+	SmoothScroll += rl.GetMouseWheelMoveV().Y * scrollAccel * Delta
 	SmoothScroll *= float32(math.Exp(-float64(scrollDecay) * float64(Delta)))
+
+	//=================================================================
 
 	Input = ""
 	var char = rl.GetCharPressed()

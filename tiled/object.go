@@ -3,6 +3,7 @@ package tiled
 import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/execution/condition"
+	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
@@ -31,7 +32,6 @@ func (object *Object) Sprite() *graphics.Sprite {
 	var y = object.Properties[property.ObjectY].(float32)
 	var w = object.Properties[property.ObjectWidth].(float32)
 	var h = object.Properties[property.ObjectHeight].(float32)
-	var ang = object.Properties[property.ObjectRotation].(float32)
 	var flipX, flipY = flag.IsOn(tileId.(uint32), internal.FlipX), flag.IsOn(tileId.(uint32), internal.FlipY)
 	var flipOffX, flipOffY = condition.If(flipX, w, 0), condition.If(flipY, -h, 0)
 	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
@@ -40,8 +40,8 @@ func (object *Object) Sprite() *graphics.Sprite {
 	if object.OwnerLayer != nil {
 		var ownerMap = object.OwnerLayer.OwnerMap
 		curTileset, firstId = currentTileset(ownerMap.Tilesets, ownerMap.TilesetsFirstTileIds, id)
-		worldX = object.OwnerLayer.OwnerMap.Properties[property.MapWorldX].(float32)
-		worldY = object.OwnerLayer.OwnerMap.Properties[property.MapWorldY].(float32)
+		worldX = ownerMap.Properties[property.MapWorldX].(float32)
+		worldY = ownerMap.Properties[property.MapWorldY].(float32)
 	} else if object.OwnerTile == nil {
 		curTileset = object.OwnerTile.OwnerTileset
 		offsetX = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetX].(float32)
@@ -65,13 +65,46 @@ func (object *Object) Sprite() *graphics.Sprite {
 		}
 	}
 
+	if assetId == "" {
+		return nil
+	}
+
 	var sprite = graphics.NewSprite(assetId, worldX+offsetX+x+flipOffX, worldY+offsetY+y+flipOffY)
 	sprite.Width, sprite.Height = w, h
 	sprite.ScaleX = condition.If(flipX, float32(-1), 1)
 	sprite.ScaleY = condition.If(flipY, float32(-1), 1)
 	sprite.PivotX, sprite.PivotY = 0, pivotY
-	sprite.Angle = ang
+	sprite.Angle = object.Properties[property.ObjectRotation].(float32)
 	return sprite
+}
+
+func (object *Object) Shape() *geometry.Shape {
+	var worldX, worldY float32 = 0, 0
+	var offsetX, offsetY float32 = 0, 0
+	var x = object.Properties[property.ObjectX].(float32)
+	var y = object.Properties[property.ObjectY].(float32)
+	var h = object.Properties[property.ObjectHeight].(float32)
+	var tileId = object.Properties[property.ObjectTileId]
+	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
+	id = flag.TurnOff(id, internal.FlipY)
+
+	if object.OwnerLayer != nil {
+		worldX = object.OwnerLayer.OwnerMap.Properties[property.MapWorldX].(float32)
+		worldY = object.OwnerLayer.OwnerMap.Properties[property.MapWorldY].(float32)
+	} else if object.OwnerTile == nil {
+		offsetX = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetX].(float32)
+		offsetY = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetY].(float32)
+	}
+
+	var shape = geometry.NewShapeCorners(object.Points...)
+	shape.Angle = object.Properties[property.ObjectRotation].(float32)
+	shape.X, shape.Y = worldX+offsetX+x, worldY+offsetY+y
+
+	if id != 0 { // adjust tile object pivot
+		shape.Y -= h
+	}
+
+	return shape
 }
 
 //=================================================================
@@ -131,7 +164,8 @@ func (object *Object) initPoints(data *internal.LayerObject) {
 
 			for i := range segments {
 				var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
-				var value = text.New(cx*rx, ",", cy*ry, " ")
+				var x, y = (cx + 1) * rx, (cy + 1) * ry // shift from center-based to tiled's top-left-based
+				var value = text.New(x, ",", y, " ")
 				ptsData += value
 
 				if i == 0 {
@@ -150,7 +184,6 @@ func (object *Object) initPoints(data *internal.LayerObject) {
 		var xy = text.Split(pt, ",")
 		if len(xy) == 2 {
 			var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
-			x, y = point.RotateAroundPoint(x, y, 0, 0, data.Rotation)
 			points = append(points, [2]float32{x, y})
 		}
 	}

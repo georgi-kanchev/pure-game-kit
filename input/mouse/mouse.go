@@ -22,15 +22,16 @@ func SetCursor(cursor int) {
 //=================================================================
 
 func CursorDelta() (x, y float32) {
-	var delta = rl.GetMouseDelta()
-	return delta.X, delta.Y
+	return internal.MouseDeltaX, internal.MouseDeltaY
 }
+
 func Scroll() float32 {
 	return rl.GetMouseWheelMoveV().Y
 }
 func ScrollSmooth() float32 {
 	return internal.SmoothScroll
 }
+
 func ButtonsPressed() []int {
 	return internal.Buttons
 }

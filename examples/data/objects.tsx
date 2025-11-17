@@ -30,6 +30,7 @@
    <object id="1" x="6" y="1">
     <polygon points="0,0 -4,5 -4,8 1,12 3,12 8,8 8,5 4,0"/>
    </object>
+   <object id="2" x="1" y="11" width="4" height="4"/>
   </objectgroup>
  </tile>
  <tile id="314">

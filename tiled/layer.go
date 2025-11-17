@@ -3,6 +3,7 @@ package tiled
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/data/path"
+	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
@@ -23,7 +24,17 @@ type Layer struct {
 func (layer *Layer) Sprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
 	for _, obj := range layer.Objects {
-		result = append(result, obj.Sprite())
+		var sprite = obj.Sprite()
+		if sprite != nil {
+			result = append(result, sprite)
+		}
+	}
+	return result
+}
+func (layer *Layer) Shapes() []*geometry.Shape {
+	var result = []*geometry.Shape{}
+	for _, obj := range layer.Objects {
+		result = append(result, obj.Shape())
 	}
 	return result
 }

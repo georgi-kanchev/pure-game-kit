@@ -3,6 +3,7 @@ package tiled
 import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/debug"
+	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
@@ -32,6 +33,28 @@ func (tileset *Tileset) Sprites() []*graphics.Sprite {
 		sprites = append(sprites, sprite)
 	}
 	return sprites
+}
+
+func (tileset *Tileset) Shapes() []*geometry.Shape {
+	var shapes = []*geometry.Shape{}
+	var columns = tileset.Properties[property.TilesetColumns].(int)
+	var x, y float32 = 0, 0
+	for i, tile := range tileset.Tiles {
+		var width = tile.Properties[property.TileWidth].(int)
+		var height = tile.Properties[property.TileHeight].(int)
+		x += float32(width)
+		if i%columns == 0 {
+			x = 0
+			y += float32(height)
+		}
+
+		for _, obj := range tile.Objects {
+			var shape = obj.Shape()
+			shape.X, shape.Y = x, y-float32(height)
+			shapes = append(shapes, shape)
+		}
+	}
+	return shapes
 }
 
 //=================================================================
