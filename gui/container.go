@@ -205,12 +205,14 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			c.targetScrollX = number.Map(mx-c.X, handleWidth/2, c.Width-handleWidth/2, 0, maxX-minX-c.Width)
 			handleColor = color.Gray
 
-			// smooth handle
+			// smooth handle dragging
 			var diff = c.targetScrollX - c.ScrollX
 			c.ScrollX += diff * handleSpeed * internal.DeltaTime
 			if number.Absolute(diff) < 0.5 {
 				c.ScrollX = c.targetScrollX
 			}
+		} else { // the scroll may have changed by MMB dragging or scrolling
+			c.targetScrollX = c.ScrollX
 		}
 
 		c.ScrollX = number.Limit(c.ScrollX, 0, (maxX-minX)-c.Width)
@@ -268,6 +270,8 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			if number.Absolute(diff) < 0.5 {
 				c.ScrollY = c.targetScrollY
 			}
+		} else { // the scroll may have changed by MMB dragging or scrolling
+			c.targetScrollY = c.ScrollY
 		}
 
 		c.ScrollY = number.Limit(c.ScrollY, 0, (maxY-minY)-c.Height)
