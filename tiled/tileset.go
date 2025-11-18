@@ -36,7 +36,7 @@ func (tileset *Tileset) Sprites() []*graphics.Sprite {
 }
 
 func (tileset *Tileset) Shapes() []*geometry.Shape {
-	var shapes = []*geometry.Shape{}
+	var result = []*geometry.Shape{}
 	var columns = tileset.Properties[property.TilesetColumns].(int)
 	var x, y float32 = 0, 0
 	for i, tile := range tileset.Tiles {
@@ -48,13 +48,14 @@ func (tileset *Tileset) Shapes() []*geometry.Shape {
 			y += float32(height)
 		}
 
-		for _, obj := range tile.Objects {
-			var shape = obj.Shape()
-			shape.X, shape.Y = x, y-float32(height)
-			shapes = append(shapes, shape)
+		var shapes = tile.Shapes()
+		for _, shape := range shapes {
+			shape.X += x
+			shape.Y += y - float32(height)
+			result = append(result, shape)
 		}
 	}
-	return shapes
+	return result
 }
 
 //=================================================================

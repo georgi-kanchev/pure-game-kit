@@ -9,6 +9,11 @@ shader effects, port?
 simple particles, port?
 
 // DONE:
+[104] [Tue] [18-11-2025]
+gui - improved quality of life container smooth scroll/drag + hover/click colors
+camera - fixed/reduced boxes draw tearing artifacts
+tiled - shapes fixes
+
 [103] [Mon] [17-11-2025]
 tiled - map sprites from layers
 tiled - object/tileset/layer/map shapes

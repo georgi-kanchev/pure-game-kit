@@ -3,9 +3,11 @@ package tiled
 import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/debug"
+	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
+	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/text"
 )
 
@@ -31,6 +33,15 @@ func (tile *Tile) Sprite() *graphics.Sprite {
 	sprite.Width, sprite.Height = float32(width), float32(height)
 	sprite.PivotX, sprite.PivotY = 0, 0
 	return sprite
+}
+func (tile *Tile) Shapes() []*geometry.Shape {
+	var result = []*geometry.Shape{}
+	for _, obj := range tile.Objects {
+		if len(obj.Corners) > 0 {
+			result = append(result, obj.Shape())
+		}
+	}
+	return result
 }
 
 //=================================================================
@@ -86,11 +97,14 @@ func (tile *Tile) initProperties(tilesetData *internal.Tileset, data *internal.T
 	}
 }
 func (tile *Tile) initObjects(data *internal.TilesetTile) {
-	if len(data.CollisionLayers) > 0 {
-		var objs = data.CollisionLayers[0].Objects
-		tile.Objects = make([]*Object, len(objs))
-		for i, obj := range objs {
-			tile.Objects[i] = newObject(obj, tile, nil)
-		}
+	if len(data.CollisionLayers) == 0 {
+		return
 	}
+
+	var objs = data.CollisionLayers[0].Objects
+	tile.Objects = make([]*Object, len(objs))
+	for i, obj := range objs {
+		tile.Objects[i] = newObject(obj, tile, nil)
+	}
+	collection.Reverse(tile.Objects) // the xml parses them in reverse order for some reason
 }

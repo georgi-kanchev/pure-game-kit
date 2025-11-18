@@ -19,15 +19,17 @@ func Tiled() {
 	_ = grass
 	_ = desert
 
-	var shapes = desert.Tilesets[0].Shapes()
+	var shapes = desert.Tilesets[0].Tiles[7].Shapes()
+	var sprite = desert.Tilesets[0].Tiles[7].Sprite()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DragAndZoom()
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
+		cam.DrawSprites(sprite)
 		for _, shape := range shapes {
-			cam.DrawShapesFast(color.Red, shape.CornerPoints()...)
+			cam.DrawShapes(color.FadeOut(color.Red, 0.5), shape.CornerPoints()...)
 		}
 	}
 }

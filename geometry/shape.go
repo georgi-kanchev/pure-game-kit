@@ -18,7 +18,12 @@ func NewShapeCorners(corners ...[2]float32) *Shape {
 	if len(corners) == 0 {
 		return &Shape{}
 	}
-	return &Shape{ScaleX: 1, ScaleY: 1, corners: append(corners, corners[0])}
+
+	if corners[0] != corners[len(corners)-1] {
+		corners = append(corners, corners[0])
+	} // close shape if it already isn't
+
+	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
 func NewShapeSides(radius float32, sides int) *Shape {
 	var corners = [][2]float32{}

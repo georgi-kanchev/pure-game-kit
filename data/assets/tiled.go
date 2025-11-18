@@ -163,7 +163,7 @@ func LoadTiledTileset(filePath string) string {
 			}
 
 			var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
-			tileTime += internal.Delta
+			tileTime += internal.DeltaTime
 			if tileTime > float32(dur) {
 				tileTime = 0
 				var newId = tile.Animation.Frames[frame].TileId

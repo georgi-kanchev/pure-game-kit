@@ -14,7 +14,7 @@ import (
 
 var reusableSprite = NewSprite("", 0, 0)
 
-func drawSlice(camera *Camera, parent *Node, x, y, w, h float32, id string, color uint) {
+func drawBoxPart(camera *Camera, parent *Node, x, y, w, h float32, id string, color uint) {
 	reusableSprite.AssetId = id
 	reusableSprite.X, reusableSprite.Y = x, y
 	reusableSprite.Parent = parent

@@ -14,7 +14,7 @@ import (
 
 type Object struct {
 	Properties map[string]any
-	Points     [][2]float32
+	Corners    [][2]float32
 
 	OwnerTile  *Tile
 	OwnerLayer *Layer
@@ -96,7 +96,7 @@ func (object *Object) Shape() *geometry.Shape {
 		offsetY = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetY].(float32)
 	}
 
-	var shape = geometry.NewShapeCorners(object.Points...)
+	var shape = geometry.NewShapeCorners(object.Corners...)
 	shape.Angle = object.Properties[property.ObjectRotation].(float32)
 	shape.X, shape.Y = worldX+offsetX+x, worldY+offsetY+y
 
@@ -112,7 +112,7 @@ func (object *Object) Shape() *geometry.Shape {
 func newObject(data *internal.LayerObject, ownerTile *Tile, ownerLayer *Layer) *Object {
 	var result = Object{OwnerTile: ownerTile, OwnerLayer: ownerLayer}
 	result.initProperties(data)
-	result.initPoints(data)
+	result.initCorners(data)
 	return &result
 }
 
@@ -146,7 +146,7 @@ func (object *Object) initProperties(data *internal.LayerObject) {
 		object.Properties[prop.Name] = parseProperty(prop, owner)
 	}
 }
-func (object *Object) initPoints(data *internal.LayerObject) {
+func (object *Object) initCorners(data *internal.LayerObject) {
 	var ptsData = ""
 	if data.Polyline != nil {
 		ptsData = data.Polyline.Points
@@ -156,37 +156,33 @@ func (object *Object) initPoints(data *internal.LayerObject) {
 	}
 	if ptsData == "" {
 		var w, h = data.Width, data.Height
-		if data.Ellipse != nil {
+		if data.Point != nil {
+			// no ptsData for a single point
+		} else if data.Ellipse != nil {
 			const segments = 16
 			var rx, ry = w / 2, h / 2
 			var step = 360.0 / float32(segments)
-			var firstValue = ""
 
 			for i := range segments {
 				var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
 				var x, y = (cx + 1) * rx, (cy + 1) * ry // shift from center-based to tiled's top-left-based
 				var value = text.New(x, ",", y, " ")
 				ptsData += value
-
-				if i == 0 {
-					firstValue = value
-				}
 			}
-			ptsData += firstValue
-		} else { // rectangle
+		} else { // assume it's a rectangle
 			ptsData = text.New(0, ",", 0, " ", w, ",", 0, " ", w, ",", h, " ", 0, ",", h)
 		}
 	}
 
-	var points = [][2]float32{}
+	var corners = [][2]float32{}
 	var pts = text.Split(text.Trim(ptsData), " ")
 	for _, pt := range pts {
 		var xy = text.Split(pt, ",")
 		if len(xy) == 2 {
 			var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
-			points = append(points, [2]float32{x, y})
+			corners = append(corners, [2]float32{x, y})
 		}
 	}
 
-	object.Points = points
+	object.Corners = corners
 }

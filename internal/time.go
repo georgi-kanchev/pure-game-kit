@@ -7,8 +7,8 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var Clock, Delta, FrameRate, FrameRateAverage, Runtime float32
-var RealDelta, RealFrameRate, RealFrameRateAverage, RealRuntime float32
+var Clock, DeltaTime, FrameRate, FrameRateAverage, Runtime float32
+var RealDeltaTime, RealFrameRate, RealFrameRateAverage, RealRuntime float32
 var FrameCount, RealFrameCount uint64
 var TimeScale float32 = 1
 
@@ -42,20 +42,20 @@ func updateTimeData() {
 	}
 
 	if prevClock > Clock { // we hit midnight
-		prevClock = Clock - Delta
+		prevClock = Clock - DeltaTime
 	}
 
-	RealDelta = rl.GetFrameTime()
-	RealRuntime += RealDelta
-	RealFrameRate = 1.0 / RealDelta
+	RealDeltaTime = rl.GetFrameTime()
+	RealRuntime += RealDeltaTime
+	RealFrameRate = 1.0 / RealDeltaTime
 	RealFrameRateAverage = float32(RealFrameCount) / RealRuntime
 	RealFrameCount++
 
-	Delta = number.Smallest(RealDelta*TimeScale, deltaMax)
-	Runtime += Delta
-	FrameRate = 1.0 / Delta
+	DeltaTime = number.Smallest(RealDeltaTime*TimeScale, deltaMax)
+	Runtime += DeltaTime
+	FrameRate = 1.0 / DeltaTime
 	FrameRateAverage = float32(FrameCount) / Runtime
-	if RealDelta < deltaMax {
+	if RealDeltaTime < deltaMax {
 		FrameCount++
 	}
 

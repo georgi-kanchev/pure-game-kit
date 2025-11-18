@@ -27,12 +27,12 @@ func AsClock12(seconds float32, divider string, units int, amPm bool) string {
 
 func Scale() float32                { return internal.TimeScale }
 func Clock() float32                { return internal.Clock }
-func FrameDelta() float32           { return internal.Delta }
+func FrameDelta() float32           { return internal.DeltaTime }
 func FrameRate() float32            { return internal.FrameRate }
 func FrameRateAverage() float32     { return internal.FrameRateAverage }
 func FrameCount() uint64            { return internal.FrameCount }
 func Runtime() float32              { return internal.Runtime }
-func RealFrameDelta() float32       { return internal.RealDelta }
+func RealFrameDelta() float32       { return internal.RealDeltaTime }
 func RealFrameRate() float32        { return internal.RealFrameRate }
 func RealFrameRateAverage() float32 { return internal.RealFrameRateAverage }
 func RealFrameCount() uint64        { return internal.RealFrameCount }

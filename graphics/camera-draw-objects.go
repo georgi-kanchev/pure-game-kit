@@ -102,6 +102,12 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
+		// trying to reducing tearing artifacts...
+		rectWorld.X = float32(int(rectWorld.X))
+		rectWorld.Y = float32(int(rectWorld.Y))
+		rectWorld.Width = float32(int(rectWorld.Width))
+		rectWorld.Height = float32(int(rectWorld.Height))
+
 		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(s.Color))
 	}
 	camera.end()
@@ -153,19 +159,19 @@ func (camera *Camera) DrawBoxes(boxes ...*Box) {
 			}
 		}
 
-		drawSlice(camera, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], c) // center
+		drawBoxPart(camera, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], c) // center
 
 		// edges
-		drawSlice(camera, &s.Node, l, 0, w-l-r, u, asset[1], c)   // top
-		drawSlice(camera, &s.Node, 0, u, l, h-u-d, asset[3], c)   // left
-		drawSlice(camera, &s.Node, w-r, u, r, h-u-d, asset[5], c) // right
-		drawSlice(camera, &s.Node, l, h-d, w-l-r, d, asset[7], c) // bottom
+		drawBoxPart(camera, &s.Node, l, 0, w-l-r, u, asset[1], c)   // top
+		drawBoxPart(camera, &s.Node, 0, u, l, h-u-d, asset[3], c)   // left
+		drawBoxPart(camera, &s.Node, w-r, u, r, h-u-d, asset[5], c) // right
+		drawBoxPart(camera, &s.Node, l, h-d, w-l-r, d, asset[7], c) // bottom
 
 		// corners
-		drawSlice(camera, &s.Node, 0, 0, l, u, asset[0], c)     // top left
-		drawSlice(camera, &s.Node, w-r, 0, r, u, asset[2], c)   // top right
-		drawSlice(camera, &s.Node, 0, h-d, l, d, asset[6], c)   // bottom left
-		drawSlice(camera, &s.Node, w-r, h-d, r, d, asset[8], c) // bottom right
+		drawBoxPart(camera, &s.Node, 0, 0, l, u, asset[0], c)     // top left
+		drawBoxPart(camera, &s.Node, w-r, 0, r, u, asset[2], c)   // top right
+		drawBoxPart(camera, &s.Node, 0, h-d, l, d, asset[6], c)   // bottom left
+		drawBoxPart(camera, &s.Node, w-r, h-d, r, d, asset[8], c) // bottom right
 	}
 	camera.Batch = false
 	camera.end()

@@ -6,7 +6,7 @@
    <object id="1" x="16" y="7">
     <polygon points="0,0 -1,0 -7,3 -8,4 -10,8 -10,9 0,9"/>
    </object>
-   <object id="3" x="4" y="3" width="5" height="9" rotation="31.65">
+   <object id="3" x="7" y="0" width="5" height="9" rotation="45">
     <ellipse/>
    </object>
    <object id="4" x="3" y="3">
@@ -17,7 +17,7 @@
  <tile id="8">
   <objectgroup draworder="index" id="2">
    <object id="1" x="6" y="6">
-    <polygon points="0,0 -2,1 -6,1 -6,10 10,10 10,1 5,1 4,0"/>
+    <polygon points="0,0 -1,1 -6,1 -6,10 10,10 10,1 5,1 4,0"/>
    </object>
   </objectgroup>
  </tile>
@@ -52,14 +52,11 @@
  </tile>
  <tile id="115">
   <objectgroup draworder="index" id="2">
-   <object id="4" name="collision" x="9" y="4">
-    <properties>
-     <property name="solid" type="bool" value="true"/>
-    </properties>
-    <polyline points="1,7 -1,12 7,12 7,5 1,7"/>
-   </object>
    <object id="5" name="origin" x="7" y="6">
     <point/>
+   </object>
+   <object id="6" x="16" y="9">
+    <polygon points="0,0 -6,2 -8,7 0,7"/>
    </object>
   </objectgroup>
  </tile>
