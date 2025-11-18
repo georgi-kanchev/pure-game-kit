@@ -103,6 +103,6 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 
 		textBox.Text = info
 		camera.PivotX, camera.PivotY = 0, 0
-		camera.DrawTextBoxes(&textBox)
+		camera.DrawTextBoxes(textBox)
 	}
 }

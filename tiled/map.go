@@ -7,6 +7,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
+	"pure-game-kit/utility/collection"
 )
 
 type Map struct {
@@ -80,17 +81,19 @@ func (Map *Map) initTilesets(data *internal.Map) {
 	}
 }
 func (Map *Map) initLayers(directory string, layers *internal.Layers) {
-	for _, layer := range layers.LayersTiles {
-		Map.Layers = append(Map.Layers, newLayerTiles(layer, Map))
-	}
-	for _, layer := range layers.LayersObjects {
-		Map.Layers = append(Map.Layers, newLayerObjects(layer, Map))
-	}
-	for _, layer := range layers.LayersImages {
-		Map.Layers = append(Map.Layers, newLayerImage(directory, layer, Map))
-	}
 	for _, group := range layers.LayersGroups {
 		Map.Layers = append(Map.Layers, newLayerGroup(group, Map))
 		Map.initLayers(directory, &group.Layers)
 	}
+	for _, layer := range layers.LayersImages {
+		Map.Layers = append(Map.Layers, newLayerImage(directory, layer, Map))
+	}
+	for _, layer := range layers.LayersObjects {
+		Map.Layers = append(Map.Layers, newLayerObjects(layer, Map))
+	}
+	for _, layer := range layers.LayersTiles {
+		Map.Layers = append(Map.Layers, newLayerTiles(layer, Map))
+	}
+
+	collection.Reverse(Map.Layers)
 }

@@ -37,9 +37,7 @@ func (tile *Tile) Sprite() *graphics.Sprite {
 func (tile *Tile) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	for _, obj := range tile.Objects {
-		if len(obj.Corners) > 0 {
-			result = append(result, obj.Shape())
-		}
+		result = append(result, obj.Shapes()...)
 	}
 	return result
 }

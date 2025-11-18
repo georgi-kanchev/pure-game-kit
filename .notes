@@ -12,6 +12,7 @@ simple particles, port?
 [104] [Tue] [18-11-2025]
 gui - improved quality of life container smooth scroll/drag + hover/click colors
 camera - fixed/reduced boxes draw tearing artifacts
+camera - draw text fallback fonts fix
 tiled - shapes fixes
 
 [103] [Mon] [17-11-2025]

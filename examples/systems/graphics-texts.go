@@ -35,7 +35,7 @@ func Texts() {
 
 		textBox.Thickness = float32(0.5 + a/2)
 
-		cam.DrawTextBoxes(&textBox)
+		cam.DrawTextBoxes(textBox)
 		textBox.Width, textBox.Height = textBox.MousePosition(cam)
 	}
 }

@@ -71,6 +71,10 @@ func NewShapeEllipse(width, height float32, segments int) *Shape {
 //=================================================================
 
 func (shape *Shape) CornerPoints() [][2]float32 {
+	if shape == nil {
+		return nil
+	}
+
 	var result = make([][2]float32, len(shape.corners))
 	shape.minX, shape.minY = number.Infinity(), number.Infinity()
 	shape.maxX, shape.maxY = number.NegativeInfinity(), number.NegativeInfinity()

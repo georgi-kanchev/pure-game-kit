@@ -8,13 +8,12 @@ import (
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
 	"pure-game-kit/utility/number"
-	"slices"
 )
 
 type Tileset struct {
 	Project    *Project
 	Properties map[string]any
-	Tiles      []*Tile
+	Tiles      map[uint32]*Tile
 }
 
 func (tileset *Tileset) Sprites() []*graphics.Sprite {
@@ -24,7 +23,7 @@ func (tileset *Tileset) Sprites() []*graphics.Sprite {
 	for i, tile := range tileset.Tiles {
 		var sprite = tile.Sprite()
 		x += sprite.Width
-		if i%columns == 0 {
+		if i%uint32(columns) == 0 {
 			x = 0
 			y += sprite.Height
 		}
@@ -43,7 +42,7 @@ func (tileset *Tileset) Shapes() []*geometry.Shape {
 		var width = tile.Properties[property.TileWidth].(int)
 		var height = tile.Properties[property.TileHeight].(int)
 		x += float32(width)
-		if i%columns == 0 {
+		if i%uint32(columns) == 0 {
 			x = 0
 			y += float32(height)
 		}
@@ -118,13 +117,10 @@ func (tileset *Tileset) initProperties(data *internal.Tileset) {
 	}
 }
 func (tileset *Tileset) initTiles(data *internal.Tileset) {
-	var tiles = map[uint32]*Tile{}
-	var keys = make([]uint32, 0, data.TileCount)
-	tileset.Tiles = make([]*Tile, data.TileCount)
+	tileset.Tiles = make(map[uint32]*Tile, data.TileCount)
 
 	for _, tile := range data.Tiles {
-		keys = append(keys, tile.Id)
-		tiles[tile.Id] = newTile(data.AssetId, tile.Id, tileset)
+		tileset.Tiles[tile.Id] = newTile(data.AssetId, tile.Id, tileset)
 	}
 
 	if data.Columns != 0 {
@@ -132,19 +128,10 @@ func (tileset *Tileset) initTiles(data *internal.Tileset) {
 		for i := range cols {
 			for j := range rows {
 				var tileId = uint32(number.Indexes2DToIndex1D(i, j, rows, data.Columns))
-				if tiles[tileId] == nil {
-					keys = append(keys, tileId)
-					tiles[tileId] = newTile(data.AssetId, tileId, tileset)
+				if tileset.Tiles[tileId] == nil {
+					tileset.Tiles[tileId] = newTile(data.AssetId, tileId, tileset)
 				}
 			}
 		}
-	}
-
-	slices.Sort(keys)
-
-	var i = 0
-	for _, key := range keys {
-		tileset.Tiles[i] = tiles[key]
-		i++
 	}
 }

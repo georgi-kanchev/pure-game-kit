@@ -33,8 +33,8 @@ func (layer *Layer) Sprites() []*graphics.Sprite {
 }
 func (layer *Layer) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	for _, obj := range layer.Objects {
-		result = append(result, obj.Shape())
+	for _, object := range layer.Objects {
+		result = append(result, object.Shapes()...)
 	}
 	return result
 }
@@ -101,4 +101,5 @@ func (t *Layer) initObjects(data *internal.LayerObjects) {
 	for i, obj := range data.Objects {
 		t.Objects[i] = newObject(obj, nil, t)
 	}
+	collection.Reverse(t.Objects)
 }

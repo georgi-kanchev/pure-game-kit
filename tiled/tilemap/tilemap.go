@@ -350,7 +350,7 @@ func LayerTexts(mapId, layerNameOrId, objectNameClassOrId string) []*graphics.Te
 				textbox.AlignmentY = 1
 			}
 
-			result = append(result, &textbox)
+			result = append(result, textbox)
 		}
 	}
 

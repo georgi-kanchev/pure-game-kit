@@ -294,8 +294,14 @@ func (camera *Camera) DrawText(fontId, text string, x, y, height float32, color 
 	var font, has = internal.Fonts[fontId]
 
 	if !has {
-		var defaultFont = rl.GetFontDefault()
-		font = &defaultFont
+		var def, hasDefault = internal.Fonts[""]
+		if hasDefault {
+			font = def
+		} else {
+			var fallback = rl.GetFontDefault()
+			font = &fallback
+		}
+
 	}
 
 	if sh.ID != 0 {

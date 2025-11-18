@@ -22,9 +22,9 @@ type TextBox struct {
 	EmbeddedThicknesses []float32
 }
 
-func NewTextBox(fontId string, x, y float32, text ...any) TextBox {
+func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 	var node = NewNode(x, y)
-	var textBox = TextBox{
+	var textBox = &TextBox{
 		FontId: fontId, Node: node, Text: txt.New(text...), LineHeight: 100,
 		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
 		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^', EmbeddedThicknessesTag: '*',
@@ -257,8 +257,8 @@ func (textBox *TextBox) font() *rl.Font {
 	}
 
 	if !hasFont {
-		var defaultFont = rl.GetFontDefault()
-		font = &defaultFont // fallback to raylib default
+		var fallback = rl.GetFontDefault()
+		font = &fallback // fallback to raylib default
 	}
 	return font
 }
