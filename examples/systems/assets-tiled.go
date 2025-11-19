@@ -9,6 +9,8 @@ import (
 )
 
 func Tiled() {
+	assets.LoadFont(32, "examples/data/monogram.ttf")
+
 	var cam = graphics.NewCamera(4)
 	var mapIds = assets.LoadTiledMapsFromWorld("examples/data/world.world")
 	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
@@ -19,7 +21,8 @@ func Tiled() {
 	_ = grass
 	_ = desert
 
-	var shapes = grass.Layers[6].Shapes()
+	var shapes = desert.Layers[2].Shapes()
+	var pts = grass.Layers[6].Points()
 
 	assets.LoadDefaultFont()
 
@@ -27,6 +30,10 @@ func Tiled() {
 		cam.SetScreenAreaToWindow()
 		cam.DragAndZoom()
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
+
+		for _, pt := range pts {
+			cam.DrawCircle(pt[0], pt[1], 1, color.White)
+		}
 
 		for _, shape := range shapes {
 			cam.DrawShapes(color.FadeOut(color.Red, 0.5), shape.CornerPoints()...)

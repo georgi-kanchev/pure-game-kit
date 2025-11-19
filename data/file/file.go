@@ -36,7 +36,7 @@ func TimeOfLastEdit(path string) (year, month, day, minute int) {
 }
 
 func LoadBytes(path string) []byte {
-	if IsExisting(path) {
+	if !IsExisting(path) {
 		debug.LogError("Failed to find file: \"", path, "\"")
 		return []byte{}
 	}

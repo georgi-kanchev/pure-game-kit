@@ -64,6 +64,7 @@ const (
 	ObjectWidth    = "width"
 	ObjectHeight   = "height"
 	ObjectRotation = "rotation"
+	ObjectType     = "type"
 
 	ObjectTileId = "tileId"
 	ObjectFlipX  = "flipX"
@@ -73,7 +74,7 @@ const (
 	ObjectTextFont      = "font"
 	ObjectTextFontSize  = "fontSize"
 	ObjectTextAlignX    = "alignX"
-	ObjectTextAlignY    = "alignX"
+	ObjectTextAlignY    = "alignY"
 	ObjectTextWordWrap  = "wordWrap"
 	ObjectTextColor     = "color"
 	ObjectTextBold      = "bold"

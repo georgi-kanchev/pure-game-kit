@@ -63,8 +63,8 @@
    <object id="6" x="283" y="236" width="8" height="45"/>
    <object id="7" x="236" y="267" width="30.0045" height="20" rotation="328.91"/>
    <object id="8" x="255" y="265" width="29" height="14"/>
-   <object id="34" x="11" y="32" width="98" height="63">
-    <text fontfamily="Jupiteroid" pixelsize="9" wrap="1" color="#ff0000" bold="1" kerning="0" halign="right" valign="center">The uppercase and lowercase forms of the 24 letters are:</text>
+   <object id="34" x="16" y="48" width="96" height="32">
+    <text fontfamily="monogram" pixelsize="9" wrap="1" color="#ff0000" kerning="0" halign="right" valign="center">The uppercase and lowercase forms of the 24 letters are:</text>
    </object>
    <object id="35" x="272" y="176">
     <polygon points="0,0 16,16 0,16"/>
@@ -78,7 +78,7 @@
    <object id="39" x="283" y="139">
     <polygon points="0,0 12,10 2,10 0,21 -9,11"/>
    </object>
-   <object id="77" x="214" y="160">
+   <object id="77" name="line" x="214" y="160">
     <polyline points="0,0 -6,16 10,32 -6,48 26,64"/>
    </object>
   </objectgroup>

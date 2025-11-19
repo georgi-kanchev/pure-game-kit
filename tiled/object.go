@@ -7,7 +7,9 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
+	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/flag"
+	"pure-game-kit/utility/is"
 	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
 )
@@ -20,7 +22,67 @@ type Object struct {
 	OwnerLayer *Layer
 }
 
+func (object *Object) Points() [][2]float32 {
+	var result = [][2]float32{}
+	var objType = object.Properties[property.ObjectType]
+	if objType != "point" && objType != "tile" {
+		return result
+	}
+
+	var x = object.Properties[property.ObjectX].(float32)
+	var y = object.Properties[property.ObjectY].(float32)
+	var h = object.Properties[property.ObjectHeight].(float32)
+	var worldX, worldY, offsetX, offsetY = object.getOffsets()
+
+	if objType == "tile" {
+		var result = object.getTile().Points()
+		for i := range result {
+			result[i][0] += worldX + offsetX + x
+			result[i][1] += worldY + offsetY + y - h
+		}
+		return result
+	}
+
+	return [][2]float32{{worldX + offsetX + x, worldY + offsetY + y}}
+}
+func (object *Object) TextBox() *graphics.TextBox {
+	var objType = object.Properties[property.ObjectType]
+	if objType != "text" {
+		return nil
+	}
+
+	var font = object.Properties[property.ObjectTextFont].(string)
+	var txt = object.Properties[property.ObjectText]
+	var x = object.Properties[property.ObjectX].(float32)
+	var y = object.Properties[property.ObjectY].(float32)
+	var bold = object.Properties[property.ObjectTextBold].(bool)
+
+	for id := range internal.Fonts {
+		var name = path.LastPart(path.RemoveExtension(id))
+		if text.LowerCase(font) == text.LowerCase(name) {
+			font = id // searching font in loaded fonts by name (case insensitive)
+		}
+	}
+
+	var textBox = graphics.NewTextBox(font, x, y, txt)
+	textBox.Width = object.Properties[property.ObjectWidth].(float32)
+	textBox.Height = object.Properties[property.ObjectHeight].(float32)
+	textBox.AlignmentX = object.Properties[property.ObjectTextAlignX].(float32)
+	textBox.AlignmentY = object.Properties[property.ObjectTextAlignY].(float32)
+	textBox.Angle = object.Properties[property.ObjectRotation].(float32)
+	textBox.WordWrap = object.Properties[property.ObjectTextWordWrap].(bool)
+	textBox.Color = object.Properties[property.ObjectTextColor].(uint)
+	textBox.Thickness = condition.If(bold, float32(0.8), 0.5)
+	textBox.LineHeight = float32(object.Properties[property.ObjectTextFontSize].(int))
+	textBox.PivotX, textBox.PivotY = 0, 0
+	return textBox
+}
 func (object *Object) Sprite() *graphics.Sprite {
+	var objType = object.Properties[property.ObjectType]
+	if objType != "tile" {
+		return nil
+	}
+
 	var pivotY float32 = 0
 	var assetId = ""
 	var x = object.Properties[property.ObjectX].(float32)
@@ -30,29 +92,18 @@ func (object *Object) Sprite() *graphics.Sprite {
 	var tileId = object.Properties[property.ObjectTileId]
 	var flipX, flipY = flag.IsOn(tileId.(uint32), internal.FlipX), flag.IsOn(tileId.(uint32), internal.FlipY)
 	var flipOffX, flipOffY = condition.If(flipX, w, 0), condition.If(flipY, -h, 0)
-	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
-	id = flag.TurnOff(id, internal.FlipY)
-	var tileset, firstId, worldX, worldY, offsetX, offsetY = object.getTileData(id)
+	var worldX, worldY, offsetX, offsetY = object.getOffsets()
+	var tile = object.getTile()
 
-	if tileset != nil {
-		var asset, hasAsset = tileset.Properties[property.TilesetAtlasId]
+	if tile.OwnerTileset != nil {
+		var asset, hasAsset = tile.OwnerTileset.Properties[property.TilesetAtlasId]
 		pivotY = 1
 
 		if hasAsset {
-			assetId = path.New(asset.(string), text.New(id-firstId))
+			assetId = path.New(asset.(string), text.New(tile.Properties[property.TileId]))
 		} else {
-			for _, tile := range tileset.Tiles {
-				var id = tile.Properties[property.TileId].(uint32)
-				if id == tileId.(uint32)-firstId {
-					assetId = tile.Properties[property.TileImage].(string)
-					break
-				}
-			}
+			assetId = tile.Properties[property.TileImage].(string)
 		}
-	}
-
-	if assetId == "" {
-		return nil
 	}
 
 	var sprite = graphics.NewSprite(assetId, worldX+offsetX+x+flipOffX, worldY+offsetY+y+flipOffY)
@@ -63,24 +114,20 @@ func (object *Object) Sprite() *graphics.Sprite {
 	sprite.Angle = object.Properties[property.ObjectRotation].(float32)
 	return sprite
 }
-
 func (object *Object) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	var _, isText = object.Properties[property.ObjectText]
-	if isText {
+	var objType = object.Properties[property.ObjectType]
+	if is.OneOf(objType, "text", "point", "line") {
 		return result
 	}
 
 	var x = object.Properties[property.ObjectX].(float32)
 	var y = object.Properties[property.ObjectY].(float32)
 	var h = object.Properties[property.ObjectHeight].(float32)
-	var tileId = object.Properties[property.ObjectTileId]
-	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
-	id = flag.TurnOff(id, internal.FlipY)
-	var tileset, firstId, worldX, worldY, offsetX, offsetY = object.getTileData(id)
+	var worldX, worldY, offsetX, offsetY = object.getOffsets()
 
-	if id > 0 {
-		result = append(result, tileset.Tiles[id-firstId].Shapes()...)
+	if objType == "tile" {
+		result = append(result, object.getTile().Shapes()...)
 		for _, shape := range result {
 			shape.X += worldX + offsetX + x
 			shape.Y += worldY + offsetY + y - h
@@ -96,6 +143,8 @@ func (object *Object) Shapes() []*geometry.Shape {
 }
 
 //=================================================================
+
+var aligns = map[string]float32{"left": 0, "center": 0.5, "right": 1, "top": 0, "bottom": 1, "justify": 0}
 
 func newObject(data *internal.LayerObject, ownerTile *Tile, ownerLayer *Layer) *Object {
 	var result = Object{OwnerTile: ownerTile, OwnerLayer: ownerLayer}
@@ -131,9 +180,23 @@ func (object *Object) initProperties(data *internal.LayerObject) {
 		object.Properties[property.ObjectTextItalic] = data.Text.Italic
 		object.Properties[property.ObjectTextStrikeout] = data.Text.Strikeout
 		object.Properties[property.ObjectTextUnderline] = data.Text.Underline
-		object.Properties[property.ObjectTextAlignX] = data.Text.AlignX
-		object.Properties[property.ObjectTextAlignY] = data.Text.AlignY
-		object.Properties[property.ObjectTextColor] = data.Text.Color
+		object.Properties[property.ObjectTextAlignX] = aligns[data.Text.AlignX]
+		object.Properties[property.ObjectTextAlignY] = aligns[data.Text.AlignY]
+		object.Properties[property.ObjectTextColor] = color.Hex(data.Text.Color)
+		object.Properties[property.ObjectTextWordWrap] = data.Text.WordWrap
+		object.Properties[property.ObjectType] = "text"
+	} else if data.Gid > 0 {
+		object.Properties[property.ObjectType] = "tile"
+	} else if data.Ellipse != nil {
+		object.Properties[property.ObjectType] = "ellipse"
+	} else if data.Point != nil {
+		object.Properties[property.ObjectType] = "point"
+	} else if data.Polyline != nil {
+		object.Properties[property.ObjectType] = "line"
+	} else if data.Polygon != nil {
+		object.Properties[property.ObjectType] = "polygon"
+	} else {
+		object.Properties[property.ObjectType] = "rectangle"
 	}
 
 	var owner *Project = nil
@@ -188,21 +251,30 @@ func (object *Object) initCorners(data *internal.LayerObject) {
 	object.Corners = corners
 }
 
-func (object *Object) getTileData(id uint32) (tileset *Tileset, fId uint32, wx, wy, ox, oy float32) {
+func (object *Object) getTile() *Tile {
+	var tileId = object.Properties[property.ObjectTileId]
+	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
+	id = flag.TurnOff(id, internal.FlipY)
 	var curTileset *Tileset = nil
 	var firstId uint32 = 1
-	var worldX, worldY float32 = 0, 0
-	var offsetX, offsetY float32 = 0, 0
-
 	if object.OwnerLayer != nil {
-		var ownerMap = object.OwnerLayer.OwnerMap
-		curTileset, firstId = currentTileset(ownerMap, id)
-		worldX = ownerMap.Properties[property.MapWorldX].(float32)
-		worldY = ownerMap.Properties[property.MapWorldY].(float32)
+		curTileset, firstId = currentTileset(object.OwnerLayer.OwnerMap, id)
 	} else if object.OwnerTile == nil {
 		curTileset = object.OwnerTile.OwnerTileset
-		offsetX = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetX].(float32)
-		offsetY = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetY].(float32)
 	}
-	return curTileset, firstId, worldX, worldY, offsetX, offsetY
+
+	if id == 0 {
+		return nil
+	}
+	return curTileset.Tiles[id-firstId]
+}
+func (object *Object) getOffsets() (worldX, worldY, layerX, layerY float32) {
+	if object.OwnerLayer != nil {
+		worldX = object.OwnerLayer.OwnerMap.Properties[property.MapWorldX].(float32)
+		worldY = object.OwnerLayer.OwnerMap.Properties[property.MapWorldY].(float32)
+	} else if object.OwnerTile == nil {
+		layerX = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetX].(float32)
+		layerY = object.OwnerTile.OwnerTileset.Properties[property.LayerOffsetY].(float32)
+	}
+	return
 }

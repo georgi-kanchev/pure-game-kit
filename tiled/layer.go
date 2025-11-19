@@ -21,6 +21,23 @@ type Layer struct {
 
 //=================================================================
 
+func (layer *Layer) Points() [][2]float32 {
+	var result = [][2]float32{}
+	for _, obj := range layer.Objects {
+		result = append(result, obj.Points()...)
+	}
+	return result
+}
+func (layer *Layer) TextBoxes() []*graphics.TextBox {
+	var result = []*graphics.TextBox{}
+	for _, obj := range layer.Objects {
+		var textBox = obj.TextBox()
+		if textBox != nil {
+			result = append(result, textBox)
+		}
+	}
+	return result
+}
 func (layer *Layer) Sprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
 	for _, obj := range layer.Objects {
