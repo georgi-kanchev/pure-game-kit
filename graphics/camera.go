@@ -3,6 +3,7 @@ package graphics
 import (
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/button"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/angle"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/window"
@@ -36,6 +37,8 @@ type Camera struct {
 	// 	camera.Draw...
 	// 	camera.Batch = false
 	Batch bool
+
+	velocityX, velocityY float32
 }
 
 func NewCamera(zoom float32) *Camera {
@@ -44,17 +47,46 @@ func NewCamera(zoom float32) *Camera {
 	return &cam
 }
 
-//=================================================================
+// =================================================================
 
-func (camera *Camera) DragAndZoom() {
-	var dx, dy = mouse.CursorDelta()
-	camera.Zoom *= 1 + 0.001*float32(mouse.ScrollSmooth())
+func (camera *Camera) MouseDragAndZoom() {
+	camera.Zoom *= 1 + 0.05*mouse.Scroll()
 
 	if mouse.IsButtonPressed(button.Middle) {
+		var dx, dy = mouse.CursorDelta()
 		var rad = angle.ToRadians(-camera.Angle)
 		var sin, cos = number.Sine(rad), number.Cosine(rad)
 		camera.X -= (dx*cos - dy*sin) / camera.Zoom
 		camera.Y -= (dx*sin + dy*cos) / camera.Zoom
+	}
+}
+func (camera *Camera) MouseDragAndZoomSmooth() {
+	camera.Zoom *= 1 + 0.001*mouse.ScrollSmooth()
+
+	if mouse.IsButtonPressed(button.Middle) {
+		var rad = angle.ToRadians(-camera.Angle)
+		var sin, cos = number.Sine(rad), number.Cosine(rad)
+		var dx, dy = mouse.CursorDelta()
+		var wdx, wdy = (dx*cos - dy*sin) / camera.Zoom, (dx*sin + dy*cos) / camera.Zoom
+
+		camera.X -= wdx
+		camera.Y -= wdy
+
+		camera.velocityX = -wdx * dragMomentum
+		camera.velocityY = -wdy * dragMomentum
+
+	} else {
+		camera.X += camera.velocityX * internal.DeltaTime
+		camera.Y += camera.velocityY * internal.DeltaTime
+		camera.velocityX *= dragFriction
+		camera.velocityY *= dragFriction
+
+		if number.Absolute(camera.velocityX) < 0.01 {
+			camera.velocityX = 0
+		}
+		if number.Absolute(camera.velocityY) < 0.01 {
+			camera.velocityY = 0
+		}
 	}
 }
 

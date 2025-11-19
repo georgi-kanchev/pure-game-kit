@@ -8,6 +8,7 @@ import (
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
 	"pure-game-kit/utility/number"
+	"slices"
 )
 
 type Tileset struct {
@@ -18,42 +19,46 @@ type Tileset struct {
 
 func (tileset *Tileset) Sprites() []*graphics.Sprite {
 	var sprites = []*graphics.Sprite{}
-	var columns = tileset.Properties[property.TilesetColumns].(int)
-	var x, y float32 = 0, 0
-	for i, tile := range tileset.Tiles {
-		var sprite = tile.Sprite()
-		x += sprite.Width
-		if i%uint32(columns) == 0 {
-			x = 0
-			y += sprite.Height
-		}
-
+	tileset.forEachTile(true, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
 		sprite.X, sprite.Y = x, y-sprite.Height
 		sprites = append(sprites, sprite)
-	}
+	})
 	return sprites
 }
-
 func (tileset *Tileset) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	var columns = tileset.Properties[property.TilesetColumns].(int)
-	var x, y float32 = 0, 0
-	for i, tile := range tileset.Tiles {
-		var width = tile.Properties[property.TileWidth].(int)
-		var height = tile.Properties[property.TileHeight].(int)
-		x += float32(width)
-		if i%uint32(columns) == 0 {
-			x = 0
-			y += float32(height)
-		}
-
+	tileset.forEachTile(false, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
 		var shapes = tile.Shapes()
 		for _, shape := range shapes {
 			shape.X += x
-			shape.Y += y - float32(height)
+			shape.Y += y - h
 			result = append(result, shape)
 		}
-	}
+	})
+	return result
+}
+func (tileset *Tileset) Lines() [][2]float32 {
+	var result = [][2]float32{}
+	tileset.forEachTile(false, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
+		var lines = tile.Lines()
+		for i := range lines {
+			lines[i][0] += x
+			lines[i][1] += y - h
+			result = append(result, lines[i])
+		}
+	})
+	return result
+}
+func (tileset *Tileset) Points() [][2]float32 {
+	var result = [][2]float32{}
+	tileset.forEachTile(false, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
+		var points = tile.Points()
+		for i := range points {
+			points[i][0] += x
+			points[i][1] += y - h
+			result = append(result, points[i])
+		}
+	})
 	return result
 }
 
@@ -133,5 +138,36 @@ func (tileset *Tileset) initTiles(data *internal.Tileset) {
 				}
 			}
 		}
+	}
+}
+
+func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w, h float32, s *graphics.Sprite)) {
+	var columns = tileset.Properties[property.TilesetColumns].(int)
+	var x, y float32 = 0, 0
+	var keys = []uint32{}
+
+	for k := range tileset.Tiles {
+		keys = append(keys, k)
+	}
+	slices.Sort(keys)
+
+	for i, id := range keys {
+		var tile = tileset.Tiles[id]
+		var width = float32(tile.Properties[property.TileWidth].(int))
+		var height = float32(tile.Properties[property.TileHeight].(int))
+		var sprite *graphics.Sprite
+
+		if isSprite {
+			sprite = tile.Sprite()
+			width, height = sprite.Width, sprite.Height
+		}
+
+		x += width
+		if i%columns == 0 {
+			x = 0
+			y += height
+		}
+
+		action(tile, x, y, width, height, sprite)
 	}
 }

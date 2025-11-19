@@ -9,6 +9,11 @@ shader effects, port?
 simple particles, port?
 
 // DONE:
+[105] [Wed] [19-11-2025]
+camera - draw points
+camera - drag & scroll separate functions for raw & smooth
+tiled - progress
+
 [104] [Tue] [18-11-2025]
 gui - improved quality of life container smooth scroll/drag + hover/click colors
 camera - fixed/reduced boxes draw tearing artifacts

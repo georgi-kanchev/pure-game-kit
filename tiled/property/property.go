@@ -47,6 +47,8 @@ const (
 	LayerDrawOrder = "drawOrder"
 
 	LayerImage            = "image"
+	LayerImageWidth       = "imageWidth"
+	LayerImageHeight      = "imageHeight"
 	LayerTransparentColor = "transparentColor"
 	LayerRepeatX          = "repeatX"
 	LayerRepeatY          = "repeatY"

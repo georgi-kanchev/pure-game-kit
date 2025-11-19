@@ -34,6 +34,13 @@ func NewMap(mapId string, project *Project) *Map {
 
 //=================================================================
 
+func (Map *Map) TextBoxes() []*graphics.TextBox {
+	var result = []*graphics.TextBox{}
+	for _, layer := range Map.Layers {
+		result = append(result, layer.TextBoxes()...)
+	}
+	return result
+}
 func (Map *Map) Sprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
 	for _, layer := range Map.Layers {
@@ -45,6 +52,20 @@ func (Map *Map) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	for _, layer := range Map.Layers {
 		result = append(result, layer.Shapes()...)
+	}
+	return result
+}
+func (Map *Map) Lines() [][2]float32 {
+	var result = [][2]float32{}
+	for _, layer := range Map.Layers {
+		result = append(result, layer.Lines()...)
+	}
+	return result
+}
+func (Map *Map) Points() [][2]float32 {
+	var result = [][2]float32{}
+	for _, layer := range Map.Layers {
+		result = append(result, layer.Points()...)
 	}
 	return result
 }

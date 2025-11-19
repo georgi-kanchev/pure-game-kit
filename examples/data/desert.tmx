@@ -64,7 +64,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <imagelayer id="7" name="Image Layer 1" offsetx="32" offsety="206">
+ <imagelayer id="7" name="Image Layer 1" offsetx="47" offsety="213">
   <image source="objects.png" width="256" height="544"/>
  </imagelayer>
  <objectgroup color="#aa55ff" id="4" name="Objects">

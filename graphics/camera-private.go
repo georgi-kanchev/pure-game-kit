@@ -183,6 +183,8 @@ func separateShapes(points [][2]float32) [][][2]float32 {
 var rlCam = rl.Camera2D{}
 var maskX, maskY, maskW, maskH int
 
+const dragFriction, dragMomentum = 0.88, 30.0
+
 // call before draw to update camera but use screen space instead of camera space
 func (camera *Camera) update() {
 	tryRecreateWindow()

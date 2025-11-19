@@ -36,6 +36,9 @@
    <object id="1" x="9" y="9">
     <point/>
    </object>
+   <object id="2" x="6" y="0">
+    <polyline points="0,0 -1,1 -1,6 0,8 0,9 -1,11 -1,13 0,14 0,16"/>
+   </object>
   </objectgroup>
  </tile>
  <tile id="110">

@@ -102,11 +102,20 @@ func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]
 	}
 	camera.end()
 }
+func (camera *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
+	camera.begin()
+	camera.Batch = true
+	for _, pt := range points {
+		camera.DrawCircle(pt[0], pt[1], radius, color)
+	}
+	camera.Batch = false
+	camera.end()
+}
 func (camera *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 	camera.begin()
 	if len(colors) == 1 {
 		rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(colors[0]))
-	} else if len(colors) == 2 {
+	} else if len(colors) > 1 {
 		rl.DrawCircleGradient(int32(x), int32(y), radius, rl.GetColor(colors[0]), rl.GetColor(colors[1]))
 	}
 	camera.end()

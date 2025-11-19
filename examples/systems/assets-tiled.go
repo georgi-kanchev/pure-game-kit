@@ -21,23 +21,25 @@ func Tiled() {
 	_ = grass
 	_ = desert
 
-	var shapes = desert.Layers[2].Shapes()
-	var pts = grass.Layers[6].Points()
+	// var pts = grass.Tilesets[0].Points()
+	// var lines = grass.Tilesets[0].Lines()
+	// var shapes = grass.Tilesets[0].Shapes()
+	var sprites = desert.Layers[3].Sprites()
 
 	assets.LoadDefaultFont()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DragAndZoom()
+		cam.MouseDragAndZoomSmooth()
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
-		for _, pt := range pts {
-			cam.DrawCircle(pt[0], pt[1], 1, color.White)
-		}
+		cam.DrawSprites(sprites...)
+		// cam.DrawPoints(1, color.Red, pts...)
+		// cam.DrawLinesPath(0.5, color.Red, lines...)
 
-		for _, shape := range shapes {
-			cam.DrawShapes(color.FadeOut(color.Red, 0.5), shape.CornerPoints()...)
-		}
+		// for _, shape := range shapes {
+		// 	cam.DrawShapesFast(color.Red, shape.CornerPoints()...)
+		// }
 	}
 }
 
