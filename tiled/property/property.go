@@ -52,8 +52,6 @@ const (
 	LayerTransparentColor = "transparentColor"
 	LayerRepeatX          = "repeatX"
 	LayerRepeatY          = "repeatY"
-	LayerWidth            = "width"
-	LayerHeight           = "height"
 
 	ObjectId       = "id"
 	ObjectName     = "name"

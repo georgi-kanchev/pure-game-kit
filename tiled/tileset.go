@@ -162,12 +162,18 @@ func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w,
 			width, height = sprite.Width, sprite.Height
 		}
 
-		x += width
-		if i%columns == 0 {
-			x = 0
-			y += height
+		if columns != 0 {
+			x += width
+			if i%columns == 0 {
+				x = 0
+				y += height
+			}
 		}
 
 		action(tile, x, y, width, height, sprite)
+
+		if columns == 0 {
+			x += width
+		}
 	}
 }

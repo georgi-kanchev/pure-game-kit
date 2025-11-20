@@ -278,8 +278,7 @@ func (object *Object) initCorners(data *internal.LayerObject) {
 
 func (object *Object) getTile() *Tile {
 	var tileId = object.Properties[property.ObjectTileId]
-	var id = flag.TurnOff(tileId.(uint32), internal.FlipX)
-	id = flag.TurnOff(id, internal.FlipY)
+	var id = flag.TurnOff(tileId.(uint32), internal.Flips)
 	var curTileset *Tileset = nil
 	var firstId uint32 = 1
 	if object.OwnerLayer != nil {

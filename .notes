@@ -1,4 +1,7 @@
 // TODO:
+tiled tile render size/stretch/aspect ratio etc
+tiled z order of layers preservation, as prop?
+tiled layer tiles shapes
 tiled real object pointer properties
 
 grid pathfinding
@@ -9,6 +12,9 @@ shader effects, port?
 simple particles, port?
 
 // DONE:
+[106] [Thu] [20-11-2025]
+tiled - layer tile sprites almost done
+
 [105] [Wed] [19-11-2025]
 camera - draw points
 camera - drag & scroll separate functions for raw & smooth

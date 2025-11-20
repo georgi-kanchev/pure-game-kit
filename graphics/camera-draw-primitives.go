@@ -62,7 +62,7 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 	for x := left; x <= right; x += spacingX { // vertical
 		var myThickness = thickness
 		if number.DivisionRemainder(x, spacingX*10) == 0 {
-			myThickness *= 2
+			myThickness *= 3
 		}
 
 		camera.DrawLine(x, top, x, bottom, myThickness, color)
@@ -70,17 +70,17 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 	for y := top; y <= bottom; y += spacingY { // horizontal
 		var myThickness = thickness
 		if number.DivisionRemainder(y, spacingY*10) == 0 {
-			myThickness *= 2
+			myThickness *= 3
 		}
 
 		camera.DrawLine(left, y, right, y, myThickness, color)
 	}
 
 	if top <= 0 && bottom >= 0 { // x
-		camera.DrawLine(left, 0, right, 0, thickness*4, color)
+		camera.DrawLine(left, 0, right, 0, thickness*6, color)
 	}
 	if left <= 0 && right >= 0 { // y
-		camera.DrawLine(0, top, 0, bottom, thickness*4, color)
+		camera.DrawLine(0, top, 0, bottom, thickness*6, color)
 	}
 	camera.Batch = false
 	camera.end()

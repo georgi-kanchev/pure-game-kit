@@ -28,7 +28,7 @@ func NewMap(mapId string, project *Project) *Map {
 	var result = Map{Project: project, Layers: []*Layer{}}
 	result.initProperties(data)
 	result.initTilesets(data)
-	result.initLayers(data.Directory, &data.Layers)
+	result.initLayers(data.Directory, &data.Layers, nil)
 	return &result
 }
 
@@ -101,19 +101,20 @@ func (Map *Map) initTilesets(data *internal.Map) {
 		Map.TilesetsFirstTileIds[i] = data.FirstTileIds[i]
 	}
 }
-func (Map *Map) initLayers(directory string, layers *internal.Layers) {
+func (Map *Map) initLayers(directory string, layers *internal.Layers, ownerGroup *Layer) {
 	for _, group := range layers.LayersGroups {
-		Map.Layers = append(Map.Layers, newLayerGroup(group, Map))
-		Map.initLayers(directory, &group.Layers)
+		var layer = newLayerGroup(group, Map, ownerGroup)
+		Map.Layers = append(Map.Layers, layer)
+		Map.initLayers(directory, &group.Layers, layer)
 	}
 	for _, layer := range layers.LayersImages {
-		Map.Layers = append(Map.Layers, newLayerImage(directory, layer, Map))
+		Map.Layers = append(Map.Layers, newLayerImage(directory, layer, Map, ownerGroup))
 	}
 	for _, layer := range layers.LayersObjects {
-		Map.Layers = append(Map.Layers, newLayerObjects(layer, Map))
+		Map.Layers = append(Map.Layers, newLayerObjects(layer, Map, ownerGroup))
 	}
 	for _, layer := range layers.LayersTiles {
-		Map.Layers = append(Map.Layers, newLayerTiles(layer, Map))
+		Map.Layers = append(Map.Layers, newLayerTiles(layer, Map, ownerGroup))
 	}
 
 	collection.Reverse(Map.Layers)

@@ -3,12 +3,14 @@ package tiled
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/data/path"
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
-	"pure-game-kit/internal"
+	it "pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/flag"
 	"pure-game-kit/utility/number"
 )
 
@@ -17,7 +19,8 @@ type Layer struct {
 	TileIds    []uint32  // used by Tile Layers only
 	Objects    []*Object // used by Object Layers only
 
-	OwnerMap *Map
+	OwnerMap   *Map
+	OwnerGroup *Layer
 }
 
 //=================================================================
@@ -52,12 +55,15 @@ func (layer *Layer) TextBoxes() []*graphics.TextBox {
 }
 func (layer *Layer) Sprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
-	var image = layer.Properties[property.LayerImage].(string)
-	if image != "" {
-		var worldX, worldY, layerX, layerY = layer.getOffsets()
+	var image, hasImage = layer.Properties[property.LayerImage]
+	var columns = layer.OwnerMap.Properties[property.MapColumns].(int)
+	var rows = layer.OwnerMap.Properties[property.MapRows].(int)
+	var worldX, worldY, layerX, layerY = layer.getOffsets()
+
+	if hasImage {
 		var imgW = layer.Properties[property.LayerImageWidth].(int)
 		var imgH = layer.Properties[property.LayerImageHeight].(int)
-		var sprite = graphics.NewSprite(image, worldX+layerX, worldY+layerY)
+		var sprite = graphics.NewSprite(image.(string), worldX+layerX, worldY+layerY)
 		sprite.Width, sprite.Height = float32(imgW), float32(imgH)
 		sprite.PivotX, sprite.PivotY = 0, 0
 		return []*graphics.Sprite{sprite}
@@ -69,6 +75,29 @@ func (layer *Layer) Sprites() []*graphics.Sprite {
 			result = append(result, sprite)
 		}
 	}
+
+	for i, tileId := range layer.TileIds {
+		var id = flag.TurnOff(tileId, it.Flips)
+		if id == 0 {
+			continue
+		}
+
+		var cellX, cellY = number.Index1DToIndexes2D(i, columns, rows)
+		var curTileset, firstId = currentTileset(layer.OwnerMap, id)
+		var tile = curTileset.Tiles[id-firstId]
+		var sprite = tile.Sprite()
+		var tileW = float32(layer.OwnerMap.Properties[property.MapTileWidth].(int))
+		var tileH = float32(layer.OwnerMap.Properties[property.MapTileHeight].(int))
+		var _, isImage = tile.Properties[property.TileImage]
+		var ang, w, h, offX, offY = getTileOrientation(tileId, sprite.Width, sprite.Height, tileH, isImage)
+
+		sprite.X, sprite.Y = worldX+layerX+float32(cellX)*tileW+offX, worldY+layerY+float32(cellY)*tileH+offY
+		sprite.Width, sprite.Height = w, h
+		sprite.Angle = ang
+
+		result = append(result, sprite)
+	}
+
 	return result
 }
 func (layer *Layer) Shapes() []*geometry.Shape {
@@ -81,32 +110,31 @@ func (layer *Layer) Shapes() []*geometry.Shape {
 
 //=================================================================
 
-func newLayerTiles(data *internal.LayerTiles, owner *Map) *Layer {
-	var layer = Layer{TileIds: collection.Clone(data.Tiles), OwnerMap: owner}
+func newLayerTiles(data *it.LayerTiles, owner *Map, group *Layer) *Layer {
+	var layer = Layer{TileIds: collection.Clone(data.Tiles), OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, nil, nil, "")
 	return &layer
 }
-func newLayerObjects(data *internal.LayerObjects, owner *Map) *Layer {
-	var layer = Layer{OwnerMap: owner}
+func newLayerObjects(data *it.LayerObjects, owner *Map, group *Layer) *Layer {
+	var layer = Layer{OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, data, nil, "")
 	layer.initObjects(data)
 	return &layer
 }
-func newLayerImage(directory string, data *internal.LayerImage, owner *Map) *Layer {
-	var layer = Layer{OwnerMap: owner}
+func newLayerImage(directory string, data *it.LayerImage, owner *Map, group *Layer) *Layer {
+	var layer = Layer{OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, nil, data, directory)
 	return &layer
 }
-func newLayerGroup(data *internal.LayerGroup, owner *Map) *Layer {
-	var layer = Layer{OwnerMap: owner}
+func newLayerGroup(data *it.LayerGroup, owner *Map, group *Layer) *Layer {
+	var layer = Layer{OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, nil, nil, "")
 	return &layer
 }
 
 //=================================================================
 
-func (layer *Layer) initProperties(
-	data *internal.Layer, objs *internal.LayerObjects, img *internal.LayerImage, dir string) {
+func (layer *Layer) initProperties(data *it.Layer, objs *it.LayerObjects, img *it.LayerImage, dir string) {
 	layer.Properties = make(map[string]any)
 	layer.Properties[property.LayerName] = data.Id
 	layer.Properties[property.LayerClass] = data.Class
@@ -138,7 +166,7 @@ func (layer *Layer) initProperties(
 		layer.Properties[prop.Name] = parseProperty(prop, layer.OwnerMap.Project)
 	}
 }
-func (layer *Layer) initObjects(data *internal.LayerObjects) {
+func (layer *Layer) initObjects(data *it.LayerObjects) {
 	layer.Objects = make([]*Object, len(data.Objects))
 	for i, obj := range data.Objects {
 		layer.Objects[i] = newObject(obj, nil, layer)
@@ -152,4 +180,59 @@ func (layer *Layer) getOffsets() (worldX, worldY, layerX, layerY float32) {
 	layerX = layer.Properties[property.LayerOffsetX].(float32)
 	layerY = layer.Properties[property.LayerOffsetY].(float32)
 	return
+}
+func getTileOrientation(tileId uint32, w, h, th float32, image bool) (ang, newW, newH, offX, offY float32) {
+	var flipH = flag.IsOn(tileId, it.FlipX)
+	var flipV = flag.IsOn(tileId, it.FlipY)
+	var flipDiag = flag.IsOn(tileId, it.FlipDiag)
+
+	ang = 0.0
+	newW, newH = w, h
+	offX, offY = 0, condition.If(image, th-h, 0)
+
+	if flipH && !flipV && flipDiag { // rotation 90
+		ang = 90
+		offX = h
+		offY = condition.If(image, th-w, 0)
+	} else if flipH && flipV && !flipDiag { // rotation 180
+		ang = 180
+		offX = w
+		offY = condition.If(image, th, h)
+	} else if !flipH && flipV && flipDiag { // rotation 270
+		ang = 270
+		offY = condition.If(image, th, w)
+	} else if flipH && !flipV && !flipDiag { // flip x only
+		newW = -w
+		offX = w
+	} else if flipH && flipV && flipDiag { // flip x + rotation 90
+		ang = 90
+		newW = -w
+		offX = h
+		offY = condition.If(image, th, w)
+	} else if !flipH && flipV && !flipDiag { // flip x + rotation 180
+		newH = -h
+		offY = condition.If(image, th, h)
+	} else if !flipH && !flipV && flipDiag { // flip x + rotation 270
+		ang = 270
+		newW = -w
+		offY = condition.If(image, th-w, 0)
+	}
+	return ang, newW, newH, offX, offY
+}
+func tileRenderSize(w, h float32, mapData *it.Map, tileset *it.Tileset) (float32, float32) {
+	var ratioW, ratioH float32 = 1, 1
+	if w > h {
+		ratioH = h / w
+	} else {
+		ratioW = w / h
+	}
+
+	if tileset.TileRenderSize == "grid" {
+		w, h = float32(mapData.TileWidth), float32(mapData.TileHeight)
+	}
+	if tileset.FillMode == "preserve-aspect-fit" {
+		w *= ratioW
+		h *= ratioH
+	}
+	return w, h
 }

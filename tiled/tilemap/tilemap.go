@@ -94,10 +94,10 @@ func LayerProperty(mapId, layerNameOrId, property string) string {
 		return text.New(img.RepeatX)
 	case p.LayerRepeatY:
 		return text.New(img.RepeatY)
-	case p.LayerWidth:
-		return text.New(img.Image.Width)
-	case p.LayerHeight:
-		return text.New(img.Image.Height)
+		// case p.LayerWidth:
+		// return text.New(img.Image.Width)
+		// case p.LayerHeight:
+		// return text.New(img.Image.Height)
 	}
 
 	// for _, prop := range layer.Properties {
