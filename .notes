@@ -1,7 +1,5 @@
 // TODO:
-tiled tile render size/stretch/aspect ratio etc
 tiled z order of layers preservation, as prop?
-tiled layer tiles shapes
 tiled real object pointer properties
 
 grid pathfinding
@@ -13,7 +11,8 @@ simple particles, port?
 
 // DONE:
 [107] [Fri] [21-11-2025]
-tiled - sprites finished
+tiled - tileset sprites/shapes/pts/lines done
+tiled - layer sprites/shapes/pts/lines + rotations done
 
 [106] [Thu] [20-11-2025]
 tiled - layer tile sprites almost done

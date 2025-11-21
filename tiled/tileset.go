@@ -3,6 +3,7 @@ package tiled
 import (
 	"pure-game-kit/data/path"
 	"pure-game-kit/debug"
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
@@ -19,19 +20,20 @@ type Tileset struct {
 
 func (tileset *Tileset) Sprites() []*graphics.Sprite {
 	var sprites = []*graphics.Sprite{}
-	tileset.forEachTile(true, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
-		sprite.X, sprite.Y = x, y-sprite.Height
+	tileset.forEachTile(true, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
+		sprite.Width, sprite.Height = w, h
+		sprite.X, sprite.Y = x, y-h
 		sprites = append(sprites, sprite)
 	})
 	return sprites
 }
 func (tileset *Tileset) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	tileset.forEachTile(false, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
+	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		var shapes = tile.Shapes()
 		for _, shape := range shapes {
-			shape.X += x
-			shape.Y += y - h
+			shape.X, shape.Y = shape.X*scW+x, shape.Y*scH+y-h
+			shape.ScaleX, shape.ScaleY = scW, scH
 			result = append(result, shape)
 		}
 	})
@@ -39,11 +41,10 @@ func (tileset *Tileset) Shapes() []*geometry.Shape {
 }
 func (tileset *Tileset) Lines() [][2]float32 {
 	var result = [][2]float32{}
-	tileset.forEachTile(false, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
+	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		var lines = tile.Lines()
 		for i := range lines {
-			lines[i][0] += x
-			lines[i][1] += y - h
+			lines[i][0], lines[i][1] = lines[i][0]*scW+x, lines[i][1]*scH+y-h
 			result = append(result, lines[i])
 		}
 	})
@@ -51,11 +52,10 @@ func (tileset *Tileset) Lines() [][2]float32 {
 }
 func (tileset *Tileset) Points() [][2]float32 {
 	var result = [][2]float32{}
-	tileset.forEachTile(false, func(tile *Tile, x, y, w, h float32, sprite *graphics.Sprite) {
+	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		var points = tile.Points()
 		for i := range points {
-			points[i][0] += x
-			points[i][1] += y - h
+			points[i][0], points[i][1] = points[i][0]*scW+x, points[i][1]*scH+y-h
 			result = append(result, points[i])
 		}
 	})
@@ -143,12 +143,15 @@ func (tileset *Tileset) initTiles(data *internal.Tileset) {
 	}
 }
 
-func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w, h float32, s *graphics.Sprite)) {
+func (tileset *Tileset) forEachTile(isSprite bool,
+	action func(t *Tile, x, y, w, h, scW, scH float32, s *graphics.Sprite)) {
 	var columns = tileset.Properties[property.TilesetColumns].(int)
 	var x, y float32 = 0, 0
 	var keys = []uint32{}
 	var tileW = float32(tileset.Properties[property.TilesetTileWidth].(int))
 	var tileH = float32(tileset.Properties[property.TilesetTileHeight].(int))
+	var renderSize = tileset.Properties[property.TilesetRenderSize].(string)
+	var fillMode = tileset.Properties[property.TilesetFillMode].(string)
 
 	for k := range tileset.Tiles {
 		keys = append(keys, k)
@@ -160,10 +163,26 @@ func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w,
 		var width = float32(tile.Properties[property.TileWidth].(int))
 		var height = float32(tile.Properties[property.TileHeight].(int))
 		var sprite *graphics.Sprite
+		var scX, scY = tileW / width, tileH / height
+		var ratioW, ratioH float32 = 1, 1
+
+		if renderSize == "grid" && fillMode == "" {
+			width, height = tileW, tileH
+		}
 
 		if isSprite {
 			sprite = tile.Sprite()
-			width, height = tileset.tileRenderSize(sprite.Width, sprite.Height, tileW, tileH)
+			width, height = sprite.Width, sprite.Height
+		}
+
+		width, height, ratioW, ratioH = tileset.tileRenderSize(width, height, tileW, tileH)
+
+		if renderSize == "grid" && fillMode == "preserve-aspect-fit" {
+			scX, scY = scX*ratioW, scY*ratioH
+		}
+
+		if renderSize != "grid" {
+			scX, scY = 1, 1
 		}
 
 		if columns != 0 {
@@ -174,23 +193,20 @@ func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w,
 			}
 		}
 
-		action(tile, x, y, width, height, sprite)
+		action(tile, x, y, width, height, scX, scY, sprite)
 
 		if columns == 0 {
 			x += width
 		}
 	}
 }
-func (tileset *Tileset) tileRenderSize(w, h, tileW, tileH float32) (float32, float32) {
-	var ratioW, ratioH float32 = 1, 1
+func (tileset *Tileset) tileRenderSize(w, h, tileW, tileH float32) (newW, newH, ratioW, ratioH float32) {
+	ratioW, ratioH = 1, 1
 	var renderSize = tileset.Properties[property.TilesetRenderSize].(string)
 	var fillMode = tileset.Properties[property.TilesetFillMode].(string)
 
-	if w > h {
-		ratioH = h / w
-	} else {
-		ratioW = w / h
-	}
+	ratioH = condition.If(w > h, h/w, ratioH)
+	ratioW = condition.If(w <= h, w/h, ratioW)
 
 	if renderSize == "grid" {
 		w, h = tileW, tileH
@@ -200,5 +216,5 @@ func (tileset *Tileset) tileRenderSize(w, h, tileW, tileH float32) (float32, flo
 			h *= ratioH
 		}
 	}
-	return w, h
+	return w, h, ratioW, ratioH
 }

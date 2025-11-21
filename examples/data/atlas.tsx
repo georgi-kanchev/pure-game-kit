@@ -9,8 +9,11 @@
    <object id="3" x="7" y="0" width="5" height="9" rotation="45">
     <ellipse/>
    </object>
-   <object id="4" x="3" y="3">
+   <object id="4" x="2" y="2">
     <point/>
+   </object>
+   <object id="5" x="1" y="10">
+    <polyline points="0,0 2,4 13,-7 10,-9"/>
    </object>
   </objectgroup>
  </tile>

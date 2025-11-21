@@ -22,6 +22,95 @@ type Object struct {
 	OwnerLayer *Layer
 }
 
+func (object *Object) Sprite() *graphics.Sprite {
+	var objType = object.Properties[property.ObjectType]
+	if objType != "tile" {
+		return nil
+	}
+
+	var pivotY float32 = 0
+	var assetId = ""
+	var x, y, w, h, ang = object.getArea()
+	var tileId = object.Properties[property.ObjectTileId]
+	var flipX, flipY = flag.IsOn(tileId.(uint32), internal.FlipX), flag.IsOn(tileId.(uint32), internal.FlipY)
+	var flipOffX, flipOffY = condition.If(flipX, w, 0), condition.If(flipY, -h, 0)
+	var worldX, worldY, offsetX, offsetY = object.getOffsets()
+	var tile = object.getTile()
+
+	if tile.OwnerTileset != nil {
+		var asset, hasAsset = tile.OwnerTileset.Properties[property.TilesetAtlasId]
+		pivotY = 1
+
+		if hasAsset {
+			assetId = path.New(asset.(string), text.New(tile.Properties[property.TileId]))
+		} else {
+			assetId = tile.Properties[property.TileImage].(string)
+		}
+	}
+
+	var sprite = graphics.NewSprite(assetId, worldX+offsetX+x+flipOffX, worldY+offsetY+y+flipOffY)
+	sprite.Width, sprite.Height = w, h
+	sprite.ScaleX = condition.If(flipX, float32(-1), 1)
+	sprite.ScaleY = condition.If(flipY, float32(-1), 1)
+	sprite.PivotX, sprite.PivotY = 0, pivotY
+	sprite.Angle = ang
+	return sprite
+}
+func (object *Object) TextBox() *graphics.TextBox {
+	var objType = object.Properties[property.ObjectType]
+	if objType != "text" {
+		return nil
+	}
+
+	var font = object.Properties[property.ObjectTextFont].(string)
+	var txt = object.Properties[property.ObjectText]
+	var x, y, w, h, ang = object.getArea()
+	var bold = object.Properties[property.ObjectTextBold].(bool)
+
+	for id := range internal.Fonts {
+		var name = path.LastPart(path.RemoveExtension(id))
+		if text.LowerCase(font) == text.LowerCase(name) {
+			font = id // searching font in loaded fonts by name (case insensitive)
+		}
+	}
+
+	var textBox = graphics.NewTextBox(font, x, y, txt)
+	textBox.Width, textBox.Height = w, h
+	textBox.Angle = ang
+	textBox.AlignmentX = object.Properties[property.ObjectTextAlignX].(float32)
+	textBox.AlignmentY = object.Properties[property.ObjectTextAlignY].(float32)
+	textBox.WordWrap = object.Properties[property.ObjectTextWordWrap].(bool)
+	textBox.Color = object.Properties[property.ObjectTextColor].(uint)
+	textBox.Thickness = condition.If(bold, float32(0.8), 0.5)
+	textBox.LineHeight = float32(object.Properties[property.ObjectTextFontSize].(int))
+	textBox.PivotX, textBox.PivotY = 0, 0
+	return textBox
+}
+func (object *Object) Shapes() []*geometry.Shape {
+	var result = []*geometry.Shape{}
+	var objType = object.Properties[property.ObjectType]
+	if is.OneOf(objType, "text", "point", "line") {
+		return result
+	}
+
+	var x, y, _, h, ang = object.getArea()
+	var worldX, worldY, offsetX, offsetY = object.getOffsets()
+
+	if objType == "tile" {
+		result = append(result, object.getTile().Shapes()...)
+		for _, shape := range result {
+			shape.X += worldX + offsetX + x
+			shape.Y += worldY + offsetY + y - h
+		}
+		return result
+	}
+
+	var shape = geometry.NewShapeCorners(object.Corners...)
+	shape.Angle = ang
+	shape.X, shape.Y = worldX+offsetX+x, worldY+offsetY+y
+	result = append(result, shape)
+	return result
+}
 func (object *Object) Lines() [][2]float32 {
 	var result = [][2]float32{}
 	var objType = object.Properties[property.ObjectType]
@@ -76,95 +165,6 @@ func (object *Object) Points() [][2]float32 {
 	}
 
 	return [][2]float32{{worldX + offsetX + x, worldY + offsetY + y}}
-}
-func (object *Object) TextBox() *graphics.TextBox {
-	var objType = object.Properties[property.ObjectType]
-	if objType != "text" {
-		return nil
-	}
-
-	var font = object.Properties[property.ObjectTextFont].(string)
-	var txt = object.Properties[property.ObjectText]
-	var x, y, w, h, ang = object.getArea()
-	var bold = object.Properties[property.ObjectTextBold].(bool)
-
-	for id := range internal.Fonts {
-		var name = path.LastPart(path.RemoveExtension(id))
-		if text.LowerCase(font) == text.LowerCase(name) {
-			font = id // searching font in loaded fonts by name (case insensitive)
-		}
-	}
-
-	var textBox = graphics.NewTextBox(font, x, y, txt)
-	textBox.Width, textBox.Height = w, h
-	textBox.Angle = ang
-	textBox.AlignmentX = object.Properties[property.ObjectTextAlignX].(float32)
-	textBox.AlignmentY = object.Properties[property.ObjectTextAlignY].(float32)
-	textBox.WordWrap = object.Properties[property.ObjectTextWordWrap].(bool)
-	textBox.Color = object.Properties[property.ObjectTextColor].(uint)
-	textBox.Thickness = condition.If(bold, float32(0.8), 0.5)
-	textBox.LineHeight = float32(object.Properties[property.ObjectTextFontSize].(int))
-	textBox.PivotX, textBox.PivotY = 0, 0
-	return textBox
-}
-func (object *Object) Sprite() *graphics.Sprite {
-	var objType = object.Properties[property.ObjectType]
-	if objType != "tile" {
-		return nil
-	}
-
-	var pivotY float32 = 0
-	var assetId = ""
-	var x, y, w, h, ang = object.getArea()
-	var tileId = object.Properties[property.ObjectTileId]
-	var flipX, flipY = flag.IsOn(tileId.(uint32), internal.FlipX), flag.IsOn(tileId.(uint32), internal.FlipY)
-	var flipOffX, flipOffY = condition.If(flipX, w, 0), condition.If(flipY, -h, 0)
-	var worldX, worldY, offsetX, offsetY = object.getOffsets()
-	var tile = object.getTile()
-
-	if tile.OwnerTileset != nil {
-		var asset, hasAsset = tile.OwnerTileset.Properties[property.TilesetAtlasId]
-		pivotY = 1
-
-		if hasAsset {
-			assetId = path.New(asset.(string), text.New(tile.Properties[property.TileId]))
-		} else {
-			assetId = tile.Properties[property.TileImage].(string)
-		}
-	}
-
-	var sprite = graphics.NewSprite(assetId, worldX+offsetX+x+flipOffX, worldY+offsetY+y+flipOffY)
-	sprite.Width, sprite.Height = w, h
-	sprite.ScaleX = condition.If(flipX, float32(-1), 1)
-	sprite.ScaleY = condition.If(flipY, float32(-1), 1)
-	sprite.PivotX, sprite.PivotY = 0, pivotY
-	sprite.Angle = ang
-	return sprite
-}
-func (object *Object) Shapes() []*geometry.Shape {
-	var result = []*geometry.Shape{}
-	var objType = object.Properties[property.ObjectType]
-	if is.OneOf(objType, "text", "point", "line") {
-		return result
-	}
-
-	var x, y, _, h, ang = object.getArea()
-	var worldX, worldY, offsetX, offsetY = object.getOffsets()
-
-	if objType == "tile" {
-		result = append(result, object.getTile().Shapes()...)
-		for _, shape := range result {
-			shape.X += worldX + offsetX + x
-			shape.Y += worldY + offsetY + y - h
-		}
-		return result
-	}
-
-	var shape = geometry.NewShapeCorners(object.Corners...)
-	shape.Angle = ang
-	shape.X, shape.Y = worldX+offsetX+x, worldY+offsetY+y
-	result = append(result, shape)
-	return result
 }
 
 //=================================================================

@@ -21,24 +21,6 @@ type Tile struct {
 	OwnerTileset *Tileset
 }
 
-func (tile *Tile) Lines() [][2]float32 {
-	var result = [][2]float32{}
-	for i, obj := range tile.Objects {
-		if i != 0 {
-			result = append(result, [2]float32{number.NaN(), number.NaN()})
-		}
-
-		result = append(result, obj.Lines()...)
-	}
-	return result
-}
-func (tile *Tile) Points() [][2]float32 {
-	var result = [][2]float32{}
-	for _, obj := range tile.Objects {
-		result = append(result, obj.Points()...)
-	}
-	return result
-}
 func (tile *Tile) Sprite() *graphics.Sprite {
 	var atlasId, hasAtlas = tile.OwnerTileset.Properties[property.TilesetAtlasId]
 	if hasAtlas {
@@ -58,6 +40,24 @@ func (tile *Tile) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	for _, obj := range tile.Objects {
 		result = append(result, obj.Shapes()...)
+	}
+	return result
+}
+func (tile *Tile) Lines() [][2]float32 {
+	var result = [][2]float32{}
+	for i, obj := range tile.Objects {
+		if i != 0 {
+			result = append(result, [2]float32{number.NaN(), number.NaN()})
+		}
+
+		result = append(result, obj.Lines()...)
+	}
+	return result
+}
+func (tile *Tile) Points() [][2]float32 {
+	var result = [][2]float32{}
+	for _, obj := range tile.Objects {
+		result = append(result, obj.Points()...)
 	}
 	return result
 }

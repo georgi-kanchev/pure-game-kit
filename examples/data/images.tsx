@@ -75,6 +75,20 @@
  </tile>
  <tile id="68">
   <image source="tiles/ridge-1.png" width="89" height="26"/>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="18" y="3">
+    <polygon points="5,-1 -15,8 -15,23 71,23 70,18 37,8 57,3 45,-1 29,6"/>
+   </object>
+   <object id="2" x="77" y="13">
+    <point/>
+   </object>
+   <object id="3" x="36" y="3">
+    <polyline points="0,0 12,2"/>
+   </object>
+   <object id="4" x="4" y="2" width="6" height="3">
+    <ellipse/>
+   </object>
+  </objectgroup>
  </tile>
  <tile id="69">
   <image source="tiles/ridge-2.png" width="40" height="28"/>
