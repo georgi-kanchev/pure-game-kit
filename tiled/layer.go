@@ -89,7 +89,14 @@ func (layer *Layer) Sprites() []*graphics.Sprite {
 		var tileW = float32(layer.OwnerMap.Properties[property.MapTileWidth].(int))
 		var tileH = float32(layer.OwnerMap.Properties[property.MapTileHeight].(int))
 		var _, isImage = tile.Properties[property.TileImage]
-		var ang, w, h, offX, offY = getTileOrientation(tileId, sprite.Width, sprite.Height, tileH, isImage)
+		var width, height = curTileset.tileRenderSize(sprite.Width, sprite.Height, tileW, tileH)
+		var ang, w, h, offX, offY = tileOrientation(tileId, width, height, tileH, isImage)
+		var tileRenderSize = curTileset.Properties[property.TilesetRenderSize].(string)
+
+		if tileRenderSize == "grid" {
+			sprite.PivotX, sprite.PivotY = 0.5, 0.5
+			offX, offY = tileW/2, tileH/2
+		}
 
 		sprite.X, sprite.Y = worldX+layerX+float32(cellX)*tileW+offX, worldY+layerY+float32(cellY)*tileH+offY
 		sprite.Width, sprite.Height = w, h
@@ -181,7 +188,7 @@ func (layer *Layer) getOffsets() (worldX, worldY, layerX, layerY float32) {
 	layerY = layer.Properties[property.LayerOffsetY].(float32)
 	return
 }
-func getTileOrientation(tileId uint32, w, h, th float32, image bool) (ang, newW, newH, offX, offY float32) {
+func tileOrientation(tileId uint32, w, h, th float32, image bool) (ang, newW, newH, offX, offY float32) {
 	var flipH = flag.IsOn(tileId, it.FlipX)
 	var flipV = flag.IsOn(tileId, it.FlipY)
 	var flipDiag = flag.IsOn(tileId, it.FlipDiag)
@@ -218,21 +225,4 @@ func getTileOrientation(tileId uint32, w, h, th float32, image bool) (ang, newW,
 		offY = condition.If(image, th-w, 0)
 	}
 	return ang, newW, newH, offX, offY
-}
-func tileRenderSize(w, h float32, mapData *it.Map, tileset *it.Tileset) (float32, float32) {
-	var ratioW, ratioH float32 = 1, 1
-	if w > h {
-		ratioH = h / w
-	} else {
-		ratioW = w / h
-	}
-
-	if tileset.TileRenderSize == "grid" {
-		w, h = float32(mapData.TileWidth), float32(mapData.TileHeight)
-	}
-	if tileset.FillMode == "preserve-aspect-fit" {
-		w *= ratioW
-		h *= ratioH
-	}
-	return w, h
 }

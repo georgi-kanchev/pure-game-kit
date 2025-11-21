@@ -107,6 +107,8 @@ func (tileset *Tileset) initProperties(data *internal.Tileset) {
 	tileset.Properties[property.TilesetSpacing] = data.Spacing
 	tileset.Properties[property.TilesetOffsetX] = 0
 	tileset.Properties[property.TilesetOffsetY] = 0
+	tileset.Properties[property.TilesetRenderSize] = data.TileRenderSize
+	tileset.Properties[property.TilesetFillMode] = data.FillMode
 
 	if data.Offset != nil {
 		tileset.Properties[property.TilesetOffsetX] = data.Offset.X
@@ -145,6 +147,8 @@ func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w,
 	var columns = tileset.Properties[property.TilesetColumns].(int)
 	var x, y float32 = 0, 0
 	var keys = []uint32{}
+	var tileW = float32(tileset.Properties[property.TilesetTileWidth].(int))
+	var tileH = float32(tileset.Properties[property.TilesetTileHeight].(int))
 
 	for k := range tileset.Tiles {
 		keys = append(keys, k)
@@ -159,7 +163,7 @@ func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w,
 
 		if isSprite {
 			sprite = tile.Sprite()
-			width, height = sprite.Width, sprite.Height
+			width, height = tileset.tileRenderSize(sprite.Width, sprite.Height, tileW, tileH)
 		}
 
 		if columns != 0 {
@@ -176,4 +180,25 @@ func (tileset *Tileset) forEachTile(isSprite bool, action func(t *Tile, x, y, w,
 			x += width
 		}
 	}
+}
+func (tileset *Tileset) tileRenderSize(w, h, tileW, tileH float32) (float32, float32) {
+	var ratioW, ratioH float32 = 1, 1
+	var renderSize = tileset.Properties[property.TilesetRenderSize].(string)
+	var fillMode = tileset.Properties[property.TilesetFillMode].(string)
+
+	if w > h {
+		ratioH = h / w
+	} else {
+		ratioW = w / h
+	}
+
+	if renderSize == "grid" {
+		w, h = tileW, tileH
+
+		if fillMode == "preserve-aspect-fit" {
+			w *= ratioW
+			h *= ratioH
+		}
+	}
+	return w, h
 }

@@ -51,6 +51,7 @@ func (tile *Tile) Sprite() *graphics.Sprite {
 	var sprite = graphics.NewSprite(atlasId.(string), 0, 0)
 	sprite.Width, sprite.Height = float32(width), float32(height)
 	sprite.PivotX, sprite.PivotY = 0, 0
+
 	return sprite
 }
 func (tile *Tile) Shapes() []*geometry.Shape {

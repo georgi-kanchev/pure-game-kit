@@ -17,7 +17,7 @@ func Tiled() {
 	var project = tiled.NewProject(projectId)
 	var grass = tiled.NewMap(mapIds[0], project)
 	var desert = tiled.NewMap(mapIds[1], project)
-	// var terr = tiled.NewMap(mapIds[2], project)
+	var terr = tiled.NewMap(mapIds[2], project)
 
 	_ = grass
 	_ = desert
@@ -25,7 +25,8 @@ func Tiled() {
 	// var pts = grass.Tilesets[0].Points()
 	// var lines = grass.Tilesets[0].Lines()
 	// var shapes = grass.Tilesets[0].Shapes()
-	var terrain = desert.Sprites()
+	var terrain = terr.Sprites()
+	var des = desert.Sprites()
 	// var sprites = grass.Layers[7].Sprites()
 
 	assets.LoadDefaultFont()
@@ -35,6 +36,7 @@ func Tiled() {
 		cam.MouseDragAndZoomSmooth()
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
+		cam.DrawSprites(des...)
 		cam.DrawSprites(terrain...)
 		// cam.DrawSprites(sprites...)
 		// cam.DrawPoints(1, color.Red, pts...)

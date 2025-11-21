@@ -24,6 +24,8 @@ const (
 	TilesetOffsetX    = "offsetX"
 	TilesetOffsetY    = "offsetY"
 	TilesetAtlasId    = "atlasId"
+	TilesetRenderSize = "renderSize"
+	TilesetFillMode   = "fillMode"
 
 	TileId          = "id"
 	TileClass       = "class"

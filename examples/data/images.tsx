@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="images" tilewidth="199" tileheight="242" tilecount="36" columns="0" tilerendersize="grid" fillmode="preserve-aspect-fit">
+<tileset version="1.10" tiledversion="1.11.2" name="images" tilewidth="199" tileheight="242" tilecount="36" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="44">
   <image source="tiles/birch-1.png" width="176" height="240"/>
