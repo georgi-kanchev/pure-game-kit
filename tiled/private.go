@@ -1,8 +1,10 @@
 package tiled
 
 import (
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/flag"
 	"pure-game-kit/utility/text"
 )
 
@@ -58,4 +60,42 @@ func currentTileset(Map *Map, tile uint32) (tileset *Tileset, firstId uint32) {
 		}
 	}
 	return result, bestFirstId
+}
+func tileOrientation(tileId uint32, w, h, th float32, image bool) (ang, newW, newH, offX, offY float32) {
+	var flipH = flag.IsOn(tileId, internal.FlipX)
+	var flipV = flag.IsOn(tileId, internal.FlipY)
+	var flipDiag = flag.IsOn(tileId, internal.FlipDiag)
+
+	ang = 0.0
+	newW, newH = w, h
+	offX, offY = 0, condition.If(image, th-h, 0)
+
+	if flipH && !flipV && flipDiag { // rotation 90
+		ang = 90
+		offX = h
+		offY = condition.If(image, th-w, 0)
+	} else if flipH && flipV && !flipDiag { // rotation 180
+		ang = 180
+		offX = w
+		offY = condition.If(image, th, h)
+	} else if !flipH && flipV && flipDiag { // rotation 270
+		ang = 270
+		offY = condition.If(image, th, w)
+	} else if flipH && !flipV && !flipDiag { // flip x only
+		newW = -w
+		offX = w
+	} else if flipH && flipV && flipDiag { // flip x + rotation 90
+		ang = 90
+		newW = -w
+		offX = h
+		offY = condition.If(image, th, w)
+	} else if !flipH && flipV && !flipDiag { // flip x + rotation 180
+		newH = -h
+		offY = condition.If(image, th, h)
+	} else if !flipH && !flipV && flipDiag { // flip x + rotation 270
+		ang = 270
+		newW = -w
+		offY = condition.If(image, th-w, 0)
+	}
+	return ang, newW, newH, offX, offY
 }

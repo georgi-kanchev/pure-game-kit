@@ -219,45 +219,6 @@ func (layer *Layer) getOffsets() (worldX, worldY, layerX, layerY float32) {
 	layerY = layer.Properties[property.LayerOffsetY].(float32)
 	return
 }
-func tileOrientation(tileId uint32, w, h, th float32, image bool) (ang, newW, newH, offX, offY float32) {
-	var flipH = flag.IsOn(tileId, it.FlipX)
-	var flipV = flag.IsOn(tileId, it.FlipY)
-	var flipDiag = flag.IsOn(tileId, it.FlipDiag)
-
-	ang = 0.0
-	newW, newH = w, h
-	offX, offY = 0, condition.If(image, th-h, 0)
-
-	if flipH && !flipV && flipDiag { // rotation 90
-		ang = 90
-		offX = h
-		offY = condition.If(image, th-w, 0)
-	} else if flipH && flipV && !flipDiag { // rotation 180
-		ang = 180
-		offX = w
-		offY = condition.If(image, th, h)
-	} else if !flipH && flipV && flipDiag { // rotation 270
-		ang = 270
-		offY = condition.If(image, th, w)
-	} else if flipH && !flipV && !flipDiag { // flip x only
-		newW = -w
-		offX = w
-	} else if flipH && flipV && flipDiag { // flip x + rotation 90
-		ang = 90
-		newW = -w
-		offX = h
-		offY = condition.If(image, th, w)
-	} else if !flipH && flipV && !flipDiag { // flip x + rotation 180
-		newH = -h
-		offY = condition.If(image, th, h)
-	} else if !flipH && !flipV && flipDiag { // flip x + rotation 270
-		ang = 270
-		newW = -w
-		offY = condition.If(image, th-w, 0)
-	}
-	return ang, newW, newH, offX, offY
-}
-
 func (layer *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, scH float32)) {
 	if len(layer.TileIds) == 0 {
 		return
