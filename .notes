@@ -1,12 +1,15 @@
 // TODO:
+tiled draw func for all structs
+tiled find object/layer by name/id
 tiled real object pointer properties
 
 grid pathfinding
 off-grid navmesh pathfinding
 alpha blending, additive, multiply
-shape/sprite shadow draw
+
 shader effects, port?
 simple particles, port?
+shape/sprite shadow draw?
 
 // DONE:
 [108] [Tue] [25-11-2025]
