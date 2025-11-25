@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
-	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 )
@@ -124,5 +123,4 @@ func (tile *Tile) initObjects(data *internal.TilesetTile) {
 	for i, obj := range objs {
 		tile.Objects[i] = newObject(obj, tile, nil)
 	}
-	collection.Reverse(tile.Objects) // the xml parses them in reverse order for some reason
 }

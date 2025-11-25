@@ -10,6 +10,9 @@ shader effects, port?
 simple particles, port?
 
 // DONE:
+[108] [Tue] [25-11-2025]
+tiled - layer/object sorted + order props
+
 [107] [Fri] [21-11-2025]
 tiled - tileset sprites/shapes/pts/lines done
 tiled - layer sprites/shapes/pts/lines + rotations done

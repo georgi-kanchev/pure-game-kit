@@ -34,6 +34,7 @@ const (
 	TileProbability = "probability"
 	TileImage       = "image"
 
+	LayerId        = "id"
 	LayerName      = "name"
 	LayerClass     = "class"
 	LayerVisible   = "visible"
@@ -44,6 +45,7 @@ const (
 	LayerOffsetY   = "offsetY"
 	LayerParallaxX = "parallaxX"
 	LayerParallaxY = "parallaxY"
+	LayerOrder     = "order"
 
 	LayerColor     = "color"
 	LayerDrawOrder = "drawOrder"
@@ -67,6 +69,7 @@ const (
 	ObjectHeight   = "height"
 	ObjectRotation = "rotation"
 	ObjectType     = "type"
+	ObjectOrder    = "order"
 
 	ObjectTileId = "tileId"
 	ObjectFlipX  = "flipX"

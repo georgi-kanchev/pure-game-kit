@@ -174,7 +174,7 @@ func newLayerGroup(data *it.LayerGroup, owner *Map, group *Layer) *Layer {
 
 func (layer *Layer) initProperties(data *it.Layer, objs *it.LayerObjects, img *it.LayerImage, dir string) {
 	layer.Properties = make(map[string]any)
-	layer.Properties[property.LayerName] = data.Id
+	layer.Properties[property.LayerId] = data.Id
 	layer.Properties[property.LayerClass] = data.Class
 	layer.Properties[property.LayerName] = data.Name
 	layer.Properties[property.LayerVisible] = data.Visible != "false"
@@ -208,8 +208,8 @@ func (layer *Layer) initObjects(data *it.LayerObjects) {
 	layer.Objects = make([]*Object, len(data.Objects))
 	for i, obj := range data.Objects {
 		layer.Objects[i] = newObject(obj, nil, layer)
+		layer.Objects[i].Properties[property.ObjectOrder] = i
 	}
-	collection.Reverse(layer.Objects)
 }
 
 func (layer *Layer) getOffsets() (worldX, worldY, layerX, layerY float32) {

@@ -1,5 +1,7 @@
 package internal
 
+import "encoding/xml"
+
 type Map struct {
 	Name, Directory string
 	WorldX, WorldY  float32
@@ -23,6 +25,15 @@ type Map struct {
 	Tilesets        []*Tileset    `xml:"tileset"`
 	Layers
 	Properties []*Property `xml:"properties>property"`
+}
+
+type LayersInOrder struct {
+	Layers []*AnyLayer `xml:",any"`
+}
+type AnyLayer struct {
+	XMLName   xml.Name
+	Id        uint32      `xml:"id,attr"`
+	SubLayers []*AnyLayer `xml:",any"`
 }
 
 type MapChunkSize struct {

@@ -1,6 +1,7 @@
 package example
 
 import (
+	"fmt"
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
 	"pure-game-kit/tiled"
@@ -15,14 +16,12 @@ func Tiled() {
 	var mapIds = assets.LoadTiledMapsFromWorld("examples/data/world.world")
 	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
 	var project = tiled.NewProject(projectId)
-	var desert = tiled.NewMap(mapIds[1], project)
-
-	var sprites = desert.Layers[0].Sprites()
-	var shapes = desert.Layers[0].Shapes()
-	var points = desert.Layers[0].Points()
-	var lines = desert.Layers[0].Lines()
+	var desert = tiled.NewMap(mapIds[0], project)
+	var sprites = desert.Sprites()
 
 	assets.LoadDefaultFont()
+
+	fmt.Printf("desert.Layers: %v\n", desert.Layers)
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -30,11 +29,5 @@ func Tiled() {
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
 		cam.DrawSprites(sprites...)
-		cam.DrawPoints(1, color.Red, points...)
-		cam.DrawLinesPath(1, color.Blue, lines...)
-
-		for _, shape := range shapes {
-			cam.DrawShapes(color.FadeOut(color.Green, 0.75), shape.CornerPoints()...)
-		}
 	}
 }

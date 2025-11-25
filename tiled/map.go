@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
-	"pure-game-kit/utility/collection"
 )
 
 type Map struct {
@@ -29,6 +28,7 @@ func NewMap(mapId string, project *Project) *Map {
 	result.initProperties(data)
 	result.initTilesets(data)
 	result.initLayers(data.Directory, &data.Layers, nil)
+	result.sortLayers(data)
 	return &result
 }
 
@@ -116,6 +116,18 @@ func (Map *Map) initLayers(directory string, layers *internal.Layers, ownerGroup
 	for _, layer := range layers.LayersTiles {
 		Map.Layers = append(Map.Layers, newLayerTiles(layer, Map, ownerGroup))
 	}
+}
 
-	collection.Reverse(Map.Layers)
+func (Map *Map) sortLayers(data *internal.Map) {
+	var sortedLayers = []*Layer{}
+	for _, id := range data.LayersInOrder {
+		for _, layer := range Map.Layers {
+			var curId = layer.Properties[property.LayerId]
+			if curId == id {
+				sortedLayers = append(sortedLayers, layer)
+				layer.Properties[property.LayerOrder] = len(sortedLayers) - 1
+			}
+		}
+	}
+	Map.Layers = sortedLayers
 }

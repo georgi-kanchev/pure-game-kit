@@ -69,6 +69,11 @@ func LoadTiledMap(filePath string) string {
 		return "" // error is in storage
 	}
 
+	var layersInOrder *internal.LayersInOrder
+	storage.FromFileXML(filePath, &layersInOrder)
+	mapData.LayersInOrder = getLayersOrder(layersInOrder.Layers)
+	collection.Reverse(mapData.LayersInOrder)
+
 	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
 	mapData.Directory = path.Folder(filePath)
 	mapData.FirstTileIds = make([]uint32, len(mapData.Tilesets))

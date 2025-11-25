@@ -18,6 +18,7 @@ type Layers struct {
 	LayersTiles   []*LayerTiles   `xml:"layer"`
 	LayersObjects []*LayerObjects `xml:"objectgroup"`
 	LayersImages  []*LayerImage   `xml:"imagelayer"`
+	LayersInOrder []uint32
 }
 
 type LayerGroup struct {

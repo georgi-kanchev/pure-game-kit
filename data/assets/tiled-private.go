@@ -7,7 +7,9 @@ import (
 	"pure-game-kit/data/storage"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/flag"
+	"pure-game-kit/utility/is"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 )
@@ -158,6 +160,18 @@ func bytesToTiles(data []byte) []uint32 {
 	var err = binary.Read(reader, binary.LittleEndian, &result)
 	if err != nil {
 		return nil
+	}
+	return result
+}
+
+func getLayersOrder(layers []*internal.AnyLayer) []uint32 {
+	var result = []uint32{}
+	collection.Reverse(layers)
+	for _, layer := range layers {
+		if is.OneOf(layer.XMLName.Local, "layer", "objectgroup", "imagelayer", "group") {
+			result = append(result, layer.Id)
+		}
+		result = append(result, getLayersOrder(layer.SubLayers)...)
 	}
 	return result
 }
