@@ -15,6 +15,8 @@ type Map struct {
 	Tilesets             []*Tileset
 	TilesetsFirstTileIds []uint32
 	Layers               []*Layer
+
+	assetId string
 }
 
 func NewMap(mapId string, project *Project) *Map {
@@ -24,12 +26,21 @@ func NewMap(mapId string, project *Project) *Map {
 		return nil
 	}
 
-	var result = Map{Project: project, Layers: []*Layer{}}
-	result.initProperties(data)
-	result.initTilesets(data)
-	result.initLayers(data.Directory, &data.Layers, nil)
-	result.sortLayers(data)
+	var result = Map{Project: project, Layers: []*Layer{}, assetId: mapId}
+	result.Recreate()
 	return &result
+}
+func (Map *Map) Recreate() {
+	var data, _ = internal.TiledMaps[Map.assetId]
+	if data == nil {
+		debug.LogError("Failed to recreate map: \"", Map.assetId, "\"\nNo data is loaded with this map id.")
+		return
+	}
+
+	Map.initProperties(data)
+	Map.initTilesets(data)
+	Map.initLayers(data.Directory, &data.Layers, nil)
+	Map.sortLayers(data)
 }
 
 //=================================================================
@@ -68,6 +79,12 @@ func (Map *Map) Points() [][2]float32 {
 		result = append(result, layer.Points()...)
 	}
 	return result
+}
+
+func (Map *Map) Draw(camera *graphics.Camera) {
+	for _, layer := range Map.Layers {
+		layer.Draw(camera)
+	}
 }
 
 //=================================================================

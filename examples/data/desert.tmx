@@ -64,17 +64,17 @@
 0,0,0,0,0,0,0,2684355509,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <imagelayer id="7" name="Image Layer 1" visible="0" offsetx="47" offsety="213">
+ <imagelayer id="7" name="Image Layer 1" offsetx="47" offsety="213">
   <image source="objects.png" width="256" height="544"/>
  </imagelayer>
- <objectgroup color="#aa55ff" id="4" name="Objects" visible="0">
-  <object id="10" name="sprite" gid="1" x="240" y="64" width="16" height="16">
+ <objectgroup color="#aa55ff" id="4" name="Objects">
+  <object id="10" name="sprite" gid="1" x="195" y="47" width="16" height="16">
    <properties>
     <property name="my-bush" type="object" value="11"/>
    </properties>
   </object>
-  <object id="11" gid="567" x="256" y="64" width="16" height="16"/>
-  <object id="13" gid="950" x="224" y="112" width="40" height="28"/>
-  <object id="14" x="272" y="64" width="16" height="16"/>
+  <object id="11" gid="567" x="211" y="47" width="16" height="16"/>
+  <object id="13" gid="950" x="179" y="95" width="40" height="28"/>
+  <object id="14" x="227" y="47" width="16" height="16"/>
  </objectgroup>
 </map>

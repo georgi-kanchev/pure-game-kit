@@ -6,6 +6,9 @@
    <object id="1" x="7" y="9">
     <point/>
    </object>
+   <object id="2" x="0" y="13">
+    <polygon points="0,0 7,-5 16,-5 16,3 0,3"/>
+   </object>
   </objectgroup>
  </tile>
  <tile id="142">

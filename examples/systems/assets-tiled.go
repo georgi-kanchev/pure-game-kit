@@ -1,7 +1,6 @@
 package example
 
 import (
-	"fmt"
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
 	"pure-game-kit/tiled"
@@ -16,18 +15,16 @@ func Tiled() {
 	var mapIds = assets.LoadTiledMapsFromWorld("examples/data/world.world")
 	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
 	var project = tiled.NewProject(projectId)
-	var desert = tiled.NewMap(mapIds[0], project)
-	var sprites = desert.Sprites()
+	var grass = tiled.NewMap(mapIds[1], project)
+	// var sprites = desert.Sprites()
 
 	assets.LoadDefaultFont()
-
-	fmt.Printf("desert.Layers: %v\n", desert.Layers)
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmooth()
-		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 
-		cam.DrawSprites(sprites...)
+		grass.Draw(cam)
+		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
 	}
 }

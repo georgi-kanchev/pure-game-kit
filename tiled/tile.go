@@ -15,8 +15,6 @@ type Tile struct {
 	Properties map[string]any
 	Objects    []*Object
 
-	IsAnimating bool
-
 	OwnerTileset *Tileset
 }
 

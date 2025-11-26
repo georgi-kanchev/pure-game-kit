@@ -22,6 +22,13 @@ type Layer struct {
 
 	OwnerMap   *Map
 	OwnerGroup *Layer
+
+	sprites   []*graphics.Sprite
+	textBoxes []*graphics.TextBox
+	shapes    []*geometry.Shape
+	shapeGrid *geometry.ShapeGrid
+	lines     [][2]float32
+	points    [][2]float32
 }
 
 //=================================================================
@@ -29,12 +36,14 @@ type Layer struct {
 func (layer *Layer) Sprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
 	var image, hasImage = layer.Properties[property.LayerImage]
+	var tint = layer.Properties[property.LayerTint].(uint)
 
 	if hasImage {
 		var worldX, worldY, layerX, layerY = layer.getOffsets()
 		var imgW = layer.Properties[property.LayerImageWidth].(int)
 		var imgH = layer.Properties[property.LayerImageHeight].(int)
 		var sprite = graphics.NewSprite(image.(string), worldX+layerX, worldY+layerY)
+		sprite.Color = tint
 		sprite.Width, sprite.Height = float32(imgW), float32(imgH)
 		sprite.PivotX, sprite.PivotY = 0, 0
 		return []*graphics.Sprite{sprite}
@@ -44,17 +53,19 @@ func (layer *Layer) Sprites() []*graphics.Sprite {
 		for _, obj := range layer.Objects {
 			var sprite = obj.Sprite()
 			if sprite != nil {
+				sprite.Color = tint
 				result = append(result, sprite)
 			}
 		}
 		return result
 	}
 
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32) {
+	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var sprite = tile.Sprite()
 		sprite.X, sprite.Y = x, y
 		sprite.Width, sprite.Height = w, h
 		sprite.Angle = ang
+		sprite.Color = tint
 		result = append(result, sprite)
 	})
 	return result
@@ -69,16 +80,21 @@ func (layer *Layer) TextBoxes() []*graphics.TextBox {
 	}
 	return result
 }
-func (layer *Layer) Shapes() []*geometry.Shape {
-	var result = []*geometry.Shape{}
+func (layer *Layer) ShapeGrid() *geometry.ShapeGrid {
+	var tileW = layer.OwnerMap.Properties[property.MapTileWidth].(int)
+	var tileH = layer.OwnerMap.Properties[property.MapTileHeight].(int)
+	var result = geometry.NewShapeGrid(tileW, tileH)
+	var cellW = float32(layer.OwnerMap.Properties[property.MapTileWidth].(int))
+	var cellH = float32(layer.OwnerMap.Properties[property.MapTileHeight].(int))
 
-	for _, object := range layer.Objects {
-		result = append(result, object.Shapes()...)
-	}
-
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32) {
+	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var shapes = tile.Shapes()
+		if len(shapes) == 0 {
+			return
+		}
 		var _, isImage = tile.Properties[property.TileImage]
+		var cx, cy = float32(cellX) * cellW, float32(cellY) * cellH
+		var offX, offY = x - cx, y - cy
 
 		for _, shape := range shapes {
 			if isImage {
@@ -97,12 +113,47 @@ func (layer *Layer) Shapes() []*geometry.Shape {
 			}
 
 			shape.X, shape.Y = point.RotateAroundPoint(shape.X*scW, shape.Y*scH, 0, 0, ang)
-			shape.X, shape.Y = shape.X+x, shape.Y+y
+			shape.X, shape.Y = shape.X+offX-cellW/2, shape.Y+offY-cellH/2
 			shape.Angle += ang
-
-			result = append(result, shape)
 		}
+		result.SetAtCell(cellX, cellY, shapes...)
 	})
+	return result
+}
+func (layer *Layer) Shapes() []*geometry.Shape {
+	var result = []*geometry.Shape{}
+
+	for _, object := range layer.Objects {
+		result = append(result, object.Shapes()...)
+	}
+
+	// layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
+	// 	var shapes = tile.Shapes()
+	// 	var _, isImage = tile.Properties[property.TileImage]
+
+	// 	for _, shape := range shapes {
+	// 		if isImage {
+	// 			shape.ScaleX, shape.ScaleY = scW, scH
+	// 		}
+
+	// 		if w < 0 {
+	// 			shape.X *= -1
+	// 			shape.ScaleX *= -1
+	// 			shape.Angle = -shape.Angle
+	// 		}
+	// 		if h < 0 {
+	// 			shape.Y *= -1
+	// 			shape.ScaleY *= -1
+	// 			shape.Angle = -shape.Angle
+	// 		}
+
+	// 		shape.X, shape.Y = point.RotateAroundPoint(shape.X*scW, shape.Y*scH, 0, 0, ang)
+	// 		shape.X, shape.Y = shape.X+x, shape.Y+y
+	// 		shape.Angle += ang
+
+	// 		result = append(result, shape)
+	// 	}
+	// })
 	return result
 }
 func (layer *Layer) Lines() [][2]float32 {
@@ -115,7 +166,7 @@ func (layer *Layer) Lines() [][2]float32 {
 		result = append(result, obj.Lines()...)
 	}
 
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32) {
+	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var points = tile.Lines()
 		for _, pt := range points {
 			pt[0], pt[1] = pt[0]*scW, pt[1]*scH
@@ -133,7 +184,7 @@ func (layer *Layer) Points() [][2]float32 {
 		result = append(result, obj.Points()...)
 	}
 
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32) {
+	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var points = tile.Points()
 		for _, pt := range points {
 			pt[0], pt[1] = pt[0]*scW, pt[1]*scH
@@ -144,6 +195,28 @@ func (layer *Layer) Points() [][2]float32 {
 		}
 	})
 	return result
+}
+
+func (layer *Layer) Draw(camera *graphics.Camera) {
+	var spr, txt, gr = layer.Sprites(), layer.TextBoxes(), layer.ShapeGrid().All()
+	var sh, pt, ln = layer.Shapes(), layer.Points(), layer.Lines()
+	var col, hasCol = layer.Properties[property.LayerColor]
+	camera.DrawSprites(spr...)
+	camera.DrawTextBoxes(txt...)
+
+	if !hasCol {
+		col = color.White
+	}
+
+	sh = append(sh, gr...)
+	for _, shape := range sh {
+		var pts = shape.CornerPoints()
+		camera.DrawShapes(color.FadeOut(col.(uint), 0.5), pts...)
+		camera.DrawLinesPath(1, col.(uint), pts...)
+	}
+
+	camera.DrawLinesPath(1, col.(uint), ln...)
+	camera.DrawPoints(1, col.(uint), pt...)
 }
 
 //=================================================================
@@ -180,7 +253,7 @@ func (layer *Layer) initProperties(data *it.Layer, objs *it.LayerObjects, img *i
 	layer.Properties[property.LayerVisible] = data.Visible != "false"
 	layer.Properties[property.LayerLocked] = data.Locked
 	layer.Properties[property.LayerOpacity] = data.Opacity
-	layer.Properties[property.LayerTint] = color.Hex(data.Tint)
+	layer.Properties[property.LayerTint] = condition.If(data.Tint == "", color.White, color.Hex(data.Tint))
 	layer.Properties[property.LayerOffsetX] = data.OffsetX
 	layer.Properties[property.LayerOffsetY] = data.OffsetY
 	layer.Properties[property.LayerParallaxX] = data.ParallaxX
@@ -219,7 +292,7 @@ func (layer *Layer) getOffsets() (worldX, worldY, layerX, layerY float32) {
 	layerY = layer.Properties[property.LayerOffsetY].(float32)
 	return
 }
-func (layer *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, scH float32)) {
+func (layer *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int)) {
 	if len(layer.TileIds) == 0 {
 		return
 	}
@@ -249,6 +322,10 @@ func (layer *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, sc
 		var ang, w, h, offX, offY = tileOrientation(tileId, width, height, cellH, isImage)
 		var scX, scY float32 = 1, 1
 
+		cellX, cellY = cellX+worldX+layerX, cellY+worldY+layerY
+		cx += int((worldX + layerX) / cellW)
+		cy += int((worldY + layerY) / cellH)
+
 		if renderSize == "grid" {
 			scX, scY = cellW/tileW, cellH/tileH
 
@@ -264,6 +341,6 @@ func (layer *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, sc
 			}
 		}
 
-		action(tile, ang, worldX+layerX+cellX+offX, worldY+layerY+cellY+offY, w, h, scX, scY)
+		action(tile, ang, cellX+offX, cellY+offY, w, h, scX, scY, cx, cy)
 	}
 }
