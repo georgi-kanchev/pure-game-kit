@@ -34,7 +34,6 @@ func Tiled() {
 			grass.Recreate()
 			project.Recreate()
 		}
-
 		grass.Draw(cam)
 	}
 }

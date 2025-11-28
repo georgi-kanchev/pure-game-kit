@@ -19,7 +19,18 @@ type Tile struct {
 	OwnerTileset *Tileset
 }
 
-func (tile *Tile) Sprite() *graphics.Sprite {
+func (tile *Tile) FindObjectsBy(property string, value any) []*Object {
+	var result = []*Object{}
+	for _, obj := range tile.Objects {
+		var curValue, has = obj.Properties[property]
+		if has && value == curValue {
+			result = append(result, obj)
+		}
+	}
+	return result
+}
+
+func (tile *Tile) ExtractSprite() *graphics.Sprite {
 	var atlasId, hasAtlas = tile.OwnerTileset.Properties[property.TilesetAtlasId]
 	if hasAtlas {
 		atlasId = path.New(atlasId.(string), text.New(tile.Properties[property.TileId]))
@@ -34,34 +45,37 @@ func (tile *Tile) Sprite() *graphics.Sprite {
 
 	return sprite
 }
-func (tile *Tile) Shapes() []*geometry.Shape {
+func (tile *Tile) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	for _, obj := range tile.Objects {
-		result = append(result, obj.Shapes()...)
+		result = append(result, obj.ExtractShapes()...)
 	}
 	return result
 }
-func (tile *Tile) Lines() [][2]float32 {
+func (tile *Tile) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
 	for i, obj := range tile.Objects {
 		if i != 0 {
 			result = append(result, [2]float32{number.NaN(), number.NaN()})
 		}
 
-		result = append(result, obj.Lines()...)
+		result = append(result, obj.ExtractLines()...)
 	}
 	return result
 }
-func (tile *Tile) Points() [][2]float32 {
+func (tile *Tile) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
 	for _, obj := range tile.Objects {
-		result = append(result, obj.Points()...)
+		result = append(result, obj.ExtractPoints()...)
 	}
 	return result
 }
 
+//=================================================================
+
 func (tile *Tile) Draw(camera *graphics.Camera) {
-	draw(camera, []*graphics.Sprite{tile.Sprite()}, nil, tile.Shapes(), tile.Points(), tile.Lines(), color.White)
+	draw(camera, []*graphics.Sprite{tile.ExtractSprite()}, nil,
+		tile.ExtractShapes(), tile.ExtractPoints(), tile.ExtractLines(), color.White)
 }
 
 //=================================================================

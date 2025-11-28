@@ -1,8 +1,4 @@
 // TODO:
-tiled draw func for all structs
-tiled find object/layer by name/id
-tiled real object pointer properties
-
 grid pathfinding
 off-grid navmesh pathfinding
 alpha blending, additive, multiply
@@ -16,6 +12,7 @@ shape/sprite shadow draw?
 assets - hot reloading fixes
 tiled - map automatic hot reload done when reloading tiled assets
 tiled - draw finished for map/tileset/tile/object/layer
+tiled - find layer/object/tile by property
 
 [109] [Wed] [26-11-2025]
 tiled - layer shape grid

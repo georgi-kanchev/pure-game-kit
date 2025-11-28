@@ -22,7 +22,7 @@ type Object struct {
 	OwnerLayer *Layer
 }
 
-func (object *Object) Sprite() *graphics.Sprite {
+func (object *Object) ExtractSprite() *graphics.Sprite {
 	var objType = object.Properties[property.ObjectType]
 	if objType != "tile" {
 		return nil
@@ -56,7 +56,7 @@ func (object *Object) Sprite() *graphics.Sprite {
 	sprite.Angle = ang
 	return sprite
 }
-func (object *Object) TextBox() *graphics.TextBox {
+func (object *Object) ExtractTextBox() *graphics.TextBox {
 	var objType = object.Properties[property.ObjectType]
 	if objType != "text" {
 		return nil
@@ -86,7 +86,7 @@ func (object *Object) TextBox() *graphics.TextBox {
 	textBox.PivotX, textBox.PivotY = 0, 0
 	return textBox
 }
-func (object *Object) Shapes() []*geometry.Shape {
+func (object *Object) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	var objType = object.Properties[property.ObjectType]
 	if is.OneOf(objType, "text", "point", "line") {
@@ -97,7 +97,7 @@ func (object *Object) Shapes() []*geometry.Shape {
 	var worldX, worldY, offsetX, offsetY = object.getOffsets()
 
 	if objType == "tile" {
-		result = append(result, object.getTile().Shapes()...)
+		result = append(result, object.getTile().ExtractShapes()...)
 		for _, shape := range result {
 			shape.X += worldX + offsetX + x
 			shape.Y += worldY + offsetY + y - h
@@ -111,7 +111,7 @@ func (object *Object) Shapes() []*geometry.Shape {
 	result = append(result, shape)
 	return result
 }
-func (object *Object) Lines() [][2]float32 {
+func (object *Object) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
 	var objType = object.Properties[property.ObjectType]
 	if objType != "line" && objType != "tile" {
@@ -122,7 +122,7 @@ func (object *Object) Lines() [][2]float32 {
 	var worldX, worldY, offsetX, offsetY = object.getOffsets()
 
 	if objType == "tile" {
-		result = object.getTile().Lines()
+		result = object.getTile().ExtractLines()
 		for i := range result {
 			result[i][0] += worldX + offsetX + x
 			result[i][1] += worldY + offsetY + y - h
@@ -145,7 +145,7 @@ func (object *Object) Lines() [][2]float32 {
 
 	return result
 }
-func (object *Object) Points() [][2]float32 {
+func (object *Object) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
 	var objType = object.Properties[property.ObjectType]
 	if objType != "point" && objType != "tile" {
@@ -156,7 +156,7 @@ func (object *Object) Points() [][2]float32 {
 	var worldX, worldY, offsetX, offsetY = object.getOffsets()
 
 	if objType == "tile" {
-		var result = object.getTile().Points()
+		var result = object.getTile().ExtractPoints()
 		for i := range result {
 			result[i][0] += worldX + offsetX + x
 			result[i][1] += worldY + offsetY + y - h
@@ -167,10 +167,12 @@ func (object *Object) Points() [][2]float32 {
 	return [][2]float32{{worldX + offsetX + x, worldY + offsetY + y}}
 }
 
+//=================================================================
+
 func (object *Object) Draw(camera *graphics.Camera) {
-	var sprs = []*graphics.Sprite{object.Sprite()}
-	var txts = []*graphics.TextBox{object.TextBox()}
-	draw(camera, sprs, txts, object.Shapes(), object.Points(), object.Lines(), color.White)
+	var sprs = []*graphics.Sprite{object.ExtractSprite()}
+	var txts = []*graphics.TextBox{object.ExtractTextBox()}
+	draw(camera, sprs, txts, object.ExtractShapes(), object.ExtractPoints(), object.ExtractLines(), color.White)
 }
 
 //=================================================================

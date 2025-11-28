@@ -19,7 +19,18 @@ type Tileset struct {
 	Tiles      map[uint32]*Tile
 }
 
-func (tileset *Tileset) Sprites() []*graphics.Sprite {
+func (tileset *Tileset) FindTileBy(property string, value any) []*Tile {
+	var result = []*Tile{}
+	for _, tile := range tileset.Tiles {
+		var curValue, has = tile.Properties[property]
+		if has && value == curValue {
+			result = append(result, tile)
+		}
+	}
+	return result
+}
+
+func (tileset *Tileset) ExtractSprites() []*graphics.Sprite {
 	var sprites = []*graphics.Sprite{}
 	tileset.forEachTile(true, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		sprite.Width, sprite.Height = w, h
@@ -28,10 +39,10 @@ func (tileset *Tileset) Sprites() []*graphics.Sprite {
 	})
 	return sprites
 }
-func (tileset *Tileset) Shapes() []*geometry.Shape {
+func (tileset *Tileset) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
-		var shapes = tile.Shapes()
+		var shapes = tile.ExtractShapes()
 		for _, shape := range shapes {
 			shape.X, shape.Y = shape.X*scW+x, shape.Y*scH+y-h
 			shape.ScaleX, shape.ScaleY = scW, scH
@@ -40,10 +51,10 @@ func (tileset *Tileset) Shapes() []*geometry.Shape {
 	})
 	return result
 }
-func (tileset *Tileset) Lines() [][2]float32 {
+func (tileset *Tileset) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
 	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
-		var lines = tile.Lines()
+		var lines = tile.ExtractLines()
 		for i := range lines {
 			lines[i][0], lines[i][1] = lines[i][0]*scW+x, lines[i][1]*scH+y-h
 			result = append(result, lines[i])
@@ -51,10 +62,10 @@ func (tileset *Tileset) Lines() [][2]float32 {
 	})
 	return result
 }
-func (tileset *Tileset) Points() [][2]float32 {
+func (tileset *Tileset) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
 	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
-		var points = tile.Points()
+		var points = tile.ExtractPoints()
 		for i := range points {
 			points[i][0], points[i][1] = points[i][0]*scW+x, points[i][1]*scH+y-h
 			result = append(result, points[i])
@@ -63,8 +74,11 @@ func (tileset *Tileset) Points() [][2]float32 {
 	return result
 }
 
+//=================================================================
+
 func (tileset *Tileset) Draw(camera *graphics.Camera) {
-	draw(camera, tileset.Sprites(), nil, tileset.Shapes(), tileset.Points(), tileset.Lines(), color.White)
+	draw(camera, tileset.ExtractSprites(), nil, tileset.ExtractShapes(),
+		tileset.ExtractPoints(), tileset.ExtractLines(), color.White)
 }
 
 //=================================================================
@@ -176,7 +190,7 @@ func (tileset *Tileset) forEachTile(isSprite bool,
 		}
 
 		if isSprite {
-			sprite = tile.Sprite()
+			sprite = tile.ExtractSprite()
 			width, height = sprite.Width, sprite.Height
 		}
 

@@ -46,41 +46,54 @@ func (Map *Map) Recreate() {
 
 //=================================================================
 
-func (Map *Map) Sprites() []*graphics.Sprite {
+func (Map *Map) FindLayersBy(property string, value any) []*Layer {
+	var result = []*Layer{}
+	for _, layer := range Map.Layers {
+		var curValue, has = layer.Properties[property]
+		if has && value == curValue {
+			result = append(result, layer)
+		}
+	}
+	return result
+}
+
+func (Map *Map) ExtractSprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
 	for _, layer := range Map.Layers {
-		result = append(result, layer.Sprites()...)
+		result = append(result, layer.ExtractSprites()...)
 	}
 	return result
 }
-func (Map *Map) TextBoxes() []*graphics.TextBox {
+func (Map *Map) ExtractTextBoxes() []*graphics.TextBox {
 	var result = []*graphics.TextBox{}
 	for _, layer := range Map.Layers {
-		result = append(result, layer.TextBoxes()...)
+		result = append(result, layer.ExtractTextBoxes()...)
 	}
 	return result
 }
-func (Map *Map) Shapes() []*geometry.Shape {
+func (Map *Map) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	for _, layer := range Map.Layers {
-		result = append(result, layer.Shapes()...)
+		result = append(result, layer.ExtractShapes()...)
 	}
 	return result
 }
-func (Map *Map) Lines() [][2]float32 {
+func (Map *Map) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
 	for _, layer := range Map.Layers {
-		result = append(result, layer.Lines()...)
+		result = append(result, layer.ExtractLines()...)
 	}
 	return result
 }
-func (Map *Map) Points() [][2]float32 {
+func (Map *Map) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
 	for _, layer := range Map.Layers {
-		result = append(result, layer.Points()...)
+		result = append(result, layer.ExtractPoints()...)
 	}
 	return result
 }
+
+//=================================================================
 
 func (Map *Map) Draw(camera *graphics.Camera) {
 	for _, layer := range Map.Layers {

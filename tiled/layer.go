@@ -26,7 +26,18 @@ type Layer struct {
 
 //=================================================================
 
-func (layer *Layer) Sprites() []*graphics.Sprite {
+func (layer *Layer) FindObjectsBy(property string, value any) []*Object {
+	var result = []*Object{}
+	for _, obj := range layer.Objects {
+		var curValue, has = obj.Properties[property]
+		if has && value == curValue {
+			result = append(result, obj)
+		}
+	}
+	return result
+}
+
+func (layer *Layer) ExtractSprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
 	var image, hasImage = layer.Properties[property.LayerImage]
 	var tint = layer.Properties[property.LayerTint].(uint)
@@ -44,7 +55,7 @@ func (layer *Layer) Sprites() []*graphics.Sprite {
 
 	if len(layer.Objects) > 0 {
 		for _, obj := range layer.Objects {
-			var sprite = obj.Sprite()
+			var sprite = obj.ExtractSprite()
 			if sprite != nil {
 				sprite.Color = tint
 				result = append(result, sprite)
@@ -54,7 +65,7 @@ func (layer *Layer) Sprites() []*graphics.Sprite {
 	}
 
 	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
-		var sprite = tile.Sprite()
+		var sprite = tile.ExtractSprite()
 		sprite.X, sprite.Y = x, y
 		sprite.Width, sprite.Height = w, h
 		sprite.Angle = ang
@@ -63,17 +74,17 @@ func (layer *Layer) Sprites() []*graphics.Sprite {
 	})
 	return result
 }
-func (layer *Layer) TextBoxes() []*graphics.TextBox {
+func (layer *Layer) ExtractTextBoxes() []*graphics.TextBox {
 	var result = []*graphics.TextBox{} // tile & image layers don't have textboxes
 	for _, obj := range layer.Objects {
-		var textBox = obj.TextBox()
+		var textBox = obj.ExtractTextBox()
 		if textBox != nil {
 			result = append(result, textBox)
 		}
 	}
 	return result
 }
-func (layer *Layer) ShapeGrid() *geometry.ShapeGrid {
+func (layer *Layer) ExtractShapeGrid() *geometry.ShapeGrid {
 	var tileW = layer.OwnerMap.Properties[property.MapTileWidth].(int)
 	var tileH = layer.OwnerMap.Properties[property.MapTileHeight].(int)
 	var result = geometry.NewShapeGrid(tileW, tileH)
@@ -81,7 +92,7 @@ func (layer *Layer) ShapeGrid() *geometry.ShapeGrid {
 	var cellH = float32(layer.OwnerMap.Properties[property.MapTileHeight].(int))
 
 	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
-		var shapes = tile.Shapes()
+		var shapes = tile.ExtractShapes()
 		if len(shapes) == 0 {
 			return
 		}
@@ -113,25 +124,25 @@ func (layer *Layer) ShapeGrid() *geometry.ShapeGrid {
 	})
 	return result
 }
-func (layer *Layer) Shapes() []*geometry.Shape {
+func (layer *Layer) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	for _, object := range layer.Objects {
-		result = append(result, object.Shapes()...)
+		result = append(result, object.ExtractShapes()...)
 	}
 	return result
 }
-func (layer *Layer) Lines() [][2]float32 {
+func (layer *Layer) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
 	for i, obj := range layer.Objects {
 		if i != 0 {
 			result = append(result, [2]float32{number.NaN(), number.NaN()})
 		}
 
-		result = append(result, obj.Lines()...)
+		result = append(result, obj.ExtractLines()...)
 	}
 
 	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
-		var points = tile.Lines()
+		var points = tile.ExtractLines()
 		for _, pt := range points {
 			pt[0], pt[1] = pt[0]*scW, pt[1]*scH
 			pt[0], pt[1] = pt[0]*condition.If(w < 0, float32(-1), 1), pt[1]*condition.If(h < 0, float32(-1), 1)
@@ -142,14 +153,14 @@ func (layer *Layer) Lines() [][2]float32 {
 	})
 	return result
 }
-func (layer *Layer) Points() [][2]float32 {
+func (layer *Layer) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
 	for _, obj := range layer.Objects {
-		result = append(result, obj.Points()...)
+		result = append(result, obj.ExtractPoints()...)
 	}
 
 	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
-		var points = tile.Points()
+		var points = tile.ExtractPoints()
 		for _, pt := range points {
 			pt[0], pt[1] = pt[0]*scW, pt[1]*scH
 			pt[0], pt[1] = pt[0]*condition.If(w < 0, float32(-1), 1), pt[1]*condition.If(h < 0, float32(-1), 1)
@@ -160,6 +171,8 @@ func (layer *Layer) Points() [][2]float32 {
 	})
 	return result
 }
+
+//=================================================================
 
 func (layer *Layer) Draw(camera *graphics.Camera) {
 	var l = layer
@@ -167,8 +180,8 @@ func (layer *Layer) Draw(camera *graphics.Camera) {
 	if !hasCol {
 		col = color.White
 	}
-	draw(camera, l.Sprites(), l.TextBoxes(),
-		append(l.Shapes(), l.ShapeGrid().All()...), l.Points(), l.Lines(), col.(uint))
+	draw(camera, l.ExtractSprites(), l.ExtractTextBoxes(),
+		append(l.ExtractShapes(), l.ExtractShapeGrid().All()...), l.ExtractPoints(), l.ExtractLines(), col.(uint))
 }
 
 //=================================================================
