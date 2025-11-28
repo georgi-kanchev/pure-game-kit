@@ -3,6 +3,8 @@ package example
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/tiled"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/window"
@@ -15,7 +17,7 @@ func Tiled() {
 	var mapIds = assets.LoadTiledMapsFromWorld("examples/data/world.world")
 	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
 	var project = tiled.NewProject(projectId)
-	var grass = tiled.NewMap(mapIds[1], project)
+	var grass = tiled.NewMap(mapIds[0], project)
 	// var sprites = desert.Sprites()
 
 	assets.LoadDefaultFont()
@@ -24,7 +26,13 @@ func Tiled() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmooth()
 
-		grass.Draw(cam)
+		// grass.Draw(cam)
 		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
+
+		if keyboard.IsKeyJustPressed(key.F5) {
+			assets.ReloadAllTiledMaps()
+		}
+
+		grass.Draw(cam)
 	}
 }

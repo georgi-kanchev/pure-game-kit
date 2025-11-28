@@ -15,8 +15,6 @@ type Map struct {
 	Tilesets             []*Tileset
 	TilesetsFirstTileIds []uint32
 	Layers               []*Layer
-
-	assetId string
 }
 
 func NewMap(mapId string, project *Project) *Map {
@@ -26,21 +24,10 @@ func NewMap(mapId string, project *Project) *Map {
 		return nil
 	}
 
-	var result = Map{Project: project, Layers: []*Layer{}, assetId: mapId}
-	result.Recreate()
-	return &result
-}
-func (Map *Map) Recreate() {
-	var data, _ = internal.TiledMaps[Map.assetId]
-	if data == nil {
-		debug.LogError("Failed to recreate map: \"", Map.assetId, "\"\nNo data is loaded with this map id.")
-		return
-	}
-
-	Map.initProperties(data)
-	Map.initTilesets(data)
-	Map.initLayers(data.Directory, &data.Layers, nil)
-	Map.sortLayers(data)
+	var result = &Map{Project: project, Layers: []*Layer{}}
+	result.recreate(mapId)
+	internal.TiledReloadCallbacks = append(internal.TiledReloadCallbacks, func() { result.recreate(mapId) })
+	return result // this ^ ^ ^ will leak memory when NewMap is called multiple times but life is too short to care
 }
 
 //=================================================================
@@ -89,6 +76,18 @@ func (Map *Map) Draw(camera *graphics.Camera) {
 
 //=================================================================
 // private
+
+func (Map *Map) recreate(mapId string) {
+	var data, _ = internal.TiledMaps[mapId]
+	if data == nil {
+		return
+	}
+
+	Map.initProperties(data)
+	Map.initTilesets(data)
+	Map.initLayers(data.Directory, &data.Layers, nil)
+	Map.sortLayers(data)
+}
 
 func (Map *Map) initProperties(data *internal.Map) {
 	Map.Properties = make(map[string]any)

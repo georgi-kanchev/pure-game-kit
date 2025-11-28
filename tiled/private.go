@@ -2,6 +2,8 @@ package tiled
 
 import (
 	"pure-game-kit/execution/condition"
+	geo "pure-game-kit/geometry"
+	gfx "pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/flag"
@@ -98,4 +100,17 @@ func tileOrientation(tileId uint32, w, h, th float32, image bool) (ang, newW, ne
 		offY = condition.If(image, th-w, 0)
 	}
 	return ang, newW, newH, offX, offY
+}
+func draw(c *gfx.Camera, spr []*gfx.Sprite, txt []*gfx.TextBox, sh []*geo.Shape, pt, ln [][2]float32, col uint) {
+	c.DrawSprites(spr...)
+	c.DrawTextBoxes(txt...)
+
+	for _, shape := range sh {
+		var pts = shape.CornerPoints()
+		c.DrawShapes(color.FadeOut(col, 0.5), pts...)
+		c.DrawLinesPath(0.5, col, pts...)
+	}
+
+	c.DrawLinesPath(0.5, col, ln...)
+	c.DrawPoints(0.5, col, pt...)
 }

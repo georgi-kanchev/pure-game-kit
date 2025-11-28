@@ -7,6 +7,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
+	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 )
@@ -57,6 +58,10 @@ func (tile *Tile) Points() [][2]float32 {
 		result = append(result, obj.Points()...)
 	}
 	return result
+}
+
+func (tile *Tile) Draw(camera *graphics.Camera) {
+	draw(camera, []*graphics.Sprite{tile.Sprite()}, nil, tile.Shapes(), tile.Points(), tile.Lines(), color.White)
 }
 
 //=================================================================

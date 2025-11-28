@@ -8,6 +8,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
+	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"slices"
 )
@@ -60,6 +61,10 @@ func (tileset *Tileset) Points() [][2]float32 {
 		}
 	})
 	return result
+}
+
+func (tileset *Tileset) Draw(camera *graphics.Camera) {
+	draw(camera, tileset.Sprites(), nil, tileset.Shapes(), tileset.Points(), tileset.Lines(), color.White)
 }
 
 //=================================================================

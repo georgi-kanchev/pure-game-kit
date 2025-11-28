@@ -51,6 +51,7 @@ func LoadTiledMapsFromWorld(filePath string) (mapIds []string) {
 
 		var mp, _ = internal.TiledMaps[mapId]
 		mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
+		internal.TiledWorlds[mapId] = [2]float32{mp.WorldX, mp.WorldY}
 	}
 
 	return resultIds
@@ -78,6 +79,11 @@ func LoadTiledMap(filePath string) string {
 	mapData.Directory = path.Folder(filePath)
 	mapData.FirstTileIds = make([]uint32, len(mapData.Tilesets))
 	internal.TiledMaps[filePath] = mapData
+
+	var worldOffset, hasWorld = internal.TiledWorlds[filePath]
+	if hasWorld { // keeps world offsets when reloading maps
+		mapData.WorldX, mapData.WorldY = worldOffset[0], worldOffset[1]
+	}
 
 	for i, t := range mapData.Tilesets {
 		LoadTiledTileset(path.New(mapData.Directory, t.Source))
@@ -235,6 +241,7 @@ func ReloadAllTiledMaps() {
 	for _, id := range loaded {
 		LoadTiledMap(id)
 	}
+	tryTriggerReloadCallbacks()
 }
 func ReloadAllTiledTilesets() {
 	var loaded = slices.Collect(maps.Keys(internal.TiledTilesets))
@@ -242,6 +249,7 @@ func ReloadAllTiledTilesets() {
 	for _, id := range loaded {
 		LoadTiledTileset(id)
 	}
+	tryTriggerReloadCallbacks()
 }
 func ReloadAllTiledProjects() {
 	var loaded = slices.Collect(maps.Keys(internal.TiledProjects))
@@ -249,4 +257,5 @@ func ReloadAllTiledProjects() {
 	for _, id := range loaded {
 		LoadTiledProject(id)
 	}
+	tryTriggerReloadCallbacks()
 }

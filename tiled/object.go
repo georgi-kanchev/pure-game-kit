@@ -16,7 +16,7 @@ import (
 
 type Object struct {
 	Properties map[string]any
-	Corners    [][2]float32
+	Corners    [][2]float32 // used to describe either shapes, lines or points
 
 	OwnerTile  *Tile
 	OwnerLayer *Layer
@@ -167,6 +167,12 @@ func (object *Object) Points() [][2]float32 {
 	return [][2]float32{{worldX + offsetX + x, worldY + offsetY + y}}
 }
 
+func (object *Object) Draw(camera *graphics.Camera) {
+	var sprs = []*graphics.Sprite{object.Sprite()}
+	var txts = []*graphics.TextBox{object.TextBox()}
+	draw(camera, sprs, txts, object.Shapes(), object.Points(), object.Lines(), color.White)
+}
+
 //=================================================================
 
 var aligns = map[string]float32{"left": 0, "center": 0.5, "right": 1, "top": 0, "bottom": 1, "justify": 0}
@@ -177,8 +183,6 @@ func newObject(data *internal.LayerObject, ownerTile *Tile, ownerLayer *Layer) *
 	result.initCorners(data)
 	return &result
 }
-
-//=================================================================
 
 func (object *Object) initProperties(data *internal.LayerObject) {
 	object.Properties = make(map[string]any)

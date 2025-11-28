@@ -22,13 +22,6 @@ type Layer struct {
 
 	OwnerMap   *Map
 	OwnerGroup *Layer
-
-	sprites   []*graphics.Sprite
-	textBoxes []*graphics.TextBox
-	shapes    []*geometry.Shape
-	shapeGrid *geometry.ShapeGrid
-	lines     [][2]float32
-	points    [][2]float32
 }
 
 //=================================================================
@@ -122,38 +115,9 @@ func (layer *Layer) ShapeGrid() *geometry.ShapeGrid {
 }
 func (layer *Layer) Shapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-
 	for _, object := range layer.Objects {
 		result = append(result, object.Shapes()...)
 	}
-
-	// layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
-	// 	var shapes = tile.Shapes()
-	// 	var _, isImage = tile.Properties[property.TileImage]
-
-	// 	for _, shape := range shapes {
-	// 		if isImage {
-	// 			shape.ScaleX, shape.ScaleY = scW, scH
-	// 		}
-
-	// 		if w < 0 {
-	// 			shape.X *= -1
-	// 			shape.ScaleX *= -1
-	// 			shape.Angle = -shape.Angle
-	// 		}
-	// 		if h < 0 {
-	// 			shape.Y *= -1
-	// 			shape.ScaleY *= -1
-	// 			shape.Angle = -shape.Angle
-	// 		}
-
-	// 		shape.X, shape.Y = point.RotateAroundPoint(shape.X*scW, shape.Y*scH, 0, 0, ang)
-	// 		shape.X, shape.Y = shape.X+x, shape.Y+y
-	// 		shape.Angle += ang
-
-	// 		result = append(result, shape)
-	// 	}
-	// })
 	return result
 }
 func (layer *Layer) Lines() [][2]float32 {
@@ -198,25 +162,13 @@ func (layer *Layer) Points() [][2]float32 {
 }
 
 func (layer *Layer) Draw(camera *graphics.Camera) {
-	var spr, txt, gr = layer.Sprites(), layer.TextBoxes(), layer.ShapeGrid().All()
-	var sh, pt, ln = layer.Shapes(), layer.Points(), layer.Lines()
-	var col, hasCol = layer.Properties[property.LayerColor]
-	camera.DrawSprites(spr...)
-	camera.DrawTextBoxes(txt...)
-
+	var l = layer
+	var col, hasCol = l.Properties[property.LayerColor]
 	if !hasCol {
 		col = color.White
 	}
-
-	sh = append(sh, gr...)
-	for _, shape := range sh {
-		var pts = shape.CornerPoints()
-		camera.DrawShapes(color.FadeOut(col.(uint), 0.5), pts...)
-		camera.DrawLinesPath(1, col.(uint), pts...)
-	}
-
-	camera.DrawLinesPath(1, col.(uint), ln...)
-	camera.DrawPoints(1, col.(uint), pt...)
+	draw(camera, l.Sprites(), l.TextBoxes(),
+		append(l.Shapes(), l.ShapeGrid().All()...), l.Points(), l.Lines(), col.(uint))
 }
 
 //=================================================================
