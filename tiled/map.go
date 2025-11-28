@@ -71,6 +71,13 @@ func (Map *Map) ExtractTextBoxes() []*graphics.TextBox {
 	}
 	return result
 }
+func (Map *Map) ExtractShapeGrids() []*geometry.ShapeGrid {
+	var result = []*geometry.ShapeGrid{}
+	for _, layer := range Map.Layers {
+		result = append(result, layer.ExtractShapeGrid())
+	}
+	return result
+}
 func (Map *Map) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
 	for _, layer := range Map.Layers {
