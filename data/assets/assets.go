@@ -20,14 +20,9 @@ func ReloadAll() {
 	ReloadAllTextures()
 	ReloadAllSounds()
 	ReloadAllMusic()
-
-	skipReloadCallbacks = true
 	ReloadAllTiledMaps()
 	ReloadAllTiledTilesets()
 	ReloadAllTiledProjects()
-	skipReloadCallbacks = false
-
-	tryTriggerReloadCallbacks() // this is skipped in the previous 3 calls to avoid reloading 3 times
 }
 
 //=================================================================
@@ -53,8 +48,6 @@ const defaultPatterns = "&"
 const defaultRetroAtlas = "#"
 const defaultUI = "!"
 const defaultSoundsUI = "~"
-
-var skipReloadCallbacks = false
 
 func tryCreateWindow() {
 	if !rl.IsWindowReady() {

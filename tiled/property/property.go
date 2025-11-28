@@ -14,6 +14,8 @@ const (
 	MapWorldX          = "worldX"
 	MapWorldY          = "worldY"
 
+	//=================================================================
+
 	TilesetName       = "name"
 	TilesetClass      = "class"
 	TilesetTileWidth  = "width"
@@ -27,12 +29,16 @@ const (
 	TilesetRenderSize = "renderSize"
 	TilesetFillMode   = "fillMode"
 
+	//=================================================================
+
 	TileId          = "id"
 	TileClass       = "class"
 	TileWidth       = "width"
 	TileHeight      = "height"
 	TileProbability = "probability"
 	TileImage       = "image"
+
+	//=================================================================
 
 	LayerId        = "id"
 	LayerName      = "name"
@@ -56,6 +62,8 @@ const (
 	LayerTransparentColor = "transparentColor"
 	LayerRepeatX          = "repeatX"
 	LayerRepeatY          = "repeatY"
+
+	//=================================================================
 
 	ObjectId       = "id"
 	ObjectName     = "name"

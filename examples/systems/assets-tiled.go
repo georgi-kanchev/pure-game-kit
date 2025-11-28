@@ -31,6 +31,8 @@ func Tiled() {
 
 		if keyboard.IsKeyJustPressed(key.F5) {
 			assets.ReloadAllTiledMaps()
+			grass.Recreate()
+			project.Recreate()
 		}
 
 		grass.Draw(cam)

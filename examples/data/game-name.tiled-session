@@ -22,11 +22,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 2,
+            "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 170.5,
-                "y": 116.25
+                "x": -82,
+                "y": 89.5
             }
         },
         "images.tsx": {

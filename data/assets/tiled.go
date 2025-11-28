@@ -241,7 +241,6 @@ func ReloadAllTiledMaps() {
 	for _, id := range loaded {
 		LoadTiledMap(id)
 	}
-	tryTriggerReloadCallbacks()
 }
 func ReloadAllTiledTilesets() {
 	var loaded = slices.Collect(maps.Keys(internal.TiledTilesets))
@@ -249,7 +248,6 @@ func ReloadAllTiledTilesets() {
 	for _, id := range loaded {
 		LoadTiledTileset(id)
 	}
-	tryTriggerReloadCallbacks()
 }
 func ReloadAllTiledProjects() {
 	var loaded = slices.Collect(maps.Keys(internal.TiledProjects))
@@ -257,5 +255,4 @@ func ReloadAllTiledProjects() {
 	for _, id := range loaded {
 		LoadTiledProject(id)
 	}
-	tryTriggerReloadCallbacks()
 }

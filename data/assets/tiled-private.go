@@ -175,11 +175,3 @@ func getLayersOrder(layers []*internal.AnyLayer) []uint32 {
 	}
 	return result
 }
-
-func tryTriggerReloadCallbacks() {
-	if !skipReloadCallbacks { // this helps batching reloads to skip multiple unnecessary ones
-		for _, cb := range internal.TiledReloadCallbacks {
-			cb()
-		}
-	}
-}

@@ -40,7 +40,6 @@ var Music = make(map[string]*rl.Music)
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
 var TiledProjects = make(map[string]*Project)
-var TiledReloadCallbacks = []func(){}
 var TiledWorlds = make(map[string][2]float32) // used to store map offsets in the world when reloading maps
 
 //=================================================================

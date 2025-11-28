@@ -11,6 +11,8 @@ type Project struct {
 	Properties     map[string]any
 	Classes        map[string]any      // a collection of custom properties that anything in the project can use
 	UniqueTilesets map[string]*Tileset // maps in the same project will try to reuse these instead of loading them
+
+	assetId string
 }
 
 func NewProject(projectId string) *Project {
@@ -20,10 +22,19 @@ func NewProject(projectId string) *Project {
 		return nil
 	}
 
-	var result = Project{UniqueTilesets: map[string]*Tileset{}}
-	result.initClasses(data)
-	result.initProperties(data)
-	return &result
+	var result = &Project{UniqueTilesets: map[string]*Tileset{}, assetId: projectId}
+	result.Recreate()
+	return result
+}
+
+func (project *Project) Recreate() {
+	var data, _ = internal.TiledProjects[project.assetId]
+	if data == nil {
+		return
+	}
+
+	project.initClasses(data)
+	project.initProperties(data)
 }
 
 //=================================================================
