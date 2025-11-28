@@ -13,6 +13,7 @@ assets - hot reloading fixes
 tiled - map automatic hot reload done when reloading tiled assets
 tiled - draw finished for map/tileset/tile/object/layer
 tiled - find layer/object/tile by property
+tiled - finished overhaul, removed old implementation
 
 [109] [Wed] [26-11-2025]
 tiled - layer shape grid
