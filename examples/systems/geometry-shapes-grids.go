@@ -29,7 +29,7 @@ func ShapesGrids() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmooth()
-		cam.DrawGrid(1, 32, 32, color.Red)
+		cam.DrawGrid(1, 32, 32, color.DarkGray)
 
 		var mx, my = cam.MousePosition()
 		shape.X, shape.Y = mx, my

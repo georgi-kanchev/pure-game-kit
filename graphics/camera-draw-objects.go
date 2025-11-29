@@ -102,10 +102,6 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
-		// trying to reducing tearing artifacts...
-		// rectWorld.X = float32(int(rectWorld.X))
-		// rectWorld.Y = float32(int(rectWorld.Y))
-
 		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(s.Color))
 	}
 	camera.end()

@@ -85,3 +85,37 @@ func (line *Line) IsCrossingLine(target Line) bool {
 func (line *Line) IsLeftOfPoint(x, y float32) bool {
 	return (line.Bx-line.Ax)*(y-line.Ay)-(line.By-line.Ay)*(x-line.Ax) < 0
 }
+
+//=================================================================
+
+// calculates the minimal subsections of the polyline routes to traverse to reach target
+//
+// start and target point can be anywhere (not necessarily on the paths)
+//
+// multiple paths can be separated by [NaN, NaN]
+//
+// separate paths need to be sharing points to connect - disconnected paths are discarded
+func FollowPath(start, target [2]float32, points ...[2]float32) [][2]float32 {
+	var startX, startY = closestPointOnPath(start, points)
+	var targetX, targetY = closestPointOnPath(target, points)
+
+	return [][2]float32{{startX, startY}, {targetX, targetY}}
+}
+
+//=================================================================
+// private
+
+func closestPointOnPath(start [2]float32, points [][2]float32) (closestX, closestY float32) {
+	var bestDist = number.Infinity()
+	for i := 1; i < len(points); i++ {
+		var p0, p1 = points[i-1], points[i]
+		var line = NewLine(p0[0], p0[1], p1[0], p1[1])
+		var curClosestX, curClosestY = line.ClosestToPoint(start[0], start[1])
+		var dist = point.DistanceToPoint(start[0], start[1], curClosestX, curClosestY)
+		if dist < bestDist {
+			bestDist = dist
+			closestX, closestY = curClosestX, curClosestY
+		}
+	}
+	return closestX, closestY
+}

@@ -27,7 +27,7 @@ func Tiled() {
 		cam.MouseDragAndZoomSmooth()
 
 		// grass.Draw(cam)
-		cam.DrawGrid(0.5, 16, 16, color.Darken(color.Gray, 0.5))
+		cam.DrawGrid(0.5, 16, 16, color.DarkGray)
 
 		if keyboard.IsKeyJustPressed(key.F5) {
 			assets.ReloadAllTiledMaps()

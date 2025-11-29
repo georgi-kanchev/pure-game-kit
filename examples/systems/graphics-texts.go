@@ -27,7 +27,7 @@ func Texts() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.PivotX, cam.PivotY = 0.05, 0
-		textBox.Color = color.Darken(color.Gray, 0.5)
+		textBox.Color = color.DarkGray
 		cam.DrawNodes(&textBox.Node)
 		textBox.Color = color.White
 

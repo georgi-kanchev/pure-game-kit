@@ -8,6 +8,10 @@ simple particles, port?
 shape/sprite shadow draw?
 
 // DONE:
+[111] [Sat] [29-11-2025]
+colors - added more presets
+geometry - path following started
+
 [110] [Fri] [28-11-2025]
 assets - hot reloading fixes
 tiled - map automatic hot reload done when reloading tiled assets

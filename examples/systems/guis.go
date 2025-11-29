@@ -149,7 +149,7 @@ func GUIs() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawGrid(2, 100, 100, color.Darken(color.Gray, 0.5))
+		cam.DrawGrid(2, 100, 100, color.DarkGray)
 
 		var grab = hud.DragOnGrab()
 		if grab != "" {

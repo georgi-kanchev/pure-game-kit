@@ -78,6 +78,7 @@ func (shapeGrid *ShapeGrid) FindPath(start, target [2]float32, turnFactor int, m
 }
 
 //=================================================================
+// private
 
 type priorityQueue []*node
 
@@ -124,7 +125,7 @@ func heuristic(ax, ay, bx, by int) float32 {
 	return float32(math.Sqrt(float64(dx*dx + dy*dy)))
 }
 
-func (shapeGrid *ShapeGrid) smoothZigzag(points [][2]float32, turnFactor int, minimize bool) [][2]float32 {
+func (shapeGrid *ShapeGrid) smoothZigzag(points [][2]float32, turnFactor int, minimizePoints bool) [][2]float32 {
 	var pts = collection.Clone(points)
 	if len(pts) < 2 {
 		return pts
@@ -139,7 +140,7 @@ func (shapeGrid *ShapeGrid) smoothZigzag(points [][2]float32, turnFactor int, mi
 			continue
 		}
 
-		if minimize {
+		if minimizePoints {
 			pts = append(pts[:i], pts[i+1:]...)
 			i--
 			continue

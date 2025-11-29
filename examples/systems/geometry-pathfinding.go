@@ -29,7 +29,7 @@ func Pathfinding() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmooth()
-		cam.DrawGrid(1, 32, 32, color.Red)
+		cam.DrawGrid(1, 32, 32, color.DarkGray)
 
 		var allShapes = grid.All()
 		for _, v := range allShapes {
@@ -37,7 +37,7 @@ func Pathfinding() {
 		}
 
 		var mx, my = cam.MousePosition()
-		path = grid.FindPath([2]float32{16, 16}, [2]float32{mx, my}, 0, true)
+		path = grid.FindPath([2]float32{16, 16}, [2]float32{mx, my}, 10, false)
 		cam.DrawLinesPath(1, color.Green, path...)
 		cam.DrawPoints(2, color.White, path...)
 	}

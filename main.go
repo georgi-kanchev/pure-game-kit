@@ -66,6 +66,7 @@ func main() {
 		gui.Button("shape grids geometry", f.Text, " Chunks `(geometry-shapes-grids.go)", f.NewRow, ""),
 		gui.Button("shape collision geometry", f.Text, " Collisions `(geometry-shapes-collisions.go)", f.NewRow, ""),
 		gui.Button("pathfind around geometry", f.Text, " Pathfinding `(geometry-pathfinding.go)", f.NewRow, ""),
+		gui.Button("path following geometry", f.Text, " Path Following `(geometry-path-following.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("data", f.ThemeId, "label", f.Text, "Assets:", f.NewRow, ""),
 		gui.Button("tiled scenes", f.Text, " Tiled Scenes `(assets-tiled.go)", f.NewRow, ""),
@@ -86,6 +87,8 @@ func main() {
 	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
 
+	hud.Scale = 1.01 // removes tearing artifacts
+
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
 		"boxes graphics":   example.Boxes,
@@ -100,6 +103,7 @@ func main() {
 		"shape grids geometry":     example.ShapesGrids,
 		"shape collision geometry": example.Collisions,
 		"pathfind around geometry": example.Pathfinding,
+		"path following geometry":  example.PathFollowing,
 		//=================================================================
 		"tiled scenes":              example.Tiled,
 		"default font asset":        example.DefaultAssetFont,

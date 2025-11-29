@@ -60,7 +60,7 @@ func Shapes() {
 		cam.DrawLinesPath(8, colCircle, hexagon.CornerPoints()...)
 		cam.DrawShapesFast(color.Darken(colRect, 0.5), rectangle.CornerPoints()...)
 		cam.DrawLinesPath(8, colRect, rectangle.CornerPoints()...)
-		cam.DrawShapesFast(color.Darken(color.White, 0.5), triangle.CornerPoints()...)
+		cam.DrawShapesFast(color.Gray, triangle.CornerPoints()...)
 		cam.DrawLinesPath(8, color.White, triangle.CornerPoints()...)
 
 		cam.DrawLinesPath(8, colShape, shape.CornerPoints()...)
@@ -69,7 +69,7 @@ func Shapes() {
 		cam.DrawShapes(color.Darken(color.Violet, 0.5), stars...)
 		cam.DrawLinesPath(8, color.Violet, stars...)
 
-		cam.DrawShapesFast(color.Darken(color.Green, 0.5), ellipse.CornerPoints()...)
+		cam.DrawShapesFast(color.DarkGreen, ellipse.CornerPoints()...)
 		cam.DrawLinesPath(8, color.Green, ellipse.CornerPoints()...)
 
 		for _, v := range crossPoints {
