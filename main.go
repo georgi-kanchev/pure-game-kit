@@ -65,6 +65,7 @@ func main() {
 		gui.Button("shape geometry", f.Text, " Shapes `(geometry-shapes.go)", f.NewRow, ""),
 		gui.Button("shape grids geometry", f.Text, " Chunks `(geometry-shapes-grids.go)", f.NewRow, ""),
 		gui.Button("shape collision geometry", f.Text, " Collisions `(geometry-shapes-collisions.go)", f.NewRow, ""),
+		gui.Button("pathfind around geometry", f.Text, " Pathfinding `(geometry-pathfinding.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("data", f.ThemeId, "label", f.Text, "Assets:", f.NewRow, ""),
 		gui.Button("tiled scenes", f.Text, " Tiled Scenes `(assets-tiled.go)", f.NewRow, ""),
@@ -98,6 +99,7 @@ func main() {
 		"shape geometry":           example.Shapes,
 		"shape grids geometry":     example.ShapesGrids,
 		"shape collision geometry": example.Collisions,
+		"pathfind around geometry": example.Pathfinding,
 		//=================================================================
 		"tiled scenes":              example.Tiled,
 		"default font asset":        example.DefaultAssetFont,
