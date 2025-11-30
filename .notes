@@ -1,5 +1,5 @@
 // TODO:
-grid pathfinding
+save vscode settings & extensions etc
 off-grid navmesh pathfinding
 alpha blending, additive, multiply
 
@@ -8,6 +8,9 @@ simple particles, port?
 shape/sprite shadow draw?
 
 // DONE:
+[112] [Sun] [30-11-2025]
+geometry - path following progress: single non-looping path done
+
 [111] [Sat] [29-11-2025]
 colors - added more presets
 geometry - path following started
