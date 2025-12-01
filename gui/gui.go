@@ -114,9 +114,9 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	reset(camera, gui) // keep order of variables & reset
 
-	var tlx, tly = camera.PointFromPivot(0, 0)
-	var brx, bry = camera.PointFromPivot(1, 1)
-	var cx, cy = camera.PointFromPivot(0.5, 0.5)
+	var tlx, tly = camera.PointFromEdge(0, 0)
+	var brx, bry = camera.PointFromEdge(1, 1)
+	var cx, cy = camera.PointFromEdge(0.5, 0.5)
 	var w, h = camera.Size() // caching dynamic cam props
 	camCx, camCy, camLx, camRx = text.New(cx), text.New(cy), text.New(tlx), text.New(brx)
 	camTy, camBy, camW, camH = text.New(tly), text.New(bry), text.New(w), text.New(h)

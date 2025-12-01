@@ -180,6 +180,7 @@ func (layer *Layer) Draw(camera *graphics.Camera) {
 	if !hasCol {
 		col = color.White
 	}
+
 	draw(camera, l.ExtractSprites(), l.ExtractTextBoxes(),
 		append(l.ExtractShapes(), l.ExtractShapeGrid().All()...), l.ExtractPoints(), l.ExtractLines(), col.(uint))
 }

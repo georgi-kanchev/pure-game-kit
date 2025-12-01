@@ -56,7 +56,6 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 	for window.KeepOpen() {
 		camera.SetScreenAreaToWindow()
 		textBox.Width, textBox.Height = camera.Size()
-		camera.PivotX, camera.PivotY = 0.5, 0.5
 		sprite.CameraFit(camera)
 		sprite.ScaleX *= scale
 		sprite.ScaleY *= scale
@@ -102,7 +101,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		}
 
 		textBox.Text = info
-		camera.PivotX, camera.PivotY = 0, 0
+		textBox.X, textBox.Y = camera.PointFromScreen(0, 0)
 		camera.DrawTextBoxes(textBox)
 	}
 }

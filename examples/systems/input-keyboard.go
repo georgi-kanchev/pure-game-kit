@@ -17,7 +17,6 @@ func Keyboard() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.PivotX, cam.PivotY = 0, 0
 		text += keyboard.Input()
 
 		if (keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace)) &&
@@ -33,6 +32,7 @@ func Keyboard() {
 			fmt.Printf("%v\n", "hello, world")
 		}
 
-		cam.DrawText(font, text, 0, 0, 200, color.White)
+		var x, y = cam.PointFromScreen(0, 0)
+		cam.DrawText(font, text, x, y, 200, color.White)
 	}
 }

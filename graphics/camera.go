@@ -14,7 +14,7 @@ import (
 type Camera struct {
 	ScreenX, ScreenY, ScreenWidth, ScreenHeight,
 	MaskX, MaskY, MaskWidth, MaskHeight, Blend int
-	X, Y, Angle, Zoom, PivotX, PivotY float32
+	X, Y, Angle, Zoom float32
 
 	// Makes sequencial Draw calls faster.
 	// All of the drawing to the camera can be batched, as long as the other parameters don't change.
@@ -42,7 +42,7 @@ type Camera struct {
 }
 
 func NewCamera(zoom float32) *Camera {
-	var cam = Camera{Zoom: zoom, PivotX: 0.5, PivotY: 0.5}
+	var cam = Camera{Zoom: zoom}
 	cam.SetScreenAreaToWindow()
 	return &cam
 }
@@ -164,11 +164,7 @@ func (camera *Camera) PointFromCamera(otherCamera *Camera, otherX, otherY float3
 func (camera *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (otherX, otherY float32) {
 	return otherCamera.PointFromCamera(camera, myX, myY)
 }
-func (camera *Camera) PointFromPivot(pivotX, pivotY float32) (x, y float32) {
-	// useful to get edge coordinates
-	var prevX, prevY = camera.PivotX, camera.PivotY
-	camera.PivotX, camera.PivotY = pivotX, pivotY
-	var scrX, scrY = camera.PointToScreen(0, 0)
-	camera.PivotX, camera.PivotY = prevX, prevY
-	return camera.PointFromScreen(scrX, scrY)
+func (camera *Camera) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
+	var scrX, scrY = float32(camera.ScreenWidth) * edgeX, float32(camera.ScreenHeight) * edgeY
+	return camera.PointFromScreen(int(scrX), int(scrY))
 }

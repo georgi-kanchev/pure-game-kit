@@ -193,8 +193,8 @@ func (camera *Camera) update() {
 	rlCam.Target.Y = float32(camera.Y)
 	rlCam.Rotation = float32(camera.Angle)
 	rlCam.Zoom = float32(camera.Zoom)
-	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth)*float32(camera.PivotX)
-	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight)*float32(camera.PivotY)
+	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth/2)
+	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight/2)
 
 	var mx = number.Biggest(camera.MaskX, camera.ScreenX)
 	var my = number.Biggest(camera.MaskY, camera.ScreenY)

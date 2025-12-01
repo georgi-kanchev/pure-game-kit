@@ -80,10 +80,10 @@ func Flows() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.PivotX, cam.PivotY = 0.5, 0.5
 		cam.DrawNodes(&node)
-		cam.PivotX, cam.PivotY = 0, 0
-		cam.DrawText(font, output, 0, 0, 200, color.White)
+
+		var x, y = cam.PointFromScreen(0, 0)
+		cam.DrawText(font, output, x, y, 200, color.White)
 
 		if keyboard.IsKeyJustPressed(key.W) {
 			a.Signal("W press")
