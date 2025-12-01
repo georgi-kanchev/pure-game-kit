@@ -26,6 +26,7 @@ func (camera *Camera) DrawScreenFrame(thickness int, color uint) {
 	rl.DrawRectangle(int32(x), int32(y+h-thickness), int32(w), int32(thickness), rl.GetColor(color)) // bottom
 	rl.DrawRectangle(int32(x), int32(y), int32(thickness), int32(h), rl.GetColor(color))             // left
 }
+
 func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	camera.begin()
 	camera.Batch = true
@@ -102,30 +103,8 @@ func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]
 	}
 	camera.end()
 }
-func (camera *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
-	camera.begin()
-	camera.Batch = true
-	for _, pt := range points {
-		camera.DrawCircle(pt[0], pt[1], radius, color)
-	}
-	camera.Batch = false
-	camera.end()
-}
-func (camera *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
-	camera.begin()
-	if len(colors) == 1 {
-		rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(colors[0]))
-	} else if len(colors) > 1 {
-		rl.DrawCircleGradient(int32(x), int32(y), radius, rl.GetColor(colors[0]), rl.GetColor(colors[1]))
-	}
-	camera.end()
-}
-func (camera *Camera) DrawEllipse(x, y, width, height float32, color uint) {
-	camera.begin()
-	rl.DrawEllipse(int32(x), int32(y), width/2, height/2, rl.GetColor(color))
-	camera.end()
-}
-func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, color uint) {
+
+func (camera *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, color uint) {
 	if thickness == 0 {
 		return
 	}
@@ -148,10 +127,10 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 		var trx, try = point.MoveAtAngle(x, y, angle, width-thickness)
 		var brx, bry = point.MoveAtAngle(x, y, angle+90, height-thickness)
 
-		camera.DrawRectangle(x, y, width, thickness, angle, color)
-		camera.DrawRectangle(trx, try, thickness, height, angle, color)
-		camera.DrawRectangle(brx, bry, width, thickness, angle, color)
-		camera.DrawRectangle(x, y, thickness, height, angle, color)
+		camera.DrawQuad(x, y, width, thickness, angle, color)
+		camera.DrawQuad(trx, try, thickness, height, angle, color)
+		camera.DrawQuad(brx, bry, width, thickness, angle, color)
+		camera.DrawQuad(x, y, thickness, height, angle, color)
 		return
 	}
 
@@ -160,13 +139,13 @@ func (camera *Camera) DrawFrame(x, y, width, height, angle, thickness float32, c
 	var trx, try = point.MoveAtAngle(x1, y1, angle, width)
 	var blx, bly = point.MoveAtAngle(tlx, tly, angle+90, height+thickness)
 
-	camera.DrawRectangle(tlx, tly, width+thickness*2, thickness, angle, color)
-	camera.DrawRectangle(trx, try, thickness, height+thickness*2, angle, color)
-	camera.DrawRectangle(blx, bly, width+thickness*2, thickness, angle, color)
-	camera.DrawRectangle(tlx, tly, thickness, height+thickness*2, angle, color)
+	camera.DrawQuad(tlx, tly, width+thickness*2, thickness, angle, color)
+	camera.DrawQuad(trx, try, thickness, height+thickness*2, angle, color)
+	camera.DrawQuad(blx, bly, width+thickness*2, thickness, angle, color)
+	camera.DrawQuad(tlx, tly, thickness, height+thickness*2, angle, color)
 	camera.end()
 }
-func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, colors ...uint) {
+func (camera *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 	if !camera.isAreaVisible(x, y, width, height, angle) {
 		return
 	}
@@ -203,6 +182,35 @@ func (camera *Camera) DrawRectangle(x, y, width, height, angle float32, colors .
 	rl.DrawRectangleGradientEx(rect, tl, bl, br, tr)
 	camera.end()
 	camera.Angle = prevAng
+}
+
+func (camera *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
+	camera.begin()
+	camera.Batch = true
+	for _, pt := range points {
+		camera.DrawCircle(pt[0], pt[1], radius, color)
+	}
+	camera.Batch = false
+	camera.end()
+}
+func (camera *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
+	camera.begin()
+	if len(colors) == 1 {
+		rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(colors[0]))
+	} else if len(colors) > 1 {
+		rl.DrawCircleGradient(int32(x), int32(y), radius, rl.GetColor(colors[0]), rl.GetColor(colors[1]))
+	}
+	camera.end()
+}
+func (camera *Camera) DrawEllipse(x, y, width, height float32, color uint) {
+	camera.begin()
+	rl.DrawEllipse(int32(x), int32(y), width/2, height/2, rl.GetColor(color))
+	camera.end()
+}
+func (camera *Camera) DrawCone(x, y, length, width, angle float32, color uint) {
+	camera.begin()
+	rl.DrawCircleSector(rl.Vector2{X: x, Y: y}, length, angle-width/2, angle+width/2, 64, rl.GetColor(color))
+	camera.end()
 }
 
 // works with convex + concave (non-self-intersacting) shapes

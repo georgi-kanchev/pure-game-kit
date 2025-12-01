@@ -123,7 +123,7 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		}
 
 	} else {
-		cam.DrawRectangle(widget.X, widget.Y, widget.Width, widget.Height, 0, col)
+		cam.DrawQuad(widget.X, widget.Y, widget.Width, widget.Height, 0, col)
 	}
 
 	if textBox.Text != "" {
@@ -164,7 +164,7 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 	}
 
 	if frameSz != 0 && frameCol != 0 {
-		cam.DrawFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, frameSz, frameCol)
+		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, frameSz, frameCol)
 	}
 
 	textBox.Text = "" // skip any further texts unless they are setuped beforehand

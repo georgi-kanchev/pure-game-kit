@@ -20,7 +20,7 @@ func (camera *Camera) DrawNodes(nodes ...*Node) {
 		}
 
 		var w, h = n.Width, n.Height
-		camera.DrawRectangle(x, y, w*scX, h*scY, ang, n.Color)
+		camera.DrawQuad(x, y, w*scX, h*scY, ang, n.Color)
 	}
 }
 func (camera *Camera) DrawSprites(sprites ...*Sprite) {

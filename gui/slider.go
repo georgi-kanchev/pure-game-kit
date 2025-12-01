@@ -63,7 +63,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 				reusableWidget.Width, reusableWidget.Height = widget.Height, widget.Height
 				drawReusableWidget(buttonColor, stepAssetId, stepX-widget.Height/2, widget.Y, root, cam)
 			} else {
-				cam.DrawRectangle(stepX, widget.Y, 5, widget.Height, 0, buttonColor)
+				cam.DrawQuad(stepX, widget.Y, 5, widget.Height, 0, buttonColor)
 			}
 		}
 	}

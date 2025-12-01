@@ -33,6 +33,8 @@ func PathFollowing() {
 		cam.MouseDragAndZoomSmooth()
 		cam.DrawGrid(1, 32, 32, color.DarkGray)
 
+		cam.DrawCone(0, 0, 200, 360, 0, color.Red)
+
 		var mx, my = cam.MousePosition()
 		var result = geometry.FollowPaths(startX, startY, mx, my, paths...)
 

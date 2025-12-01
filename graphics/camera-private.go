@@ -215,6 +215,7 @@ func (camera *Camera) begin() {
 
 	rl.BeginMode2D(rlCam)
 	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
+	rl.BeginBlendMode(rl.BlendMode(camera.Blend))
 }
 
 // call after draw to get back to using screen space
@@ -223,6 +224,7 @@ func (camera *Camera) end() {
 		return
 	}
 
+	rl.EndBlendMode()
 	rl.EndScissorMode()
 	rl.EndMode2D()
 }

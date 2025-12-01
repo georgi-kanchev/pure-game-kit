@@ -1,13 +1,16 @@
 // TODO:
 save vscode settings & extensions etc
 off-grid navmesh pathfinding
-alpha blending, additive, multiply
 
 shader effects, port?
 simple particles, port?
 shape/sprite shadow draw?
 
 // DONE:
+[113] [Mon] [01-12-2025]
+camera - draw cone
+camera - blend modes
+
 [112] [Sun] [30-11-2025]
 geometry - path following progress: single non-looping path done
 

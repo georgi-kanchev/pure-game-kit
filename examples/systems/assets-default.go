@@ -88,7 +88,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			}
 		}
 
-		camera.DrawFrame(mmx, mmy, float32(aw)*sprite.ScaleX, float32(ah)*sprite.ScaleY, 0, 6, color.Cyan)
+		camera.DrawQuadFrame(mmx, mmy, float32(aw)*sprite.ScaleX, float32(ah)*sprite.ScaleY, 0, 6, color.Cyan)
 
 		var info = text.New(
 			"id: '", txt, "'",

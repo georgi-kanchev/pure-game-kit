@@ -28,7 +28,7 @@ func Tweens() {
 		cam.DrawGrid(1, 100, 100, color.Gray)
 
 		var pos = position.CurrentValues()
-		cam.DrawRectangle(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], color.White)
+		cam.DrawQuad(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], color.White)
 
 		if position.IsFinished() {
 			position.Restart()

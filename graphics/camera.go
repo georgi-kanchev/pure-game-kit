@@ -13,7 +13,7 @@ import (
 
 type Camera struct {
 	ScreenX, ScreenY, ScreenWidth, ScreenHeight,
-	MaskX, MaskY, MaskWidth, MaskHeight int
+	MaskX, MaskY, MaskWidth, MaskHeight, Blend int
 	X, Y, Angle, Zoom, PivotX, PivotY float32
 
 	// Makes sequencial Draw calls faster.

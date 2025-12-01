@@ -217,9 +217,9 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 
 		c.ScrollX = number.Limit(c.ScrollX, 0, (maxX-minX)-c.Width)
 		var x = number.Map(c.ScrollX, 0, (maxX-minX)-c.Width, c.X, c.X+c.Width-handleWidth)
-		cam.DrawRectangle(c.X, c.Y+c.Height-scrollSize, c.Width, scrollSize, 0, color.RGBA(0, 0, 0, 150))
-		cam.DrawRectangle(x, c.Y+c.Height-scrollSize, handleWidth, scrollSize, 0, handleColor)
-		cam.DrawFrame(x, c.Y+c.Height-scrollSize, handleWidth, scrollSize, 0, -scrollSize*0.3, color.Black)
+		cam.DrawQuad(c.X, c.Y+c.Height-scrollSize, c.Width, scrollSize, 0, color.RGBA(0, 0, 0, 150))
+		cam.DrawQuad(x, c.Y+c.Height-scrollSize, handleWidth, scrollSize, 0, handleColor)
+		cam.DrawQuadFrame(x, c.Y+c.Height-scrollSize, handleWidth, scrollSize, 0, -scrollSize*0.3, color.Black)
 	}
 
 	//=================================================================
@@ -276,9 +276,9 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 
 		c.ScrollY = number.Limit(c.ScrollY, 0, (maxY-minY)-c.Height)
 		var y = number.Map(c.ScrollY, 0, (maxY-minY)-c.Height, c.Y, c.Y+c.Height-handleH)
-		cam.DrawRectangle(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, 0, color.RGBA(0, 0, 0, 150))
-		cam.DrawRectangle(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
-		cam.DrawFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, color.Black)
+		cam.DrawQuad(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, 0, color.RGBA(0, 0, 0, 150))
+		cam.DrawQuad(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
+		cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, color.Black)
 	}
 	c.prevMouseX, c.prevMouseY = mx, my
 }

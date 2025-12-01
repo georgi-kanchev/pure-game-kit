@@ -123,12 +123,12 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 			ax, bx = bx, ax
 		}
 
-		cam.DrawRectangle(ax, textBox.Y, bx-ax, textBox.Height, 0, color.Azure)
+		cam.DrawQuad(ax, textBox.Y, bx-ax, textBox.Height, 0, color.Azure)
 	})
 	maskText = false
 
 	if typingIn == widget {
-		cam.DrawFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, -5, color.Gray)
+		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, -5, color.Gray)
 	}
 
 	if typingIn == widget && cursorTime < 0.5 {
