@@ -85,3 +85,8 @@ func (line *Line) IsCrossingLine(target Line) bool {
 func (line *Line) IsLeftOfPoint(x, y float32) bool {
 	return (line.Bx-line.Ax)*(y-line.Ay)-(line.By-line.Ay)*(x-line.Ax) < 0
 }
+func (line *Line) ContainsPoint(x, y, tolerance float32) bool {
+	var cx, cy = line.ClosestToPoint(x, y)
+	var dx, dy = cx - x, cy - y
+	return dx*dx+dy*dy <= tolerance*tolerance
+}

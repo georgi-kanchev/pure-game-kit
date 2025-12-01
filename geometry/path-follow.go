@@ -1,7 +1,6 @@
 package geometry
 
 import (
-	"pure-game-kit/execution/condition"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 )
@@ -17,8 +16,13 @@ func FollowPaths(startX, startY, targetX, targetY float32, paths ...[2]float32) 
 	var allNodes = createNodes(paths)
 	var sx, sy, startNode, _ = closestPointOnPath(startX, startY, allNodes)
 	var tx, ty, target1, target2 = closestPointOnPath(targetX, targetY, allNodes)
+	var _, path = walk(startNode, target1, target2, sx, sy, targetX, targetY)
 	var result = [][2]float32{{startX, startY}, {sx, sy}}
-	result = append(result, startWalking(startNode, target1, target2, targetX, targetY)...)
+	if len(path) == 0 { // no path was found, perhaps the end target is a disconnected one
+		return result
+	}
+
+	result = append(result, path...)
 	result = append(result, [2]float32{tx, ty}, [2]float32{targetX, targetY})
 	return result
 }
@@ -29,9 +33,11 @@ func FollowPaths(startX, startY, targetX, targetY float32, paths ...[2]float32) 
 type n struct {
 	X, Y                float32
 	PathIndex, UniqueId int
-	Visited             bool // to stop infinite loops
-	Connections         []*n // can be self-joining loop or other paths joining in
-	Up, Down            *n
+	Neighbors           []*n
+
+	SearchPrev *n
+	SearchDist float32
+	SearchSeen bool
 }
 
 func createNodes(points [][2]float32) []*n {
@@ -46,70 +52,91 @@ func createNodes(points [][2]float32) []*n {
 		if i != 0 {
 			prevNode = result[len(result)-1]
 		}
-		var newN = &n{X: point[0], Y: point[1], PathIndex: pathIndex, UniqueId: i, Down: prevNode}
+		var newN = &n{X: point[0], Y: point[1], PathIndex: pathIndex, UniqueId: i}
 		result = append(result, newN)
 
-		if prevNode != nil {
-			prevNode.Up = newN
+		if prevNode != nil && prevNode.PathIndex == newN.PathIndex {
+			newN.Neighbors = append(newN.Neighbors, prevNode)
+			prevNode.Neighbors = append(prevNode.Neighbors, newN)
 		}
 	}
 	for _, node := range result {
 		for _, target := range result {
-			if node.UniqueId != target.UniqueId && node.X == target.X && node.Y == target.Y {
-				node.Connections = append(node.Connections, target)
+			if node != target && node.X == target.X && node.Y == target.Y {
+				node.Neighbors = append(node.Neighbors, target)
 			}
 		}
 	}
 	return result
 }
 
-func startWalking(startNode, target1, target2 *n, targetX, targetY float32) [][2]float32 {
-	var upDist, up = walk(startNode, target1, target2, true, targetX, targetY)
-	var downDist, down = walk(startNode, target1, target2, false, targetX, targetY)
-	return condition.If(upDist < downDist, up, down)
+func walk(start *n, target1 *n, target2 *n, startX, startY, targetX, targetY float32) (distance float32, path [][2]float32) {
+	var queue = []*n{start}
+	var hack = false
+	start.SearchSeen = true
+
+	for _, nb := range start.Neighbors {
+		if start.PathIndex == nb.PathIndex && nb.UniqueId < start.UniqueId {
+			hack = true
+			break
+		}
+	}
+	if !hack {
+		start.X, start.Y = startX, startY
+	}
+
+	for len(queue) > 0 {
+		var cur = queue[0]
+		queue = queue[1:]
+
+		for _, nb := range cur.Neighbors {
+			if (cur == target1 && nb == target2) ||
+				(cur == target2 && nb == target1) {
+				var line = NewLine(cur.X, cur.Y, nb.X, nb.Y)
+				var x, y = line.ClosestToPoint(targetX, targetY)
+				var dist = cur.SearchDist + point.DistanceToPoint(cur.X, cur.Y, x, y)
+				var path = reconstructFromNode(cur)
+				return dist, path // we found the target
+			}
+
+			if nb.SearchSeen {
+				continue
+			}
+
+			nb.SearchSeen = true
+			nb.SearchPrev = cur
+			nb.SearchDist = cur.SearchDist + point.DistanceToPoint(cur.X, cur.Y, nb.X, nb.Y)
+
+			queue = append(queue, nb)
+		}
+	}
+
+	return number.Infinity(), nil
 }
-func walk(node *n, target1 *n, target2 *n, up bool, targetX, targetY float32) (dist float32, pts [][2]float32) {
-	var totalDistance float32
-	var points = [][2]float32{}
-	var prev = node
-	var cur = condition.If(up, node.Up, node.Down)
 
-	if !up { // add starting node if walking down, otherwise it's skipped
-		points = append(points, [2]float32{prev.X, prev.Y})
-	}
-
-	if cur == nil { // our first step is a deadend
-		totalDistance = number.Infinity()
-	} // this is not the path, so indicate it with infinite distance
-
-	for cur != nil {
-		if (prev == target1 && cur == target2) ||
-			(prev == target2 && cur == target1) {
-			var line = NewLine(prev.X, prev.Y, cur.X, cur.Y)
-			var x, y = line.ClosestToPoint(targetX, targetY)
-			totalDistance += point.DistanceToPoint(prev.X, prev.Y, x, y)
-			points = append(points, [2]float32{x, y})
-			break // target was found
+func reconstructFromNode(n *n) [][2]float32 {
+	var result [][2]float32
+	var unique = map[[2]float32]any{}
+	for n != nil {
+		var point = [2]float32{n.X, n.Y}
+		var _, has = unique[point]
+		if !has {
+			result = append([][2]float32{point}, result...)
 		}
-
-		totalDistance += point.DistanceToPoint(prev.X, prev.Y, cur.X, cur.Y)
-		points = append(points, [2]float32{cur.X, cur.Y})
-		prev = cur
-		cur = condition.If(up, cur.Up, cur.Down)
-
-		if cur == nil { // we reached a deadend
-			totalDistance = number.Infinity()
-			break // this is not the path, so indicate it with infinite distance
-		}
+		unique[point] = nil
+		n = n.SearchPrev
 	}
-
-	return totalDistance, points
+	return result
 }
 
 func closestPointOnPath(startX, startY float32, nodes []*n) (closestX, closestY float32, n1, n2 *n) {
 	var bestDist = number.Infinity()
 	for i := 1; i < len(nodes); i++ {
 		var p1, p2 = nodes[i-1], nodes[i]
+		if p1.PathIndex != p2.PathIndex {
+			continue // ignore path connections
+		}
+
 		var line = NewLine(p1.X, p1.Y, p2.X, p2.Y)
 		var curClosestX, curClosestY = line.ClosestToPoint(startX, startY)
 		var dist = point.DistanceToPoint(startX, startY, curClosestX, curClosestY)
