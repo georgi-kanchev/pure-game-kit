@@ -1,6 +1,7 @@
 package geometry
 
 import (
+	"container/heap"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 )
@@ -10,13 +11,11 @@ import (
 // start and target point can be anywhere (not necessarily on the paths)
 //
 // multiple paths can be separated by [NaN, NaN]
-//
-// separate paths need to be sharing points to connect - disconnected paths are discarded
 func FollowPaths(startX, startY, targetX, targetY float32, paths ...[2]float32) [][2]float32 {
 	var allNodes = createNodes(paths)
-	var sx, sy, startNode, _ = closestPointOnPath(startX, startY, allNodes)
-	var tx, ty, target1, target2 = closestPointOnPath(targetX, targetY, allNodes)
-	var _, path = walk(startNode, target1, target2, sx, sy, targetX, targetY)
+	var sx, sy, startNode = closestPointOnPath(startX, startY, allNodes)
+	var tx, ty, targetNode = closestPointOnPath(targetX, targetY, allNodes)
+	var path = startNode.walk(targetNode)
 	var result = [][2]float32{{startX, startY}, {sx, sy}}
 	if len(path) == 0 { // no path was found, perhaps the end target is a disconnected one
 		return result
@@ -24,20 +23,32 @@ func FollowPaths(startX, startY, targetX, targetY float32, paths ...[2]float32) 
 
 	result = append(result, path...)
 	result = append(result, [2]float32{tx, ty}, [2]float32{targetX, targetY})
+	result = remove180Turns(result)
 	return result
 }
 
 //=================================================================
 // private
 
-type n struct {
-	X, Y                float32
-	PathIndex, UniqueId int
-	Neighbors           []*n
+type n struct { // node
+	X, Y      float32
+	PathIndex int
+	Neighbors []*n
 
 	SearchPrev *n
 	SearchDist float32
 	SearchSeen bool
+}
+type npq []*n                     // node priority queue
+func (pq npq) Len() int           { return len(pq) }
+func (pq npq) Less(i, j int) bool { return pq[i].SearchDist < pq[j].SearchDist }
+func (pq npq) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+func (pq *npq) Push(x any)        { *pq = append(*pq, x.(*n)) }
+func (pq *npq) Pop() any {
+	old := *pq
+	n := old[len(old)-1]
+	*pq = old[:len(old)-1]
+	return n
 }
 
 func createNodes(points [][2]float32) []*n {
@@ -52,7 +63,7 @@ func createNodes(points [][2]float32) []*n {
 		if i != 0 {
 			prevNode = result[len(result)-1]
 		}
-		var newN = &n{X: point[0], Y: point[1], PathIndex: pathIndex, UniqueId: i}
+		var newN = &n{X: point[0], Y: point[1], PathIndex: pathIndex, SearchDist: number.Infinity()}
 		result = append(result, newN)
 
 		if prevNode != nil && prevNode.PathIndex == newN.PathIndex {
@@ -69,52 +80,57 @@ func createNodes(points [][2]float32) []*n {
 	}
 	return result
 }
-
-func walk(start *n, target1 *n, target2 *n, startX, startY, targetX, targetY float32) (distance float32, path [][2]float32) {
-	var queue = []*n{start}
-	var hack = false
-	start.SearchSeen = true
-
-	for _, nb := range start.Neighbors {
-		if start.PathIndex == nb.PathIndex && nb.UniqueId < start.UniqueId {
-			hack = true
-			break
+func (start *n) walk(end *n) [][2]float32 {
+	var all []*n
+	var stack []*n = []*n{start}
+	for len(stack) > 0 {
+		var cur = stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		if !cur.SearchSeen {
+			cur.SearchSeen = true
+			all = append(all, cur)
+			stack = append(stack, cur.Neighbors...)
 		}
 	}
-	if !hack {
-		start.X, start.Y = startX, startY
+	for _, node := range all {
+		node.SearchDist = number.Infinity()
+		node.SearchPrev = nil
+		node.SearchSeen = false
 	}
 
-	for len(queue) > 0 {
-		var cur = queue[0]
-		queue = queue[1:]
+	start.SearchDist = 0
+
+	var prioQueue = &npq{}
+	heap.Init(prioQueue)
+	heap.Push(prioQueue, start)
+
+	for prioQueue.Len() > 0 {
+		var cur = heap.Pop(prioQueue).(*n)
+		if cur.SearchSeen {
+			continue
+		}
+		cur.SearchSeen = true
+
+		if cur == end {
+			return cur.reconstructPath()
+		}
 
 		for _, nb := range cur.Neighbors {
-			if (cur == target1 && nb == target2) ||
-				(cur == target2 && nb == target1) {
-				var line = NewLine(cur.X, cur.Y, nb.X, nb.Y)
-				var x, y = line.ClosestToPoint(targetX, targetY)
-				var dist = cur.SearchDist + point.DistanceToPoint(cur.X, cur.Y, x, y)
-				var path = reconstructFromNode(cur)
-				return dist, path // we found the target
-			}
-
 			if nb.SearchSeen {
 				continue
 			}
-
-			nb.SearchSeen = true
-			nb.SearchPrev = cur
-			nb.SearchDist = cur.SearchDist + point.DistanceToPoint(cur.X, cur.Y, nb.X, nb.Y)
-
-			queue = append(queue, nb)
+			var dist = cur.SearchDist + point.DistanceToPoint(cur.X, cur.Y, nb.X, nb.Y)
+			if dist < nb.SearchDist {
+				nb.SearchDist = dist
+				nb.SearchPrev = cur
+				heap.Push(prioQueue, nb)
+			}
 		}
 	}
 
-	return number.Infinity(), nil
+	return nil
 }
-
-func reconstructFromNode(n *n) [][2]float32 {
+func (n *n) reconstructPath() [][2]float32 {
 	var result [][2]float32
 	var unique = map[[2]float32]any{}
 	for n != nil {
@@ -126,11 +142,13 @@ func reconstructFromNode(n *n) [][2]float32 {
 		unique[point] = nil
 		n = n.SearchPrev
 	}
+
 	return result
 }
-
-func closestPointOnPath(startX, startY float32, nodes []*n) (closestX, closestY float32, n1, n2 *n) {
+func closestPointOnPath(x, y float32, nodes []*n) (closestX, closestY float32, newNode *n) {
 	var bestDist = number.Infinity()
+	var bestP1, bestP2 *n
+
 	for i := 1; i < len(nodes); i++ {
 		var p1, p2 = nodes[i-1], nodes[i]
 		if p1.PathIndex != p2.PathIndex {
@@ -138,13 +156,50 @@ func closestPointOnPath(startX, startY float32, nodes []*n) (closestX, closestY 
 		}
 
 		var line = NewLine(p1.X, p1.Y, p2.X, p2.Y)
-		var curClosestX, curClosestY = line.ClosestToPoint(startX, startY)
-		var dist = point.DistanceToPoint(startX, startY, curClosestX, curClosestY)
+		var curX, curY = line.ClosestToPoint(x, y)
+		var dist = point.DistanceToPoint(x, y, curX, curY)
+
 		if dist < bestDist {
 			bestDist = dist
-			closestX, closestY = curClosestX, curClosestY
-			n1, n2 = p1, p2
+			closestX, closestY = curX, curY
+			bestP1, bestP2 = p1, p2
 		}
 	}
-	return closestX, closestY, n1, n2
+
+	if bestP1 != nil && bestP2 != nil {
+		if closestX == bestP1.X && closestY == bestP1.Y {
+			return closestX, closestY, bestP1
+		}
+		if closestX == bestP2.X && closestY == bestP2.Y {
+			return closestX, closestY, bestP2
+		}
+
+		var proj = &n{X: closestX, Y: closestY, PathIndex: bestP1.PathIndex}
+		proj.Neighbors = []*n{bestP1, bestP2}
+		bestP1.Neighbors = append(bestP1.Neighbors, proj)
+		bestP2.Neighbors = append(bestP2.Neighbors, proj)
+		return closestX, closestY, proj
+	}
+
+	return closestX, closestY, nil
+}
+func remove180Turns(path [][2]float32) [][2]float32 {
+	var n = len(path)
+	if n < 3 {
+		return path
+	}
+
+	var result = make([][2]float32, 0, n)
+	result = append(result, path[0])
+	for i := 1; i < n-1; i++ {
+		var a, b, c = result[len(result)-1], path[i], path[i+1]
+		var l1, l2 = NewLine(a[0], a[1], b[0], b[1]), NewLine(b[0], b[1], c[0], c[1])
+		var ang1, ang2 = l1.Angle(), l2.Angle()
+		var diff = number.Wrap(ang2-ang1, 0, 360)
+		if !number.IsWithin(diff, 180, 0.1) {
+			result = append(result, b)
+		}
+	}
+	result = append(result, path[n-1])
+	return result
 }

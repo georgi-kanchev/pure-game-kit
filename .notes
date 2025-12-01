@@ -10,8 +10,10 @@ shape/sprite shadow draw?
 [113] [Mon] [01-12-2025]
 camera - draw cone
 camera - blend modes
+camera - removed pivots, not needed
+camera - simplified & renamed CameraFromPivot into CameraFromEdge
 line - contains point method
-geometry - path following almost done
+geometry - path following done
 
 [112] [Sun] [30-11-2025]
 geometry - path following progress: single non-looping path done
