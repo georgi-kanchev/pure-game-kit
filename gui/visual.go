@@ -7,8 +7,8 @@ import (
 	"pure-game-kit/utility/number"
 )
 
-func Visual(id string, properties ...string) string {
-	return newWidget("visual", id, properties...)
+func Visual(id string, fields ...string) string {
+	return newWidget("visual", id, fields...)
 }
 
 //=================================================================

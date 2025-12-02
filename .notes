@@ -1,19 +1,23 @@
 // TODO:
-save vscode settings & extensions etc
-off-grid navmesh pathfinding
-
 shader effects, port?
 simple particles, port?
 shape/sprite shadow draw?
 
 // DONE:
-[113] [Mon] [01-12-2025]
+[115] [Wed] [03-12-2025]
+renamed build scripts
+gui - rename fix
+
+[114] [Tue] [02-12-2025]
 camera - draw cone
 camera - blend modes
 camera - removed pivots, not needed
 camera - simplified & renamed CameraFromPivot into CameraFromEdge
-line - contains point method
 geometry - path following done
+line - contains point method
+
+[113] [Mon] [01-12-2025]
+geometry - path following progress
 
 [112] [Sun] [30-11-2025]
 geometry - path following progress: single non-looping path done
