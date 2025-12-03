@@ -6,8 +6,8 @@ const (
 	X        = "x"        // [widget] [container]
 	Y        = "y"        // [widget] [container]
 	ThemeId  = "themeId"  // [widget] [container]
-	Hidden   = "hidden"   // [widget] [container]
-	Disabled = "disabled" // [widget] [container]
+	Hidden   = "hidden"   // [widget] [container] "1" = true | "" = false
+	Disabled = "disabled" // [widget] [container] "1" = true | "" = false
 
 	Width    = "width"    // [widget] [theme] [container]
 	Height   = "height"   // [widget] [theme] [container]

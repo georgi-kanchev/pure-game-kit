@@ -32,11 +32,11 @@ func (widget *widget) isFocused(root *root, cam *graphics.Camera) bool {
 	return wFocused == widget && wWasHovered == widget && widget.isHovered(root.Containers[widget.OwnerId], cam)
 }
 func (widget *widget) isDisabled(owner *container) bool {
-	var _, disabled = widget.Fields[field.Disabled]
+	var disabled = widget.Fields[field.Disabled] != ""
 	var ownerDisabled = false
 
 	if owner != nil {
-		_, ownerDisabled = owner.Fields[field.Disabled]
+		ownerDisabled = dyn(owner, owner.Fields[field.Disabled], "") != ""
 	}
 
 	return disabled || ownerDisabled

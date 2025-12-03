@@ -127,7 +127,7 @@ func GUIs() {
 		gui.Draggable("slot-9", f.Width, "200", f.Height, "200", f.AssetId, box[0]),
 		gui.Draggable("slot-10", f.Width, "200", f.Height, "200", f.AssetId, box[0]),
 		// ======================================================
-		gui.Container("menu", "", "", "820", "300", f.ThemeId, "button", f.Hidden, "+", f.GapX, "10", f.GapY, "10"),
+		gui.Container("menu", "", "", "820", "300", f.ThemeId, "button", f.Hidden, "1", f.GapX, "10", f.GapY, "10"),
 		gui.Visual("menu-bgr", f.FillContainer, "", f.AssetId, box[0], f.Color, "200 200 200 255"),
 		gui.Button("menu-1", f.GapX, "0", f.Width, "1000", f.Text, "Monday"),
 		gui.Button("menu-2", f.GapX, "0", f.NewRow, "", f.Width, d.OwnerWidth, f.Text, "Tuesday"),
@@ -139,7 +139,7 @@ func GUIs() {
 		gui.Button("menu-6", f.GapX, "0", f.NewRow, "", f.Width, d.OwnerWidth, f.Text, "Saturday"),
 		gui.Button("menu-7", f.GapX, "0", f.NewRow, "", f.Width, d.OwnerWidth, f.Text, "Sunday"),
 		// ======================================================
-		gui.Container("tooltips", "", "", "", "", f.ThemeId, "button", f.Hidden, "+"),
+		gui.Container("tooltips", "", "", "", "", f.ThemeId, "button", f.Hidden, "1"),
 		gui.Tooltip("tooltip", f.AssetId, box[7], f.Width, "700", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5"),
 	))
 	assets.LoadDefaultFont()
