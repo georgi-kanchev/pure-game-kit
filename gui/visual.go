@@ -70,7 +70,7 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	textBox.WordWrap = defaultValue(root.themedField(p.TextWordWrap, owner, widget), "on") == "on"
 	textBox.PivotX, textBox.PivotY = 0, 0
 	textBox.FontId = root.themedField(p.TextFontId, owner, widget)
-	textBox.LineHeight = parseNum(root.themedField(p.TextLineHeight, owner, widget), 60)
+	textBox.LineHeight = parseNum(root.themedField(p.TextLineHeight, owner, widget), 30)
 	textBox.LineGap = parseNum(root.themedField(p.TextLineGap, owner, widget), 0)
 	textBox.SymbolGap = parseNum(root.themedField(p.TextSymbolGap, owner, widget), 0.2)
 	textBox.AlignmentX = parseNum(root.themedField(p.TextAlignmentX, owner, widget), 0)
