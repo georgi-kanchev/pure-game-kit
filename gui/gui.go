@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/dynamic"
 	"pure-game-kit/gui/field"
+	f "pure-game-kit/gui/field"
 	"pure-game-kit/utility/text"
 )
 
@@ -123,6 +124,11 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
+		var hidden = dyn(c, c.Fields[f.Hidden], "")
+		if hidden != "" {
+			continue
+		}
+
 		var _, hasTarget = c.Fields[field.TargetId]
 		if hasTarget {
 			gui.root.cacheTarget(gui.root.themedField(field.TargetId, c, nil))

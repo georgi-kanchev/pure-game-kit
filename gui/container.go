@@ -50,11 +50,6 @@ const scrollSize, handleSpeed, dragFriction, dragMomentum = 25.0, 12.0, 0.95, 30
 var cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container
 
 func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
-	var hidden = dyn(c, c.Fields[f.Hidden], "")
-	if hidden != "" {
-		return
-	}
-
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
 	var cGapX = parseNum(dyn(c, c.Fields[f.GapX], "0"), 0)
