@@ -36,7 +36,7 @@ const (
 
 	Text                  = "text"                  // [widget] [theme]
 	TextFontId            = "textFontId"            // [widget] [theme]
-	TextColor             = "textColor"             // [widget] [theme] default: "255 255 255 255"
+	TextColor             = "textColor"             // [widget] [theme] default: "127 127 127 255"
 	TextLineHeight        = "textLineHeight"        // [widget] [theme] default: "60"
 	TextLineGap           = "textLineGap"           // [widget] [theme]
 	TextSymbolGap         = "textSymbolGap"         // [widget] [theme] default: "0.2"

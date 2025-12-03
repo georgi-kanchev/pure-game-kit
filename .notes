@@ -6,7 +6,7 @@ shape/sprite shadow draw?
 // DONE:
 [115] [Wed] [03-12-2025]
 renamed build scripts
-gui - small tweaks, restructures & renames
+gui - small tweaks & fixes, restructures & renames
 gui - dynamics for target container and field for containers
 gui - dynamic added center x/y for owner & target
 gui - dynamic removed x/y for owner & target since leftX & topY is more descriptive

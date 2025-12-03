@@ -126,6 +126,10 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		cam.DrawQuad(widget.X, widget.Y, widget.Width, widget.Height, 0, col)
 	}
 
+	if frameSz != 0 && frameCol != 0 {
+		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, frameSz, frameCol)
+	}
+
 	if textBox.Text != "" {
 		var mx, my, mw, mh = cam.MaskX, cam.MaskY, cam.MaskWidth, cam.MaskHeight
 		if maskText { // used for inputbox mask
@@ -154,17 +158,14 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 			textBox.EmbeddedColors = embeddedColors
 		}
 
-		var c = parseColor(defaultValue(root.themedField(p.TextColor, owner, widget), "0 0 0"), disabled || fadeText)
+		var colVal = defaultValue(root.themedField(p.TextColor, owner, widget), "127 127 127")
+		var c = parseColor(colVal, disabled || fadeText)
 		textBox.Color = c
 		textBox.Thickness = parseNum(root.themedField(p.TextThickness, owner, widget), 0.5)
 		textBox.Smoothness = parseNum(root.themedField(p.TextSmoothness, owner, widget), 0.02)
 		cam.DrawTextBoxes(&textBox)
 
 		cam.Mask(mx, my, mw, mh)
-	}
-
-	if frameSz != 0 && frameCol != 0 {
-		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, frameSz, frameCol)
 	}
 
 	textBox.Text = "" // skip any further texts unless they are setuped beforehand
