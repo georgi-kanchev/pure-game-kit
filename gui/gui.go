@@ -132,9 +132,8 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		var oy = text.New(dyn(nil, c.Properties[field.Y], "0"))
 		var ow = text.New(dyn(nil, c.Properties[field.Width], "0"))
 		var oh = text.New(dyn(nil, c.Properties[field.Height], "0"))
-		ownerX, ownerY = ox, oy // caching dynamic owner/container props
 		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
-		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2"
+		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2" // caching dynamic props
 
 		c.updateAndDraw(gui.root, camera)
 	}

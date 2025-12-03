@@ -22,9 +22,9 @@ var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widge
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 	"draggable": draggable,
 }
-var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                                 // dynamic prop cache
-var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerCx, ownerCy, ownerW, ownerH string // dynamic prop cache
-var tarX, tarY, tarLx, tarRx, tarTy, tarBy, tarCx, tarCy, tarW, tarH string                     // dynamic prop cache
+var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                 // dynamic prop cache
+var ownerLx, ownerRx, ownerTy, ownerBy, ownerCx, ownerCy, ownerW, ownerH string // dynamic prop cache
+var tarLx, tarRx, tarTy, tarBy, tarCx, tarCy, tarW, tarH string                 // dynamic prop cache
 
 func (gui *GUI) reset(camera *graphics.Camera) {
 	if mouse.IsButtonJustPressed(b.Left) {
@@ -107,9 +107,8 @@ func (root *root) cacheTarget(targetId string) {
 		th = root.themedField(field.Height, owner, targetWidget)
 	}
 
-	tarX, tarY = tx, ty
 	tarLx, tarRx, tarTy, tarBy, tarW, tarH = tx, tx+"+"+tw, ty, ty+"+"+th, tw, th
-	tarCx, tarCy = tx+"+"+tw+"/2", ty+"+"+th+"/2"
+	tarCx, tarCy = tx+"+"+tw+"/2", ty+"+"+th+"/2" // caching dynamic props
 }
 
 func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
@@ -147,8 +146,6 @@ func defaultValue(value, defaultValue string) string {
 	return value
 }
 func dyn(owner *container, value string, defaultValue string) string {
-	value = strings.ReplaceAll(value, dynamic.TargetX, tarX)
-	value = strings.ReplaceAll(value, dynamic.TargetY, tarY)
 	value = strings.ReplaceAll(value, dynamic.TargetWidth, tarW)
 	value = strings.ReplaceAll(value, dynamic.TargetHeight, tarH)
 	value = strings.ReplaceAll(value, dynamic.TargetLeftX, tarLx)
@@ -159,8 +156,6 @@ func dyn(owner *container, value string, defaultValue string) string {
 	value = strings.ReplaceAll(value, dynamic.TargetCenterY, tarCy)
 
 	if owner != nil {
-		value = text.Replace(value, dynamic.OwnerX, ownerX)
-		value = text.Replace(value, dynamic.OwnerY, ownerY)
 		value = text.Replace(value, dynamic.OwnerWidth, ownerW)
 		value = text.Replace(value, dynamic.OwnerHeight, ownerH)
 		value = text.Replace(value, dynamic.OwnerLeftX, ownerLx)

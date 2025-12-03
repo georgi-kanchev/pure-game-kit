@@ -10,8 +10,6 @@ const (
 	CameraWidth   = "CameraWidth"   // [widget] [container]
 	CameraHeight  = "CameraHeight"  // [widget] [container]
 
-	OwnerX       = "OwnerX"       // [widget]
-	OwnerY       = "OwnerY"       // [widget]
 	OwnerCenterX = "OwnerCenterX" // [widget]
 	OwnerCenterY = "OwnerCenterY" // [widget]
 	OwnerLeftX   = "OwnerLeftX"   // [widget]
@@ -21,8 +19,6 @@ const (
 	OwnerWidth   = "OwnerWidth"   // [widget]
 	OwnerHeight  = "OwnerHeight"  // [widget]
 
-	TargetX       = "TargetX"       // [container]
-	TargetY       = "TargetY"       // [container]
 	TargetCenterX = "TargetCenterX" // [container]
 	TargetCenterY = "TargetCenterY" // [container]
 	TargetLeftX   = "TargetLeftX"   // [container]

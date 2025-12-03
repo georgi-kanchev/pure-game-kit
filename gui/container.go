@@ -55,7 +55,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		return
 	}
 
-	var x, y, w, h = parseNum(ownerX, 0), parseNum(ownerY, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
+	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
 	var cGapX = parseNum(dyn(c, c.Properties[f.GapX], "0"), 0)
 	var cGapY = parseNum(dyn(c, c.Properties[f.GapY], "0"), 0)
