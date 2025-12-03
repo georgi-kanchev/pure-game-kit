@@ -124,14 +124,14 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
-		var hidden = dyn(c, c.Fields[f.Hidden], "")
-		if hidden != "" {
-			continue
-		}
-
 		var _, hasTarget = c.Fields[field.TargetId]
 		if hasTarget {
 			gui.root.cacheTarget(gui.root.themedField(field.TargetId, c, nil))
+		}
+
+		var hidden = dyn(c, c.Fields[f.Hidden], "")
+		if hidden != "" { // dyn uses target so needs to be after
+			continue
 		}
 
 		var ox = text.New(dyn(nil, c.Fields[field.X], "0"))
