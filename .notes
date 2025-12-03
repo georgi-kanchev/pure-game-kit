@@ -8,6 +8,7 @@ shape/sprite shadow draw?
 renamed build scripts
 gui - small tweaks, restructures & renames
 gui - dynamics for target container and field for containers
+gui - dynamic added center x/y for owner & target
 
 [114] [Tue] [02-12-2025]
 camera - draw cone

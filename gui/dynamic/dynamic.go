@@ -12,6 +12,8 @@ const (
 
 	OwnerX       = "OwnerX"       // [widget]
 	OwnerY       = "OwnerY"       // [widget]
+	OwnerCenterX = "OwnerCenterX" // [widget]
+	OwnerCenterY = "OwnerCenterY" // [widget]
 	OwnerLeftX   = "OwnerLeftX"   // [widget]
 	OwnerRightX  = "OwnerRightX"  // [widget]
 	OwnerTopY    = "OwnerTopY"    // [widget]
@@ -19,12 +21,14 @@ const (
 	OwnerWidth   = "OwnerWidth"   // [widget]
 	OwnerHeight  = "OwnerHeight"  // [widget]
 
-	TargetWidth   = "TargetWidth"   // [container]
-	TargetHeight  = "TargetHeight"  // [container]
 	TargetX       = "TargetX"       // [container]
 	TargetY       = "TargetY"       // [container]
+	TargetCenterX = "TargetCenterX" // [container]
+	TargetCenterY = "TargetCenterY" // [container]
 	TargetLeftX   = "TargetLeftX"   // [container]
 	TargetRightX  = "TargetRightX"  // [container]
 	TargetTopY    = "TargetTopY"    // [container]
 	TargetBottomY = "TargetBottomY" // [container]
+	TargetWidth   = "TargetWidth"   // [container]
+	TargetHeight  = "TargetHeight"  // [container]
 )

@@ -22,9 +22,9 @@ var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widge
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 	"draggable": draggable,
 }
-var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                       // dynamic prop cache
-var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string         // dynamic prop cache
-var targetX, targetY, targetLx, targetRx, targetTy, targetBy, targetW, targetH string // dynamic prop cache
+var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                                 // dynamic prop cache
+var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerCx, ownerCy, ownerW, ownerH string // dynamic prop cache
+var tarX, tarY, tarLx, tarRx, tarTy, tarBy, tarCx, tarCy, tarW, tarH string                     // dynamic prop cache
 
 func (gui *GUI) reset(camera *graphics.Camera) {
 	if mouse.IsButtonJustPressed(b.Left) {
@@ -91,14 +91,14 @@ func (root *root) themedField(fld string, c *container, w *widget) string {
 	return ""
 }
 func (root *root) cacheTarget(targetId string) {
-	var targetCntnr = root.Containers[targetId]
+	var targetContainer = root.Containers[targetId]
 	var targetWidget = root.Widgets[targetId]
 	var tx, ty, tw, th string
-	if targetCntnr != nil {
-		tx = root.themedField(field.X, targetCntnr, nil)
-		ty = root.themedField(field.Y, targetCntnr, nil)
-		tw = root.themedField(field.Width, targetCntnr, nil)
-		th = root.themedField(field.Height, targetCntnr, nil)
+	if targetContainer != nil {
+		tx = root.themedField(field.X, targetContainer, nil)
+		ty = root.themedField(field.Y, targetContainer, nil)
+		tw = root.themedField(field.Width, targetContainer, nil)
+		th = root.themedField(field.Height, targetContainer, nil)
 	} else if targetWidget != nil {
 		var owner = root.Containers[targetWidget.OwnerId]
 		tx = root.themedField(field.X, owner, targetWidget)
@@ -107,8 +107,9 @@ func (root *root) cacheTarget(targetId string) {
 		th = root.themedField(field.Height, owner, targetWidget)
 	}
 
-	targetX, targetY = tx, ty
-	targetLx, targetRx, targetTy, targetBy, targetW, targetH = tx, tx+"+"+tw, ty, ty+"+"+th, tw, th
+	tarX, tarY = tx, ty
+	tarLx, tarRx, tarTy, tarBy, tarW, tarH = tx, tx+"+"+tw, ty, ty+"+"+th, tw, th
+	tarCx, tarCy = tx+"+"+tw+"/2", ty+"+"+th+"/2"
 }
 
 func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
@@ -146,14 +147,16 @@ func defaultValue(value, defaultValue string) string {
 	return value
 }
 func dyn(owner *container, value string, defaultValue string) string {
-	value = strings.ReplaceAll(value, dynamic.TargetX, targetX)
-	value = strings.ReplaceAll(value, dynamic.TargetY, targetY)
-	value = strings.ReplaceAll(value, dynamic.TargetWidth, targetW)
-	value = strings.ReplaceAll(value, dynamic.TargetHeight, targetH)
-	value = strings.ReplaceAll(value, dynamic.TargetLeftX, targetLx)
-	value = strings.ReplaceAll(value, dynamic.TargetRightX, targetRx)
-	value = strings.ReplaceAll(value, dynamic.TargetTopY, targetTy)
-	value = strings.ReplaceAll(value, dynamic.TargetBottomY, targetBy)
+	value = strings.ReplaceAll(value, dynamic.TargetX, tarX)
+	value = strings.ReplaceAll(value, dynamic.TargetY, tarY)
+	value = strings.ReplaceAll(value, dynamic.TargetWidth, tarW)
+	value = strings.ReplaceAll(value, dynamic.TargetHeight, tarH)
+	value = strings.ReplaceAll(value, dynamic.TargetLeftX, tarLx)
+	value = strings.ReplaceAll(value, dynamic.TargetRightX, tarRx)
+	value = strings.ReplaceAll(value, dynamic.TargetTopY, tarTy)
+	value = strings.ReplaceAll(value, dynamic.TargetBottomY, tarBy)
+	value = strings.ReplaceAll(value, dynamic.TargetCenterX, tarCx)
+	value = strings.ReplaceAll(value, dynamic.TargetCenterY, tarCy)
 
 	if owner != nil {
 		value = text.Replace(value, dynamic.OwnerX, ownerX)
@@ -164,6 +167,8 @@ func dyn(owner *container, value string, defaultValue string) string {
 		value = text.Replace(value, dynamic.OwnerRightX, ownerRx)
 		value = text.Replace(value, dynamic.OwnerTopY, ownerTy)
 		value = text.Replace(value, dynamic.OwnerBottomY, ownerBy)
+		value = text.Replace(value, dynamic.OwnerCenterX, ownerCx)
+		value = text.Replace(value, dynamic.OwnerCenterY, ownerCy)
 	}
 
 	value = text.Replace(value, dynamic.CameraCenterX, camCx)
