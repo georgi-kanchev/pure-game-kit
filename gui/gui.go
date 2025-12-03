@@ -196,6 +196,17 @@ func (gui *GUI) Field(id, field string) string {
 	return ""
 }
 
+func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
+	for _, c := range gui.root.Containers {
+		var hidden = c.Properties[field.Hidden]
+		if hidden != "" && c.isHovered(camera) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // works for widgets & containers
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var w, hasW = gui.root.Widgets[id]

@@ -10,6 +10,7 @@ gui - small tweaks & fixes, restructures & renames
 gui - dynamics for target container and field for containers
 gui - dynamic added center x/y for owner & target
 gui - dynamic removed x/y for owner & target since leftX & topY is more descriptive
+gui - is any hovered check
 
 [114] [Tue] [02-12-2025]
 camera - draw cone
