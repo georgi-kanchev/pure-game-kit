@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/data/storage"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/dynamic"
-	"pure-game-kit/gui/field"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/utility/text"
 )
@@ -78,11 +77,11 @@ func NewElementsXML(elements ...string) string {
 
 	// container is missing on top, add root container
 	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
-		result += "\n\t<Container " + field.Id + "=\"root\" " +
-			field.X + "=\"" + dynamic.CameraLeftX + "\" " +
-			field.Y + "=\"" + dynamic.CameraTopY + "\" " +
-			field.Width + "=\"" + dynamic.CameraWidth + "\" " +
-			field.Height + "=\"" + dynamic.CameraHeight + "\">"
+		result += "\n\t<Container " + f.Id + "=\"root\" " +
+			f.X + "=\"" + dynamic.CameraLeftX + "\" " +
+			f.Y + "=\"" + dynamic.CameraTopY + "\" " +
+			f.Width + "=\"" + dynamic.CameraWidth + "\" " +
+			f.Height + "=\"" + dynamic.CameraHeight + "\">"
 	}
 
 	for i, v := range elements {
@@ -124,9 +123,9 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
-		var _, hasTarget = c.Fields[field.TargetId]
+		var _, hasTarget = c.Fields[f.TargetId]
 		if hasTarget {
-			gui.root.cacheTarget(gui.root.themedField(field.TargetId, c, nil))
+			gui.root.cacheTarget(gui.root.themedField(f.TargetId, c, nil))
 		}
 
 		var hidden = dyn(c, c.Fields[f.Hidden], "")
@@ -134,10 +133,10 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 			continue
 		}
 
-		var ox = text.New(dyn(nil, c.Fields[field.X], "0"))
-		var oy = text.New(dyn(nil, c.Fields[field.Y], "0"))
-		var ow = text.New(dyn(nil, c.Fields[field.Width], "0"))
-		var oh = text.New(dyn(nil, c.Fields[field.Height], "0"))
+		var ox = text.New(dyn(nil, c.Fields[f.X], "0"))
+		var oy = text.New(dyn(nil, c.Fields[f.Y], "0"))
+		var ow = text.New(dyn(nil, c.Fields[f.Width], "0"))
+		var oh = text.New(dyn(nil, c.Fields[f.Height], "0"))
 		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
 		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2" // caching dynamic props
 
@@ -208,7 +207,7 @@ func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 	gui.reset(camera)
 
 	for _, c := range gui.root.Containers {
-		var hidden = c.Fields[field.Hidden]
+		var hidden = c.Fields[f.Hidden]
 		if hidden == "" && c.isHovered(camera) {
 			return true
 		}
