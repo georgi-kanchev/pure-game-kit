@@ -33,7 +33,7 @@ func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) 
 	}
 
 	var owner = root.Containers[widget.OwnerId]
-	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
+	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
 	var focus = widget.isFocused(root, camera) && wPressedOn == widget
 	var input = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustReleased(b.Left))
 
@@ -47,7 +47,7 @@ func (root *root) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camer
 
 	var focus = widget.isFocused(root, camera)
 	var owner = root.Containers[widget.OwnerId]
-	var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
+	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
 	var first = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustPressed(b.Left))
 	var tick = time.RealRuntime() > wPressedAt+0.5
 	var inputHold = k.IsKeyPressed(hotkey) || (focus && wPressedOn == widget && m.IsButtonPressed(b.Left))

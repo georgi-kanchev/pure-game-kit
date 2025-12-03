@@ -8,11 +8,12 @@ const (
 	ThemeId = "themeId" // [widget] [container]
 	Hidden  = "hidden"  // [widget] [container]
 
-	Width   = "width"   // [widget] [theme] [container]
-	Height  = "height"  // [widget] [theme] [container]
-	AssetId = "assetId" // [widget] [theme] [container]
-	GapX    = "gapX"    // [widget] [theme] [container]
-	GapY    = "gapY"    // [widget] [theme] [container]
+	Width    = "width"    // [widget] [theme] [container]
+	Height   = "height"   // [widget] [theme] [container]
+	AssetId  = "assetId"  // [widget] [theme] [container]
+	GapX     = "gapX"     // [widget] [theme] [container]
+	GapY     = "gapY"     // [widget] [theme] [container]
+	TargetId = "targetId" // [container]
 
 	Value         = "value"         // [widget]
 	Disabled      = "disabled"      // [widget]

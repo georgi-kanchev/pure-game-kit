@@ -60,7 +60,7 @@ func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 }
 func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
-	var margin = parseNum(themedProp(field.InputFieldMargin, root, owner, widget), 30)
+	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, widget), 30)
 
 	if keyboard.IsComboJustPressed(key.LeftControl, key.A) ||
 		keyboard.IsComboJustPressed(key.RightControl, key.A) {
@@ -78,7 +78,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	var anyInput = mouse.IsAnyButtonJustPressed() || mouse.Scroll() != 0
 	var focused = widget.isFocused(root, cam)
 	var meTyping = typingIn == widget // each input field should disable its own typing
-	var text = txt.Remove(themedProp(field.Text, root, owner, widget), "\n")
+	var text = txt.Remove(root.themedField(field.Text, owner, widget), "\n")
 
 	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyJustPressed(key.Escape)) {
 		typingIn = nil
@@ -103,7 +103,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 	var isPlaceholder = false
 	if text == "" {
-		var placeholder = themedProp(field.InputFieldPlaceholder, root, owner, widget)
+		var placeholder = root.themedField(field.InputFieldPlaceholder, owner, widget)
 		placeholder = txt.Remove(defaultValue(placeholder, "Type..."), "\n")
 		setupText(margin, root, widget, false) // don't skip when empty!
 		textBox.Text = placeholder
@@ -251,7 +251,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		calculateXs(cam)
 
 		var owner = root.Containers[widget.OwnerId]
-		sound.AssetId = defaultValue(themedProp(field.InputFieldSoundErase, root, owner, widget), "~erase")
+		sound.AssetId = defaultValue(root.themedField(field.InputFieldSoundErase, owner, widget), "~erase")
 		sound.Volume = root.Volume
 		sound.Play()
 	}
@@ -304,7 +304,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	}
 
 	var owner = root.Containers[widget.OwnerId]
-	sound.AssetId = defaultValue(themedProp(field.InputFieldSoundType, root, owner, widget), "~write")
+	sound.AssetId = defaultValue(root.themedField(field.InputFieldSoundType, owner, widget), "~write")
 	sound.Volume = root.Volume
 	sound.Play()
 
@@ -340,12 +340,12 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	cursorTime = 0
 	scrollX = 0
 	typingIn = allInputFields[(myIndex+1)%total]
-	var text = txt.Remove(themedProp(field.Text, root, owner, typingIn), "\n")
+	var text = txt.Remove(root.themedField(field.Text, owner, typingIn), "\n")
 	indexCursor = len(text)
 	indexSelect = indexCursor
 	frame = int(time.FrameCount()) // only once per frame
 
-	var margin = parseNum(themedProp(field.InputFieldMargin, root, owner, typingIn), 30)
+	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, typingIn), 30)
 	setupText(margin, root, typingIn, true)
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
 		textBox.Text = ""

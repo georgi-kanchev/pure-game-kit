@@ -112,7 +112,7 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	gui.root.Volume = gui.Volume
 
-	reset(camera, gui) // keep order of variables & reset
+	gui.reset(camera) // keep order of variables & reset
 
 	var tlx, tly = camera.PointFromEdge(0, 0)
 	var brx, bry = camera.PointFromEdge(1, 1)
@@ -123,6 +123,11 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
+		var _, hasTarget = c.Properties[field.TargetId]
+		if hasTarget {
+			gui.root.cacheTarget(gui.root.themedField(field.TargetId, c, nil))
+		}
+
 		var ox = text.New(dyn(nil, c.Properties[field.X], "0"))
 		var oy = text.New(dyn(nil, c.Properties[field.Y], "0"))
 		var ow = text.New(dyn(nil, c.Properties[field.Width], "0"))
@@ -179,7 +184,7 @@ func (gui *GUI) Field(id, field string) string {
 
 	if hasW {
 		var owner = gui.root.Containers[w.OwnerId]
-		return themedProp(field, gui.root, owner, w)
+		return gui.root.themedField(field, owner, w)
 	}
 	if hasC {
 		return c.Properties[field]

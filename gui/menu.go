@@ -24,7 +24,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 
 	var escape = keyboard.IsKeyJustPressed(key.Escape)
 	var anyButton = mouse.IsAnyButtonJustPressed() && !widget.isHovered(owner, cam)
-	var containerId = themedProp(field.MenuContainerId, root, owner, widget)
+	var containerId = root.themedField(field.MenuContainerId, owner, widget)
 	var c, has = root.Containers[containerId]
 	var visible = c.Properties[field.Hidden] == ""
 
@@ -38,7 +38,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 		c.Y = widget.Y + widget.Height
 
 		var _, camH = cam.Size()
-		var h = parseNum(themedProp(field.Height, root, c, nil), 0)
+		var h = parseNum(root.themedField(field.Height, c, nil), 0)
 		if c.Y+h > camH/2 {
 			c.Properties[field.Y] = text.New(widget.Y - h)
 			c.Y = widget.Y - h
@@ -53,7 +53,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	if c.WasHidden && visible {
-		sound.AssetId = defaultValue(themedProp(field.MenuSound, root, owner, widget), "~popup")
+		sound.AssetId = defaultValue(root.themedField(field.MenuSound, owner, widget), "~popup")
 		sound.Volume = root.Volume
 		sound.Play()
 	}

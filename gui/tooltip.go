@@ -28,11 +28,11 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 	if condition.JustTurnedTrue(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget
 		tooltipAt = time.RealRuntime()
-		var tooltipId = themedProp(field.TooltipId, root, c, widget)
+		var tooltipId = root.themedField(field.TooltipId, c, widget)
 		tooltip = root.Widgets[tooltipId]
 
 		if tooltip != nil {
-			var text = themedProp(field.TooltipText, root, c, widget)
+			var text = root.themedField(field.TooltipText, c, widget)
 			tooltip.Properties[field.Text] = text
 
 			if text != "" {
@@ -54,7 +54,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	tooltipVisible = !hidden
 
 	if !tooltipWasVisible && tooltipVisible {
-		sound.AssetId = defaultValue(themedProp(field.TooltipSound, root, owner, tooltipForWidget), "~popup")
+		sound.AssetId = defaultValue(root.themedField(field.TooltipSound, owner, tooltipForWidget), "~popup")
 		sound.Volume = root.Volume
 		sound.Play()
 	}
@@ -65,7 +65,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 
 	var camW, camH = cam.Size()
 	var width = parseNum(dyn(c, tooltip.Properties[field.Width], "500"), 500)
-	var margin = parseNum(themedProp(field.TooltipMargin, root, c, tooltip), 50)
+	var margin = parseNum(root.themedField(field.TooltipMargin, c, tooltip), 50)
 	tooltip.Width, tooltip.Height = width-margin, camH
 
 	setupVisualsText(root, tooltip, true)

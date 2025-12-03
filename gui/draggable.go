@@ -29,7 +29,7 @@ func (gui *GUI) DragCancel() {
 		wPressedOn = nil
 
 		var owner = gui.root.Containers[wPressedOn.OwnerId]
-		sound.AssetId = defaultValue(themedProp(field.DraggableSoundCancel, gui.root, owner, wPressedOn), "~error")
+		sound.AssetId = defaultValue(gui.root.themedField(field.DraggableSoundCancel, owner, wPressedOn), "~error")
 		sound.Volume = gui.root.Volume
 		sound.Play()
 	}
@@ -52,8 +52,8 @@ func draggable(cam *graphics.Camera, root *root, widget *widget) {
 
 func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
 	var owner = root.Containers[widget.OwnerId]
-	var assetId = defaultValue(themedProp(field.DraggableSpriteId, root, owner, widget), "")
-	var scale = parseNum(themedProp(field.DraggableSpriteScale, root, owner, widget), 1)
+	var assetId = defaultValue(root.themedField(field.DraggableSpriteId, owner, widget), "")
+	var scale = parseNum(root.themedField(field.DraggableSpriteScale, owner, widget), 1)
 
 	if assetId == "" {
 		return
@@ -64,7 +64,7 @@ func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
 	var spriteRatio = widget.Width / widget.Height
 	var drawW, drawH float32
 	var disabled = widget.isDisabled(owner)
-	var col = defaultValue(themedProp(field.DraggableSpriteColor, root, owner, widget), "255 255 255")
+	var col = defaultValue(root.themedField(field.DraggableSpriteColor, owner, widget), "255 255 255")
 
 	if assetRatio > spriteRatio {
 		drawW = widget.Width
@@ -87,7 +87,7 @@ func onDrop(root *root) (string, string) {
 	var left = mouse.IsButtonJustReleased(b.Left)
 	if wPressedOn != nil && wPressedOn.Class == "draggable" && left {
 		var owner = root.Containers[wPressedOn.OwnerId]
-		var assetId = defaultValue(themedProp(field.DraggableSpriteId, root, owner, wPressedOn), "")
+		var assetId = defaultValue(root.themedField(field.DraggableSpriteId, owner, wPressedOn), "")
 		if assetId == "" {
 			return wPressedOn.Id, ""
 		}
@@ -95,11 +95,11 @@ func onDrop(root *root) (string, string) {
 		sound.Volume = root.Volume
 		defer sound.Play()
 		if wFocused == nil || wFocused.Class == "draggable" {
-			sound.AssetId = defaultValue(themedProp(field.ButtonSoundRelease, root, owner, wPressedOn), "~release")
+			sound.AssetId = defaultValue(root.themedField(field.ButtonSoundRelease, owner, wPressedOn), "~release")
 			return wPressedOn.Id, wFocused.Id
 		}
 
-		sound.AssetId = defaultValue(themedProp(field.DraggableSoundCancel, root, owner, wPressedOn), "~error")
+		sound.AssetId = defaultValue(root.themedField(field.DraggableSoundCancel, owner, wPressedOn), "~error")
 		return wPressedOn.Id, ""
 	}
 	return "", ""
@@ -108,7 +108,7 @@ func onGrab(root *root) string {
 	var result = condition.JustTurnedTrue(wPressedOn != nil && wPressedOn.Class == "draggable", ";;;;draggg-start")
 	if result {
 		var owner = root.Containers[wPressedOn.OwnerId]
-		if themedProp(field.DraggableSpriteId, root, owner, wPressedOn) == "" {
+		if root.themedField(field.DraggableSpriteId, owner, wPressedOn) == "" {
 			return ""
 		}
 		return wPressedOn.Id

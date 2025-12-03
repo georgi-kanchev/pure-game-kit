@@ -6,7 +6,8 @@ shape/sprite shadow draw?
 // DONE:
 [115] [Wed] [03-12-2025]
 renamed build scripts
-gui - rename fix
+gui - small tweaks, restructures & renames
+gui - dynamics for target container and field for containers
 
 [114] [Tue] [02-12-2025]
 camera - draw cone

@@ -20,7 +20,7 @@ var reusableWidget *widget = &widget{Properties: map[string]string{}}
 
 func slider(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
-	var assetId = themedProp(field.AssetId, root, owner, widget)
+	var assetId = root.themedField(field.AssetId, owner, widget)
 	if assetId == "" {
 		widget.Height /= 2
 		widget.Y += widget.Height / 2
@@ -35,17 +35,17 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 
 	var _, h = assets.Size(assetId)
 	var ratio = widget.Height / float32(h)
-	var handleAssetId = themedProp(field.SliderHandleAssetId, root, owner, widget)
+	var handleAssetId = root.themedField(field.SliderHandleAssetId, owner, widget)
 	var hw, hh = assets.Size(handleAssetId)
 	var handleWidth, handleHeight = float32(hw), float32(hh)
 	handleWidth *= ratio
 	handleHeight *= ratio
 	var handleY = widget.Y - (handleWidth)/3
 	var value = parseNum(widget.Properties[field.Value], 0)
-	var step = parseNum(themedProp(field.SliderStep, root, owner, widget), 0)
+	var step = parseNum(root.themedField(field.SliderStep, owner, widget), 0)
 
 	if value != widget.PrevValue && !sound.IsPlaying() {
-		sound.AssetId = defaultValue(themedProp(field.SliderSound, root, owner, widget), "~slider")
+		sound.AssetId = defaultValue(root.themedField(field.SliderSound, owner, widget), "~slider")
 		sound.Volume = root.Volume
 		sound.Play()
 	}
@@ -55,7 +55,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 	if step > 0 {
 		var stepPx = (widget.Width - handleWidth) * step
 		var totalSteps = int(number.RoundUp((1-step)/step, -1))
-		var stepAssetId = themedProp(field.SliderStepAssetId, root, owner, widget)
+		var stepAssetId = root.themedField(field.SliderStepAssetId, owner, widget)
 
 		for i := 1; i <= totalSteps; i++ {
 			var stepX = (widget.X + handleWidth/2) + float32(i)*stepPx
@@ -88,7 +88,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 
 func (widget *widget) setSliderValue(value float32, root *root) float32 {
 	var owner = root.Containers[widget.OwnerId]
-	var step = parseNum(themedProp(field.SliderStep, root, owner, widget), 0)
+	var step = parseNum(root.themedField(field.SliderStep, owner, widget), 0)
 	value = number.Snap(value, number.Unsign(step))
 	value = number.Limit(value, 0, 1)
 	widget.Properties[field.Value] = text.New(value)

@@ -20,14 +20,14 @@ var box graphics.Box = graphics.Box{}
 
 func setupVisualsTextured(root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
-	var assetId = themedProp(p.AssetId, root, owner, widget)
+	var assetId = root.themedField(p.AssetId, owner, widget)
 
 	if assetId != "" {
-		var cLeft = parseNum(dyn(owner, themedProp(p.BoxEdgeLeft, root, owner, widget), "100"), 0)
-		var cRight = parseNum(dyn(owner, themedProp(p.BoxEdgeRight, root, owner, widget), "100"), 0)
-		var cTop = parseNum(dyn(owner, themedProp(p.BoxEdgeTop, root, owner, widget), "100"), 0)
-		var cBottom = parseNum(dyn(owner, themedProp(p.BoxEdgeBottom, root, owner, widget), "100"), 0)
-		var col = parseColor(themedProp(p.Color, root, owner, widget), widget.isDisabled(owner))
+		var cLeft = parseNum(dyn(owner, root.themedField(p.BoxEdgeLeft, owner, widget), "100"), 0)
+		var cRight = parseNum(dyn(owner, root.themedField(p.BoxEdgeRight, owner, widget), "100"), 0)
+		var cTop = parseNum(dyn(owner, root.themedField(p.BoxEdgeTop, owner, widget), "100"), 0)
+		var cBottom = parseNum(dyn(owner, root.themedField(p.BoxEdgeBottom, owner, widget), "100"), 0)
+		var col = parseColor(root.themedField(p.Color, owner, widget), widget.isDisabled(owner))
 		var _, has = internal.Boxes[assetId]
 		var offX = parseNum(dyn(owner, widget.Properties[p.OffsetX], "0"), 0)
 		var offY = parseNum(dyn(owner, widget.Properties[p.OffsetY], "0"), 0)
@@ -55,7 +55,7 @@ func setupVisualsTextured(root *root, widget *widget) {
 }
 func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	var owner = root.Containers[widget.OwnerId]
-	var text = themedProp(p.Text, root, owner, widget)
+	var text = root.themedField(p.Text, owner, widget)
 	if skipEmpty && text == "" {
 		return
 	}
@@ -67,52 +67,52 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	textBox.EmbeddedAssetsTag = '^'
 	textBox.EmbeddedThicknessesTag = '*'
 	textBox.Text = text
-	textBox.WordWrap = defaultValue(themedProp(p.TextWordWrap, root, owner, widget), "on") == "on"
+	textBox.WordWrap = defaultValue(root.themedField(p.TextWordWrap, owner, widget), "on") == "on"
 	textBox.PivotX, textBox.PivotY = 0, 0
-	textBox.FontId = themedProp(p.TextFontId, root, owner, widget)
-	textBox.LineHeight = parseNum(themedProp(p.TextLineHeight, root, owner, widget), 60)
-	textBox.LineGap = parseNum(themedProp(p.TextLineGap, root, owner, widget), 0)
-	textBox.SymbolGap = parseNum(themedProp(p.TextSymbolGap, root, owner, widget), 0.2)
-	textBox.AlignmentX = parseNum(themedProp(p.TextAlignmentX, root, owner, widget), 0)
-	textBox.AlignmentY = parseNum(themedProp(p.TextAlignmentY, root, owner, widget), 0)
+	textBox.FontId = root.themedField(p.TextFontId, owner, widget)
+	textBox.LineHeight = parseNum(root.themedField(p.TextLineHeight, owner, widget), 60)
+	textBox.LineGap = parseNum(root.themedField(p.TextLineGap, owner, widget), 0)
+	textBox.SymbolGap = parseNum(root.themedField(p.TextSymbolGap, owner, widget), 0.2)
+	textBox.AlignmentX = parseNum(root.themedField(p.TextAlignmentX, owner, widget), 0)
+	textBox.AlignmentY = parseNum(root.themedField(p.TextAlignmentY, owner, widget), 0)
 	textBox.Width, textBox.Height = widget.Width, widget.Height
 
 	textBox.EmbeddedAssetsTag =
-		rune(defaultValue(themedProp(p.TextEmbeddedAssetsTag, root, owner, widget), "^")[0])
+		rune(defaultValue(root.themedField(p.TextEmbeddedAssetsTag, owner, widget), "^")[0])
 	textBox.EmbeddedAssetIds = []string{
-		themedProp(p.TextEmbeddedAssetId1, root, owner, widget),
-		themedProp(p.TextEmbeddedAssetId2, root, owner, widget),
-		themedProp(p.TextEmbeddedAssetId3, root, owner, widget),
-		themedProp(p.TextEmbeddedAssetId4, root, owner, widget),
-		themedProp(p.TextEmbeddedAssetId5, root, owner, widget),
+		root.themedField(p.TextEmbeddedAssetId1, owner, widget),
+		root.themedField(p.TextEmbeddedAssetId2, owner, widget),
+		root.themedField(p.TextEmbeddedAssetId3, owner, widget),
+		root.themedField(p.TextEmbeddedAssetId4, owner, widget),
+		root.themedField(p.TextEmbeddedAssetId5, owner, widget),
 	}
 
 	textBox.EmbeddedColorsTag =
-		rune(defaultValue(themedProp(p.TextEmbeddedColorsTag, root, owner, widget), "`")[0])
+		rune(defaultValue(root.themedField(p.TextEmbeddedColorsTag, owner, widget), "`")[0])
 	textBox.EmbeddedColors = []uint{
-		parseColor(themedProp(p.TextEmbeddedColor1, root, owner, widget), disabled),
-		parseColor(themedProp(p.TextEmbeddedColor2, root, owner, widget), disabled),
-		parseColor(themedProp(p.TextEmbeddedColor3, root, owner, widget), disabled),
-		parseColor(themedProp(p.TextEmbeddedColor4, root, owner, widget), disabled),
-		parseColor(themedProp(p.TextEmbeddedColor5, root, owner, widget), disabled),
+		parseColor(root.themedField(p.TextEmbeddedColor1, owner, widget), disabled),
+		parseColor(root.themedField(p.TextEmbeddedColor2, owner, widget), disabled),
+		parseColor(root.themedField(p.TextEmbeddedColor3, owner, widget), disabled),
+		parseColor(root.themedField(p.TextEmbeddedColor4, owner, widget), disabled),
+		parseColor(root.themedField(p.TextEmbeddedColor5, owner, widget), disabled),
 	}
 
 	textBox.EmbeddedThicknessesTag =
-		rune(defaultValue(themedProp(p.TextEmbeddedThicknessesTag, root, owner, widget), "*")[0])
+		rune(defaultValue(root.themedField(p.TextEmbeddedThicknessesTag, owner, widget), "*")[0])
 	textBox.EmbeddedThicknesses = []float32{
-		parseNum(themedProp(p.TextEmbeddedThickness1, root, owner, widget), 0.5),
-		parseNum(themedProp(p.TextEmbeddedThickness2, root, owner, widget), 0.5),
-		parseNum(themedProp(p.TextEmbeddedThickness3, root, owner, widget), 0.5),
-		parseNum(themedProp(p.TextEmbeddedThickness4, root, owner, widget), 0.5),
-		parseNum(themedProp(p.TextEmbeddedThickness5, root, owner, widget), 0.5),
+		parseNum(root.themedField(p.TextEmbeddedThickness1, owner, widget), 0.5),
+		parseNum(root.themedField(p.TextEmbeddedThickness2, owner, widget), 0.5),
+		parseNum(root.themedField(p.TextEmbeddedThickness3, owner, widget), 0.5),
+		parseNum(root.themedField(p.TextEmbeddedThickness4, owner, widget), 0.5),
+		parseNum(root.themedField(p.TextEmbeddedThickness5, owner, widget), 0.5),
 	}
 }
 func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool, betweenVisualAndText func()) {
 	var owner = root.Containers[widget.OwnerId]
-	var assetId = themedProp(p.AssetId, root, owner, widget)
-	var col = parseColor(themedProp(p.Color, root, owner, widget), widget.isDisabled(owner))
-	var frameCol = parseColor(themedProp(p.FrameColor, root, owner, widget), widget.isDisabled(owner))
-	var frameSz = parseNum(themedProp(p.FrameSize, root, owner, widget), 0)
+	var assetId = root.themedField(p.AssetId, owner, widget)
+	var col = parseColor(root.themedField(p.Color, owner, widget), widget.isDisabled(owner))
+	var frameCol = parseColor(root.themedField(p.FrameColor, owner, widget), widget.isDisabled(owner))
+	var frameSz = parseNum(root.themedField(p.FrameSize, owner, widget), 0)
 
 	if assetId != "" {
 		var _, has = internal.Boxes[assetId]
@@ -143,21 +143,21 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		}
 
 		var disabled = widget.isDisabled(owner)
-		var outlineCol = themedProp(p.TextColorOutline, root, owner, widget)
+		var outlineCol = root.themedField(p.TextColorOutline, owner, widget)
 		if outlineCol != "" {
 			var embeddedColors = textBox.EmbeddedColors
 			textBox.EmbeddedColors = []uint{}
-			textBox.Thickness = parseNum(themedProp(p.TextThicknessOutline, root, owner, widget), 0.92)
-			textBox.Smoothness = parseNum(themedProp(p.TextSmoothnessOutline, root, owner, widget), 0.08)
+			textBox.Thickness = parseNum(root.themedField(p.TextThicknessOutline, owner, widget), 0.92)
+			textBox.Smoothness = parseNum(root.themedField(p.TextSmoothnessOutline, owner, widget), 0.08)
 			textBox.Color = parseColor(outlineCol, disabled)
 			cam.DrawTextBoxes(&textBox)
 			textBox.EmbeddedColors = embeddedColors
 		}
 
-		var c = parseColor(defaultValue(themedProp(p.TextColor, root, owner, widget), "0 0 0"), disabled || fadeText)
+		var c = parseColor(defaultValue(root.themedField(p.TextColor, owner, widget), "0 0 0"), disabled || fadeText)
 		textBox.Color = c
-		textBox.Thickness = parseNum(themedProp(p.TextThickness, root, owner, widget), 0.5)
-		textBox.Smoothness = parseNum(themedProp(p.TextSmoothness, root, owner, widget), 0.02)
+		textBox.Thickness = parseNum(root.themedField(p.TextThickness, owner, widget), 0.5)
+		textBox.Smoothness = parseNum(root.themedField(p.TextSmoothness, owner, widget), 0.02)
 		cam.DrawTextBoxes(&textBox)
 
 		cam.Mask(mx, my, mw, mh)

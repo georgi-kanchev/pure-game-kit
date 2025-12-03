@@ -37,7 +37,7 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	var prev = widget.ThemeId
 	var _, ownerDisabled = owner.Properties[field.Disabled]
 	var _, disabled = widget.Properties[field.Disabled]
-	var themePress = themedProp(field.ButtonThemeIdPress, root, owner, widget)
+	var themePress = root.themedField(field.ButtonThemeIdPress, owner, widget)
 	var focus = widget.isFocused(root, cam)
 
 	if focus {
@@ -47,7 +47,7 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 			m.SetCursor(cursor.NotAllowed)
 		}
 
-		var themeHover = themedProp(field.ButtonThemeIdHover, root, owner, widget)
+		var themeHover = root.themedField(field.ButtonThemeIdHover, owner, widget)
 		if themeHover != "" {
 			widget.ThemeId = themeHover
 		}
@@ -55,11 +55,11 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	if typingIn == nil { // no hotkeys while typing
-		var hotkey = key.FromName(themedProp(field.ButtonHotkey, root, owner, widget))
+		var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
 		tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, widget, root, owner)
 
 		if btnSounds && root.IsButtonJustClicked(widget.Id, cam) {
-			sound.AssetId = defaultValue(themedProp(field.ButtonSoundPress, root, owner, widget), "~release")
+			sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), "~release")
 			sound.Volume = root.Volume
 			sound.Play()
 		}
@@ -68,7 +68,7 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	setupVisualsTextured(root, widget)
 	setupVisualsText(root, widget, true)
 	drawVisuals(cam, root, widget, false, nil)
-	buttonColor = parseColor(themedProp(field.Color, root, owner, widget), widget.isDisabled(owner))
+	buttonColor = parseColor(root.themedField(field.Color, owner, widget), widget.isDisabled(owner))
 	widget.ThemeId = prev
 }
 
@@ -78,7 +78,7 @@ func tryPress(press, once, sounds bool, themePress string, widget *widget, root 
 	}
 	if once {
 		if sounds {
-			sound.AssetId = defaultValue(themedProp(field.ButtonSoundPress, root, owner, widget), "~press")
+			sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), "~press")
 			sound.Volume = root.Volume
 			sound.Play()
 		}

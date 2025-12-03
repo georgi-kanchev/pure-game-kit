@@ -11,6 +11,7 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
+	"strings"
 )
 
 var sound *audio.Audio = audio.New("")
@@ -21,10 +22,11 @@ var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widge
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 	"draggable": draggable,
 }
-var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string               // dynamic prop cache
-var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string // dynamic prop cache
+var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                       // dynamic prop cache
+var ownerX, ownerY, ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH string         // dynamic prop cache
+var targetX, targetY, targetLx, targetRx, targetTy, targetBy, targetW, targetH string // dynamic prop cache
 
-func reset(camera *graphics.Camera, gui *GUI) {
+func (gui *GUI) reset(camera *graphics.Camera) {
 	if mouse.IsButtonJustPressed(b.Left) {
 		wPressedOn = nil
 		tooltip = nil
@@ -48,6 +50,67 @@ func reset(camera *graphics.Camera, gui *GUI) {
 		mouse.SetCursor(cursor.Arrow)
 	}
 }
+func (root *root) themedField(fld string, c *container, w *widget) string {
+	// priority for widget: widget -> widget theme -> container theme
+
+	var widgetSelf, containerSelf = "", ""
+	var widgetTheme, containerTheme *theme
+	var hasWidget, hasContainer, hasWidgetTheme, hasContainerTheme = false, false, false, false
+
+	if w != nil {
+		widgetSelf, hasWidget = w.Properties[fld]
+		widgetTheme, hasWidgetTheme = root.Themes[w.ThemeId]
+	}
+	if c != nil {
+		containerSelf, hasContainer = c.Properties[fld]
+		containerTheme, hasContainerTheme = root.Themes[c.Properties[field.ThemeId]]
+	}
+
+	if w != nil {
+		if hasWidget {
+			return widgetSelf
+		}
+		if hasWidgetTheme {
+			return widgetTheme.Properties[fld]
+		}
+		if hasContainerTheme {
+			return containerTheme.Properties[fld]
+		}
+		if hasContainer {
+			return containerSelf
+		}
+	}
+
+	if hasContainer {
+		return containerSelf
+	}
+	if hasContainerTheme {
+		return containerTheme.Properties[fld]
+	}
+
+	return ""
+}
+func (root *root) cacheTarget(targetId string) {
+	var targetCntnr = root.Containers[targetId]
+	var targetWidget = root.Widgets[targetId]
+	var tx, ty, tw, th string
+	if targetCntnr != nil {
+		tx = root.themedField(field.X, targetCntnr, nil)
+		ty = root.themedField(field.Y, targetCntnr, nil)
+		tw = root.themedField(field.Width, targetCntnr, nil)
+		th = root.themedField(field.Height, targetCntnr, nil)
+	} else if targetWidget != nil {
+		var owner = root.Containers[targetWidget.OwnerId]
+		tx = root.themedField(field.X, owner, targetWidget)
+		ty = root.themedField(field.Y, owner, targetWidget)
+		tw = root.themedField(field.Width, owner, targetWidget)
+		th = root.themedField(field.Height, owner, targetWidget)
+	}
+
+	targetX, targetY = tx, ty
+	targetLx, targetRx, targetTy, targetBy, targetW, targetH = tx, tx+"+"+tw, ty, ty+"+"+th, tw, th
+}
+
 func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
 	camera.Angle, camera.Zoom = prevAng, prevZoom // reset angle, zoom & mask to how it was
 	camera.X, camera.Y = prevX, prevY             // also x y
@@ -62,7 +125,6 @@ func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
 	cWasHovered = cHovered
 	prevMouseX, prevMouseY = mouseX, mouseY
 }
-
 func extraProps(props ...string) string {
 	var result = ""
 	for i, v := range props {
@@ -77,63 +139,21 @@ func extraProps(props ...string) string {
 	}
 	return result
 }
-
-func themedProp(prop string, root *root, c *container, w *widget) string {
-	// priority for widget: widget -> widget theme -> container theme
-
-	var widgetSelf, containerSelf = "", ""
-	var widgetTheme, containerTheme *theme
-	var hasWidget, hasContainer, hasWidgetTheme, hasContainerTheme = false, false, false, false
-
-	if w != nil {
-		widgetSelf, hasWidget = w.Properties[prop]
-		widgetTheme, hasWidgetTheme = root.Themes[w.ThemeId]
-	}
-	if c != nil {
-		containerSelf, hasContainer = c.Properties[prop]
-		containerTheme, hasContainerTheme = root.Themes[c.Properties[field.ThemeId]]
-	}
-
-	if w != nil {
-		if hasWidget {
-			return widgetSelf
-		}
-		if hasWidgetTheme {
-			return widgetTheme.Properties[prop]
-		}
-		if hasContainerTheme {
-			return containerTheme.Properties[prop]
-		}
-		if hasContainer {
-			return containerSelf
-		}
-	}
-
-	if hasContainer {
-		return containerSelf
-	}
-	if hasContainerTheme {
-		return containerTheme.Properties[prop]
-	}
-
-	return ""
-}
 func defaultValue(value, defaultValue string) string {
 	if value == "" {
 		return defaultValue
 	}
 	return value
 }
-
 func dyn(owner *container, value string, defaultValue string) string {
-	value = text.Replace(value, dynamic.CameraCenterX, camCx)
-	value = text.Replace(value, dynamic.CameraCenterY, camCy)
-	value = text.Replace(value, dynamic.CameraLeftX, camLx)
-	value = text.Replace(value, dynamic.CameraRightX, camRx)
-	value = text.Replace(value, dynamic.CameraTopY, camTy)
-	value = text.Replace(value, dynamic.CameraBottomY, camBy)
-	value = text.Replace(value, dynamic.CameraWidth, camW)
-	value = text.Replace(value, dynamic.CameraHeight, camH)
+	value = strings.ReplaceAll(value, dynamic.TargetX, targetX)
+	value = strings.ReplaceAll(value, dynamic.TargetY, targetY)
+	value = strings.ReplaceAll(value, dynamic.TargetWidth, targetW)
+	value = strings.ReplaceAll(value, dynamic.TargetHeight, targetH)
+	value = strings.ReplaceAll(value, dynamic.TargetLeftX, targetLx)
+	value = strings.ReplaceAll(value, dynamic.TargetRightX, targetRx)
+	value = strings.ReplaceAll(value, dynamic.TargetTopY, targetTy)
+	value = strings.ReplaceAll(value, dynamic.TargetBottomY, targetBy)
 
 	if owner != nil {
 		value = text.Replace(value, dynamic.OwnerX, ownerX)
@@ -146,14 +166,14 @@ func dyn(owner *container, value string, defaultValue string) string {
 		value = text.Replace(value, dynamic.OwnerBottomY, ownerBy)
 	}
 
-	// value = strings.ReplaceAll(value, dynamic.MyX, "")
-	// value = strings.ReplaceAll(value, dynamic.MyY, "")
-	// value = strings.ReplaceAll(value, dynamic.MyWidth, "")
-	// value = strings.ReplaceAll(value, dynamic.MyHeight, "")
-	// value = strings.ReplaceAll(value, dynamic.MyLeftX, "")
-	// value = strings.ReplaceAll(value, dynamic.MyRightX, "")
-	// value = strings.ReplaceAll(value, dynamic.MyTopY, "")
-	// value = strings.ReplaceAll(value, dynamic.MyBottomY, "")
+	value = text.Replace(value, dynamic.CameraCenterX, camCx)
+	value = text.Replace(value, dynamic.CameraCenterY, camCy)
+	value = text.Replace(value, dynamic.CameraLeftX, camLx)
+	value = text.Replace(value, dynamic.CameraRightX, camRx)
+	value = text.Replace(value, dynamic.CameraTopY, camTy)
+	value = text.Replace(value, dynamic.CameraBottomY, camBy)
+	value = text.Replace(value, dynamic.CameraWidth, camW)
+	value = text.Replace(value, dynamic.CameraHeight, camH)
 
 	var calc = text.Calculate(value)
 	if number.IsNaN(calc) {
@@ -161,7 +181,6 @@ func dyn(owner *container, value string, defaultValue string) string {
 	}
 	return text.New(calc)
 }
-
 func parseColor(value string, disabled ...bool) uint {
 	var rgba = text.Split(value, " ")
 	var r, g, b, a byte
@@ -189,7 +208,6 @@ func parseNum(value string, defaultValue float32) float32 {
 	}
 	return v
 }
-
 func isHovered(x, y, w, h float32, cam *graphics.Camera) bool {
 	var prevAng = cam.Angle
 	cam.Angle = 0
