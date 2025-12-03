@@ -16,7 +16,7 @@ type GUI struct {
 	root   *root
 }
 
-func NewXML(xmlData string) *GUI {
+func NewFromXML(xmlData string) *GUI {
 	var gui = GUI{root: &root{}}
 	storage.FromXML(xmlData, &gui.root)
 
@@ -72,7 +72,7 @@ func NewXML(xmlData string) *GUI {
 	gui.Volume = gui.root.XmlVolume
 	return &gui
 }
-func NewElements(elements ...string) *GUI {
+func NewElementsXML(elements ...string) string {
 	var result = "<GUI scale=\"1\" volume=\"1\">"
 
 	// container is missing on top, add root container
@@ -101,7 +101,7 @@ func NewElements(elements ...string) *GUI {
 	}
 
 	result += "\n</GUI>"
-	return NewXML(result)
+	return result
 }
 
 // =================================================================

@@ -14,7 +14,7 @@ import (
 func main() {
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewElements(
+	var hud = gui.NewFromXML(gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, d.OwnerWidth+"-40", f.Height, "100", f.GapY, "50",
 			f.TextAlignmentX, "0", f.TextAlignmentY, "0.5", f.TextColor, "0 0 0 255",
@@ -83,7 +83,7 @@ func main() {
 		gui.Button("animation sequences", f.Text, " Animation Sequences `(motion-animations.go)", f.NewRow, ""),
 		gui.Button("tweens", f.Text, " Tweens `(motion-tweens.go)", f.NewRow, ""),
 		gui.Button("flows", f.Text, " Flows `(execution-flows.go)", f.NewRow, ""),
-	)
+	))
 	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
 

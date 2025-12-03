@@ -15,7 +15,7 @@ func GUIs() {
 	var cam = graphics.NewCamera(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons()
 	var _, ids, box = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewElements(
+	var hud = gui.NewFromXML(gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, "300", f.Height, "100", f.GapX, "20", f.GapY, "20",
 			f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
@@ -141,7 +141,7 @@ func GUIs() {
 		// ======================================================
 		gui.Container("tooltips", "", "", "", "", f.ThemeId, "button", f.Hidden, "+"),
 		gui.Tooltip("tooltip", f.AssetId, box[7], f.Width, "700", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5"),
-	)
+	))
 	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
