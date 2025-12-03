@@ -213,6 +213,10 @@ func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 
 // works for widgets & containers
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
+	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
+	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	gui.reset(camera)
+
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
 
@@ -227,6 +231,10 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 
 // works for widgets & containers
 func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
+	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
+	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	gui.reset(camera)
+
 	var w, has = gui.root.Widgets[widgetId]
 	if has {
 		return w.isFocused(gui.root, camera)
