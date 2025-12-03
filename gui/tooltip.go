@@ -33,7 +33,7 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 
 		if tooltip != nil {
 			var text = root.themedField(field.TooltipText, c, widget)
-			tooltip.Properties[field.Text] = text
+			tooltip.Fields[field.Text] = text
 
 			if text != "" {
 				mouse.SetCursor(cursor.Hand)
@@ -50,7 +50,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 
 	var owner = root.Containers[tooltipForWidget.OwnerId]
 	var hidden = tooltip == nil || tooltipForWidget == nil || time.RealRuntime() < tooltipAt+0.5 ||
-		tooltip.Properties[field.Text] == "" || !tooltipForWidget.isFocused(root, cam)
+		tooltip.Fields[field.Text] == "" || !tooltipForWidget.isFocused(root, cam)
 	tooltipVisible = !hidden
 
 	if !tooltipWasVisible && tooltipVisible {
@@ -64,7 +64,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	}
 
 	var camW, camH = cam.Size()
-	var width = parseNum(dyn(c, tooltip.Properties[field.Width], "500"), 500)
+	var width = parseNum(dyn(c, tooltip.Fields[field.Width], "500"), 500)
 	var margin = parseNum(root.themedField(field.TooltipMargin, c, tooltip), 50)
 	tooltip.Width, tooltip.Height = width-margin, camH
 

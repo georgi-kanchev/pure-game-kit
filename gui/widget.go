@@ -13,7 +13,7 @@ type widget struct {
 	X, Y, Width, Height,
 	DragX, DragY, PrevValue float32
 	IsCulled      bool
-	Properties    map[string]string
+	Fields        map[string]string
 	UpdateAndDraw func(cam *graphics.Camera, root *root, widget *widget)
 }
 
@@ -32,11 +32,11 @@ func (widget *widget) isFocused(root *root, cam *graphics.Camera) bool {
 	return wFocused == widget && wWasHovered == widget && widget.isHovered(root.Containers[widget.OwnerId], cam)
 }
 func (widget *widget) isDisabled(owner *container) bool {
-	var _, disabled = widget.Properties[field.Disabled]
+	var _, disabled = widget.Fields[field.Disabled]
 	var ownerDisabled = false
 
 	if owner != nil {
-		_, ownerDisabled = owner.Properties[field.Disabled]
+		_, ownerDisabled = owner.Fields[field.Disabled]
 	}
 
 	return disabled || ownerDisabled

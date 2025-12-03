@@ -26,12 +26,12 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 	var anyButton = mouse.IsAnyButtonJustPressed() && !widget.isHovered(owner, cam)
 	var containerId = root.themedField(field.MenuContainerId, owner, widget)
 	var c, has = root.Containers[containerId]
-	var visible = c.Properties[field.Hidden] == ""
+	var visible = c.Fields[field.Hidden] == ""
 
 	if has && root.IsButtonJustClicked(widget.Id, cam) {
-		c.Properties[field.Hidden] = condition.If(visible, "+", "")
-		c.Properties[field.X] = text.New(widget.X)
-		c.Properties[field.Y] = text.New(widget.Y + widget.Height)
+		c.Fields[field.Hidden] = condition.If(visible, "+", "")
+		c.Fields[field.X] = text.New(widget.X)
+		c.Fields[field.Y] = text.New(widget.Y + widget.Height)
 		visible = !visible
 
 		c.X = widget.X
@@ -40,14 +40,14 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 		var _, camH = cam.Size()
 		var h = parseNum(root.themedField(field.Height, c, nil), 0)
 		if c.Y+h > camH/2 {
-			c.Properties[field.Y] = text.New(widget.Y - h)
+			c.Fields[field.Y] = text.New(widget.Y - h)
 			c.Y = widget.Y - h
 		}
 	}
 
 	if anyButton || mouse.Scroll() != 0 || !window.IsHovered() || escape {
 		if escape || (has && !c.isFocused(cam)) {
-			c.Properties[field.Hidden] = "+"
+			c.Fields[field.Hidden] = "+"
 			visible = false
 		}
 	}

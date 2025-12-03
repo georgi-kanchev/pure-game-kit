@@ -412,6 +412,6 @@ func wordIndex(text string, left bool) int {
 
 }
 func setText(widget *widget, text string) {
-	widget.Properties[field.Text] = text
+	widget.Fields[field.Text] = text
 	textBox.Text = text
 }

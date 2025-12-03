@@ -16,7 +16,7 @@ func Slider(id string, properties ...string) string {
 //=================================================================
 // private
 
-var reusableWidget *widget = &widget{Properties: map[string]string{}}
+var reusableWidget *widget = &widget{Fields: map[string]string{}}
 
 func slider(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
@@ -41,7 +41,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 	handleWidth *= ratio
 	handleHeight *= ratio
 	var handleY = widget.Y - (handleWidth)/3
-	var value = parseNum(widget.Properties[field.Value], 0)
+	var value = parseNum(widget.Fields[field.Value], 0)
 	var step = parseNum(root.themedField(field.SliderStep, owner, widget), 0)
 
 	if value != widget.PrevValue && !sound.IsPlaying() {
@@ -91,14 +91,14 @@ func (widget *widget) setSliderValue(value float32, root *root) float32 {
 	var step = parseNum(root.themedField(field.SliderStep, owner, widget), 0)
 	value = number.Snap(value, number.Unsign(step))
 	value = number.Limit(value, 0, 1)
-	widget.Properties[field.Value] = text.New(value)
+	widget.Fields[field.Value] = text.New(value)
 	return value
 }
 func drawReusableWidget(col uint, assetId string, x, y float32, root *root, cam *graphics.Camera) {
 	var r, g, b, a = color.Channels(col)
-	clear(reusableWidget.Properties)
-	reusableWidget.Properties[field.AssetId] = assetId
-	reusableWidget.Properties[field.Color] = text.New(r, " ", g, " ", b, " ", a)
+	clear(reusableWidget.Fields)
+	reusableWidget.Fields[field.AssetId] = assetId
+	reusableWidget.Fields[field.Color] = text.New(r, " ", g, " ", b, " ", a)
 	reusableWidget.X, reusableWidget.Y = x, y
 
 	setupVisualsTextured(root, reusableWidget)

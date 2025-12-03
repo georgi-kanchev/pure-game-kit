@@ -58,12 +58,12 @@ func (root *root) themedField(fld string, c *container, w *widget) string {
 	var hasWidget, hasContainer, hasWidgetTheme, hasContainerTheme = false, false, false, false
 
 	if w != nil {
-		widgetSelf, hasWidget = w.Properties[fld]
+		widgetSelf, hasWidget = w.Fields[fld]
 		widgetTheme, hasWidgetTheme = root.Themes[w.ThemeId]
 	}
 	if c != nil {
-		containerSelf, hasContainer = c.Properties[fld]
-		containerTheme, hasContainerTheme = root.Themes[c.Properties[field.ThemeId]]
+		containerSelf, hasContainer = c.Fields[fld]
+		containerTheme, hasContainerTheme = root.Themes[c.Fields[field.ThemeId]]
 	}
 
 	if w != nil {

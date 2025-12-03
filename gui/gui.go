@@ -27,11 +27,11 @@ func NewXML(xmlData string) *GUI {
 	for _, c := range gui.root.XmlContainers {
 		var cId = c.XmlProps[0].Value
 		c.Widgets = make([]string, len(c.XmlWidgets))
-		c.Properties = make(map[string]string, len(c.XmlProps))
+		c.Fields = make(map[string]string, len(c.XmlProps))
 		c.WasHidden = true
 
 		for _, xmlProp := range c.XmlProps {
-			c.Properties[xmlProp.Name.Local] = xmlProp.Value
+			c.Fields[xmlProp.Name.Local] = xmlProp.Value
 		}
 
 		for j, w := range c.XmlWidgets {
@@ -41,7 +41,7 @@ func NewXML(xmlData string) *GUI {
 			c.Widgets[j] = wId
 			w.OwnerId = cId
 			w.Class = wClass
-			w.Properties = make(map[string]string, len(w.XmlProps))
+			w.Fields = make(map[string]string, len(w.XmlProps))
 			w.Id = wId
 
 			if has {
@@ -49,7 +49,7 @@ func NewXML(xmlData string) *GUI {
 			}
 
 			for _, xmlProp := range w.XmlProps {
-				w.Properties[xmlProp.Name.Local] = xmlProp.Value
+				w.Fields[xmlProp.Name.Local] = xmlProp.Value
 			}
 
 			gui.root.Widgets[wId] = w
@@ -123,15 +123,15 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 
 	for _, id := range containers {
 		var c = gui.root.Containers[id]
-		var _, hasTarget = c.Properties[field.TargetId]
+		var _, hasTarget = c.Fields[field.TargetId]
 		if hasTarget {
 			gui.root.cacheTarget(gui.root.themedField(field.TargetId, c, nil))
 		}
 
-		var ox = text.New(dyn(nil, c.Properties[field.X], "0"))
-		var oy = text.New(dyn(nil, c.Properties[field.Y], "0"))
-		var ow = text.New(dyn(nil, c.Properties[field.Width], "0"))
-		var oh = text.New(dyn(nil, c.Properties[field.Height], "0"))
+		var ox = text.New(dyn(nil, c.Fields[field.X], "0"))
+		var oy = text.New(dyn(nil, c.Fields[field.Y], "0"))
+		var ow = text.New(dyn(nil, c.Fields[field.Width], "0"))
+		var oh = text.New(dyn(nil, c.Fields[field.Height], "0"))
 		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
 		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2" // caching dynamic props
 
@@ -164,10 +164,10 @@ func (gui *GUI) SetField(id, field string, value string) {
 	var t, hasT = gui.root.Themes[id]
 
 	if hasW {
-		w.Properties[field] = value
+		w.Fields[field] = value
 	}
 	if hasC {
-		c.Properties[field] = value
+		c.Fields[field] = value
 	}
 	if hasT {
 		t.Properties[field] = value
@@ -187,7 +187,7 @@ func (gui *GUI) Field(id, field string) string {
 		return gui.root.themedField(field, owner, w)
 	}
 	if hasC {
-		return c.Properties[field]
+		return c.Fields[field]
 	}
 	if hasT {
 		return t.Properties[field]
@@ -197,9 +197,13 @@ func (gui *GUI) Field(id, field string) string {
 }
 
 func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
+	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
+	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	gui.reset(camera)
+
 	for _, c := range gui.root.Containers {
-		var hidden = c.Properties[field.Hidden]
-		if hidden != "" && c.isHovered(camera) {
+		var hidden = c.Fields[field.Hidden]
+		if hidden == "" && c.isHovered(camera) {
 			return true
 		}
 	}

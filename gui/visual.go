@@ -29,8 +29,8 @@ func setupVisualsTextured(root *root, widget *widget) {
 		var cBottom = parseNum(dyn(owner, root.themedField(p.BoxEdgeBottom, owner, widget), "100"), 0)
 		var col = parseColor(root.themedField(p.Color, owner, widget), widget.isDisabled(owner))
 		var _, has = internal.Boxes[assetId]
-		var offX = parseNum(dyn(owner, widget.Properties[p.OffsetX], "0"), 0)
-		var offY = parseNum(dyn(owner, widget.Properties[p.OffsetY], "0"), 0)
+		var offX = parseNum(dyn(owner, widget.Fields[p.OffsetX], "0"), 0)
+		var offY = parseNum(dyn(owner, widget.Fields[p.OffsetY], "0"), 0)
 
 		if has {
 			box.X, box.Y = widget.X+offX, widget.Y+offY

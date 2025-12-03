@@ -28,9 +28,9 @@ type container struct {
 	velocityX, velocityY,
 	targetScrollX, targetScrollY float32
 
-	Properties map[string]string
-	Widgets    []string
-	WasHidden  bool
+	Fields    map[string]string
+	Widgets   []string
+	WasHidden bool
 }
 
 func Container(id, x, y, width, height string, properties ...string) string {
@@ -50,15 +50,15 @@ const scrollSize, handleSpeed, dragFriction, dragMomentum = 25.0, 12.0, 0.95, 30
 var cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container
 
 func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
-	var hidden, _ = c.Properties[f.Hidden]
+	var hidden, _ = c.Fields[f.Hidden]
 	if hidden != "" {
 		return
 	}
 
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
-	var cGapX = parseNum(dyn(c, c.Properties[f.GapX], "0"), 0)
-	var cGapY = parseNum(dyn(c, c.Properties[f.GapY], "0"), 0)
+	var cGapX = parseNum(dyn(c, c.Fields[f.GapX], "0"), 0)
+	var cGapY = parseNum(dyn(c, c.Fields[f.GapY], "0"), 0)
 	var curX, curY = x + cGapX, y + cGapY
 	var maxHeight float32
 	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
@@ -77,25 +77,25 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 
 	for _, wId := range c.Widgets {
 		var widget = root.Widgets[wId]
-		var wHidden, _ = widget.Properties[f.Hidden]
+		var wHidden, _ = widget.Fields[f.Hidden]
 		if wHidden != "" || widget.Class == "tooltip" {
 			continue
 		}
 
-		var _, isBgr = widget.Properties[f.FillContainer]
+		var _, isBgr = widget.Fields[f.FillContainer]
 		var ww = parseNum(dyn(c, root.themedField(f.Width, c, widget), "0"), 0)
 		var wh = parseNum(dyn(c, root.themedField(f.Height, c, widget), "0"), 0)
 		var gapX = parseNum(dyn(c, root.themedField(f.GapX, c, widget), "0"), 0)
 		var gapY = parseNum(dyn(c, root.themedField(f.GapY, c, widget), "0"), 0)
-		var offX = parseNum(dyn(c, widget.Properties[f.OffsetX], "0"), 0)
-		var offY = parseNum(dyn(c, widget.Properties[f.OffsetY], "0"), 0)
+		var offX = parseNum(dyn(c, widget.Fields[f.OffsetX], "0"), 0)
+		var offY = parseNum(dyn(c, widget.Fields[f.OffsetY], "0"), 0)
 
 		if isBgr {
 			widget.X, widget.Y = x, y
 			ww, wh = w, h
 			cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight) // mask doesn't affect bgr
 		} else {
-			var row, newRow = widget.Properties[f.NewRow]
+			var row, newRow = widget.Fields[f.NewRow]
 			if newRow {
 				curX = x + cGapX
 				curY += parseNum(dyn(c, row, text.New(maxHeight+gapY)), 0)
@@ -296,7 +296,7 @@ func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, m
 
 	for _, w := range c.Widgets {
 		var widget = root.Widgets[w]
-		var _, isBgr = widget.Properties[f.FillContainer]
+		var _, isBgr = widget.Fields[f.FillContainer]
 		if isBgr {
 			continue
 		}

@@ -35,15 +35,13 @@ var btnSounds = true
 func button(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var prev = widget.ThemeId
-	var _, ownerDisabled = owner.Properties[field.Disabled]
-	var _, disabled = widget.Properties[field.Disabled]
 	var themePress = root.themedField(field.ButtonThemeIdPress, owner, widget)
 	var focus = widget.isFocused(root, cam)
 
 	if focus {
 		m.SetCursor(cursor.Hand)
 
-		if disabled || ownerDisabled {
+		if widget.isDisabled(owner) {
 			m.SetCursor(cursor.NotAllowed)
 		}
 
