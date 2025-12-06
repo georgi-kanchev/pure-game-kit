@@ -42,6 +42,14 @@ var TiledMaps = make(map[string]*Map)
 var TiledProjects = make(map[string]*Project)
 var TiledWorlds = make(map[string][2]float32) // used to store map offsets in the world when reloading maps
 
+var Screens []interface {
+	OnLoad()
+	OnEnter()
+	OnUpdate()
+	OnExit()
+}
+var CurrentScreen int
+
 //=================================================================
 
 var Cursor int
@@ -124,7 +132,6 @@ func Path(path string) string {
 
 var prevCursor int
 
-// timers from engine/execution/flow
 func updateTimers() {
 	for k, v := range CallAfter {
 		if Runtime > k {
@@ -143,8 +150,6 @@ func updateTimers() {
 		}
 	}
 }
-
-// keys & buttons + scroll from engine/input/keyboard & mouse
 func updateInput() {
 	AnyButtonPressedOnce = false
 	AnyButtonReleasedOnce = false
@@ -199,6 +204,11 @@ func updateAnimatedTiles() {
 		for _, tile := range tileset.AnimatedTiles {
 			tile.Update()
 		}
+	}
+}
+func updateScreens() {
+	if CurrentScreen >= 0 && CurrentScreen < len(Screens) {
+		Screens[CurrentScreen].OnUpdate()
 	}
 }
 
