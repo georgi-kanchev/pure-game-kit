@@ -28,15 +28,23 @@ func Log(message ...any) {
 		return
 	}
 
-	appendFile("\n" + elements(message...))
+	var content = "\n" + elements(message...)
+	appendFile(content)
 
 	if PrintLogs {
-		fmt.Println(elements(message...))
+		fmt.Println(content)
 	}
 }
 func LogError(message ...any) {
-	if !LoggingDisabled {
-		appendFile("\nERROR!\n" + callInfo(elements(message...)) + "\n")
+	if LoggingDisabled {
+		return
+	}
+
+	var content = "\nERROR!\n" + callInfo(elements(message...)) + "\n"
+	appendFile(content)
+
+	if PrintLogs {
+		fmt.Println(content)
 	}
 }
 
