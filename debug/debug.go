@@ -31,22 +31,20 @@ func Log(message ...any) {
 	appendFile("\n" + elements(message...))
 
 	if PrintLogs {
-		Print(message...)
+		fmt.Println(elements(message...))
 	}
 }
 func LogError(message ...any) {
-	if LoggingDisabled {
-		return
+	if !LoggingDisabled {
+		appendFile("\nERROR!\n" + callInfo(elements(message...)) + "\n")
 	}
-
-	appendFile("\nERROR!\n" + callInfo(elements(message...)) + "\n")
 }
 
 func Print(message ...any) {
 	fmt.Println(elements(message...))
 
-	if LogPrints {
-		Log(message...)
+	if !LoggingDisabled && LogPrints {
+		appendFile("\n" + elements(message...))
 	}
 }
 func PrintLinesOfCode() {

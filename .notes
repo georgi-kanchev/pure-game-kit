@@ -6,6 +6,7 @@ shape/sprite shadow draw?
 [116] [Sat] [06-12-2025]
 utility - collection sort numbers & strings
 utility - collection map keys & values
+debug - fix recursive log/print
 
 [115] [Wed] [03-12-2025]
 renamed build scripts
