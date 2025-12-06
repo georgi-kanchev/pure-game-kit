@@ -361,3 +361,14 @@ func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) strin
 	}
 	return builder.ToText()
 }
+
+func SortNumbers[T number.Number](collection []T) {
+	if len(collection) != 0 {
+		slices.Sort(collection)
+	}
+}
+func SortTexts(collection []string) {
+	if len(collection) != 0 {
+		slices.Sort(collection)
+	}
+}
