@@ -362,13 +362,28 @@ func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) strin
 	return builder.ToText()
 }
 
-func SortNumbers[T number.Number](collection []T) {
+func SortNumbers[T number.Number](collection ...T) {
 	if len(collection) != 0 {
 		slices.Sort(collection)
 	}
 }
-func SortTexts(collection []string) {
+func SortTexts(collection ...string) {
 	if len(collection) != 0 {
 		slices.Sort(collection)
 	}
+}
+
+func MapKeys[K comparable, V any](Map map[K]V) []K {
+	var keys = make([]K, 0, len(Map))
+	for k := range Map {
+		keys = append(keys, k)
+	}
+	return keys
+}
+func MapValues[K comparable, V any](Map map[K]V) []V {
+	var values = make([]V, 0, len(Map))
+	for _, v := range Map {
+		values = append(values, v)
+	}
+	return values
 }
