@@ -1,3 +1,5 @@
+// A very simple terminal-like command creation and execution.
+// Turns a line of text (string command name + string parameters) into custom code execution.
 package command
 
 import (
@@ -12,12 +14,12 @@ func New(name string, execution func(parameters []string) (output string)) {
 
 //=================================================================
 
-// example
+// Command examples:
 //
-//	"command_name: param0, param1, param2"
-//	"log_messages: `hello, world!`, 1, 2, 3, 4, true, false, true"
-//	"debug: true"
-//	"change_window_title: `My own window!`"
+//	command_name: param0, param1, param2
+//	log_messages: `hello, world!`, 1, 2, 3, 4, true, false, true
+//	debug: true
+//	change_window_title: `My own window!`
 func Execute(command string) (output string) {
 	command = text.Trim(text.Remove(command, "\r", "\n"))
 	var replaced, originals = internal.ReplaceQuotedStrings(command, quote, internal.Placeholder)

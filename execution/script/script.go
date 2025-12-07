@@ -1,3 +1,6 @@
+// Lua modding. A way to execute complex code from a string/file, as well as that string/file
+// executing any provided functions. Some very basic Lua modules are included - everything else
+// is excluded for security reasons, especially file manipulation.
 package script
 
 import (
@@ -19,7 +22,7 @@ func New() *Script {
 	return &Script{state: state}
 }
 
-func (s *Script) AddFunction(functionName string, function any) {
+func (script *Script) AddFunction(functionName string, function any) {
 	var rv = reflect.ValueOf(function)
 	var rt = rv.Type()
 
@@ -63,7 +66,7 @@ func (s *Script) AddFunction(functionName string, function any) {
 		return len(out)
 	}
 
-	s.state.SetGlobal(functionName, s.state.NewFunction(luaFn))
+	script.state.SetGlobal(functionName, script.state.NewFunction(luaFn))
 }
 func (script *Script) ExecuteCode(code string) bool {
 	var err = script.state.DoString(code)

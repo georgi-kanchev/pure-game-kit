@@ -1,3 +1,4 @@
+// Wraps some essential OS/IO file functionalities to make them more digestible and clarify their API.
 package file
 
 import (

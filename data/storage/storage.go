@@ -1,3 +1,5 @@
+// Wraps the JSON & XML formats, as well as some byte compression/decompression functionalities to make
+// them more digestible and clarify their API.
 package storage
 
 import (

@@ -1,3 +1,4 @@
+// A combined controller for the Sound & Music assets. It exists independently of the assets.
 package audio
 
 import (
@@ -22,7 +23,7 @@ type Audio struct {
 	time, duration float32
 
 	// this field does not contain the sound data
-	// it's in internal.Sounds which this instance just uses  as raylib alias
+	// it's in internal.Sounds which this instance just uses as a raylib alias
 	instance *rl.Sound
 }
 

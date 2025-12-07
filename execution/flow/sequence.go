@@ -1,3 +1,7 @@
+// Mimics the async/await paradigm by providing predetermined steps (rules) and then navigating them.
+// Makes it easier to delay code execution linearly (without nesting) by a known period of time or by
+// waiting for a specific signal. May also be used as an advanced state machine that executes states
+// according to different rules, instead of constantly pumping updates.
 package flow
 
 import (

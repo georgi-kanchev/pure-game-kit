@@ -1,3 +1,15 @@
+// A dead-simple screen/scene manager. Essentially a global state machine with some
+// scene-specific interface callback functions that always updates the current screen/scene.
+// Does not require manual updating since it is hooked to the engine pump.
+// Because of that, the main game loop may remain empty:
+//
+//	// create screens here...
+//
+//	for window.KeepOpen() {
+//	// empty game loop
+//	}
+//
+// since each screen would be handled elsewhere.
 package screens
 
 import "pure-game-kit/internal"

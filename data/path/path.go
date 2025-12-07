@@ -1,3 +1,6 @@
+// Wraps some essential OS/IO path functionalities to make them more digestible and clarify their API.
+//
+// None of those functionalities rely on existing files or folders, they simply operate on a string.
 package path
 
 import (

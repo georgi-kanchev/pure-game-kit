@@ -11,6 +11,8 @@ gui - fixed container contents being offset incorrectly when first widget has Ne
 gui - fixed offset fields not accounted for visual texts
 gui - multiple xmls joined into a single gui constructor
 gui - button toggle widgets field + functionality
+started package descriptions
+some name/description fixes
 
 [116] [Sat] [06-12-2025]
 utility - collection sort numbers & strings
