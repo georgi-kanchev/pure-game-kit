@@ -68,10 +68,11 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	if root.IsButtonJustClicked(widget.Id, cam) { // handling any widgets that this button toggles
 		for _, wId := range owner.Widgets {
 			var curWidget = root.Widgets[wId]
-			var treeParentId = root.themedField(field.ToggleButtonId, owner, curWidget)
-			if treeParentId == widget.Id {
+			var toggleParentId = root.themedField(field.ToggleButtonId, owner, curWidget)
+			if toggleParentId == widget.Id {
 				var hidden = curWidget.Fields[field.Hidden]
-				curWidget.Fields[field.Hidden] = condition.If(hidden == "", "1", "")
+				var newHidden = condition.If(hidden == "", "1", "")
+				curWidget.Fields[field.Hidden] = newHidden
 			}
 		}
 	}

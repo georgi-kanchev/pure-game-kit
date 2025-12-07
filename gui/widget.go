@@ -41,3 +41,10 @@ func (widget *widget) isDisabled(owner *container) bool {
 
 	return disabled || ownerDisabled
 }
+func (widget *widget) isHidden(root *root, owner *container) bool {
+	var toggleParentId = root.themedField(field.ToggleButtonId, owner, widget)
+	var toggleParent = root.Widgets[toggleParentId]
+	var hidden = widget.Fields[field.Hidden] != ""
+	var parentHidden = toggleParent != nil && toggleParent.isHidden(root, owner)
+	return hidden || parentHidden
+}

@@ -124,6 +124,8 @@ func GUIs() {
 		gui.Button("btn4", f.Text, "Child3", f.ToggleButtonId, "btn1", f.OffsetX, "50", f.NewRow, ""),
 		gui.Button("btn5", f.Text, "Parent2", f.NewRow, ""),
 		gui.Button("btn6", f.Text, "Child", f.ToggleButtonId, "btn5", f.OffsetX, "50", f.NewRow, ""),
+		gui.Button("btn7", f.Text, "Nested", f.ToggleButtonId, "btn5", f.OffsetX, "50", f.NewRow, ""),
+		gui.Button("btn8", f.Text, "Deep", f.ToggleButtonId, "btn7", f.OffsetX, "100", f.NewRow, ""),
 		gui.Visual("divider-3", f.AssetId, box[12], f.BoxEdgeTop, "0", f.BoxEdgeBottom, "0", f.NewRow, "",
 			f.Width, "820", f.Height, "40"),
 		gui.Draggable("slot-1", f.NewRow, "50", f.Width, "200", f.Height, "200", f.AssetId, box[0],
