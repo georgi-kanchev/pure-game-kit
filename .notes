@@ -2,6 +2,15 @@
 shader effects, port?
 simple particles, port?
 shape/sprite shadow draw?
+gui button would be nice to be able to press multiple hotkeys at once
+
+[117] [Sun] [07-12-2025]
+gui - fixed menus not hiding correctly
+gui - fixed scroll not accounting hidden widgets correctly
+gui - fixed container contents being offset incorrectly when first widget has NewRow field
+gui - fixed offset fields not accounted for visual texts
+gui - multiple xmls joined into a single gui constructor
+gui - button toggle widgets field + functionality
 
 [116] [Sat] [06-12-2025]
 utility - collection sort numbers & strings

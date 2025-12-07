@@ -14,7 +14,7 @@ import (
 func main() {
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewFromXML(gui.NewElementsXML(
+	var hud = gui.NewFromXMLs(gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, d.OwnerWidth+"-40", f.Height, "100", f.GapY, "50",
 			f.TextAlignmentX, "0", f.TextAlignmentY, "0.5", f.TextColor, "0 0 0 255",
@@ -42,7 +42,7 @@ func main() {
 		// ======================================================
 		gui.Visual("description", f.Text, "`pure-game-kit `- simple 2D game engine\n`~  ~  ~  Examples  ~  ~  ~",
 			f.AssetId, "", f.Color, "0 0 0 0", f.Width, "1500", f.Height, d.OwnerHeight+"-90",
-			f.OffsetX, "30", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5", f.TextColor, "255 255 255 255",
+			f.OffsetX, "15", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5", f.TextColor, "255 255 255 255",
 			f.TextLineHeight, "100", f.TextColorOutline, "0 0 0 255", f.TextThicknessOutline, "0.95",
 			f.TextEmbeddedColor1, "255 0 0 255", f.TextEmbeddedColor2, "0 255 255 255",
 			f.TextEmbeddedColor3, "255 255 255 255"),

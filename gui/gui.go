@@ -16,13 +16,36 @@ type GUI struct {
 	root   *root
 }
 
-func NewFromXML(xmlData string) *GUI {
+// Joins multiple XMLs into a single GUI - useful for splitting single large files into multiple.
+// Keep in mind that the GUI will have the Scale & Volume of only the first XML, the rest are ignored.
+func NewFromXMLs(xmlsData ...string) *GUI {
 	var gui = GUI{root: &root{}}
-	storage.FromXML(xmlData, &gui.root)
+	var roots []*root
+
+	for i, xmlData := range xmlsData {
+		if xmlData == "" {
+			continue
+		}
+
+		var root = &root{}
+		storage.FromXML(xmlData, &root)
+
+		if i == 0 { // only take scale & volume from the first xml
+			gui.root.XmlScale = root.XmlScale
+			gui.root.XmlVolume = root.XmlVolume
+		}
+
+		roots = append(roots, root)
+	}
 
 	gui.root.Containers = map[string]*container{}
 	gui.root.Widgets = map[string]*widget{}
 	gui.root.Themes = map[string]*theme{}
+	gui.root.ContainerIds = []string{}
+
+	for _, r := range roots { // merge contents from all xml roots
+		gui.root.XmlContainers = append(gui.root.XmlContainers, r.XmlContainers...)
+	}
 
 	for _, c := range gui.root.XmlContainers {
 		var cId = c.XmlProps[0].Value
@@ -72,6 +95,11 @@ func NewFromXML(xmlData string) *GUI {
 	gui.Volume = gui.root.XmlVolume
 	return &gui
 }
+
+// Constructs an XML from a chain of elements (Widgets, Containers and Themes) with Scale & Volume of 1.
+// Useful for creating the GUI in an autocompleted code environment instead of in a raw XML file.
+//
+//	gui.NewFromXMLs(...) // <- put the resulting XML in here to create the GUI
 func NewElementsXML(elements ...string) string {
 	var result = "<GUI scale=\"1\" volume=\"1\">"
 
@@ -162,7 +190,7 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	restore(camera, prevAng, prevZoom, prevX, prevY) // undo what reset does, everything as it was for cam
 }
 
-// works for widgets & containers
+// Works for Widgets & Containers.
 func (gui *GUI) SetField(id, field string, value string) {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
@@ -181,7 +209,7 @@ func (gui *GUI) SetField(id, field string, value string) {
 
 //=================================================================
 
-// works for widgets & containers
+// Works for Widgets & Containers.
 func (gui *GUI) Field(id, field string) string {
 	var w, hasW = gui.root.Widgets[id]
 	var c, hasC = gui.root.Containers[id]
@@ -216,7 +244,7 @@ func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 	return false
 }
 
-// works for widgets & containers
+// Works for Widgets & Containers.
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
 	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()
@@ -234,7 +262,7 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	return false
 }
 
-// works for widgets & containers
+// Works for Widgets & Containers.
 func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
 	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()

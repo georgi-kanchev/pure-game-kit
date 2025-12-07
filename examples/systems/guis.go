@@ -15,7 +15,7 @@ func GUIs() {
 	var cam = graphics.NewCamera(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons()
 	var _, ids, box = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewFromXML(gui.NewElementsXML(
+	var hud = gui.NewFromXMLs(gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, "300", f.Height, "100", f.GapX, "20", f.GapY, "20",
 			f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
@@ -63,7 +63,7 @@ func GUIs() {
 			f.GapY, "20", f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
 			f.AssetId, box[9]),
 		// ======================================================
-		gui.Container("panel", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "650",
+		gui.Container("panel", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1100",
 			f.ThemeId, "button", f.GapX, "40", f.GapY, "20"),
 		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
 		// ======================================================
@@ -77,7 +77,10 @@ func GUIs() {
 			f.TooltipText, "Press this button to do absolutely nothing.", f.ButtonHotkey, "A"),
 		gui.Visual("stepper", f.AssetId, box[9], f.Text, "10/10", f.TextAlignmentY, "0.5", f.GapX, "0",
 			f.TextColor, "150 150 150 255"),
-		gui.Button("step-right", f.Width, "100", f.TextEmbeddedAssetId1, icons[212], f.Text, "^^", f.GapX, "0"),
+		gui.Button("step-right", f.Width, "100", f.TextEmbeddedAssetId1, icons[212], f.Text, "^^", f.GapX, "0",
+			f.ButtonHotkey, "D"),
+		gui.Visual("hotkey-info", f.ThemeId, "label", f.Text, "(press A or D)", f.Width, "800",
+			f.TextColor, "127 127 127"),
 		gui.Visual("checkbox-label", f.ThemeId, "label", f.Text, "Checkbox", f.NewRow, ""),
 		gui.Checkbox("checkbox", f.ThemeId, "checkbox-off", f.CheckboxThemeId, "checkbox-on"),
 		gui.Menu("dropdown", f.NewRow, "", f.AssetId, box[9], f.Text, "^^ List selection", f.Width, "820",
@@ -115,6 +118,14 @@ func GUIs() {
 			f.CheckboxGroup, "radio"),
 		gui.Visual("divider-2", f.AssetId, box[12], f.BoxEdgeTop, "0", f.BoxEdgeBottom, "0", f.NewRow, "",
 			f.Width, "820", f.Height, "40"),
+		gui.Button("btn1", f.Text, "Parent1", f.NewRow, ""),
+		gui.Button("btn2", f.Text, "Child1", f.ToggleButtonId, "btn1", f.OffsetX, "50", f.NewRow, ""),
+		gui.Button("btn3", f.Text, "Child2", f.ToggleButtonId, "btn1", f.OffsetX, "50", f.NewRow, ""),
+		gui.Button("btn4", f.Text, "Child3", f.ToggleButtonId, "btn1", f.OffsetX, "50", f.NewRow, ""),
+		gui.Button("btn5", f.Text, "Parent2", f.NewRow, ""),
+		gui.Button("btn6", f.Text, "Child", f.ToggleButtonId, "btn5", f.OffsetX, "50", f.NewRow, ""),
+		gui.Visual("divider-3", f.AssetId, box[12], f.BoxEdgeTop, "0", f.BoxEdgeBottom, "0", f.NewRow, "",
+			f.Width, "820", f.Height, "40"),
 		gui.Draggable("slot-1", f.NewRow, "50", f.Width, "200", f.Height, "200", f.AssetId, box[0],
 			f.DraggableSpriteId, icons[50]),
 		gui.Draggable("slot-2", f.Width, "200", f.Height, "200", f.AssetId, box[0], f.DraggableSpriteId, icons[100]),
@@ -146,6 +157,8 @@ func GUIs() {
 	assets.LoadDefaultSoundsUI()
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
+
+	hud.Scale = 1.01
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()

@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
 	k "pure-game-kit/input/keyboard"
@@ -52,14 +53,26 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 		tryPress(m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left), btnSounds, themePress, widget, root, owner)
 	}
 
-	if typingIn == nil { // no hotkeys while typing
-		var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
+	var hotkeyStr = root.themedField(field.ButtonHotkey, owner, widget)
+	if typingIn == nil && hotkeyStr != "" { // no hotkeys while typing
+		var hotkey = key.FromName(hotkeyStr)
 		tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, widget, root, owner)
 
 		if btnSounds && root.IsButtonJustClicked(widget.Id, cam) {
 			sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), "~release")
 			sound.Volume = root.Volume
 			sound.Play()
+		}
+	}
+
+	if root.IsButtonJustClicked(widget.Id, cam) { // handling any widgets that this button toggles
+		for _, wId := range owner.Widgets {
+			var curWidget = root.Widgets[wId]
+			var treeParentId = root.themedField(field.ToggleButtonId, owner, curWidget)
+			if treeParentId == widget.Id {
+				var hidden = curWidget.Fields[field.Hidden]
+				curWidget.Fields[field.Hidden] = condition.If(hidden == "", "1", "")
+			}
 		}
 	}
 

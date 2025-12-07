@@ -29,7 +29,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 	var visible = c.Fields[field.Hidden] == ""
 
 	if has && root.IsButtonJustClicked(widget.Id, cam) {
-		c.Fields[field.Hidden] = condition.If(visible, "+", "")
+		c.Fields[field.Hidden] = condition.If(visible, "1", "")
 		c.Fields[field.X] = text.New(widget.X)
 		c.Fields[field.Y] = text.New(widget.Y + widget.Height)
 		visible = !visible
@@ -47,7 +47,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 
 	if anyButton || mouse.Scroll() != 0 || !window.IsHovered() || escape {
 		if escape || (has && !c.isFocused(cam)) {
-			c.Fields[field.Hidden] = "+"
+			c.Fields[field.Hidden] = "1"
 			visible = false
 		}
 	}

@@ -91,7 +91,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 			cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight) // mask doesn't affect bgr
 		} else {
 			var row, newRow = widget.Fields[f.NewRow]
-			if newRow {
+			if newRow && nonBgrIndex > 0 { // new row doesn't work for first element
 				curX = x + cGapX
 				curY += parseNum(dyn(c, row, text.New(maxHeight+gapY)), 0)
 				maxHeight = 0
@@ -292,7 +292,8 @@ func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, m
 	for _, w := range c.Widgets {
 		var widget = root.Widgets[w]
 		var _, isBgr = widget.Fields[f.FillContainer]
-		if isBgr {
+		var wHidden, _ = widget.Fields[f.Hidden]
+		if isBgr || wHidden != "" || widget.Class == "tooltip" {
 			continue
 		}
 

@@ -36,8 +36,7 @@ func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) 
 	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
 	var focus = widget.isFocused(root, camera) && wPressedOn == widget
 	var input = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustReleased(b.Left))
-
-	return exists && input
+	return input
 }
 func (root *root) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
 	var widget, exists = root.Widgets[buttonId]

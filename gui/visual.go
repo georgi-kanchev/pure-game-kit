@@ -61,8 +61,10 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	}
 
 	var disabled = widget.isDisabled(owner)
+	var offX = parseNum(dyn(owner, widget.Fields[p.OffsetX], "0"), 0)
+	var offY = parseNum(dyn(owner, widget.Fields[p.OffsetY], "0"), 0)
 	textBox.ScaleX, textBox.ScaleY = 1, 1
-	textBox.X, textBox.Y = widget.X, widget.Y
+	textBox.X, textBox.Y = widget.X+offX, widget.Y+offY
 	textBox.EmbeddedColorsTag = '`'
 	textBox.EmbeddedAssetsTag = '^'
 	textBox.EmbeddedThicknessesTag = '*'

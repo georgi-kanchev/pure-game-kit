@@ -17,22 +17,23 @@ const (
 	TargetId = "targetId" // [container]
 
 	Value         = "value"         // [widget]
-	FillContainer = "fillContainer" // [widget]
-	NewRow        = "newRow"        // [widget] example: "200", "" = GapY
+	FillContainer = "fillContainer" // [widget] treated as the graphics of its container, not a standalone widget
+	NewRow        = "newRow"        // [widget] skipped for first widget in container; example: "200", "" = GapY
 	OffsetX       = "offsetX"       // [widget]
 	OffsetY       = "offsetY"       // [widget]
 	TooltipText   = "tooltipText"   // [widget]
 
-	TooltipId     = "tooltipId"     // [widget] [theme]
-	TooltipMargin = "tooltipMargin" // [widget] [theme]
-	TooltipSound  = "tooltipSound"  // [widget] [theme] default: "~popup"
-	Color         = "color"         // [widget] [theme] example: "255 0 0 255"
-	FrameColor    = "frameColor"    // [widget] [theme] example: "255 0 0 255"
-	FrameSize     = "frameSize"     // [widget] [theme] positive outward, negative inward
-	BoxEdgeLeft   = "boxEdgeLeft"   // [widget] [theme]
-	BoxEdgeRight  = "boxEdgeRight"  // [widget] [theme]
-	BoxEdgeTop    = "boxEdgeTop"    // [widget] [theme]
-	BoxEdgeBottom = "boxEdgeBottom" // [widget] [theme]
+	ToggleButtonId = "toggleButtonId" // [widget] [theme] hides/shows widget when button is clicked
+	TooltipId      = "tooltipId"      // [widget] [theme]
+	TooltipMargin  = "tooltipMargin"  // [widget] [theme]
+	TooltipSound   = "tooltipSound"   // [widget] [theme] default: "~popup"
+	Color          = "color"          // [widget] [theme] example: "255 0 0 255"
+	FrameColor     = "frameColor"     // [widget] [theme] example: "255 0 0 255"
+	FrameSize      = "frameSize"      // [widget] [theme] positive outward, negative inward
+	BoxEdgeLeft    = "boxEdgeLeft"    // [widget] [theme]
+	BoxEdgeRight   = "boxEdgeRight"   // [widget] [theme]
+	BoxEdgeTop     = "boxEdgeTop"     // [widget] [theme]
+	BoxEdgeBottom  = "boxEdgeBottom"  // [widget] [theme]
 
 	Text                  = "text"                  // [widget] [theme]
 	TextFontId            = "textFontId"            // [widget] [theme]
@@ -71,7 +72,7 @@ const (
 	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
 	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
 	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
-	ButtonHotkey         = "buttonHotkey"         // [widget] [theme]
+	ButtonHotkey         = "buttonHotkey"         // [widget] [theme] one button hotkey can be pressed at all times
 	ButtonSoundPress     = "buttonSoundPress"     // [widget] [theme] default: "~press"
 	ButtonSoundRelease   = "buttonSoundRelease"   // [widget] [theme] default: "~release"
 
