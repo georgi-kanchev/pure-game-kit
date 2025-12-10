@@ -1,3 +1,7 @@
+// Uses lines and line-constructed shapes to determine collisions and their cross points.
+// Shapes can also resolve collisions, as well as chunk themselves efficiently, speeding up
+// calculations. Contains a way to find the shortest path on a grid of shapes,
+// as well as following the shortest path segments on a predetermined set of paths (network).
 package geometry
 
 import (
@@ -6,6 +10,8 @@ import (
 	"pure-game-kit/utility/point"
 )
 
+// The sole building block of the entire geometry package, represented by two points, A & B.
+// Very useful for collision checks and raycasts when dealing with multiple lines.
 type Line struct{ Ax, Ay, Bx, By float32 }
 
 func NewLine(ax, ay, bx, by float32) Line {

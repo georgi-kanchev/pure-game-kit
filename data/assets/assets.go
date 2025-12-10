@@ -4,6 +4,10 @@
 //
 // Optionally, some embedded default images, sounds and a font may be loaded as a placeholder
 // to get things on-screen quickly.
+//
+// Requires a window because textures & fonts need their OpenGL context,
+// and audio needs a device & context to be created.
+// Will force initialize a new window whenever needed if there is none.
 package assets
 
 import (

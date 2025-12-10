@@ -4,7 +4,7 @@
 package debug
 
 // this package shouldn't have any engine dependencies
-// because every other package should be able to use it (avoid circular dependency)
+// because every other package should be able to use its error logging (avoid circular dependency)
 import (
 	"bufio"
 	"bytes"
