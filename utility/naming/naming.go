@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/flag"
 	"pure-game-kit/utility/naming/casing"
-	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/random"
 	txt "pure-game-kit/utility/text"
 )
@@ -19,7 +18,7 @@ func Apply(text string, naming int, divider string) string {
 
 	if naming == casing.Random {
 		var result = txt.NewBuilder()
-		var randBool = random.Range(0, 1, number.NaN()) < 0.5
+		var randBool = random.Range(0.0, 1.0) < 0.5
 		for _, r := range text {
 			if randBool {
 				result.WriteSymbol(unicode.ToLower(r))

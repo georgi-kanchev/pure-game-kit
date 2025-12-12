@@ -6,81 +6,99 @@ import (
 	"time"
 )
 
-var CurrentSeed = number.NaN()
-
-func Seed(keys ...float32) float32 {
-	var ints = make([]int, len(keys))
-	for i := range ints {
-		ints[i] = floatToIntSeed(keys[i])
-	}
-	return float32(SeedInts(ints...))
-}
-func SeedInts(keys ...int) int {
-	var seed = uint64(2654435769)
-	for _, p := range keys {
-		seed = hashSeed(seed, uint64(p))
-	}
-	return int(seed)
-}
-
-func Range(a, b, seed float32) float32 {
-	if a == b {
-		return a
-	}
-	if a > b {
-		a, b = b, a
+func CombineSeeds[T number.Number](seeds ...T) T {
+	if len(seeds) == 0 {
+		var zero T
+		switch any(zero).(type) {
+		case float32:
+			return T(number.NaN())
+		case float64:
+			return T(math.NaN())
+		}
+		return 0
 	}
 
-	if seed != seed { // is NaN
-		seed = float32(time.Now().UnixNano()%1e9) / 1e9 // value in [0,1)
+	var compact = make([]uint64, len(seeds))
+	switch any(seeds[0]).(type) {
+	case int, int8, int16, int32, int64:
+		for i, s := range seeds {
+			compact[i] = uint64(int64(s))
+		}
+	case uint, uint8, uint16, uint32, uint64:
+		for i, s := range seeds {
+			compact[i] = uint64(s)
+		}
+	case float32, float64:
+		for i, s := range seeds {
+			compact[i] = uint64(float64(s) * 1e9)
+		}
 	}
 
-	var diff = b - a
-	var intSeed = int(seed * 2147483647)
-	intSeed = (1103515245*intSeed + 12345) % 2147483647
-	var normalized = float32(intSeed) / 2147483647.0
-	return a + normalized*diff
-}
-func RangeInt(a, b int, seed float32) int {
-	return int(Range(float32(a), float32(b), seed))
+	var out = combineSeeds(compact...) // hash everything to one uint64
+	var zero T                         // convert uint64 result back to T
+	switch any(zero).(type) {
+	case int:
+		return T(int(out))
+	case int8:
+		return T(int8(out))
+	case int16:
+		return T(int16(out))
+	case int32:
+		return T(int32(out))
+	case int64:
+		return T(int64(out))
+	case uint:
+		return T(uint(out))
+	case uint8:
+		return T(uint8(out))
+	case uint16:
+		return T(uint16(out))
+	case uint32:
+		return T(uint32(out))
+	case uint64:
+		return T(uint64(out))
+	case float32:
+		return T(float32(out))
+	case float64:
+		return T(float64(out))
+	}
+	panic("unsupported type")
 }
 
-func HasChance(percent float32) bool {
-	return HasChanceSeeded(percent, number.NaN())
+func Range[T number.Number](a, b T, seeds ...float32) T {
+	switch any(a).(type) {
+	case int, int8, int16, int32, int64:
+		return T(rangeInt(int64(a), int64(b), seeds...))
+	case uint, uint8, uint16, uint32, uint64:
+		return T(rangeInt(uint64(a), uint64(b), seeds...))
+	case float32, float64:
+		return T(rangeFloat(float64(a), float64(b), seeds...))
+	}
+	panic("unsupported type")
 }
-func HasChanceSeeded(percent, seed float32) bool {
+func HasChance(percent float32, seeds ...float32) bool {
 	if percent <= 0 {
 		return false
 	}
-	return Range(0, 100, seed) <= number.Smallest(100, percent)
+	return Range(float32(0), 100, seeds...) <= number.Smallest(100, percent)
 }
 
-func Shuffle[T any](items ...T) {
-	ShuffleSeeded(number.NaN(), items...)
-}
-func ShuffleSeeded[T any](seed float32, items ...T) {
+func Shuffle[T any](items []T, seeds ...float32) []T {
 	for i := len(items) - 1; i > 0; i-- {
-		var j = RangeInt(0, i, seed)
+		var j = Range(0, i, seeds...)
 		items[i], items[j] = items[j], items[i]
 	}
+	return items
+}
+func Pick[T any](items ...T) T {
+	return PickFrom(items)
+}
+func PickFrom[T any](items []T, seeds ...float32) T {
+	return items[Range(0, len(items), seeds...)]
 }
 
-func PickMultiple[T any](count int, items ...T) []T {
-	return chooseMultipleInternal(items, count, number.NaN())
-}
-func PickMultipleSeeded[T any](count int, seed float32, items ...T) []T {
-	return chooseMultipleInternal(items, count, seed)
-}
-
-func PickOne[T any](items ...T) *T {
-	return singlePointer(chooseMultipleInternal(items, 1, number.NaN()))
-}
-func PickOneSeeded[T any](seed float32, items ...T) *T {
-	return singlePointer(chooseMultipleInternal(items, 1, seed))
-}
-
-func NoisePerlin(x, y, scale, seed float32) float32 {
-	var intSeed = floatToIntSeed(seed)
+func NoisePerlin(x, y, scale float32, seeds ...float32) float32 {
+	var intSeed = floatToIntSeed(CombineSeeds(seeds...))
 	var gradients = [8][2]float32{
 		{1, 0}, {-1, 0}, {0, 1}, {0, -1},
 		{1, 1}, {-1, 1}, {1, -1}, {-1, -1},
@@ -88,7 +106,7 @@ func NoisePerlin(x, y, scale, seed float32) float32 {
 	var fade = func(t float32) float32 { return t * t * t * (t*(t*6-15) + 10) }
 	var lerp = func(a, b, t float32) float32 { return a + t*(b-a) }
 	var dot = func(ix, iy int, x, y float32) float32 {
-		var hash = SeedInts(intSeed, ix, iy)
+		var hash = CombineSeeds(intSeed, ix, iy)
 		var g = gradients[hash%8]
 		var dx = x - float32(ix)
 		var dy = y - float32(iy)
@@ -108,8 +126,8 @@ func NoisePerlin(x, y, scale, seed float32) float32 {
 
 	return (value + 1) / 2 // normalized from [-1, 1] to [0, 1]
 }
-func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
-	var intSeed = floatToIntSeed(seed)
+func NoiseOpenSimplex(x, y, scale float32, seeds ...float32) float32 {
+	var intSeed = floatToIntSeed(CombineSeeds(seeds...))
 	const stretch2D = -0.211324865405187 // (1/sqrt(2+1)-1)/2
 	const squish2D = 0.366025403784439   // (sqrt(2+1)-1)/2
 	const norm2D = 47.0
@@ -119,7 +137,7 @@ func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
 		{5, -2}, {2, -5}, {-5, -2}, {-2, -5},
 	}
 	var getPerm = func(i, j int) int {
-		var subSeed = SeedInts(intSeed, i, j)
+		var subSeed = CombineSeeds(intSeed, i, j)
 		var r = Range(0, 255, float32(subSeed))
 		return int(r) & 255
 	}
@@ -163,20 +181,20 @@ func NoiseOpenSimplex(x, y, scale, seed float32) float32 {
 
 	return number.Limit(value/norm2D+0.5, 0, 1)
 }
-func NoiseWorley(x, y, scale, seed float32) float32 {
+func NoiseWorley(x, y, scale float32, seeds ...float32) float32 {
 	x *= scale
 	y *= scale
 
 	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
 	var minDist = number.Infinity()
-	var instSeed = floatToIntSeed(seed)
+	var intSeed = floatToIntSeed(CombineSeeds(seeds...))
 
 	for dy := int(-1); dy <= 1; dy++ {
 		for dx := int(-1); dx <= 1; dx++ {
 			var ix, iy = xi + dx, yi + dy
-			var cellSeed = SeedInts(instSeed, ix, iy)
-			var fx, fy = Range(0, 1, float32(cellSeed)), Range(0, 1, float32(cellSeed+1))
-			var cx, cy = float32(ix) + fx, float32(iy) + fy
+			var cellSeed = CombineSeeds(intSeed, ix, iy)
+			var fx, fy = Range(0.0, 1.0, float32(cellSeed)), Range(0.0, 1.0, float32(cellSeed+1))
+			var cx, cy = float32(ix) + float32(fx), float32(iy) + float32(fy)
 			var dx, dy = cx - x, cy - y
 			var dist = dx*dx + dy*dy
 
@@ -191,10 +209,11 @@ func NoiseWorley(x, y, scale, seed float32) float32 {
 	var result = float32(number.SquareRoot(minDist) / sqrt2)
 	return number.Limit(result, 0, 1)
 }
-func NoiseVoronoi(x, y, scale, seed float32) float32 {
+func NoiseVoronoi(x, y, scale float32, seeds ...float32) float32 {
 	x *= scale
 	y *= scale
 
+	var seed = CombineSeeds(seeds...)
 	var intSeed = floatToIntSeed(seed)
 	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
 	var minDist = number.Infinity()
@@ -203,9 +222,9 @@ func NoiseVoronoi(x, y, scale, seed float32) float32 {
 	for dy := int(-1); dy <= 1; dy++ {
 		for dx := int(-1); dx <= 1; dx++ {
 			var ix, iy = xi + dx, yi + dy
-			var cellSeed = SeedInts(intSeed, ix, iy)
-			var fx, fy = Range(0, 1, float32(cellSeed)), Range(0, 1, float32(cellSeed+1))
-			var cx, cy = float32(ix) + fx, float32(iy) + fy
+			var cellSeed = CombineSeeds(intSeed, ix, iy)
+			var fx, fy = Range(0.0, 1.0, float32(cellSeed)), Range(0.0, 1.0, float32(cellSeed+1))
+			var cx, cy = float32(ix) + float32(fx), float32(iy) + float32(fy)
 			var dx, dy = cx - x, cy - y
 			var dist = dx*dx + dy*dy
 
@@ -216,33 +235,33 @@ func NoiseVoronoi(x, y, scale, seed float32) float32 {
 		}
 	}
 
-	var regionID = SeedInts(floatToIntSeed(seed), closestFeature[0], closestFeature[1])
-	var regionVal = Range(0, 1, float32(regionID))
-	return regionVal
+	var regionID = CombineSeeds(floatToIntSeed(seed), closestFeature[0], closestFeature[1])
+	var regionVal = Range(0.0, 1.0, float32(regionID))
+	return float32(regionVal)
 }
-func NoiseValue(x, y, scale, seed float32) float32 {
+func NoiseValue(x, y, scale float32, seeds ...float32) float32 {
 	x *= scale
 	y *= scale
 
-	var intSeed = floatToIntSeed(seed)
+	var intSeed = floatToIntSeed(CombineSeeds(seeds...))
 	var lerp = func(a, b, t float32) float32 { return a + t*(b-a) }
 	var smoothstep = func(t float32) float32 { return t * t * (3 - 2*t) }
 	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
 	var xf, yf = x - float32(xi), y - float32(yi)
-	var seed00, seed10 = SeedInts(intSeed, xi, yi), SeedInts(intSeed, xi+1, yi)
-	var seed01, seed11 = SeedInts(intSeed, xi, yi+1), SeedInts(intSeed, xi+1, yi+1)
-	var v00, v10 = Range(0, 1, float32(seed00)), Range(0, 1, float32(seed10))
-	var v01, v11 = Range(0, 1, float32(seed01)), Range(0, 1, float32(seed11))
+	var seed00, seed10 = CombineSeeds(intSeed, xi, yi), CombineSeeds(intSeed, xi+1, yi)
+	var seed01, seed11 = CombineSeeds(intSeed, xi, yi+1), CombineSeeds(intSeed, xi+1, yi+1)
+	var v00, v10 = Range(0.0, 1.0, float32(seed00)), Range(0.0, 1.0, float32(seed10))
+	var v01, v11 = Range(0.0, 1.0, float32(seed01)), Range(0.0, 1.0, float32(seed11))
 	var u, v = smoothstep(xf), smoothstep(yf)
-	var i1, i2 = lerp(v00, v10, u), lerp(v01, v11, u)
+	var i1, i2 = lerp(float32(v00), float32(v10), u), lerp(float32(v01), float32(v11), u)
 
 	return lerp(i1, i2, v)
 }
-func NoiseValueCubic(x, y, scale, seed float32) float32 {
+func NoiseValueCubic(x, y, scale float32, seeds ...float32) float32 {
 	x *= scale
 	y *= scale
 
-	var intSeed = floatToIntSeed(seed)
+	var intSeed = floatToIntSeed(CombineSeeds(seeds...))
 	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
 	var xf, yf = x - float32(xi), y - float32(yi)
 	var vals [4][4]float32
@@ -257,8 +276,8 @@ func NoiseValueCubic(x, y, scale, seed float32) float32 {
 
 	for gy := -1; gy <= 2; gy++ {
 		for gx := -1; gx <= 2; gx++ {
-			var cellSeed = SeedInts(intSeed, xi+int(gx), yi+int(gy))
-			vals[gx+1][gy+1] = Range(0, 1, float32(cellSeed))
+			var cellSeed = CombineSeeds(intSeed, xi+int(gx), yi+int(gy))
+			vals[gx+1][gy+1] = float32(Range(0.0, 1.0, float32(cellSeed)))
 		}
 	}
 
@@ -299,29 +318,49 @@ func floatToIntSeed(seed float32) int {
 	return intSeed
 }
 
-func chooseMultipleInternal[T any](items []T, count int, seed float32) []T {
-	if len(items) == 0 || count <= 0 {
-		return []T{}
+func rangeInt[T number.Integer](a, b T, seeds ...float32) T {
+	var ua, ub = uint64(a), uint64(b)
+	if ua == ub {
+		return a
+	}
+	if ua > ub {
+		ua, ub = ub, ua
 	}
 
-	var clone = make([]T, len(items))
-	copy(clone, items)
-
-	for i := len(clone) - 1; i > 0; i-- {
-		var j = RangeInt(0, i, seed)
-		clone[i], clone[j] = clone[j], clone[i]
+	var diff = ub - ua
+	var seed = CombineSeeds(seeds...)
+	if seed != seed { // is NaN
+		seed = float32(time.Now().UnixNano()%1e9) / 1e9
 	}
-
-	if count > len(clone) {
-		count = len(clone)
-	}
-
-	return clone[:count]
+	var s = uint64(seed * 2147483647)
+	s = (1103515245*s + 12345) % 2147483647
+	var result = ua + (s*diff)/2147483647
+	return T(result)
 }
-
-func singlePointer[T any](items []T) *T {
-	if len(items) == 0 {
-		return nil
+func rangeFloat[T number.Float](a, b T, seeds ...float32) T {
+	var fa, fb = float64(a), float64(b)
+	if fa == fb {
+		return a
 	}
-	return &items[0]
+	if fa > fb {
+		fa, fb = fb, fa
+	}
+
+	var seed = CombineSeeds(seeds...)
+	if seed != seed { // is NaN
+		seed = float32(time.Now().UnixNano()%1e9) / 1e9
+	}
+
+	var s = int(seed * 2147483647)
+	s = (1103515245*s + 12345) % 2147483647
+	var normalized = float64(s) / 2147483647.0
+	var r = fa + (fb-fa)*normalized
+	return T(r)
+}
+func combineSeeds(seeds ...uint64) uint64 {
+	var seed = uint64(2654435769)
+	for _, s := range seeds {
+		seed = hashSeed(seed, s)
+	}
+	return seed
 }

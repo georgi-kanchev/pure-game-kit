@@ -12,6 +12,8 @@ import (
 )
 
 func main() {
+	example.Randoms()
+
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()
 	var hud = gui.NewFromXMLs(gui.NewElementsXML(
