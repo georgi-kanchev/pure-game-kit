@@ -345,7 +345,7 @@ func NegativeInfinity() float32 {
 	return float32(math.Inf(-1))
 }
 func IsNaN(number float32) bool {
-	return math.IsNaN(float64(number))
+	return number != number
 }
 func NaN() float32 {
 	return float32(math.NaN())

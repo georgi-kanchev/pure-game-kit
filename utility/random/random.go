@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var CurrentSeed = number.NaN()
+
 func Seed(keys ...float32) float32 {
 	var ints = make([]int, len(keys))
 	for i := range ints {
@@ -14,17 +16,9 @@ func Seed(keys ...float32) float32 {
 	return float32(SeedInts(ints...))
 }
 func SeedInts(keys ...int) int {
-	var hashSeed = func(seed uint64, a int) uint64 {
-		seed ^= uint64(a)
-		seed = (seed ^ (seed >> 16)) * 2246822519
-		seed = (seed ^ (seed >> 13)) * 3266489917
-		seed ^= seed >> 16
-		return seed
-	}
 	var seed = uint64(2654435769)
-
 	for _, p := range keys {
-		seed = hashSeed(seed, p)
+		seed = hashSeed(seed, uint64(p))
 	}
 	return int(seed)
 }
@@ -37,7 +31,7 @@ func Range(a, b, seed float32) float32 {
 		a, b = b, a
 	}
 
-	if seed != seed { // seed is NaN
+	if seed != seed { // is NaN
 		seed = float32(time.Now().UnixNano()%1e9) / 1e9 // value in [0,1)
 	}
 
@@ -71,17 +65,17 @@ func ShuffleSeeded[T any](seed float32, items ...T) {
 	}
 }
 
-func ChooseMultiple[T any](count int, items ...T) []T {
+func PickMultiple[T any](count int, items ...T) []T {
 	return chooseMultipleInternal(items, count, number.NaN())
 }
-func ChooseMultipleSeeded[T any](count int, seed float32, items ...T) []T {
+func PickMultipleSeeded[T any](count int, seed float32, items ...T) []T {
 	return chooseMultipleInternal(items, count, seed)
 }
 
-func ChooseOne[T any](items ...T) *T {
+func PickOne[T any](items ...T) *T {
 	return singlePointer(chooseMultipleInternal(items, 1, number.NaN()))
 }
-func ChooseOneSeeded[T any](seed float32, items ...T) *T {
+func PickOneSeeded[T any](seed float32, items ...T) *T {
 	return singlePointer(chooseMultipleInternal(items, 1, seed))
 }
 
@@ -287,9 +281,17 @@ func NoiseValueCubic(x, y, scale, seed float32) float32 {
 //=================================================================
 // private
 
+func hashSeed(seed, value uint64) uint64 {
+	seed ^= value
+	seed = (seed ^ (seed >> 16)) * 2246822519
+	seed = (seed ^ (seed >> 13)) * 3266489917
+	seed ^= seed >> 16
+	return seed
+}
+
 func floatToIntSeed(seed float32) int {
 	var intSeed int = 0
-	if number.IsNaN(seed) {
+	if seed != seed { // is NaN
 		intSeed = int(time.Now().UnixNano())
 	} else {
 		intSeed = int(math.Float32bits(seed))
