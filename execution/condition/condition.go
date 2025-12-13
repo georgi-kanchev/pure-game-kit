@@ -1,5 +1,7 @@
-// Utility functions that control the code flow based on some condition or time, as well as
-// acting as shortcuts for simple if/else blocks.
+/*
+Utility functions that control the code flow based on some condition or time, as well as
+acting as shortcuts for simple if/else blocks.
+*/
 package condition
 
 import "pure-game-kit/internal"

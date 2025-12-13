@@ -1,6 +1,8 @@
-// Unifies logging, printing and error handling consistently.
-//
-// Profiles the running application and analyzes the state of the project.
+/*
+Unifies logging, printing and error handling consistently.
+
+Profiles the running application and analyzes the state of the project.
+*/
 package debug
 
 // this package shouldn't have any engine dependencies

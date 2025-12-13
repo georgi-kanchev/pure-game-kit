@@ -1,6 +1,8 @@
-// Lua modding. A way to execute complex code from a string/file, as well as that string/file
-// executing any provided functions. Some very basic Lua modules are included - everything else
-// is excluded for security reasons, especially file manipulation.
+/*
+Lua modding. A way to execute complex code from a string/file, as well as that string/file
+executing any provided functions. Some very basic Lua modules are included - everything else
+is excluded for security reasons, especially file manipulation.
+*/
 package script
 
 import (

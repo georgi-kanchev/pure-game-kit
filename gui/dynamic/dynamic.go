@@ -1,3 +1,16 @@
+/*
+Contains constants, representing dynamic variables of:
+  - Camera passed to the GUI when drawing - useful for anchoring elements or resizing them in percents.
+  - Container owner of a specific widget - useful for using it as a pivot or reference.
+  - Optional container target of a specific container - useful for using it as a pivot or reference.
+
+Can be included in some XML properties alongside math expressions like so:
+
+	// in XML:
+	containerX="TargetX + TargetWidth + 50" containerWidth="CameraWidth / 4"
+	// or in code:
+	gui.Container("name", dynamic.CameraLeftX+"+10", dynamic.CameraTopY+"+10", dynamic.CameraWidth+"-20", "1100")
+*/
 package dynamic
 
 const (
@@ -18,7 +31,7 @@ const (
 	OwnerBottomY = "OwnerBottomY" // [widget]
 	OwnerWidth   = "OwnerWidth"   // [widget]
 	OwnerHeight  = "OwnerHeight"  // [widget]
-	
+
 	TargetCenterX  = "TargetCenterX"  // [container]
 	TargetCenterY  = "TargetCenterY"  // [container]
 	TargetLeftX    = "TargetLeftX"    // [container]

@@ -1,6 +1,8 @@
-// Strictly tied to the window, drawing on it and converting between the two coordinate systems
-// through a camera. The camera's drawing may be separated into two categories: primitives and objects.
-// While using the assets for drawing, the graphical objects are very lightweight and exist independently of them.
+/*
+Strictly tied to the window, drawing on it through a camera and converting between the two coordinate systems.
+The camera's drawing consists of two categories: primitives and objects.
+While using the assets for drawing, the graphical objects are still very lightweight and exist independently of them.
+*/
 package graphics
 
 import (

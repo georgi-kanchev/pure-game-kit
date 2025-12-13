@@ -1,5 +1,4 @@
-// Used by the graphics camera to define how to draw something.
-// Useful for effects such as lighting.
+// Used by the graphics camera to define how to draw something. Useful for effects such as lighting.
 package blend
 
 const (
