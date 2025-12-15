@@ -1,3 +1,8 @@
+/*
+Tiled's Maps, Tilesets, Tiles, Layers and Objects come with some built-in properties.
+This package contains constants, describing them & their names. Useful for autocompletion when
+looking for a built-in property, unlike custom ones that have no such thing out-of-the-box.
+*/
 package property
 
 const (

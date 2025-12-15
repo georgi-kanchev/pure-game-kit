@@ -53,13 +53,10 @@ var CurrentScreen int
 //=================================================================
 
 var Cursor int
-var MouseDeltaX, MouseDeltaY, SmoothScroll float32
 var Input = ""
-var Keys = []int{}
-var KeysPrev = []int{}
-var Buttons = []int{}
-var AnyButtonPressedOnce = false
-var AnyButtonReleasedOnce = false
+var MouseDeltaX, MouseDeltaY, SmoothScroll float32
+var Keys, KeysPrev, Buttons, ButtonsPrev = []int{}, []int{}, []int{}, []int{}
+var AnyButtonJustPressed, AnyButtonJustReleased, AnyKeyJustPressed, AnyKeyJustReleased = false, false, false, false
 
 //=================================================================
 
@@ -151,16 +148,18 @@ func updateTimers() {
 	}
 }
 func updateInput() {
-	AnyButtonPressedOnce = false
-	AnyButtonReleasedOnce = false
+	AnyButtonJustPressed = false
+	AnyButtonJustReleased = false
+	ButtonsPrev = collection.Clone(Buttons)
+
 	for i := range 7 {
 		if rl.IsMouseButtonPressed(rl.MouseButton(i)) {
 			Buttons = append(Buttons, i)
-			AnyButtonPressedOnce = true
+			AnyButtonJustPressed = true
 		}
 		if rl.IsMouseButtonReleased(rl.MouseButton(i)) {
 			Buttons = collection.Remove(Buttons, i)
-			AnyButtonReleasedOnce = true
+			AnyButtonJustReleased = true
 		}
 	}
 
@@ -178,14 +177,17 @@ func updateInput() {
 
 	//=================================================================
 
+	AnyKeyJustPressed = false
+	AnyKeyJustReleased = false
+	KeysPrev = collection.Clone(Keys)
 	Input = ""
+
 	var char = rl.GetCharPressed()
 	for char > 0 {
 		Input += string(char)
 		char = rl.GetCharPressed()
 	}
 
-	KeysPrev = collection.Clone(Keys)
 	checkKeyRange(32, 96)
 	checkKeyRange(256, 349)
 
@@ -216,9 +218,11 @@ func checkKeyRange(from, to int) {
 	for i := from; i < to+1; i++ {
 		if rl.IsKeyPressed(int32(i)) {
 			Keys = append(Keys, i)
+			AnyKeyJustPressed = true
 		}
 		if rl.IsKeyReleased(int32(i)) {
 			Keys = collection.Remove(Keys, i)
+			AnyKeyJustReleased = true
 		}
 	}
 }

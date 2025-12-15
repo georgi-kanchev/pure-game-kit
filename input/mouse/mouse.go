@@ -1,7 +1,13 @@
+/*
+Contains checks for whether a certain mouse button is interacted with in various ways.
+Also provides the currently pressed buttons, scrolling and OS cursor customization.
+Meant to be checked every frame instead of subscribtion-based events/callbacks.
+*/
 package mouse
 
 import (
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -37,21 +43,21 @@ func ButtonsPressed() []int {
 }
 
 func IsButtonPressed(button int) bool {
-	return rl.IsMouseButtonDown(rl.MouseButton(button))
+	return collection.Contains(internal.Buttons, button)
 }
 func IsButtonJustPressed(button int) bool {
-	return rl.IsMouseButtonPressed(rl.MouseButton(button))
+	return collection.Contains(internal.Buttons, button) && !collection.Contains(internal.ButtonsPrev, button)
 }
 func IsButtonJustReleased(button int) bool {
-	return rl.IsMouseButtonReleased(rl.MouseButton(button))
+	return !collection.Contains(internal.Buttons, button) && collection.Contains(internal.ButtonsPrev, button)
 }
 
 func IsAnyButtonPressed() bool {
 	return len(internal.Buttons) > 0
 }
 func IsAnyButtonJustPressed() bool {
-	return internal.AnyButtonPressedOnce
+	return internal.AnyButtonJustPressed
 }
 func IsAnyButtonJustReleased() bool {
-	return internal.AnyButtonReleasedOnce
+	return internal.AnyButtonJustReleased
 }

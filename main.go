@@ -8,6 +8,7 @@ import (
 	d "pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
+	"pure-game-kit/input/mouse/button"
 	"pure-game-kit/window"
 )
 
@@ -125,6 +126,10 @@ func main() {
 	for window.KeepOpen() {
 		window.Title = "pure-game-kit: hub"
 		cam.SetScreenAreaToWindow()
+
+		if mouse.IsButtonJustPressed(button.Left) {
+			print()
+		}
 
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k, cam) {

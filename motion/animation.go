@@ -1,3 +1,9 @@
+/*
+Provides a solution for smooth number transitions in the form of the universally known Tweens
+(an animation term, short for "inbetween"), that make use of custom curves or pre-made easings,
+describing the movement. Also provides a solution for animation sequences - a collection of any data,
+iterated over time.
+*/
 package motion
 
 import (
@@ -20,67 +26,67 @@ func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animatio
 
 //=================================================================
 
-func (sequence *Animation[T]) SetDuration(seconds float32) {
-	sequence.ItemsPerSecond = float32(len(sequence.Items)) / seconds
+func (animation *Animation[T]) SetDuration(seconds float32) {
+	animation.ItemsPerSecond = float32(len(animation.Items)) / seconds
 }
-func (sequence *Animation[T]) SetIndex(index int) {
-	index = number.Limit(index, 0, len(sequence.Items)-1)
-	var newTime = float32(index) / sequence.ItemsPerSecond
-	sequence.startTime = time.Runtime() - newTime
+func (animation *Animation[T]) SetIndex(index int) {
+	index = number.Limit(index, 0, len(animation.Items)-1)
+	var newTime = float32(index) / animation.ItemsPerSecond
+	animation.startTime = time.Runtime() - newTime
 }
-func (sequence *Animation[T]) SetTime(seconds float32) {
-	sequence.startTime = runtime() - seconds
+func (animation *Animation[T]) SetTime(seconds float32) {
+	animation.startTime = runtime() - seconds
 }
 
 //=================================================================
 
-func (sequence *Animation[T]) CurrentItem() *T {
-	return &sequence.Items[sequence.CurrentIndex()]
+func (animation *Animation[T]) CurrentItem() *T {
+	return &animation.Items[animation.CurrentIndex()]
 }
-func (sequence *Animation[T]) CurrentIndex() int {
-	var progress = sequence.update()
-	var count = float32(len(sequence.Items))
+func (animation *Animation[T]) CurrentIndex() int {
+	var progress = animation.update()
+	var count = float32(len(animation.Items))
 	return int(number.Smallest(progress*count, count-1))
 }
-func (sequence *Animation[T]) CurrentTime() float32 {
-	var progress = sequence.update()
-	var count = float64(len(sequence.Items))
-	return progress * float32(count) / sequence.ItemsPerSecond
+func (animation *Animation[T]) CurrentTime() float32 {
+	var progress = animation.update()
+	var count = float64(len(animation.Items))
+	return progress * float32(count) / animation.ItemsPerSecond
 }
-func (sequence *Animation[T]) CurrentDuration() float32 {
-	var count = float32(len(sequence.Items))
-	return count / sequence.ItemsPerSecond
+func (animation *Animation[T]) CurrentDuration() float32 {
+	var count = float32(len(animation.Items))
+	return count / animation.ItemsPerSecond
 }
 
-func (sequence *Animation[T]) IsFinished() bool {
-	var progress = sequence.update()
+func (animation *Animation[T]) IsFinished() bool {
+	var progress = animation.update()
 	return progress == 1
 }
-func (sequence *Animation[T]) IsPlaying() bool {
-	return !sequence.IsFinished() && !sequence.IsPaused
+func (animation *Animation[T]) IsPlaying() bool {
+	return !animation.IsFinished() && !animation.IsPaused
 }
 
 //=================================================================
 // private
 
-func (sequence *Animation[T]) update() float32 {
+func (animation *Animation[T]) update() float32 {
 	var runtime = time.Runtime()
-	var progress = (runtime - sequence.startTime) / sequence.CurrentDuration()
+	var progress = (runtime - animation.startTime) / animation.CurrentDuration()
 
-	if sequence.IsPaused && runtime != sequence.lastUpdateTime {
-		sequence.startTime += runtime - sequence.lastUpdateTime
+	if animation.IsPaused && runtime != animation.lastUpdateTime {
+		animation.startTime += runtime - animation.lastUpdateTime
 	}
 
 	if progress >= 1 {
-		if sequence.IsLooping {
-			sequence.startTime = runtime
+		if animation.IsLooping {
+			animation.startTime = runtime
 			progress = 0
 		} else {
 			progress = 1
 		}
 	}
 
-	sequence.lastUpdateTime = runtime
+	animation.lastUpdateTime = runtime
 	return progress
 }
 func runtime() float32 { return time.Runtime() } // freeing up "seconds" as var/param name

@@ -37,10 +37,10 @@ Alongside solving all of those problems, here are some of the very useful featur
   - Widgets inheriting/reusing properties from their Themes or Container owners and optionally overwriting them.
   - Elements supporting custom properties that only custom logic may rely on.
   - Dividing long & complex GUI systems into multiple XMLs by optionally merging them during parsing.
-  - Containers handling scrolling, masking and ordering widgets out of the box.
+  - Containers handling scrolling, masking and ordering widgets out-of-the-box.
   - Easy to reference themes, widgets, containers and assets due to the nature of ids.
   - Rendering fallbacks to basic colored shapes in case no assets are provided.
-  - Out of the box Z ordering for input & drawing.
+  - Out-of-the-box Z ordering for input & drawing.
   - Having tooltips for all widgets, including text labels & images.
 */
 package gui

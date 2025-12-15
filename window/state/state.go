@@ -1,10 +1,4 @@
+// Contains constants, representing the window state in the Operating System (OS).
 package state
 
-const (
-	Floating = iota
-	FloatingBorderless
-	Fullscreen
-	FullscreenBorderless
-	Maximized
-	Minimized
-)
+const Floating, FloatingBorderless, Fullscreen, FullscreenBorderless, Maximized, Minimized = 0, 1, 2, 3, 4, 5

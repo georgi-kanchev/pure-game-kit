@@ -1,7 +1,7 @@
 /*
-Contains checks for whether a certain (or any) keyboard key is interacted with in different ways.
+Contains checks for whether a certain keyboard key is interacted with in various ways.
 Also provides text input and the currently pressed keys. Meant to be checked every frame
-instead of relying on events.
+instead of subscribtion-based events/callbacks.
 */
 package keyboard
 
@@ -20,37 +20,27 @@ func KeysPressed() []int {
 }
 
 func IsKeyPressed(key int) bool {
-	return rl.IsKeyDown(int32(key))
+	return collection.Contains(internal.Keys, key)
 }
 func IsKeyHeld(key int) bool {
 	return rl.IsKeyPressedRepeat(int32(key))
 }
 
 func IsKeyJustPressed(key int) bool {
-	return rl.IsKeyPressed(int32(key))
+	return collection.Contains(internal.Keys, key) && !collection.Contains(internal.KeysPrev, key)
 }
 func IsKeyJustReleased(key int) bool {
-	return rl.IsKeyReleased(int32(key))
+	return !collection.Contains(internal.Keys, key) && collection.Contains(internal.KeysPrev, key)
 }
 
 func IsAnyKeyPressed() bool {
 	return len(internal.Keys) > 0
 }
 func IsAnyKeyJustPressed() bool {
-	for _, k := range internal.Keys {
-		if !collection.Contains(internal.KeysPrev, k) {
-			return true
-		}
-	}
-	return false
+	return internal.AnyKeyJustPressed
 }
 func IsAnyKeyJustReleased() bool {
-	for _, k := range internal.KeysPrev {
-		if !collection.Contains(internal.Keys, k) {
-			return true
-		}
-	}
-	return false
+	return internal.AnyKeyJustReleased
 }
 
 func IsComboJustPressed(keys ...int) bool {

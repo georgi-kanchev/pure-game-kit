@@ -1,3 +1,4 @@
+// Contains all keyboard keys as constants, as well as a way to convert them to & from their name.
 package key
 
 const (
@@ -28,6 +29,24 @@ const (
 	LeftShift, LeftControl, LeftAlt, LeftSuper, RightShift, RightControl, RightAlt, RightSuper,
 	Menu = 340, 341, 342, 343, 344, 345, 346, 347, 348
 )
+
+func ToName(key int) string {
+	var value, has = keyNames[key]
+	if has {
+		return value.(string)
+	}
+	return ""
+}
+func FromName(name string) int {
+	var value, has = keyNames[name]
+	if has {
+		return value.(int)
+	}
+	return 0
+}
+
+//=================================================================
+// private
 
 var keyNames = map[any]any{ // this monstrosity is the shortest & simplest way to map keys to their names
 	"Space": Space, Space: "Space", "Apostrophe": Apostrophe, Apostrophe: "Apostrophe",
@@ -81,20 +100,4 @@ var keyNames = map[any]any{ // this monstrosity is the shortest & simplest way t
 	"RightShift": RightShift, RightShift: "RightShift", "RightControl": RightControl, RightControl: "RightControl",
 	"RightAlt": RightAlt, RightAlt: "RightAlt", "RightSuper": RightSuper, RightSuper: "RightSuper",
 	"Menu": Menu, Menu: "Menu",
-}
-
-func ToName(key int) string {
-	var value, has = keyNames[key]
-	if has {
-		return value.(string)
-	}
-	return ""
-}
-
-func FromName(name string) int {
-	var value, has = keyNames[name]
-	if has {
-		return value.(int)
-	}
-	return 0
 }

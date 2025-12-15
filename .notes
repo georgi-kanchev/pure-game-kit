@@ -3,6 +3,12 @@ shader effects, port?
 simple particles, port?
 shape/sprite shadow draw?
 gui button would be nice to be able to press multiple hotkeys at once
+gui xml doesn't allow some symbols such as '>', the strings can be swapped with placeholders as in internal.go
+
+[121] [Mon] [15-12-2025]
+package descriptions, utility remaining
+renames, tweaks, refactors
+input - some caching for keys & buttons to avoid c calls
 
 [120] [Sat] [13-12-2025]
 package descriptions more progress

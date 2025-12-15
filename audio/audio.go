@@ -18,7 +18,7 @@ type Audio struct {
 	prevAssetId string
 	prevPitch, prevLeftRight,
 	prevTime float32
-	prevPause, finishedOnce bool
+	prevPause, justFinished bool
 
 	time, duration float32
 
@@ -74,7 +74,7 @@ func (audio *Audio) IsPlaying() bool {
 	return false
 }
 func (audio *Audio) IsJustFinished() bool {
-	return audio.finishedOnce
+	return audio.justFinished
 }
 
 func (audio *Audio) Time() (current, duration float32) {
@@ -132,12 +132,12 @@ func (audio *Audio) update(float32) {
 	}
 
 	// loop
-	audio.finishedOnce = false
+	audio.justFinished = false
 	if audio.time < audio.prevTime {
 		if audio.IsLooping {
 			audio.Play()
 		} else {
-			audio.finishedOnce = true
+			audio.justFinished = true
 		}
 	}
 

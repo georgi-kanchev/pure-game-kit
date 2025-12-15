@@ -1,8 +1,13 @@
+/*
+Used by the engine packages only:
+  - As a third party messenger when communicating with each other, avoiding dependencies loops.
+  - To re-use private engine (non-API) code.
+  - To store runtime resources such as assets, callbacks, input cache, time cache and so on.
+  - To pump updates every frame coming from the window package onto other packages that require them.
+*/
 package internal
 
-import (
-	txt "pure-game-kit/utility/text"
-)
+import txt "pure-game-kit/utility/text"
 
 const Placeholder = '╌'
 
