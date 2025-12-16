@@ -1,7 +1,7 @@
-// Helper functions for bit-masks.
-//
-// They are useful for storing up to 64 flags (bool values) in a single integer
-// where each bit represents each flag (on/off).
+/*
+Helper functions for bit-masks. Useful for storing up to 64 flags (bool values) in a single integer
+where each bit represents each flag (on/off).
+*/
 package flag
 
 import "golang.org/x/exp/constraints"

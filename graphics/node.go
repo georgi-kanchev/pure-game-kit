@@ -2,7 +2,7 @@ package graphics
 
 import (
 	"pure-game-kit/utility/angle"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 )
@@ -18,7 +18,7 @@ type Node struct {
 
 func NewNode(x, y float32) Node {
 	return Node{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
-		PivotX: 0.5, PivotY: 0.5, Color: color.White}
+		PivotX: 0.5, PivotY: 0.5, Color: palette.White}
 }
 
 //=================================================================

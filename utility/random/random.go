@@ -1,3 +1,8 @@
+/*
+A few helper functions, related to randomness. Also provides a way to use controlled randomness
+in the form of seeds, as well as combining seeds. Has a few functions that act upon a collection -
+shuffling it or choosing an item.
+*/
 package random
 
 import (

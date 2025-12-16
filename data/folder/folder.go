@@ -1,6 +1,6 @@
 /*
-Wraps some essential Operating System/Input-Output (OS/IO) folder functionalities to make them more
-digestible and clarify their API.
+Wraps some essential Operating System/Input-Output (OS/IO) folder features with helper functions
+to make them more digestible and clarify their API.
 */
 package folder
 

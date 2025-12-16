@@ -6,7 +6,7 @@ import (
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/tiled"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
 
@@ -27,7 +27,7 @@ func Tiled() {
 		cam.MouseDragAndZoomSmooth()
 
 		// grass.Draw(cam)
-		cam.DrawGrid(0.5, 16, 16, color.DarkGray)
+		cam.DrawGrid(0.5, 16, 16, palette.DarkGray)
 
 		if keyboard.IsKeyJustPressed(key.F5) {
 			assets.ReloadAllTiledMaps()

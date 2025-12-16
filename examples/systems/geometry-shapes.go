@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
@@ -48,9 +49,9 @@ func Shapes() {
 
 		shape.Angle += time.FrameDelta() * 60
 		var mx, my = cam.MousePosition()
-		var colShape = condition.If(shape.IsOverlappingShapes(triangle), color.Red, color.Green)
-		var colRect = condition.If(rectangle.IsCrossingShapes(shape), color.Brown, color.Cyan)
-		var colCircle = condition.If(hexagon.IsContainingShapes(triangle), color.Yellow, color.Pink)
+		var colShape = condition.If(shape.IsOverlappingShapes(triangle), palette.Red, palette.Green)
+		var colRect = condition.If(rectangle.IsCrossingShapes(shape), palette.Brown, palette.Cyan)
+		var colCircle = condition.If(hexagon.IsContainingShapes(triangle), palette.Yellow, palette.Pink)
 
 		triangle.X, triangle.Y = mx, my
 
@@ -60,20 +61,20 @@ func Shapes() {
 		cam.DrawLinesPath(8, colCircle, hexagon.CornerPoints()...)
 		cam.DrawShapesFast(color.Darken(colRect, 0.5), rectangle.CornerPoints()...)
 		cam.DrawLinesPath(8, colRect, rectangle.CornerPoints()...)
-		cam.DrawShapesFast(color.Gray, triangle.CornerPoints()...)
-		cam.DrawLinesPath(8, color.White, triangle.CornerPoints()...)
+		cam.DrawShapesFast(palette.Gray, triangle.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.White, triangle.CornerPoints()...)
 
 		cam.DrawLinesPath(8, colShape, shape.CornerPoints()...)
 
 		// not DrawShapesFast because stars are concave
-		cam.DrawShapes(color.Darken(color.Violet, 0.5), stars...)
-		cam.DrawLinesPath(8, color.Violet, stars...)
+		cam.DrawShapes(color.Darken(palette.Violet, 0.5), stars...)
+		cam.DrawLinesPath(8, palette.Violet, stars...)
 
-		cam.DrawShapesFast(color.DarkGreen, ellipse.CornerPoints()...)
-		cam.DrawLinesPath(8, color.Green, ellipse.CornerPoints()...)
+		cam.DrawShapesFast(palette.DarkGreen, ellipse.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Green, ellipse.CornerPoints()...)
 
 		for _, v := range crossPoints {
-			cam.DrawCircle(v[0], v[1], 16, color.Green)
+			cam.DrawCircle(v[0], v[1], 16, palette.Green)
 		}
 	}
 }

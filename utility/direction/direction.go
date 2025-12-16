@@ -1,3 +1,7 @@
+/*
+Helper functions for a directional vector. Similar angle but interpreting data differently.
+Useful for working with 2D objects.
+*/
 package direction
 
 import (
@@ -22,6 +26,9 @@ func Normalize(x, y float32) (float32, float32) {
 }
 func Length(x, y float32) float32 {
 	return number.SquareRoot(x*x + y*y)
+}
+func BetweenPoints(x, y, targetX, targetY float32) (float32, float32) {
+	return Normalize(targetX-x, targetY-y)
 }
 
 //=================================================================

@@ -3,7 +3,7 @@ package example
 import (
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/random"
 	"pure-game-kit/window"
 )
@@ -29,16 +29,16 @@ func Pathfinding() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmooth()
-		cam.DrawGrid(1, 32, 32, color.DarkGray)
+		cam.DrawGrid(1, 32, 32, palette.DarkGray)
 
 		var allShapes = grid.All()
 		for _, v := range allShapes {
-			cam.DrawLinesPath(1, color.Gray, v.CornerPoints()...)
+			cam.DrawLinesPath(1, palette.Gray, v.CornerPoints()...)
 		}
 
 		var mx, my = cam.MousePosition()
 		path = grid.FindPath([2]float32{16, 16}, [2]float32{mx, my}, 10, false)
-		cam.DrawLinesPath(1, color.Green, path...)
-		cam.DrawPoints(2, color.White, path...)
+		cam.DrawLinesPath(1, palette.Green, path...)
+		cam.DrawPoints(2, palette.White, path...)
 	}
 }

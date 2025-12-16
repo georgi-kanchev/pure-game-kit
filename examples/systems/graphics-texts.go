@@ -3,7 +3,7 @@ package example
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
@@ -17,7 +17,7 @@ func Texts() {
 	textBox.PivotX, textBox.PivotY = 0, 0
 	textBox.AlignmentY = 1
 	textBox.Angle = 0
-	textBox.EmbeddedColors = []uint{color.Red, color.Green, color.Black, color.White, color.Blue}
+	textBox.EmbeddedColors = []uint{palette.Red, palette.Green, palette.Black, palette.White, palette.Blue}
 	textBox.EmbeddedAssetIds = []string{tiles[162], tiles[256], tiles[156], tiles[154], tiles[157]}
 	textBox.EmbeddedThicknesses = []float32{0.7, 0.5, 0.35}
 	textBox.LineHeight = 100
@@ -27,9 +27,9 @@ func Texts() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		textBox.X, textBox.Y = cam.PointFromScreen(50, 0)
-		textBox.Color = color.DarkGray
+		textBox.Color = palette.DarkGray
 		cam.DrawNodes(&textBox.Node)
-		textBox.Color = color.White
+		textBox.Color = palette.White
 
 		a = number.Sine(time.Runtime() / 5)
 

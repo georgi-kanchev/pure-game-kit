@@ -12,6 +12,7 @@ import (
 	"pure-game-kit/input/mouse/cursor"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 )
@@ -160,7 +161,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 
 	if minX < c.X || maxX > c.X+c.Width {
 		var handleWidth = c.Width / (maxX - minX) * c.Width
-		var handleColor = color.Brighten(color.Gray, 0.5)
+		var handleColor = color.Brighten(palette.Gray, 0.5)
 
 		if scroll != 0 && focused && shift {
 			c.ScrollX -= float32(scroll)
@@ -183,7 +184,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			wWasHovered = nil
 			wFocused = nil
 			mouse.SetCursor(cursor.Hand)
-			handleColor = color.White
+			handleColor = palette.White
 
 			if mouse.IsButtonJustPressed(b.Left) {
 				cPressedOnScrollV = c
@@ -197,7 +198,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 
 		if c == cPressedOnScrollV {
 			c.targetScrollX = number.Map(mx-c.X, handleWidth/2, c.Width-handleWidth/2, 0, maxX-minX-c.Width)
-			handleColor = color.Gray
+			handleColor = palette.Gray
 
 			// smooth handle dragging
 			var diff = c.targetScrollX - c.ScrollX
@@ -213,14 +214,14 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		var x = number.Map(c.ScrollX, 0, (maxX-minX)-c.Width, c.X, c.X+c.Width-handleWidth)
 		cam.DrawQuad(c.X, c.Y+c.Height-scrollSize, c.Width, scrollSize, 0, color.RGBA(0, 0, 0, 150))
 		cam.DrawQuad(x, c.Y+c.Height-scrollSize, handleWidth, scrollSize, 0, handleColor)
-		cam.DrawQuadFrame(x, c.Y+c.Height-scrollSize, handleWidth, scrollSize, 0, -scrollSize*0.3, color.Black)
+		cam.DrawQuadFrame(x, c.Y+c.Height-scrollSize, handleWidth, scrollSize, 0, -scrollSize*0.3, palette.Black)
 	}
 
 	//=================================================================
 
 	if minY < c.Y || maxY > c.Y+c.Height {
 		var handleH = (c.Height / (maxY - minY)) * c.Height
-		var handleCol = color.Brighten(color.Gray, 0.5)
+		var handleCol = color.Brighten(palette.Gray, 0.5)
 
 		if scroll != 0 && focused && !shift {
 			c.ScrollY -= float32(scroll)
@@ -243,7 +244,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			wWasHovered = nil
 			wFocused = nil
 			mouse.SetCursor(cursor.Hand)
-			handleCol = color.White
+			handleCol = palette.White
 
 			if mouse.IsButtonJustPressed(b.Left) {
 				cPressedOnScrollH = c
@@ -256,7 +257,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		}
 		if c == cPressedOnScrollH { // drag handle
 			c.targetScrollY += (my - c.prevMouseY) / (handleH / c.Height)
-			handleCol = color.Gray
+			handleCol = palette.Gray
 
 			// smooth handle dragging
 			var diff = c.targetScrollY - c.ScrollY
@@ -272,7 +273,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		var y = number.Map(c.ScrollY, 0, (maxY-minY)-c.Height, c.Y, c.Y+c.Height-handleH)
 		cam.DrawQuad(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, 0, color.RGBA(0, 0, 0, 150))
 		cam.DrawQuad(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
-		cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, color.Black)
+		cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, palette.Black)
 	}
 	c.prevMouseX, c.prevMouseY = mx, my
 }

@@ -7,7 +7,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 	"pure-game-kit/window"
@@ -24,12 +24,12 @@ func Flows() {
 	b.SetSteps(false,
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
-			node.Color = color.Azure
+			node.Color = palette.Azure
 			output = "Flow B: step 1"
 		}),
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
-			node.Color = color.Green
+			node.Color = palette.Green
 			output = "Flow B: step 2"
 		}))
 
@@ -83,7 +83,7 @@ func Flows() {
 		cam.DrawNodes(&node)
 
 		var x, y = cam.PointFromScreen(0, 0)
-		cam.DrawText(font, output, x, y, 200, color.White)
+		cam.DrawText(font, output, x, y, 200, palette.White)
 
 		if keyboard.IsKeyJustPressed(key.W) {
 			a.Signal("W press")

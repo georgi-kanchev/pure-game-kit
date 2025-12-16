@@ -10,6 +10,7 @@ import (
 	"pure-game-kit/tiled/property"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/flag"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
@@ -178,7 +179,7 @@ func (layer *Layer) Draw(camera *graphics.Camera) {
 	var l = layer
 	var col, hasCol = l.Properties[property.LayerColor]
 	if !hasCol {
-		col = color.White
+		col = palette.White
 	}
 
 	draw(camera, l.ExtractSprites(), l.ExtractTextBoxes(),
@@ -219,7 +220,7 @@ func (layer *Layer) initProperties(data *it.Layer, objs *it.LayerObjects, img *i
 	layer.Properties[property.LayerVisible] = data.Visible != "false"
 	layer.Properties[property.LayerLocked] = data.Locked
 	layer.Properties[property.LayerOpacity] = data.Opacity
-	layer.Properties[property.LayerTint] = condition.If(data.Tint == "", color.White, color.Hex(data.Tint))
+	layer.Properties[property.LayerTint] = condition.If(data.Tint == "", palette.White, color.Hex(data.Tint))
 	layer.Properties[property.LayerOffsetX] = data.OffsetX
 	layer.Properties[property.LayerOffsetY] = data.OffsetY
 	layer.Properties[property.LayerParallaxX] = data.ParallaxX

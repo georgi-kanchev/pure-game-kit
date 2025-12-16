@@ -3,7 +3,7 @@ package example
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
 
@@ -16,7 +16,7 @@ func Boxes() {
 	box.EdgeRight = 100
 	box.EdgeBottom = 100
 	box.EdgeTop = 100
-	box.Color = color.Cyan
+	box.Color = palette.Cyan
 
 	var bar = graphics.NewBox(b[11], 0, 0)
 	bar.PivotX, bar.PivotY = 0, 0

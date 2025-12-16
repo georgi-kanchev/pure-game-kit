@@ -1,3 +1,4 @@
+// Constants, representing text symbol case patterns.
 package casing
 
 const (

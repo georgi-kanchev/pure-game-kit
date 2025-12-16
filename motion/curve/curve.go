@@ -1,5 +1,5 @@
 /*
-Contains a Bezier function and a Spline function. They represent a curve through some provided points
+A Bezier function and a Spline function. They represent a curve through some provided points
 and interpolate a resulting point on the curve according to a progress, ranged (but not limited to) 0 to 1.
 Useful for describing a smooth movement or path for a point or a pair of numeric values
 (time & strength for example).

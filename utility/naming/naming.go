@@ -1,3 +1,8 @@
+/*
+A somewhat complex subject represented by 2 functions. Tries to unify or convert names to a single style
+of casing and separation patterns. Useful for parsing commands, forcing file name rules, forcing
+function name rules for custom code etc.
+*/
 package naming
 
 import (

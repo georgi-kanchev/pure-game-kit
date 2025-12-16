@@ -1,5 +1,5 @@
 /*
-Contains constants for GUI element field names. Some elements share the same fields.
+Constants for GUI element field names. Some elements share the same fields.
 Useful for autocomplete during manual GUI construction, like so:
 
 	gui.Visual("title", field.ThemeId, "label", field.Text, "Fields")

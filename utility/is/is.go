@@ -1,3 +1,4 @@
+// A few shortcut checks when comparing a value to other values and a type wrapper function.
 package is
 
 import (

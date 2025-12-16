@@ -5,7 +5,7 @@ import (
 	"pure-game-kit/motion"
 	"pure-game-kit/motion/curve"
 	"pure-game-kit/motion/easing"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
 
@@ -26,10 +26,10 @@ func Tweens() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		cam.DrawGrid(1, 100, 100, color.Gray)
+		cam.DrawGrid(1, 100, 100, palette.Gray)
 
 		var pos = position.CurrentValues()
-		cam.DrawQuad(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], color.White)
+		cam.DrawQuad(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], palette.White)
 
 		if position.IsFinished() {
 			position.Restart()

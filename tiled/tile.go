@@ -7,7 +7,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 )
@@ -75,7 +75,7 @@ func (tile *Tile) ExtractPoints() [][2]float32 {
 
 func (tile *Tile) Draw(camera *graphics.Camera) {
 	draw(camera, []*graphics.Sprite{tile.ExtractSprite()}, nil,
-		tile.ExtractShapes(), tile.ExtractPoints(), tile.ExtractLines(), color.White)
+		tile.ExtractShapes(), tile.ExtractPoints(), tile.ExtractLines(), palette.White)
 }
 
 //=================================================================

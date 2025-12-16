@@ -5,7 +5,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/direction"
 	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
@@ -52,9 +52,9 @@ func Collisions() {
 		dirX, dirY = shape.Collide(dirX*step, dirY*step, shape2, shape3, shape4)
 		shape.X += dirX
 		shape.Y += dirY
-		cam.DrawLinesPath(8, color.Red, shape2.CornerPoints()...)
-		cam.DrawLinesPath(8, color.Red, shape3.CornerPoints()...)
-		cam.DrawLinesPath(8, color.Red, shape4.CornerPoints()...)
-		cam.DrawLinesPath(8, color.Green, shape.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Red, shape2.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Red, shape3.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Red, shape4.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Green, shape.CornerPoints()...)
 	}
 }

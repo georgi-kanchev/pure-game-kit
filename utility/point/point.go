@@ -1,3 +1,4 @@
+// A few helper functions, operating on a 2D point in space. Useful for handling 2D objects.
 package point
 
 import (

@@ -1,3 +1,16 @@
+/*
+Everything can be represented by numbers, making this one of the most important packages.
+It has many useful helper functions, operating on all sorts of numbers, representing all sorts of things.
+Contains functionalities such as:
+  - Formatting numbers into text.
+  - Numbers interacting with ranges.
+  - Shortcuts for finding a certain number in a collection.
+  - Transforming, wrapping, mapping numbers.
+  - Wrapping universally known math functions to make them more digestible and clarify their API.
+  - Number checks.
+  - Index conversion.
+  - etc
+*/
 package number
 
 import (

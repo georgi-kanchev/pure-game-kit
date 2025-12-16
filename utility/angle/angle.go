@@ -1,19 +1,9 @@
+// Helper functions for an angle in 360 degrees. Useful for working with 2D objects.
 package angle
 
 import (
 	"math"
 	"pure-game-kit/utility/number"
-)
-
-const (
-	Right float32 = iota * 45
-	DownRight
-	Down
-	DownLeft
-	Left
-	UpLeft
-	Up
-	UpRight
 )
 
 func ToRadians(degrees float32) float32 {

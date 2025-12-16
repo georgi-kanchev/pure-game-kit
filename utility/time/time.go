@@ -1,3 +1,9 @@
+/*
+Helper functions for time. Provides time conversions. As well as runtime and real time stats.
+Provides a way to slow down or speed up those runtime stats. All values are in seconds, unless
+a unit is explicitly specified otherwise. Useful for when dealing with motion, debugging or displaying
+timers/clocks etc.
+*/
 package time
 
 import (

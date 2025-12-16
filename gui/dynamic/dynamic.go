@@ -1,5 +1,5 @@
 /*
-Contains constants, representing dynamic variables of:
+Constants, representing dynamic variables of:
   - Camera passed to the GUI when drawing - useful for anchoring elements or resizing them in percents.
   - Container owner of a specific widget - useful for using it as a pivot or reference.
   - Optional container target of a specific container - useful for using it as a pivot or reference.

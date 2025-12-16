@@ -4,7 +4,7 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
@@ -29,7 +29,7 @@ func ShapesGrids() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmooth()
-		cam.DrawGrid(1, 32, 32, color.DarkGray)
+		cam.DrawGrid(1, 32, 32, palette.DarkGray)
 
 		var mx, my = cam.MousePosition()
 		shape.X, shape.Y = mx, my
@@ -38,20 +38,20 @@ func ShapesGrids() {
 		var allShapes = grid.All()
 		var potential = grid.AroundShape(shape)
 		for _, v := range allShapes {
-			cam.DrawLinesPath(1, color.Gray, v.CornerPoints()...)
+			cam.DrawLinesPath(1, palette.Gray, v.CornerPoints()...)
 		}
 		for _, v := range potential {
-			cam.DrawLinesPath(2, color.Green, v.CornerPoints()...)
+			cam.DrawLinesPath(2, palette.Green, v.CornerPoints()...)
 		}
 
 		var surroundingShapes = grid.AroundShape(shape)
 		var crossPoints = shape.CrossPointsWithShapes(surroundingShapes...)
-		var col = condition.If(shape.IsCrossingShapes(surroundingShapes...), color.Violet, color.Cyan)
+		var col = condition.If(shape.IsCrossingShapes(surroundingShapes...), palette.Violet, palette.Cyan)
 
 		cam.DrawLinesPath(2, col, shape.CornerPoints()...)
 
 		for _, v := range crossPoints {
-			cam.DrawCircle(v[0], v[1], 3, color.Magenta)
+			cam.DrawCircle(v[0], v[1], 3, palette.Magenta)
 		}
 	}
 }

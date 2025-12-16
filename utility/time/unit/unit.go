@@ -1,3 +1,4 @@
+// Constants, representing units of time. Useful for time convertions.
 package unit
 
 const (

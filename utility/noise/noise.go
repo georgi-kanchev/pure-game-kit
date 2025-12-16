@@ -1,3 +1,11 @@
+/*
+Provides multiple 2D noise functions, each with a different behavior. They accept an x & y coordinate
+to sample from and a scale for the noise itself to zoom in/out. They also accept multiple optional seeds,
+making it possible to generate the same noise value when providing the same seeds in the same order
+(usually loop indexes or grid coordinates etc). After computation, they return a 0 to 1 ranged value.
+The usege is very similar to indexing a pixel color on a coordinate of an infinite gray scaled image.
+Useful for terrain generation, controlled randomness, repeating pattern effects & many more.
+*/
 package noise
 
 import (

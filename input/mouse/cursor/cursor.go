@@ -1,4 +1,4 @@
-// Contains all Operating System (OS) mouse cursor graphics as constants. Usually used when interacting with a GUI.
+// All Operating System (OS) mouse cursor graphics as constants. Usually used when interacting with a GUI.
 package cursor
 
 const (

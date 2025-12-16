@@ -9,7 +9,7 @@ import (
 	"pure-game-kit/input/mouse"
 	btn "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	txt "pure-game-kit/utility/text"
 	"pure-game-kit/utility/time"
@@ -123,17 +123,17 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 			ax, bx = bx, ax
 		}
 
-		cam.DrawQuad(ax, textBox.Y, bx-ax, textBox.Height, 0, color.Azure)
+		cam.DrawQuad(ax, textBox.Y, bx-ax, textBox.Height, 0, palette.Azure)
 	})
 	maskText = false
 
 	if typingIn == widget {
-		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, -5, color.Gray)
+		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, -5, palette.Gray)
 	}
 
 	if typingIn == widget && cursorTime < 0.5 {
 		var x = cursorX(margin, widget)
-		cam.DrawLine(x, textBox.Y, x, textBox.Y+textBox.Height, 5, color.Black)
+		cam.DrawLine(x, textBox.Y, x, textBox.Y+textBox.Height, 5, palette.Black)
 	}
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
 }

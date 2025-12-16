@@ -6,7 +6,7 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
 
@@ -33,6 +33,6 @@ func Keyboard() {
 		}
 
 		var x, y = cam.PointFromScreen(0, 0)
-		cam.DrawText(font, text, x, y, 200, color.White)
+		cam.DrawText(font, text, x, y, 200, palette.White)
 	}
 }

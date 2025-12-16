@@ -6,6 +6,7 @@ import (
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/button"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/window"
 )
@@ -47,7 +48,7 @@ func PathFollowing() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmooth()
-		cam.DrawGrid(1, 32, 32, color.DarkGray)
+		cam.DrawGrid(1, 32, 32, palette.DarkGray)
 
 		var mx, my = cam.MousePosition()
 		var result = geometry.FollowPaths(startX, startY, mx, my, paths...)
@@ -66,6 +67,6 @@ func PathFollowing() {
 		cam.DrawLinesPath(5, randomColors[5], p6...)
 		cam.DrawLinesPath(5, randomColors[6], p7...)
 		cam.DrawLinesPath(5, randomColors[7], p8...)
-		cam.DrawLinesPath(2, color.Red, result...)
+		cam.DrawLinesPath(2, palette.Red, result...)
 	}
 }

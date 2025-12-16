@@ -1,3 +1,7 @@
+/*
+Helper functions for slices and maps. Some of them wrap standard functions to make them more
+digestible and clarify their API.
+*/
 package collection
 
 import (

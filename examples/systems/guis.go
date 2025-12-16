@@ -7,7 +7,7 @@ import (
 	"pure-game-kit/gui"
 	d "pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
-	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
 
@@ -164,7 +164,7 @@ func GUIs() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawGrid(2, 100, 100, color.DarkGray)
+		cam.DrawGrid(2, 100, 100, palette.DarkGray)
 
 		var grab = hud.DragOnGrab()
 		if grab != "" {

@@ -8,6 +8,7 @@ import (
 	"pure-game-kit/internal"
 	"pure-game-kit/tiled/property"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/flag"
 	"pure-game-kit/utility/is"
 	"pure-game-kit/utility/point"
@@ -172,7 +173,7 @@ func (object *Object) ExtractPoints() [][2]float32 {
 func (object *Object) Draw(camera *graphics.Camera) {
 	var sprs = []*graphics.Sprite{object.ExtractSprite()}
 	var txts = []*graphics.TextBox{object.ExtractTextBox()}
-	draw(camera, sprs, txts, object.ExtractShapes(), object.ExtractPoints(), object.ExtractLines(), color.White)
+	draw(camera, sprs, txts, object.ExtractShapes(), object.ExtractPoints(), object.ExtractLines(), palette.White)
 }
 
 //=================================================================
