@@ -17,11 +17,6 @@ func CallIf(condition bool, then func()) {
 		then()
 	}
 }
-func CallIfNotNil(function func()) {
-	if function != nil {
-		function()
-	}
-}
 func CallIfElse(condition bool, then func(), otherwise func()) {
 	if condition {
 		then()
