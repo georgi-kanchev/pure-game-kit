@@ -5,6 +5,9 @@ shape/sprite shadow draw?
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>', the strings can be swapped with placeholders, see internal.go
 
+[123] [Wed] [17-12-2025]
+gui - multiple XMLs constructor optimization
+
 [122] [Tue] [16-12-2025]
 package descriptions finished
 utility tweaks, refactors etc

@@ -47,9 +47,11 @@ package gui
 
 import (
 	"pure-game-kit/data/storage"
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
+	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/text"
 )
 
@@ -86,32 +88,29 @@ Pseudo-XML format example:
 */
 func NewFromXMLs(xmlsData ...string) *GUI {
 	var gui = GUI{root: &root{}}
-	var roots []*root
+	var mergedXML = ""
 
 	for i, xmlData := range xmlsData {
-		if xmlData == "" {
+		xmlData = text.Trim(xmlData)
+		var lines = text.Split(xmlData, "\n")
+		if xmlData == "" || len(lines) < 3 {
 			continue
 		}
 
-		var root = &root{}
-		storage.FromXML(xmlData, &root)
-
-		if i == 0 { // only take scale & volume from the first xml
-			gui.root.XmlScale = root.XmlScale
-			gui.root.XmlVolume = root.XmlVolume
-		}
-
-		roots = append(roots, root)
+		var startIndex = condition.If(i == 0, 0, 1)
+		var portion = lines[startIndex : len(lines)-1]
+		xmlData = collection.ToText(portion, "\n")
+		mergedXML += xmlData + "\n"
 	}
+	mergedXML += "</GUI>"
 
+	var root = &root{}
+	storage.FromXML(mergedXML, &root)
+	gui.root = root
 	gui.root.Containers = map[string]*container{}
 	gui.root.Widgets = map[string]*widget{}
 	gui.root.Themes = map[string]*theme{}
 	gui.root.ContainerIds = []string{}
-
-	for _, r := range roots { // merge contents from all xml roots
-		gui.root.XmlContainers = append(gui.root.XmlContainers, r.XmlContainers...)
-	}
 
 	for _, c := range gui.root.XmlContainers {
 		var cId = c.XmlProps[0].Value
