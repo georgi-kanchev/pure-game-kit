@@ -17,7 +17,9 @@ type Screen interface {
 
 func Add(screen Screen, load bool) (screenId int) {
 	internal.Screens = append(internal.Screens, screen)
-	screen.OnLoad()
+	if load {
+		screen.OnLoad()
+	}
 	return len(internal.Screens) - 1
 }
 func Enter(screenId int, load bool) {
