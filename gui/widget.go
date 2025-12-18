@@ -29,7 +29,9 @@ func (widget *widget) isHovered(owner *container, cam *graphics.Camera) bool {
 		isHovered(widget.X, widget.Y, widget.Width, widget.Height, cam)
 }
 func (widget *widget) isFocused(root *root, cam *graphics.Camera) bool {
-	return wFocused == widget && wWasHovered == widget && widget.isHovered(root.Containers[widget.OwnerId], cam)
+	return wFocused == widget &&
+		wWasHovered == widget &&
+		widget.isHovered(root.Containers[widget.OwnerId], cam)
 }
 func (widget *widget) isDisabled(owner *container) bool {
 	var disabled = widget.Fields[field.Disabled] != ""

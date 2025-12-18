@@ -17,11 +17,6 @@ func Tooltip(id string, properties ...string) string {
 //=================================================================
 // private
 
-var tooltip *widget
-var tooltipForWidget *widget
-var tooltipAt float32
-var tooltipVisible, tooltipWasVisible = false, false
-
 func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Camera) {
 	var hov = widget.isFocused(root, cam)
 
@@ -78,7 +73,8 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	textBox.Y = tooltipForWidget.Y - textH
 	textBox.X = number.Limit(textBox.X, -camW/2, camW/2-width)
 	textBox.Y = number.Limit(textBox.Y, -camH/2, camH/2-textH)
-	tooltip.X, tooltip.Y, tooltip.Width, tooltip.Height = textBox.X, textBox.Y, width, textH
+	tooltip.X, tooltip.Y = textBox.X, textBox.Y
+	tooltip.Width, tooltip.Height = width, textH
 
 	textBox.X += margin / 2
 

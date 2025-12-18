@@ -16,8 +16,6 @@ func Slider(id string, properties ...string) string {
 //=================================================================
 // private
 
-var reusableWidget *widget = &widget{Fields: map[string]string{}}
-
 func slider(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var assetId = root.themedField(field.AssetId, owner, widget)

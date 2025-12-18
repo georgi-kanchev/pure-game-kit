@@ -28,11 +28,6 @@ func (gui *GUI) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera)
 //=================================================================
 // private
 
-var wPressedOn *widget
-var wPressedAt float32
-var buttonColor uint
-var btnSounds = true
-
 func button(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var prev = widget.ThemeId
@@ -50,7 +45,8 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 		if themeHover != "" {
 			widget.ThemeId = themeHover
 		}
-		tryPress(m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left), btnSounds, themePress, widget, root, owner)
+		var press, justPress = m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left)
+		tryPress(press, justPress, btnSounds, themePress, widget, root, owner)
 	}
 
 	var hotkeyStr = root.themedField(field.ButtonHotkey, owner, widget)

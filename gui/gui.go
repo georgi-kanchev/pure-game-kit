@@ -144,10 +144,10 @@ func NewFromXMLs(xmlsData ...string) *GUI {
 		}
 		for _, t := range c.XmlThemes {
 			var tId = t.XmlProps[0].Value
-			t.Properties = make(map[string]string, len(t.XmlProps))
+			t.Fields = make(map[string]string, len(t.XmlProps))
 
 			for _, xmlProp := range t.XmlProps {
-				t.Properties[xmlProp.Name.Local] = xmlProp.Value
+				t.Fields[xmlProp.Name.Local] = xmlProp.Value
 			}
 			gui.root.Themes[tId] = t
 		}
@@ -251,10 +251,10 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	}
 
 	if cWasHovered == cHovered {
-		cFocused = cHovered // only containers that are hovered 2 frames in a row accept input (top-down prio)
+		cFocused = cHovered // only containers hovered 2 frames in a row get input (top-down prio)
 	}
-	if wWasHovered == wHovered {
-		wFocused = wHovered // only widgets that are hovered 2 frames in a row accept input (top-down prio)
+	if wWasHovered == WHovered {
+		wFocused = WHovered // only widgets hovered 2 frames in a row get input (top-down prio)
 	}
 
 	if wPressedOn != nil && wPressedOn.Class == "draggable" {
@@ -282,7 +282,7 @@ func (gui *GUI) SetField(id, field string, value string) {
 		c.Fields[field] = value
 	}
 	if hasT {
-		t.Properties[field] = value
+		t.Fields[field] = value
 	}
 }
 
@@ -302,7 +302,7 @@ func (gui *GUI) Field(id, field string) string {
 		return c.Fields[field]
 	}
 	if hasT {
-		return t.Properties[field]
+		return t.Fields[field]
 	}
 
 	return ""

@@ -14,10 +14,6 @@ func Visual(id string, fields ...string) string {
 //=================================================================
 // private
 
-var textBox graphics.TextBox = graphics.TextBox{}
-var sprite graphics.Sprite = graphics.Sprite{}
-var box graphics.Box = graphics.Box{}
-
 func setupVisualsTextured(root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var assetId = root.themedField(p.AssetId, owner, widget)
@@ -136,7 +132,9 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		var mx, my, mw, mh = cam.MaskX, cam.MaskY, cam.MaskWidth, cam.MaskHeight
 		if maskText { // used for inputbox mask
 			var x, y = cam.PointToScreen(widget.X+textMargin, widget.Y+textMargin/2)
-			var xw, yh = cam.PointToScreen(widget.X+widget.Width-textMargin, widget.Y+widget.Height-textMargin/2)
+			var realX = widget.X + widget.Width - textMargin
+			var realY = widget.Y + widget.Height - textMargin/2
+			var xw, yh = cam.PointToScreen(realX, realY)
 			xw = number.Limit(xw, cam.MaskX, cam.MaskX+cam.MaskWidth)
 			yh = number.Limit(yh, cam.MaskY, cam.MaskY+cam.MaskHeight)
 			x = number.Limit(x, cam.MaskX, cam.MaskX+cam.MaskWidth)

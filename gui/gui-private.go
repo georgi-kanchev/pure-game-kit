@@ -16,8 +16,6 @@ import (
 
 var sound *audio.Audio = audio.New("")
 var mouseX, mouseY, prevMouseX, prevMouseY float32
-var wFocused, wHovered, wWasHovered *widget
-var cFocused, cHovered, cWasHovered *container
 var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget){
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 	"draggable": draggable,
@@ -25,6 +23,34 @@ var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widge
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                 // dynamic prop cache
 var ownerLx, ownerRx, ownerTy, ownerBy, ownerCx, ownerCy, ownerW, ownerH string // dynamic prop cache
 var tarLx, tarRx, tarTy, tarBy, tarCx, tarCy, tarW, tarH, tarHid, tarDis string // dynamic prop cache
+
+var wFocused, WHovered, wWasHovered *widget
+
+var cFocused, cHovered, cWasHovered *container
+var cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container
+
+var wPressedOn *widget
+var wPressedAt float32
+var buttonColor uint
+var btnSounds = true
+
+var typingIn *widget
+var indexCursor, indexSelect int
+var cursorTime, scrollX, textMargin float32
+var symbolXs = []float32{}
+var maskText bool       // used for inputbox mask
+var simulateRemove bool // used to delete text when typing
+var frame int
+
+var tooltip, tooltipForWidget *widget
+var tooltipAt float32
+var tooltipVisible, tooltipWasVisible bool
+
+var textBox graphics.TextBox = graphics.TextBox{}
+var sprite graphics.Sprite = graphics.Sprite{}
+var box graphics.Box = graphics.Box{}
+
+var reusableWidget = &widget{Fields: map[string]string{}}
 
 func (gui *GUI) reset(camera *graphics.Camera) {
 	if mouse.IsButtonJustPressed(b.Left) {
@@ -53,28 +79,37 @@ func (gui *GUI) reset(camera *graphics.Camera) {
 func (root *root) themedField(fld string, c *container, w *widget) string {
 	// priority for widget: widget -> widget theme -> container theme
 
-	var widgetSelf, containerSelf = "", ""
+	var widgetSelf, containerSelf, widgetThemeField, containerThemeField = "", "", "", ""
 	var widgetTheme, containerTheme *theme
 	var hasWidget, hasContainer, hasWidgetTheme, hasContainerTheme = false, false, false, false
+	var hasWidgetThemeField, hasContainerThemeField = false, false
 
 	if w != nil {
 		widgetSelf, hasWidget = w.Fields[fld]
 		widgetTheme, hasWidgetTheme = root.Themes[w.ThemeId]
+
+		if hasWidgetTheme {
+			widgetThemeField, hasWidgetThemeField = widgetTheme.Fields[fld]
+		}
 	}
 	if c != nil {
 		containerSelf, hasContainer = c.Fields[fld]
 		containerTheme, hasContainerTheme = root.Themes[c.Fields[field.ThemeId]]
+
+		if hasContainerTheme {
+			containerThemeField, hasContainerThemeField = containerTheme.Fields[fld]
+		}
 	}
 
 	if w != nil {
 		if hasWidget {
 			return widgetSelf
 		}
-		if hasWidgetTheme {
-			return widgetTheme.Properties[fld]
+		if hasWidgetTheme && hasWidgetThemeField {
+			return widgetThemeField
 		}
-		if hasContainerTheme {
-			return containerTheme.Properties[fld]
+		if hasContainerTheme && hasContainerThemeField {
+			return containerThemeField
 		}
 		if hasContainer {
 			return containerSelf
@@ -85,7 +120,7 @@ func (root *root) themedField(fld string, c *container, w *widget) string {
 		return containerSelf
 	}
 	if hasContainerTheme {
-		return containerTheme.Properties[fld]
+		return containerTheme.Fields[fld]
 	}
 
 	return ""
@@ -126,7 +161,7 @@ func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
 		tooltip = nil
 	}
 
-	wWasHovered = wHovered
+	wWasHovered = WHovered
 	cWasHovered = cHovered
 	prevMouseX, prevMouseY = mouseX, mouseY
 }

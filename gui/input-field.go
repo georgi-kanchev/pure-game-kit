@@ -36,14 +36,6 @@ func (gui *GUI) InputFieldStopTyping() {
 //=================================================================
 // private
 
-var typingIn *widget
-var indexCursor, indexSelect int
-var cursorTime, scrollX, textMargin float32
-var symbolXs []float32 = []float32{}
-var maskText = false       // used for inputbox mask
-var simulateRemove = false // used to delete text when typing
-var frame = 0
-
 func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 	setupVisualsText(root, widget, skipEmpty)
 	textBox.AlignmentX, textBox.AlignmentY = 0, 0
@@ -146,8 +138,9 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 	var teleport = indexCursor != indexSelect
 
 	if keyboard.IsKeyJustPressed(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow) {
+		var max = number.Biggest(indexCursor-1, 0)
 		cursorTime = 0
-		indexCursor = condition.If(ctrl, wordIndex(text, true), number.Biggest(indexCursor-1, 0))
+		indexCursor = condition.If(ctrl, wordIndex(text, true), max)
 
 		if !shift {
 			indexSelect = indexCursor
@@ -159,8 +152,9 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 		}
 	}
 	if keyboard.IsKeyJustPressed(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow) {
+		var min = number.Smallest(length, indexCursor+1)
 		cursorTime = 0
-		indexCursor = condition.If(ctrl, wordIndex(text, false), number.Smallest(length, indexCursor+1))
+		indexCursor = condition.If(ctrl, wordIndex(text, false), min)
 
 		if !shift {
 			indexSelect = indexCursor

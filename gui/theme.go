@@ -8,7 +8,7 @@ import (
 type theme struct {
 	XmlProps []xml.Attr `xml:",any,attr"`
 
-	Properties map[string]string
+	Fields map[string]string
 }
 
 func Theme(id string, properties ...string) string {

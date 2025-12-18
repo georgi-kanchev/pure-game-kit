@@ -48,8 +48,6 @@ func Container(id, x, y, width, height string, properties ...string) string {
 
 const scrollSize, handleSpeed, dragFriction, dragMomentum = 25.0, 12.0, 0.95, 30.0
 
-var cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container
-
 func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
@@ -114,7 +112,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		}
 
 		if widget.isHovered(c, cam) {
-			wHovered = widget
+			WHovered = widget
 		}
 
 		var outsideX = widget.X+widget.Width < c.X || widget.X > c.X+c.Width
@@ -180,7 +178,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		}
 
 		if focused && isHovered(c.X, c.Y+c.Height-scrollSize, c.Width, scrollSize, cam) {
-			wHovered = nil
+			WHovered = nil
 			wWasHovered = nil
 			wFocused = nil
 			mouse.SetCursor(cursor.Hand)
@@ -240,7 +238,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		}
 
 		if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {
-			wHovered = nil
+			WHovered = nil
 			wWasHovered = nil
 			wFocused = nil
 			mouse.SetCursor(cursor.Hand)
