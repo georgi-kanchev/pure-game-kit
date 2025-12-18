@@ -131,6 +131,8 @@ func main() {
 			print()
 		}
 
+		hud.UpdateAndDraw(cam)
+
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k, cam) {
 				window.Title = "pure-game-kit: " + k
@@ -138,7 +140,5 @@ func main() {
 				v()
 			}
 		}
-
-		hud.UpdateAndDraw(cam)
 	}
 }

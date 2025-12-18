@@ -46,7 +46,7 @@ func menu(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	if anyButton || mouse.Scroll() != 0 || !window.IsHovered() || escape {
-		if escape || (has && !c.isFocused(cam)) {
+		if escape || (has && !c.isFocused(root, cam)) {
 			c.Fields[field.Hidden] = "1"
 			visible = false
 		}

@@ -63,9 +63,9 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
 
 	if c.isHovered(cam) {
-		cHovered = c
+		root.cHovered = c
 	}
-	if c.isFocused(cam) && mouse.IsButtonJustPressed(b.Middle) {
+	if c.isFocused(root, cam) && mouse.IsButtonJustPressed(b.Middle) {
 		cMiddlePressed = c
 	}
 
@@ -112,7 +112,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		}
 
 		if widget.isHovered(c, cam) {
-			WHovered = widget
+			root.wHovered = widget
 		}
 
 		var outsideX = widget.X+widget.Width < c.X || widget.X > c.X+c.Width
@@ -141,7 +141,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	}
 
 	for _, draggable := range draggables {
-		if draggable != wPressedOn {
+		if draggable != root.wPressedOn {
 			drawDraggable(draggable, root, cam)
 		}
 	}
@@ -153,7 +153,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.Camera) {
 	var minX, minY, maxX, maxY = c.contentMinMax(gapX, gapY, root)
 	var mx, my = cam.MousePosition()
-	var focused = c.isFocused(cam)
+	var focused = c.isFocused(root, cam)
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var scroll = mouse.ScrollSmooth()
 
@@ -178,9 +178,9 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		}
 
 		if focused && isHovered(c.X, c.Y+c.Height-scrollSize, c.Width, scrollSize, cam) {
-			WHovered = nil
-			wWasHovered = nil
-			wFocused = nil
+			root.wHovered = nil
+			root.wWasHovered = nil
+			root.wFocused = nil
 			mouse.SetCursor(cursor.Hand)
 			handleColor = palette.White
 
@@ -238,9 +238,9 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		}
 
 		if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {
-			WHovered = nil
-			wWasHovered = nil
-			wFocused = nil
+			root.wHovered = nil
+			root.wWasHovered = nil
+			root.wFocused = nil
 			mouse.SetCursor(cursor.Hand)
 			handleCol = palette.White
 
@@ -279,8 +279,8 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 func (c *container) isHovered(cam *graphics.Camera) bool {
 	return isHovered(c.X, c.Y, c.Width, c.Height, cam)
 }
-func (c *container) isFocused(cam *graphics.Camera) bool {
-	return cFocused == c && cWasHovered == c && c.isHovered(cam)
+func (c *container) isFocused(root *root, cam *graphics.Camera) bool {
+	return root.cFocused == c && root.cWasHovered == c && c.isHovered(cam)
 }
 
 func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, maxX, maxY float32) {

@@ -24,13 +24,8 @@ var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                 
 var ownerLx, ownerRx, ownerTy, ownerBy, ownerCx, ownerCy, ownerW, ownerH string // dynamic prop cache
 var tarLx, tarRx, tarTy, tarBy, tarCx, tarCy, tarW, tarH, tarHid, tarDis string // dynamic prop cache
 
-var wFocused, WHovered, wWasHovered *widget
-
-var cFocused, cHovered, cWasHovered *container
 var cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container
 
-var wPressedOn *widget
-var wPressedAt float32
 var buttonColor uint
 var btnSounds = true
 
@@ -52,9 +47,11 @@ var box graphics.Box = graphics.Box{}
 
 var reusableWidget = &widget{Fields: map[string]string{}}
 
+var clickedId, clickedAndHeldId = "", ""
+
 func (gui *GUI) reset(camera *graphics.Camera) {
 	if mouse.IsButtonJustPressed(b.Left) {
-		wPressedOn = nil
+		gui.root.wPressedOn = nil
 		tooltip = nil
 		cPressedOnScrollH = nil
 		cPressedOnScrollV = nil
@@ -151,18 +148,18 @@ func (root *root) cacheTarget(targetId string) {
 	tarHid, tarDis = tHid, tDis
 }
 
-func restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
+func (root *root) restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
 	camera.Angle, camera.Zoom = prevAng, prevZoom // reset angle, zoom & mask to how it was
 	camera.X, camera.Y = prevX, prevY             // also x y
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
 	if mouse.IsButtonJustReleased(b.Left) {
-		wPressedOn = nil
+		root.wPressedOn = nil
 		tooltip = nil
 	}
 
-	wWasHovered = WHovered
-	cWasHovered = cHovered
+	root.wWasHovered = root.wHovered
+	root.cWasHovered = root.cHovered
 	prevMouseX, prevMouseY = mouseX, mouseY
 }
 func extraProps(props ...string) string {

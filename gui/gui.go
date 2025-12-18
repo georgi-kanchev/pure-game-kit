@@ -250,23 +250,35 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		c.updateAndDraw(gui.root, camera)
 	}
 
-	if cWasHovered == cHovered {
-		cFocused = cHovered // only containers hovered 2 frames in a row get input (top-down prio)
+	if gui.root.cWasHovered == gui.root.cHovered {
+		gui.root.cFocused = gui.root.cHovered // only containers hovered 2 frames in a row get input (top-down prio)
 	}
-	if wWasHovered == WHovered {
-		wFocused = WHovered // only widgets hovered 2 frames in a row get input (top-down prio)
+	if gui.root.wWasHovered == gui.root.wHovered {
+		gui.root.wFocused = gui.root.wHovered // only widgets hovered 2 frames in a row get input (top-down prio)
 	}
 
-	if wPressedOn != nil && wPressedOn.Class == "draggable" {
+	if gui.root.wPressedOn != nil && gui.root.wPressedOn.Class == "draggable" {
 		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
-		drawDraggable(wPressedOn, gui.root, camera)
+		drawDraggable(gui.root.wPressedOn, gui.root, camera)
 	}
 	if tooltip != nil {
 		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 		drawTooltip(gui.root, gui.root.Containers[tooltip.OwnerId], camera)
 	}
 
-	restore(camera, prevAng, prevZoom, prevX, prevY) // undo what reset does, everything as it was for cam
+	clickedId = condition.If(clickedId != "", "", clickedId)
+	clickedAndHeldId = condition.If(clickedAndHeldId != "", "", clickedAndHeldId)
+
+	if gui.root.wPressedOn != nil {
+		if gui.root.IsButtonJustClicked(gui.root.wPressedOn.Id, camera) {
+			clickedId = gui.root.wPressedOn.Id
+		}
+		if gui.root.IsButtonClickedAndHeld(gui.root.wPressedOn.Id, camera) {
+			clickedAndHeldId = gui.root.wPressedOn.Id
+		}
+	}
+
+	gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) // undo what reset does, everything as it was for cam
 }
 
 // Works for Widgets & Containers.
@@ -310,7 +322,7 @@ func (gui *GUI) Field(id, field string) string {
 
 func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	defer func() { gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
 	gui.reset(camera)
 
 	for _, c := range gui.root.Containers {
@@ -326,7 +338,7 @@ func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 // Works for Widgets & Containers.
 func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	defer func() { gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
 	gui.reset(camera)
 
 	var w, hasW = gui.root.Widgets[id]
@@ -336,7 +348,7 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 		return w.isFocused(gui.root, camera)
 	}
 	if hasC {
-		return c.isFocused(camera)
+		return c.isFocused(gui.root, camera)
 	}
 	return false
 }
@@ -344,7 +356,7 @@ func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 // Works for Widgets & Containers.
 func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	defer func() { gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
 	gui.reset(camera)
 
 	var w, has = gui.root.Widgets[widgetId]

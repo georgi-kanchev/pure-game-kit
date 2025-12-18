@@ -19,10 +19,10 @@ func Button(id string, properties ...string) string {
 //=================================================================
 
 func (gui *GUI) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
-	return gui.root.IsButtonJustClicked(buttonId, camera)
+	return clickedId == buttonId
 }
 func (gui *GUI) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
-	return gui.root.IsButtonClickedAndHeld(buttonId, camera)
+	return clickedAndHeldId == buttonId
 }
 
 //=================================================================
@@ -81,7 +81,7 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 }
 
 func tryPress(press, once, sounds bool, themePress string, widget *widget, root *root, owner *container) {
-	if press && wPressedOn == widget && themePress != "" {
+	if press && root.wPressedOn == widget && themePress != "" {
 		widget.ThemeId = themePress
 	}
 	if once {
@@ -90,7 +90,7 @@ func tryPress(press, once, sounds bool, themePress string, widget *widget, root 
 			sound.Volume = root.Volume
 			sound.Play()
 		}
-		wPressedOn = widget
-		wPressedAt = time.RealRuntime()
+		root.wPressedOn = widget
+		root.wPressedAt = time.RealRuntime()
 	}
 }

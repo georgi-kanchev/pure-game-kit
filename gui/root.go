@@ -24,6 +24,10 @@ type root struct {
 	Themes       map[string]*theme
 	Containers   map[string]*container
 	Widgets      map[string]*widget
+
+	wHovered, wWasHovered, wFocused, wPressedOn *widget
+	cHovered, cWasHovered, cFocused             *container
+	wPressedAt                                  float32
 }
 
 func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
@@ -34,7 +38,7 @@ func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) 
 
 	var owner = root.Containers[widget.OwnerId]
 	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
-	var focus = widget.isFocused(root, camera) && wPressedOn == widget
+	var focus = widget.isFocused(root, camera) && root.wPressedOn == widget
 	var input = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustReleased(b.Left))
 	return input
 }
@@ -48,8 +52,8 @@ func (root *root) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camer
 	var owner = root.Containers[widget.OwnerId]
 	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
 	var first = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustPressed(b.Left))
-	var tick = time.RealRuntime() > wPressedAt+0.5
-	var inputHold = k.IsKeyPressed(hotkey) || (focus && wPressedOn == widget && m.IsButtonPressed(b.Left))
+	var tick = time.RealRuntime() > root.wPressedAt+0.5
+	var inputHold = k.IsKeyPressed(hotkey) || (focus && root.wPressedOn == widget && m.IsButtonPressed(b.Left))
 	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId, "-", hotkey)) && tick
 
 	return first || hold
