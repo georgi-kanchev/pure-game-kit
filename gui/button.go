@@ -50,10 +50,11 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	var hotkeyStr = root.themedField(field.ButtonHotkey, owner, widget)
-	if typingIn == nil && hotkeyStr != "" { // no hotkeys while typing
-		var hotkey = key.FromName(hotkeyStr)
-		tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, widget, root, owner)
-
+	if typingIn == nil {
+		if hotkeyStr != "" { // no hotkeys while typing
+			var hotkey = key.FromName(hotkeyStr)
+			tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, widget, root, owner)
+		}
 		if btnSounds && root.IsButtonJustClicked(widget.Id, cam) {
 			sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), "~release")
 			sound.Volume = root.Volume

@@ -25,11 +25,9 @@ func setupVisualsTextured(root *root, widget *widget) {
 		var cBottom = parseNum(dyn(owner, root.themedField(p.BoxEdgeBottom, owner, widget), "100"), 0)
 		var col = parseColor(root.themedField(p.Color, owner, widget), widget.isDisabled(owner))
 		var _, has = internal.Boxes[assetId]
-		var offX = parseNum(dyn(owner, widget.Fields[p.OffsetX], "0"), 0)
-		var offY = parseNum(dyn(owner, widget.Fields[p.OffsetY], "0"), 0)
 
 		if has {
-			box.X, box.Y = widget.X+offX, widget.Y+offY
+			box.X, box.Y = widget.X, widget.Y
 			box.AssetId = assetId
 			box.Color = col
 			box.ScaleX, box.ScaleY = 1, 1
@@ -38,7 +36,7 @@ func setupVisualsTextured(root *root, widget *widget) {
 			box.EdgeTop, box.EdgeBottom = cTop, cBottom
 			box.PivotX, box.PivotY = 0, 0
 		} else {
-			sprite.X, sprite.Y = widget.X+offX, widget.Y+offY
+			sprite.X, sprite.Y = widget.X, widget.Y
 			sprite.PivotX, sprite.PivotY = 0, 0
 			sprite.AssetId = assetId
 			sprite.Color = col
@@ -57,10 +55,8 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	}
 
 	var disabled = widget.isDisabled(owner)
-	var offX = parseNum(dyn(owner, widget.Fields[p.OffsetX], "0"), 0)
-	var offY = parseNum(dyn(owner, widget.Fields[p.OffsetY], "0"), 0)
 	textBox.ScaleX, textBox.ScaleY = 1, 1
-	textBox.X, textBox.Y = widget.X+offX, widget.Y+offY
+	textBox.X, textBox.Y = widget.X, widget.Y
 	textBox.EmbeddedColorsTag = '`'
 	textBox.EmbeddedAssetsTag = '^'
 	textBox.EmbeddedThicknessesTag = '*'
