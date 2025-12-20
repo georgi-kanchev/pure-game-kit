@@ -28,6 +28,8 @@ type root struct {
 	wHovered, wWasHovered, wFocused, wPressedOn *widget
 	cHovered, cWasHovered, cFocused             *container
 	wPressedAt                                  float32
+
+	cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container // for container slider
 }
 
 func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {

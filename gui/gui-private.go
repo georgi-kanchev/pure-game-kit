@@ -24,8 +24,6 @@ var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                 
 var ownerLx, ownerRx, ownerTy, ownerBy, ownerCx, ownerCy, ownerW, ownerH string // dynamic prop cache
 var tarLx, tarRx, tarTy, tarBy, tarCx, tarCy, tarW, tarH, tarHid, tarDis string // dynamic prop cache
 
-var cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container
-
 var buttonColor uint
 var btnSounds = true
 
@@ -53,15 +51,15 @@ func (gui *GUI) reset(camera *graphics.Camera) {
 	if mouse.IsButtonJustPressed(b.Left) {
 		gui.root.wPressedOn = nil
 		tooltip = nil
-		cPressedOnScrollH = nil
-		cPressedOnScrollV = nil
+		gui.root.cPressedOnScrollH = nil
+		gui.root.cPressedOnScrollV = nil
 	}
 	if mouse.IsButtonJustReleased(b.Left) {
-		cPressedOnScrollH = nil
-		cPressedOnScrollV = nil
+		gui.root.cPressedOnScrollH = nil
+		gui.root.cPressedOnScrollV = nil
 	}
 	if mouse.IsButtonJustReleased(b.Middle) {
-		cMiddlePressed = nil
+		gui.root.cMiddlePressed = nil
 	}
 
 	camera.Zoom = gui.Scale
