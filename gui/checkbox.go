@@ -22,27 +22,45 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 
 	button(cam, root, widget)
 
-	if root.IsButtonJustClicked(widget.Id, cam) {
-		var group = root.themedField(field.CheckboxGroup, owner, widget)
-		widget.Fields[field.Value] = condition.If(isOff, "v", "")
-		var soundId = condition.If(isOff, "~on", "~off")
-		sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), soundId)
-		sound.Volume = root.Volume
-		defer sound.Play()
+	if !root.IsButtonJustClicked(widget.Id, cam) {
+		return
+	}
 
-		if group == "" {
-			return
-		}
+	var group = root.themedField(field.CheckboxGroup, owner, widget)
+	widget.Fields[field.Value] = condition.If(isOff, "v", "")
+	var soundId = condition.If(isOff, "~on", "~off")
+	sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), soundId)
+	sound.Volume = root.Volume
+	defer sound.Play()
 
+	if group != "" {
 		sound.AssetId = "~on"
 		for _, w := range root.Widgets {
+			if w.Id == widget.Id {
+				continue
+			}
+
 			var wOwner = root.Containers[w.OwnerId]
 			var wGroup = root.themedField(field.CheckboxGroup, wOwner, w)
 			if wGroup == group {
 				w.Fields[field.Value] = ""
+				w.tryToggleChildrenVisible(owner, root)
 			}
 		}
 
 		widget.Fields[field.Value] = "v"
+	}
+
+	widget.tryToggleChildrenVisible(owner, root)
+}
+
+func (widget *widget) tryToggleChildrenVisible(owner *container, root *root) {
+	for _, wId := range owner.Widgets {
+		var curWidget = root.Widgets[wId]
+		var toggleParentId = root.themedField(field.ToggleButtonId, owner, curWidget)
+		if toggleParentId == widget.Id {
+			var newHidden = condition.If(widget.Fields[field.Value] == "", "1", "")
+			curWidget.Fields[field.Hidden] = newHidden
+		}
 	}
 }
