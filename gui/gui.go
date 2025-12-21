@@ -366,12 +366,12 @@ func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 	return false
 }
 
-func (gui *GUI) WidgetIds() []string {
+func (gui *GUI) IdsWidgets() []string {
 	return collection.MapKeys(gui.root.Widgets)
 }
-func (gui *GUI) ContainerIds() []string {
+func (gui *GUI) IdsContainers() []string {
 	return collection.MapKeys(gui.root.Containers)
 }
-func (gui *GUI) ThemeIds() []string {
+func (gui *GUI) IdsThemes() []string {
 	return collection.MapKeys(gui.root.Themes)
 }
