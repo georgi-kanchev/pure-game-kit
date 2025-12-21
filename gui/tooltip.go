@@ -41,6 +41,10 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 	}
 }
 func drawTooltip(root *root, c *container, cam *graphics.Camera) {
+	if tooltip.textBox == nil {
+		tooltip.textBox = &graphics.TextBox{}
+	}
+
 	defer func() { tooltipWasVisible = tooltipVisible }()
 
 	var owner = root.Containers[tooltipForWidget.OwnerId]
@@ -65,22 +69,22 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 
 	setupVisualsText(root, tooltip, true)
 
-	var lines = textBox.TextLines()
-	var lh = textBox.LineHeight
-	var textH = float32(len(lines)*int(lh+textBox.LineGap)) + lh
-	textBox.Height = textH
-	textBox.X = tooltipForWidget.X + tooltipForWidget.Width/2 - textBox.Width/2
-	textBox.Y = tooltipForWidget.Y - textH
-	textBox.X = number.Limit(textBox.X, -camW/2, camW/2-width)
-	textBox.Y = number.Limit(textBox.Y, -camH/2, camH/2-textH)
-	tooltip.X, tooltip.Y = textBox.X, textBox.Y
+	var lines = tooltip.textBox.TextLines()
+	var lh = tooltip.textBox.LineHeight
+	var textH = float32(len(lines)*int(lh+tooltip.textBox.LineGap)) + lh
+	tooltip.textBox.Height = textH
+	tooltip.textBox.X = tooltipForWidget.X + tooltipForWidget.Width/2 - tooltip.textBox.Width/2
+	tooltip.textBox.Y = tooltipForWidget.Y - textH
+	tooltip.textBox.X = number.Limit(tooltip.textBox.X, -camW/2, camW/2-width)
+	tooltip.textBox.Y = number.Limit(tooltip.textBox.Y, -camH/2, camH/2-textH)
+	tooltip.X, tooltip.Y = tooltip.textBox.X, tooltip.textBox.Y
 	tooltip.Width, tooltip.Height = width, textH
 
-	textBox.X += margin / 2
+	tooltip.textBox.X += margin / 2
 
 	if tooltip.Y+tooltip.Height > tooltipForWidget.Y+2 { // margin of error 2 pixels
 		tooltip.Y = tooltipForWidget.Y + tooltipForWidget.Height
-		textBox.Y = tooltip.Y
+		tooltip.textBox.Y = tooltip.Y
 	}
 
 	setupVisualsTextured(root, tooltip)

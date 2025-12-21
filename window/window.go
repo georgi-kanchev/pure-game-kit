@@ -7,7 +7,9 @@ positioning & sizing the window.
 package window
 
 import (
+	col "image/color"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -39,7 +41,11 @@ func KeepOpen() bool {
 	rl.EndScissorMode()
 	rl.EndDrawing()
 	rl.BeginDrawing()
-	rl.ClearBackground(rl.GetColor(Color))
+
+	var r, g, b, a = color.Channels(Color)
+	rl.ClearBackground(col.RGBA{R: r, G: g, B: b, A: a})
+
+	w, h = rl.GetScreenWidth(), rl.GetScreenHeight()
 
 	internal.Update()
 
@@ -155,7 +161,7 @@ func SetIcon(assetId string) {
 //=================================================================
 
 func Size() (width, height int) {
-	return rl.GetScreenWidth(), rl.GetScreenHeight()
+	return w, h
 }
 
 func Monitors() (info []string, current int) {
@@ -205,6 +211,7 @@ func IsFocused() bool {
 // =================================================================
 // private
 
+var w, h = 0, 0
 var terminate = false
 var currTitle = ""
 var currTargetFPS byte = 0

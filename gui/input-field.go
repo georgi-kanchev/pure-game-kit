@@ -38,19 +38,23 @@ func (gui *GUI) InputFieldStopTyping() {
 
 func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 	setupVisualsText(root, widget, skipEmpty)
-	textBox.AlignmentX, textBox.AlignmentY = 0, 0
-	textBox.Width = 9999
-	textBox.Height = widget.Height - margin
-	textBox.LineHeight = widget.Height - margin
+	widget.textBox.AlignmentX, widget.textBox.AlignmentY = 0, 0
+	widget.textBox.Width = 9999
+	widget.textBox.Height = widget.Height - margin
+	widget.textBox.LineHeight = widget.Height - margin
 	var scroll = condition.If(typingIn == widget, scrollX, 0)
-	textBox.X = textBox.X + margin - scroll
-	textBox.Y += margin / 2
-	textBox.Text = txt.Remove(textBox.Text, "\n")
-	textBox.EmbeddedAssetsTag = 0
-	textBox.EmbeddedColorsTag = 0
-	textBox.EmbeddedThicknessesTag = 0
+	widget.textBox.X = widget.textBox.X + margin - scroll
+	widget.textBox.Y += margin / 2
+	widget.textBox.Text = txt.Remove(widget.textBox.Text, "\n")
+	widget.textBox.EmbeddedAssetsTag = 0
+	widget.textBox.EmbeddedColorsTag = 0
+	widget.textBox.EmbeddedThicknessesTag = 0
 }
 func inputField(cam *graphics.Camera, root *root, widget *widget) {
+	if widget.textBox == nil {
+		widget.textBox = &graphics.TextBox{}
+	}
+
 	var owner = root.Containers[widget.OwnerId]
 	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, widget), 30)
 
@@ -98,7 +102,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		var placeholder = root.themedField(field.InputFieldPlaceholder, owner, widget)
 		placeholder = txt.Remove(defaultValue(placeholder, "Type..."), "\n")
 		setupText(margin, root, widget, false) // don't skip when empty!
-		textBox.Text = placeholder
+		widget.textBox.Text = placeholder
 		isPlaceholder = true
 	}
 
@@ -115,7 +119,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 			ax, bx = bx, ax
 		}
 
-		cam.DrawQuad(ax, textBox.Y, bx-ax, textBox.Height, 0, palette.Azure)
+		cam.DrawQuad(ax, widget.textBox.Y, bx-ax, widget.textBox.Height, 0, palette.Azure)
 	})
 	maskText = false
 
@@ -125,7 +129,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 	if typingIn == widget && cursorTime < 0.5 {
 		var x = cursorX(margin, widget)
-		cam.DrawLine(x, textBox.Y, x, textBox.Y+textBox.Height, 5, palette.Black)
+		cam.DrawLine(x, widget.textBox.Y, x, widget.textBox.Y+widget.textBox.Height, 5, palette.Black)
 	}
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
 }
@@ -208,7 +212,7 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 			indexCursor = closestIndex(cam)
 
 			if mouse.IsButtonJustPressed(btn.Left) {
-				calculateXs(cam) // calculate once and update indexes to not drop performance
+				calculateXs(widget, cam) // calculate once and update indexes to not drop performance
 				indexCursor = closestIndex(cam)
 				indexSelect = indexCursor
 			}
@@ -242,7 +246,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		setText(widget, text)
 		indexCursor -= back
 		indexSelect = indexCursor
-		calculateXs(cam)
+		calculateXs(widget, cam)
 
 		var owner = root.Containers[widget.OwnerId]
 		sound.AssetId = defaultValue(root.themedField(field.InputFieldSoundErase, owner, widget), "~erase")
@@ -264,7 +268,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		remove(condition.If(ctrl, indexCursor-wordIndex(text, true), 1), 0)
 
 		// scrolls left when empty space appears on the right (if possible)
-		var textWidth, _ = textBox.TextMeasure(textBox.Text)
+		var textWidth, _ = widget.textBox.TextMeasure(widget.textBox.Text)
 		var textRight = (left - scrollX) + textWidth
 		if indexCursor > 0 && textRight < right {
 			scrollX -= right - textRight
@@ -285,7 +289,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	if indexCursor != indexSelect { // text is selected, we should remove it and then type
 		simulateRemove = true
 		tryRemove(cam, text, root, widget, margin)
-		text = textBox.Text
+		text = widget.textBox.Text
 		simulateRemove = false
 	}
 
@@ -306,7 +310,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	indexCursor += txt.Length(input)
 	indexSelect = indexCursor
 	cursorTime = 0
-	calculateXs(cam)
+	calculateXs(widget, cam)
 	return text
 }
 func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
@@ -342,22 +346,22 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, typingIn), 30)
 	setupText(margin, root, typingIn, true)
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
-		textBox.Text = ""
+		self.textBox.Text = ""
 	}
-	calculateXs(cam)
+	calculateXs(self, cam)
 }
 
-func calculateXs(cam *graphics.Camera) {
-	var textLength = txt.Length(textBox.Text)
+func calculateXs(self *widget, cam *graphics.Camera) {
+	var textLength = txt.Length(self.textBox.Text)
 	symbolXs = []float32{}
 
 	for i := range textLength {
-		var x, _, _, _, _ = textBox.TextSymbol(cam, i)
+		var x, _, _, _, _ = self.textBox.TextSymbol(cam, i)
 		symbolXs = append(symbolXs, x+scrollX)
 	}
 	if len(symbolXs) > 0 {
-		var w, _ = textBox.TextMeasure(textBox.Text)
-		symbolXs = append(symbolXs, textBox.X+w+scrollX)
+		var w, _ = self.textBox.TextMeasure(self.textBox.Text)
+		symbolXs = append(symbolXs, self.textBox.X+w+scrollX)
 	}
 
 	if indexSelect > textLength {
@@ -407,5 +411,5 @@ func wordIndex(text string, left bool) int {
 }
 func setText(widget *widget, text string) {
 	widget.Fields[field.Text] = text
-	textBox.Text = text
+	widget.textBox.Text = text
 }

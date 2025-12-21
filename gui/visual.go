@@ -48,6 +48,10 @@ func setupVisualsTextured(root *root, widget *widget) {
 	}
 }
 func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
+	if widget.textBox == nil {
+		widget.textBox = &graphics.TextBox{}
+	}
+
 	var owner = root.Containers[widget.OwnerId]
 	var text = root.themedField(p.Text, owner, widget)
 	if skipEmpty && text == "" {
@@ -55,25 +59,25 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	}
 
 	var disabled = widget.isDisabled(owner)
-	textBox.ScaleX, textBox.ScaleY = 1, 1
-	textBox.X, textBox.Y = widget.X, widget.Y
-	textBox.EmbeddedColorsTag = '`'
-	textBox.EmbeddedAssetsTag = '^'
-	textBox.EmbeddedThicknessesTag = '*'
-	textBox.Text = text
-	textBox.WordWrap = defaultValue(root.themedField(p.TextWordWrap, owner, widget), "on") == "on"
-	textBox.PivotX, textBox.PivotY = 0, 0
-	textBox.FontId = root.themedField(p.TextFontId, owner, widget)
-	textBox.LineHeight = parseNum(root.themedField(p.TextLineHeight, owner, widget), 30)
-	textBox.LineGap = parseNum(root.themedField(p.TextLineGap, owner, widget), 0)
-	textBox.SymbolGap = parseNum(root.themedField(p.TextSymbolGap, owner, widget), 0.2)
-	textBox.AlignmentX = parseNum(root.themedField(p.TextAlignmentX, owner, widget), 0)
-	textBox.AlignmentY = parseNum(root.themedField(p.TextAlignmentY, owner, widget), 0)
-	textBox.Width, textBox.Height = widget.Width, widget.Height
+	widget.textBox.ScaleX, widget.textBox.ScaleY = 1, 1
+	widget.textBox.X, widget.textBox.Y = widget.X, widget.Y
+	widget.textBox.EmbeddedColorsTag = '`'
+	widget.textBox.EmbeddedAssetsTag = '^'
+	widget.textBox.EmbeddedThicknessesTag = '*'
+	widget.textBox.Text = text
+	widget.textBox.WordWrap = defaultValue(root.themedField(p.TextWordWrap, owner, widget), "on") == "on"
+	widget.textBox.PivotX, widget.textBox.PivotY = 0, 0
+	widget.textBox.FontId = root.themedField(p.TextFontId, owner, widget)
+	widget.textBox.LineHeight = parseNum(root.themedField(p.TextLineHeight, owner, widget), 30)
+	widget.textBox.LineGap = parseNum(root.themedField(p.TextLineGap, owner, widget), 0)
+	widget.textBox.SymbolGap = parseNum(root.themedField(p.TextSymbolGap, owner, widget), 0.2)
+	widget.textBox.AlignmentX = parseNum(root.themedField(p.TextAlignmentX, owner, widget), 0)
+	widget.textBox.AlignmentY = parseNum(root.themedField(p.TextAlignmentY, owner, widget), 0)
+	widget.textBox.Width, widget.textBox.Height = widget.Width, widget.Height
 
-	textBox.EmbeddedAssetsTag =
+	widget.textBox.EmbeddedAssetsTag =
 		rune(defaultValue(root.themedField(p.TextEmbeddedAssetsTag, owner, widget), "^")[0])
-	textBox.EmbeddedAssetIds = []string{
+	widget.textBox.EmbeddedAssetIds = []string{
 		root.themedField(p.TextEmbeddedAssetId1, owner, widget),
 		root.themedField(p.TextEmbeddedAssetId2, owner, widget),
 		root.themedField(p.TextEmbeddedAssetId3, owner, widget),
@@ -81,9 +85,9 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 		root.themedField(p.TextEmbeddedAssetId5, owner, widget),
 	}
 
-	textBox.EmbeddedColorsTag =
+	widget.textBox.EmbeddedColorsTag =
 		rune(defaultValue(root.themedField(p.TextEmbeddedColorsTag, owner, widget), "`")[0])
-	textBox.EmbeddedColors = []uint{
+	widget.textBox.EmbeddedColors = []uint{
 		parseColor(root.themedField(p.TextEmbeddedColor1, owner, widget), disabled),
 		parseColor(root.themedField(p.TextEmbeddedColor2, owner, widget), disabled),
 		parseColor(root.themedField(p.TextEmbeddedColor3, owner, widget), disabled),
@@ -91,9 +95,9 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 		parseColor(root.themedField(p.TextEmbeddedColor5, owner, widget), disabled),
 	}
 
-	textBox.EmbeddedThicknessesTag =
+	widget.textBox.EmbeddedThicknessesTag =
 		rune(defaultValue(root.themedField(p.TextEmbeddedThicknessesTag, owner, widget), "*")[0])
-	textBox.EmbeddedThicknesses = []float32{
+	widget.textBox.EmbeddedThicknesses = []float32{
 		parseNum(root.themedField(p.TextEmbeddedThickness1, owner, widget), 0.5),
 		parseNum(root.themedField(p.TextEmbeddedThickness2, owner, widget), 0.5),
 		parseNum(root.themedField(p.TextEmbeddedThickness3, owner, widget), 0.5),
@@ -124,7 +128,7 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, frameSz, frameCol)
 	}
 
-	if textBox.Text != "" {
+	if widget.textBox != nil && widget.textBox.Text != "" {
 		var mx, my, mw, mh = cam.MaskX, cam.MaskY, cam.MaskWidth, cam.MaskHeight
 		if maskText { // used for inputbox mask
 			var x, y = cam.PointToScreen(widget.X+textMargin, widget.Y+textMargin/2)
@@ -145,24 +149,24 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		var disabled = widget.isDisabled(owner)
 		var outlineCol = root.themedField(p.TextColorOutline, owner, widget)
 		if outlineCol != "" {
-			var embeddedColors = textBox.EmbeddedColors
-			textBox.EmbeddedColors = []uint{}
-			textBox.Thickness = parseNum(root.themedField(p.TextThicknessOutline, owner, widget), 0.92)
-			textBox.Smoothness = parseNum(root.themedField(p.TextSmoothnessOutline, owner, widget), 0.08)
-			textBox.Color = parseColor(outlineCol, disabled)
-			cam.DrawTextBoxes(&textBox)
-			textBox.EmbeddedColors = embeddedColors
+			var embeddedColors = widget.textBox.EmbeddedColors
+			widget.textBox.EmbeddedColors = []uint{}
+			widget.textBox.Thickness = parseNum(root.themedField(p.TextThicknessOutline, owner, widget), 0.92)
+			widget.textBox.Smoothness = parseNum(root.themedField(p.TextSmoothnessOutline, owner, widget), 0.08)
+			widget.textBox.Color = parseColor(outlineCol, disabled)
+			cam.DrawTextBoxes(widget.textBox)
+			widget.textBox.EmbeddedColors = embeddedColors
 		}
 
 		var colVal = defaultValue(root.themedField(p.TextColor, owner, widget), "127 127 127")
 		var c = parseColor(colVal, disabled || fadeText)
-		textBox.Color = c
-		textBox.Thickness = parseNum(root.themedField(p.TextThickness, owner, widget), 0.5)
-		textBox.Smoothness = parseNum(root.themedField(p.TextSmoothness, owner, widget), 0.02)
-		cam.DrawTextBoxes(&textBox)
+		widget.textBox.Color = c
+		widget.textBox.Thickness = parseNum(root.themedField(p.TextThickness, owner, widget), 0.5)
+		widget.textBox.Smoothness = parseNum(root.themedField(p.TextSmoothness, owner, widget), 0.02)
+		cam.DrawTextBoxes(widget.textBox)
 
 		cam.Mask(mx, my, mw, mh)
 	}
 
-	textBox.Text = "" // skip any further texts unless they are setuped beforehand
+	// widget.textBox.Text = "" // skip any further texts unless they are setuped beforehand
 }

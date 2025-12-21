@@ -102,7 +102,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
-		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, rl.GetColor(s.Color))
+		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Color))
 	}
 	camera.end()
 }

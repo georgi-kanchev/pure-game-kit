@@ -14,17 +14,17 @@ func (camera *Camera) DrawColor(color uint) {
 	camera.end()
 
 	var x, y, w, h = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
-	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(h), rl.GetColor(color))
+	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(h), getColor(color))
 }
 func (camera *Camera) DrawScreenFrame(thickness int, color uint) {
 	camera.begin()
 	camera.end()
 
 	var x, y, w, h = camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight
-	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(thickness), rl.GetColor(color))             // top
-	rl.DrawRectangle(int32(x+w-thickness), int32(y), int32(thickness), int32(h), rl.GetColor(color)) // right
-	rl.DrawRectangle(int32(x), int32(y+h-thickness), int32(w), int32(thickness), rl.GetColor(color)) // bottom
-	rl.DrawRectangle(int32(x), int32(y), int32(thickness), int32(h), rl.GetColor(color))             // left
+	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(thickness), getColor(color))             // top
+	rl.DrawRectangle(int32(x+w-thickness), int32(y), int32(thickness), int32(h), getColor(color)) // right
+	rl.DrawRectangle(int32(x), int32(y+h-thickness), int32(w), int32(thickness), getColor(color)) // bottom
+	rl.DrawRectangle(int32(x), int32(y), int32(thickness), int32(h), getColor(color))             // left
 }
 
 func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
@@ -89,7 +89,7 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 
 func (camera *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 	camera.begin()
-	rl.DrawLineEx(rl.Vector2{X: ax, Y: ay}, rl.Vector2{X: bx, Y: by}, thickness, rl.GetColor(color))
+	rl.DrawLineEx(rl.Vector2{X: ax, Y: ay}, rl.Vector2{X: bx, Y: by}, thickness, getColor(color))
 	camera.end()
 }
 
@@ -99,7 +99,7 @@ func (camera *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]
 	for i := 1; i < len(points); i++ {
 		var a = rl.Vector2{X: points[i-1][0], Y: points[i-1][1]}
 		var b = rl.Vector2{X: points[i][0], Y: points[i][1]}
-		rl.DrawLineEx(a, b, thickness, rl.GetColor(color))
+		rl.DrawLineEx(a, b, thickness, getColor(color))
 	}
 	camera.end()
 }
@@ -164,7 +164,7 @@ func (camera *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uin
 
 	if len(colors) == 1 {
 		camera.begin()
-		rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, rl.GetColor(colors[0]))
+		rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, getColor(colors[0]))
 		camera.end()
 		return // draw regular rect with one provided color
 	}
@@ -173,8 +173,8 @@ func (camera *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uin
 		colors = append(colors, colors[len(colors)-1])
 	}
 
-	var tl, tr = rl.GetColor(colors[0]), rl.GetColor(colors[1])
-	var br, bl = rl.GetColor(colors[2]), rl.GetColor(colors[3])
+	var tl, tr = getColor(colors[0]), getColor(colors[1])
+	var br, bl = getColor(colors[2]), getColor(colors[3])
 	var prevAng = camera.Angle
 	camera.Angle = angle
 	camera.begin()
@@ -196,20 +196,20 @@ func (camera *Camera) DrawPoints(radius float32, color uint, points ...[2]float3
 func (camera *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 	camera.begin()
 	if len(colors) == 1 {
-		rl.DrawCircle(int32(x), int32(y), radius, rl.GetColor(colors[0]))
+		rl.DrawCircle(int32(x), int32(y), radius, getColor(colors[0]))
 	} else if len(colors) > 1 {
-		rl.DrawCircleGradient(int32(x), int32(y), radius, rl.GetColor(colors[0]), rl.GetColor(colors[1]))
+		rl.DrawCircleGradient(int32(x), int32(y), radius, getColor(colors[0]), getColor(colors[1]))
 	}
 	camera.end()
 }
 func (camera *Camera) DrawEllipse(x, y, width, height float32, color uint) {
 	camera.begin()
-	rl.DrawEllipse(int32(x), int32(y), width/2, height/2, rl.GetColor(color))
+	rl.DrawEllipse(int32(x), int32(y), width/2, height/2, getColor(color))
 	camera.end()
 }
 func (camera *Camera) DrawCone(x, y, length, width, angle float32, color uint) {
 	camera.begin()
-	rl.DrawCircleSector(rl.Vector2{X: x, Y: y}, length, angle-width/2, angle+width/2, 64, rl.GetColor(color))
+	rl.DrawCircleSector(rl.Vector2{X: x, Y: y}, length, angle-width/2, angle+width/2, 64, getColor(color))
 	camera.end()
 }
 
@@ -244,7 +244,7 @@ func (camera *Camera) DrawShapes(color uint, points ...[2]float32) {
 				v1, v3 = v3, v1
 			}
 
-			rl.DrawTriangle(v1, v2, v3, rl.GetColor(color))
+			rl.DrawTriangle(v1, v2, v3, getColor(color))
 		}
 	}
 }
@@ -271,7 +271,7 @@ func (camera *Camera) DrawShapesFast(color uint, points ...[2]float32) {
 			collection.Reverse(vectors)
 		}
 
-		rl.DrawTriangleFan(vectors, rl.GetColor(color))
+		rl.DrawTriangleFan(vectors, getColor(color))
 	}
 }
 
@@ -301,7 +301,7 @@ func (camera *Camera) DrawTexture(textureId string, x, y, width, height, angle f
 		rectTexture.Height *= -1
 	}
 
-	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, rl.GetColor(color))
+	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, getColor(color))
 	camera.end()
 }
 func (camera *Camera) DrawText(fontId, text string, x, y, height float32, color uint) {
@@ -327,7 +327,7 @@ func (camera *Camera) DrawText(fontId, text string, x, y, height float32, color 
 		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), []float32{0.5}, rl.ShaderUniformFloat)
 	}
 
-	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, 0, rl.GetColor(color))
+	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, 0, getColor(color))
 
 	if sh.ID != 0 {
 		rl.EndShaderMode()

@@ -9,6 +9,7 @@ gui xml doesn't allow some symbols such as '>', the strings can be swapped with 
 gui - fixed offset properties again, this time for real
 gui - toggles for checkboxes & groups
 graphics - textbox format symbols caching
+small optimizations
 
 [123] [Wed] [17-12-2025]
 gui - multiple XMLs constructor optimization

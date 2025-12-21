@@ -1,7 +1,9 @@
 package graphics
 
 import (
+	"image/color"
 	"pure-game-kit/internal"
+	col "pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 	"pure-game-kit/window"
@@ -214,8 +216,15 @@ func (camera *Camera) begin() {
 	}
 
 	rl.BeginMode2D(rlCam)
-	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
-	rl.BeginBlendMode(rl.BlendMode(camera.Blend))
+
+	var w, h = window.Size()
+	if maskX != 0 || maskY != 0 || maskW != w || maskH != h {
+		rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
+	}
+
+	if camera.Blend != 0 {
+		rl.BeginBlendMode(rl.BlendMode(camera.Blend))
+	}
 }
 
 // call after draw to get back to using screen space
@@ -224,8 +233,15 @@ func (camera *Camera) end() {
 		return
 	}
 
-	rl.EndBlendMode()
-	rl.EndScissorMode()
+	if camera.Blend != 0 {
+		rl.EndBlendMode()
+	}
+
+	var w, h = window.Size()
+	if maskX != 0 || maskY != 0 || maskW != w || maskH != h {
+		rl.EndScissorMode()
+	}
+
 	rl.EndMode2D()
 }
 
@@ -246,6 +262,14 @@ func (camera *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
 	var maxY = number.Biggest(stly, stry, sbry, sbly)
 
 	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
+}
+
+//=================================================================
+// other
+
+func getColor(value uint) color.RGBA {
+	var r, g, b, a = col.Channels(value)
+	return color.RGBA{R: r, G: g, B: b, A: a}
 }
 
 func tryRecreateWindow() {
