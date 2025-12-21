@@ -28,7 +28,6 @@ const (
 	OffsetX       = "offsetX"       // [widget]
 	OffsetY       = "offsetY"       // [widget]
 	TooltipText   = "tooltipText"   // [widget]
-	Language      = "language"      // [widget] hides/shows elements according to a GUI language parameter
 
 	ToggleButtonId = "toggleButtonId" // [widget] [theme] hides/shows widget when button is clicked
 	TooltipId      = "tooltipId"      // [widget] [theme]

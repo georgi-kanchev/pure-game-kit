@@ -216,11 +216,7 @@ func (camera *Camera) begin() {
 	}
 
 	rl.BeginMode2D(rlCam)
-
-	var w, h = window.Size()
-	if maskX != 0 || maskY != 0 || maskW != w || maskH != h {
-		rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
-	}
+	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
 
 	if camera.Blend != 0 {
 		rl.BeginBlendMode(rl.BlendMode(camera.Blend))
@@ -237,11 +233,7 @@ func (camera *Camera) end() {
 		rl.EndBlendMode()
 	}
 
-	var w, h = window.Size()
-	if maskX != 0 || maskY != 0 || maskW != w || maskH != h {
-		rl.EndScissorMode()
-	}
-
+	rl.EndScissorMode()
 	rl.EndMode2D()
 }
 

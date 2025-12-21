@@ -18,7 +18,6 @@ type root struct {
 	XmlContainers []*container `xml:"Container"`
 	XmlScale      float32      `xml:"scale,attr"`
 	XmlVolume     float32      `xml:"volume,attr"`
-	Language      string       `xml:"language,attr"`
 
 	Volume       float32
 	ContainerIds []string

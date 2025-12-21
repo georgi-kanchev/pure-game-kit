@@ -58,10 +58,9 @@ import (
 // https://showcase.primefaces.org - basic default browser widgets showcase (scroll down to forms on the left)
 
 type GUI struct {
-	Scale    float32
-	Volume   float32
-	Language string
-	root     *root
+	Scale  float32
+	Volume float32
+	root   *root
 }
 
 /*
@@ -159,7 +158,6 @@ func NewFromXMLs(xmlsData ...string) *GUI {
 
 	gui.Scale = gui.root.XmlScale
 	gui.Volume = gui.root.XmlVolume
-	gui.Language = gui.root.Language
 	return &gui
 }
 
@@ -220,7 +218,6 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var containers = gui.root.ContainerIds
 
 	gui.root.Volume = gui.Volume
-	gui.root.Language = gui.Language
 
 	gui.reset(camera) // keep order of variables & reset
 
@@ -367,4 +364,14 @@ func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 		return w.isFocused(gui.root, camera)
 	}
 	return false
+}
+
+func (gui *GUI) WidgetIds() []string {
+	return collection.MapKeys(gui.root.Widgets)
+}
+func (gui *GUI) ContainerIds() []string {
+	return collection.MapKeys(gui.root.Containers)
+}
+func (gui *GUI) ThemeIds() []string {
+	return collection.MapKeys(gui.root.Themes)
 }
