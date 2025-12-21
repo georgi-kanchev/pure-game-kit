@@ -6,8 +6,11 @@ shuffling it or choosing an item.
 package random
 
 import (
+	"fmt"
+	"hash/fnv"
 	"math"
 	"pure-game-kit/utility/number"
+	"reflect"
 	"time"
 )
 
@@ -100,6 +103,21 @@ func Pick[T any](items ...T) T {
 }
 func PickFrom[T any](items []T, seeds ...float32) T {
 	return items[Range(0, len(items), seeds...)]
+}
+
+func Hash(v any) uint32 {
+	var h = fnv.New32a()
+	var val = reflect.ValueOf(v)
+	if val.Kind() == reflect.Pointer {
+		val = val.Elem()
+	}
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		if field.CanInterface() { // only exported fields
+			h.Write(fmt.Appendf(nil, "%v", field.Interface()))
+		}
+	}
+	return h.Sum32()
 }
 
 //=================================================================

@@ -3,6 +3,7 @@ package graphics
 import (
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/random"
 	txt "pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -20,6 +21,10 @@ type TextBox struct {
 	EmbeddedAssetIds    []string
 	EmbeddedColors      []uint
 	EmbeddedThicknesses []float32
+
+	hash         uint32
+	cacheChars   []string
+	cacheSymbols []symbol
 }
 
 func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
@@ -129,6 +134,11 @@ type symbol struct {
 }
 
 func (t *TextBox) formatSymbols() ([]string, []symbol) {
+	var curHash = random.Hash(t)
+	if t.hash == curHash {
+		return t.cacheChars, t.cacheSymbols
+	}
+
 	var result = []symbol{}
 	var resultLines = []string{}
 	var assetTag = string(t.EmbeddedAssetsTag)
@@ -244,6 +254,9 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		}
 	}
 
+	t.hash = curHash
+	t.cacheChars = resultLines
+	t.cacheSymbols = result
 	return resultLines, result
 }
 
