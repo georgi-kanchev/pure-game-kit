@@ -71,7 +71,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 
 	for _, wId := range c.Widgets {
 		var widget = root.Widgets[wId]
-		if widget.isHidden(root, c) || widget.Class == "tooltip" {
+		if widget.isSkipped(root, c) {
 			continue
 		}
 
@@ -297,7 +297,7 @@ func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, m
 	for _, w := range c.Widgets {
 		var widget = root.Widgets[w]
 		var _, isBgr = widget.Fields[f.FillContainer]
-		if isBgr || widget.isHidden(root, c) || widget.Class == "tooltip" {
+		if isBgr || widget.isSkipped(root, c) {
 			continue
 		}
 

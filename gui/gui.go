@@ -58,14 +58,15 @@ import (
 // https://showcase.primefaces.org - basic default browser widgets showcase (scroll down to forms on the left)
 
 type GUI struct {
-	Scale  float32
-	Volume float32
-	root   *root
+	Scale    float32
+	Volume   float32
+	Language string
+	root     *root
 }
 
 /*
 Joins multiple XMLs into a single GUI - useful for splitting single large files into multiple.
-Keep in mind that the GUI will have the Scale & Volume of only the first XML root, the rest are ignored.
+Keep in mind that the GUI will have the Scale, Volume & Language of only the first XML root, the rest are ignored.
 
 Pseudo-XML format example:
 
@@ -158,11 +159,12 @@ func NewFromXMLs(xmlsData ...string) *GUI {
 
 	gui.Scale = gui.root.XmlScale
 	gui.Volume = gui.root.XmlVolume
+	gui.Language = gui.root.Language
 	return &gui
 }
 
 /*
-Constructs an XML from a chain of elements (Widgets, Containers and Themes) with Scale & Volume of 1.
+Constructs an XML from a chain of elements (Widgets, Containers and Themes) with Scale & Volume of 1 & Language "".
 Useful for creating the GUI in an autocompleted code environment instead of in a raw XML file, like so:
 
 	var xml = gui.NewElementsXML(
@@ -218,6 +220,7 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var containers = gui.root.ContainerIds
 
 	gui.root.Volume = gui.Volume
+	gui.root.Language = gui.Language
 
 	gui.reset(camera) // keep order of variables & reset
 

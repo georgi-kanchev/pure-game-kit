@@ -58,7 +58,6 @@ func (textBox *TextBox) TextWrap(text string) string {
 			word += " " // split removes spaces, add it for all words but last one
 		}
 
-		var wordLength = txt.Length(word)
 		var wordSize = rl.MeasureTextEx(*font, txt.Trim(word), textBox.LineHeight, textBox.gapSymbols())
 		var wordEndOfBox = curX+wordSize.X > textBox.Width
 		var firstWord = w == 0
@@ -69,24 +68,24 @@ func (textBox *TextBox) TextWrap(text string) string {
 			buffer.WriteSymbol('\n')
 		}
 
-		for c := range wordLength {
-			var char = rune(word[c])
+		for i, c := range word {
+			var char = string(c)
 			var charSize = rl.MeasureTextEx(*font, string(char), textBox.LineHeight, 0)
 			var charEndOfBoxX = curX+charSize.X > textBox.Width
-			var charFirst = c == 0 && firstWord
+			var charFirst = i == 0 && firstWord
 
-			if !charFirst && char != ' ' && (char == '\n' || charEndOfBoxX) {
+			if !charFirst && char != " " && (char == "\n" || charEndOfBoxX) {
 				curX = 0
 				curY += textBox.LineHeight + textBox.gapLines()
 
-				if char != '\n' {
+				if char != "\n" {
 					buffer.WriteSymbol('\n')
 				}
 			}
 
-			buffer.WriteSymbol(char)
+			buffer.WriteText(char)
 
-			if char == textBox.EmbeddedColorsTag || char == textBox.EmbeddedThicknessesTag {
+			if char == string(textBox.EmbeddedColorsTag) || char == string(textBox.EmbeddedThicknessesTag) {
 				continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
 			} // however, the assets tag has width and it should
 
@@ -161,7 +160,6 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	for l, line := range lines {
 		var tagless = txt.Remove(line, colorTag, thickTag)
 		var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
-		var lineLength = txt.Length(line)
 		var skip = false // replaces 'continue' to avoid skipping the offset calculations
 
 		curX = (t.Width - lineSize.X) * alignX
@@ -179,11 +177,11 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			line = line[:len(line)-3] + "..." // invisible lines after this one, indicate it
 		}
 
-		for c := range lineLength {
-			var char = string(line[c])
+		for _, c := range line {
+			var char = string(c)
 			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
 
-			if line[c] == '\r' {
+			if char == "\r" {
 				lastChar = char
 				continue // use as zerospace character or skip anyway
 			}

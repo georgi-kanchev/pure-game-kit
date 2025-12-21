@@ -18,16 +18,17 @@ const (
 	Width    = "width"    // [widget] [theme] [container]
 	Height   = "height"   // [widget] [theme] [container]
 	AssetId  = "assetId"  // [widget] [theme] [container]
-	GapX     = "gapX"     // [widget] [theme] [container]
-	GapY     = "gapY"     // [widget] [theme] [container]
-	TargetId = "targetId" // [container]
+	GapX     = "gapX"     // [widget] [theme] [container] horizontal spacing between self & previous widget
+	GapY     = "gapY"     // [widget] [theme] [container] vertical spacing between self & previous widget
+	TargetId = "targetId" // [container] which container fields to use with Target... dynamics
 
-	Value         = "value"         // [widget]
+	Value         = "value"         // [widget] used by slider & checkbox to represent state
 	FillContainer = "fillContainer" // [widget] treated as the graphics of its container, not a standalone widget
 	NewRow        = "newRow"        // [widget] skipped for first widget in container; example: "200", "" = GapY
 	OffsetX       = "offsetX"       // [widget]
 	OffsetY       = "offsetY"       // [widget]
 	TooltipText   = "tooltipText"   // [widget]
+	Language      = "language"      // [widget] hides/shows elements according to a GUI language parameter
 
 	ToggleButtonId = "toggleButtonId" // [widget] [theme] hides/shows widget when button is clicked
 	TooltipId      = "tooltipId"      // [widget] [theme]
@@ -92,7 +93,7 @@ const (
 	CheckboxSoundOn  = "checkboxSoundOn"  // [widget] [theme] default: "~on"
 	CheckboxSoundOff = "checkboxSoundOff" // [widget] [theme] default: "~off"
 
-	MenuContainerId = "menuContainerId" // [widget] [theme]
+	MenuContainerId = "menuContainerId" // [widget] [theme] which container should this menu toggle
 	MenuSound       = "menuSound"       // [widget] [theme] default: "~popup"
 
 	InputFieldMargin      = "inputFieldMargin"      // [widget] [theme] default: "30"

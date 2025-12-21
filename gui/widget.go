@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
+	f "pure-game-kit/gui/field"
 )
 
 type widget struct {
@@ -53,4 +54,9 @@ func (widget *widget) isHidden(root *root, owner *container) bool {
 	var hidden = widget.Fields[field.Hidden] != ""
 	var parentHidden = toggleParent != nil && toggleParent.isHidden(root, owner)
 	return hidden || parentHidden
+}
+
+func (widget *widget) isSkipped(root *root, owner *container) bool {
+	var lang = widget.Fields[f.Language]
+	return widget.isHidden(root, owner) || widget.Class == "tooltip" || lang != root.Language
 }
