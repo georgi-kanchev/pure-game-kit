@@ -52,6 +52,7 @@ import (
 	"pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/utility/collection"
+	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 )
 
@@ -318,6 +319,15 @@ func (gui *GUI) Field(id, field string) string {
 	}
 
 	return ""
+}
+func (gui *GUI) FieldNumber(id, field string) float32 {
+	var w, hasW = gui.root.Widgets[id]
+	var owner *container
+	if hasW {
+		owner = gui.root.Containers[w.OwnerId]
+	}
+	var value = dyn(owner, gui.Field(id, field), "NaN")
+	return parseNum(value, number.NaN())
 }
 
 func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {

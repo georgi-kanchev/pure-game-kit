@@ -6,8 +6,8 @@ import (
 	"pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/cursor"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/time"
 )
 
 func Tooltip(id string, properties ...string) string {
@@ -22,7 +22,7 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 
 	if condition.JustTurnedTrue(hov, ";;hoverrr-"+widget.Id) {
 		tooltipForWidget = widget
-		tooltipAt = time.RealRuntime()
+		tooltipAt = internal.Runtime
 		var tooltipId = root.themedField(field.TooltipId, c, widget)
 		tooltip = root.Widgets[tooltipId]
 
@@ -48,7 +48,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 	defer func() { tooltipWasVisible = tooltipVisible }()
 
 	var owner = root.Containers[tooltipForWidget.OwnerId]
-	var hidden = tooltip == nil || tooltipForWidget == nil || time.RealRuntime() < tooltipAt+0.5 ||
+	var hidden = tooltip == nil || tooltipForWidget == nil || internal.Runtime < tooltipAt+0.5 ||
 		tooltip.Fields[field.Text] == "" || !tooltipForWidget.isFocused(root, cam)
 	tooltipVisible = !hidden
 

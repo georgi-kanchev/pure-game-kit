@@ -152,7 +152,7 @@ func (root *root) restore(camera *graphics.Camera, prevAng, prevZoom, prevX, pre
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
 	if mouse.IsButtonJustReleased(b.Left) {
-		root.wPressedOn = nil
+		// root.wPressedOn = nil // not sure if needed, causes problems
 		tooltip = nil
 	}
 

@@ -16,12 +16,6 @@ import (
 	"time"
 )
 
-//=================================================================
-
-func SetScale(scale float32) { internal.TimeScale = scale }
-
-//=================================================================
-
 func AsClock24(seconds float32, divider string, units int) string {
 	var ts = time.Duration(seconds * float32(time.Second))
 	return formatTimeParts(ts, divider, units, false, false)
@@ -31,18 +25,14 @@ func AsClock12(seconds float32, divider string, units int, amPm bool) string {
 	return formatTimeParts(ts, divider, units, true, amPm)
 }
 
-func Scale() float32                { return internal.TimeScale }
-func Clock() float32                { return internal.Clock }
-func FrameDelta() float32           { return internal.DeltaTime }
-func FrameRate() float32            { return internal.FrameRate }
-func FrameRateAverage() float32     { return internal.FrameRateAverage }
-func FrameCount() uint64            { return internal.FrameCount }
-func Runtime() float32              { return internal.Runtime }
-func RealFrameDelta() float32       { return internal.RealDeltaTime }
-func RealFrameRate() float32        { return internal.RealFrameRate }
-func RealFrameRateAverage() float32 { return internal.RealFrameRateAverage }
-func RealFrameCount() uint64        { return internal.RealFrameCount }
-func RealRuntime() float32          { return internal.RealRuntime }
+//=================================================================
+
+func Clock() float32            { return internal.Clock }
+func FrameDelta() float32       { return internal.DeltaTime }
+func FrameRate() float32        { return internal.FrameRate }
+func FrameRateAverage() float32 { return internal.FrameRateAverage }
+func FrameCount() uint64        { return internal.FrameCount }
+func Runtime() float32          { return internal.Runtime }
 
 func ToMilliseconds(seconds float32) float32 { return seconds * 1000 }
 func ToMinutes(secodns float32) float32      { return secodns / 60 }

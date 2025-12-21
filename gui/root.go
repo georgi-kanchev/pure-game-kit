@@ -9,8 +9,8 @@ import (
 	"pure-game-kit/input/keyboard/key"
 	m "pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/text"
-	"pure-game-kit/utility/time"
 )
 
 type root struct {
@@ -54,7 +54,7 @@ func (root *root) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camer
 	var owner = root.Containers[widget.OwnerId]
 	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
 	var first = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustPressed(b.Left))
-	var tick = time.RealRuntime() > root.wPressedAt+0.5
+	var tick = internal.Runtime > root.wPressedAt+0.5
 	var inputHold = k.IsKeyPressed(hotkey) || (focus && root.wPressedOn == widget && m.IsButtonPressed(b.Left))
 	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId, "-", hotkey)) && tick
 

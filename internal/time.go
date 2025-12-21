@@ -8,9 +8,7 @@ import (
 )
 
 var Clock, DeltaTime, FrameRate, FrameRateAverage, Runtime float32
-var RealDeltaTime, RealFrameRate, RealFrameRateAverage, RealRuntime float32
-var FrameCount, RealFrameCount uint64
-var TimeScale float32 = 1
+var FrameCount uint64
 
 var CallAfter = make(map[float32][]func())
 var CallFor = make(map[float32][]func(remaining float32))
@@ -46,19 +44,10 @@ func updateTimeData() {
 		prevClock = Clock - DeltaTime
 	}
 
-	RealDeltaTime = rl.GetFrameTime()
-	RealRuntime += RealDeltaTime
-	RealFrameRate = 1.0 / RealDeltaTime
-	RealFrameRateAverage = float32(RealFrameCount) / RealRuntime
-	RealFrameCount++
-
-	DeltaTime = number.Smallest(RealDeltaTime*TimeScale, deltaMax)
+	DeltaTime = number.Smallest(rl.GetFrameTime(), deltaMax)
 	Runtime += DeltaTime
 	FrameRate = 1.0 / DeltaTime
 	FrameRateAverage = float32(FrameCount) / Runtime
-	if RealDeltaTime < deltaMax {
-		FrameCount++
-	}
 
 	prevClock = Clock
 }

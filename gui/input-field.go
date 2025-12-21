@@ -9,6 +9,7 @@ import (
 	"pure-game-kit/input/mouse"
 	btn "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	txt "pure-game-kit/utility/text"
@@ -94,7 +95,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		tryFocusNextField(cam, root, widget)
 
 		scrollX = condition.If(txt.Length(text) == 0, 0, scrollX)
-		cursorTime += time.RealFrameDelta()
+		cursorTime += internal.DeltaTime
 	}
 
 	var isPlaceholder = false

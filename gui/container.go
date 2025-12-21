@@ -177,7 +177,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			c.ScrollX -= delta
 			c.velocityX = -delta * dragMomentum
 		} else { // apply momentum
-			c.ScrollX += c.velocityX * internal.RealDeltaTime
+			c.ScrollX += c.velocityX * internal.DeltaTime
 			c.velocityX *= dragFriction // friction
 			if number.Absolute(c.velocityX) < 0.01 {
 				c.velocityX = 0
@@ -207,7 +207,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 
 			// smooth handle dragging
 			var diff = c.targetScrollX - c.ScrollX
-			c.ScrollX += diff * handleSpeed * internal.RealDeltaTime
+			c.ScrollX += diff * handleSpeed * internal.DeltaTime
 			if number.Absolute(diff) < 0.5 {
 				c.ScrollX = c.targetScrollX
 			}
@@ -237,7 +237,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			c.ScrollY -= delta
 			c.velocityY = -delta * dragMomentum
 		} else { // apply momentum
-			c.ScrollY += c.velocityY * internal.RealDeltaTime
+			c.ScrollY += c.velocityY * internal.DeltaTime
 			c.velocityY *= dragFriction // friction
 			if number.Absolute(c.velocityY) < 0.01 {
 				c.velocityY = 0
@@ -266,7 +266,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 
 			// smooth handle dragging
 			var diff = c.targetScrollY - c.ScrollY
-			c.ScrollY += diff * handleSpeed * internal.RealDeltaTime
+			c.ScrollY += diff * handleSpeed * internal.DeltaTime
 			if number.Absolute(diff) < 0.5 {
 				c.ScrollY = c.targetScrollY
 			}
