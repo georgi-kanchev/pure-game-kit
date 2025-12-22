@@ -110,6 +110,15 @@ func (shape *Shape) CornerPoints() [][2]float32 {
 
 func (shape *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVelocityX, newVelocityY float32) {
 	for _, target := range targets {
+		var corners [][2]float32
+		var targetCorners [][2]float32
+		if shape.minX == 0 && shape.minY == 0 && shape.maxX == 0 && shape.maxY == 0 {
+			corners = shape.CornerPoints()
+		}
+		if target.minX == 0 && target.minY == 0 && target.maxX == 0 && target.maxY == 0 {
+			corners = target.CornerPoints()
+		}
+
 		if !shape.inBoundingBoxShape(*target) {
 			continue
 		}
@@ -118,9 +127,8 @@ func (shape *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (ne
 		var cay = shape.minY + (shape.maxY-shape.minY)/2
 		var cbx = target.minX + (target.maxX-target.minX)/2
 		var cby = target.minY + (target.maxY-target.minY)/2
-		var corners = shape.CornerPoints()
-		var targetCorners = target.CornerPoints()
-
+		corners = shape.CornerPoints()
+		targetCorners = target.CornerPoints()
 		corners = corners[:len(corners)-1]
 		targetCorners = targetCorners[:len(targetCorners)-1]
 
