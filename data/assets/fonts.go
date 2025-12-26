@@ -4,9 +4,14 @@ import (
 	"pure-game-kit/data/file"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+func LoadedFontIds() []string {
+	return collection.MapKeys(internal.Fonts)
+}
 
 func LoadFont(size int, filePath string) string {
 	tryCreateWindow()

@@ -5,10 +5,18 @@ import (
 	"pure-game-kit/data/file"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 	"slices"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+func LoadedSoundIds() []string {
+	return collection.MapKeys(internal.Sounds)
+}
+func LoadedMusicIds() []string {
+	return collection.MapKeys(internal.Music)
+}
 
 func LoadSound(filePath string) string {
 	tryCreateWindow()

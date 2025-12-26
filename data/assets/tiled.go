@@ -11,6 +11,16 @@ import (
 	"slices"
 )
 
+func LoadedTiledProjectIds() []string {
+	return collection.MapKeys(internal.TiledProjects)
+}
+func LoadedTiledMapIds() []string {
+	return collection.MapKeys(internal.TiledMaps)
+}
+func LoadedTiledTilesetIds() []string {
+	return collection.MapKeys(internal.TiledTilesets)
+}
+
 func LoadTiledProject(filePath string) string {
 	tryCreateWindow()
 

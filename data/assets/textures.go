@@ -5,10 +5,15 @@ import (
 	"pure-game-kit/data/file"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 	"slices"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+func LoadedTextureIds() []string {
+	return collection.MapKeys(internal.Textures)
+}
 
 func LoadTexture(filePath string) string {
 	tryCreateWindow()
