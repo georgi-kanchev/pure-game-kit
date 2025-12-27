@@ -1,6 +1,6 @@
 /*
-Wraps the JSON & XML formats, as well as some byte compression/decompression functionalities to make
-them more digestible and clarify their API.
+Wraps the JSON & XML formats, as well as some byte convertion/compression/decompression
+functionalities to make them more digestible and clarify their API.
 */
 package storage
 
@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"
+	"encoding/gob"
 	"encoding/json"
 	"encoding/xml"
 	"io"
@@ -15,7 +16,7 @@ import (
 	"pure-game-kit/debug"
 )
 
-func FromFileJSON(path string, structInstance any) {
+func FromFileJSON(path string, objectPointer any) {
 	var file, err = os.Open(path)
 	if err != nil {
 		debug.LogError("Failed to open JSON file: \"", path, "\"\n", err)
@@ -24,12 +25,12 @@ func FromFileJSON(path string, structInstance any) {
 	defer file.Close()
 
 	var decoder = json.NewDecoder(file)
-	var err2 = decoder.Decode(structInstance)
+	var err2 = decoder.Decode(objectPointer)
 	if err2 != nil {
 		debug.LogError("Failed to decode JSON file: \"", path, "\"\n", err2)
 	}
 }
-func FromFileXML(path string, structInstance any) {
+func FromFileXML(path string, objectPointer any) {
 	var file, err = os.Open(path)
 	if err != nil {
 		debug.LogError("Failed to open XML file: \"", path, "\"\n", err)
@@ -38,35 +39,35 @@ func FromFileXML(path string, structInstance any) {
 	defer file.Close()
 
 	var decoder = xml.NewDecoder(file)
-	var err2 = decoder.Decode(structInstance)
+	var err2 = decoder.Decode(objectPointer)
 	if err2 != nil {
 		debug.LogError("Failed to decode XML file: \"", path, "\"\n", err2)
 	}
 }
 
-func FromJSON(jsonData string, structInstance any) {
-	var err = json.Unmarshal([]byte(jsonData), structInstance)
+func FromJSON(jsonData string, objectPointer any) {
+	var err = json.Unmarshal([]byte(jsonData), objectPointer)
 	if err != nil {
 		debug.LogError("Failed to populate struct instance with JSON data!\n", err)
 	}
 }
-func FromXML(xmlData string, structInstance any) {
-	var err = xml.Unmarshal([]byte(xmlData), structInstance)
+func FromXML(xmlData string, objectPointer any) {
+	var err = xml.Unmarshal([]byte(xmlData), objectPointer)
 	if err != nil {
 		debug.LogError("Failed to populate struct instance with XML data!\n", err)
 	}
 }
 
-func ToJSON(structPointer any) string {
-	var data, err = json.MarshalIndent(structPointer, "", "  ") // pretty print
+func ToJSON(objectPointer any) string {
+	var data, err = json.MarshalIndent(objectPointer, "", "  ") // pretty print
 	if err != nil {
 		debug.LogError("Failed to create JSON data from struct instance!\n", err)
 		return ""
 	}
 	return string(data)
 }
-func ToXML(structPointer any) string {
-	var data, err = xml.MarshalIndent(structPointer, "", "  ") // pretty print
+func ToXML(objectPointer any) string {
+	var data, err = xml.MarshalIndent(objectPointer, "", "  ") // pretty print
 	if err != nil {
 		debug.LogError("Failed to create XML data from struct instance!\n", err)
 		return ""
@@ -123,4 +124,72 @@ func DecompressGZIP(data []byte) []byte {
 	}
 	return result
 
+}
+
+/*
+Converts any object (struct, slice, map) into bytes that can be used later to populate the object back with:
+
+	storage.FromBytes(...)
+
+To register interface implementations, optional sub-types are required when the object contains interfaces.
+Does not work when interfaces with the same names are provided from different packages. Usage example:
+
+	type Animal interface {}
+	type Dog struct {}   // implements Animal
+	type Cat struct {}   // implements Animal
+	type Horse struct {} // implements Animal
+
+	var animals []Animal // dogs, cats & horses inside
+	var bytes = storage.ToBytes(animals, Dog{}, Cat{}, Horse{}) // order does not matter
+	var newAnimals []Animal
+	storage.FromBytes(bytes, &newAnimals, Dog{}, Cat{}, Horse{}) // order does not matter
+
+Useful for saving to a file.
+*/
+func ToBytes(objectPointer any, subTypes ...any) []byte {
+	for _, t := range subTypes {
+		gob.Register(t)
+	}
+
+	var buf bytes.Buffer
+	var err = gob.NewEncoder(&buf).Encode(objectPointer)
+	if err != nil {
+		debug.LogError("Failed to convert struct instance into binary data!\n", err)
+		return nil
+	}
+	return CompressZLIB(buf.Bytes())
+}
+
+/*
+Populates an object (struct, slice, map) from bytes produced by:
+
+	storage.ToBytes(...)
+
+To populate the object correctly, optional sub-types are required when the data (that was converted to bytes)
+contains interfaces. Does not work when interfaces with the same names are provided from different packages.
+Usage example:
+
+	type Animal interface {}
+	type Dog struct {}   // implements Animal
+	type Cat struct {}   // implements Animal
+	type Horse struct {} // implements Animal
+
+	var animals []Animal // dogs, cats & horses inside
+	var bytes = storage.ToBytes(animals, Dog{}, Cat{}, Horse{}) // order does not matter
+	var newAnimals []Animal
+	storage.FromBytes(bytes, &newAnimals, Dog{}, Cat{}, Horse{}) // order does not matter
+
+Useful for loading from a file.
+*/
+func FromBytes(data []byte, objectPointer any, subTypes ...any) {
+	for _, t := range subTypes {
+		gob.Register(t)
+	}
+
+	var buf = bytes.NewBuffer(DecompressZLIB(data))
+	var dec = gob.NewDecoder(buf)
+	var err = dec.Decode(objectPointer)
+	if err != nil {
+		debug.LogError("Failed to populate struct instance from binary data!\n", err)
+	}
 }
