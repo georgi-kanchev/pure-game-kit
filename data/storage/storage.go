@@ -12,38 +12,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"io"
-	"os"
 	"pure-game-kit/debug"
 )
-
-func FromFileJSON(path string, objectPointer any) {
-	var file, err = os.Open(path)
-	if err != nil {
-		debug.LogError("Failed to open JSON file: \"", path, "\"\n", err)
-		return
-	}
-	defer file.Close()
-
-	var decoder = json.NewDecoder(file)
-	var err2 = decoder.Decode(objectPointer)
-	if err2 != nil {
-		debug.LogError("Failed to decode JSON file: \"", path, "\"\n", err2)
-	}
-}
-func FromFileXML(path string, objectPointer any) {
-	var file, err = os.Open(path)
-	if err != nil {
-		debug.LogError("Failed to open XML file: \"", path, "\"\n", err)
-		return
-	}
-	defer file.Close()
-
-	var decoder = xml.NewDecoder(file)
-	var err2 = decoder.Decode(objectPointer)
-	if err2 != nil {
-		debug.LogError("Failed to decode XML file: \"", path, "\"\n", err2)
-	}
-}
 
 func FromJSON(jsonData string, objectPointer any) {
 	var err = json.Unmarshal([]byte(jsonData), objectPointer)

@@ -2,6 +2,7 @@ package assets
 
 import (
 	"maps"
+	"pure-game-kit/data/file"
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/internal"
@@ -30,7 +31,7 @@ func LoadTiledProject(filePath string) string {
 	}
 
 	var data *internal.Project
-	storage.FromFileJSON(filePath, &data)
+	storage.FromJSON(file.LoadText(filePath), &data)
 	if data == nil {
 		return "" // error is in storage
 	}
@@ -44,7 +45,7 @@ func LoadTiledMapsFromWorld(filePath string) (mapIds []string) {
 	var resultIds = []string{}
 	var world *internal.World
 
-	storage.FromFileJSON(filePath, &world)
+	storage.FromJSON(file.LoadText(filePath), &world)
 	if world == nil {
 		return resultIds // error is in storage
 	}
@@ -75,13 +76,14 @@ func LoadTiledMap(filePath string) string {
 	}
 
 	var mapData *internal.Map
-	storage.FromFileXML(filePath, &mapData)
+	var fileContent = file.LoadText(filePath)
+	storage.FromXML(fileContent, &mapData)
 	if mapData == nil {
 		return "" // error is in storage
 	}
 
 	var layersInOrder *internal.LayersInOrder
-	storage.FromFileXML(filePath, &layersInOrder)
+	storage.FromXML(fileContent, &layersInOrder)
 	mapData.LayersInOrder = getLayersOrder(layersInOrder.Layers)
 	collection.Reverse(mapData.LayersInOrder)
 
@@ -126,7 +128,7 @@ func LoadTiledTileset(filePath string) string {
 	var tileset *internal.Tileset
 	var w, h = 0, 0
 
-	storage.FromFileXML(filePath, &tileset)
+	storage.FromXML(file.LoadText(filePath), &tileset)
 	if tileset == nil {
 		return "" // error is in storage
 	}

@@ -3,6 +3,7 @@ package assets
 import (
 	"bytes"
 	"encoding/binary"
+	"pure-game-kit/data/file"
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/execution/condition"
@@ -26,7 +27,7 @@ func tryTemplate(layer []*internal.LayerObjects, directory string) {
 		var path = path.New(directory, o.Template)
 		var template, _ = cachedTemplates[path]
 		if template == nil {
-			storage.FromFileXML(path, &template)
+			storage.FromXML(file.LoadText(path), &template)
 			cachedTemplates[path] = template
 		}
 
