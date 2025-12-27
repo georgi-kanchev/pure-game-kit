@@ -131,23 +131,12 @@ Converts any object (struct, slice, map) into bytes that can be used later to po
 
 	storage.FromBytes(...)
 
-To register interface implementations, optional sub-types are required when the object contains interfaces.
-Does not work when interfaces with the same names are provided from different packages. Usage example:
-
-	type Animal interface {}
-	type Dog struct {}   // implements Animal
-	type Cat struct {}   // implements Animal
-	type Horse struct {} // implements Animal
-
-	var animals []Animal // dogs, cats & horses inside
-	var bytes = storage.ToBytes(animals, Dog{}, Cat{}, Horse{}) // order does not matter
-	var newAnimals []Animal
-	storage.FromBytes(bytes, &newAnimals, Dog{}, Cat{}, Horse{}) // order does not matter
-
+To register interface implementations, optional types are required when the object contains interfaces.
+Does not work when interfaces with the same names are provided from different packages.
 Useful for saving to a file.
 */
-func ToBytes(objectPointer any, subTypes ...any) []byte {
-	for _, t := range subTypes {
+func ToBytes(objectPointer any, registerTypes ...any) []byte {
+	for _, t := range registerTypes {
 		gob.Register(t)
 	}
 
@@ -165,31 +154,24 @@ Populates an object (struct, slice, map) from bytes produced by:
 
 	storage.ToBytes(...)
 
-To populate the object correctly, optional sub-types are required when the data (that was converted to bytes)
+To populate the object correctly, optional types are required when the data (that was converted to bytes)
 contains interfaces. Does not work when interfaces with the same names are provided from different packages.
-Usage example:
-
-	type Animal interface {}
-	type Dog struct {}   // implements Animal
-	type Cat struct {}   // implements Animal
-	type Horse struct {} // implements Animal
-
-	var animals []Animal // dogs, cats & horses inside
-	var bytes = storage.ToBytes(animals, Dog{}, Cat{}, Horse{}) // order does not matter
-	var newAnimals []Animal
-	storage.FromBytes(bytes, &newAnimals, Dog{}, Cat{}, Horse{}) // order does not matter
-
 Useful for loading from a file.
 */
-func FromBytes(data []byte, objectPointer any, subTypes ...any) {
-	for _, t := range subTypes {
+func FromBytes(data []byte, objectPointer any, registerTypes ...any) {
+	for _, t := range registerTypes {
 		gob.Register(t)
 	}
 
+	const msg = "Failed to populate struct instance from binary data!\n"
+	if len(data) == 0 {
+		debug.LogError(msg, "Bytes data is empty.")
+		return
+	}
 	var buf = bytes.NewBuffer(DecompressZLIB(data))
 	var dec = gob.NewDecoder(buf)
 	var err = dec.Decode(objectPointer)
 	if err != nil {
-		debug.LogError("Failed to populate struct instance from binary data!\n", err)
+		debug.LogError(msg, err)
 	}
 }

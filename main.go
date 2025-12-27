@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	example.Randoms()
+	// example.Randoms()
+	example.StorageBinary()
 
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()

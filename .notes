@@ -7,6 +7,7 @@ gui xml doesn't allow some symbols such as '>', the strings can be swapped with 
 
 [128] [Sat] [27-12-2025]
 storage - binary save/load
+example - binary save/load
 
 [127] [Fri] [26-12-2025]
 assets - added API to get loaded ids
