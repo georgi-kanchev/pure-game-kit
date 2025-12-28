@@ -1,5 +1,5 @@
 /*
-Mimics the async/await paradigm by providing predetermined steps (rules) and then navigating them.
+Mimics the async/await paradigm by providing predetermined steps (rules) and navigating them.
 Makes it easier to delay code execution linearly (without nesting) by a known period of time or by
 waiting for a specific signal. May also be used as an advanced state machine that executes states
 according to different rules, instead of constantly pumping updates.
@@ -10,7 +10,6 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/time"
 )
 
 type Sequence struct {
@@ -26,66 +25,66 @@ type Step interface{ Continue(*Sequence) bool }
 func NewSequence() *Sequence {
 	return &Sequence{}
 }
-func (sequence *Sequence) SetSteps(runInstantly bool, steps ...Step) {
-	sequence.currIndex = -1
-	sequence.steps = steps
+func (s *Sequence) SetSteps(runInstantly bool, steps ...Step) {
+	s.currIndex = -1
+	s.steps = steps
 
 	if runInstantly {
-		sequence.Run()
+		s.Run()
 	}
 }
 
 //=================================================================
 
-func (sequence *Sequence) Run() {
-	sequence.GoToStep(0)
+func (s *Sequence) Run() {
+	s.GoToStep(0)
 
-	if !sequence.hasPump {
-		sequence.hasPump = true
-		condition.CallFor(number.ValueMaximum[float32](), sequence.update)
+	if !s.hasPump {
+		s.hasPump = true
+		condition.CallFor(number.ValueMaximum[float32](), s.update)
 	}
 }
-func (sequence *Sequence) Stop() {
-	sequence.GoToStep(-1)
+func (s *Sequence) Stop() {
+	s.GoToStep(-1)
 }
 
-func (sequence *Sequence) Signal(signal string) {
-	sequence.signals = append(sequence.signals, signal)
+func (s *Sequence) Signal(signal string) {
+	s.signals = append(s.signals, signal)
 }
-func (sequence *Sequence) GoToStep(step int) {
-	sequence.currIndex = step
+func (s *Sequence) GoToStep(step int) {
+	s.currIndex = step
 }
-func (sequence *Sequence) GoToNextStep() {
-	sequence.currIndex++
-}
-
-func (sequence *Sequence) IsRunning() bool {
-	return number.IsBetween(sequence.currIndex, 0, len(sequence.steps), true, false)
+func (s *Sequence) GoToNextStep() {
+	s.currIndex++
 }
 
-func (sequence *Sequence) CurrentStep() int {
-	return sequence.currIndex
+func (s *Sequence) IsRunning() bool {
+	return number.IsBetween(s.currIndex, 0, len(s.steps), true, false)
+}
+
+func (s *Sequence) CurrentStep() int {
+	return s.currIndex
 }
 
 // useful for time tracking a continuously looping step
-func (sequence *Sequence) CurrentStepTimer() float32 {
-	return time.Runtime() - sequence.stepStartedAt
+func (s *Sequence) CurrentStepTimer() float32 {
+	return internal.Runtime - s.stepStartedAt
 }
 
 //=================================================================
 // private
 
-func (sequence *Sequence) update(float32) {
-	if sequence.prevIndex != sequence.currIndex {
-		sequence.stepStartedAt = internal.Runtime
+func (s *Sequence) update(float32) {
+	if s.prevIndex != s.currIndex {
+		s.stepStartedAt = internal.Runtime
 	}
-	sequence.prevIndex = sequence.currIndex
+	s.prevIndex = s.currIndex
 
-	var prev = sequence.currIndex // this checks if we changed index inside the step itself, skip increment if so
-	var validIndex = sequence.currIndex >= 0 && sequence.currIndex < len(sequence.steps)
-	var keepGoing = validIndex && sequence.steps[sequence.currIndex].Continue(sequence)
+	var prev = s.currIndex // this checks if we changed index inside the step itself, skip increment if so
+	var validIndex = s.currIndex >= 0 && s.currIndex < len(s.steps)
+	var keepGoing = validIndex && s.steps[s.currIndex].Continue(s)
 
-	if keepGoing && prev == sequence.currIndex {
-		sequence.currIndex++
+	if keepGoing && prev == s.currIndex {
+		s.currIndex++
 	}
 }

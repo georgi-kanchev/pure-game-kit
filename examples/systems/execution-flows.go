@@ -2,13 +2,11 @@ package example
 
 import (
 	"pure-game-kit/data/assets"
-	"pure-game-kit/execution/condition"
 	"pure-game-kit/execution/flow"
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/utility/color/palette"
-	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
 	"pure-game-kit/window"
 )
@@ -18,7 +16,6 @@ func Flows() {
 	var node = graphics.NewNode(0, 0)
 	var font = assets.LoadDefaultFont()
 	var output = ""
-	var timerInt = 0
 
 	var b = flow.NewSequence()
 	b.SetSteps(false,
@@ -53,26 +50,21 @@ func Flows() {
 			node.ScaleX, node.ScaleY = 3, 3
 			output = "Flow A: step 3"
 		}),
-		flow.NowDoLoop(50, func(i int) {
+		flow.NowDoAndRepeat(50, func(i int) {
 			output = text.New("looping: ", i)
 		}),
-		flow.NowDoLoop(number.ValueMaximum[int](), func(i int) {
-			var timer = a.CurrentStepTimer()
-			timerInt = int(timer)
-			if timer == 0 {
-				output = text.New("5 second timer started")
-			}
-
-			if timerInt > 0 && condition.JustChanged(&timerInt) {
-				output = text.New("timer: ", timer)
-			}
-
-			if timer > 5 {
-				output = text.New("5 seconds timer ended")
+		flow.NowDoAndRepeatFor(5, func() {
+			output = text.New("timer: ", a.CurrentStepTimer())
+		}),
+		flow.NowDoAndKeepRepeating(func() {
+			output = "Waiting for Space press"
+			if keyboard.IsKeyJustPressed(key.Space) {
 				a.GoToNextStep()
 			}
 		}),
-		flow.NowWaitForDelay(1),
+		flow.NowDoAndRepeatFor(3, func() {
+			output = "That's all! Restaring..."
+		}),
 		flow.NowDo(func() {
 			a.Run()
 		}),
