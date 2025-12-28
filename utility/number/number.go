@@ -322,6 +322,9 @@ func Precision[T Float](number T) int {
 	}
 	return 0
 }
+func Exponential[T Float](number T) T {
+	return T(math.Exp(float64(number)))
+}
 
 func Round[T Float](number T, precision ...int) T {
 	if len(precision) == 0 {

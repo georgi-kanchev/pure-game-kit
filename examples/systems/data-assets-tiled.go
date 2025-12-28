@@ -24,7 +24,7 @@ func Tiled() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.MouseDragAndZoomSmooth()
+		cam.MouseDragAndZoomSmoothly()
 
 		// grass.Draw(cam)
 		cam.DrawGrid(0.5, 16, 16, palette.DarkGray)

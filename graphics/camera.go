@@ -38,7 +38,7 @@ type Camera struct {
 	// 	camera.Batch = false
 	Batch bool
 
-	velocityX, velocityY float32
+	velocityX, velocityY, dragVelX, dragVelY float32
 }
 
 func NewCamera(zoom float32) *Camera {
@@ -60,33 +60,38 @@ func (camera *Camera) MouseDragAndZoom() {
 		camera.Y -= (dx*sin + dy*cos) / camera.Zoom
 	}
 }
-func (camera *Camera) MouseDragAndZoomSmooth() {
+func (camera *Camera) MouseDragAndZoomSmoothly() {
 	camera.Zoom *= 1 + 0.001*mouse.ScrollSmooth()
+
+	const dragFriction, dragStrength = 8.0, 8.0
+	var dt = internal.DeltaTime
+	var decay = number.Exponential(-dragFriction * dt)
+	camera.velocityX *= decay
+	camera.velocityY *= decay
 
 	if mouse.IsButtonPressed(button.Middle) {
 		var rad = angle.ToRadians(-camera.Angle)
 		var sin, cos = number.Sine(rad), number.Cosine(rad)
 		var dx, dy = mouse.CursorDelta()
-		var wdx, wdy = (dx*cos - dy*sin) / camera.Zoom, (dx*sin + dy*cos) / camera.Zoom
 
-		camera.X -= wdx
-		camera.Y -= wdy
+		dx /= dt
+		dy /= dt
 
-		camera.velocityX = -wdx * dragMomentum
-		camera.velocityY = -wdy * dragMomentum
+		var wdx = (dx*cos - dy*sin) / camera.Zoom
+		var wdy = (dx*sin + dy*cos) / camera.Zoom
 
-	} else {
-		camera.X += camera.velocityX * internal.DeltaTime
-		camera.Y += camera.velocityY * internal.DeltaTime
-		camera.velocityX *= dragFriction
-		camera.velocityY *= dragFriction
+		camera.velocityX -= wdx * dragStrength * dt
+		camera.velocityY -= wdy * dragStrength * dt
+	}
 
-		if number.Absolute(camera.velocityX) < 0.01 {
-			camera.velocityX = 0
-		}
-		if number.Absolute(camera.velocityY) < 0.01 {
-			camera.velocityY = 0
-		}
+	camera.X += camera.velocityX * dt
+	camera.Y += camera.velocityY * dt
+
+	if number.Absolute(camera.velocityX) < 0.0001 {
+		camera.velocityX = 0
+	}
+	if number.Absolute(camera.velocityY) < 0.0001 {
+		camera.velocityY = 0
 	}
 }
 

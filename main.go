@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
@@ -9,6 +11,7 @@ import (
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/button"
+	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -124,6 +127,10 @@ func main() {
 		"flows":               example.Flows,
 	}
 
+	window.TargetFrameRate = 0
+
+	debug.ProfileCPU(10)
+
 	for window.KeepOpen() {
 		window.Title = "pure-game-kit: hub"
 		cam.SetScreenAreaToWindow()
@@ -141,5 +148,6 @@ func main() {
 				v()
 			}
 		}
+		fmt.Printf("time.FrameRate(): %v\n", time.FrameRate())
 	}
 }

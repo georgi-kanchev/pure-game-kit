@@ -173,13 +173,17 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		}
 
 		if c == root.cMiddlePressed {
-			var delta = mx - c.prevMouseX
-			c.ScrollX -= delta
-			c.velocityX = -delta * dragMomentum
-		} else { // apply momentum
+			var dx = mx - c.prevMouseX
+			c.ScrollX -= dx
+			var instantVelX = -dx / internal.DeltaTime
+			const weight = 0.2
+			c.velocityX = (c.velocityX * (1.0 - weight)) + (instantVelX * weight)
+		} else {
 			c.ScrollX += c.velocityX * internal.DeltaTime
-			c.velocityX *= dragFriction // friction
-			if number.Absolute(c.velocityX) < 0.01 {
+			var decay = number.Exponential(-10.0 * internal.DeltaTime)
+			c.velocityX *= decay
+
+			if number.Absolute(c.velocityX) < 0.1 {
 				c.velocityX = 0
 			}
 		}
@@ -233,13 +237,17 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		}
 
 		if c == root.cMiddlePressed {
-			var delta = my - c.prevMouseY
-			c.ScrollY -= delta
-			c.velocityY = -delta * dragMomentum
-		} else { // apply momentum
+			var dy = my - c.prevMouseY
+			c.ScrollY -= dy
+			var instantVelY = -dy / internal.DeltaTime
+			const weight = 0.2
+			c.velocityY = (c.velocityY * (1.0 - weight)) + (instantVelY * weight)
+		} else {
 			c.ScrollY += c.velocityY * internal.DeltaTime
-			c.velocityY *= dragFriction // friction
-			if number.Absolute(c.velocityY) < 0.01 {
+			var decay = number.Exponential(-10.0 * internal.DeltaTime)
+			c.velocityY *= decay
+
+			if number.Absolute(c.velocityY) < 0.1 {
 				c.velocityY = 0
 			}
 		}

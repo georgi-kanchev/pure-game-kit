@@ -3,9 +3,9 @@ package graphics
 import (
 	"image/color"
 	"pure-game-kit/internal"
+	ang "pure-game-kit/utility/angle"
 	col "pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/point"
 	"pure-game-kit/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -185,8 +185,6 @@ func separateShapes(points [][2]float32) [][][2]float32 {
 var rlCam = rl.Camera2D{}
 var maskX, maskY, maskW, maskH int
 
-const dragFriction, dragMomentum = 0.88, 30.0
-
 // call before draw to update camera but use screen space instead of camera space
 func (camera *Camera) update() {
 	tryRecreateWindow()
@@ -238,21 +236,47 @@ func (camera *Camera) end() {
 }
 
 func (camera *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
+	camera.update()
+	// optimized for speed
+	var angleRad = ang.ToRadians(angle)
+	var angle90Rad = ang.ToRadians(angle + 90)
+	var cosA, sinA = number.Cosine(angleRad), number.Sine(angleRad)
+	var cosB, sinB = number.Cosine(angle90Rad), number.Sine(angle90Rad)
 	var tlx, tly = x, y
-	var trx, try = point.MoveAtAngle(tlx, tly, angle, width)
-	var brx, bry = point.MoveAtAngle(trx, try, angle+90, height)
-	var blx, bly = point.MoveAtAngle(tlx, tly, angle+90, height)
-	var stlx, stly = camera.PointToScreen(tlx, tly)
-	var strx, stry = camera.PointToScreen(trx, try)
-	var sbrx, sbry = camera.PointToScreen(brx, bry)
-	var sblx, sbly = camera.PointToScreen(blx, bly)
-	var mtlx, mtly = camera.MaskX, camera.MaskY
-	var mbrx, mbry = camera.MaskX + camera.MaskWidth, camera.MaskY + camera.MaskHeight
+	var trx = tlx + cosA*width
+	var try = tly + sinA*width
+	var blx = tlx + cosB*height
+	var bly = tly + sinB*height
+	var brx = trx + cosB*height
+	var bry = try + sinB*height
+	var tx = float32(rlCam.Target.X)
+	var ty = float32(rlCam.Target.Y)
+	var zoom = float32(rlCam.Zoom)
+	var camRotRad = ang.ToRadians(rlCam.Rotation)
+	var cosR, sinR = number.Cosine(camRotRad), number.Sine(camRotRad)
+	var offX = float32(rlCam.Offset.X)
+	var offY = float32(rlCam.Offset.Y)
+	var pointToScreen = func(px, py float32) (float32, float32) { // inlined to skip cam.update() on each call
+		px -= tx
+		py -= ty
+		px *= zoom
+		py *= zoom
+		var rx = px*cosR - py*sinR
+		var ry = px*sinR + py*cosR
+		return rx + offX, ry + offY
+	}
+	var stlx, stly = pointToScreen(tlx, tly)
+	var strx, stry = pointToScreen(trx, try)
+	var sbrx, sbry = pointToScreen(brx, bry)
+	var sblx, sbly = pointToScreen(blx, bly)
 	var minX = number.Smallest(stlx, strx, sbrx, sblx)
 	var maxX = number.Biggest(stlx, strx, sbrx, sblx)
 	var minY = number.Smallest(stly, stry, sbry, sbly)
 	var maxY = number.Biggest(stly, stry, sbry, sbly)
-
+	var mtlx = float32(camera.MaskX)
+	var mtly = float32(camera.MaskY)
+	var mbrx = mtlx + float32(camera.MaskWidth)
+	var mbry = mtly + float32(camera.MaskHeight)
 	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
 }
 

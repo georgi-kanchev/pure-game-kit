@@ -173,7 +173,7 @@ func updateInput() {
 
 	const scrollAccel, scrollDecay = 600.0, 8.0
 	SmoothScroll += rl.GetMouseWheelMoveV().Y * scrollAccel * DeltaTime
-	SmoothScroll *= float32(math.Exp(-float64(scrollDecay) * float64(DeltaTime)))
+	SmoothScroll *= number.Exponential(-scrollDecay * DeltaTime)
 	if SmoothScroll != 0 && number.IsWithin(SmoothScroll, 0, 0.0001) {
 		SmoothScroll = 0
 	}

@@ -8,6 +8,8 @@ gui xml doesn't allow some symbols such as '>', the strings can be swapped with 
 [129] [Sun] [28-12-2025]
 text - improved, added, tweaked
 flow - steps renames, additions, improvements, tweaks
+camera - smooth dragging fixes with high framerate
+gui - container scroll dragging fixes with high framerate
 
 [128] [Sat] [27-12-2025]
 storage - binary save/load
