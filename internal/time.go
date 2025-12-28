@@ -46,6 +46,7 @@ func updateTimeData() {
 
 	DeltaTime = number.Smallest(rl.GetFrameTime(), deltaMax)
 	Runtime += DeltaTime
+	FrameCount++
 	FrameRate = 1.0 / DeltaTime
 	FrameRateAverage = float32(FrameCount) / Runtime
 
