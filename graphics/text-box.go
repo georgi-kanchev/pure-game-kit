@@ -94,7 +94,7 @@ func (textBox *TextBox) TextWrap(text string) string {
 	}
 
 	var result = buffer.ToText()
-	result = txt.Replace(result, " \n", "\n")
+	result = txt.ReplaceWith(result, " \n", "\n")
 
 	return result
 }

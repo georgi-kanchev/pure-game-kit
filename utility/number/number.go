@@ -323,31 +323,26 @@ func Precision[T Float](number T) int {
 	return 0
 }
 
-// negative precision ignores it
-func Round[T Float](number T, precision int) T {
-	if precision < 0 {
+func Round[T Float](number T, precision ...int) T {
+	if len(precision) == 0 {
 		return T(math.Round(float64(number)))
 	}
 
-	var pow = math.Pow(10, float64(precision))
+	var pow = math.Pow(10, float64(precision[0]))
 	return T(math.Round(float64(number)*pow) / pow)
 }
-
-// negative precision ignores it
-func RoundUp[T Float](number T, precision int) T {
-	if precision < 0 {
+func RoundUp[T Float](number T, precision ...int) T {
+	if len(precision) == 0 {
 		return T(math.Ceil(float64(number)))
 	}
-	var pow = math.Pow(10, float64(precision))
+	var pow = math.Pow(10, float64(precision[0]))
 	return T(math.Ceil(float64(number)*pow) / pow)
 }
-
-// negative precision ignores it
-func RoundDown[T Float](number T, precision int) T {
-	if precision < 0 {
+func RoundDown[T Float](number T, precision ...int) T {
+	if len(precision) == 0 {
 		return T(math.Floor(float64(number)))
 	}
-	var pow = math.Pow(10, float64(precision))
+	var pow = math.Pow(10, float64(precision[0]))
 	return T(math.Floor(float64(number)*pow) / pow)
 }
 

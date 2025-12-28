@@ -50,16 +50,16 @@ func Apply(text string, naming int, divider string) string {
 		word := words[i]
 
 		if flag.IsOn(naming, casing.Lower) {
-			word = txt.LowerCase(word)
+			word = txt.ToLowerCase(word)
 		}
 
 		if flag.IsOn(naming, casing.Upper) {
-			word = txt.UpperCase(word)
+			word = txt.ToUpperCase(word)
 		}
 
 		if flag.IsOn(naming, casing.Camel) {
 			if i == 0 {
-				word = txt.LowerCase(word)
+				word = txt.ToLowerCase(word)
 			} else {
 				word = capitalize(word)
 			}
@@ -73,7 +73,7 @@ func Apply(text string, naming int, divider string) string {
 			if i == 0 {
 				word = capitalize(word)
 			} else {
-				word = txt.LowerCase(word)
+				word = txt.ToLowerCase(word)
 			}
 		}
 
@@ -280,7 +280,7 @@ func capitalize(word string) string {
 		return ""
 	}
 	var runes = []rune(word)
-	return string(unicode.ToUpper(runes[0])) + txt.LowerCase(string(runes[1:]))
+	return string(unicode.ToUpper(runes[0])) + txt.ToLowerCase(string(runes[1:]))
 }
 func addDivCamelPascal(text, div string) string {
 	var result = txt.NewBuilder()

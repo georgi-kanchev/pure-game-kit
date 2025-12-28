@@ -52,7 +52,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 
 	if step > 0 {
 		var stepPx = (widget.Width - handleWidth) * step
-		var totalSteps = int(number.RoundUp((1-step)/step, -1))
+		var totalSteps = int(number.RoundUp((1 - step) / step))
 		var stepAssetId = root.themedField(field.SliderStepAssetId, owner, widget)
 
 		for i := 1; i <= totalSteps; i++ {

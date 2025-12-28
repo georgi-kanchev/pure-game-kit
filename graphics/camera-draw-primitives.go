@@ -55,10 +55,10 @@ func (camera *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint
 		}
 	}
 
-	var left = number.RoundDown(minX/spacingX, -1) * spacingX
-	var right = number.RoundUp(maxX/spacingX, -1) * spacingX
-	var top = number.RoundDown(minY/spacingY, -1) * spacingY
-	var bottom = number.RoundUp(maxY/spacingY, -1) * spacingY
+	var left = number.RoundDown(minX/spacingX) * spacingX
+	var right = number.RoundUp(maxX/spacingX) * spacingX
+	var top = number.RoundDown(minY/spacingY) * spacingY
+	var bottom = number.RoundUp(maxY/spacingY) * spacingY
 
 	for x := left; x <= right; x += spacingX { // vertical
 		var myThickness = thickness

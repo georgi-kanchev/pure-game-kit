@@ -10,7 +10,7 @@ func Scripts() {
 	var scr = script.New()
 
 	scr.AddFunction("ToLower", func(value string) string {
-		return text.LowerCase(value)
+		return text.ToLowerCase(value)
 	})
 	scr.ExecuteCode(`
 function Greet(name)

@@ -19,7 +19,7 @@ func defaultValueText(value, defaultValue string) string {
 func parseProperty(prop *internal.Property, project *Project) any {
 	switch prop.Type {
 	case "bool":
-		return text.LowerCase(prop.Value) == "true"
+		return text.ToLowerCase(prop.Value) == "true"
 	case "int", "object":
 		return text.ToNumber[int](prop.Value)
 	case "float":

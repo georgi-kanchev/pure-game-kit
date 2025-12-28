@@ -54,7 +54,7 @@ func (shapeGrid *ShapeGrid) AtPoint(x, y float32) []*Shape {
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
-	var i, j = number.RoundDown(x/w, -1), number.RoundDown(y/h, -1)
+	var i, j = number.RoundDown(x / w), number.RoundDown(y / h)
 	return shapeGrid.AtCell(int(i), int(j))
 }
 func (shapeGrid *ShapeGrid) AroundLine(line Line) []*Shape {
@@ -65,8 +65,8 @@ func (shapeGrid *ShapeGrid) AroundLine(line Line) []*Shape {
 
 	var result []*Shape
 	var x0, y0, x1, y1 = line.Ax / w, line.Ay / h, line.Bx / w, line.By / h
-	var ix0, iy0 = int(number.RoundDown(x0, -1)), int(number.RoundDown(y0, -1))
-	var ix1, iy1 = int(number.RoundDown(x1, -1)), int(number.RoundDown(y1, -1))
+	var ix0, iy0 = int(number.RoundDown(x0)), int(number.RoundDown(y0))
+	var ix1, iy1 = int(number.RoundDown(x1)), int(number.RoundDown(y1))
 	var dx, dy = x1 - x0, y1 - y0
 	var stepX, stepY int
 	var tMaxX, tMaxY, tDeltaX, tDeltaY float32

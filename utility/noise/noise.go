@@ -34,7 +34,7 @@ func Perlin(x, y, scale float32, seeds ...float32) float32 {
 	x *= scale
 	y *= scale
 
-	var x0, y0 = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
+	var x0, y0 = int(number.RoundDown(x)), int(number.RoundDown(y))
 	var x1, y1 = x0 + 1, y0 + 1
 	var sx, sy = fade(x - float32(x0)), fade(y - float32(y0))
 	var n00, n10 = dot(x0, y0, x, y), dot(x1, y0, x, y)
@@ -65,7 +65,7 @@ func OpenSimplex(x, y, scale float32, seeds ...float32) float32 {
 
 	var s = (x + y) * float32(stretch2D)
 	var xf, yf = x + s, y + s
-	var xi, yi = int(number.RoundDown(xf, -1)), int(number.RoundDown(yf, -1))
+	var xi, yi = int(number.RoundDown(xf)), int(number.RoundDown(yf))
 	var t = float32(xi+yi) * float32(squish2D)
 	var X0, Y0 = float32(xi) - t, float32(yi) - t
 	var x0, y0 = x - X0, y - Y0
@@ -103,7 +103,7 @@ func Worley(x, y, scale float32, seeds ...float32) float32 {
 	x *= scale
 	y *= scale
 
-	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
+	var xi, yi = int(number.RoundDown(x)), int(number.RoundDown(y))
 	var minDist = number.Infinity()
 	var intSeed = floatToIntSeed(random.CombineSeeds(seeds...))
 
@@ -133,7 +133,7 @@ func Voronoi(x, y, scale float32, seeds ...float32) float32 {
 
 	var seed = random.CombineSeeds(seeds...)
 	var intSeed = floatToIntSeed(seed)
-	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
+	var xi, yi = int(number.RoundDown(x)), int(number.RoundDown(y))
 	var minDist = number.Infinity()
 	var closestFeature [2]int
 
@@ -164,7 +164,7 @@ func Value(x, y, scale float32, seeds ...float32) float32 {
 	var intSeed = floatToIntSeed(random.CombineSeeds(seeds...))
 	var lerp = func(a, b, t float32) float32 { return a + t*(b-a) }
 	var smoothstep = func(t float32) float32 { return t * t * (3 - 2*t) }
-	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
+	var xi, yi = int(number.RoundDown(x)), int(number.RoundDown(y))
 	var xf, yf = x - float32(xi), y - float32(yi)
 	var seed00, seed10 = random.CombineSeeds(intSeed, xi, yi), random.CombineSeeds(intSeed, xi+1, yi)
 	var seed01, seed11 = random.CombineSeeds(intSeed, xi, yi+1), random.CombineSeeds(intSeed, xi+1, yi+1)
@@ -180,7 +180,7 @@ func ValueCubic(x, y, scale float32, seeds ...float32) float32 {
 	y *= scale
 
 	var intSeed = floatToIntSeed(random.CombineSeeds(seeds...))
-	var xi, yi = int(number.RoundDown(x, -1)), int(number.RoundDown(y, -1))
+	var xi, yi = int(number.RoundDown(x)), int(number.RoundDown(y))
 	var xf, yf = x - float32(xi), y - float32(yi)
 	var vals [4][4]float32
 	var interpRow [4]float32

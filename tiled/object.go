@@ -70,7 +70,7 @@ func (object *Object) ExtractTextBox() *graphics.TextBox {
 
 	for id := range internal.Fonts {
 		var name = path.LastPart(path.RemoveExtension(id))
-		if text.LowerCase(font) == text.LowerCase(name) {
+		if text.ToLowerCase(font) == text.ToLowerCase(name) {
 			font = id // searching font in loaded fonts by name (case insensitive)
 		}
 	}
