@@ -123,7 +123,7 @@ func main() {
 		"tweens":              example.Tweens,
 		"flows":               example.Flows,
 	}
-
+	
 	for window.KeepOpen() {
 		window.Title = "pure-game-kit: hub"
 		cam.SetScreenAreaToWindow()
