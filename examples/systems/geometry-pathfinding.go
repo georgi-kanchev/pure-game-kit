@@ -37,7 +37,7 @@ func Pathfinding() {
 		}
 
 		var mx, my = cam.MousePosition()
-		path = grid.FindPath([2]float32{16, 16}, [2]float32{mx, my}, 10, false)
+		path = grid.FindPathSmoothly(16, 16, mx, my, false)
 		cam.DrawLinesPath(1, palette.Green, path...)
 		cam.DrawPoints(2, palette.White, path...)
 	}
