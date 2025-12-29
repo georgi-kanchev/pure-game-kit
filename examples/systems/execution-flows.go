@@ -17,8 +17,9 @@ func Flows() {
 	var font = assets.LoadDefaultFont()
 	var output = ""
 
-	var b = flow.NewSequence()
-	b.SetSteps(false,
+	var second = flow.NewSequence()
+	second.GoToStep(-1)
+	second.SetSteps(
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.Color = palette.Azure
@@ -30,15 +31,15 @@ func Flows() {
 			output = "Flow B: step 2"
 		}))
 
-	var a = flow.NewSequence()
-	a.SetSteps(true,
+	var first = flow.NewSequence()
+	first.SetSteps(
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.Angle = 45
-			b.Run()
+			second.GoToStep(0)
 			output = "Flow A: step 1"
 		}),
-		flow.NowWaitForSequence(b),
+		flow.NowWaitForSequence(second),
 		flow.NowWaitForDelay(1),
 		flow.NowDo(func() {
 			node.Angle = 0
@@ -54,19 +55,19 @@ func Flows() {
 			output = text.New("looping: ", i)
 		}),
 		flow.NowDoAndRepeatFor(5, func() {
-			output = text.New("timer: ", a.CurrentStepTimer())
+			output = text.New("timer: ", first.CurrentStepTimer())
 		}),
 		flow.NowDoAndKeepRepeating(func() {
 			output = "Waiting for Space press"
 			if keyboard.IsKeyJustPressed(key.Space) {
-				a.GoToNextStep()
+				first.GoToNextStep()
 			}
 		}),
 		flow.NowDoAndRepeatFor(3, func() {
 			output = "That's all! Restaring..."
 		}),
 		flow.NowDo(func() {
-			a.Run()
+			first.GoToStep(0)
 		}),
 	)
 
@@ -74,11 +75,14 @@ func Flows() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawNodes(&node)
 
+		first.Update()
+		second.Update()
+
 		var x, y = cam.PointFromScreen(0, 0)
 		cam.DrawText(font, output, x, y, 200, palette.White)
 
 		if keyboard.IsKeyJustPressed(key.W) {
-			a.Signal("W press")
+			first.Signal("W press")
 		}
 	}
 }
