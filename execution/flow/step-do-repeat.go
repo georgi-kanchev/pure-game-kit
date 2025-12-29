@@ -23,24 +23,24 @@ func NowDoAndRepeatFor(seconds float32, action func()) *StepRepeat {
 	return &StepRepeat{duration: seconds, actionSec: action}
 }
 
-func (step *StepRepeat) Continue(*Sequence) bool {
-	if step.duration > 0 {
-		step.currTime += internal.DeltaTime
-		step.actionSec()
+func (s *StepRepeat) Continue(*Sequence) bool {
+	if s.duration > 0 {
+		s.currTime += internal.DeltaTime
+		s.actionSec()
 
-		if step.currTime > step.duration {
-			step.currTime = 0
+		if s.currTime > s.duration {
+			s.currTime = 0
 			return true
 		}
 		return false
 	}
 
-	if step.i >= step.times {
-		step.i = 0
+	if s.i >= s.times {
+		s.i = 0
 		return true
 	}
 
-	step.action(step.i)
-	step.i++
+	s.action(s.i)
+	s.i++
 	return false
 }

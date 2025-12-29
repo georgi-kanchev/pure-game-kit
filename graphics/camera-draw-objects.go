@@ -8,30 +8,30 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func (camera *Camera) DrawNodes(nodes ...*Node) {
+func (c *Camera) DrawNodes(nodes ...*Node) {
 	for _, n := range nodes {
 		if n == nil {
 			continue
 		}
 
 		var x, y, ang, scX, scY = n.TransformToCamera()
-		if !camera.isAreaVisible(x, y, n.Width*scX, n.Height*scY, ang) {
+		if !c.isAreaVisible(x, y, n.Width*scX, n.Height*scY, ang) {
 			continue
 		}
 
 		var w, h = n.Width, n.Height
-		camera.DrawQuad(x, y, w*scX, h*scY, ang, n.Color)
+		c.DrawQuad(x, y, w*scX, h*scY, ang, n.Color)
 	}
 }
-func (camera *Camera) DrawSprites(sprites ...*Sprite) {
-	camera.begin()
+func (c *Camera) DrawSprites(sprites ...*Sprite) {
+	c.begin()
 	for _, s := range sprites {
 		if s == nil {
 			continue
 		}
 
 		var x, y, ang, scX, scY = s.TransformToCamera()
-		if !camera.isAreaVisible(x, y, s.Width*scX, s.Height*scY, ang) {
+		if !c.isAreaVisible(x, y, s.Width*scX, s.Height*scY, ang) {
 			continue
 		}
 
@@ -104,7 +104,7 @@ func (camera *Camera) DrawSprites(sprites ...*Sprite) {
 
 		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Color))
 	}
-	camera.end()
+	c.end()
 }
 func (camera *Camera) DrawBoxes(boxes ...*Box) {
 	camera.begin()
@@ -170,16 +170,16 @@ func (camera *Camera) DrawBoxes(boxes ...*Box) {
 	camera.Batch = false
 	camera.end()
 }
-func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
-	camera.begin()
-	camera.Batch = true
+func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
+	c.begin()
+	c.Batch = true
 	for _, t := range textBoxes {
 		if t == nil {
 			continue
 		}
 
 		var x, y, ang, scX, scY = t.TransformToCamera()
-		if !camera.isAreaVisible(x, y, t.Width*scX, t.Height*scY, ang) {
+		if !c.isAreaVisible(x, y, t.Width*scX, t.Height*scY, ang) {
 			continue
 		}
 
@@ -189,7 +189,7 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 		beginShader(t, t.Thickness)
 		for _, s := range symbols {
-			var camX, camY = t.PointToCamera(camera, s.X, s.Y)
+			var camX, camY = t.PointToCamera(c, s.X, s.Y)
 			var pos = rl.Vector2{X: camX, Y: camY}
 
 			if s.Thickness != lastThickness {
@@ -210,8 +210,8 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 				sprite.Color = uint(rl.ColorToInt(s.Color))
 
 				endShader()
-				camera.update()
-				camera.DrawSprites(sprite)
+				c.update()
+				c.DrawSprites(sprite)
 				beginShader(t, s.Thickness)
 				continue
 			}
@@ -222,6 +222,6 @@ func (camera *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 		endShader()
 	}
-	camera.Batch = false
-	camera.end()
+	c.Batch = false
+	c.end()
 }

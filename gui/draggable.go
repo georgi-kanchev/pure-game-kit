@@ -16,22 +16,22 @@ func Draggable(id string, properties ...string) string {
 
 //=================================================================
 
-func (gui *GUI) DragOnGrab() (draggableId string) {
-	return onGrab(gui.root)
+func (g *GUI) DragOnGrab() (draggableId string) {
+	return onGrab(g.root)
 }
 
-func (gui *GUI) DragOnDrop() (grabId, dropId string) {
-	return onDrop(gui.root)
+func (g *GUI) DragOnDrop() (grabId, dropId string) {
+	return onDrop(g.root)
 }
 
-func (gui *GUI) DragCancel() {
-	if gui.root.wPressedOn != nil && gui.root.wPressedOn.Class == "draggable" {
-		gui.root.wPressedOn = nil
+func (g *GUI) DragCancel() {
+	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
+		g.root.wPressedOn = nil
 
-		var owner = gui.root.Containers[gui.root.wPressedOn.OwnerId]
-		var val = gui.root.themedField(field.DraggableSoundCancel, owner, gui.root.wPressedOn)
+		var owner = g.root.Containers[g.root.wPressedOn.OwnerId]
+		var val = g.root.themedField(field.DraggableSoundCancel, owner, g.root.wPressedOn)
 		sound.AssetId = defaultValue(val, "~error")
-		sound.Volume = gui.root.Volume
+		sound.Volume = g.root.Volume
 		sound.Play()
 	}
 }

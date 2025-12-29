@@ -47,22 +47,22 @@ var reusableWidget = &widget{Fields: map[string]string{}}
 
 var clickedId, clickedAndHeldId = "", ""
 
-func (gui *GUI) reset(camera *graphics.Camera) {
+func (g *GUI) reset(camera *graphics.Camera) {
 	if mouse.IsButtonJustPressed(b.Left) {
-		gui.root.wPressedOn = nil
+		g.root.wPressedOn = nil
 		tooltip = nil
-		gui.root.cPressedOnScrollH = nil
-		gui.root.cPressedOnScrollV = nil
+		g.root.cPressedOnScrollH = nil
+		g.root.cPressedOnScrollV = nil
 	}
 	if mouse.IsButtonJustReleased(b.Left) {
-		gui.root.cPressedOnScrollH = nil
-		gui.root.cPressedOnScrollV = nil
+		g.root.cPressedOnScrollH = nil
+		g.root.cPressedOnScrollV = nil
 	}
 	if mouse.IsButtonJustReleased(b.Middle) {
-		gui.root.cMiddlePressed = nil
+		g.root.cMiddlePressed = nil
 	}
 
-	camera.Zoom = gui.Scale
+	camera.Zoom = g.Scale
 	camera.Angle = 0          // force no cam rotation for UI
 	camera.X, camera.Y = 0, 0 // force no position offset for UI
 	mouseX, mouseY = camera.MousePosition()

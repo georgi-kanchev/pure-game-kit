@@ -23,13 +23,13 @@ func InputField(id string, properties ...string) string {
 
 //=================================================================
 
-func (gui *GUI) InputFieldIsTyping() (inputFieldId string) {
+func (g *GUI) InputFieldIsTyping() (inputFieldId string) {
 	if typingIn != nil {
 		return typingIn.Id
 	}
 	return ""
 }
-func (gui *GUI) InputFieldStopTyping() {
+func (g *GUI) InputFieldStopTyping() {
 	typingIn = nil
 	scrollX = 0
 }

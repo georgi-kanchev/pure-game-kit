@@ -81,37 +81,37 @@ func NewClient(ip string, onMessage func(fromId, tag int, message string)) *Clie
 
 //=================================================================
 
-func (client *Client) Id() int {
-	return client.myId
+func (c *Client) Id() int {
+	return c.myId
 }
 
 //=================================================================
 
-func (client *Client) SendToServer(tag int, message string) {
-	client.send(false, 0, tag, message)
+func (c *Client) SendToServer(tag int, message string) {
+	c.send(false, 0, tag, message)
 }
-func (client *Client) SendToAll(tag int, message string) {
-	client.send(false, -1, tag, message)
+func (c *Client) SendToAll(tag int, message string) {
+	c.send(false, -1, tag, message)
 }
-func (client *Client) SendToClient(clientId, tag int, message string) {
-	client.send(false, clientId, tag, message)
+func (c *Client) SendToClient(clientId, tag int, message string) {
+	c.send(false, clientId, tag, message)
 }
 
-func (client *Client) Leave() {
-	if client.conn != nil {
-		(*client.conn).Close()
-		client.conn = nil
-		client.myId = -1
+func (c *Client) Leave() {
+	if c.conn != nil {
+		(*c.conn).Close()
+		c.conn = nil
+		c.myId = -1
 	}
 }
 
 //=================================================================
 // private
 
-func (client *Client) send(internally bool, toId, tag int, message string) {
-	if (!internally && tag < 0) || client.conn == nil {
+func (c *Client) send(internally bool, toId, tag int, message string) {
+	if (!internally && tag < 0) || c.conn == nil {
 		return
 	}
 
-	fmt.Fprintln(*client.conn, text.New(toId, divider, tag, divider, message))
+	fmt.Fprintln(*c.conn, text.New(toId, divider, tag, divider, message))
 }

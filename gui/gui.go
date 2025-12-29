@@ -214,13 +214,13 @@ func NewElementsXML(elements ...string) string {
 
 // =================================================================
 
-func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
+func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	var containers = gui.root.ContainerIds
+	var containers = g.root.ContainerIds
 
-	gui.root.Volume = gui.Volume
+	g.root.Volume = g.Volume
 
-	gui.reset(camera) // keep order of variables & reset
+	g.reset(camera) // keep order of variables & reset
 
 	var tlx, tly = camera.PointFromEdge(0, 0)
 	var brx, bry = camera.PointFromEdge(1, 1)
@@ -230,10 +230,10 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	camTy, camBy, camW, camH = text.New(tly), text.New(bry), text.New(w), text.New(h)
 
 	for _, id := range containers {
-		var c = gui.root.Containers[id]
+		var c = g.root.Containers[id]
 		var _, hasTarget = c.Fields[f.TargetId]
 		if hasTarget {
-			gui.root.cacheTarget(gui.root.themedField(f.TargetId, c, nil))
+			g.root.cacheTarget(g.root.themedField(f.TargetId, c, nil))
 		}
 
 		var hidden = dyn(c, c.Fields[f.Hidden], "")
@@ -248,45 +248,45 @@ func (gui *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
 		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2" // caching dynamic props
 
-		c.updateAndDraw(gui.root, camera)
+		c.updateAndDraw(g.root, camera)
 	}
 
-	if gui.root.cWasHovered == gui.root.cHovered {
-		gui.root.cFocused = gui.root.cHovered // only containers hovered 2 frames in a row get input (top-down prio)
+	if g.root.cWasHovered == g.root.cHovered {
+		g.root.cFocused = g.root.cHovered // only containers hovered 2 frames in a row get input (top-down prio)
 	}
-	if gui.root.wWasHovered == gui.root.wHovered {
-		gui.root.wFocused = gui.root.wHovered // only widgets hovered 2 frames in a row get input (top-down prio)
+	if g.root.wWasHovered == g.root.wHovered {
+		g.root.wFocused = g.root.wHovered // only widgets hovered 2 frames in a row get input (top-down prio)
 	}
 
-	if gui.root.wPressedOn != nil && gui.root.wPressedOn.Class == "draggable" {
+	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
 		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
-		drawDraggable(gui.root.wPressedOn, gui.root, camera)
+		drawDraggable(g.root.wPressedOn, g.root, camera)
 	}
 	if tooltip != nil {
 		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
-		drawTooltip(gui.root, gui.root.Containers[tooltip.OwnerId], camera)
+		drawTooltip(g.root, g.root.Containers[tooltip.OwnerId], camera)
 	}
 
 	clickedId = condition.If(clickedId != "", "", clickedId)
 	clickedAndHeldId = condition.If(clickedAndHeldId != "", "", clickedAndHeldId)
 
-	if gui.root.wPressedOn != nil {
-		if gui.root.IsButtonJustClicked(gui.root.wPressedOn.Id, camera) {
-			clickedId = gui.root.wPressedOn.Id
+	if g.root.wPressedOn != nil {
+		if g.root.IsButtonJustClicked(g.root.wPressedOn.Id, camera) {
+			clickedId = g.root.wPressedOn.Id
 		}
-		if gui.root.IsButtonClickedAndHeld(gui.root.wPressedOn.Id, camera) {
-			clickedAndHeldId = gui.root.wPressedOn.Id
+		if g.root.IsButtonClickedAndHeld(g.root.wPressedOn.Id, camera) {
+			clickedAndHeldId = g.root.wPressedOn.Id
 		}
 	}
 
-	gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) // undo what reset does, everything as it was for cam
+	g.root.restore(camera, prevAng, prevZoom, prevX, prevY) // undo what reset does, everything as it was for cam
 }
 
 // Works for Widgets & Containers.
-func (gui *GUI) SetField(id, field string, value string) {
-	var w, hasW = gui.root.Widgets[id]
-	var c, hasC = gui.root.Containers[id]
-	var t, hasT = gui.root.Themes[id]
+func (g *GUI) SetField(id, field string, value string) {
+	var w, hasW = g.root.Widgets[id]
+	var c, hasC = g.root.Containers[id]
+	var t, hasT = g.root.Themes[id]
 
 	if hasW {
 		w.Fields[field] = value
@@ -302,14 +302,14 @@ func (gui *GUI) SetField(id, field string, value string) {
 //=================================================================
 
 // Works for Widgets & Containers.
-func (gui *GUI) Field(id, field string) string {
-	var w, hasW = gui.root.Widgets[id]
-	var c, hasC = gui.root.Containers[id]
-	var t, hasT = gui.root.Themes[id]
+func (g *GUI) Field(id, field string) string {
+	var w, hasW = g.root.Widgets[id]
+	var c, hasC = g.root.Containers[id]
+	var t, hasT = g.root.Themes[id]
 
 	if hasW {
-		var owner = gui.root.Containers[w.OwnerId]
-		return gui.root.themedField(field, owner, w)
+		var owner = g.root.Containers[w.OwnerId]
+		return g.root.themedField(field, owner, w)
 	}
 	if hasC {
 		return c.Fields[field]
@@ -320,22 +320,22 @@ func (gui *GUI) Field(id, field string) string {
 
 	return ""
 }
-func (gui *GUI) FieldNumber(id, field string) float32 {
-	var w, hasW = gui.root.Widgets[id]
+func (g *GUI) FieldNumber(id, field string) float32 {
+	var w, hasW = g.root.Widgets[id]
 	var owner *container
 	if hasW {
-		owner = gui.root.Containers[w.OwnerId]
+		owner = g.root.Containers[w.OwnerId]
 	}
-	var value = dyn(owner, gui.Field(id, field), "NaN")
+	var value = dyn(owner, g.Field(id, field), "NaN")
 	return parseNum(value, number.NaN())
 }
 
-func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
+func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
-	gui.reset(camera)
+	defer func() { g.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	g.reset(camera)
 
-	for _, c := range gui.root.Containers {
+	for _, c := range g.root.Containers {
 		var hidden = c.Fields[f.Hidden]
 		if hidden == "" && c.isHovered(camera) {
 			return true
@@ -346,42 +346,42 @@ func (gui *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 }
 
 // Works for Widgets & Containers.
-func (gui *GUI) IsHovered(id string, camera *graphics.Camera) bool {
+func (g *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
-	gui.reset(camera)
+	defer func() { g.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	g.reset(camera)
 
-	var w, hasW = gui.root.Widgets[id]
-	var c, hasC = gui.root.Containers[id]
+	var w, hasW = g.root.Widgets[id]
+	var c, hasC = g.root.Containers[id]
 
 	if hasW {
-		return w.isFocused(gui.root, camera)
+		return w.isFocused(g.root, camera)
 	}
 	if hasC {
-		return c.isFocused(gui.root, camera)
+		return c.isFocused(g.root, camera)
 	}
 	return false
 }
 
 // Works for Widgets & Containers.
-func (gui *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
+func (g *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { gui.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
-	gui.reset(camera)
+	defer func() { g.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
+	g.reset(camera)
 
-	var w, has = gui.root.Widgets[widgetId]
+	var w, has = g.root.Widgets[widgetId]
 	if has {
-		return w.isFocused(gui.root, camera)
+		return w.isFocused(g.root, camera)
 	}
 	return false
 }
 
-func (gui *GUI) IdsWidgets() []string {
-	return collection.MapKeys(gui.root.Widgets)
+func (g *GUI) IdsWidgets() []string {
+	return collection.MapKeys(g.root.Widgets)
 }
-func (gui *GUI) IdsContainers() []string {
-	return collection.MapKeys(gui.root.Containers)
+func (g *GUI) IdsContainers() []string {
+	return collection.MapKeys(g.root.Containers)
 }
-func (gui *GUI) IdsThemes() []string {
-	return collection.MapKeys(gui.root.Themes)
+func (g *GUI) IdsThemes() []string {
+	return collection.MapKeys(g.root.Themes)
 }

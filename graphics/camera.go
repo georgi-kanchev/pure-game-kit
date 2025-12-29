@@ -49,88 +49,88 @@ func NewCamera(zoom float32) *Camera {
 
 // =================================================================
 
-func (camera *Camera) MouseDragAndZoom() {
-	camera.Zoom *= 1 + 0.05*mouse.Scroll()
+func (c *Camera) MouseDragAndZoom() {
+	c.Zoom *= 1 + 0.05*mouse.Scroll()
 
 	if mouse.IsButtonPressed(button.Middle) {
 		var dx, dy = mouse.CursorDelta()
-		var rad = angle.ToRadians(-camera.Angle)
+		var rad = angle.ToRadians(-c.Angle)
 		var sin, cos = number.Sine(rad), number.Cosine(rad)
-		camera.X -= (dx*cos - dy*sin) / camera.Zoom
-		camera.Y -= (dx*sin + dy*cos) / camera.Zoom
+		c.X -= (dx*cos - dy*sin) / c.Zoom
+		c.Y -= (dx*sin + dy*cos) / c.Zoom
 	}
 }
-func (camera *Camera) MouseDragAndZoomSmoothly() {
-	camera.Zoom *= 1 + 0.001*mouse.ScrollSmooth()
+func (c *Camera) MouseDragAndZoomSmoothly() {
+	c.Zoom *= 1 + 0.001*mouse.ScrollSmooth()
 
 	const dragFriction, dragStrength = 8.0, 8.0
 	var dt = internal.DeltaTime
 	var decay = number.Exponential(-dragFriction * dt)
-	camera.velocityX *= decay
-	camera.velocityY *= decay
+	c.velocityX *= decay
+	c.velocityY *= decay
 
 	if mouse.IsButtonPressed(button.Middle) {
-		var rad = angle.ToRadians(-camera.Angle)
+		var rad = angle.ToRadians(-c.Angle)
 		var sin, cos = number.Sine(rad), number.Cosine(rad)
 		var dx, dy = mouse.CursorDelta()
 
 		dx /= dt
 		dy /= dt
 
-		var wdx = (dx*cos - dy*sin) / camera.Zoom
-		var wdy = (dx*sin + dy*cos) / camera.Zoom
+		var wdx = (dx*cos - dy*sin) / c.Zoom
+		var wdy = (dx*sin + dy*cos) / c.Zoom
 
-		camera.velocityX -= wdx * dragStrength * dt
-		camera.velocityY -= wdy * dragStrength * dt
+		c.velocityX -= wdx * dragStrength * dt
+		c.velocityY -= wdy * dragStrength * dt
 	}
 
-	camera.X += camera.velocityX * dt
-	camera.Y += camera.velocityY * dt
+	c.X += c.velocityX * dt
+	c.Y += c.velocityY * dt
 
-	if number.Absolute(camera.velocityX) < 0.0001 {
-		camera.velocityX = 0
+	if number.Absolute(c.velocityX) < 0.0001 {
+		c.velocityX = 0
 	}
-	if number.Absolute(camera.velocityY) < 0.0001 {
-		camera.velocityY = 0
+	if number.Absolute(c.velocityY) < 0.0001 {
+		c.velocityY = 0
 	}
 }
 
-func (camera *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight int) {
-	camera.ScreenX = screenX
-	camera.ScreenY = screenY
-	camera.ScreenWidth = screenWidth
-	camera.ScreenHeight = screenHeight
-	camera.Mask(screenX, screenY, screenWidth, screenHeight)
+func (c *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight int) {
+	c.ScreenX = screenX
+	c.ScreenY = screenY
+	c.ScreenWidth = screenWidth
+	c.ScreenHeight = screenHeight
+	c.Mask(screenX, screenY, screenWidth, screenHeight)
 }
-func (camera *Camera) SetScreenAreaToWindow() {
+func (c *Camera) SetScreenAreaToWindow() {
 	tryRecreateWindow()
 	var w, h = window.Size()
-	camera.SetScreenArea(0, 0, w, h)
+	c.SetScreenArea(0, 0, w, h)
 }
-func (camera *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
-	camera.MaskX, camera.MaskY = screenX, screenY
-	camera.MaskWidth, camera.MaskHeight = screenWidth, screenHeight
+func (c *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
+	c.MaskX, c.MaskY = screenX, screenY
+	c.MaskWidth, c.MaskHeight = screenWidth, screenHeight
 }
 
 //=================================================================
 
-func (camera *Camera) IsHovered() bool {
+func (c *Camera) IsHovered() bool {
 	var mousePos = rl.GetMousePosition()
-	return float32(mousePos.X) > float32(camera.ScreenX) &&
-		float32(mousePos.Y) > float32(camera.ScreenY) &&
-		float32(mousePos.X) < float32(camera.ScreenX+camera.ScreenWidth) &&
-		float32(mousePos.Y) < float32(camera.ScreenY+camera.ScreenHeight)
+	return float32(mousePos.X) > float32(c.ScreenX) &&
+		float32(mousePos.Y) > float32(c.ScreenY) &&
+		float32(mousePos.X) < float32(c.ScreenX+c.ScreenWidth) &&
+		float32(mousePos.Y) < float32(c.ScreenY+c.ScreenHeight)
 }
-func (camera *Camera) MousePosition() (x, y float32) {
-	return camera.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
+func (c *Camera) MousePosition() (x, y float32) {
+	return c.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
 }
-func (camera *Camera) Size() (width, height float32) {
-	camera.update()
-	return float32(camera.ScreenWidth) / camera.Zoom, float32(camera.ScreenHeight) / camera.Zoom
+func (c *Camera) Size() (width, height float32) {
+	c.update()
+	return float32(c.ScreenWidth) / c.Zoom, float32(c.ScreenHeight) / c.Zoom
 }
 
-func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
-	camera.update()
+func (c *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
+	c.update()
 
 	var sx, sy = float32(screenX), float32(screenY)
 	sx -= float32(rlCam.Offset.X)
@@ -146,8 +146,8 @@ func (camera *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	rotY += float32(rlCam.Target.Y)
 	return rotX, rotY
 }
-func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
-	camera.update()
+func (c *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
+	c.update()
 
 	x -= float32(rlCam.Target.X)
 	y -= float32(rlCam.Target.Y)
@@ -162,14 +162,14 @@ func (camera *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 	rotY += float32(rlCam.Offset.Y)
 	return int(rotX), int(rotY)
 }
-func (camera *Camera) PointFromCamera(otherCamera *Camera, otherX, otherY float32) (myX, myY float32) {
+func (c *Camera) PointFromCamera(otherCamera *Camera, otherX, otherY float32) (myX, myY float32) {
 	var screenX, screenY = otherCamera.PointToScreen(otherX, otherY)
-	return camera.PointFromScreen(screenX, screenY)
+	return c.PointFromScreen(screenX, screenY)
 }
-func (camera *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (otherX, otherY float32) {
-	return otherCamera.PointFromCamera(camera, myX, myY)
+func (c *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (otherX, otherY float32) {
+	return otherCamera.PointFromCamera(c, myX, myY)
 }
-func (camera *Camera) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
-	var scrX, scrY = float32(camera.ScreenWidth) * edgeX, float32(camera.ScreenHeight) * edgeY
-	return camera.PointFromScreen(int(scrX), int(scrY))
+func (c *Camera) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
+	var scrX, scrY = float32(c.ScreenWidth) * edgeX, float32(c.ScreenHeight) * edgeY
+	return c.PointFromScreen(int(scrX), int(scrY))
 }

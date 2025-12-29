@@ -186,48 +186,48 @@ var rlCam = rl.Camera2D{}
 var maskX, maskY, maskW, maskH int
 
 // call before draw to update camera but use screen space instead of camera space
-func (camera *Camera) update() {
+func (c *Camera) update() {
 	tryRecreateWindow()
 
-	rlCam.Target.X = float32(camera.X)
-	rlCam.Target.Y = float32(camera.Y)
-	rlCam.Rotation = float32(camera.Angle)
-	rlCam.Zoom = float32(camera.Zoom)
-	rlCam.Offset.X = float32(camera.ScreenX) + float32(camera.ScreenWidth/2)
-	rlCam.Offset.Y = float32(camera.ScreenY) + float32(camera.ScreenHeight/2)
+	rlCam.Target.X = float32(c.X)
+	rlCam.Target.Y = float32(c.Y)
+	rlCam.Rotation = float32(c.Angle)
+	rlCam.Zoom = float32(c.Zoom)
+	rlCam.Offset.X = float32(c.ScreenX) + float32(c.ScreenWidth/2)
+	rlCam.Offset.Y = float32(c.ScreenY) + float32(c.ScreenHeight/2)
 
-	var mx = number.Biggest(camera.MaskX, camera.ScreenX)
-	var my = number.Biggest(camera.MaskY, camera.ScreenY)
-	var maxW = camera.ScreenX + camera.ScreenWidth - mx
-	var maxH = camera.ScreenY + camera.ScreenHeight - my
-	var mw = number.Smallest(camera.MaskWidth, maxW)
-	var mh = number.Smallest(camera.MaskHeight, maxH)
+	var mx = number.Biggest(c.MaskX, c.ScreenX)
+	var my = number.Biggest(c.MaskY, c.ScreenY)
+	var maxW = c.ScreenX + c.ScreenWidth - mx
+	var maxH = c.ScreenY + c.ScreenHeight - my
+	var mw = number.Smallest(c.MaskWidth, maxW)
+	var mh = number.Smallest(c.MaskHeight, maxH)
 
 	maskX, maskY, maskW, maskH = mx, my, mw, mh
 }
 
 // call before draw to update camera and use camera space
-func (camera *Camera) begin() {
-	camera.update()
-	if camera.Batch {
+func (c *Camera) begin() {
+	c.update()
+	if c.Batch {
 		return
 	}
 
 	rl.BeginMode2D(rlCam)
 	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
 
-	if camera.Blend != 0 {
-		rl.BeginBlendMode(rl.BlendMode(camera.Blend))
+	if c.Blend != 0 {
+		rl.BeginBlendMode(rl.BlendMode(c.Blend))
 	}
 }
 
 // call after draw to get back to using screen space
-func (camera *Camera) end() {
-	if camera.Batch {
+func (c *Camera) end() {
+	if c.Batch {
 		return
 	}
 
-	if camera.Blend != 0 {
+	if c.Blend != 0 {
 		rl.EndBlendMode()
 	}
 
@@ -235,8 +235,8 @@ func (camera *Camera) end() {
 	rl.EndMode2D()
 }
 
-func (camera *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
-	camera.update()
+func (c *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
+	c.update()
 	// optimized for speed
 	var angleRad = ang.ToRadians(angle)
 	var angle90Rad = ang.ToRadians(angle + 90)
@@ -273,10 +273,10 @@ func (camera *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
 	var maxX = number.Biggest(stlx, strx, sbrx, sblx)
 	var minY = number.Smallest(stly, stry, sbry, sbly)
 	var maxY = number.Biggest(stly, stry, sbry, sbly)
-	var mtlx = float32(camera.MaskX)
-	var mtly = float32(camera.MaskY)
-	var mbrx = mtlx + float32(camera.MaskWidth)
-	var mbry = mtly + float32(camera.MaskHeight)
+	var mtlx = float32(c.MaskX)
+	var mtly = float32(c.MaskY)
+	var mbrx = mtlx + float32(c.MaskWidth)
+	var mbry = mtly + float32(c.MaskHeight)
 	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
 }
 

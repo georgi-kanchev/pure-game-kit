@@ -19,9 +19,9 @@ type Tileset struct {
 	Tiles      map[uint32]*Tile
 }
 
-func (tileset *Tileset) FindTileBy(property string, value any) []*Tile {
+func (t *Tileset) FindTileBy(property string, value any) []*Tile {
 	var result = []*Tile{}
-	for _, tile := range tileset.Tiles {
+	for _, tile := range t.Tiles {
 		var curValue, has = tile.Properties[property]
 		if has && value == curValue {
 			result = append(result, tile)
@@ -30,18 +30,18 @@ func (tileset *Tileset) FindTileBy(property string, value any) []*Tile {
 	return result
 }
 
-func (tileset *Tileset) ExtractSprites() []*graphics.Sprite {
+func (t *Tileset) ExtractSprites() []*graphics.Sprite {
 	var sprites = []*graphics.Sprite{}
-	tileset.forEachTile(true, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
+	t.forEachTile(true, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		sprite.Width, sprite.Height = w, h
 		sprite.X, sprite.Y = x, y-h
 		sprites = append(sprites, sprite)
 	})
 	return sprites
 }
-func (tileset *Tileset) ExtractShapes() []*geometry.Shape {
+func (t *Tileset) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
+	t.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		var shapes = tile.ExtractShapes()
 		for _, shape := range shapes {
 			shape.X, shape.Y = shape.X*scW+x, shape.Y*scH+y-h
@@ -51,9 +51,9 @@ func (tileset *Tileset) ExtractShapes() []*geometry.Shape {
 	})
 	return result
 }
-func (tileset *Tileset) ExtractLines() [][2]float32 {
+func (t *Tileset) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
-	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
+	t.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		var lines = tile.ExtractLines()
 		for i := range lines {
 			lines[i][0], lines[i][1] = lines[i][0]*scW+x, lines[i][1]*scH+y-h
@@ -62,9 +62,9 @@ func (tileset *Tileset) ExtractLines() [][2]float32 {
 	})
 	return result
 }
-func (tileset *Tileset) ExtractPoints() [][2]float32 {
+func (t *Tileset) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
-	tileset.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
+	t.forEachTile(false, func(tile *Tile, x, y, w, h, scW, scH float32, sprite *graphics.Sprite) {
 		var points = tile.ExtractPoints()
 		for i := range points {
 			points[i][0], points[i][1] = points[i][0]*scW+x, points[i][1]*scH+y-h
@@ -76,9 +76,9 @@ func (tileset *Tileset) ExtractPoints() [][2]float32 {
 
 //=================================================================
 
-func (tileset *Tileset) Draw(camera *graphics.Camera) {
-	draw(camera, tileset.ExtractSprites(), nil, tileset.ExtractShapes(),
-		tileset.ExtractPoints(), tileset.ExtractLines(), palette.White)
+func (t *Tileset) Draw(camera *graphics.Camera) {
+	draw(camera, t.ExtractSprites(), nil, t.ExtractShapes(),
+		t.ExtractPoints(), t.ExtractLines(), palette.White)
 }
 
 //=================================================================
@@ -110,43 +110,43 @@ func newTileset(tilesetId string, project *Project) *Tileset {
 
 //=================================================================
 
-func (tileset *Tileset) initProperties(data *internal.Tileset) {
+func (t *Tileset) initProperties(data *internal.Tileset) {
 	var rows = 0
 	if data.Columns != 0 {
 		rows = data.TileCount / data.Columns
 	}
 
-	tileset.Properties = make(map[string]any)
-	tileset.Properties[property.TilesetName] = data.Name
-	tileset.Properties[property.TilesetClass] = data.Class
-	tileset.Properties[property.TilesetTileWidth] = data.TileWidth
-	tileset.Properties[property.TilesetTileHeight] = data.TileHeight
-	tileset.Properties[property.TilesetColumns] = data.Columns
-	tileset.Properties[property.TilesetRows] = rows
-	tileset.Properties[property.TilesetSpacing] = data.Spacing
-	tileset.Properties[property.TilesetOffsetX] = 0
-	tileset.Properties[property.TilesetOffsetY] = 0
-	tileset.Properties[property.TilesetRenderSize] = data.TileRenderSize
-	tileset.Properties[property.TilesetFillMode] = data.FillMode
+	t.Properties = make(map[string]any)
+	t.Properties[property.TilesetName] = data.Name
+	t.Properties[property.TilesetClass] = data.Class
+	t.Properties[property.TilesetTileWidth] = data.TileWidth
+	t.Properties[property.TilesetTileHeight] = data.TileHeight
+	t.Properties[property.TilesetColumns] = data.Columns
+	t.Properties[property.TilesetRows] = rows
+	t.Properties[property.TilesetSpacing] = data.Spacing
+	t.Properties[property.TilesetOffsetX] = 0
+	t.Properties[property.TilesetOffsetY] = 0
+	t.Properties[property.TilesetRenderSize] = data.TileRenderSize
+	t.Properties[property.TilesetFillMode] = data.FillMode
 
 	if data.Offset != nil {
-		tileset.Properties[property.TilesetOffsetX] = data.Offset.X
-		tileset.Properties[property.TilesetOffsetY] = data.Offset.Y
+		t.Properties[property.TilesetOffsetX] = data.Offset.X
+		t.Properties[property.TilesetOffsetY] = data.Offset.Y
 	}
 
 	if data.Image != nil {
-		tileset.Properties[property.TilesetAtlasId] = path.New(path.Folder(data.AssetId), data.Image.Source)
+		t.Properties[property.TilesetAtlasId] = path.New(path.Folder(data.AssetId), data.Image.Source)
 	}
 
 	for _, prop := range data.Properties {
-		tileset.Properties[prop.Name] = parseProperty(prop, tileset.Project)
+		t.Properties[prop.Name] = parseProperty(prop, t.Project)
 	}
 }
-func (tileset *Tileset) initTiles(data *internal.Tileset) {
-	tileset.Tiles = make(map[uint32]*Tile, data.TileCount)
+func (t *Tileset) initTiles(data *internal.Tileset) {
+	t.Tiles = make(map[uint32]*Tile, data.TileCount)
 
 	for _, tile := range data.Tiles {
-		tileset.Tiles[tile.Id] = newTile(data.AssetId, tile.Id, tileset)
+		t.Tiles[tile.Id] = newTile(data.AssetId, tile.Id, t)
 	}
 
 	if data.Columns != 0 {
@@ -154,31 +154,31 @@ func (tileset *Tileset) initTiles(data *internal.Tileset) {
 		for i := range cols {
 			for j := range rows {
 				var tileId = uint32(number.Indexes2DToIndex1D(i, j, rows, data.Columns))
-				if tileset.Tiles[tileId] == nil {
-					tileset.Tiles[tileId] = newTile(data.AssetId, tileId, tileset)
+				if t.Tiles[tileId] == nil {
+					t.Tiles[tileId] = newTile(data.AssetId, tileId, t)
 				}
 			}
 		}
 	}
 }
 
-func (tileset *Tileset) forEachTile(isSprite bool,
+func (t *Tileset) forEachTile(isSprite bool,
 	action func(t *Tile, x, y, w, h, scW, scH float32, s *graphics.Sprite)) {
-	var columns = tileset.Properties[property.TilesetColumns].(int)
+	var columns = t.Properties[property.TilesetColumns].(int)
 	var x, y float32 = 0, 0
 	var keys = []uint32{}
-	var tileW = float32(tileset.Properties[property.TilesetTileWidth].(int))
-	var tileH = float32(tileset.Properties[property.TilesetTileHeight].(int))
-	var renderSize = tileset.Properties[property.TilesetRenderSize].(string)
-	var fillMode = tileset.Properties[property.TilesetFillMode].(string)
+	var tileW = float32(t.Properties[property.TilesetTileWidth].(int))
+	var tileH = float32(t.Properties[property.TilesetTileHeight].(int))
+	var renderSize = t.Properties[property.TilesetRenderSize].(string)
+	var fillMode = t.Properties[property.TilesetFillMode].(string)
 
-	for k := range tileset.Tiles {
+	for k := range t.Tiles {
 		keys = append(keys, k)
 	}
 	slices.Sort(keys)
 
 	for i, id := range keys {
-		var tile = tileset.Tiles[id]
+		var tile = t.Tiles[id]
 		var width = float32(tile.Properties[property.TileWidth].(int))
 		var height = float32(tile.Properties[property.TileHeight].(int))
 		var sprite *graphics.Sprite
@@ -194,7 +194,7 @@ func (tileset *Tileset) forEachTile(isSprite bool,
 			width, height = sprite.Width, sprite.Height
 		}
 
-		width, height, ratioW, ratioH = tileset.tileRenderSize(width, height, tileW, tileH)
+		width, height, ratioW, ratioH = t.tileRenderSize(width, height, tileW, tileH)
 
 		if renderSize == "grid" && fillMode == "preserve-aspect-fit" {
 			scX, scY = scX*ratioW, scY*ratioH
@@ -219,10 +219,10 @@ func (tileset *Tileset) forEachTile(isSprite bool,
 		}
 	}
 }
-func (tileset *Tileset) tileRenderSize(w, h, tileW, tileH float32) (newW, newH, ratioW, ratioH float32) {
+func (t *Tileset) tileRenderSize(w, h, tileW, tileH float32) (newW, newH, ratioW, ratioH float32) {
 	ratioW, ratioH = 1, 1
-	var renderSize = tileset.Properties[property.TilesetRenderSize].(string)
-	var fillMode = tileset.Properties[property.TilesetFillMode].(string)
+	var renderSize = t.Properties[property.TilesetRenderSize].(string)
+	var fillMode = t.Properties[property.TilesetFillMode].(string)
 
 	ratioH = condition.If(w > h, h/w, ratioH)
 	ratioW = condition.If(w <= h, w/h, ratioW)

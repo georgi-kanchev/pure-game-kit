@@ -27,9 +27,9 @@ type Layer struct {
 
 //=================================================================
 
-func (layer *Layer) FindObjectsBy(property string, value any) []*Object {
+func (l *Layer) FindObjectsBy(property string, value any) []*Object {
 	var result = []*Object{}
-	for _, obj := range layer.Objects {
+	for _, obj := range l.Objects {
 		var curValue, has = obj.Properties[property]
 		if has && value == curValue {
 			result = append(result, obj)
@@ -38,15 +38,15 @@ func (layer *Layer) FindObjectsBy(property string, value any) []*Object {
 	return result
 }
 
-func (layer *Layer) ExtractSprites() []*graphics.Sprite {
+func (l *Layer) ExtractSprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
-	var image, hasImage = layer.Properties[property.LayerImage]
-	var tint = layer.Properties[property.LayerTint].(uint)
+	var image, hasImage = l.Properties[property.LayerImage]
+	var tint = l.Properties[property.LayerTint].(uint)
 
 	if hasImage {
-		var worldX, worldY, layerX, layerY = layer.getOffsets()
-		var imgW = layer.Properties[property.LayerImageWidth].(int)
-		var imgH = layer.Properties[property.LayerImageHeight].(int)
+		var worldX, worldY, layerX, layerY = l.getOffsets()
+		var imgW = l.Properties[property.LayerImageWidth].(int)
+		var imgH = l.Properties[property.LayerImageHeight].(int)
 		var sprite = graphics.NewSprite(image.(string), worldX+layerX, worldY+layerY)
 		sprite.Color = tint
 		sprite.Width, sprite.Height = float32(imgW), float32(imgH)
@@ -54,8 +54,8 @@ func (layer *Layer) ExtractSprites() []*graphics.Sprite {
 		return []*graphics.Sprite{sprite}
 	}
 
-	if len(layer.Objects) > 0 {
-		for _, obj := range layer.Objects {
+	if len(l.Objects) > 0 {
+		for _, obj := range l.Objects {
 			var sprite = obj.ExtractSprite()
 			if sprite != nil {
 				sprite.Color = tint
@@ -65,7 +65,7 @@ func (layer *Layer) ExtractSprites() []*graphics.Sprite {
 		return result
 	}
 
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
+	l.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var sprite = tile.ExtractSprite()
 		sprite.X, sprite.Y = x, y
 		sprite.Width, sprite.Height = w, h
@@ -75,9 +75,9 @@ func (layer *Layer) ExtractSprites() []*graphics.Sprite {
 	})
 	return result
 }
-func (layer *Layer) ExtractTextBoxes() []*graphics.TextBox {
+func (l *Layer) ExtractTextBoxes() []*graphics.TextBox {
 	var result = []*graphics.TextBox{} // tile & image layers don't have textboxes
-	for _, obj := range layer.Objects {
+	for _, obj := range l.Objects {
 		var textBox = obj.ExtractTextBox()
 		if textBox != nil {
 			result = append(result, textBox)
@@ -85,14 +85,14 @@ func (layer *Layer) ExtractTextBoxes() []*graphics.TextBox {
 	}
 	return result
 }
-func (layer *Layer) ExtractShapeGrid() *geometry.ShapeGrid {
-	var tileW = layer.OwnerMap.Properties[property.MapTileWidth].(int)
-	var tileH = layer.OwnerMap.Properties[property.MapTileHeight].(int)
+func (l *Layer) ExtractShapeGrid() *geometry.ShapeGrid {
+	var tileW = l.OwnerMap.Properties[property.MapTileWidth].(int)
+	var tileH = l.OwnerMap.Properties[property.MapTileHeight].(int)
 	var result = geometry.NewShapeGrid(tileW, tileH)
-	var cellW = float32(layer.OwnerMap.Properties[property.MapTileWidth].(int))
-	var cellH = float32(layer.OwnerMap.Properties[property.MapTileHeight].(int))
+	var cellW = float32(l.OwnerMap.Properties[property.MapTileWidth].(int))
+	var cellH = float32(l.OwnerMap.Properties[property.MapTileHeight].(int))
 
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
+	l.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var shapes = tile.ExtractShapes()
 		if len(shapes) == 0 {
 			return
@@ -125,16 +125,16 @@ func (layer *Layer) ExtractShapeGrid() *geometry.ShapeGrid {
 	})
 	return result
 }
-func (layer *Layer) ExtractShapes() []*geometry.Shape {
+func (l *Layer) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	for _, object := range layer.Objects {
+	for _, object := range l.Objects {
 		result = append(result, object.ExtractShapes()...)
 	}
 	return result
 }
-func (layer *Layer) ExtractLines() [][2]float32 {
+func (l *Layer) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
-	for i, obj := range layer.Objects {
+	for i, obj := range l.Objects {
 		if i != 0 {
 			result = append(result, [2]float32{number.NaN(), number.NaN()})
 		}
@@ -142,7 +142,7 @@ func (layer *Layer) ExtractLines() [][2]float32 {
 		result = append(result, obj.ExtractLines()...)
 	}
 
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
+	l.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var points = tile.ExtractLines()
 		for _, pt := range points {
 			pt[0], pt[1] = pt[0]*scW, pt[1]*scH
@@ -154,13 +154,13 @@ func (layer *Layer) ExtractLines() [][2]float32 {
 	})
 	return result
 }
-func (layer *Layer) ExtractPoints() [][2]float32 {
+func (l *Layer) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
-	for _, obj := range layer.Objects {
+	for _, obj := range l.Objects {
 		result = append(result, obj.ExtractPoints()...)
 	}
 
-	layer.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
+	l.forEachTile(func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int) {
 		var points = tile.ExtractPoints()
 		for _, pt := range points {
 			pt[0], pt[1] = pt[0]*scW, pt[1]*scH
@@ -212,65 +212,65 @@ func newLayerGroup(data *it.LayerGroup, owner *Map, group *Layer) *Layer {
 
 //=================================================================
 
-func (layer *Layer) initProperties(data *it.Layer, objs *it.LayerObjects, img *it.LayerImage, dir string) {
-	layer.Properties = make(map[string]any)
-	layer.Properties[property.LayerId] = data.Id
-	layer.Properties[property.LayerClass] = data.Class
-	layer.Properties[property.LayerName] = data.Name
-	layer.Properties[property.LayerVisible] = data.Visible != "false"
-	layer.Properties[property.LayerLocked] = data.Locked
-	layer.Properties[property.LayerOpacity] = data.Opacity
-	layer.Properties[property.LayerTint] = condition.If(data.Tint == "", palette.White, color.Hex(data.Tint))
-	layer.Properties[property.LayerOffsetX] = data.OffsetX
-	layer.Properties[property.LayerOffsetY] = data.OffsetY
-	layer.Properties[property.LayerParallaxX] = data.ParallaxX
-	layer.Properties[property.LayerParallaxY] = data.ParallaxY
+func (l *Layer) initProperties(data *it.Layer, objs *it.LayerObjects, img *it.LayerImage, dir string) {
+	l.Properties = make(map[string]any)
+	l.Properties[property.LayerId] = data.Id
+	l.Properties[property.LayerClass] = data.Class
+	l.Properties[property.LayerName] = data.Name
+	l.Properties[property.LayerVisible] = data.Visible != "false"
+	l.Properties[property.LayerLocked] = data.Locked
+	l.Properties[property.LayerOpacity] = data.Opacity
+	l.Properties[property.LayerTint] = condition.If(data.Tint == "", palette.White, color.Hex(data.Tint))
+	l.Properties[property.LayerOffsetX] = data.OffsetX
+	l.Properties[property.LayerOffsetY] = data.OffsetY
+	l.Properties[property.LayerParallaxX] = data.ParallaxX
+	l.Properties[property.LayerParallaxY] = data.ParallaxY
 
 	if objs != nil {
-		layer.Properties[property.LayerColor] = color.Hex(objs.Color)
-		layer.Properties[property.LayerDrawOrder] = objs.DrawOrder
+		l.Properties[property.LayerColor] = color.Hex(objs.Color)
+		l.Properties[property.LayerDrawOrder] = objs.DrawOrder
 	}
 
 	if img != nil && img.Image != nil {
-		layer.Properties[property.LayerImage] = assets.LoadTexture(path.New(dir, img.Image.Source))
-		layer.Properties[property.LayerImageWidth] = img.Image.Width
-		layer.Properties[property.LayerImageHeight] = img.Image.Height
-		layer.Properties[property.LayerTransparentColor] = color.Hex(img.Image.TransparentColor)
-		layer.Properties[property.LayerRepeatX] = img.RepeatX
-		layer.Properties[property.LayerRepeatY] = img.RepeatY
+		l.Properties[property.LayerImage] = assets.LoadTexture(path.New(dir, img.Image.Source))
+		l.Properties[property.LayerImageWidth] = img.Image.Width
+		l.Properties[property.LayerImageHeight] = img.Image.Height
+		l.Properties[property.LayerTransparentColor] = color.Hex(img.Image.TransparentColor)
+		l.Properties[property.LayerRepeatX] = img.RepeatX
+		l.Properties[property.LayerRepeatY] = img.RepeatY
 	}
 
 	for _, prop := range data.Properties {
-		layer.Properties[prop.Name] = parseProperty(prop, layer.OwnerMap.Project)
+		l.Properties[prop.Name] = parseProperty(prop, l.OwnerMap.Project)
 	}
 }
-func (layer *Layer) initObjects(data *it.LayerObjects) {
-	layer.Objects = make([]*Object, len(data.Objects))
+func (l *Layer) initObjects(data *it.LayerObjects) {
+	l.Objects = make([]*Object, len(data.Objects))
 	for i, obj := range data.Objects {
-		layer.Objects[i] = newObject(obj, nil, layer)
-		layer.Objects[i].Properties[property.ObjectOrder] = i
+		l.Objects[i] = newObject(obj, nil, l)
+		l.Objects[i].Properties[property.ObjectOrder] = i
 	}
 }
 
-func (layer *Layer) getOffsets() (worldX, worldY, layerX, layerY float32) {
-	worldX = layer.OwnerMap.Properties[property.MapWorldX].(float32)
-	worldY = layer.OwnerMap.Properties[property.MapWorldY].(float32)
-	layerX = layer.Properties[property.LayerOffsetX].(float32)
-	layerY = layer.Properties[property.LayerOffsetY].(float32)
+func (l *Layer) getOffsets() (worldX, worldY, layerX, layerY float32) {
+	worldX = l.OwnerMap.Properties[property.MapWorldX].(float32)
+	worldY = l.OwnerMap.Properties[property.MapWorldY].(float32)
+	layerX = l.Properties[property.LayerOffsetX].(float32)
+	layerY = l.Properties[property.LayerOffsetY].(float32)
 	return
 }
-func (layer *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int)) {
-	if len(layer.TileIds) == 0 {
+func (l *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, scH float32, cellX, cellY int)) {
+	if len(l.TileIds) == 0 {
 		return
 	}
 
-	var columns = layer.OwnerMap.Properties[property.MapColumns].(int)
-	var worldX, worldY, layerX, layerY = layer.getOffsets()
-	var rows = layer.OwnerMap.Properties[property.MapRows].(int)
-	var cellW = float32(layer.OwnerMap.Properties[property.MapTileWidth].(int))
-	var cellH = float32(layer.OwnerMap.Properties[property.MapTileHeight].(int))
+	var columns = l.OwnerMap.Properties[property.MapColumns].(int)
+	var worldX, worldY, layerX, layerY = l.getOffsets()
+	var rows = l.OwnerMap.Properties[property.MapRows].(int)
+	var cellW = float32(l.OwnerMap.Properties[property.MapTileWidth].(int))
+	var cellH = float32(l.OwnerMap.Properties[property.MapTileHeight].(int))
 
-	for i, tileId := range layer.TileIds {
+	for i, tileId := range l.TileIds {
 		var id = flag.TurnOff(tileId, it.Flips)
 		if id == 0 {
 			continue
@@ -278,7 +278,7 @@ func (layer *Layer) forEachTile(action func(tile *Tile, ang, x, y, w, h, scW, sc
 
 		var cx, cy = number.Index1DToIndexes2D(i, columns, rows)
 		var cellX, cellY = float32(cx) * cellW, float32(cy) * cellH
-		var curTileset, firstId = currentTileset(layer.OwnerMap, id)
+		var curTileset, firstId = currentTileset(l.OwnerMap, id)
 		var renderSize = curTileset.Properties[property.TilesetRenderSize].(string)
 		var fillMode = curTileset.Properties[property.TilesetFillMode].(string)
 		var tile = curTileset.Tiles[id-firstId]

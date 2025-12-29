@@ -23,20 +23,20 @@ type Object struct {
 	OwnerLayer *Layer
 }
 
-func (object *Object) ExtractSprite() *graphics.Sprite {
-	var objType = object.Properties[property.ObjectType]
+func (o *Object) ExtractSprite() *graphics.Sprite {
+	var objType = o.Properties[property.ObjectType]
 	if objType != "tile" {
 		return nil
 	}
 
 	var pivotY float32 = 0
 	var assetId = ""
-	var x, y, w, h, ang = object.getArea()
-	var tileId = object.Properties[property.ObjectTileId]
+	var x, y, w, h, ang = o.getArea()
+	var tileId = o.Properties[property.ObjectTileId]
 	var flipX, flipY = flag.IsOn(tileId.(uint32), internal.FlipX), flag.IsOn(tileId.(uint32), internal.FlipY)
 	var flipOffX, flipOffY = condition.If(flipX, w, 0), condition.If(flipY, -h, 0)
-	var worldX, worldY, offsetX, offsetY = object.getOffsets()
-	var tile = object.getTile()
+	var worldX, worldY, offsetX, offsetY = o.getOffsets()
+	var tile = o.getTile()
 
 	if tile.OwnerTileset != nil {
 		var asset, hasAsset = tile.OwnerTileset.Properties[property.TilesetAtlasId]
@@ -57,16 +57,16 @@ func (object *Object) ExtractSprite() *graphics.Sprite {
 	sprite.Angle = ang
 	return sprite
 }
-func (object *Object) ExtractTextBox() *graphics.TextBox {
-	var objType = object.Properties[property.ObjectType]
+func (o *Object) ExtractTextBox() *graphics.TextBox {
+	var objType = o.Properties[property.ObjectType]
 	if objType != "text" {
 		return nil
 	}
 
-	var font = object.Properties[property.ObjectTextFont].(string)
-	var txt = object.Properties[property.ObjectText]
-	var x, y, w, h, ang = object.getArea()
-	var bold = object.Properties[property.ObjectTextBold].(bool)
+	var font = o.Properties[property.ObjectTextFont].(string)
+	var txt = o.Properties[property.ObjectText]
+	var x, y, w, h, ang = o.getArea()
+	var bold = o.Properties[property.ObjectTextBold].(bool)
 
 	for id := range internal.Fonts {
 		var name = path.LastPart(path.RemoveExtension(id))
@@ -78,27 +78,27 @@ func (object *Object) ExtractTextBox() *graphics.TextBox {
 	var textBox = graphics.NewTextBox(font, x, y, txt)
 	textBox.Width, textBox.Height = w, h
 	textBox.Angle = ang
-	textBox.AlignmentX = object.Properties[property.ObjectTextAlignX].(float32)
-	textBox.AlignmentY = object.Properties[property.ObjectTextAlignY].(float32)
-	textBox.WordWrap = object.Properties[property.ObjectTextWordWrap].(bool)
-	textBox.Color = object.Properties[property.ObjectTextColor].(uint)
+	textBox.AlignmentX = o.Properties[property.ObjectTextAlignX].(float32)
+	textBox.AlignmentY = o.Properties[property.ObjectTextAlignY].(float32)
+	textBox.WordWrap = o.Properties[property.ObjectTextWordWrap].(bool)
+	textBox.Color = o.Properties[property.ObjectTextColor].(uint)
 	textBox.Thickness = condition.If(bold, float32(0.8), 0.5)
-	textBox.LineHeight = float32(object.Properties[property.ObjectTextFontSize].(int))
+	textBox.LineHeight = float32(o.Properties[property.ObjectTextFontSize].(int))
 	textBox.PivotX, textBox.PivotY = 0, 0
 	return textBox
 }
-func (object *Object) ExtractShapes() []*geometry.Shape {
+func (o *Object) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	var objType = object.Properties[property.ObjectType]
+	var objType = o.Properties[property.ObjectType]
 	if is.OneOf(objType, "text", "point", "line") {
 		return result
 	}
 
-	var x, y, _, h, ang = object.getArea()
-	var worldX, worldY, offsetX, offsetY = object.getOffsets()
+	var x, y, _, h, ang = o.getArea()
+	var worldX, worldY, offsetX, offsetY = o.getOffsets()
 
 	if objType == "tile" {
-		result = append(result, object.getTile().ExtractShapes()...)
+		result = append(result, o.getTile().ExtractShapes()...)
 		for _, shape := range result {
 			shape.X += worldX + offsetX + x
 			shape.Y += worldY + offsetY + y - h
@@ -106,24 +106,24 @@ func (object *Object) ExtractShapes() []*geometry.Shape {
 		return result
 	}
 
-	var shape = geometry.NewShapeCorners(object.Corners...)
+	var shape = geometry.NewShapeCorners(o.Corners...)
 	shape.Angle = ang
 	shape.X, shape.Y = worldX+offsetX+x, worldY+offsetY+y
 	result = append(result, shape)
 	return result
 }
-func (object *Object) ExtractLines() [][2]float32 {
+func (o *Object) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
-	var objType = object.Properties[property.ObjectType]
+	var objType = o.Properties[property.ObjectType]
 	if objType != "line" && objType != "tile" {
 		return result
 	}
 
-	var x, y, _, h, ang = object.getArea()
-	var worldX, worldY, offsetX, offsetY = object.getOffsets()
+	var x, y, _, h, ang = o.getArea()
+	var worldX, worldY, offsetX, offsetY = o.getOffsets()
 
 	if objType == "tile" {
-		result = object.getTile().ExtractLines()
+		result = o.getTile().ExtractLines()
 		for i := range result {
 			result[i][0] += worldX + offsetX + x
 			result[i][1] += worldY + offsetY + y - h
@@ -135,7 +135,7 @@ func (object *Object) ExtractLines() [][2]float32 {
 		return result
 	}
 
-	for i, pt := range object.Corners {
+	for i, pt := range o.Corners {
 		var xy = [2]float32{worldX + offsetX + x + pt[0], worldY + offsetY + y + pt[1]}
 
 		if i > 0 {
@@ -146,18 +146,18 @@ func (object *Object) ExtractLines() [][2]float32 {
 
 	return result
 }
-func (object *Object) ExtractPoints() [][2]float32 {
+func (o *Object) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
-	var objType = object.Properties[property.ObjectType]
+	var objType = o.Properties[property.ObjectType]
 	if objType != "point" && objType != "tile" {
 		return result
 	}
 
-	var x, y, _, h, _ = object.getArea()
-	var worldX, worldY, offsetX, offsetY = object.getOffsets()
+	var x, y, _, h, _ = o.getArea()
+	var worldX, worldY, offsetX, offsetY = o.getOffsets()
 
 	if objType == "tile" {
-		var result = object.getTile().ExtractPoints()
+		var result = o.getTile().ExtractPoints()
 		for i := range result {
 			result[i][0] += worldX + offsetX + x
 			result[i][1] += worldY + offsetY + y - h
@@ -170,10 +170,10 @@ func (object *Object) ExtractPoints() [][2]float32 {
 
 //=================================================================
 
-func (object *Object) Draw(camera *graphics.Camera) {
-	var sprs = []*graphics.Sprite{object.ExtractSprite()}
-	var txts = []*graphics.TextBox{object.ExtractTextBox()}
-	draw(camera, sprs, txts, object.ExtractShapes(), object.ExtractPoints(), object.ExtractLines(), palette.White)
+func (o *Object) Draw(camera *graphics.Camera) {
+	var sprs = []*graphics.Sprite{o.ExtractSprite()}
+	var txts = []*graphics.TextBox{o.ExtractTextBox()}
+	draw(camera, sprs, txts, o.ExtractShapes(), o.ExtractPoints(), o.ExtractLines(), palette.White)
 }
 
 //=================================================================
@@ -187,62 +187,62 @@ func newObject(data *internal.LayerObject, ownerTile *Tile, ownerLayer *Layer) *
 	return &result
 }
 
-func (object *Object) initProperties(data *internal.LayerObject) {
-	object.Properties = make(map[string]any)
-	object.Properties[property.ObjectId] = data.Id
-	object.Properties[property.ObjectClass] = data.Class
-	object.Properties[property.ObjectTemplate] = data.Template
-	object.Properties[property.ObjectName] = data.Name
-	object.Properties[property.ObjectVisible] = data.Visible != "false"
-	object.Properties[property.ObjectLocked] = data.Locked
-	object.Properties[property.ObjectX] = data.X
-	object.Properties[property.ObjectY] = data.Y
-	object.Properties[property.ObjectWidth] = data.Width
-	object.Properties[property.ObjectHeight] = data.Height
-	object.Properties[property.ObjectRotation] = data.Rotation
-	object.Properties[property.ObjectTileId] = data.Gid
-	object.Properties[property.ObjectFlipX] = flag.IsOn(data.Gid, internal.FlipX)
-	object.Properties[property.ObjectFlipY] = flag.IsOn(data.Gid, internal.FlipY)
+func (o *Object) initProperties(data *internal.LayerObject) {
+	o.Properties = make(map[string]any)
+	o.Properties[property.ObjectId] = data.Id
+	o.Properties[property.ObjectClass] = data.Class
+	o.Properties[property.ObjectTemplate] = data.Template
+	o.Properties[property.ObjectName] = data.Name
+	o.Properties[property.ObjectVisible] = data.Visible != "false"
+	o.Properties[property.ObjectLocked] = data.Locked
+	o.Properties[property.ObjectX] = data.X
+	o.Properties[property.ObjectY] = data.Y
+	o.Properties[property.ObjectWidth] = data.Width
+	o.Properties[property.ObjectHeight] = data.Height
+	o.Properties[property.ObjectRotation] = data.Rotation
+	o.Properties[property.ObjectTileId] = data.Gid
+	o.Properties[property.ObjectFlipX] = flag.IsOn(data.Gid, internal.FlipX)
+	o.Properties[property.ObjectFlipY] = flag.IsOn(data.Gid, internal.FlipY)
 
 	if data.Text != nil {
-		object.Properties[property.ObjectText] = data.Text.Value
-		object.Properties[property.ObjectTextFont] = data.Text.FontFamily
-		object.Properties[property.ObjectTextFontSize] = data.Text.FontSize
-		object.Properties[property.ObjectTextBold] = data.Text.Bold
-		object.Properties[property.ObjectTextItalic] = data.Text.Italic
-		object.Properties[property.ObjectTextStrikeout] = data.Text.Strikeout
-		object.Properties[property.ObjectTextUnderline] = data.Text.Underline
-		object.Properties[property.ObjectTextAlignX] = aligns[data.Text.AlignX]
-		object.Properties[property.ObjectTextAlignY] = aligns[data.Text.AlignY]
-		object.Properties[property.ObjectTextColor] = color.Hex(data.Text.Color)
-		object.Properties[property.ObjectTextWordWrap] = data.Text.WordWrap
-		object.Properties[property.ObjectType] = "text"
+		o.Properties[property.ObjectText] = data.Text.Value
+		o.Properties[property.ObjectTextFont] = data.Text.FontFamily
+		o.Properties[property.ObjectTextFontSize] = data.Text.FontSize
+		o.Properties[property.ObjectTextBold] = data.Text.Bold
+		o.Properties[property.ObjectTextItalic] = data.Text.Italic
+		o.Properties[property.ObjectTextStrikeout] = data.Text.Strikeout
+		o.Properties[property.ObjectTextUnderline] = data.Text.Underline
+		o.Properties[property.ObjectTextAlignX] = aligns[data.Text.AlignX]
+		o.Properties[property.ObjectTextAlignY] = aligns[data.Text.AlignY]
+		o.Properties[property.ObjectTextColor] = color.Hex(data.Text.Color)
+		o.Properties[property.ObjectTextWordWrap] = data.Text.WordWrap
+		o.Properties[property.ObjectType] = "text"
 	} else if data.Gid > 0 {
-		object.Properties[property.ObjectType] = "tile"
+		o.Properties[property.ObjectType] = "tile"
 	} else if data.Ellipse != nil {
-		object.Properties[property.ObjectType] = "ellipse"
+		o.Properties[property.ObjectType] = "ellipse"
 	} else if data.Point != nil {
-		object.Properties[property.ObjectType] = "point"
+		o.Properties[property.ObjectType] = "point"
 	} else if data.Polyline != nil {
-		object.Properties[property.ObjectType] = "line"
+		o.Properties[property.ObjectType] = "line"
 	} else if data.Polygon != nil {
-		object.Properties[property.ObjectType] = "polygon"
+		o.Properties[property.ObjectType] = "polygon"
 	} else {
-		object.Properties[property.ObjectType] = "rectangle"
+		o.Properties[property.ObjectType] = "rectangle"
 	}
 
 	var owner *Project = nil
-	if object.OwnerLayer != nil {
-		owner = object.OwnerLayer.OwnerMap.Project
-	} else if object.OwnerTile == nil {
-		owner = object.OwnerTile.OwnerTileset.Project
+	if o.OwnerLayer != nil {
+		owner = o.OwnerLayer.OwnerMap.Project
+	} else if o.OwnerTile == nil {
+		owner = o.OwnerTile.OwnerTileset.Project
 	}
 
 	for _, prop := range data.Properties {
-		object.Properties[prop.Name] = parseProperty(prop, owner)
+		o.Properties[prop.Name] = parseProperty(prop, owner)
 	}
 }
-func (object *Object) initCorners(data *internal.LayerObject) {
+func (o *Object) initCorners(data *internal.LayerObject) {
 	var ptsData = ""
 	if data.Polyline != nil {
 		ptsData = data.Polyline.Points
@@ -280,18 +280,18 @@ func (object *Object) initCorners(data *internal.LayerObject) {
 		}
 	}
 
-	object.Corners = corners
+	o.Corners = corners
 }
 
-func (object *Object) getTile() *Tile {
-	var tileId = object.Properties[property.ObjectTileId]
+func (o *Object) getTile() *Tile {
+	var tileId = o.Properties[property.ObjectTileId]
 	var id = flag.TurnOff(tileId.(uint32), internal.Flips)
 	var curTileset *Tileset = nil
 	var firstId uint32 = 1
-	if object.OwnerLayer != nil {
-		curTileset, firstId = currentTileset(object.OwnerLayer.OwnerMap, id)
-	} else if object.OwnerTile == nil {
-		curTileset = object.OwnerTile.OwnerTileset
+	if o.OwnerLayer != nil {
+		curTileset, firstId = currentTileset(o.OwnerLayer.OwnerMap, id)
+	} else if o.OwnerTile == nil {
+		curTileset = o.OwnerTile.OwnerTileset
 	}
 
 	if id == 0 {
@@ -299,20 +299,20 @@ func (object *Object) getTile() *Tile {
 	}
 	return curTileset.Tiles[id-firstId]
 }
-func (object *Object) getOffsets() (worldX, worldY, layerX, layerY float32) {
-	if object.OwnerLayer != nil {
-		worldX, worldY, layerX, layerY = object.OwnerLayer.getOffsets()
-	} else if object.OwnerTile == nil {
-		layerX = object.OwnerTile.OwnerTileset.Properties[property.TilesetOffsetX].(float32)
-		layerY = object.OwnerTile.OwnerTileset.Properties[property.TilesetOffsetY].(float32)
+func (o *Object) getOffsets() (worldX, worldY, layerX, layerY float32) {
+	if o.OwnerLayer != nil {
+		worldX, worldY, layerX, layerY = o.OwnerLayer.getOffsets()
+	} else if o.OwnerTile == nil {
+		layerX = o.OwnerTile.OwnerTileset.Properties[property.TilesetOffsetX].(float32)
+		layerY = o.OwnerTile.OwnerTileset.Properties[property.TilesetOffsetY].(float32)
 	}
 	return
 }
-func (object *Object) getArea() (x, y, w, h, a float32) {
-	x = object.Properties[property.ObjectX].(float32)
-	y = object.Properties[property.ObjectY].(float32)
-	w = object.Properties[property.ObjectWidth].(float32)
-	h = object.Properties[property.ObjectHeight].(float32)
-	a = object.Properties[property.ObjectRotation].(float32)
+func (o *Object) getArea() (x, y, w, h, a float32) {
+	x = o.Properties[property.ObjectX].(float32)
+	y = o.Properties[property.ObjectY].(float32)
+	w = o.Properties[property.ObjectWidth].(float32)
+	h = o.Properties[property.ObjectHeight].(float32)
+	a = o.Properties[property.ObjectRotation].(float32)
 	return
 }

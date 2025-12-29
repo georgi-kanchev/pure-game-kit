@@ -27,14 +27,14 @@ func NewProject(projectId string) *Project {
 	return result
 }
 
-func (project *Project) Recreate() {
-	var data, _ = internal.TiledProjects[project.assetId]
+func (p *Project) Recreate() {
+	var data, _ = internal.TiledProjects[p.assetId]
 	if data == nil {
 		return
 	}
 
-	project.initClasses(data)
-	project.initProperties(data)
+	p.initClasses(data)
+	p.initProperties(data)
 }
 
 //=================================================================

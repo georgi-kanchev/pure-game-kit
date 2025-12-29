@@ -31,24 +31,24 @@ func NewMap(mapId string, project *Project) *Map {
 	return result
 }
 
-func (Map *Map) Recreate() {
-	var data, _ = internal.TiledMaps[Map.assetId]
+func (m *Map) Recreate() {
+	var data, _ = internal.TiledMaps[m.assetId]
 	if data == nil {
 		return
 	}
 
-	Map.Layers = []*Layer{}
-	Map.initProperties(data)
-	Map.initTilesets(data)
-	Map.initLayers(data.Directory, &data.Layers, nil)
-	Map.sortLayers(data)
+	m.Layers = []*Layer{}
+	m.initProperties(data)
+	m.initTilesets(data)
+	m.initLayers(data.Directory, &data.Layers, nil)
+	m.sortLayers(data)
 }
 
 //=================================================================
 
-func (Map *Map) FindLayersBy(property string, value any) []*Layer {
+func (m *Map) FindLayersBy(property string, value any) []*Layer {
 	var result = []*Layer{}
-	for _, layer := range Map.Layers {
+	for _, layer := range m.Layers {
 		var curValue, has = layer.Properties[property]
 		if has && value == curValue {
 			result = append(result, layer)
@@ -57,44 +57,44 @@ func (Map *Map) FindLayersBy(property string, value any) []*Layer {
 	return result
 }
 
-func (Map *Map) ExtractSprites() []*graphics.Sprite {
+func (m *Map) ExtractSprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
-	for _, layer := range Map.Layers {
+	for _, layer := range m.Layers {
 		result = append(result, layer.ExtractSprites()...)
 	}
 	return result
 }
-func (Map *Map) ExtractTextBoxes() []*graphics.TextBox {
+func (m *Map) ExtractTextBoxes() []*graphics.TextBox {
 	var result = []*graphics.TextBox{}
-	for _, layer := range Map.Layers {
+	for _, layer := range m.Layers {
 		result = append(result, layer.ExtractTextBoxes()...)
 	}
 	return result
 }
-func (Map *Map) ExtractShapeGrids() []*geometry.ShapeGrid {
+func (m *Map) ExtractShapeGrids() []*geometry.ShapeGrid {
 	var result = []*geometry.ShapeGrid{}
-	for _, layer := range Map.Layers {
+	for _, layer := range m.Layers {
 		result = append(result, layer.ExtractShapeGrid())
 	}
 	return result
 }
-func (Map *Map) ExtractShapes() []*geometry.Shape {
+func (m *Map) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	for _, layer := range Map.Layers {
+	for _, layer := range m.Layers {
 		result = append(result, layer.ExtractShapes()...)
 	}
 	return result
 }
-func (Map *Map) ExtractLines() [][2]float32 {
+func (m *Map) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
-	for _, layer := range Map.Layers {
+	for _, layer := range m.Layers {
 		result = append(result, layer.ExtractLines()...)
 	}
 	return result
 }
-func (Map *Map) ExtractPoints() [][2]float32 {
+func (m *Map) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
-	for _, layer := range Map.Layers {
+	for _, layer := range m.Layers {
 		result = append(result, layer.ExtractPoints()...)
 	}
 	return result
@@ -102,8 +102,8 @@ func (Map *Map) ExtractPoints() [][2]float32 {
 
 //=================================================================
 
-func (Map *Map) Draw(camera *graphics.Camera) {
-	for _, layer := range Map.Layers {
+func (m *Map) Draw(camera *graphics.Camera) {
+	for _, layer := range m.Layers {
 		layer.Draw(camera)
 	}
 }
@@ -111,55 +111,55 @@ func (Map *Map) Draw(camera *graphics.Camera) {
 //=================================================================
 // private
 
-func (Map *Map) initProperties(data *internal.Map) {
-	Map.Properties = make(map[string]any)
-	Map.Properties[property.MapName] = data.Name
-	Map.Properties[property.MapClass] = data.Class
-	Map.Properties[property.MapTileWidth] = data.TileWidth
-	Map.Properties[property.MapTileHeight] = data.TileHeight
-	Map.Properties[property.MapColumns] = data.Width
-	Map.Properties[property.MapRows] = data.Height
-	Map.Properties[property.MapInfinite] = data.Infinite
-	Map.Properties[property.MapParallaxX] = data.ParallaxOriginX
-	Map.Properties[property.MapParallaxY] = data.ParallaxOriginY
-	Map.Properties[property.MapBackgroundColor] = data.BackgroundColor
-	Map.Properties[property.MapWorldX] = data.WorldX
-	Map.Properties[property.MapWorldY] = data.WorldY
+func (m *Map) initProperties(data *internal.Map) {
+	m.Properties = make(map[string]any)
+	m.Properties[property.MapName] = data.Name
+	m.Properties[property.MapClass] = data.Class
+	m.Properties[property.MapTileWidth] = data.TileWidth
+	m.Properties[property.MapTileHeight] = data.TileHeight
+	m.Properties[property.MapColumns] = data.Width
+	m.Properties[property.MapRows] = data.Height
+	m.Properties[property.MapInfinite] = data.Infinite
+	m.Properties[property.MapParallaxX] = data.ParallaxOriginX
+	m.Properties[property.MapParallaxY] = data.ParallaxOriginY
+	m.Properties[property.MapBackgroundColor] = data.BackgroundColor
+	m.Properties[property.MapWorldX] = data.WorldX
+	m.Properties[property.MapWorldY] = data.WorldY
 
 	for _, prop := range data.Properties {
-		Map.Properties[prop.Name] = parseProperty(prop, Map.Project)
+		m.Properties[prop.Name] = parseProperty(prop, m.Project)
 	}
 }
-func (Map *Map) initTilesets(data *internal.Map) {
-	Map.Tilesets = make([]*Tileset, len(data.Tilesets))
-	Map.TilesetsFirstTileIds = make([]uint32, len(data.Tilesets))
+func (m *Map) initTilesets(data *internal.Map) {
+	m.Tilesets = make([]*Tileset, len(data.Tilesets))
+	m.TilesetsFirstTileIds = make([]uint32, len(data.Tilesets))
 
 	for i, t := range data.Tilesets {
-		Map.Tilesets[i] = newTileset(path.New(data.Directory, t.Source), Map.Project)
-		Map.TilesetsFirstTileIds[i] = data.FirstTileIds[i]
+		m.Tilesets[i] = newTileset(path.New(data.Directory, t.Source), m.Project)
+		m.TilesetsFirstTileIds[i] = data.FirstTileIds[i]
 	}
 }
-func (Map *Map) initLayers(directory string, layers *internal.Layers, ownerGroup *Layer) {
+func (m *Map) initLayers(directory string, layers *internal.Layers, ownerGroup *Layer) {
 	for _, group := range layers.LayersGroups {
-		var layer = newLayerGroup(group, Map, ownerGroup)
-		Map.Layers = append(Map.Layers, layer)
-		Map.initLayers(directory, &group.Layers, layer)
+		var layer = newLayerGroup(group, m, ownerGroup)
+		m.Layers = append(m.Layers, layer)
+		m.initLayers(directory, &group.Layers, layer)
 	}
 	for _, layer := range layers.LayersImages {
-		Map.Layers = append(Map.Layers, newLayerImage(directory, layer, Map, ownerGroup))
+		m.Layers = append(m.Layers, newLayerImage(directory, layer, m, ownerGroup))
 	}
 	for _, layer := range layers.LayersObjects {
-		Map.Layers = append(Map.Layers, newLayerObjects(layer, Map, ownerGroup))
+		m.Layers = append(m.Layers, newLayerObjects(layer, m, ownerGroup))
 	}
 	for _, layer := range layers.LayersTiles {
-		Map.Layers = append(Map.Layers, newLayerTiles(layer, Map, ownerGroup))
+		m.Layers = append(m.Layers, newLayerTiles(layer, m, ownerGroup))
 	}
 }
 
-func (Map *Map) sortLayers(data *internal.Map) {
+func (m *Map) sortLayers(data *internal.Map) {
 	var sortedLayers = []*Layer{}
 	for _, id := range data.LayersInOrder {
-		for _, layer := range Map.Layers {
+		for _, layer := range m.Layers {
 			var curId = layer.Properties[property.LayerId]
 			if curId == id {
 				sortedLayers = append(sortedLayers, layer)
@@ -167,5 +167,5 @@ func (Map *Map) sortLayers(data *internal.Map) {
 			}
 		}
 	}
-	Map.Layers = sortedLayers
+	m.Layers = sortedLayers
 }

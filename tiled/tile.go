@@ -19,9 +19,9 @@ type Tile struct {
 	OwnerTileset *Tileset
 }
 
-func (tile *Tile) FindObjectsBy(property string, value any) []*Object {
+func (t *Tile) FindObjectsBy(property string, value any) []*Object {
 	var result = []*Object{}
-	for _, obj := range tile.Objects {
+	for _, obj := range t.Objects {
 		var curValue, has = obj.Properties[property]
 		if has && value == curValue {
 			result = append(result, obj)
@@ -30,31 +30,31 @@ func (tile *Tile) FindObjectsBy(property string, value any) []*Object {
 	return result
 }
 
-func (tile *Tile) ExtractSprite() *graphics.Sprite {
-	var atlasId, hasAtlas = tile.OwnerTileset.Properties[property.TilesetAtlasId]
+func (t *Tile) ExtractSprite() *graphics.Sprite {
+	var atlasId, hasAtlas = t.OwnerTileset.Properties[property.TilesetAtlasId]
 	if hasAtlas {
-		atlasId = path.New(atlasId.(string), text.New(tile.Properties[property.TileId]))
+		atlasId = path.New(atlasId.(string), text.New(t.Properties[property.TileId]))
 	} else {
-		atlasId = tile.Properties[property.TileImage]
+		atlasId = t.Properties[property.TileImage]
 	}
-	var width = tile.Properties[property.TileWidth].(int)
-	var height = tile.Properties[property.TileHeight].(int)
+	var width = t.Properties[property.TileWidth].(int)
+	var height = t.Properties[property.TileHeight].(int)
 	var sprite = graphics.NewSprite(atlasId.(string), 0, 0)
 	sprite.Width, sprite.Height = float32(width), float32(height)
 	sprite.PivotX, sprite.PivotY = 0, 0
 
 	return sprite
 }
-func (tile *Tile) ExtractShapes() []*geometry.Shape {
+func (t *Tile) ExtractShapes() []*geometry.Shape {
 	var result = []*geometry.Shape{}
-	for _, obj := range tile.Objects {
+	for _, obj := range t.Objects {
 		result = append(result, obj.ExtractShapes()...)
 	}
 	return result
 }
-func (tile *Tile) ExtractLines() [][2]float32 {
+func (t *Tile) ExtractLines() [][2]float32 {
 	var result = [][2]float32{}
-	for i, obj := range tile.Objects {
+	for i, obj := range t.Objects {
 		if i != 0 {
 			result = append(result, [2]float32{number.NaN(), number.NaN()})
 		}
@@ -63,9 +63,9 @@ func (tile *Tile) ExtractLines() [][2]float32 {
 	}
 	return result
 }
-func (tile *Tile) ExtractPoints() [][2]float32 {
+func (t *Tile) ExtractPoints() [][2]float32 {
 	var result = [][2]float32{}
-	for _, obj := range tile.Objects {
+	for _, obj := range t.Objects {
 		result = append(result, obj.ExtractPoints()...)
 	}
 	return result
@@ -73,9 +73,9 @@ func (tile *Tile) ExtractPoints() [][2]float32 {
 
 //=================================================================
 
-func (tile *Tile) Draw(camera *graphics.Camera) {
-	draw(camera, []*graphics.Sprite{tile.ExtractSprite()}, nil,
-		tile.ExtractShapes(), tile.ExtractPoints(), tile.ExtractLines(), palette.White)
+func (t *Tile) Draw(camera *graphics.Camera) {
+	draw(camera, []*graphics.Sprite{t.ExtractSprite()}, nil,
+		t.ExtractShapes(), t.ExtractPoints(), t.ExtractLines(), palette.White)
 }
 
 //=================================================================
@@ -110,34 +110,34 @@ func newTile(tilesetId string, tileId uint32, owner *Tileset) *Tile {
 
 //=================================================================
 
-func (tile *Tile) initProperties(tilesetData *internal.Tileset, data *internal.TilesetTile) {
+func (t *Tile) initProperties(tilesetData *internal.Tileset, data *internal.TilesetTile) {
 	var w, h = tilesetData.TileWidth, tilesetData.TileHeight
 
-	tile.Properties = make(map[string]any)
-	tile.Properties[property.TileId] = data.Id
-	tile.Properties[property.TileClass] = data.Class
-	tile.Properties[property.TileProbability] = text.ToNumber[float32](defaultValueText(data.Probability, "1"))
+	t.Properties = make(map[string]any)
+	t.Properties[property.TileId] = data.Id
+	t.Properties[property.TileClass] = data.Class
+	t.Properties[property.TileProbability] = text.ToNumber[float32](defaultValueText(data.Probability, "1"))
 
 	if data.Image != nil {
 		w, h = data.Image.Width, data.Image.Height
-		tile.Properties[property.TileImage] = data.TextureId
+		t.Properties[property.TileImage] = data.TextureId
 	}
 
-	tile.Properties[property.TileWidth] = w
-	tile.Properties[property.TileHeight] = h
+	t.Properties[property.TileWidth] = w
+	t.Properties[property.TileHeight] = h
 
 	for _, prop := range data.Properties {
-		tile.Properties[prop.Name] = parseProperty(prop, tile.OwnerTileset.Project)
+		t.Properties[prop.Name] = parseProperty(prop, t.OwnerTileset.Project)
 	}
 }
-func (tile *Tile) initObjects(data *internal.TilesetTile) {
+func (t *Tile) initObjects(data *internal.TilesetTile) {
 	if len(data.CollisionLayers) == 0 {
 		return
 	}
 
 	var objs = data.CollisionLayers[0].Objects
-	tile.Objects = make([]*Object, len(objs))
+	t.Objects = make([]*Object, len(objs))
 	for i, obj := range objs {
-		tile.Objects[i] = newObject(obj, tile, nil)
+		t.Objects[i] = newObject(obj, t, nil)
 	}
 }

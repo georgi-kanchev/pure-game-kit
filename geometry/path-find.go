@@ -7,8 +7,8 @@ import (
 	"pure-game-kit/utility/number"
 )
 
-func (shapeGrid *ShapeGrid) FindPath(start, target [2]float32, turnFactor int, minimizePoints bool) [][2]float32 {
-	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
+func (s *ShapeGrid) FindPath(start, target [2]float32, turnFactor int, minimizePoints bool) [][2]float32 {
+	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	start[0], start[1], target[0], target[1] = start[0]/w, start[1]/h, target[0]/w, target[1]/h
 	var sx, sy = int(number.RoundDown(start[0], 0)), int(number.RoundDown(start[1], 0))
 	var tx, ty = int(number.RoundDown(target[0], 0)), int(number.RoundDown(target[1], 0))
@@ -20,8 +20,8 @@ func (shapeGrid *ShapeGrid) FindPath(start, target [2]float32, turnFactor int, m
 	heap.Push(open, startNode)
 	visited[[2]int{sx, sy}] = startNode
 
-	var _, startBlocked = shapeGrid.cells[[2]int{sx, sy}]
-	var _, targetBlocked = shapeGrid.cells[[2]int{tx, ty}]
+	var _, startBlocked = s.cells[[2]int{sx, sy}]
+	var _, targetBlocked = s.cells[[2]int{tx, ty}]
 	if startBlocked || targetBlocked {
 		return [][2]float32{}
 	}
@@ -43,7 +43,7 @@ func (shapeGrid *ShapeGrid) FindPath(start, target [2]float32, turnFactor int, m
 				result[i], result[len(result)-1-i] = result[len(result)-1-i], result[i]
 			}
 
-			result = shapeGrid.smoothZigzag(result, turnFactor, minimizePoints)
+			result = s.smoothZigzag(result, turnFactor, minimizePoints)
 			result = removeRedundantPoints(result)
 			return result
 		}
@@ -51,7 +51,7 @@ func (shapeGrid *ShapeGrid) FindPath(start, target [2]float32, turnFactor int, m
 		for _, dir := range directions {
 			var nx, ny = current.x + dir[0], current.y + dir[1]
 			var key = [2]int{nx, ny}
-			var _, blocked = shapeGrid.cells[key]
+			var _, blocked = s.cells[key]
 			if blocked {
 				continue // unwalkable if present in map
 			}
@@ -125,13 +125,13 @@ func heuristic(ax, ay, bx, by int) float32 {
 	return float32(math.Sqrt(float64(dx*dx + dy*dy)))
 }
 
-func (shapeGrid *ShapeGrid) smoothZigzag(points [][2]float32, turnFactor int, minimizePoints bool) [][2]float32 {
+func (s *ShapeGrid) smoothZigzag(points [][2]float32, turnFactor int, minimizePoints bool) [][2]float32 {
 	var pts = collection.Clone(points)
 	if len(pts) < 2 {
 		return pts
 	}
 
-	var w, h = shapeGrid.cellWidth, shapeGrid.cellHeight
+	var w, h = s.cellWidth, s.cellHeight
 	for i := 1; i < len(pts)-1; i++ {
 		var horDiff = number.Absolute(pts[i-1][0] - pts[i+1][0])
 		var verDiff = number.Absolute(pts[i-1][1] - pts[i+1][1])

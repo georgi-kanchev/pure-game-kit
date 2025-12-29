@@ -8,6 +8,6 @@ func NowWaitForSequence(sequence *Sequence) *StepSequence {
 	return &StepSequence{seq: sequence}
 }
 
-func (step *StepSequence) Continue(*Sequence) bool {
-	return step.seq.currIndex < 0 || step.seq.currIndex >= len(step.seq.steps)
+func (s *StepSequence) Continue(*Sequence) bool {
+	return s.seq.currIndex < 0 || s.seq.currIndex >= len(s.seq.steps)
 }

@@ -8,7 +8,7 @@ func NowDo(action func()) *StepDo {
 	return &StepDo{action: action}
 }
 
-func (step *StepDo) Continue(*Sequence) bool {
-	step.action()
+func (s *StepDo) Continue(*Sequence) bool {
+	s.action()
 	return true
 }

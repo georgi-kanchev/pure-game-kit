@@ -70,37 +70,37 @@ func NewShapeEllipse(width, height float32, segments int) *Shape {
 
 //=================================================================
 
-func (shape *Shape) CornerPoints() [][2]float32 {
-	if shape == nil {
+func (s *Shape) CornerPoints() [][2]float32 {
+	if s == nil {
 		return nil
 	}
 
-	var result = make([][2]float32, len(shape.corners))
-	shape.minX, shape.minY = number.Infinity(), number.Infinity()
-	shape.maxX, shape.maxY = number.NegativeInfinity(), number.NegativeInfinity()
+	var result = make([][2]float32, len(s.corners))
+	s.minX, s.minY = number.Infinity(), number.Infinity()
+	s.maxX, s.maxY = number.NegativeInfinity(), number.NegativeInfinity()
 
-	for i := range shape.corners {
-		var x, y = shape.corners[i][0], shape.corners[i][1]
+	for i := range s.corners {
+		var x, y = s.corners[i][0], s.corners[i][1]
 
-		x *= shape.ScaleX
-		y *= shape.ScaleY
+		x *= s.ScaleX
+		y *= s.ScaleY
 
-		var rad = angle.ToRadians(shape.Angle)
+		var rad = angle.ToRadians(s.Angle)
 		var sin, cos = number.Sine(rad), number.Cosine(rad)
-		var resultX = shape.gridX + shape.X + (x*cos - y*sin)
-		var resultY = shape.gridY + shape.Y + (x*sin + y*cos)
+		var resultX = s.gridX + s.X + (x*cos - y*sin)
+		var resultY = s.gridY + s.Y + (x*sin + y*cos)
 
-		if shape.minX > resultX {
-			shape.minX = resultX
+		if s.minX > resultX {
+			s.minX = resultX
 		}
-		if shape.minY > resultY {
-			shape.minY = resultY
+		if s.minY > resultY {
+			s.minY = resultY
 		}
-		if shape.maxX < resultX {
-			shape.maxX = resultX
+		if s.maxX < resultX {
+			s.maxX = resultX
 		}
-		if shape.maxY < resultY {
-			shape.maxY = resultY
+		if s.maxY < resultY {
+			s.maxY = resultY
 		}
 
 		result[i] = [2]float32{resultX, resultY}
@@ -108,26 +108,26 @@ func (shape *Shape) CornerPoints() [][2]float32 {
 	return result
 }
 
-func (shape *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVelocityX, newVelocityY float32) {
+func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVelocityX, newVelocityY float32) {
 	for _, target := range targets {
 		var corners [][2]float32
 		var targetCorners [][2]float32
-		if shape.minX == 0 && shape.minY == 0 && shape.maxX == 0 && shape.maxY == 0 {
-			corners = shape.CornerPoints()
+		if s.minX == 0 && s.minY == 0 && s.maxX == 0 && s.maxY == 0 {
+			corners = s.CornerPoints()
 		}
 		if target.minX == 0 && target.minY == 0 && target.maxX == 0 && target.maxY == 0 {
 			corners = target.CornerPoints()
 		}
 
-		if !shape.inBoundingBoxShape(*target) {
+		if !s.inBoundingBoxShape(*target) {
 			continue
 		}
 
-		var cax = shape.minX + (shape.maxX-shape.minX)/2
-		var cay = shape.minY + (shape.maxY-shape.minY)/2
+		var cax = s.minX + (s.maxX-s.minX)/2
+		var cay = s.minY + (s.maxY-s.minY)/2
 		var cbx = target.minX + (target.maxX-target.minX)/2
 		var cby = target.minY + (target.maxY-target.minY)/2
-		corners = shape.CornerPoints()
+		corners = s.CornerPoints()
 		targetCorners = target.CornerPoints()
 		corners = corners[:len(corners)-1]
 		targetCorners = targetCorners[:len(targetCorners)-1]
@@ -232,93 +232,93 @@ func (shape *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (ne
 // they should have the least iterations and allocations (once per API call for CornerPoints())
 // don't be a smartass by "simplifying" and reusing them internally in the future
 
-func (shape *Shape) IsContainingPoint(x, y float32) bool {
-	var corners = shape.CornerPoints()
+func (s *Shape) IsContainingPoint(x, y float32) bool {
+	var corners = s.CornerPoints()
 
-	if !shape.inBoundingBoxPoint(x, y) {
+	if !s.inBoundingBoxPoint(x, y) {
 		return false
 	}
 
-	return shape.internalIsContainingPoint(corners, x, y)
+	return s.internalIsContainingPoint(corners, x, y)
 }
 
-func (shape *Shape) CrossPointsWithLines(lines ...Line) [][2]float32 {
-	var corners = shape.CornerPoints()
+func (s *Shape) CrossPointsWithLines(lines ...Line) [][2]float32 {
+	var corners = s.CornerPoints()
 	var result = [][2]float32{}
 
 	for _, line := range lines {
-		if shape.inBoundingBoxLine(line) {
-			result = append(result, shape.internalCrossPointsWithLine(corners, line)...)
+		if s.inBoundingBoxLine(line) {
+			result = append(result, s.internalCrossPointsWithLine(corners, line)...)
 		}
 	}
 	return result
 }
-func (shape *Shape) IsCrossingLines(lines ...Line) bool {
-	var corners = shape.CornerPoints()
+func (s *Shape) IsCrossingLines(lines ...Line) bool {
+	var corners = s.CornerPoints()
 	for _, line := range lines {
-		if shape.inBoundingBoxLine(line) && shape.internalIsCrossingLine(corners, line) {
+		if s.inBoundingBoxLine(line) && s.internalIsCrossingLine(corners, line) {
 			return true
 		}
 	}
 	return false
 }
-func (shape *Shape) IsContainingLines(lines ...Line) bool {
-	var corners = shape.CornerPoints()
+func (s *Shape) IsContainingLines(lines ...Line) bool {
+	var corners = s.CornerPoints()
 	for _, line := range lines {
-		if !shape.inBoundingBoxLine(line) || !shape.internalIsContainingLine(corners, line) {
+		if !s.inBoundingBoxLine(line) || !s.internalIsContainingLine(corners, line) {
 			return false
 		}
 	}
 	return true
 }
-func (shape *Shape) IsOverlappingLines(lines ...Line) bool {
-	var corners = shape.CornerPoints()
+func (s *Shape) IsOverlappingLines(lines ...Line) bool {
+	var corners = s.CornerPoints()
 	for _, line := range lines {
-		if shape.inBoundingBoxLine(line) && shape.internalIsOverlappingLine(corners, line) {
+		if s.inBoundingBoxLine(line) && s.internalIsOverlappingLine(corners, line) {
 			return true
 		}
 	}
 	return false
 }
 
-func (shape *Shape) CrossPointsWithShapes(shapes ...*Shape) [][2]float32 {
-	var corners = shape.CornerPoints()
+func (s *Shape) CrossPointsWithShapes(shapes ...*Shape) [][2]float32 {
+	var corners = s.CornerPoints()
 	var result = [][2]float32{}
 
 	for _, target := range shapes {
 		var targetCorners = target.CornerPoints()
-		if shape.inBoundingBoxShape(*target) {
-			result = append(result, shape.internalCrossPointsWithShape(corners, targetCorners)...)
+		if s.inBoundingBoxShape(*target) {
+			result = append(result, s.internalCrossPointsWithShape(corners, targetCorners)...)
 		}
 	}
 	return result
 }
-func (shape *Shape) IsCrossingShapes(shapes ...*Shape) bool {
-	var corners = shape.CornerPoints()
+func (s *Shape) IsCrossingShapes(shapes ...*Shape) bool {
+	var corners = s.CornerPoints()
 	for _, target := range shapes {
 		var targetCorners = target.CornerPoints()
-		if shape.inBoundingBoxShape(*target) && shape.internalIsCrossingShape(corners, targetCorners) {
+		if s.inBoundingBoxShape(*target) && s.internalIsCrossingShape(corners, targetCorners) {
 			return true
 		}
 	}
 	return false
 }
-func (shape *Shape) IsContainingShapes(shapes ...*Shape) bool {
-	var corners = shape.CornerPoints()
+func (s *Shape) IsContainingShapes(shapes ...*Shape) bool {
+	var corners = s.CornerPoints()
 	for _, target := range shapes {
 		var targetCorners = target.CornerPoints()
-		if !shape.inBoundingBoxShape(*target) || !shape.internalIsContainingShapes(corners, targetCorners) {
+		if !s.inBoundingBoxShape(*target) || !s.internalIsContainingShapes(corners, targetCorners) {
 			return false
 		}
 	}
 	return true
 }
-func (shape *Shape) IsOverlappingShapes(shapes ...*Shape) bool {
-	var corners = shape.CornerPoints()
+func (s *Shape) IsOverlappingShapes(shapes ...*Shape) bool {
+	var corners = s.CornerPoints()
 
 	for _, target := range shapes {
 		var targetCorners = target.CornerPoints()
-		if shape.inBoundingBoxShape(*target) && shape.internalIsOverlappingShape(corners, targetCorners, target) {
+		if s.inBoundingBoxShape(*target) && s.internalIsOverlappingShape(corners, targetCorners, target) {
 			return true
 		}
 	}

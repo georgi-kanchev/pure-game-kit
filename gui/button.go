@@ -18,10 +18,10 @@ func Button(id string, properties ...string) string {
 
 //=================================================================
 
-func (gui *GUI) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
+func (g *GUI) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
 	return clickedId == buttonId
 }
-func (gui *GUI) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
+func (g *GUI) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
 	return clickedAndHeldId == buttonId
 }
 

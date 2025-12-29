@@ -15,50 +15,50 @@ func NewShapeGrid(cellWidth, cellHeight int) *ShapeGrid {
 
 //=================================================================
 
-func (shapeGrid *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
+func (s *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
 	var key = [2]int{x, y}
-	var w, h = shapeGrid.cellWidth, shapeGrid.cellHeight
-	shapeGrid.cells[key] = []*Shape{}
+	var w, h = s.cellWidth, s.cellHeight
+	s.cells[key] = []*Shape{}
 
 	for _, shape := range shapes {
 		shape.gridX = float32(x*w) + (float32(w) * 0.5)
 		shape.gridY = float32(y*h) + (float32(h) * 0.5)
 	}
-	shapeGrid.cells[key] = append(shapeGrid.cells[key], shapes...)
+	s.cells[key] = append(s.cells[key], shapes...)
 }
 
 //=================================================================
 
-func (shapeGrid *ShapeGrid) Cell(shape *Shape) (cellX, cellY int) {
-	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
+func (s *ShapeGrid) Cell(shape *Shape) (cellX, cellY int) {
+	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	var x, y = shape.gridX / w, shape.gridY / h
 	return int(x), int(y)
 }
 
-func (shapeGrid *ShapeGrid) All() []*Shape {
+func (s *ShapeGrid) All() []*Shape {
 	var result = []*Shape{}
-	for k := range shapeGrid.cells {
-		result = append(result, shapeGrid.AtCell(k[0], k[1])...)
+	for k := range s.cells {
+		result = append(result, s.AtCell(k[0], k[1])...)
 	}
 	return result
 }
-func (shapeGrid *ShapeGrid) AtCell(x, y int) []*Shape {
-	var shapes, has = shapeGrid.cells[[2]int{x, y}]
+func (s *ShapeGrid) AtCell(x, y int) []*Shape {
+	var shapes, has = s.cells[[2]int{x, y}]
 	if has {
 		return shapes
 	}
 	return []*Shape{}
 }
-func (shapeGrid *ShapeGrid) AtPoint(x, y float32) []*Shape {
-	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
+func (s *ShapeGrid) AtPoint(x, y float32) []*Shape {
+	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
 	var i, j = number.RoundDown(x / w), number.RoundDown(y / h)
-	return shapeGrid.AtCell(int(i), int(j))
+	return s.AtCell(int(i), int(j))
 }
-func (shapeGrid *ShapeGrid) AroundLine(line Line) []*Shape {
-	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
+func (s *ShapeGrid) AroundLine(line Line) []*Shape {
+	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
@@ -98,7 +98,7 @@ func (shapeGrid *ShapeGrid) AroundLine(line Line) []*Shape {
 	}
 
 	for { // Traverse until reaching the target cell
-		result = append(result, shapeGrid.AtCell(ix0, iy0)...)
+		result = append(result, s.AtCell(ix0, iy0)...)
 		if ix0 == ix1 && iy0 == iy1 {
 			break
 		}
@@ -113,8 +113,8 @@ func (shapeGrid *ShapeGrid) AroundLine(line Line) []*Shape {
 
 	return result
 }
-func (shapeGrid *ShapeGrid) AroundShape(shape *Shape) []*Shape {
-	var w, h = float32(shapeGrid.cellWidth), float32(shapeGrid.cellHeight)
+func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
+	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
@@ -124,7 +124,7 @@ func (shapeGrid *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 
 	for i := 1; i < len(corners); i++ {
 		var line = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
-		result = append(result, shapeGrid.AroundLine(line)...)
+		result = append(result, s.AroundLine(line)...)
 	}
 	return result
 }

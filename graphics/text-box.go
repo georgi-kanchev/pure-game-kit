@@ -42,12 +42,12 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 
 //=================================================================
 
-func (textBox *TextBox) TextMeasure(text string) (width, height float32) {
-	var size = rl.MeasureTextEx(*textBox.font(), text, textBox.LineHeight+textBox.gapLines(), textBox.gapSymbols())
+func (t *TextBox) TextMeasure(text string) (width, height float32) {
+	var size = rl.MeasureTextEx(*t.font(), text, t.LineHeight+t.gapLines(), t.gapSymbols())
 	return size.X, size.Y
 }
-func (textBox *TextBox) TextWrap(text string) string {
-	var font = textBox.font()
+func (t *TextBox) TextWrap(text string) string {
+	var font = t.font()
 	var words = txt.Split(text, " ")
 	var curX, curY float32 = 0, 0
 	var buffer = txt.NewBuilder()
@@ -58,25 +58,25 @@ func (textBox *TextBox) TextWrap(text string) string {
 			word += " " // split removes spaces, add it for all words but last one
 		}
 
-		var wordSize = rl.MeasureTextEx(*font, txt.Trim(word), textBox.LineHeight, textBox.gapSymbols())
-		var wordEndOfBox = curX+wordSize.X > textBox.Width
+		var wordSize = rl.MeasureTextEx(*font, txt.Trim(word), t.LineHeight, t.gapSymbols())
+		var wordEndOfBox = curX+wordSize.X > t.Width
 		var firstWord = w == 0
 
-		if !firstWord && textBox.WordWrap && wordEndOfBox {
+		if !firstWord && t.WordWrap && wordEndOfBox {
 			curX = 0
-			curY += textBox.LineHeight + textBox.gapLines()
+			curY += t.LineHeight + t.gapLines()
 			buffer.WriteSymbol('\n')
 		}
 
 		for i, c := range word {
 			var char = string(c)
-			var charSize = rl.MeasureTextEx(*font, string(char), textBox.LineHeight, 0)
-			var charEndOfBoxX = curX+charSize.X > textBox.Width
+			var charSize = rl.MeasureTextEx(*font, string(char), t.LineHeight, 0)
+			var charEndOfBoxX = curX+charSize.X > t.Width
 			var charFirst = i == 0 && firstWord
 
 			if !charFirst && char != " " && (char == "\n" || charEndOfBoxX) {
 				curX = 0
-				curY += textBox.LineHeight + textBox.gapLines()
+				curY += t.LineHeight + t.gapLines()
 
 				if char != "\n" {
 					buffer.WriteSymbol('\n')
@@ -85,11 +85,11 @@ func (textBox *TextBox) TextWrap(text string) string {
 
 			buffer.WriteText(char)
 
-			if char == string(textBox.EmbeddedColorsTag) || char == string(textBox.EmbeddedThicknessesTag) {
+			if char == string(t.EmbeddedColorsTag) || char == string(t.EmbeddedThicknessesTag) {
 				continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
 			} // however, the assets tag has width and it should
 
-			curX += charSize.X + textBox.gapSymbols()
+			curX += charSize.X + t.gapSymbols()
 		}
 	}
 
@@ -98,26 +98,26 @@ func (textBox *TextBox) TextWrap(text string) string {
 
 	return result
 }
-func (textBox *TextBox) TextSymbols() string {
-	var lines = textBox.TextLines()
+func (t *TextBox) TextSymbols() string {
+	var lines = t.TextLines()
 	var result = ""
 	for _, v := range lines {
 		result += v
 	}
 	return result
 }
-func (textBox *TextBox) TextLines() []string {
-	var lines, _ = textBox.formatSymbols()
+func (t *TextBox) TextLines() []string {
+	var lines, _ = t.formatSymbols()
 	return lines
 }
-func (textBox *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, cHeight, cAngle float32) {
-	var _, symbols = textBox.formatSymbols()
+func (t *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, cHeight, cAngle float32) {
+	var _, symbols = t.formatSymbols()
 	if symbolIndex < 0 || symbolIndex >= len(symbols) {
 		return number.NaN(), number.NaN(), number.NaN(), number.NaN(), number.NaN()
 	}
 
 	var symbol = symbols[symbolIndex]
-	cX, cY = textBox.PointToCamera(camera, symbol.X, symbol.Y)
+	cX, cY = t.PointToCamera(camera, symbol.X, symbol.Y)
 	return cX, cY, symbol.Width, symbol.Height, symbol.Angle
 }
 
@@ -258,8 +258,8 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	return resultLines, result
 }
 
-func (textBox *TextBox) font() *rl.Font {
-	var font, hasFont = internal.Fonts[textBox.FontId]
+func (t *TextBox) font() *rl.Font {
+	var font, hasFont = internal.Fonts[t.FontId]
 	var defaultFont, hasDefault = internal.Fonts[""]
 
 	if !hasFont && hasDefault {
@@ -273,9 +273,9 @@ func (textBox *TextBox) font() *rl.Font {
 	}
 	return font
 }
-func (textBox *TextBox) gapSymbols() float32 {
-	return textBox.SymbolGap * textBox.LineHeight / 5
+func (t *TextBox) gapSymbols() float32 {
+	return t.SymbolGap * t.LineHeight / 5
 }
-func (textBox *TextBox) gapLines() float32 {
-	return textBox.LineGap * textBox.LineHeight / 5
+func (t *TextBox) gapLines() float32 {
+	return t.LineGap * t.LineHeight / 5
 }
