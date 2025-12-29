@@ -128,3 +128,54 @@ func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 	}
 	return result
 }
+
+func (s *ShapeGrid) MovementRange(startX, startY int, maxDistance float32) [][2]int {
+	type state struct {
+		x, y          int
+		remainingDist float32
+	}
+	var visited = make(map[[2]int]float32)
+	var queue = []state{{startX, startY, maxDistance}}
+
+	for len(queue) > 0 {
+		var curr = queue[0]
+		queue = queue[1:]
+		var currPos = [2]int{curr.x, curr.y}
+
+		if val, exists := visited[currPos]; exists && val >= curr.remainingDist {
+			continue
+		}
+		visited[currPos] = curr.remainingDist
+
+		for dx := -1; dx <= 1; dx++ {
+			for dy := -1; dy <= 1; dy++ {
+				if dx == 0 && dy == 0 {
+					continue
+				}
+
+				var nextX, nextY = curr.x + dx, curr.y + dy
+				var nextPos = [2]int{nextX, nextY}
+
+				if shapes, blocked := s.cells[nextPos]; blocked && len(shapes) > 0 {
+					continue
+				}
+
+				var cost float32 = 1.0
+				if dx != 0 && dy != 0 {
+					cost = 1.5
+				}
+
+				var nextRemaining = curr.remainingDist - cost
+				if nextRemaining >= 0 {
+					queue = append(queue, state{nextX, nextY, nextRemaining})
+				}
+			}
+		}
+	}
+
+	var result = make([][2]int, 0, len(visited))
+	for pos := range visited {
+		result = append(result, pos)
+	}
+	return result
+}

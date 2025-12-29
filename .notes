@@ -5,6 +5,13 @@ shape/sprite shadow draw?
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>', the strings can be swapped with placeholders, see internal.go
 
+[130] [Tue] [30-12-2025]
+methods self object instance names shortened
+screens - tweak
+flow - sequences tweaks, no longer in internal - manual update
+geometry - shape grid pathfind API tweaks
+geometry - shape grid method for getting movement range
+
 [129] [Sun] [28-12-2025]
 text - improved, added, tweaked
 flow - steps renames, additions, improvements, tweaks

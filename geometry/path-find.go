@@ -10,11 +10,9 @@ import (
 func (s *ShapeGrid) FindPath(startX, startY, targetX, targetY float32, minimizePoints bool) [][2]float32 {
 	return s.findPath(startX, startY, targetX, targetY, 0, true, minimizePoints)
 }
-
 func (s *ShapeGrid) FindPathDiagonally(startX, startY, targetX, targetY float32, minimizePoints bool) [][2]float32 {
 	return s.findPath(startX, startY, targetX, targetY, 1, true, minimizePoints)
 }
-
 func (s *ShapeGrid) FindPathSmoothly(startX, startY, targetX, targetY float32, minimizePoints bool) [][2]float32 {
 	return s.findPath(startX, startY, targetX, targetY, 1, false, minimizePoints)
 }
