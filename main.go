@@ -56,8 +56,8 @@ func main() {
 		//=================================================================
 		gui.Visual("gfx", f.ThemeId, "label", f.Text, "Graphics:", f.GapY, "0", f.NewRow, ""),
 		gui.Button("minimal graphics", f.Text, " Minimal Render `(graphics-minimal.go)", f.NewRow, ""),
-		gui.Button("boxes graphics", f.Text, " Boxes `(graphics-boxes.go)", f.NewRow, ""),
-		gui.Button("texts graphics", f.Text, " Texts `(graphics-texts.go)", f.NewRow, ""),
+		gui.Button("boxes", f.Text, " Boxes `(graphics-boxes.go)", f.NewRow, ""),
+		gui.Button("texts", f.Text, " Texts `(graphics-texts.go)", f.NewRow, ""),
 		gui.Button("guis", f.Text, " Graphical User Interfaces (GUIs) `(guis.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("input", f.ThemeId, "label", f.Text, "Input:", f.NewRow, ""),
@@ -95,8 +95,8 @@ func main() {
 
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
-		"boxes graphics":   example.Boxes,
-		"texts graphics":   example.Texts,
+		"boxes":            example.Boxes,
+		"texts":            example.Texts,
 		"guis":             example.GUIs,
 		//=================================================================
 		"mouse input":    example.Mouse,

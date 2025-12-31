@@ -35,6 +35,6 @@ func Mouse() {
 			mouse.SetCursor(cursor.Arrow)
 		}
 
-		cam.DrawNodes(&node)
+		cam.DrawNodes(node)
 	}
 }

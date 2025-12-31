@@ -3,9 +3,14 @@ shader effects, port?
 simple particles, port?
 shape/sprite shadow draw?
 gui button would be nice to be able to press multiple hotkeys at once
-gui xml doesn't allow some symbols such as '>', the strings can be swapped with placeholders, see internal.go
+gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
 
-[130] [Tue] [30-12-2025]
+[131] [Tue] [30-12-2025]
+camera - draw arc/circle/pie/ellipse tweaks + int position fix
+camera - draw improvements
+camera - node constructor pointer fix
+
+[130] [Mon] [29-12-2025]
 methods self object instance names shortened
 screens - tweak
 flow - sequences tweaks, no longer in internal - manual update

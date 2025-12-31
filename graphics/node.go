@@ -16,8 +16,8 @@ type Node struct {
 	Color          uint
 }
 
-func NewNode(x, y float32) Node {
-	return Node{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
+func NewNode(x, y float32) *Node {
+	return &Node{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
 		PivotX: 0.5, PivotY: 0.5, Color: palette.White}
 }
 
@@ -196,14 +196,16 @@ func toRad(ang float32) float32 { return angle.ToRadians(ang) }
 func (n *Node) getCorner(corner corner) (x, y float32) {
 	var width, height = n.Width, n.Height
 	var nx, ny, na, _, _ = n.TransformToCamera()
-	var offX, offY = -width * n.PivotX, -height * n.PivotY
-	if corner == topRight || corner == bottomRight {
-		offX = width * (1 - n.PivotX)
+	switch corner {
+	case topLeft:
+		return nx, ny
+	case topRight:
+		return point.MoveAtAngle(nx, ny, na, width)
+	case bottomRight:
+		var trx, try = point.MoveAtAngle(nx, ny, na, width)
+		return point.MoveAtAngle(trx, try, na+90, height)
+	case bottomLeft:
+		return point.MoveAtAngle(nx, ny, na+90, height)
 	}
-	if corner == bottomLeft || corner == bottomRight {
-		offY = height * (1 - n.PivotY)
-	}
-	x, y = point.MoveAtAngle(nx, ny, na, offX)
-	x, y = point.MoveAtAngle(x, y, na+90, offY)
 	return
 }

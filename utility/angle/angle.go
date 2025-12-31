@@ -75,8 +75,8 @@ func Reverse(angle float32) float32 {
 	return angle - 180
 }
 
-func BetweenPoints(x, y, tx, ty float32) float32 {
-	return FromRadians(float32(math.Atan2(float64(ty-y), float64(tx-x))))
+func BetweenPoints(x, y, targetX, targetY float32) float32 {
+	return FromRadians(float32(math.Atan2(float64(targetY-y), float64(targetX-x))))
 }
 
 func FromDirection(x, y float32) float32 {

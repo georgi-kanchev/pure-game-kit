@@ -14,7 +14,7 @@ func Conditions() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawNodes(&node)
+		cam.DrawNodes(node)
 
 		if condition.TrueEvery(1.0, "") {
 			node.Angle = number.Wrap(node.Angle+45, 0, 360)

@@ -10,6 +10,6 @@ func MinimalRender() {
 	var cam = graphics.NewCamera(1)
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawCircle(0, 0, 100, palette.Red)
+		cam.DrawCircle(0, 0, 100, palette.Red, palette.Yellow)
 	}
 }

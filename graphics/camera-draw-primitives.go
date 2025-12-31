@@ -2,7 +2,9 @@ package graphics
 
 import (
 	"pure-game-kit/internal"
+	ang "pure-game-kit/utility/angle"
 	"pure-game-kit/utility/collection"
+	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 
@@ -194,22 +196,55 @@ func (c *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
 	c.end()
 }
 func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
+	const segments = 24
 	c.begin()
+	c.Batch = true
 	if len(colors) == 1 {
-		rl.DrawCircle(int32(x), int32(y), radius, getColor(colors[0]))
+		c.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, colors[0])
 	} else if len(colors) > 1 {
-		rl.DrawCircleGradient(int32(x), int32(y), radius, getColor(colors[0]), getColor(colors[1]))
+		var step = float32(360.0 / float32(segments))
+		rl.Begin(rl.Triangles)
+		for i := range segments {
+			var ang1, ang2 = float32(i) * step, float32(i+1) * step
+			var p1x, p1y = point.MoveAtAngle(x, y, ang1, radius)
+			var p2x, p2y = point.MoveAtAngle(x, y, ang2, radius)
+			rl.Color4ub(color.Channels(colors[0]))
+			rl.Vertex2f(p2x, p2y)
+			rl.Color4ub(color.Channels(colors[0]))
+			rl.Vertex2f(p1x, p1y)
+			rl.Color4ub(color.Channels(colors[1]))
+			rl.Vertex2f(x, y)
+		}
+		rl.End()
 	}
+	c.Batch = false
 	c.end()
 }
-func (c *Camera) DrawEllipse(x, y, width, height float32, color uint) {
+func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int, color uint) {
+	var fillAngle = number.Limit(fill, 0, 1) * 360
+	if fillAngle < 360 {
+		segments = max(int((fillAngle/360.0)*float32(segments)), 3)
+	}
+
+	var points = make([]rl.Vector2, segments+2)
+	var radiusH, radiusV = width / 2, height / 2
+	var halfPie = fillAngle / 2.0
+	var rotationRad = ang.ToRadians(angle)
+	var cosRot = number.Cosine(rotationRad)
+	var sinRot = number.Sine(rotationRad)
+
+	points[0] = rl.Vector2{X: x, Y: y}
+	for i := 0; i <= segments; i++ {
+		var t = float32(i) / float32(segments)
+		var localAngDeg = (halfPie - (t * fillAngle))
+		var localAngRad = ang.ToRadians(localAngDeg)
+		var localX, localY = number.Cosine(localAngRad) * radiusH, number.Sine(localAngRad) * radiusV
+		var rotatedX, rotatedY = localX*cosRot - localY*sinRot, localX*sinRot + localY*cosRot
+		points[i+1] = rl.Vector2{X: x + rotatedX, Y: y + rotatedY}
+	}
+
 	c.begin()
-	rl.DrawEllipse(int32(x), int32(y), width/2, height/2, getColor(color))
-	c.end()
-}
-func (c *Camera) DrawCone(x, y, length, width, angle float32, color uint) {
-	c.begin()
-	rl.DrawCircleSector(rl.Vector2{X: x, Y: y}, length, angle-width/2, angle+width/2, 64, getColor(color))
+	rl.DrawTriangleFan(points, getColor(color))
 	c.end()
 }
 

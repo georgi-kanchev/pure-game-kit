@@ -30,7 +30,7 @@ type TextBox struct {
 func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 	var node = NewNode(x, y)
 	var textBox = &TextBox{
-		FontId: fontId, Node: node, Text: txt.New(text...), LineHeight: 100,
+		FontId: fontId, Node: *node, Text: txt.New(text...), LineHeight: 100,
 		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
 		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^', EmbeddedThicknessesTag: '*',
 	}

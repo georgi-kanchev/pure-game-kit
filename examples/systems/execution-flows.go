@@ -73,7 +73,7 @@ func Flows() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawNodes(&node)
+		cam.DrawNodes(node)
 
 		first.Update()
 		second.Update()
