@@ -5,6 +5,7 @@ digestible and clarify their API.
 package collection
 
 import (
+	"cmp"
 	"fmt"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
@@ -375,6 +376,11 @@ func SortTexts(collection ...string) {
 	if len(collection) != 0 {
 		slices.Sort(collection)
 	}
+}
+func SortByField[T any, F number.Number](s []T, field func(T) F) {
+	slices.SortFunc(s, func(a, b T) int {
+		return cmp.Compare(field(a), field(b))
+	})
 }
 
 func MapKeys[K comparable, V any](Map map[K]V) []K {
