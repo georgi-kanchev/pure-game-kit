@@ -1,6 +1,7 @@
 package graphics
 
 import (
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/random"
@@ -158,6 +159,11 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	// although some chars are "outside" of the box, they still need to be iterated cuz of colorIndex and assetIndex
 
 	for l, line := range lines {
+		var emptyLine = line == ""
+		if emptyLine {
+			line = " " // empty lines shouldn't be skipped
+		}
+
 		var tagless = txt.Remove(line, colorTag, thickTag)
 		var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
 		var skip = false // replaces 'continue' to avoid skipping the offset calculations
@@ -178,7 +184,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		}
 
 		for _, c := range line {
-			var char = string(c)
+			var char = condition.If(emptyLine, "", string(c))
 			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
 
 			if char == "\r" {

@@ -7,6 +7,7 @@ gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapp
 
 [133] [Fri] [02-01-2026]
 updated golang to 1.25.5
+graphics - textbox bugfix
 
 [132] [Wed] [31-12-2025]
 utility - collection sort by field func
