@@ -2,7 +2,10 @@ module pure-game-kit
 
 go 1.25.5
 
-require github.com/gen2brain/raylib-go/raylib v0.55.1
+require (
+	github.com/gen2brain/raylib-go/raylib v0.55.1
+	gopkg.in/yaml.v3 v3.0.1
+)
 
 require github.com/yuin/gopher-lua v1.1.1 // direct
 

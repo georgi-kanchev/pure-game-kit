@@ -2,35 +2,35 @@ package example
 
 import "pure-game-kit/data/storage"
 
-type Animal interface {
+type BinaryAnimal interface {
 	Name() string
 }
 
-type privateField struct{ infinitePats bool } // not saved
-type Dog struct {
-	privateField
+type binaryPrivateField struct{ infinitePats bool } // not saved
+type BinaryDog struct {
+	binaryPrivateField
 	FavoriteToy string
 }
-type Cat struct {
-	privateField
+type BinaryCat struct {
+	binaryPrivateField
 	Meows int
 }
-type Horse struct {
-	privateField
+type BinaryHorse struct {
+	binaryPrivateField
 	Speed float32
 }
 
-func (dog *Dog) Name() string     { return "dogo" }
-func (cat *Cat) Name() string     { return "cato" }
-func (horse *Horse) Name() string { return "juan" }
+func (dog *BinaryDog) Name() string     { return "dogo" }
+func (cat *BinaryCat) Name() string     { return "cato" }
+func (horse *BinaryHorse) Name() string { return "juan" }
 
 func StorageBinary() {
-	var animals = []Animal{
-		&Dog{FavoriteToy: "sticks", privateField: privateField{infinitePats: true}},
-		&Cat{Meows: 5, privateField: privateField{infinitePats: true}},
-		&Cat{Meows: 23, privateField: privateField{infinitePats: true}},
-		&Horse{Speed: 12.3, privateField: privateField{infinitePats: true}}}
-	var bytes = storage.ToBytes(&animals, &Dog{}, &Cat{}, &Horse{})
-	var newAnimals []Animal
-	storage.FromBytes(bytes, &newAnimals, &Dog{}, &Cat{}, &Horse{})
+	var animals = []BinaryAnimal{
+		&BinaryDog{FavoriteToy: "sticks", binaryPrivateField: binaryPrivateField{infinitePats: true}},
+		&BinaryCat{Meows: 5, binaryPrivateField: binaryPrivateField{infinitePats: true}},
+		&BinaryCat{Meows: 23, binaryPrivateField: binaryPrivateField{infinitePats: true}},
+		&BinaryHorse{Speed: 12.3, binaryPrivateField: binaryPrivateField{infinitePats: true}}}
+	var bytes = storage.ToBytes(&animals, &BinaryDog{}, &BinaryCat{}, &BinaryHorse{})
+	var newAnimals []BinaryAnimal
+	storage.FromBytes(bytes, &newAnimals, &BinaryDog{}, &BinaryCat{}, &BinaryHorse{})
 }

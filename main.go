@@ -15,6 +15,9 @@ import (
 func main() {
 	// example.Randoms()
 	// example.StorageBinary()
+	example.StorageYAML()
+	example.StorageXML()
+	example.StorageJSON()
 
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()
