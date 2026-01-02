@@ -21,7 +21,7 @@ var Title = "game"
 var Color uint = 0
 var IsVSynced = false     // Requires window recreation to take effect.
 var IsAntialiased = false // Requires window recreation to take effect.
-var TargetFrameRate byte = 60
+var FrameRateLimit byte = 60
 var IsOpen = false
 
 //=================================================================
@@ -248,9 +248,9 @@ func tryUpdateProperties() {
 		rl.SetWindowTitle(Title)
 	}
 
-	if TargetFrameRate == 0 {
+	if FrameRateLimit == 0 {
 		rl.SetTargetFPS(99999999)
-	} else if TargetFrameRate != currTargetFPS {
-		rl.SetTargetFPS(int32(TargetFrameRate))
+	} else if FrameRateLimit != currTargetFPS {
+		rl.SetTargetFPS(int32(FrameRateLimit))
 	}
 }

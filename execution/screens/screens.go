@@ -52,3 +52,6 @@ func Reload() {
 func Current() Screen {
 	return internal.Screens[internal.CurrentScreen]
 }
+func CurrentId() int {
+	return internal.CurrentScreen
+}
