@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"hash/fnv"
 	"math"
+	"math/rand/v2"
 	"pure-game-kit/utility/number"
 	"reflect"
-	"time"
 )
 
 func CombineSeeds[T number.Number](seeds ...T) T {
@@ -120,7 +120,7 @@ func Hash(v any) uint32 {
 	return h.Sum32()
 }
 
-//=================================================================
+// =================================================================
 // private
 
 func hashSeed(seed, value uint64) uint64 {
@@ -142,7 +142,7 @@ func rangeInt[T number.Integer](a, b T, seeds ...float32) T {
 	var diff = ub - ua
 	var seed = CombineSeeds(seeds...)
 	if seed != seed { // is NaN
-		seed = float32(time.Now().UnixNano()%1e9) / 1e9
+		seed = rand.Float32()
 	}
 	var s = uint64(seed * 2147483647)
 	s = (1103515245*s + 12345) % 2147483647
@@ -160,7 +160,7 @@ func rangeFloat[T number.Float](a, b T, seeds ...float32) T {
 
 	var seed = CombineSeeds(seeds...)
 	if seed != seed { // is NaN
-		seed = float32(time.Now().UnixNano()%1e9) / 1e9
+		seed = rand.Float32()
 	}
 
 	var s = int(seed * 2147483647)

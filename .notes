@@ -12,6 +12,7 @@ storage - yaml support + descriptions
 example - storages
 screens - current id getter
 build fixed, downloading compiler if not present etc
+utility - fixed random range giving same values on windows
 
 [132] [Wed] [31-12-2025]
 utility - collection sort by field func
