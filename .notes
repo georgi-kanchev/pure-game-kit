@@ -1,10 +1,12 @@
 // TODO:
-buttons & checkboxes are fucked up
 shader effects, port?
 simple particles, port?
 shape/sprite shadow draw?
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
+
+[134] [Sat] [03-01-2026]
+gui - checkbox/button bug fix
 
 [133] [Fri] [02-01-2026]
 updated golang to 1.25.5

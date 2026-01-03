@@ -75,7 +75,7 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	setupVisualsTextured(root, widget)
-	setupVisualsText(root, widget, true)
+	setupVisualsText(root, widget, false)
 	drawVisuals(cam, root, widget, false, nil)
 	buttonColor = parseColor(root.themedField(field.Color, owner, widget), widget.isDisabled(owner))
 	widget.ThemeId = prev

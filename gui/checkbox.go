@@ -27,7 +27,7 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	var group = root.themedField(field.CheckboxGroup, owner, widget)
-	widget.Fields[field.Value] = condition.If(isOff, "v", "")
+	widget.Fields[field.Value] = condition.If(isOff, "1", "")
 	var soundId = condition.If(isOff, "~on", "~off")
 	sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), soundId)
 	sound.Volume = root.Volume
@@ -48,7 +48,7 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 			}
 		}
 
-		widget.Fields[field.Value] = "v"
+		widget.Fields[field.Value] = "1"
 	}
 
 	widget.tryToggleChildrenVisible(owner, root)
