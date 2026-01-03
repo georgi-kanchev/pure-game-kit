@@ -83,6 +83,7 @@ func (a *Audio) Time() (current, duration float32) {
 
 //=================================================================
 // private
+// private
 
 // detects all changes in the values so that the audio can reflect them instantly
 func (a *Audio) update(float32) {

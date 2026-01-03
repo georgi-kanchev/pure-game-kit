@@ -7,6 +7,8 @@ gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapp
 
 [134] [Sat] [03-01-2026]
 gui - checkbox/button bug fix
+flow - simple state machine
+example - state machines
 
 [133] [Fri] [02-01-2026]
 updated golang to 1.25.5

@@ -89,6 +89,7 @@ func main() {
 		gui.Visual("other", f.ThemeId, "label", f.Text, "Other:", f.NewRow, ""),
 		gui.Button("animation sequences", f.Text, " Animation Sequences `(motion-animations.go)", f.NewRow, ""),
 		gui.Button("tweens", f.Text, " Tweens `(motion-tweens.go)", f.NewRow, ""),
+		gui.Button("state machines", f.Text, " State Machines `(execution-state-machines.go)", f.NewRow, ""),
 		gui.Button("flows", f.Text, " Flows `(execution-flows.go)", f.NewRow, ""),
 	))
 	assets.LoadDefaultFont()
@@ -124,6 +125,7 @@ func main() {
 		//=================================================================
 		"animation sequences": example.Animations,
 		"tweens":              example.Tweens,
+		"state machines":      example.StateMachines,
 		"flows":               example.Flows,
 	}
 
