@@ -127,14 +127,12 @@ func Smallest[T Number](number, target T, other ...T) T {
 	}
 	return min
 }
-func Average[T Number](number T, others ...T) T {
-	var sum T = number
-	var i int
-	for i = 0; i < len(others); i++ {
-		var n = others[i]
-		sum += n
+func Average[T Number](numbers ...T) T {
+	var sum T = 0
+	for i := range numbers {
+		sum += numbers[i]
 	}
-	return sum / T(1+len(others))
+	return sum / T(1+len(numbers))
 }
 func Absolute[T Number](number T) T {
 	if number < 0 {

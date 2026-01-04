@@ -7,6 +7,8 @@ gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapp
 
 [135] [Sun] [04-01-2026]
 flow - removed step sequences, too complicated and can achieve the same with state machine
+number - average api tweak
+camera - draw circle/quad no color fallback to white
 
 [134] [Sat] [03-01-2026]
 gui - checkbox/button bug fix

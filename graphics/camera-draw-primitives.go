@@ -5,6 +5,7 @@ import (
 	ang "pure-game-kit/utility/angle"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 
@@ -164,6 +165,10 @@ func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 		rect.Height *= -1
 	}
 
+	if len(colors) == 0 {
+		colors = append(colors, palette.White)
+	}
+
 	if len(colors) == 1 {
 		c.begin()
 		rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, getColor(colors[0]))
@@ -199,6 +204,11 @@ func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 	const segments = 24
 	c.begin()
 	c.Batch = true
+
+	if len(colors) == 0 {
+		colors = append(colors, palette.White)
+	}
+
 	if len(colors) == 1 {
 		c.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, colors[0])
 	} else if len(colors) > 1 {
