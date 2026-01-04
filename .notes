@@ -5,6 +5,9 @@ shape/sprite shadow draw?
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
 
+[135] [Sun] [04-01-2026]
+flow - removed step sequences, too complicated and can achieve the same with state machine
+
 [134] [Sat] [03-01-2026]
 gui - checkbox/button bug fix
 flow - simple state machine

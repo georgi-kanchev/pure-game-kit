@@ -126,7 +126,6 @@ func main() {
 		"animation sequences": example.Animations,
 		"tweens":              example.Tweens,
 		"state machines":      example.StateMachines,
-		"flows":               example.Flows,
 	}
 
 	for window.KeepOpen() {
