@@ -129,7 +129,13 @@ func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 	return result
 }
 
-func (s *ShapeGrid) MovementRange(startX, startY int, maxDistance float32) [][2]int {
+/*
+Diagonals take 1.5 cells distance-wise. This way, round range calculations are rounded & have no weird left-overs.
+This quirk makes regular 2D distances incorrect, instead use:
+
+	shapeGrid.RangeDistance(...)
+*/
+func (s *ShapeGrid) Range(startX, startY int, maxDistance float32) [][2]int {
 	type state struct {
 		x, y          int
 		remainingDist float32
@@ -178,4 +184,10 @@ func (s *ShapeGrid) MovementRange(startX, startY int, maxDistance float32) [][2]
 		result = append(result, pos)
 	}
 	return result
+}
+func RangeDistance(x, y, targetX, targetY int) float32 {
+	var dx, dy = number.Absolute(targetX - x), number.Absolute(targetY - y)
+	var diag = number.Smallest(dx, dy)
+	var straight = number.Biggest(dx, dy) - diag
+	return float32(diag)*1.5 + float32(straight)
 }
