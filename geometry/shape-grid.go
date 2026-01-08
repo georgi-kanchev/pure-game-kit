@@ -135,13 +135,13 @@ This quirk makes regular 2D distances incorrect, instead use:
 
 	shapeGrid.RangeDistance(...)
 */
-func (s *ShapeGrid) Range(startX, startY int, maxDistance float32) [][2]int {
+func (s *ShapeGrid) Range(startX, startY int, maxDistance float32, diagonals bool) [][2]int {
 	type state struct {
 		x, y          int
 		remainingDist float32
 	}
 	var visited = make(map[[2]int]float32)
-	var queue = []state{{startX, startY, maxDistance}}
+	var queue = []state{{startX, startY, maxDistance + 0.1}}
 
 	for len(queue) > 0 {
 		var curr = queue[0]
@@ -169,6 +169,14 @@ func (s *ShapeGrid) Range(startX, startY int, maxDistance float32) [][2]int {
 				var cost float32 = 1.0
 				if dx != 0 && dy != 0 {
 					cost = 1.5
+
+					if !diagonals {
+						var s1, b1 = s.cells[[2]int{curr.x + dx, curr.y}]
+						var s2, b2 = s.cells[[2]int{curr.x, curr.y + dy}]
+						if (b1 && len(s1) > 0) || (b2 && len(s2) > 0) {
+							continue
+						}
+					}
 				}
 
 				var nextRemaining = curr.remainingDist - cost

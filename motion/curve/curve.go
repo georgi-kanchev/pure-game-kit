@@ -64,3 +64,38 @@ func Spline(progress float32, curvePoints [][2]float32) (x, y float32) {
 
 	return t0, t1
 }
+
+func SmoothPath(path [][2]float32, stepsPerSegment int) [][2]float32 {
+	if len(path) < 3 {
+		return path
+	}
+
+	var smoothed [][2]float32
+	var extendedPath = append([][2]float32{path[0]}, path...)
+	extendedPath = append(extendedPath, path[len(path)-1])
+
+	for i := 0; i < len(extendedPath)-3; i++ {
+		for j := range stepsPerSegment {
+			var t = float32(j) / float32(stepsPerSegment)
+			var point = catmullRom(extendedPath[i], extendedPath[i+1], extendedPath[i+2], extendedPath[i+3], t)
+			smoothed = append(smoothed, point)
+		}
+	}
+
+	smoothed = append(smoothed, path[len(path)-1])
+	return smoothed
+}
+
+//=================================================================
+// private
+
+func catmullRom(p0, p1, p2, p3 [2]float32, t float32) [2]float32 {
+	var res [2]float32
+	for i := range 2 {
+		res[i] = 0.5 * ((2 * p1[i]) +
+			(-p0[i]+p2[i])*t +
+			(2*p0[i]-5*p1[i]+4*p2[i]-p3[i])*t*t +
+			(-p0[i]+3*p1[i]-3*p2[i]+p3[i])*t*t*t)
+	}
+	return res
+}

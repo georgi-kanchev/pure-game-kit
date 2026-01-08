@@ -3,6 +3,7 @@ package example
 import (
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
+	"pure-game-kit/motion/curve"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/random"
 	"pure-game-kit/window"
@@ -37,7 +38,7 @@ func Pathfinding() {
 		}
 
 		var mx, my = cam.MousePosition()
-		path = grid.FindPathSmoothly(16, 16, mx, my, false)
+		path = curve.SmoothPath(grid.FindPathDiagonally(16, 16, mx, my, false), 3)
 		cam.DrawLinesPath(1, palette.Green, path...)
 		cam.DrawPoints(2, palette.White, path...)
 	}
