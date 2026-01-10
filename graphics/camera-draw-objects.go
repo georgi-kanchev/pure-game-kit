@@ -106,9 +106,15 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	}
 	c.end()
 }
-func (camera *Camera) DrawBoxes(boxes ...*Box) {
-	camera.begin()
-	camera.Batch = true
+func (c *Camera) DrawBoxes(boxes ...*Box) {
+	c.begin()
+	var prevBatch = c.Batch
+	c.Batch = true
+	defer func() {
+		c.Batch = prevBatch
+		c.end()
+	}()
+
 	for _, s := range boxes {
 		if s == nil {
 			continue
@@ -117,11 +123,11 @@ func (camera *Camera) DrawBoxes(boxes ...*Box) {
 		var w, h = s.Width, s.Height
 		var u, r, d, l = s.EdgeBottom, s.EdgeRight, s.EdgeTop, s.EdgeLeft
 		var errX, errY float32 = 2, 2 // this adds margin of error to the middle part (it's behind all other parts)
-		var c = s.Color
+		var col = s.Color
 		var asset, has = internal.Boxes[s.AssetId]
 
 		if !has {
-			camera.DrawSprites(&s.Sprite)
+			c.DrawSprites(&s.Sprite)
 			return // fallback to sprite rendering if no 9slice asset found
 		}
 
@@ -153,25 +159,24 @@ func (camera *Camera) DrawBoxes(boxes ...*Box) {
 			}
 		}
 
-		drawBoxPart(camera, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], c) // center
+		drawBoxPart(c, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], col) // center
 
 		// edges
-		drawBoxPart(camera, &s.Node, l, 0, w-l-r, u, asset[1], c)   // top
-		drawBoxPart(camera, &s.Node, 0, u, l, h-u-d, asset[3], c)   // left
-		drawBoxPart(camera, &s.Node, w-r, u, r, h-u-d, asset[5], c) // right
-		drawBoxPart(camera, &s.Node, l, h-d, w-l-r, d, asset[7], c) // bottom
+		drawBoxPart(c, &s.Node, l, 0, w-l-r, u, asset[1], col)   // top
+		drawBoxPart(c, &s.Node, 0, u, l, h-u-d, asset[3], col)   // left
+		drawBoxPart(c, &s.Node, w-r, u, r, h-u-d, asset[5], col) // right
+		drawBoxPart(c, &s.Node, l, h-d, w-l-r, d, asset[7], col) // bottom
 
 		// corners
-		drawBoxPart(camera, &s.Node, 0, 0, l, u, asset[0], c)     // top left
-		drawBoxPart(camera, &s.Node, w-r, 0, r, u, asset[2], c)   // top right
-		drawBoxPart(camera, &s.Node, 0, h-d, l, d, asset[6], c)   // bottom left
-		drawBoxPart(camera, &s.Node, w-r, h-d, r, d, asset[8], c) // bottom right
+		drawBoxPart(c, &s.Node, 0, 0, l, u, asset[0], col)     // top left
+		drawBoxPart(c, &s.Node, w-r, 0, r, u, asset[2], col)   // top right
+		drawBoxPart(c, &s.Node, 0, h-d, l, d, asset[6], col)   // bottom left
+		drawBoxPart(c, &s.Node, w-r, h-d, r, d, asset[8], col) // bottom right
 	}
-	camera.Batch = false
-	camera.end()
 }
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
+	var prevBatch = c.Batch
 	c.Batch = true
 	for _, t := range textBoxes {
 		if t == nil {
@@ -222,6 +227,6 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 		endShader()
 	}
-	c.Batch = false
+	c.Batch = prevBatch
 	c.end()
 }

@@ -32,6 +32,7 @@ func (c *Camera) DrawScreenFrame(thickness int, color uint) {
 
 func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	c.begin()
+	var prevBatch = c.Batch
 	c.Batch = true
 	var sx, sy, sw, sh = c.ScreenX, c.ScreenY, c.ScreenWidth, c.ScreenHeight
 	var ulx, uly = c.PointFromScreen(sx, sy)
@@ -86,7 +87,7 @@ func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	if left <= 0 && right >= 0 { // y
 		c.DrawLine(0, top, 0, bottom, thickness*6, color)
 	}
-	c.Batch = false
+	c.Batch = prevBatch
 	c.end()
 }
 
@@ -113,8 +114,12 @@ func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, co
 	}
 
 	c.begin()
+	var prevBatch = c.Batch
 	c.Batch = true
-	defer func() { c.Batch = false }()
+	defer func() {
+		c.Batch = prevBatch
+		c.end()
+	}()
 
 	if width < 0 {
 		x, y = point.MoveAtAngle(x, y, angle+180, -width)
@@ -146,7 +151,6 @@ func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, co
 	c.DrawQuad(trx, try, thickness, height+thickness*2, angle, color)
 	c.DrawQuad(blx, bly, width+thickness*2, thickness, angle, color)
 	c.DrawQuad(tlx, tly, thickness, height+thickness*2, angle, color)
-	c.end()
 }
 func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 	if !c.isAreaVisible(x, y, width, height, angle) {
@@ -193,17 +197,16 @@ func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 
 func (c *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
 	c.begin()
+	var prevBatch = c.Batch
 	c.Batch = true
 	for _, pt := range points {
 		c.DrawCircle(pt[0], pt[1], radius, color)
 	}
-	c.Batch = false
+	c.Batch = prevBatch
 	c.end()
 }
 func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 	const segments = 24
-	c.begin()
-	c.Batch = true
 
 	if len(colors) == 0 {
 		colors = append(colors, palette.White)
@@ -212,6 +215,7 @@ func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 	if len(colors) == 1 {
 		c.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, colors[0])
 	} else if len(colors) > 1 {
+		c.begin()
 		var step = float32(360.0 / float32(segments))
 		rl.Begin(rl.Triangles)
 		for i := range segments {
@@ -226,9 +230,8 @@ func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 			rl.Vertex2f(x, y)
 		}
 		rl.End()
+		c.end()
 	}
-	c.Batch = false
-	c.end()
 }
 func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int, color uint) {
 	var fillAngle = number.Limit(fill, 0, 1) * 360
@@ -349,7 +352,7 @@ func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float3
 	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, getColor(color))
 	c.end()
 }
-func (c *Camera) DrawText(fontId, text string, x, y, height float32, color uint) {
+func (c *Camera) DrawText(fontId, text string, x, y, height, thickness float32, color uint) {
 	c.begin()
 
 	var sh = internal.ShaderText
@@ -368,8 +371,8 @@ func (c *Camera) DrawText(fontId, text string, x, y, height float32, color uint)
 
 	if sh.ID != 0 {
 		rl.BeginShaderMode(sh)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), []float32{0}, rl.ShaderUniformFloat)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), []float32{0.5}, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), []float32{0.02}, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), []float32{thickness}, rl.ShaderUniformFloat)
 	}
 
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, 0, getColor(color))

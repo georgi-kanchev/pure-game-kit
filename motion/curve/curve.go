@@ -1,6 +1,5 @@
 /*
-A Bezier function and a Spline function. They represent a curve through some provided points
-and interpolate a resulting point on the curve according to a progress, ranged (but not limited to) 0 to 1.
+A few functions to follow a curve or smooth-out lines.
 Useful for describing a smooth movement or path for a point or a pair of numeric values
 (time & strength for example).
 */
@@ -65,7 +64,27 @@ func Spline(progress float32, curvePoints [][2]float32) (x, y float32) {
 	return t0, t1
 }
 
-func SmoothPath(path [][2]float32, stepsPerSegment int) [][2]float32 {
+func SmoothPath(path [][2]float32) [][2]float32 {
+	if len(path) < 3 {
+		return path
+	}
+
+	var refined = path
+	var nextPath [][2]float32
+	nextPath = append(nextPath, refined[0])
+
+	for j := 0; j < len(refined)-1; j++ {
+		var p0, p1 = refined[j], refined[j+1]
+		var q = [2]float32{0.75*p0[0] + 0.25*p1[0], 0.75*p0[1] + 0.25*p1[1]}
+		var r = [2]float32{0.25*p0[0] + 0.75*p1[0], 0.25*p0[1] + 0.75*p1[1]}
+
+		nextPath = append(nextPath, q, r)
+	}
+	nextPath = append(nextPath, refined[len(refined)-1])
+	refined = nextPath
+	return refined
+}
+func SmoothPathSpline(path [][2]float32, stepsPerSegment int) [][2]float32 {
 	if len(path) < 3 {
 		return path
 	}
@@ -83,6 +102,41 @@ func SmoothPath(path [][2]float32, stepsPerSegment int) [][2]float32 {
 	}
 
 	smoothed = append(smoothed, path[len(path)-1])
+	return smoothed
+}
+func SmoothPathBezier(path [][2]float32, stepsPerSegment int) [][2]float32 {
+	if len(path) < 3 {
+		return path
+	}
+
+	var smoothed [][2]float32
+	for i := 0; i < len(path)-2; i += 2 {
+		var p0, p1, p2 = path[i], path[i+1], path[i+2]
+		for j := 0; j <= stepsPerSegment; j++ {
+			var t = float32(j) / float32(stepsPerSegment)
+			var invT = 1 - t
+			var x = invT*invT*p0[0] + 2*invT*t*p1[0] + t*t*p2[0]
+			var y = invT*invT*p0[1] + 2*invT*t*p1[1] + t*t*p2[1]
+			smoothed = append(smoothed, [2]float32{x, y})
+		}
+	}
+	return smoothed
+}
+
+func StraightenPath(path [][2]float32) [][2]float32 {
+	if len(path) < 3 {
+		return path
+	}
+
+	smoothed := make([][2]float32, len(path))
+	copy(smoothed, path)
+
+	// Weights: 0.25 (prev), 0.50 (curr), 0.25 (next)
+	for i := 1; i < len(path)-1; i++ {
+		smoothed[i][0] = 0.25*path[i-1][0] + 0.5*path[i][0] + 0.25*path[i+1][0]
+		smoothed[i][1] = 0.25*path[i-1][1] + 0.5*path[i][1] + 0.25*path[i+1][1]
+	}
+
 	return smoothed
 }
 
