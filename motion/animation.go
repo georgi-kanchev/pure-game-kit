@@ -7,8 +7,8 @@ iterated over time.
 package motion
 
 import (
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/time"
 )
 
 type Animation[T any] struct {
@@ -21,7 +21,7 @@ type Animation[T any] struct {
 
 func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animation[T] {
 	return Animation[T]{
-		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: time.Runtime()}
+		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: internal.Runtime}
 }
 
 //=================================================================
@@ -32,10 +32,10 @@ func (a *Animation[T]) SetDuration(seconds float32) {
 func (a *Animation[T]) SetIndex(index int) {
 	index = number.Limit(index, 0, len(a.Items)-1)
 	var newTime = float32(index) / a.ItemsPerSecond
-	a.startTime = time.Runtime() - newTime
+	a.startTime = internal.Runtime - newTime
 }
 func (a *Animation[T]) SetTime(seconds float32) {
-	a.startTime = runtime() - seconds
+	a.startTime = internal.Runtime - seconds
 }
 
 //=================================================================
@@ -70,7 +70,7 @@ func (a *Animation[T]) IsPlaying() bool {
 // private
 
 func (a *Animation[T]) update() float32 {
-	var runtime = time.Runtime()
+	var runtime = internal.Runtime
 	var progress = (runtime - a.startTime) / a.CurrentDuration()
 
 	if a.IsPaused && runtime != a.lastUpdateTime {
@@ -89,4 +89,3 @@ func (a *Animation[T]) update() float32 {
 	a.lastUpdateTime = runtime
 	return progress
 }
-func runtime() float32 { return time.Runtime() } // freeing up "seconds" as var/param name

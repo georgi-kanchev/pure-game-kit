@@ -1,8 +1,8 @@
 package motion
 
 import (
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/time"
 )
 
 type Tween struct {
@@ -37,7 +37,7 @@ func NewTween(startingItems ...float32) *Tween {
 
 func (t *Tween) Restart() {
 	t.currIndex = 0
-	t.startTime = time.Runtime()
+	t.startTime = internal.Runtime
 	t.IsPaused = false
 
 	for i := range t.tweens {
@@ -86,7 +86,7 @@ func (t *Tween) Wait(seconds float32) *Tween {
 }
 
 func (t *Tween) CurrentValues() []float32 {
-	var runtime = time.Runtime()
+	var runtime = internal.Runtime
 	var elapsed = runtime - t.startTime
 
 	if t.IsFinished() {

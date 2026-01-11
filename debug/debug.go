@@ -205,13 +205,11 @@ func PrintMemoryUsage() {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
 
-	// Basic memory usage
 	fmt.Printf("\nMemory:\n")
 	fmt.Printf("UsedNow = %v (current heap in use)\n", byteSize(int(m.Alloc)))
 	fmt.Printf("UsedTotal = %v (total allocated since start)\n", byteSize(int(m.TotalAlloc)))
 	fmt.Printf("FromOS = %v (memory reserved from OS)\n", byteSize(int(m.Sys)))
 
-	// Heap breakdown
 	fmt.Printf("\nHeap:\n")
 	fmt.Printf("Used = %v \n", byteSize(int(m.HeapAlloc)))
 	fmt.Printf("Reserved = %v \n", byteSize(int(m.HeapSys)))
@@ -219,13 +217,11 @@ func PrintMemoryUsage() {
 	fmt.Printf("Active = %v (actively in use)\n", byteSize(int(m.HeapInuse)))
 	fmt.Printf("Released = %v (given back to OS)\n", byteSize(int(m.HeapReleased)))
 
-	// Object allocations
 	fmt.Printf("\nObject:\n")
 	fmt.Printf("Allocs = %v (objects allocated)\n", m.Mallocs)
 	fmt.Printf("Frees = %v (objects freed)\n", m.Frees)
 	fmt.Printf("Live = %v (currently alive)\n", m.HeapObjects)
 
-	// Garbage collection
 	fmt.Printf("\nGarbage Collection:\n")
 	fmt.Printf("Total = %v (total collections)\n", m.NumGC)
 	fmt.Printf("Forced = %v (manual triggers)\n", m.NumForcedGC)
@@ -238,7 +234,6 @@ func PrintMemoryUsage() {
 		fmt.Printf("SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
 	}
 
-	// Stacks and other
 	fmt.Printf("\nStack:\n")
 	fmt.Printf("Used = %v\n", byteSize(int(m.StackInuse)))
 	fmt.Printf("Reserved = %v\n", byteSize(int(m.StackSys)))

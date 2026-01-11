@@ -33,6 +33,6 @@ func Keyboard() {
 		}
 
 		var x, y = cam.PointFromScreen(0, 0)
-		cam.DrawText(font, text, x, y, 200, 0.5, palette.White)
+		cam.DrawText(font, text, x, y, 200, 0.5, 0, palette.White)
 	}
 }
