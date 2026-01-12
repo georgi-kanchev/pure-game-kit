@@ -7,6 +7,7 @@ iterated over time.
 package motion
 
 import (
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 )
@@ -16,76 +17,49 @@ type Animation[T any] struct {
 	ItemsPerSecond      float32
 	IsLooping, IsPaused bool
 
-	startTime, lastUpdateTime float32
+	Time float32
 }
 
 func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animation[T] {
-	return Animation[T]{
-		Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop, startTime: internal.Runtime}
+	return Animation[T]{Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop}
 }
 
 //=================================================================
+
+func (a *Animation[T]) Update() {
+	if !a.IsPaused {
+		a.Time += internal.DeltaTime
+	}
+
+	var duration = a.Duration()
+	if a.Time >= duration {
+		a.Time = condition.If(a.IsLooping, 0, duration)
+	}
+}
 
 func (a *Animation[T]) SetDuration(seconds float32) {
 	a.ItemsPerSecond = float32(len(a.Items)) / seconds
 }
 func (a *Animation[T]) SetIndex(index int) {
 	index = number.Limit(index, 0, len(a.Items)-1)
-	var newTime = float32(index) / a.ItemsPerSecond
-	a.startTime = internal.Runtime - newTime
-}
-func (a *Animation[T]) SetTime(seconds float32) {
-	a.startTime = internal.Runtime - seconds
+	a.Time = number.Map(float32(index), 0, float32(len(a.Items)), 0, a.Duration())
 }
 
 //=================================================================
 
-func (a *Animation[T]) CurrentItem() *T {
-	return &a.Items[a.CurrentIndex()]
+func (a *Animation[T]) Item() *T {
+	return &a.Items[a.Index()]
 }
-func (a *Animation[T]) CurrentIndex() int {
-	var progress = a.update()
-	var count = float32(len(a.Items))
-	return int(number.Smallest(progress*count, count-1))
+func (a *Animation[T]) Index() int {
+	return int(number.Map(a.Time, 0, a.Duration(), 0, float32(len(a.Items))))
 }
-func (a *Animation[T]) CurrentTime() float32 {
-	var progress = a.update()
-	var count = float64(len(a.Items))
-	return progress * float32(count) / a.ItemsPerSecond
-}
-func (a *Animation[T]) CurrentDuration() float32 {
-	var count = float32(len(a.Items))
-	return count / a.ItemsPerSecond
+func (a *Animation[T]) Duration() float32 {
+	return float32(len(a.Items)) / a.ItemsPerSecond
 }
 
 func (a *Animation[T]) IsFinished() bool {
-	var progress = a.update()
-	return progress == 1
+	return a.Time == a.Duration()
 }
 func (a *Animation[T]) IsPlaying() bool {
 	return !a.IsFinished() && !a.IsPaused
-}
-
-//=================================================================
-// private
-
-func (a *Animation[T]) update() float32 {
-	var runtime = internal.Runtime
-	var progress = (runtime - a.startTime) / a.CurrentDuration()
-
-	if a.IsPaused && runtime != a.lastUpdateTime {
-		a.startTime += runtime - a.lastUpdateTime
-	}
-
-	if progress >= 1 {
-		if a.IsLooping {
-			a.startTime = runtime
-			progress = 0
-		} else {
-			progress = 1
-		}
-	}
-
-	a.lastUpdateTime = runtime
-	return progress
 }

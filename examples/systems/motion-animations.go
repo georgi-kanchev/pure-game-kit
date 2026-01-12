@@ -20,11 +20,12 @@ func Animations() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		sprite.AssetId = *animation.CurrentItem()
+		animation.Update()
+		sprite.AssetId = *animation.Item()
 		cam.DrawSprites(sprite)
 
 		if keyboard.IsKeyJustPressed(key.A) {
-			animation.SetTime(3.8)
+			animation.SetIndex(5)
 		}
 	}
 }
