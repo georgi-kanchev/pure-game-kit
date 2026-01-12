@@ -1,4 +1,6 @@
 // TODO:
+test graphics node parent
+test scale texture repeat sprite
 shader effects, port?
 simple particles, port?
 gui button would be nice to be able to press multiple hotkeys at once
