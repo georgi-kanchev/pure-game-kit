@@ -75,6 +75,14 @@ func main() {
 		gui.Button("pathfind around geometry", f.Text, " Pathfinding `(geometry-pathfinding.go)", f.NewRow, ""),
 		gui.Button("path following geometry", f.Text, " Path Following `(geometry-path-following.go)", f.NewRow, ""),
 		//=================================================================
+		gui.Visual("motion", f.ThemeId, "label", f.Text, "Motion:", f.NewRow, ""),
+		gui.Button("animation sequences", f.Text, " Animation Sequences `(motion-animations.go)", f.NewRow, ""),
+		gui.Button("tweens", f.Text, " Tweens `(motion-tweens.go)", f.NewRow, ""),
+		gui.Button("particles", f.Text, " Particles `(motion-particles.go)", f.NewRow, ""),
+		//=================================================================
+		gui.Visual("execution", f.ThemeId, "label", f.Text, "Execution:", f.NewRow, ""),
+		gui.Button("state machines", f.Text, " State Machines `(execution-state-machines.go)", f.NewRow, ""),
+		//=================================================================
 		gui.Visual("data", f.ThemeId, "label", f.Text, "Assets:", f.NewRow, ""),
 		gui.Button("tiled scenes", f.Text, " Tiled Scenes `(assets-tiled.go)", f.NewRow, ""),
 		gui.Button("default font asset", f.Text, " Default Font `(assets-default.go)", f.NewRow, ""),
@@ -85,12 +93,6 @@ func main() {
 		gui.Button("default retro atlas asset", f.Text, " Default Retro Atlas `(assets-default.go)", f.NewRow, ""),
 		gui.Button("default patterns asset", f.Text, " Default Patterns `(assets-default.go)", f.NewRow, ""),
 		gui.Button("default texture asset", f.Text, " Default Texture `(assets-default.go)", f.NewRow, ""),
-		//=================================================================
-		gui.Visual("other", f.ThemeId, "label", f.Text, "Other:", f.NewRow, ""),
-		gui.Button("animation sequences", f.Text, " Animation Sequences `(motion-animations.go)", f.NewRow, ""),
-		gui.Button("tweens", f.Text, " Tweens `(motion-tweens.go)", f.NewRow, ""),
-		gui.Button("state machines", f.Text, " State Machines `(execution-state-machines.go)", f.NewRow, ""),
-		gui.Button("flows", f.Text, " Flows `(execution-flows.go)", f.NewRow, ""),
 	))
 	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
@@ -113,6 +115,12 @@ func main() {
 		"pathfind around geometry": example.Pathfinding,
 		"path following geometry":  example.PathFollowing,
 		//=================================================================
+		"animation sequences": example.Animations,
+		"tweens":              example.Tweens,
+		"particles":           example.Particles,
+		//=================================================================
+		"state machines": example.StateMachines,
+		//=================================================================
 		"tiled scenes":              example.Tiled,
 		"default font asset":        example.DefaultAssetFont,
 		"default icons asset":       example.DefaultAssetIcons,
@@ -122,10 +130,6 @@ func main() {
 		"default retro atlas asset": example.DefaultAssetRetro,
 		"default patterns asset":    example.DefaultAssetPatterns,
 		"default texture asset":     example.DefaultAssetTexture,
-		//=================================================================
-		"animation sequences": example.Animations,
-		"tweens":              example.Tweens,
-		"state machines":      example.StateMachines,
 	}
 
 	for window.KeepOpen() {

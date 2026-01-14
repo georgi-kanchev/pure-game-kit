@@ -35,15 +35,14 @@ func Remove[T comparable](collection []T, items ...T) []T {
 		for i, v := range collection {
 			if v == item {
 				collection = slices.Delete(collection, i, i+1)
-				break // Remove only the first match per item, like your pointer version
+				break
 			}
 		}
 	}
 	return collection
 }
 func RemoveAt[T any](collection []T, indexes ...int) []T {
-	// Sort indexes descending so deletion doesn't affect subsequent indices
-	var copy = Clone(collection)
+	var copy = Clone(collection) // sort indexes descending so deletion doesn't affect subsequent indices
 	slices.SortFunc(indexes, func(a, b int) int { return b - a })
 	for _, index := range indexes {
 		if index >= 0 && index < len(copy) {

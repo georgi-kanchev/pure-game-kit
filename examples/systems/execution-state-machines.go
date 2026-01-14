@@ -9,6 +9,7 @@ import (
 	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/text"
 	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
@@ -41,7 +42,7 @@ func StateMachines() {
 		cam.DrawQuad(player.x-size/2, player.y-height, size, height, 0, palette.White)
 
 		var tlx, tly = cam.PointFromEdge(0, 0)
-		cam.DrawText("", player.state, tlx, tly, 100, 0.5, 0, palette.Gray)
+		cam.DrawText("", text.New("State: ", player.state), tlx, tly, 100, 0.5, 0, palette.Gray)
 	}
 }
 
