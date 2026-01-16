@@ -2,6 +2,7 @@ package example
 
 import (
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
 	"pure-game-kit/graphics"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
@@ -37,5 +38,7 @@ func Texts() {
 
 		cam.DrawTextBoxes(textBox)
 		textBox.Width, textBox.Height = textBox.MousePosition(cam)
+
+		debug.Print(time.FrameRate())
 	}
 }

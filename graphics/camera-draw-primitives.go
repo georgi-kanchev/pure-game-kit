@@ -222,11 +222,11 @@ func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 			var ang1, ang2 = float32(i) * step, float32(i+1) * step
 			var p1x, p1y = point.MoveAtAngle(x, y, ang1, radius)
 			var p2x, p2y = point.MoveAtAngle(x, y, ang2, radius)
-			rl.Color4ub(color.Channels(colors[0]))
-			rl.Vertex2f(p2x, p2y)
-			rl.Color4ub(color.Channels(colors[0]))
-			rl.Vertex2f(p1x, p1y)
 			rl.Color4ub(color.Channels(colors[1]))
+			rl.Vertex2f(p2x, p2y)
+			rl.Color4ub(color.Channels(colors[1]))
+			rl.Vertex2f(p1x, p1y)
+			rl.Color4ub(color.Channels(colors[0]))
 			rl.Vertex2f(x, y)
 		}
 		rl.End()

@@ -15,19 +15,21 @@ func Effects() {
 	var sh = rl.LoadShaderFromMemory(VERT, FRAG)
 	defer rl.UnloadShader(sh)
 
-	var spr = graphics.NewSprite(assets.LoadDefaultTexture(), 0, 0)
+	var tex = assets.LoadTexture("examples/data/objects.png")
+	var spr = graphics.NewSprite(tex, 0, 0)
+	assets.SetTextureSmoothness(tex, true)
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 
 		var w, h = assets.Size("")
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "renderSize"), []float32{float32(w), float32(h)}, rl.ShaderUniformVec2)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "strength"), []float32{2}, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "texSize"), []float32{float32(w), float32(h)}, rl.ShaderUniformVec2)
 
 		rl.BeginShaderMode(sh)
 		cam.DrawSprites(spr)
 		rl.EndShaderMode()
+
 		debug.Print(time.FrameRate())
 	}
 }
@@ -40,69 +42,87 @@ in vec4 fragColor;
 out vec4 finalColor;
 
 uniform sampler2D texture0;
-uniform vec4 colDiffuse;
+uniform vec2 texSize; 
 
-// Replaces 'tileCount * tileSize' (The full size of the texture/screen)
-uniform vec2 renderSize; 
-// Replaces 's' (Blur spread/scale)
-uniform vec2 blurScale; 
+//=================================================================
 
+uniform vec2 blur;
+
+uniform float gam = 0.5;
+uniform float sat = 0.5;
+uniform float con = 0.5;
+uniform float bri = 0.5;
+uniform float gra = 0.0;
+uniform float inv = 0.0;
+
+uniform vec4 overlay;
+
+//=================================================================
+
+float map(float value, float min1, float max1, float min2, float max2) {
+    return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
+
+//=================================================================
+
+vec4 compute_color_adjust(vec4 color) {
+	float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+	float gamma = gam < 0.5 ? map(gam, 0.0, 0.5, 6.0, 1.0) : map(gam, 0.5, 1.0, 1.0, 0.0);
+	float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 10.0);
+	float contrast = con < 0.5 ? map(con, 0.0, 0.5, 0.0, 1.0) : map(con, 0.5, 1.0, 1.0, 3.0);
+	float brightness = bri < 0.5 ? map(bri, 0.0, 0.5, 0.0, 1.0) : map(bri, 0.5, 1.0, 1.0, 4.0);
+
+	color.rgb = pow(color.rgb, vec3(gamma));
+	color.rgb = mix(vec3(luminance), color.rgb, saturation);
+	color.rgb = mix(vec3(0.5), color.rgb, contrast);
+	color.rgb = mix(color.rgb, vec3(luminance), gra);
+	color.rgb = mix(color.rgb, 1.0 - color.rgb, inv);
+	color.rgb *= brightness;
+	return color;
+}
+vec4 compute_blur(vec4 color) {
+	vec2 texel = 1.0 / texSize;
+    vec2 blurValue = texel * blur;
+    color *= 4.0;
+    color += texture(texture0, fragTexCoord + vec2(-blurValue.x, 0.0)) * 2.0;
+    color += texture(texture0, fragTexCoord + vec2( blurValue.x, 0.0)) * 2.0;
+    color += texture(texture0, fragTexCoord + vec2(0.0, -blurValue.y)) * 2.0;
+    color += texture(texture0, fragTexCoord + vec2(0.0,  blurValue.y)) * 2.0;
+    color += texture(texture0, fragTexCoord + vec2(-blurValue.x, -blurValue.y)) * 1.0;
+    color += texture(texture0, fragTexCoord + vec2(-blurValue.x,  blurValue.y)) * 1.0;
+    color += texture(texture0, fragTexCoord + vec2( blurValue.x, -blurValue.y)) * 1.0;
+    color += texture(texture0, fragTexCoord + vec2( blurValue.x,  blurValue.y)) * 1.0;
+	return color / 16.0;
+}
+vec4 compute_overlay(vec4 color) {
+	return vec4(mix(color.rgb, overlay.rgb, overlay.a), color.a);
+}
 void main()
 {
-    // Calculate the size of one pixel in UV space (0.0 to 1.0)
-    vec2 texel = 1.0 / renderSize;
-    
-    // Calculate the offset vector
-    vec2 blur = texel * blurScale;
-
-    // --- The 3x3 Kernel Math from your snippet ---
-    
-    // Center Pixel (Weight: 4)
-    vec4 sum = texture(texture0, fragTexCoord) * 4.0;
-
-    // Horizontal Neighbors (Weight: 2)
-    // Interpret 'coord - blur.x' as moving Left
-    sum += texture(texture0, fragTexCoord + vec2(-blur.x, 0.0)) * 2.0;
-    sum += texture(texture0, fragTexCoord + vec2( blur.x, 0.0)) * 2.0;
-
-    // Vertical Neighbors (Weight: 2)
-    // Interpret 'coord - blur.y' as moving Up
-    sum += texture(texture0, fragTexCoord + vec2(0.0, -blur.y)) * 2.0;
-    sum += texture(texture0, fragTexCoord + vec2(0.0,  blur.y)) * 2.0;
-
-    // Diagonal Neighbors (Weight: 1)
-    // Top-Left, Top-Right, Bottom-Left, Bottom-Right
-    sum += texture(texture0, fragTexCoord + vec2(-blur.x, -blur.y)) * 1.0;
-    sum += texture(texture0, fragTexCoord + vec2(-blur.x,  blur.y)) * 1.0;
-    sum += texture(texture0, fragTexCoord + vec2( blur.x, -blur.y)) * 1.0;
-    sum += texture(texture0, fragTexCoord + vec2( blur.x,  blur.y)) * 1.0;
-
-    // Normalize: Total weight is 4 + 2*4 + 1*4 = 16
-    vec4 blurResult = sum / 16.0;
-
-    finalColor = blurResult * colDiffuse * fragColor;
+    vec4 color = texture(texture0, fragTexCoord);
+	if (blur.x > 0 || blur.y > 0)
+		color = compute_blur(color);
+	if (gam != 0.5 || sat != 0.5 || con != 0.5 || bri != 0.5 || gra != 0.0 || inv != 0.0)
+		color = compute_color_adjust(color);
+	if (overlay.a > 0)
+		color = compute_overlay(color);
+    finalColor = color * fragColor;
 }`
 
 const VERT = `#version 330
 
-// Input vertex attributes
 in vec3 vertexPosition;
 in vec2 vertexTexCoord;
 in vec4 vertexColor;
 
-// Input uniform values
-uniform mat4 mvp; // Model-View-Projection matrix
+uniform mat4 mvp;
 
-// Output vertex attributes (to fragment shader)
 out vec2 fragTexCoord;
 out vec4 fragColor;
 
 void main()
 {
-    // Send the texture coordinates and color to the fragment shader
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;
-
-    // Calculate the final vertex position on screen
     gl_Position = mvp * vec4(vertexPosition, 1.0);
 }`

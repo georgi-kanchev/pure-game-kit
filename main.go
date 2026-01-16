@@ -2,14 +2,12 @@ package main
 
 import (
 	"pure-game-kit/data/assets"
-	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
 	d "pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
-	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -142,8 +140,6 @@ func main() {
 		cam.SetScreenAreaToWindow()
 
 		hud.UpdateAndDraw(cam)
-
-		debug.Print(time.FrameRate())
 
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k, cam) {
