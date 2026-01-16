@@ -20,6 +20,7 @@ type Camera struct {
 	// All of the drawing to the camera can be batched, as long as the other parameters don't change.
 	// Make sure to turn off batching after done drawing the batch,
 	// otherwise the other camera parameters will never take effect visually again.
+	// No other camera should be drawing during batching.
 	//
 	// 	// recommended
 	// 	camera.Angle = 45

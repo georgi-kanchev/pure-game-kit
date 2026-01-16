@@ -371,8 +371,7 @@ func (c *Camera) DrawText(fontId, text string, x, y, height, thickness, gap floa
 
 	if sh.ID != 0 {
 		rl.BeginShaderMode(sh)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), []float32{0.02}, rl.ShaderUniformFloat)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), []float32{thickness}, rl.ShaderUniformFloat)
+		rl.SetShaderValue(sh, internal.ShaderUniformLoc, []float32{thickness, 0.02}, rl.ShaderUniformVec2)
 	}
 
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, gap, getColor(color))

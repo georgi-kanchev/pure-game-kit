@@ -130,7 +130,7 @@ type symbol struct {
 	Thickness float32
 	Value, AssetId string
 	Font           *rl.Font
-	Color          rl.Color
+	Color          uint
 }
 
 func (t *TextBox) formatSymbols() ([]string, []symbol) {
@@ -150,7 +150,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var curX, curY float32 = 0, 0
 	var font = t.font()
 	var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
-	var curColor = getColor(t.Color)
+	var curColor = t.Color
 	var curThick = t.Thickness
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
 	var colorIndex, assetIndex, thickIndex = 0, 0, 0
@@ -198,11 +198,11 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 
 			if char == colorTag {
 				if colorIndex < len(t.EmbeddedColors) {
-					curColor = getColor(t.EmbeddedColors[colorIndex])
+					curColor = t.EmbeddedColors[colorIndex]
 					colorIndex++
 					continue
 				}
-				curColor = getColor(t.Color)
+				curColor = t.Color
 				continue
 			}
 

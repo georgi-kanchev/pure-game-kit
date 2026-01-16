@@ -2,13 +2,14 @@ package main
 
 import (
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
 	d "pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
-	"pure-game-kit/input/mouse/button"
+	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -61,6 +62,7 @@ func main() {
 		gui.Button("minimal graphics", f.Text, " Minimal Render `(graphics-minimal.go)", f.NewRow, ""),
 		gui.Button("boxes", f.Text, " Boxes `(graphics-boxes.go)", f.NewRow, ""),
 		gui.Button("texts", f.Text, " Texts `(graphics-texts.go)", f.NewRow, ""),
+		gui.Button("effects", f.Text, " Effects `(graphics-effects.go)", f.NewRow, ""),
 		gui.Button("guis", f.Text, " Graphical User Interfaces (GUIs) `(guis.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("input", f.ThemeId, "label", f.Text, "Input:", f.NewRow, ""),
@@ -104,6 +106,7 @@ func main() {
 		"boxes":            example.Boxes,
 		"texts":            example.Texts,
 		"guis":             example.GUIs,
+		"effects":          example.Effects,
 		//=================================================================
 		"mouse input":    example.Mouse,
 		"keyboard input": example.Keyboard,
@@ -132,15 +135,15 @@ func main() {
 		"default texture asset":     example.DefaultAssetTexture,
 	}
 
+	window.FrameRateLimit = 0
+
 	for window.KeepOpen() {
 		window.Title = "pure-game-kit: hub"
 		cam.SetScreenAreaToWindow()
 
-		if mouse.IsButtonJustPressed(button.Left) {
-			print()
-		}
-
 		hud.UpdateAndDraw(cam)
+
+		debug.Print(time.FrameRate())
 
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k, cam) {

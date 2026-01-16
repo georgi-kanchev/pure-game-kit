@@ -178,6 +178,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
 	var prevBatch = c.Batch
 	c.Batch = true
+	rl.BeginShaderMode(internal.ShaderText)
 	for _, t := range textBoxes {
 		if t == nil {
 			continue
@@ -191,15 +192,16 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var _, symbols = t.formatSymbols()
 		var lastThickness = t.Thickness
 		var assetTag = string(t.EmbeddedAssetsTag)
+		var thickSmooth = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
 
-		beginShader(t, t.Thickness)
+		rl.SetShaderValue(internal.ShaderText, internal.ShaderUniformLoc, thickSmooth, rl.ShaderUniformVec2)
 		for _, s := range symbols {
 			var camX, camY = t.PointToCamera(c, s.X, s.Y)
 			var pos = rl.Vector2{X: camX, Y: camY}
 
 			if s.Thickness != lastThickness {
-				endShader()
-				beginShader(t, s.Thickness)
+				thickSmooth[0] = s.Thickness
+				rl.SetShaderValue(internal.ShaderText, internal.ShaderUniformLoc, thickSmooth, rl.ShaderUniformVec2)
 				lastThickness = s.Thickness
 			}
 
@@ -212,21 +214,22 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 				sprite.Width = sprite.Height * aspect
 				sprite.PivotX, sprite.PivotY = 0, 0
 				sprite.Angle = s.Angle
-				sprite.Color = uint(rl.ColorToInt(s.Color))
+				sprite.Color = s.Color
 
-				endShader()
+				rl.EndShaderMode()
 				c.update()
 				c.DrawSprites(sprite)
-				beginShader(t, s.Thickness)
+				rl.BeginShaderMode(internal.ShaderText)
+				rl.SetShaderValue(internal.ShaderText, internal.ShaderUniformLoc, thickSmooth, rl.ShaderUniformVec2)
 				continue
 			}
 
 			if s.Value != assetTag {
-				rl.DrawTextPro(*s.Font, s.Value, pos, rl.Vector2{}, s.Angle, s.Height, 0, s.Color)
+				rl.DrawTextPro(*s.Font, s.Value, pos, rl.Vector2{}, s.Angle, s.Height, 0, getColor(s.Color))
 			}
 		}
-		endShader()
 	}
+	rl.EndShaderMode()
 	c.Batch = prevBatch
 	c.end()
 }

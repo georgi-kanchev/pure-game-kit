@@ -33,6 +33,7 @@ var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)
 var ShaderText = rl.Shader{}
+var ShaderUniformLoc int32
 
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)

@@ -2,9 +2,12 @@
 test graphics node parent
 test scale texture repeat sprite
 shader effects, port?
-simple particles, port?
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
+
+[141] [Fri] [16-01-2026]
+graphics - text render optimizations
+graphics - started effects
 
 [140] [Wed] [14-01-2026]
 motion - particle system, only point & line emitter shapes for now

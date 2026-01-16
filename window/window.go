@@ -38,6 +38,8 @@ func KeepOpen() bool {
 	tryCreate()
 	tryUpdateProperties()
 
+	rl.EndShaderMode()
+	rl.EndBlendMode()
 	rl.EndScissorMode()
 	rl.EndDrawing()
 	rl.BeginDrawing()
@@ -206,6 +208,9 @@ func IsHovered() bool {
 }
 func IsFocused() bool {
 	return rl.IsWindowFocused()
+}
+func IsJustResized() bool {
+	return rl.IsWindowResized()
 }
 
 // =================================================================

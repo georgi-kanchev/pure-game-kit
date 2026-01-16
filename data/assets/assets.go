@@ -74,6 +74,7 @@ func tryInitAudio() {
 func tryInitShader() {
 	if internal.ShaderText.ID == 0 {
 		internal.ShaderText = rl.LoadShaderFromMemory("", frag)
+		internal.ShaderUniformLoc = rl.GetLocationUniform(internal.ShaderText.ID, "thickSmooth")
 	}
 }
 

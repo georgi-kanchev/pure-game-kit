@@ -65,15 +65,14 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 
 uniform sampler2D texture0;
-uniform float smoothness;
-uniform float thickness;
+uniform vec2 thickSmooth;
 
 out vec4 finalColor;
 
 void main()
 {
-    float distance = texture(texture0, fragTexCoord).a - (1.0 - thickness);
-    float baseSmooth = smoothness * length(vec2(dFdx(distance), dFdy(distance)));
+    float distance = texture(texture0, fragTexCoord).a - (1.0 - thickSmooth.x);
+    float baseSmooth = thickSmooth.y * length(vec2(dFdx(distance), dFdy(distance)));
     float alpha = smoothstep(-baseSmooth, baseSmooth, distance);
     vec4 fill = vec4(fragColor.rgb, fragColor.a * alpha);
     

@@ -27,33 +27,6 @@ func drawBoxPart(camera *Camera, parent *Node, x, y, w, h float32, id string, co
 	camera.DrawSprites(reusableSprite)
 }
 
-func beginShader(t *TextBox, thick float32) {
-	var sh = internal.ShaderText
-
-	if sh.ID != 0 {
-		var smoothness = []float32{t.Smoothness * t.LineHeight / 5}
-		rl.BeginShaderMode(sh)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "smoothness"), smoothness, rl.ShaderUniformFloat)
-		setShaderThick(thick)
-	}
-}
-func setShaderThick(thick float32) {
-	var sh = internal.ShaderText
-
-	if sh.ID != 0 {
-		var thickness = []float32{thick}
-		thickness[0] = number.Limit(thickness[0], 0, 0.999)
-		rl.SetShaderValue(sh, rl.GetShaderLocation(sh, "thickness"), thickness, rl.ShaderUniformFloat)
-	}
-}
-func endShader() {
-	var sh = internal.ShaderText
-
-	if sh.ID != 0 {
-		rl.EndShaderMode()
-	}
-}
-
 //=================================================================
 // primitives
 
