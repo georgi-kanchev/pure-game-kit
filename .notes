@@ -7,6 +7,7 @@ gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapp
 
 [142] [Sat] [17-01-2026]
 graphics - effects done
+example - graphics effects
 
 [141] [Fri] [16-01-2026]
 graphics - text render optimizations
