@@ -32,8 +32,9 @@ var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)
-var ShaderText = rl.Shader{}
-var ShaderUniformLoc int32
+
+var ShaderText, Shader rl.Shader
+var ShaderTextLoc, ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
@@ -235,4 +236,15 @@ func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, millisec
 	seconds = int(float32(frameCount) / float32(stream.SampleRate))
 	milliseconds = int(math.Mod(float64(seconds), 1.0) * 1000)
 	return
+}
+
+func tryInitShaders() {
+	if ShaderText.ID == 0 {
+		ShaderText = rl.LoadShaderFromMemory("", fragText)
+		ShaderTextLoc = rl.GetLocationUniform(ShaderText.ID, "thickSmooth")
+	}
+	if Shader.ID == 0 {
+		Shader = rl.LoadShaderFromMemory(vert, frag)
+		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
+	}
 }

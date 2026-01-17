@@ -4,7 +4,8 @@ import "pure-game-kit/internal"
 
 type Box struct {
 	Sprite
-	EdgeLeft, EdgeRight, EdgeTop, EdgeBottom float32
+	EdgeLeft, EdgeRight,
+	EdgeTop, EdgeBottom float32
 }
 
 func NewBox(assetId string, x, y float32) Box {

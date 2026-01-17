@@ -105,9 +105,9 @@ func PickFrom[T any](items []T, seeds ...float32) T {
 	return items[Range(0, len(items), seeds...)]
 }
 
-func Hash(v any) uint32 {
+func Hash(value any) uint32 {
 	var h = fnv.New32a()
-	var val = reflect.ValueOf(v)
+	var val = reflect.ValueOf(value)
 	if val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}

@@ -192,6 +192,10 @@ func (c *Camera) begin() {
 	if c.Blend != 0 {
 		rl.BeginBlendMode(rl.BlendMode(c.Blend))
 	}
+	if c.Effects != nil {
+		rl.BeginShaderMode(internal.Shader)
+		rl.EnableDepthTest()
+	}
 }
 
 // call after draw to get back to using screen space
@@ -202,6 +206,10 @@ func (c *Camera) end() {
 
 	if c.Blend != 0 {
 		rl.EndBlendMode()
+	}
+	if c.Effects != nil {
+		rl.DisableDepthTest()
+		rl.EndShaderMode()
 	}
 
 	rl.EndScissorMode()

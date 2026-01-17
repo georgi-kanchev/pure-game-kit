@@ -6,7 +6,9 @@ type Sprite struct {
 	Node
 	TextureRepeat                  bool
 	TextureScrollX, TextureScrollY float32
-	AssetId                        string
+
+	AssetId string
+	Effects *Effects
 }
 
 func NewSprite(assetId string, x, y float32) *Sprite {

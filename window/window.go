@@ -109,7 +109,6 @@ func ApplyState(state int) {
 	}
 
 }
-
 func MoveToMonitor(monitor int) {
 	tryCreate()
 
@@ -124,7 +123,6 @@ func MoveToMonitor(monitor int) {
 		rl.MaximizeWindow()
 	}
 }
-
 func SetIcon(assetId string) {
 	tryCreate()
 
@@ -165,7 +163,6 @@ func SetIcon(assetId string) {
 func Size() (width, height int) {
 	return w, h
 }
-
 func Monitors() (info []string, current int) {
 	var count = rl.GetMonitorCount()
 	info = make([]string, count)
@@ -177,7 +174,6 @@ func Monitors() (info []string, current int) {
 	}
 	return info, rl.GetCurrentMonitor()
 }
-
 func CurrentState() int {
 	var fs = rl.IsWindowFullscreen()
 	var bor = rl.IsWindowState(rl.FlagBorderlessWindowedMode)
@@ -246,7 +242,6 @@ func tryCreate() {
 	terminate = false
 	MoveToMonitor(0)
 }
-
 func tryUpdateProperties() {
 	if Title != currTitle {
 		currTitle = Title

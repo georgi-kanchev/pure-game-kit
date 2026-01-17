@@ -14,6 +14,10 @@ var CallAfter = make(map[float32][]func())
 var CallFor = make(map[float32][]func(remaining float32))
 
 func Update() {
+	if FrameCount == 0 {
+		tryInitShaders()
+	}
+
 	updateTimeData()
 	updateTimers()
 	updateInput()

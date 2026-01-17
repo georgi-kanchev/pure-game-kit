@@ -39,6 +39,8 @@ type Camera struct {
 	// 	camera.Batch = false
 	Batch bool
 
+	Effects *Effects
+
 	velocityX, velocityY, dragVelX, dragVelY float32
 }
 

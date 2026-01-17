@@ -71,13 +71,6 @@ func tryInitAudio() {
 	}
 }
 
-func tryInitShader() {
-	if internal.ShaderText.ID == 0 {
-		internal.ShaderText = rl.LoadShaderFromMemory("", frag)
-		internal.ShaderUniformLoc = rl.GetLocationUniform(internal.ShaderText.ID, "thickSmooth")
-	}
-}
-
 func isDefault(id string) bool {
 	return !text.Contains(id, ".") // files have '.' in them (folder/name.extension) but default asset ids don't
 }

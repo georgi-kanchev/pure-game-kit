@@ -1,6 +1,7 @@
 package graphics
 
 import (
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
@@ -25,6 +26,7 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	c.begin()
+	var usingShader = false
 	for _, s := range sprites {
 		if s == nil {
 			continue
@@ -101,7 +103,22 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
+		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
+		if effects != nil {
+			effects.updateUniforms(texW, texH)
+
+			if !usingShader && c.Effects == nil {
+				rl.BeginShaderMode(internal.Shader)
+				rl.EnableDepthTest()
+				usingShader = true
+			}
+		}
+
 		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
+	}
+	if usingShader && c.Effects == nil {
+		rl.EndShaderMode()
+		rl.DisableDepthTest()
 	}
 	c.end()
 }
@@ -158,6 +175,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 			}
 		}
 
+		reusableSprite.Effects = s.Effects
 		drawBoxPart(c, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], col) // center
 
 		// edges
@@ -193,14 +211,14 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var assetTag = string(t.EmbeddedAssetsTag)
 		var thickSmooth = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
 
-		rl.SetShaderValue(internal.ShaderText, internal.ShaderUniformLoc, thickSmooth, rl.ShaderUniformVec2)
+		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
 		for _, s := range symbols {
 			var camX, camY = t.PointToCamera(c, s.X, s.Y)
 			var pos = rl.Vector2{X: camX, Y: camY}
 
 			if s.Thickness != lastThickness {
 				thickSmooth[0] = s.Thickness
-				rl.SetShaderValue(internal.ShaderText, internal.ShaderUniformLoc, thickSmooth, rl.ShaderUniformVec2)
+				rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
 				lastThickness = s.Thickness
 			}
 
@@ -219,7 +237,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 				c.update()
 				c.DrawSprites(sprite)
 				rl.BeginShaderMode(internal.ShaderText)
-				rl.SetShaderValue(internal.ShaderText, internal.ShaderUniformLoc, thickSmooth, rl.ShaderUniformVec2)
+				rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
 				continue
 			}
 
