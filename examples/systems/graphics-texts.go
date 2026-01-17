@@ -28,9 +28,9 @@ func Texts() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		textBox.X, textBox.Y = cam.PointFromScreen(50, 0)
-		textBox.Color = palette.DarkGray
+		textBox.Tint = palette.DarkGray
 		cam.DrawNodes(&textBox.Node)
-		textBox.Color = palette.White
+		textBox.Tint = palette.White
 
 		a = number.Sine(time.Runtime() / 5)
 

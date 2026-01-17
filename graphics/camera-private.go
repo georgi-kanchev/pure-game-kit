@@ -22,7 +22,7 @@ func drawBoxPart(camera *Camera, parent *Node, x, y, w, h float32, id string, co
 	reusableSprite.Parent = parent
 	reusableSprite.Width, reusableSprite.Height = w, h
 	reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
-	reusableSprite.Color = color
+	reusableSprite.Tint = color
 
 	camera.DrawSprites(reusableSprite)
 }

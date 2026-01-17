@@ -78,7 +78,7 @@ func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
 	sprite.AssetId = assetId
 	sprite.X, sprite.Y = widget.DragX, widget.DragY
 	sprite.Width, sprite.Height = drawW*scale, drawH*scale
-	sprite.Color = parseColor(col, disabled)
+	sprite.Tint = parseColor(col, disabled)
 	sprite.PivotX, sprite.PivotY = 0.5, 0.5
 	sprite.ScaleX, sprite.ScaleY = scale, scale
 	cam.DrawSprites(&sprite)

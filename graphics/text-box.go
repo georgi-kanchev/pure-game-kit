@@ -150,7 +150,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var curX, curY float32 = 0, 0
 	var font = t.font()
 	var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
-	var curColor = t.Color
+	var curColor = t.Tint
 	var curThick = t.Thickness
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
 	var colorIndex, assetIndex, thickIndex = 0, 0, 0
@@ -202,7 +202,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 					colorIndex++
 					continue
 				}
-				curColor = t.Color
+				curColor = t.Tint
 				continue
 			}
 

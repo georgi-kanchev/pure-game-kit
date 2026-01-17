@@ -81,7 +81,7 @@ func (o *Object) ExtractTextBox() *graphics.TextBox {
 	textBox.AlignmentX = o.Properties[property.ObjectTextAlignX].(float32)
 	textBox.AlignmentY = o.Properties[property.ObjectTextAlignY].(float32)
 	textBox.WordWrap = o.Properties[property.ObjectTextWordWrap].(bool)
-	textBox.Color = o.Properties[property.ObjectTextColor].(uint)
+	textBox.Tint = o.Properties[property.ObjectTextColor].(uint)
 	textBox.Thickness = condition.If(bold, float32(0.8), 0.5)
 	textBox.LineHeight = float32(o.Properties[property.ObjectTextFontSize].(int))
 	textBox.PivotX, textBox.PivotY = 0, 0

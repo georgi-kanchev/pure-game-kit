@@ -20,7 +20,7 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 		}
 
 		var w, h = n.Width, n.Height
-		c.DrawQuad(x, y, w*scX, h*scY, ang, n.Color)
+		c.DrawQuad(x, y, w*scX, h*scY, ang, n.Tint)
 	}
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
@@ -64,7 +64,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		if texture == nil {
-			return
+			continue
 		}
 
 		var w, h = s.Width, s.Height
@@ -76,8 +76,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
 		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w) * scX, Height: float32(h) * scY}
 
-		// raylib doesn't seem to have negative width/height???
-		if rectWorld.Width < 0 {
+		if rectWorld.Width < 0 { // raylib doesn't seem to support negative width/height???
 			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+180, -rectWorld.Width)
 			rectTexture.Width *= -1
 		}
@@ -102,7 +101,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
-		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Color))
+		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
 	}
 	c.end()
 }
@@ -123,7 +122,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 		var w, h = s.Width, s.Height
 		var u, r, d, l = s.EdgeBottom, s.EdgeRight, s.EdgeTop, s.EdgeLeft
 		var errX, errY float32 = 2, 2 // this adds margin of error to the middle part (it's behind all other parts)
-		var col = s.Color
+		var col = s.Tint
 		var asset, has = internal.Boxes[s.AssetId]
 
 		if !has {
@@ -214,7 +213,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 				sprite.Width = sprite.Height * aspect
 				sprite.PivotX, sprite.PivotY = 0, 0
 				sprite.Angle = s.Angle
-				sprite.Color = s.Color
+				sprite.Tint = s.Color
 
 				rl.EndShaderMode()
 				c.update()

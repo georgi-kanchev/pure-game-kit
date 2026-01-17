@@ -3,7 +3,7 @@ package motion
 import "pure-game-kit/utility/color/palette"
 
 type Particle struct {
-	X, Y, SpawnX, SpawnY,
+	X, Y,
 	Age, Angle, Scale,
 	VelocityX, VelocityY float32
 	Color          uint
@@ -14,7 +14,7 @@ type Particle struct {
 
 func newParticle(id int, x, y float32) *Particle {
 	return &Particle{
-		Id: id, X: x, Y: y, SpawnX: x, SpawnY: y, Scale: 1, Color: palette.White,
+		Id: id, X: x, Y: y, Scale: 1, Color: palette.White,
 		CustomData: make(map[string]any),
 	}
 }

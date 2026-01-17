@@ -16,7 +16,7 @@ func Boxes() {
 	box.EdgeRight = 100
 	box.EdgeBottom = 100
 	box.EdgeTop = 100
-	box.Color = palette.Cyan
+	box.Tint = palette.Cyan
 
 	var bar = graphics.NewBox(b[11], 0, 0)
 	bar.PivotX, bar.PivotY = 0, 0

@@ -48,7 +48,7 @@ func (l *Layer) ExtractSprites() []*graphics.Sprite {
 		var imgW = l.Properties[property.LayerImageWidth].(int)
 		var imgH = l.Properties[property.LayerImageHeight].(int)
 		var sprite = graphics.NewSprite(image.(string), worldX+layerX, worldY+layerY)
-		sprite.Color = tint
+		sprite.Tint = tint
 		sprite.Width, sprite.Height = float32(imgW), float32(imgH)
 		sprite.PivotX, sprite.PivotY = 0, 0
 		return []*graphics.Sprite{sprite}
@@ -58,7 +58,7 @@ func (l *Layer) ExtractSprites() []*graphics.Sprite {
 		for _, obj := range l.Objects {
 			var sprite = obj.ExtractSprite()
 			if sprite != nil {
-				sprite.Color = tint
+				sprite.Tint = tint
 				result = append(result, sprite)
 			}
 		}
@@ -70,7 +70,7 @@ func (l *Layer) ExtractSprites() []*graphics.Sprite {
 		sprite.X, sprite.Y = x, y
 		sprite.Width, sprite.Height = w, h
 		sprite.Angle = ang
-		sprite.Color = tint
+		sprite.Tint = tint
 		result = append(result, sprite)
 	})
 	return result

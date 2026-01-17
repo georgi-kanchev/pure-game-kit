@@ -13,12 +13,14 @@ type Node struct {
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
 	Parent         *Node
-	Color          uint
+	Tint           uint
+
+	Z float32 // Make sure to render semi-transparent objects last when relying on this field.
 }
 
 func NewNode(x, y float32) *Node {
 	return &Node{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
-		PivotX: 0.5, PivotY: 0.5, Color: palette.White}
+		PivotX: 0.5, PivotY: 0.5, Tint: palette.White}
 }
 
 //=================================================================

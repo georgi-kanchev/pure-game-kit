@@ -29,7 +29,7 @@ func setupVisualsTextured(root *root, widget *widget) {
 		if has {
 			box.X, box.Y = widget.X, widget.Y
 			box.AssetId = assetId
-			box.Color = col
+			box.Tint = col
 			box.ScaleX, box.ScaleY = 1, 1
 			box.Width, box.Height = widget.Width, widget.Height
 			box.EdgeLeft, box.EdgeRight = cLeft, cRight
@@ -39,7 +39,7 @@ func setupVisualsTextured(root *root, widget *widget) {
 			sprite.X, sprite.Y = widget.X, widget.Y
 			sprite.PivotX, sprite.PivotY = 0, 0
 			sprite.AssetId = assetId
-			sprite.Color = col
+			sprite.Tint = col
 			sprite.ScaleX, sprite.ScaleY = 1, 1
 			sprite.TextureRepeat = false
 			sprite.Width, sprite.Height = widget.Width, widget.Height
@@ -153,14 +153,14 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 			widget.textBox.EmbeddedColors = []uint{}
 			widget.textBox.Thickness = parseNum(root.themedField(p.TextThicknessOutline, owner, widget), 0.92)
 			widget.textBox.Smoothness = parseNum(root.themedField(p.TextSmoothnessOutline, owner, widget), 0.08)
-			widget.textBox.Color = parseColor(outlineCol, disabled)
+			widget.textBox.Tint = parseColor(outlineCol, disabled)
 			cam.DrawTextBoxes(widget.textBox)
 			widget.textBox.EmbeddedColors = embeddedColors
 		}
 
 		var colVal = defaultValue(root.themedField(p.TextColor, owner, widget), "127 127 127")
 		var c = parseColor(colVal, disabled || fadeText)
-		widget.textBox.Color = c
+		widget.textBox.Tint = c
 		widget.textBox.Thickness = parseNum(root.themedField(p.TextThickness, owner, widget), 0.5)
 		widget.textBox.Smoothness = parseNum(root.themedField(p.TextSmoothness, owner, widget), 0.02)
 		cam.DrawTextBoxes(widget.textBox)
