@@ -46,7 +46,7 @@ func Container(id, x, y, width, height string, properties ...string) string {
 //=================================================================
 // private
 
-const scrollSize, handleSpeed, dragFriction, dragMomentum = 25.0, 12.0, 0.95, 30.0
+const scrollSize, handleSpeed, dragFriction, dragMomentum = 10.0, 12.0, 0.95, 30.0
 
 func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
