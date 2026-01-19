@@ -180,6 +180,10 @@ func updateInput() {
 		SmoothScroll = 0
 	}
 
+	if AnyButtonJustPressed || AnyButtonJustReleased || AnyKeyJustPressed || AnyKeyJustReleased {
+		SmoothScroll = 0
+	}
+
 	//=================================================================
 
 	AnyKeyJustPressed = false

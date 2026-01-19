@@ -53,6 +53,7 @@ import (
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
 )
 
@@ -215,19 +216,10 @@ func NewElementsXML(elements ...string) string {
 // =================================================================
 
 func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
-	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
 	var containers = g.root.ContainerIds
-
+	var prAng, prZoom, prX, prY = g.reset(camera) // keep order of variables & reset
+	cacheDynamicCamProps(camera)
 	g.root.Volume = g.Volume
-
-	g.reset(camera) // keep order of variables & reset
-
-	var tlx, tly = camera.PointFromEdge(0, 0)
-	var brx, bry = camera.PointFromEdge(1, 1)
-	var cx, cy = camera.PointFromEdge(0.5, 0.5)
-	var w, h = camera.Size() // caching dynamic cam props
-	camCx, camCy, camLx, camRx = text.New(cx), text.New(cy), text.New(tlx), text.New(brx)
-	camTy, camBy, camW, camH = text.New(tly), text.New(bry), text.New(w), text.New(h)
 
 	for _, id := range containers {
 		var c = g.root.Containers[id]
@@ -279,7 +271,7 @@ func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		}
 	}
 
-	g.root.restore(camera, prevAng, prevZoom, prevX, prevY) // undo what reset does, everything as it was for cam
+	g.root.restore(camera, prAng, prZoom, prX, prY) // undo what reset does, everything as it was for cam
 }
 
 // Works for Widgets & Containers.
@@ -301,8 +293,16 @@ func (g *GUI) SetField(id, field string, value string) {
 
 //=================================================================
 
-// Works for Widgets & Containers.
-func (g *GUI) Field(id, field string) string {
+/*
+Works for Widgets & Containers. Use
+
+	gui.FieldNumber(...)
+
+for dynamic values.
+*/
+func (g *GUI) Field(id, field string, camera *graphics.Camera) string {
+	// var prAng, prZoom, prX, prY = g.reset(camera)
+	// defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
 	var w, hasW = g.root.Widgets[id]
 	var c, hasC = g.root.Containers[id]
 	var t, hasT = g.root.Themes[id]
@@ -320,20 +320,34 @@ func (g *GUI) Field(id, field string) string {
 
 	return ""
 }
-func (g *GUI) FieldNumber(id, field string) float32 {
+
+// Works for Widgets & Containers. Converts the appropriate fields to numbers while replacing their dynamic parts.
+func (g *GUI) FieldNumber(id, field string, camera *graphics.Camera) float32 {
 	var w, hasW = g.root.Widgets[id]
 	var owner *container
 	if hasW {
 		owner = g.root.Containers[w.OwnerId]
 	}
-	var value = dyn(owner, g.Field(id, field), "NaN")
+	var value = dyn(owner, g.Field(id, field, camera), "NaN")
 	return parseNum(value, number.NaN())
 }
 
+func (g *GUI) Area(id string, camera *graphics.Camera) (x, y, width, height, angle float32) {
+	var zoom = camera.Zoom / g.Scale
+	x = g.FieldNumber(id, f.X, camera)
+	y = g.FieldNumber(id, f.Y, camera)
+	angle = -camera.Angle
+	width = g.FieldNumber(id, f.Width, camera)
+	height = g.FieldNumber(id, f.Height, camera)
+	x, y = camera.X+x/zoom, camera.Y+y/zoom
+	x, y = point.RotateAroundPoint(x, y, camera.X, camera.Y, angle)
+	width, height = width/zoom, height/zoom
+	return
+}
+
 func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
-	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { g.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
-	g.reset(camera)
+	var prAng, prZoom, prX, prY = g.reset(camera)
+	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
 
 	for _, c := range g.root.Containers {
 		var hidden = c.Fields[f.Hidden]
@@ -347,9 +361,8 @@ func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 
 // Works for Widgets & Containers.
 func (g *GUI) IsHovered(id string, camera *graphics.Camera) bool {
-	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { g.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
-	g.reset(camera)
+	var prAng, prZoom, prX, prY = g.reset(camera)
+	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
 
 	var w, hasW = g.root.Widgets[id]
 	var c, hasC = g.root.Containers[id]
@@ -365,9 +378,8 @@ func (g *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 
 // Works for Widgets & Containers.
 func (g *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
-	var prevAng, prevZoom, prevX, prevY = camera.Angle, camera.Zoom, camera.X, camera.Y
-	defer func() { g.root.restore(camera, prevAng, prevZoom, prevX, prevY) }()
-	g.reset(camera)
+	var prAng, prZoom, prX, prY = g.reset(camera)
+	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
 
 	var w, has = g.root.Widgets[widgetId]
 	if has {

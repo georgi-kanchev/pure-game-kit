@@ -25,9 +25,9 @@ type root struct {
 	Containers   map[string]*container
 	Widgets      map[string]*widget
 
-	wHovered, wWasHovered, wFocused, wPressedOn *widget
-	cHovered, cWasHovered, cFocused             *container
-	wPressedAt                                  float32
+	wHovered, wWasHovered, wFocused, wPressedOn                 *widget
+	cHovered, cWasHovered, cFocused, cScrolledOn, cWasScrolling *container
+	wPressedAt                                                  float32
 
 	cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container // for container slider
 }

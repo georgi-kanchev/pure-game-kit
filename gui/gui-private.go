@@ -20,6 +20,7 @@ var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widge
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 	"draggable": draggable,
 }
+
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH string                 // dynamic prop cache
 var ownerLx, ownerRx, ownerTy, ownerBy, ownerCx, ownerCy, ownerW, ownerH string // dynamic prop cache
 var tarLx, tarRx, tarTy, tarBy, tarCx, tarCy, tarW, tarH, tarHid, tarDis string // dynamic prop cache
@@ -47,7 +48,9 @@ var reusableWidget = &widget{Fields: map[string]string{}}
 
 var clickedId, clickedAndHeldId = "", ""
 
-func (g *GUI) reset(camera *graphics.Camera) {
+func (g *GUI) reset(camera *graphics.Camera) (prAng, prZoom, prX, prY float32) {
+	prAng, prZoom, prX, prY = camera.Angle, camera.Zoom, camera.X, camera.Y
+
 	if mouse.IsButtonJustPressed(b.Left) {
 		g.root.wPressedOn = nil
 		tooltip = nil
@@ -70,6 +73,7 @@ func (g *GUI) reset(camera *graphics.Camera) {
 	if tooltip == nil {
 		mouse.SetCursor(cursor.Arrow)
 	}
+	return
 }
 func (root *root) themedField(fld string, c *container, w *widget) string {
 	// priority for widget: widget -> widget theme -> container theme
@@ -146,9 +150,9 @@ func (root *root) cacheTarget(targetId string) {
 	tarHid, tarDis = tHid, tDis
 }
 
-func (root *root) restore(camera *graphics.Camera, prevAng, prevZoom, prevX, prevY float32) {
-	camera.Angle, camera.Zoom = prevAng, prevZoom // reset angle, zoom & mask to how it was
-	camera.X, camera.Y = prevX, prevY             // also x y
+func (root *root) restore(camera *graphics.Camera, prAng, prZoom, prX, prY float32) {
+	camera.Angle, camera.Zoom = prAng, prZoom
+	camera.X, camera.Y = prX, prY
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
 	if mouse.IsButtonJustReleased(b.Left) {
@@ -180,6 +184,16 @@ func defaultValue(value, defaultValue string) string {
 	}
 	return value
 }
+
+func cacheDynamicCamProps(camera *graphics.Camera) {
+	var tlx, tly = camera.PointFromEdge(0, 0)
+	var brx, bry = camera.PointFromEdge(1, 1)
+	var cx, cy = camera.PointFromEdge(0.5, 0.5)
+	var w, h = camera.Size()
+	camCx, camCy, camLx, camRx = text.New(cx), text.New(cy), text.New(tlx), text.New(brx)
+	camTy, camBy, camW, camH = text.New(tly), text.New(bry), text.New(w), text.New(h)
+}
+
 func dyn(owner *container, value string, defaultValue string) string {
 	value = strings.ReplaceAll(value, dynamic.TargetWidth, tarW)
 	value = strings.ReplaceAll(value, dynamic.TargetHeight, tarH)

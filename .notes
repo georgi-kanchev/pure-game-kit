@@ -4,6 +4,12 @@ test scale texture repeat sprite
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
 
+[143] [Mon] [19-01-2026]
+gui - small code refactor
+gui - Area func to get widget/container UI area on the camera even if transformed
+gui - fixed container smooth scrolling transfering to other containers via hover
+input - mouse smooth scrolling gets canceled upon any other input just pressed/released
+
 [142] [Sat] [17-01-2026]
 graphics - effects done
 example - graphics effects

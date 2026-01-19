@@ -26,7 +26,7 @@ type container struct {
 	ScrollX, ScrollY float32
 
 	prevMouseX, prevMouseY,
-	velocityX, velocityY,
+	dragVelX, dragVelY,
 	targetScrollX, targetScrollY float32
 
 	Fields    map[string]string
@@ -163,12 +163,19 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		shift = true // when only horizontal scroll is present, no need to press shift
 	}
 
+	if mouse.Scroll() != 0 && focused {
+		root.cScrolledOn = c
+	}
+	if root.cWasScrolling == c && !focused {
+		root.cScrolledOn = nil
+	}
+
 	if horizontal {
 		var barW = condition.If(vertical, c.Width-scrollSize, c.Width) // make space for vertical scroll
 		var handleW = barW / (maxX - minX) * barW
 		var handleCol = color.Brighten(palette.Gray, 0.5)
 
-		if scroll != 0 && focused && shift {
+		if scroll != 0 && focused && shift && root.cScrolledOn == c {
 			c.ScrollX -= float32(scroll)
 		}
 
@@ -177,14 +184,14 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			c.ScrollX -= dx
 			var instantVelX = -dx / internal.DeltaTime
 			const weight = 0.2
-			c.velocityX = (c.velocityX * (1.0 - weight)) + (instantVelX * weight)
+			c.dragVelX = (c.dragVelX * (1.0 - weight)) + (instantVelX * weight)
 		} else {
-			c.ScrollX += c.velocityX * internal.DeltaTime
+			c.ScrollX += c.dragVelX * internal.DeltaTime
 			var decay = number.Exponential(-10.0 * internal.DeltaTime)
-			c.velocityX *= decay
+			c.dragVelX *= decay
 
-			if number.Absolute(c.velocityX) < 0.1 {
-				c.velocityX = 0
+			if number.Absolute(c.dragVelX) < 0.1 {
+				c.dragVelX = 0
 			}
 		}
 
@@ -232,7 +239,7 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		var handleH = (c.Height / (maxY - minY)) * c.Height
 		var handleCol = color.Brighten(palette.Gray, 0.5)
 
-		if scroll != 0 && focused && !shift {
+		if scroll != 0 && focused && !shift && root.cScrolledOn == c {
 			c.ScrollY -= float32(scroll)
 		}
 
@@ -241,14 +248,14 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 			c.ScrollY -= dy
 			var instantVelY = -dy / internal.DeltaTime
 			const weight = 0.2
-			c.velocityY = (c.velocityY * (1.0 - weight)) + (instantVelY * weight)
+			c.dragVelY = (c.dragVelY * (1.0 - weight)) + (instantVelY * weight)
 		} else {
-			c.ScrollY += c.velocityY * internal.DeltaTime
+			c.ScrollY += c.dragVelY * internal.DeltaTime
 			var decay = number.Exponential(-10.0 * internal.DeltaTime)
-			c.velocityY *= decay
+			c.dragVelY *= decay
 
-			if number.Absolute(c.velocityY) < 0.1 {
-				c.velocityY = 0
+			if number.Absolute(c.dragVelY) < 0.1 {
+				c.dragVelY = 0
 			}
 		}
 
@@ -288,6 +295,11 @@ func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.
 		cam.DrawQuad(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
 		cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, palette.Black)
 	}
+
+	if scroll != 0 && focused {
+		root.cWasScrolling = c
+	}
+
 	c.prevMouseX, c.prevMouseY = mx, my
 }
 
