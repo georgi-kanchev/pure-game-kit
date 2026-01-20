@@ -15,7 +15,7 @@ func IsExisting(path string) bool {
 	return err == nil && info.IsDir()
 }
 func IsEmpty(path string) bool {
-	return len(Content(path)) == 0
+	return len(Content(path, false)) == 0
 }
 func ByteSize(path string) int64 {
 	var totalSize int64
@@ -55,7 +55,7 @@ func TimeOfLastEdit(path string) (year, month, day, minute int) {
 	return
 }
 
-func Content(path string) []string {
+func Content(path string, includeFullPaths bool) []string {
 	if !IsExisting(path) {
 		return []string{}
 	}
@@ -67,7 +67,12 @@ func Content(path string) []string {
 
 	var names []string
 	for _, entry := range entries {
-		names = append(names, entry.Name())
+		var value = entry.Name()
+		if includeFullPaths {
+			value = ph.New(path, value)
+		}
+
+		names = append(names, value)
 	}
 	return names
 }

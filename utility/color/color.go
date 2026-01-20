@@ -29,21 +29,21 @@ func Hex(hex string) uint {
 }
 
 func RandomBright() uint {
-	var r = randomByteRange(127, 255)
-	var g = randomByteRange(127, 255)
-	var b = randomByteRange(127, 255)
+	var r = random.Range[byte](127, 255)
+	var g = random.Range[byte](127, 255)
+	var b = random.Range[byte](127, 255)
 	return RGB(r, g, b)
 }
 func RandomDark() uint {
-	var r = randomByteRange(0, 127)
-	var g = randomByteRange(0, 127)
-	var b = randomByteRange(0, 127)
+	var r = random.Range[byte](0, 127)
+	var g = random.Range[byte](0, 127)
+	var b = random.Range[byte](0, 127)
 	return RGB(r, g, b)
 }
 func Random() uint {
-	var r = randomByteRange(0, 255)
-	var g = randomByteRange(0, 255)
-	var b = randomByteRange(0, 255)
+	var r = random.Range[byte](0, 255)
+	var g = random.Range[byte](0, 255)
+	var b = random.Range[byte](0, 255)
 	return RGB(r, g, b)
 }
 
@@ -93,10 +93,6 @@ func Opposite(color uint) uint {
 
 //=================================================================
 // private
-
-func randomByteRange(min, max byte) byte {
-	return byte(random.Range(float32(min), float32(max)+1, number.NaN()))
-}
 
 func colorFromRGBA(r, g, b, a byte) uint {
 	return uint(r)<<24 | uint(g)<<16 | uint(b)<<8 | uint(a)
