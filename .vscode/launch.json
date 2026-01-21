@@ -2,22 +2,24 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Linux/Windows: Debug",
+            "name": "Debug",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}",
+            "program": "main.go",
+            "console": "externalTerminal",
             "args": []
         },
         {
-            "name": "Linux: Debug Windows (Wine automated)",
+            "name": "Debug Windows (Wine automated)",
             "type": "go",
             "request": "attach",
             "mode": "remote",
             "host": "127.0.0.1",
             "port": 2345,
             "preLaunchTask": "start-wine-dlv",
+            "console": "externalTerminal",
             "showLog": true
-        },
+        }
     ]
 }

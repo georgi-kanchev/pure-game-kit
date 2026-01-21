@@ -193,8 +193,8 @@ func GUIs() {
 
 		var from, to = hud.DragOnDrop()
 		if from != "" && to != "" {
-			var fromId = hud.Field(from, f.DraggableSpriteId)
-			var toId = hud.Field(to, f.DraggableSpriteId)
+			var fromId = hud.Field(from, f.DraggableSpriteId, cam)
+			var toId = hud.Field(to, f.DraggableSpriteId, cam)
 			hud.SetField(from, f.DraggableSpriteId, toId)
 			hud.SetField(to, f.DraggableSpriteId, fromId)
 		}

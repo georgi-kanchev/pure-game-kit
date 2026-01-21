@@ -4,6 +4,10 @@ test scale texture repeat sprite
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
 
+[145] [Wed] [21-01-2026]
+error fixes
+new launch & task jsons
+
 [144] [Tue] [20-01-2026]
 color - random fix
 folder - API tweak improvement
