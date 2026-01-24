@@ -22,7 +22,7 @@ func ShapesGrids() {
 
 	for i := -8; i < 8; i++ {
 		for j := -8; j < 8; j++ {
-			grid.SetAtCell(i, j, geometry.NewShapeRectangle(24, 24, 0.5, 0.5))
+			grid.SetAtCell(i, j, geometry.NewShapeQuad(24, 24, 0.5, 0.5))
 		}
 	}
 

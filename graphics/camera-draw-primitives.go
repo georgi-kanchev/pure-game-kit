@@ -194,6 +194,30 @@ func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 	c.end()
 	c.Angle = prevAng
 }
+func (c *Camera) DrawQuadRounded(x, y, width, height, radius, angle float32, color uint) {
+	var maxRadius = width / 2
+	if height/2 < maxRadius {
+		maxRadius = height / 2
+	}
+	radius = min(radius, maxRadius)
+
+	var sz = radius * 2
+	var vw, vh = width - 2*radius, height
+	var vx, vy = point.RotateAroundPoint(x+radius, y, x, y, angle)
+	var hw, hh = width, height - 2*radius
+	var hx, hy = point.RotateAroundPoint(x, y+radius, x, y, angle)
+	var tlx, tly = point.RotateAroundPoint(x+radius, y+radius, x, y, angle)
+	var trx, try = point.RotateAroundPoint(x+width-radius, y+radius, x, y, angle)
+	var blx, bly = point.RotateAroundPoint(x+radius, y+height-radius, x, y, angle)
+	var brx, bry = point.RotateAroundPoint(x+width-radius, y+height-radius, x, y, angle)
+
+	c.DrawQuad(vx, vy, vw, vh, angle, color)
+	c.DrawQuad(hx, hy, hw, hh, angle, color)
+	c.DrawArc(tlx, tly, sz, sz, 1, 0, 24, color)
+	c.DrawArc(trx, try, sz, sz, 1, 0, 24, color)
+	c.DrawArc(blx, bly, sz, sz, 1, 0, 24, color)
+	c.DrawArc(brx, bry, sz, sz, 1, 0, 24, color)
+}
 
 func (c *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
 	c.begin()

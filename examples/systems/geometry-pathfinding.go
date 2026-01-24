@@ -20,7 +20,7 @@ func Pathfinding() {
 			}
 
 			if random.HasChance(30) {
-				grid.SetAtCell(i, j, geometry.NewShapeRectangle(24, 24, 0.5, 0.5))
+				grid.SetAtCell(i, j, geometry.NewShapeQuad(24, 24, 0.5, 0.5))
 			}
 		}
 	}
