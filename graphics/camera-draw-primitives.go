@@ -195,6 +195,9 @@ func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 	c.Angle = prevAng
 }
 func (c *Camera) DrawQuadRounded(x, y, width, height, radius, angle float32, color uint) {
+	c.begin()
+	var prevBatch = c.Batch
+	c.Batch = true
 	var maxRadius = width / 2
 	if height/2 < maxRadius {
 		maxRadius = height / 2
@@ -217,6 +220,8 @@ func (c *Camera) DrawQuadRounded(x, y, width, height, radius, angle float32, col
 	c.DrawArc(trx, try, sz, sz, 1, 0, 24, color)
 	c.DrawArc(blx, bly, sz, sz, 1, 0, 24, color)
 	c.DrawArc(brx, bry, sz, sz, 1, 0, 24, color)
+	c.Batch = prevBatch
+	c.end()
 }
 
 func (c *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
