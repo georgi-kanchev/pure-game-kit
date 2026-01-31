@@ -363,6 +363,10 @@ func elements(elements ...any) string {
 			var value = reflect.ValueOf(e)
 			var valueType = value.Type()
 
+			if value.IsNil() {
+				continue
+			}
+
 			if valueType.Kind() == reflect.Struct {
 				result += fmt.Sprintf("%+v", e) // struct
 				continue
