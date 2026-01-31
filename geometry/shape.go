@@ -39,7 +39,7 @@ func NewShapeSides(radius float32, sides int) *Shape {
 
 	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
-func NewShapeRectangle(width, height, pivotX, pivotY float32) *Shape {
+func NewShapeQuad(width, height, pivotX, pivotY float32) *Shape {
 	var offX, offY = width * pivotX, height * pivotY
 	var corners = [][2]float32{
 		{-offX, -offY},
@@ -48,6 +48,33 @@ func NewShapeRectangle(width, height, pivotX, pivotY float32) *Shape {
 		{-offX, height - offY},
 		{-offX, -offY},
 	}
+	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+}
+func NewShapeQuadRounded(width, height, radius, pivotX, pivotY float32, segments int) *Shape {
+	var maxRadius = width / 2
+	if height/2 < maxRadius {
+		maxRadius = height / 2
+	}
+	if radius > maxRadius {
+		radius = maxRadius
+	}
+
+	const pi = 3.14159
+	var offX, offY = width * pivotX, height * pivotY
+	var corners = [][2]float32{}
+	var addCorner = func(cx, cy, startAngle float32) {
+		for i := 0; i <= segments; i++ {
+			var angle = startAngle + (float32(i)/float32(segments))*(pi/2)
+			var px = cx + radius*number.Cosine(angle)
+			var py = cy + radius*number.Sine(angle)
+			corners = append(corners, [2]float32{px - offX, py - offY})
+		}
+	}
+	addCorner(width-radius, radius, -pi/2)    // top right
+	addCorner(width-radius, height-radius, 0) // bottom right
+	addCorner(radius, height-radius, pi/2)    // bottom left
+	addCorner(radius, radius, pi)             // top left
+	corners = append(corners, corners[0])
 	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
 func NewShapeEllipse(width, height float32, segments int) *Shape {

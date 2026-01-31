@@ -22,9 +22,10 @@ func Shapes() {
 		{100, 100},
 	}...)
 	var triangle = geometry.NewShapeCorners([2]float32{}, [2]float32{100, 100}, [2]float32{-100, 100})
-	var rectangle = geometry.NewShapeRectangle(700, 500, 0.5, 0.5)
+	var rectangle = geometry.NewShapeQuad(700, 500, 0.5, 0.5)
 	var hexagon = geometry.NewShapeSides(500, 6)
 	var ellipse = geometry.NewShapeEllipse(200, 500, 16)
+	var squircle = geometry.NewShapeQuadRounded(300, 150, 20, 0.5, 0.5, 16)
 
 	shape.ScaleX, shape.ScaleY = 5, 5
 	shape.X += 180
@@ -33,6 +34,8 @@ func Shapes() {
 
 	ellipse.X, ellipse.Y = -800, 0
 	ellipse.Angle = 20
+
+	squircle.X, squircle.Y = -650, 100
 
 	var stars = [][2]float32{
 		{600 + 300, 100}, {600 + 350, 200}, {600 + 450, 200}, {600 + 370, 260},
@@ -47,6 +50,7 @@ func Shapes() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
+		squircle.Angle += time.FrameDelta() * 60
 		shape.Angle += time.FrameDelta() * 60
 		var mx, my = cam.MousePosition()
 		var colShape = condition.If(shape.IsOverlappingShapes(triangle), palette.Red, palette.Green)
@@ -57,21 +61,39 @@ func Shapes() {
 
 		var crossPoints = hexagon.CrossPointsWithShapes(shape)
 
-		cam.DrawShapesFast(color.Darken(colCircle, 0.5), hexagon.CornerPoints()...)
-		cam.DrawLinesPath(8, colCircle, hexagon.CornerPoints()...)
-		cam.DrawShapesFast(color.Darken(colRect, 0.5), rectangle.CornerPoints()...)
-		cam.DrawLinesPath(8, colRect, rectangle.CornerPoints()...)
-		cam.DrawShapesFast(palette.Gray, triangle.CornerPoints()...)
-		cam.DrawLinesPath(8, palette.White, triangle.CornerPoints()...)
+		var hexagonPts = hexagon.CornerPoints()
+		cam.DrawShapesFast(color.Darken(colCircle, 0.5), hexagonPts...)
+		cam.DrawLinesPath(8, colCircle, hexagonPts...)
+		cam.DrawPoints(4, colCircle, hexagonPts...)
 
-		cam.DrawLinesPath(8, colShape, shape.CornerPoints()...)
+		var rectPts = rectangle.CornerPoints()
+		cam.DrawShapesFast(color.Darken(colRect, 0.5), rectPts...)
+		cam.DrawLinesPath(8, colRect, rectPts...)
+		cam.DrawPoints(4, colRect, rectPts...)
+
+		var triPts = triangle.CornerPoints()
+		cam.DrawShapesFast(palette.Gray, triPts...)
+		cam.DrawLinesPath(8, palette.White, triPts...)
+		cam.DrawPoints(4, palette.White, triPts...)
+
+		var shPts = shape.CornerPoints()
+		cam.DrawLinesPath(8, colShape, shPts...)
+		cam.DrawPoints(4, colShape, shPts...)
 
 		// not DrawShapesFast because stars are concave
 		cam.DrawShapes(color.Darken(palette.Violet, 0.5), stars...)
 		cam.DrawLinesPath(8, palette.Violet, stars...)
+		cam.DrawPoints(4, palette.Violet, stars...)
 
-		cam.DrawShapesFast(palette.DarkGreen, ellipse.CornerPoints()...)
-		cam.DrawLinesPath(8, palette.Green, ellipse.CornerPoints()...)
+		var ellPts = ellipse.CornerPoints()
+		cam.DrawShapesFast(palette.DarkGreen, ellPts...)
+		cam.DrawLinesPath(8, palette.Green, ellPts...)
+		cam.DrawPoints(4, palette.Green, ellPts...)
+
+		var roundPts = squircle.CornerPoints()
+		cam.DrawShapesFast(palette.Magenta, roundPts...)
+		cam.DrawLinesPath(8, palette.DarkMagenta, roundPts...)
+		cam.DrawPoints(4, palette.DarkMagenta, roundPts...)
 
 		for _, v := range crossPoints {
 			cam.DrawCircle(v[0], v[1], 16, palette.Green)
