@@ -334,11 +334,18 @@ func (g *GUI) FieldNumber(id, field string, camera *graphics.Camera) float32 {
 
 func (g *GUI) Area(id string, camera *graphics.Camera) (x, y, width, height, angle float32) {
 	var zoom = camera.Zoom / g.Scale
-	x = g.FieldNumber(id, f.X, camera)
-	y = g.FieldNumber(id, f.Y, camera)
+	var w, hasW = g.root.Widgets[id]
+	var c, hasC = g.root.Containers[id]
+	if hasC {
+		x, y = c.X, c.Y
+		width, height = c.Width, c.Height
+	}
+
+	if hasW {
+		x, y = w.X, w.Y
+		width, height = w.Width, w.Height
+	}
 	angle = -camera.Angle
-	width = g.FieldNumber(id, f.Width, camera)
-	height = g.FieldNumber(id, f.Height, camera)
 	x, y = camera.X+x/zoom, camera.Y+y/zoom
 	x, y = point.RotateAroundPoint(x, y, camera.X, camera.Y, angle)
 	width, height = width/zoom, height/zoom
