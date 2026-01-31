@@ -48,31 +48,32 @@ var reusableWidget = &widget{Fields: map[string]string{}}
 
 var clickedId, clickedAndHeldId = "", ""
 
-func (g *GUI) reset(camera *graphics.Camera) (prAng, prZoom, prX, prY float32) {
+func (g *GUI) reset(camera *graphics.Camera, inputState bool) (prAng, prZoom, prX, prY float32) {
 	prAng, prZoom, prX, prY = camera.Angle, camera.Zoom, camera.X, camera.Y
 
-	if mouse.IsButtonJustPressed(b.Left) {
-		g.root.wPressedOn = nil
-		tooltip = nil
-		g.root.cPressedOnScrollH = nil
-		g.root.cPressedOnScrollV = nil
-	}
-	if mouse.IsButtonJustReleased(b.Left) {
-		g.root.cPressedOnScrollH = nil
-		g.root.cPressedOnScrollV = nil
-	}
-	if mouse.IsButtonJustReleased(b.Middle) {
-		g.root.cMiddlePressed = nil
+	if inputState {
+		mouseX, mouseY = camera.MousePosition()
+		if mouse.IsButtonJustPressed(b.Left) {
+			g.root.wPressedOn = nil
+			tooltip = nil
+			g.root.cPressedOnScrollH = nil
+			g.root.cPressedOnScrollV = nil
+		}
+		if mouse.IsButtonJustReleased(b.Left) {
+			g.root.cPressedOnScrollH = nil
+			g.root.cPressedOnScrollV = nil
+		}
+		if mouse.IsButtonJustReleased(b.Middle) {
+			g.root.cMiddlePressed = nil
+		}
+		if tooltip == nil {
+			mouse.SetCursor(cursor.Arrow)
+		}
 	}
 
 	camera.Zoom = g.Scale
 	camera.Angle = 0          // force no cam rotation for UI
 	camera.X, camera.Y = 0, 0 // force no position offset for UI
-	mouseX, mouseY = camera.MousePosition()
-
-	if tooltip == nil {
-		mouse.SetCursor(cursor.Arrow)
-	}
 	return
 }
 func (root *root) themedField(fld string, c *container, w *widget) string {

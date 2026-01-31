@@ -217,7 +217,7 @@ func NewElementsXML(elements ...string) string {
 
 func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var containers = g.root.ContainerIds
-	var prAng, prZoom, prX, prY = g.reset(camera) // keep order of variables & reset
+	var prAng, prZoom, prX, prY = g.reset(camera, true) // keep order of variables & reset
 	cacheDynamicCamProps(camera)
 	g.root.Volume = g.Volume
 
@@ -353,7 +353,7 @@ func (g *GUI) Area(id string, camera *graphics.Camera) (x, y, width, height, ang
 }
 
 func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
-	var prAng, prZoom, prX, prY = g.reset(camera)
+	var prAng, prZoom, prX, prY = g.reset(camera, false)
 	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
 
 	for _, c := range g.root.Containers {
@@ -362,13 +362,12 @@ func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 			return true
 		}
 	}
-
 	return false
 }
 
 // Works for Widgets & Containers.
 func (g *GUI) IsHovered(id string, camera *graphics.Camera) bool {
-	var prAng, prZoom, prX, prY = g.reset(camera)
+	var prAng, prZoom, prX, prY = g.reset(camera, false)
 	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
 
 	var w, hasW = g.root.Widgets[id]
@@ -385,9 +384,8 @@ func (g *GUI) IsHovered(id string, camera *graphics.Camera) bool {
 
 // Works for Widgets & Containers.
 func (g *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
-	var prAng, prZoom, prX, prY = g.reset(camera)
+	var prAng, prZoom, prX, prY = g.reset(camera, false)
 	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
-
 	var w, has = g.root.Widgets[widgetId]
 	if has {
 		return w.isFocused(g.root, camera)
