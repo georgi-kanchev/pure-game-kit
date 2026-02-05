@@ -16,6 +16,13 @@ import (
 func Clone[T any](collection []T) []T {
 	return slices.Clone(collection)
 }
+func Duplicate[T any](collection []T) []T {
+	return Clone(collection)
+}
+func Copy[T any](collection []T) []T {
+	return Clone(collection)
+}
+
 func SameItems[T any](amount int, item T) []T {
 	var result = make([]T, amount)
 	for i := range amount {
