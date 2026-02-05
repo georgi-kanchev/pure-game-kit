@@ -393,12 +393,20 @@ func (g *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
 	return false
 }
 
-func (g *GUI) IdsWidgets() []string {
+func (g *GUI) WidgetIdsOfContainer(containerId string) []string {
+	var c = g.root.Containers[containerId]
+	if c == nil {
+		return nil
+	}
+
+	return collection.Clone(c.Widgets)
+}
+func (g *GUI) AllWidgetIds() []string {
 	return collection.MapKeys(g.root.Widgets)
 }
-func (g *GUI) IdsContainers() []string {
+func (g *GUI) AllContainerIds() []string {
 	return collection.MapKeys(g.root.Containers)
 }
-func (g *GUI) IdsThemes() []string {
+func (g *GUI) AllThemeIds() []string {
 	return collection.MapKeys(g.root.Themes)
 }
