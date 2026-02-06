@@ -64,7 +64,7 @@ func GUIs() {
 			f.AssetId, box[9]),
 		// ======================================================
 		gui.Container("panel", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1100",
-			f.ThemeId, "button", f.GapX, "40", f.GapY, "20"),
+			f.ThemeId, "button", f.GapX, "40", f.GapY, "20", f.AnchorX, "1"),
 		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
 		// ======================================================
 		gui.Visual("name-label", f.ThemeId, "label", f.Text, "Name", f.TooltipText, "Wow, tooltip for labels!"),
@@ -79,7 +79,7 @@ func GUIs() {
 			f.TextColor, "150 150 150 255"),
 		gui.Button("step-right", f.Width, "100", f.TextEmbeddedAssetId1, icons[212], f.Text, "^^", f.GapX, "0",
 			f.ButtonHotkey, "D"),
-		gui.Visual("hotkey-info", f.ThemeId, "label", f.Text, "(press A or D)", f.Width, "800",
+		gui.Visual("hotkey-info", f.ThemeId, "label", f.Text, "(press A or D)", f.Width, "450",
 			f.TextColor, "127 127 127"),
 		gui.Visual("checkbox-label", f.ThemeId, "label", f.Text, "Checkbox", f.NewRow, ""),
 		gui.Checkbox("checkbox", f.ThemeId, "checkbox-off", f.CheckboxThemeId, "checkbox-on"),

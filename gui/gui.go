@@ -51,6 +51,8 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
+	"pure-game-kit/input/mouse"
+	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
@@ -269,6 +271,11 @@ func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		if g.root.IsButtonClickedAndHeld(g.root.wPressedOn.Id, camera) {
 			clickedAndHeldId = g.root.wPressedOn.Id
 		}
+	}
+
+	if mouse.IsButtonJustReleased(b.Left) {
+		g.root.wPressedOn = nil
+		tooltip = nil
 	}
 
 	g.root.restore(camera, prAng, prZoom, prX, prY) // undo what reset does, everything as it was for cam

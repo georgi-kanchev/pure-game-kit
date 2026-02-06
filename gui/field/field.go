@@ -15,12 +15,15 @@ const (
 	Hidden   = "hidden"   // [widget] [container] "1" = true, "" = false
 	Disabled = "disabled" // [widget] [container] "1" = true, "" = false
 
-	Width    = "width"    // [widget] [theme] [container]
-	Height   = "height"   // [widget] [theme] [container]
-	AssetId  = "assetId"  // [widget] [theme] [container]
-	GapX     = "gapX"     // [widget] [theme] [container] horizontal spacing between self & previous widget
-	GapY     = "gapY"     // [widget] [theme] [container] vertical spacing between self & previous widget
+	Width   = "width"   // [widget] [theme] [container]
+	Height  = "height"  // [widget] [theme] [container]
+	AssetId = "assetId" // [widget] [theme] [container]
+	GapX    = "gapX"    // [widget] [theme] [container] X spacing between self & previous widget
+	GapY    = "gapY"    // [widget] [theme] [container] Y spacing between self & previous widget
+
 	TargetId = "targetId" // [container] which container fields to use with Target... dynamics
+	AnchorX  = "anchorX"  // [container] no effect when X scroll, example: 0 = left, 0.5 = center, 1 = right
+	AnchorY  = "anchorY"  // [container] no effect when Y scroll, example: 0 = top, 0.5 = center, 1 = bottom
 
 	Value         = "value"         // [widget] used by slider & checkbox to represent state
 	FillContainer = "fillContainer" // [widget] treated as the graphics of its container, not a standalone widget

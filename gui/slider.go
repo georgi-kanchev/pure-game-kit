@@ -84,12 +84,12 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 	}
 }
 
-func (widget *widget) setSliderValue(value float32, root *root) float32 {
-	var owner = root.Containers[widget.OwnerId]
-	var step = parseNum(root.themedField(field.SliderStep, owner, widget), 0)
+func (w *widget) setSliderValue(value float32, root *root) float32 {
+	var owner = root.Containers[w.OwnerId]
+	var step = parseNum(root.themedField(field.SliderStep, owner, w), 0)
 	value = number.Snap(value, number.Unsign(step))
 	value = number.Limit(value, 0, 1)
-	widget.Fields[field.Value] = text.New(value)
+	w.Fields[field.Value] = text.New(value)
 	return value
 }
 func drawReusableWidget(col uint, assetId string, x, y float32, root *root, cam *graphics.Camera) {

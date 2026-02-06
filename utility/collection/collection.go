@@ -58,6 +58,9 @@ func RemoveAt[T any](collection []T, indexes ...int) []T {
 	}
 	return copy
 }
+func Clear[T any](collection []T) {
+	clear(collection)
+}
 
 func IndexOf[T comparable](collection []T, value T) int {
 	for i, v := range collection {
@@ -402,4 +405,7 @@ func MapValues[K comparable, V any](Map map[K]V) []V {
 		values = append(values, v)
 	}
 	return values
+}
+func MapClear[K comparable, V any](Map map[K]V) {
+	clear(Map)
 }

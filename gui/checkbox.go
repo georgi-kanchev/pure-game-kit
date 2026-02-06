@@ -54,12 +54,12 @@ func checkbox(cam *graphics.Camera, root *root, widget *widget) {
 	widget.tryToggleChildrenVisible(owner, root)
 }
 
-func (widget *widget) tryToggleChildrenVisible(owner *container, root *root) {
+func (w *widget) tryToggleChildrenVisible(owner *container, root *root) {
 	for _, wId := range owner.Widgets {
 		var curWidget = root.Widgets[wId]
 		var toggleParentId = root.themedField(field.ToggleButtonId, owner, curWidget)
-		if toggleParentId == widget.Id {
-			var newHidden = condition.If(widget.Fields[field.Value] == "", "1", "")
+		if toggleParentId == w.Id {
+			var newHidden = condition.If(w.Fields[field.Value] == "", "1", "")
 			curWidget.Fields[field.Hidden] = newHidden
 		}
 	}

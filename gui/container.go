@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
+	"pure-game-kit/gui/field"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
@@ -11,6 +12,7 @@ import (
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
@@ -48,6 +50,8 @@ func Container(id, x, y, width, height string, properties ...string) string {
 
 const scrollSize, handleSpeed, dragFriction, dragMomentum = 10.0, 12.0, 0.95, 30.0
 
+var rowWidths = map[*widget]float32{}
+
 func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
@@ -56,8 +60,10 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var curX, curY = x + cGapX, y + cGapY
 	var maxHeight float32
 	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
-	var nonBgrIndex = 0
+	var nonBgrIndex = 0 // new row shouldn't work for first widget, used to check first nonBgr widget
 	var draggables []*widget = make([]*widget, 0)
+	var anchorX = parseNum(c.Fields[field.AnchorX], 0)
+	var anchorY = parseNum(c.Fields[field.AnchorY], 0)
 
 	cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
@@ -69,7 +75,10 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		root.cMiddlePressed = c
 	}
 
-	for _, wId := range c.Widgets {
+	var rowWidth = cGapX * 2
+	var rowWidgets []*widget
+	collection.MapClear(rowWidths)
+	for _, wId := range c.Widgets { // loop for calculations, see below it
 		var widget = root.Widgets[wId]
 		if widget.isSkipped(root, c) {
 			continue
@@ -86,16 +95,22 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		if isBgr {
 			widget.X, widget.Y = x, y
 			ww, wh = w, h
-			cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight) // mask doesn't affect bgr
 		} else {
 			var row, newRow = widget.Fields[f.NewRow]
-			if newRow && nonBgrIndex > 0 { // new row doesn't work for first element
+			if newRow && nonBgrIndex > 0 {
+				for _, w := range rowWidgets {
+					rowWidths[w] = rowWidth
+				}
+				rowWidgets = nil
+				rowWidth = cGapX * 2
+
 				curX = x + cGapX
 				curY += parseNum(dyn(c, row, text.New(maxHeight+gapY)), 0)
 				maxHeight = 0
 			}
 
-			curX += condition.If(newRow || nonBgrIndex == 0, 0, gapX)
+			gapX = condition.If(newRow || nonBgrIndex == 0, 0, gapX)
+			curX += gapX
 			widget.X = curX + offX
 			widget.Y = curY + offY
 			curX += ww
@@ -109,30 +124,59 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		if !isBgr {
 			widget.X -= c.ScrollX
 			widget.Y -= c.ScrollY
+
+			rowWidth += widget.Width + gapX
+			rowWidgets = append(rowWidgets, widget)
+		}
+
+		var outsideX = widget.X+widget.Width < c.X || widget.X > c.X+c.Width
+		var outsideY = widget.Y+widget.Height < c.Y || widget.Y > c.Y+c.Height
+		widget.IsCulled = outsideX || outsideY
+	}
+	for _, w := range rowWidgets { // apply for last row too, no new row to trigger it
+		rowWidths[w] = rowWidth
+	}
+
+	//=================================================================
+	// this is done in two loops because the content size of the container needs to be known to anchor it
+
+	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY, root)
+	var contentW, contentH = maxX - minX, maxY - minY
+	for _, wId := range c.Widgets { // after-calculation loop
+		var widget = root.Widgets[wId]
+		if widget.isSkipped(root, c) || widget.IsCulled {
+			continue
+		}
+
+		var _, isBgr = widget.Fields[f.FillContainer]
+		if isBgr {
+			cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight) // mask doesn't affect bgr
+		} else {
+			if contentW <= c.Width {
+				widget.X += c.Width*anchorX - contentW*anchorX
+				widget.X += (contentW - rowWidths[widget]) * anchorX
+			}
+			if contentH <= c.Height {
+				widget.Y += c.Height*anchorY - contentH*anchorY
+			}
 		}
 
 		if widget.isHovered(c, cam) {
 			root.wHovered = widget
 		}
 
-		var outsideX = widget.X+widget.Width < c.X || widget.X > c.X+c.Width
-		var outsideY = widget.Y+widget.Height < c.Y || widget.Y > c.Y+c.Height
-		widget.IsCulled = outsideX || outsideY
+		if widget.UpdateAndDraw != nil {
+			widget.UpdateAndDraw(cam, root, widget)
+			tryShowTooltip(widget, root, c, cam)
+		} else if widget.Class == "visual" {
+			setupVisualsTextured(root, widget)
+			setupVisualsText(root, widget, true)
+			drawVisuals(cam, root, widget, false, nil)
+			tryShowTooltip(widget, root, c, cam)
+		}
 
-		if !widget.IsCulled { // culling widgets outside of the container (masked, invisible)
-			if widget.UpdateAndDraw != nil {
-				widget.UpdateAndDraw(cam, root, widget)
-				tryShowTooltip(widget, root, c, cam)
-			} else if widget.Class == "visual" {
-				setupVisualsTextured(root, widget)
-				setupVisualsText(root, widget, true)
-				drawVisuals(cam, root, widget, false, nil)
-				tryShowTooltip(widget, root, c, cam)
-			}
-
-			if widget.Class == "draggable" {
-				draggables = append(draggables, widget)
-			}
+		if widget.Class == "draggable" {
+			draggables = append(draggables, widget)
 		}
 
 		if isBgr { // back to gap clipping
@@ -147,11 +191,10 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	}
 
 	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
-	c.tryShowScroll(cGapX, cGapY, root, cam)
+	c.tryShowScroll(minX, minY, maxX, maxY, root, cam)
 }
 
-func (c *container) tryShowScroll(gapX, gapY float32, root *root, cam *graphics.Camera) {
-	var minX, minY, maxX, maxY = c.contentMinMax(gapX, gapY, root)
+func (c *container) tryShowScroll(minX, minY, maxX, maxY float32, root *root, cam *graphics.Camera) {
 	var mx, my = cam.MousePosition()
 	var focused = c.isFocused(root, cam)
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
@@ -317,14 +360,19 @@ func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, m
 	for _, w := range c.Widgets {
 		var widget = root.Widgets[w]
 		var _, isBgr = widget.Fields[f.FillContainer]
-		if isBgr || widget.isSkipped(root, c) {
+		if isBgr || widget.isSkipped(root, c) { // even culled items are calculated for
 			continue
 		}
 
-		minX = condition.If(widget.X < minX, widget.X, minX)
-		minY = condition.If(widget.Y < minY, widget.Y, minY)
-		maxX = condition.If(widget.X+widget.Width > maxX, widget.X+widget.Width, maxX)
-		maxY = condition.If(widget.Y+widget.Height > maxY, widget.Y+widget.Height, maxY)
+		// added just in case cuz it makes sense? not sure if needed
+		var offX = parseNum(dyn(c, widget.Fields[f.OffsetX], "0"), 0)
+		var offY = parseNum(dyn(c, widget.Fields[f.OffsetY], "0"), 0)
+		var x, y = widget.X + offX, widget.Y + offY
+
+		minX = condition.If(x < minX, x, minX)
+		minY = condition.If(y < minY, y, minY)
+		maxX = condition.If(x+widget.Width > maxX, x+widget.Width, maxX)
+		maxY = condition.If(y+widget.Height > maxY, y+widget.Height, maxY)
 	}
 	minX -= gapX
 	maxX += gapX

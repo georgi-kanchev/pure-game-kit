@@ -1,8 +1,15 @@
 // TODO:
 test graphics node parent
 test scale texture repeat sprite
+gui check container/widget gap, doesn't always seem to work?
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
+
+[149] [Fri] [06-02-2026]
+collection - clear map & slices
+gui - slider fix
+gui - new container fields anchor x/y to allign the widget content
+gui - isHovered func optimization
 
 [148] [Thu] [05-02-2026]
 gui - get widgets ids of container + ids API renames

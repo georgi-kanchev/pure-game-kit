@@ -156,11 +156,6 @@ func (root *root) restore(camera *graphics.Camera, prAng, prZoom, prX, prY float
 	camera.X, camera.Y = prX, prY
 	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
 
-	if mouse.IsButtonJustReleased(b.Left) {
-		// root.wPressedOn = nil // not sure if needed, causes problems
-		tooltip = nil
-	}
-
 	root.wWasHovered = root.wHovered
 	root.cWasHovered = root.cHovered
 	prevMouseX, prevMouseY = mouseX, mouseY
@@ -263,9 +258,8 @@ func parseNum(value string, defaultValue float32) float32 {
 func isHovered(x, y, w, h float32, cam *graphics.Camera) bool {
 	var prevAng = cam.Angle
 	cam.Angle = 0
-	var sx, sy = cam.PointToScreen(x, y)
-	var mx, my = cam.PointToScreen(cam.MousePosition())
-	var result = mx > sx && mx < sx+int(w*cam.Zoom) && my > sy && my < sy+int(h*cam.Zoom)
+	var mx, my = cam.MousePosition()
+	var result = mx > x && mx < x+w && my > y && my < y+h
 	cam.Angle = prevAng
 	return result
 }

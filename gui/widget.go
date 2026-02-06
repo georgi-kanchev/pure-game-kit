@@ -28,17 +28,17 @@ func newWidget(class, id string, properties ...string) string {
 
 //=================================================================
 
-func (widget *widget) isHovered(owner *container, cam *graphics.Camera) bool {
+func (w *widget) isHovered(owner *container, cam *graphics.Camera) bool {
 	return isHovered(owner.X, owner.Y, owner.Width, owner.Height, cam) &&
-		isHovered(widget.X, widget.Y, widget.Width, widget.Height, cam)
+		isHovered(w.X, w.Y, w.Width, w.Height, cam)
 }
-func (widget *widget) isFocused(root *root, cam *graphics.Camera) bool {
-	return root.wFocused == widget &&
-		root.wWasHovered == widget &&
-		widget.isHovered(root.Containers[widget.OwnerId], cam)
+func (w *widget) isFocused(root *root, cam *graphics.Camera) bool {
+	return root.wFocused == w &&
+		root.wWasHovered == w &&
+		w.isHovered(root.Containers[w.OwnerId], cam)
 }
-func (widget *widget) isDisabled(owner *container) bool {
-	var disabled = widget.Fields[field.Disabled] != ""
+func (w *widget) isDisabled(owner *container) bool {
+	var disabled = w.Fields[field.Disabled] != ""
 	var ownerDisabled = false
 
 	if owner != nil {
@@ -47,14 +47,14 @@ func (widget *widget) isDisabled(owner *container) bool {
 
 	return disabled || ownerDisabled
 }
-func (widget *widget) isHidden(root *root, owner *container) bool {
-	var toggleParentId = root.themedField(field.ToggleButtonId, owner, widget)
+func (w *widget) isHidden(root *root, owner *container) bool {
+	var toggleParentId = root.themedField(field.ToggleButtonId, owner, w)
 	var toggleParent = root.Widgets[toggleParentId]
-	var hidden = widget.Fields[field.Hidden] != ""
+	var hidden = w.Fields[field.Hidden] != ""
 	var parentHidden = toggleParent != nil && toggleParent.isHidden(root, owner)
 	return hidden || parentHidden
 }
 
-func (widget *widget) isSkipped(root *root, owner *container) bool {
-	return widget.isHidden(root, owner) || widget.Class == "tooltip"
+func (w *widget) isSkipped(root *root, owner *container) bool {
+	return w.isHidden(root, owner) || w.Class == "tooltip"
 }
