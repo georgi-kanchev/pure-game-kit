@@ -364,15 +364,10 @@ func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, m
 			continue
 		}
 
-		// added just in case cuz it makes sense? not sure if needed
-		var offX = parseNum(dyn(c, widget.Fields[f.OffsetX], "0"), 0)
-		var offY = parseNum(dyn(c, widget.Fields[f.OffsetY], "0"), 0)
-		var x, y = widget.X + offX, widget.Y + offY
-
-		minX = condition.If(x < minX, x, minX)
-		minY = condition.If(y < minY, y, minY)
-		maxX = condition.If(x+widget.Width > maxX, x+widget.Width, maxX)
-		maxY = condition.If(y+widget.Height > maxY, y+widget.Height, maxY)
+		minX = condition.If(widget.X < minX, widget.X, minX)
+		minY = condition.If(widget.Y < minY, widget.Y, minY)
+		maxX = condition.If(widget.X+widget.Width > maxX, widget.X+widget.Width, maxX)
+		maxY = condition.If(widget.Y+widget.Height > maxY, widget.Y+widget.Height, maxY)
 	}
 	minX -= gapX
 	maxX += gapX
