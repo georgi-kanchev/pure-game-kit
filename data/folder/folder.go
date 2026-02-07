@@ -10,7 +10,7 @@ import (
 	"pure-game-kit/debug"
 )
 
-func IsExisting(path string) bool {
+func Exists(path string) bool {
 	var info, err = os.Stat(path)
 	return err == nil && info.IsDir()
 }
@@ -36,7 +36,7 @@ func ByteSize(path string) int64 {
 	return totalSize
 }
 func TimeOfLastEdit(path string) (year, month, day, minute int) {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		debug.LogError("Failed to find folder: \"", path, "\"")
 		return 0, 0, 0, 0
 	}
@@ -56,7 +56,7 @@ func TimeOfLastEdit(path string) (year, month, day, minute int) {
 }
 
 func Content(path string, includeFullPaths bool) []string {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		return []string{}
 	}
 
@@ -77,7 +77,7 @@ func Content(path string, includeFullPaths bool) []string {
 	return names
 }
 func Files(path string) []string {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		return []string{}
 	}
 
@@ -95,7 +95,7 @@ func Files(path string) []string {
 	return files
 }
 func Folders(path string) []string {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		return []string{}
 	}
 

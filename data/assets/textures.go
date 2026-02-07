@@ -23,7 +23,7 @@ func LoadTexture(filePath string) string {
 		return filePath
 	}
 
-	if !file.IsExisting(filePath) {
+	if !file.Exists(filePath) {
 		debug.LogError("Failed to find image file: \"", filePath, "\"")
 		return ""
 	}

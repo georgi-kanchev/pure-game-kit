@@ -9,7 +9,7 @@ import (
 	"pure-game-kit/debug"
 )
 
-func IsExisting(path string) bool {
+func Exists(path string) bool {
 	var info, err = os.Stat(path)
 	return err == nil && !info.IsDir()
 }
@@ -22,7 +22,7 @@ func ByteSize(path string) int64 {
 	return info.Size()
 }
 func TimeOfLastEdit(path string) (year, month, day, minute int) {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		return 0, 0, 0, 0
 	}
 
@@ -40,7 +40,7 @@ func TimeOfLastEdit(path string) (year, month, day, minute int) {
 }
 
 func LoadBytes(path string) []byte {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		debug.LogError("Failed to find file: \"", path, "\"")
 		return []byte{}
 	}
@@ -67,7 +67,7 @@ func SaveText(path, content string) bool {
 	return SaveBytes(path, []byte(content))
 }
 func SaveTextAppend(path string, content string) bool {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		SaveText(path, content)
 		return true
 	}

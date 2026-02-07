@@ -27,7 +27,7 @@ func LoadSound(filePath string) string {
 		return filePath
 	}
 
-	if !file.IsExisting(filePath) {
+	if !file.Exists(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")
 		return ""
 	}
@@ -50,7 +50,7 @@ func LoadMusic(filePath string) string {
 		return filePath
 	}
 
-	if !file.IsExisting(filePath) {
+	if !file.Exists(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")
 		return ""
 	}
