@@ -16,7 +16,6 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/text"
 )
 
 type container struct {
@@ -55,8 +54,8 @@ var rowWidths = map[*widget]float32{}
 func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
-	var cGapX = parseNum(dyn(c, c.Fields[f.GapX], "0"), 0)
-	var cGapY = parseNum(dyn(c, c.Fields[f.GapY], "0"), 0)
+	var cGapX = parseNum(c.Fields[f.GapX], 0)
+	var cGapY = parseNum(c.Fields[f.GapY], 0)
 	var curX, curY = x + cGapX, y + cGapY
 	var maxHeight float32
 	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
@@ -87,10 +86,10 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		var _, isBgr = widget.Fields[f.FillContainer]
 		var ww = parseNum(dyn(c, root.themedField(f.Width, c, widget), "0"), 0)
 		var wh = parseNum(dyn(c, root.themedField(f.Height, c, widget), "0"), 0)
-		var gapX = parseNum(dyn(c, root.themedField(f.GapX, c, widget), "0"), 0)
-		var gapY = parseNum(dyn(c, root.themedField(f.GapY, c, widget), "0"), 0)
-		var offX = parseNum(dyn(c, widget.Fields[f.OffsetX], "0"), 0)
-		var offY = parseNum(dyn(c, widget.Fields[f.OffsetY], "0"), 0)
+		var gapX = parseNum(root.themedField(f.GapX, c, widget), 0)
+		var gapY = parseNum(root.themedField(f.GapY, c, widget), 0)
+		var offX = parseNum(widget.Fields[f.OffsetX], 0)
+		var offY = parseNum(widget.Fields[f.OffsetY], 0)
 
 		if isBgr {
 			widget.X, widget.Y = x, y
@@ -105,7 +104,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 				rowWidth = cGapX * 2
 
 				curX = x + cGapX
-				curY += parseNum(dyn(c, row, text.New(maxHeight+gapY)), 0)
+				curY += parseNum(row, maxHeight+gapY)
 				maxHeight = 0
 			}
 

@@ -23,15 +23,6 @@ const (
 	CameraWidth   = "CameraWidth"   // [widget] [container]
 	CameraHeight  = "CameraHeight"  // [widget] [container]
 
-	OwnerCenterX = "OwnerCenterX" // [widget]
-	OwnerCenterY = "OwnerCenterY" // [widget]
-	OwnerLeftX   = "OwnerLeftX"   // [widget]
-	OwnerRightX  = "OwnerRightX"  // [widget]
-	OwnerTopY    = "OwnerTopY"    // [widget]
-	OwnerBottomY = "OwnerBottomY" // [widget]
-	OwnerWidth   = "OwnerWidth"   // [widget]
-	OwnerHeight  = "OwnerHeight"  // [widget]
-
 	TargetCenterX  = "TargetCenterX"  // [container]
 	TargetCenterY  = "TargetCenterY"  // [container]
 	TargetLeftX    = "TargetLeftX"    // [container]
@@ -42,4 +33,16 @@ const (
 	TargetHeight   = "TargetHeight"   // [container]
 	TargetHidden   = "TargetHidden"   // [container]
 	TargetDisabled = "TargetDisabled" // [container]
+
+	OwnerCenterX = "OwnerCenterX" // [widget]
+	OwnerCenterY = "OwnerCenterY" // [widget]
+	OwnerLeftX   = "OwnerLeftX"   // [widget]
+	OwnerRightX  = "OwnerRightX"  // [widget]
+	OwnerTopY    = "OwnerTopY"    // [widget]
+	OwnerBottomY = "OwnerBottomY" // [widget]
+	OwnerWidth   = "OwnerWidth"   // [widget]
+	OwnerHeight  = "OwnerHeight"  // [widget]
+
+	TextWidth  = "TextWidth"  // [widget]
+	TextHeight = "TextHeight" // [widget]
 )

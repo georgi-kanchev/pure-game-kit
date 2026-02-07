@@ -11,7 +11,6 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
-	"strings"
 )
 
 var sound *audio.Audio = audio.New("")
@@ -125,7 +124,7 @@ func (root *root) themedField(fld string, c *container, w *widget) string {
 
 	return ""
 }
-func (root *root) cacheTarget(targetId string) {
+func (root *root) cacheDynTargetProps(targetId string) {
 	var targetContainer = root.Containers[targetId]
 	var targetWidget = root.Widgets[targetId]
 	var tx, ty, tw, th, tHid, tDis string
@@ -181,7 +180,7 @@ func defaultValue(value, defaultValue string) string {
 	return value
 }
 
-func cacheDynamicCamProps(camera *graphics.Camera) {
+func cacheDynCamProps(camera *graphics.Camera) {
 	var tlx, tly = camera.PointFromEdge(0, 0)
 	var brx, bry = camera.PointFromEdge(1, 1)
 	var cx, cy = camera.PointFromEdge(0.5, 0.5)
@@ -190,19 +189,19 @@ func cacheDynamicCamProps(camera *graphics.Camera) {
 	camTy, camBy, camW, camH = text.New(tly), text.New(bry), text.New(w), text.New(h)
 }
 
-func dyn(owner *container, value string, defaultValue string) string {
-	value = strings.ReplaceAll(value, dynamic.TargetWidth, tarW)
-	value = strings.ReplaceAll(value, dynamic.TargetHeight, tarH)
-	value = strings.ReplaceAll(value, dynamic.TargetLeftX, tarLx)
-	value = strings.ReplaceAll(value, dynamic.TargetRightX, tarRx)
-	value = strings.ReplaceAll(value, dynamic.TargetTopY, tarTy)
-	value = strings.ReplaceAll(value, dynamic.TargetBottomY, tarBy)
-	value = strings.ReplaceAll(value, dynamic.TargetCenterX, tarCx)
-	value = strings.ReplaceAll(value, dynamic.TargetCenterY, tarCy)
-	value = strings.ReplaceAll(value, dynamic.TargetHidden, tarHid)
-	value = strings.ReplaceAll(value, dynamic.TargetDisabled, tarDis)
+func dyn(c *container, value string, defaultValue string) string {
+	value = text.ReplaceWith(value, dynamic.TargetWidth, tarW)
+	value = text.ReplaceWith(value, dynamic.TargetHeight, tarH)
+	value = text.ReplaceWith(value, dynamic.TargetLeftX, tarLx)
+	value = text.ReplaceWith(value, dynamic.TargetRightX, tarRx)
+	value = text.ReplaceWith(value, dynamic.TargetTopY, tarTy)
+	value = text.ReplaceWith(value, dynamic.TargetBottomY, tarBy)
+	value = text.ReplaceWith(value, dynamic.TargetCenterX, tarCx)
+	value = text.ReplaceWith(value, dynamic.TargetCenterY, tarCy)
+	value = text.ReplaceWith(value, dynamic.TargetHidden, tarHid)
+	value = text.ReplaceWith(value, dynamic.TargetDisabled, tarDis)
 
-	if owner != nil {
+	if c != nil {
 		value = text.ReplaceWith(value, dynamic.OwnerWidth, ownerW)
 		value = text.ReplaceWith(value, dynamic.OwnerHeight, ownerH)
 		value = text.ReplaceWith(value, dynamic.OwnerLeftX, ownerLx)

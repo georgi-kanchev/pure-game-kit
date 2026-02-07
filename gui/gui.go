@@ -220,14 +220,14 @@ func NewElementsXML(elements ...string) string {
 func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	var containers = g.root.ContainerIds
 	var prAng, prZoom, prX, prY = g.reset(camera, true) // keep order of variables & reset
-	cacheDynamicCamProps(camera)
+	cacheDynCamProps(camera)
 	g.root.Volume = g.Volume
 
 	for _, id := range containers {
 		var c = g.root.Containers[id]
 		var _, hasTarget = c.Fields[f.TargetId]
 		if hasTarget {
-			g.root.cacheTarget(g.root.themedField(f.TargetId, c, nil))
+			g.root.cacheDynTargetProps(g.root.themedField(f.TargetId, c, nil))
 		}
 
 		var hidden = dyn(c, c.Fields[f.Hidden], "")

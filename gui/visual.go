@@ -19,10 +19,10 @@ func setupVisualsTextured(root *root, widget *widget) {
 	var assetId = root.themedField(p.AssetId, owner, widget)
 
 	if assetId != "" {
-		var cLeft = parseNum(dyn(owner, root.themedField(p.BoxEdgeLeft, owner, widget), "100"), 0)
-		var cRight = parseNum(dyn(owner, root.themedField(p.BoxEdgeRight, owner, widget), "100"), 0)
-		var cTop = parseNum(dyn(owner, root.themedField(p.BoxEdgeTop, owner, widget), "100"), 0)
-		var cBottom = parseNum(dyn(owner, root.themedField(p.BoxEdgeBottom, owner, widget), "100"), 0)
+		var cLeft = parseNum(root.themedField(p.BoxEdgeLeft, owner, widget), 0)
+		var cRight = parseNum(root.themedField(p.BoxEdgeRight, owner, widget), 0)
+		var cTop = parseNum(root.themedField(p.BoxEdgeTop, owner, widget), 0)
+		var cBottom = parseNum(root.themedField(p.BoxEdgeBottom, owner, widget), 0)
 		var col = parseColor(root.themedField(p.Color, owner, widget), widget.isDisabled(owner))
 		var _, has = internal.Boxes[assetId]
 
@@ -65,7 +65,7 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	widget.textBox.EmbeddedAssetsTag = '^'
 	widget.textBox.EmbeddedThicknessesTag = '*'
 	widget.textBox.Text = text
-	widget.textBox.WordWrap = defaultValue(root.themedField(p.TextWordWrap, owner, widget), "on") == "on"
+	widget.textBox.WordWrap = defaultValue(root.themedField(p.TextWordWrap, owner, widget), "1") == "1"
 	widget.textBox.PivotX, widget.textBox.PivotY = 0, 0
 	widget.textBox.FontId = root.themedField(p.TextFontId, owner, widget)
 	widget.textBox.LineHeight = parseNum(root.themedField(p.TextLineHeight, owner, widget), 30)
