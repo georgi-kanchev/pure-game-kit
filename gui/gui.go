@@ -339,6 +339,19 @@ func (g *GUI) FieldNumber(id, field string, camera *graphics.Camera) float32 {
 	return parseNum(value, number.NaN())
 }
 
+func (g *GUI) AreaText(widgetId string, camera *graphics.Camera) (width, height float32) {
+	var w, hasW = g.root.Widgets[widgetId]
+
+	if hasW && w.textBox != nil {
+		var t = w.textBox
+		var text = condition.If(t.WordWrap, t.TextWrap(t.Text), t.Text)
+		width, height = t.TextMeasure(text)
+		return width, height
+	}
+	return number.NaN(), number.NaN()
+}
+
+// Works for Widgets & Containers.
 func (g *GUI) Area(id string, camera *graphics.Camera) (x, y, width, height, angle float32) {
 	var zoom = camera.Zoom / g.Scale
 	var w, hasW = g.root.Widgets[id]

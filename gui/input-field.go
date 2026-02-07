@@ -23,7 +23,7 @@ func InputField(id string, properties ...string) string {
 
 //=================================================================
 
-func (g *GUI) InputFieldIsTyping() (inputFieldId string) {
+func (g *GUI) InputFieldTyping() (inputFieldId string) {
 	if typingIn != nil {
 		return typingIn.Id
 	}
@@ -36,6 +36,8 @@ func (g *GUI) InputFieldStopTyping() {
 
 //=================================================================
 // private
+
+const cursorWidth float32 = 2
 
 func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 	setupVisualsText(root, widget, skipEmpty)
@@ -57,7 +59,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	}
 
 	var owner = root.Containers[widget.OwnerId]
-	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, widget), 30)
+	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, widget), 10)
 
 	if keyboard.IsComboJustPressed(key.LeftControl, key.A) ||
 		keyboard.IsComboJustPressed(key.RightControl, key.A) {
@@ -87,6 +89,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		}
 
 		typingIn = widget
+		widget.textBox.Text = text
 	}
 	if typingIn == widget {
 		text = tryInput(text, widget, margin, root, cam)
@@ -96,6 +99,9 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 		scrollX = condition.If(txt.Length(text) == 0, 0, scrollX)
 		cursorTime += internal.DeltaTime
+	} else {
+		indexCursor = 0
+		indexSelect = 0
 	}
 
 	var isPlaceholder = false
@@ -110,7 +116,7 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	maskText = true
 	textMargin = margin
 	drawVisuals(cam, root, widget, isPlaceholder, func() {
-		if indexCursor == indexSelect || typingIn != widget {
+		if indexCursor == indexSelect || typingIn != widget || len(symbolXs) == 0 {
 			return
 		}
 		var ax = symbolXs[indexCursor] - scrollX
@@ -120,17 +126,20 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 			ax, bx = bx, ax
 		}
 
-		cam.DrawQuad(ax, widget.textBox.Y, bx-ax, widget.textBox.Height, 0, palette.Azure)
+		var y, h = widget.textBox.Y + margin/2, widget.textBox.Height - margin
+		cam.DrawQuad(ax, y, bx-ax, h, 0, palette.Azure)
 	})
 	maskText = false
 
 	if typingIn == widget {
-		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, -5, palette.Gray)
+		cam.DrawQuadFrame(widget.X, widget.Y, widget.Width, widget.Height, 0, -4, palette.Gray)
 	}
 
 	if typingIn == widget && cursorTime < 0.5 {
-		var x = cursorX(margin, widget)
-		cam.DrawLine(x, widget.textBox.Y, x, widget.textBox.Y+widget.textBox.Height, 5, palette.Black)
+		var x, y = cursorX(margin, widget), widget.textBox.Y + margin/2
+		var w, h = cursorWidth, widget.textBox.Height - margin
+		cam.DrawQuad(x, y, w, h, 0, palette.White)
+		cam.DrawQuadFrame(x, y, w, h, 0, w/2, palette.Black)
 	}
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
 }
@@ -243,7 +252,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		if front > 0 && indexCursor == txt.Length(text) {
 			return
 		}
-		text = text[:indexCursor-back] + text[indexCursor+front:]
+		text = txt.Part(text, 0, indexCursor-back) + txt.Part(text, indexCursor+front, txt.Length(text))
 		setText(widget, text)
 		indexCursor -= back
 		indexSelect = indexCursor
@@ -299,7 +308,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 		setText(widget, text)
 		setupText(margin, root, widget, true) // text is not setuped cuz it was empty "" (skipped)
 	} else {
-		text = text[:indexCursor] + input + text[indexCursor:]
+		text = txt.Insert(text, input, indexCursor)
 	}
 
 	var owner = root.Containers[widget.OwnerId]
@@ -344,7 +353,7 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	indexSelect = indexCursor
 	frame = int(time.FrameCount()) // only once per frame
 
-	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, typingIn), 30)
+	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, typingIn), 10)
 	setupText(margin, root, typingIn, true)
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
 		self.textBox.Text = ""

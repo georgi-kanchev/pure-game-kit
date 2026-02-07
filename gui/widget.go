@@ -54,7 +54,6 @@ func (w *widget) isHidden(root *root, owner *container) bool {
 	var parentHidden = toggleParent != nil && toggleParent.isHidden(root, owner)
 	return hidden || parentHidden
 }
-
 func (w *widget) isSkipped(root *root, owner *container) bool {
 	return w.isHidden(root, owner) || w.Class == "tooltip"
 }

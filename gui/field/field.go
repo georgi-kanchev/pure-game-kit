@@ -98,7 +98,7 @@ const (
 	MenuContainerId = "menuContainerId" // [widget] [theme] which container should this menu toggle
 	MenuSound       = "menuSound"       // [widget] [theme] default: "~popup"
 
-	InputFieldMargin      = "inputFieldMargin"      // [widget] [theme] default: "30"
+	InputFieldMargin      = "inputFieldMargin"      // [widget] [theme] default: "10"
 	InputFieldPlaceholder = "inputFieldPlaceholder" // [widget] [theme] default: "Type..."
 	InputFieldSoundType   = "inputFieldSoundType"   // [widget] [theme] default: "~write"
 	InputFieldSoundErase  = "inputFieldSoundErase"  // [widget] [theme] default: "~erase"

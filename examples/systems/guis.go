@@ -64,14 +64,14 @@ func GUIs() {
 			f.AssetId, box[9]),
 		// ======================================================
 		gui.Container("panel", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1100",
-			f.ThemeId, "button", f.GapX, "40", f.GapY, "20", f.AnchorX, "1"),
+			f.ThemeId, "button", f.GapX, "40", f.GapY, "20"),
 		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
 		// ======================================================
 		gui.Visual("name-label", f.ThemeId, "label", f.Text, "Name", f.TooltipText, "Wow, tooltip for labels!"),
-		gui.InputField("name", f.Width, "500", f.AssetId, box[9], f.Text, "Kenney",
+		gui.InputField("name", f.Width, "500", f.AssetId, box[9], f.Text, "Kenney", f.InputFieldMargin, "20",
 			f.InputFieldPlaceholder, "Your name..."),
 		gui.Visual("class-label", f.ThemeId, "label", f.Text, "Class", f.NewRow, ""),
-		gui.InputField("class", f.Width, "500", f.AssetId, box[9], f.Text, "Cool"),
+		gui.InputField("class", f.Width, "500", f.AssetId, box[9], f.Text, "Cool", f.InputFieldMargin, "20"),
 		gui.Visual("stepper-label", f.ThemeId, "label", f.Text, "Stepper", f.NewRow, ""),
 		gui.Button("step-left", f.Width, "100", f.TextEmbeddedAssetId1, "arrow-left", f.Text, "^^ ",
 			f.TooltipText, "Press this button to do absolutely nothing.", f.ButtonHotkey, "A"),
