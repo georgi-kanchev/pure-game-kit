@@ -12,6 +12,7 @@ import (
 	"pure-game-kit/utility/number"
 	"reflect"
 	"regexp"
+	"unicode"
 
 	"strconv"
 	"strings"
@@ -126,18 +127,42 @@ func SplitWords(text string) []string {
 	return re.FindAllString(strings.ToLower(text), -1)
 }
 func Split(text, divider string) []string {
+	if text == "" {
+		return nil
+	}
 	return strings.Split(text, divider)
+}
+func SplitLines(text string) []string {
+	return Split(text, "\n")
 }
 
 //=================================================================
 // edit
 
-func ReplaceWith(text, part, with string) string {
+func Insert(text, part string, atIndex int) string {
+	var lastIndex = Length(text)
+	var before = Part(text, 0, atIndex)
+	var after = Part(text, atIndex, lastIndex)
+	return before + part + after
+}
+func Part(text string, fromIndex, toIndex int) string {
+	var runes = []rune(text)
+	var length = len(runes)
+	var start = number.Limit(fromIndex, 0, length)
+	var end = number.Limit(toIndex, 0, length)
+
+	if start > end {
+		return ""
+	}
+
+	return string(runes[start:end])
+}
+func Replace(text, part, with string) string {
 	return strings.ReplaceAll(text, part, with)
 }
 func Remove(text string, parts ...string) string {
 	for _, part := range parts {
-		text = ReplaceWith(text, part, "")
+		text = Replace(text, part, "")
 	}
 	return text
 }
@@ -153,13 +178,6 @@ func Reveal(text string, progress float32) string {
 	progress = number.Limit(progress, -1, 0)
 	var cutoff = int(number.Round(progress * textLen))
 	return string([]rune(text)[cutoff:])
-}
-func RevealBy(text string, fromStart, fromEnd int) string {
-	var runes = []rune(text)
-	var length = len(runes)
-	var start = number.Limit(fromStart, 0, length)
-	var end = number.Limit(fromEnd, 0, length)
-	return string(runes[start:end])
 }
 
 // Positive length trims from the end, negative length trims from the start. Default indicator if skipped: '…'
@@ -310,8 +328,38 @@ func Contains(text string, parts ...string) bool {
 	}
 	return true
 }
+
+// Same as IsEmpty(...)
 func IsBlank(text string) bool {
 	return Trim(text) == ""
+}
+
+// Same as IsBlank(...)
+func IsEmpty(text string) bool {
+	return IsBlank(text)
+}
+
+func IsAllLetters(text string) bool {
+	if len(text) == 0 {
+		return false
+	}
+	for _, r := range text {
+		if !unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
+func IsAllDigits(text string) bool {
+	if len(text) == 0 {
+		return false
+	}
+	for _, r := range text {
+		if !unicode.IsDigit(r) {
+			return false
+		}
+	}
+	return true
 }
 
 //=================================================================

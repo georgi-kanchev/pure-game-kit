@@ -43,9 +43,11 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 
 //=================================================================
 
+// Does not wrap the text - use TextWrap(...) beforehand if intended.
 func (t *TextBox) TextMeasure(text string) (width, height float32) {
 	var size = rl.MeasureTextEx(*t.font(), text, t.LineHeight+t.gapLines(), t.gapSymbols())
-	return size.X, size.Y
+	height = float32(len(txt.SplitLines(text))) * (t.LineHeight + t.gapLines())
+	return size.X, height // raylib doesn't seem to calculate height correctly
 }
 func (t *TextBox) TextWrap(text string) string {
 	var font = t.font()
@@ -95,7 +97,7 @@ func (t *TextBox) TextWrap(text string) string {
 	}
 
 	var result = buffer.ToText()
-	result = txt.ReplaceWith(result, " \n", "\n")
+	result = txt.Replace(result, " \n", "\n")
 
 	return result
 }
