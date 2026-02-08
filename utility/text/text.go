@@ -127,6 +127,7 @@ func SplitWords(text string) []string {
 	return re.FindAllString(strings.ToLower(text), -1)
 }
 func Split(text, divider string) []string {
+	text = Remove(text, "\r")
 	if text == "" {
 		return nil
 	}
