@@ -84,8 +84,8 @@ func ApplyState(state int) {
 		}
 
 		var m = rl.GetCurrentMonitor()
-		var w = rl.GetMonitorWidth(m)
-		var h = rl.GetMonitorHeight(m)
+		var w, h = rl.GetMonitorWidth(m), rl.GetMonitorHeight(m)
+
 		rl.SetWindowSize(w, h)
 		rl.ToggleFullscreen()
 		return
@@ -106,6 +106,14 @@ func ApplyState(state int) {
 	}
 	if state == st.FullscreenBorderless || state == st.Maximized {
 		rl.MaximizeWindow()
+	}
+
+	// center window, kinda
+	if state == st.Floating || state == st.FloatingBorderless {
+		var m = rl.GetCurrentMonitor()
+		var pos = rl.GetMonitorPosition(m)
+		var ww, wh = Size()
+		rl.SetWindowPosition(int(pos.X)+ww/4, int(pos.Y)+wh/4)
 	}
 
 }
@@ -170,7 +178,7 @@ func Monitors() (info []string, current int) {
 		var refreshRate = rl.GetMonitorRefreshRate(i)
 		var name = rl.GetMonitorName(i)
 		var w, h = rl.GetMonitorWidth(i), rl.GetMonitorHeight(i)
-		info[i] = text.New(name, " [", w, "x", h, ", ", refreshRate, "Hz]")
+		info[i] = text.New(name, " (", w, "x", h, ", ", refreshRate, "Hz)")
 	}
 	return info, rl.GetCurrentMonitor()
 }

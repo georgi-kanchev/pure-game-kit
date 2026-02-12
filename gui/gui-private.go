@@ -45,7 +45,7 @@ var box graphics.Box = graphics.Box{}
 
 var reusableWidget = &widget{Fields: map[string]string{}}
 
-var clickedId, clickedAndHeldId = "", ""
+var clickedId, clickedAndHeldId, sliderSlidId = "", "", ""
 
 func (g *GUI) reset(camera *graphics.Camera, inputState bool) (prAng, prZoom, prX, prY float32) {
 	prAng, prZoom, prX, prY = camera.Angle, camera.Zoom, camera.X, camera.Y

@@ -13,23 +13,19 @@ func Slider(id string, properties ...string) string {
 	return newWidget("slider", id, properties...)
 }
 
+func (g *GUI) IsSliderJustSlid(id string) bool {
+	return sliderSlidId == id
+}
+
 //=================================================================
 // private
 
 func slider(cam *graphics.Camera, root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var assetId = root.themedField(field.AssetId, owner, widget)
-	if assetId == "" {
-		widget.Height /= 2
-		widget.Y += widget.Height / 2
-	}
 	btnSounds = false
 	button(cam, root, widget)
 	btnSounds = true
-	if assetId == "" {
-		widget.Y -= widget.Height / 2
-		widget.Height *= 2
-	}
 
 	var _, h = assets.Size(assetId)
 	var ratio = widget.Height / float32(h)
@@ -38,6 +34,9 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 	var handleWidth, handleHeight = float32(hw), float32(hh)
 	handleWidth *= ratio
 	handleHeight *= ratio
+	if handleAssetId == "" {
+		handleWidth, handleHeight = widget.Height, widget.Height
+	}
 	var handleY = widget.Y - (handleWidth)/3
 	var value = parseNum(widget.Fields[field.Value], 0)
 	var step = parseNum(root.themedField(field.SliderStep, owner, widget), 0)
@@ -48,6 +47,9 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 		sound.Play()
 	}
 
+	if widget.PrevValue != value {
+		sliderSlidId = widget.Id
+	}
 	widget.PrevValue = value
 
 	if step > 0 {
@@ -61,7 +63,7 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 				reusableWidget.Width, reusableWidget.Height = widget.Height, widget.Height
 				drawReusableWidget(buttonColor, stepAssetId, stepX-widget.Height/2, widget.Y, root, cam)
 			} else {
-				cam.DrawQuad(stepX, widget.Y, 5, widget.Height, 0, buttonColor)
+				cam.DrawQuad(stepX-2.5, widget.Y, 5, widget.Height, 0, buttonColor)
 			}
 		}
 	}
@@ -76,8 +78,8 @@ func slider(cam *graphics.Camera, root *root, widget *widget) {
 	buttonColor = color.Brighten(buttonColor, 0.5)
 
 	if handleAssetId == "" {
-		cam.DrawCircle(x, handleY+handleWidth*0.8, handleWidth, color.Darken(buttonColor, 0.5))
-		cam.DrawCircle(x, handleY+handleWidth*0.8, handleWidth*0.75, buttonColor)
+		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/2, color.Darken(buttonColor, 0.5))
+		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/3, buttonColor)
 	} else {
 		reusableWidget.Width, reusableWidget.Height = handleWidth, handleHeight
 		drawReusableWidget(buttonColor, handleAssetId, x, handleY, root, cam)

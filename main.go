@@ -142,7 +142,7 @@ func main() {
 		hud.UpdateAndDraw(cam)
 
 		for k, v := range buttons {
-			if hud.IsButtonJustClicked(k, cam) {
+			if hud.IsButtonJustClicked(k) {
 				window.Title = "pure-game-kit: " + k
 				mouse.SetCursor(0)
 				v()

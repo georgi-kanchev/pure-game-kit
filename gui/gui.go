@@ -223,6 +223,8 @@ func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	cacheDynCamProps(camera)
 	g.root.Volume = g.Volume
 
+	sliderSlidId = condition.If(sliderSlidId != "", "", sliderSlidId)
+
 	for _, id := range containers {
 		var c = g.root.Containers[id]
 		var _, hasTarget = c.Fields[f.TargetId]
@@ -308,8 +310,6 @@ Works for Widgets & Containers. Use
 for dynamic values.
 */
 func (g *GUI) Field(id, field string, camera *graphics.Camera) string {
-	// var prAng, prZoom, prX, prY = g.reset(camera)
-	// defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
 	var w, hasW = g.root.Widgets[id]
 	var c, hasC = g.root.Containers[id]
 	var t, hasT = g.root.Themes[id]
