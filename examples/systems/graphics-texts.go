@@ -25,6 +25,8 @@ func Texts() {
 
 	var a float32 = 0
 
+	debug.ProfileCPU(10)
+
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		textBox.X, textBox.Y = cam.PointFromScreen(50, 0)
@@ -38,7 +40,5 @@ func Texts() {
 
 		cam.DrawTextBoxes(textBox)
 		textBox.Width, textBox.Height = textBox.MousePosition(cam)
-
-		debug.Print(time.FrameRate())
 	}
 }

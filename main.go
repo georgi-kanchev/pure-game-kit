@@ -1,13 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"pure-game-kit/data/assets"
 	example "pure-game-kit/examples/systems"
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
 	d "pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
+	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -147,6 +150,10 @@ func main() {
 				mouse.SetCursor(0)
 				v()
 			}
+		}
+
+		if condition.TrueEvery(0.2, "fps") {
+			fmt.Printf("time.FrameRate(): %v\n", time.FrameRate())
 		}
 	}
 }

@@ -269,12 +269,11 @@ func ProfileCPU(seconds float32) {
 
 		// Generate SVG via `go tool pprof`
 		var cmd = exec.Command("go", "tool", "pprof", "-svg", profileFile)
-		out, err := cmd.Output()
+		out, err := cmd.CombinedOutput() // Captures both Stdout and Stderr
 		if err != nil {
-			log.Println("failed to generate svg:", err)
+			log.Printf("failed to generate svg: %v. Output: %s", err, string(out))
 			return
 		}
-
 		if err := os.WriteFile(svgFile, out, 0644); err != nil {
 			log.Println("failed to save svg:", err)
 			return
