@@ -1,20 +1,97 @@
 package main
 
 import (
-	"fmt"
 	"pure-game-kit/data/assets"
 	example "pure-game-kit/examples/systems"
-	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
 	d "pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
-	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
+	rl.InitWindow(800, 450, "Raylib Go - 2D Mesh Example")
+	defer rl.CloseWindow()
+
+	// 1. Load Texture and Material
+	tex := rl.LoadTexture("examples/data/logo.PNG") // Replace with your image path
+	defer rl.UnloadTexture(tex)
+
+	// Materials define how the mesh is shaded. We use the default.
+	mat := rl.LoadMaterialDefault()
+	rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
+
+	// 2. Define the Mesh (2 Quads = 8 Vertices, 4 Triangles)
+	mesh := rl.Mesh{}
+	mesh.VertexCount = 8
+	mesh.TriangleCount = 4
+
+	// Positions (X, Y, Z) - Keep Z at 0 for 2D
+	vertices := []float32{
+		// QUAD A (Background)
+		100, 100, -0.1, // Top-Left
+		100, 200, -0.1, // Bottom-Left
+		200, 200, -0.1, // Bottom-Right
+		200, 100, -0.1, // Top-Right
+
+		// QUAD B (Foreground - Offset slightly)
+		150, 150, -0.2, // Top-Left
+		150, 250, -0.2, // Bottom-Left
+		250, 250, -0.2, // Bottom-Right
+		250, 150, -0.2, // Top-Right
+	}
+
+	// Texture Coordinates (U, V) - 0.0 to 1.0
+	texCoords := []float32{
+		0, 0, 0, 1, 1, 1, 1, 0,
+		0, 0, 0, 1, 1, 1, 1, 0,
+	}
+
+	// Colors (R, G, B, A)
+	colors := make([]uint8, mesh.VertexCount*4)
+	for i := 0; i < int(mesh.VertexCount*4); i++ {
+		colors[i] = 255 // White tint for all
+	}
+
+	// Indices (Connecting vertices into triangles)
+	indices := []uint16{
+		0, 1, 2, 0, 2, 3, // Quad 1
+		4, 5, 6, 4, 6, 7, // Quad 2
+	}
+
+	mesh.Vertices = &vertices[0]
+	mesh.Texcoords = &texCoords[0]
+	mesh.Indices = &indices[0]
+	mesh.Colors = &colors[0]
+
+	// Upload to GPU
+	rl.UploadMesh(&mesh, false)
+	defer rl.UnloadMesh(&mesh)
+
+	// 3. Setup 2D Camera
+	camera := rl.NewCamera2D(rl.NewVector2(0, 0), rl.NewVector2(0, 0), 0.0, 1.0)
+
+	rl.SetTargetFPS(60)
+
+	for !rl.WindowShouldClose() {
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.RayWhite)
+
+		rl.BeginMode2D(camera)
+		rl.EnableDepthTest()
+		// Draw the mesh using the identity matrix (no extra 3D translation)
+		rl.DrawMesh(mesh, mat, rl.MatrixIdentity())
+		rl.DisableDepthTest()
+		rl.EndMode2D()
+
+		rl.DrawText("Rendering 2D sprites via a single Mesh buffer", 10, 10, 20, rl.DarkGray)
+		rl.EndDrawing()
+	}
+
 	// example.Randoms()
 	// example.StorageBinary()
 	example.StorageYAML()
@@ -150,10 +227,6 @@ func main() {
 				mouse.SetCursor(0)
 				v()
 			}
-		}
-
-		if condition.TrueEvery(0.2, "fps") {
-			fmt.Printf("time.FrameRate(): %v\n", time.FrameRate())
 		}
 	}
 }

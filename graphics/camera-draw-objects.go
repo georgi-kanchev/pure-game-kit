@@ -206,12 +206,18 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
+		if t.Fast {
+			var text = condition.If(t.WordWrap, t.TextWrap(t.Text), t.Text)
+			c.DrawText(t.FontId, text, t.X, t.Y, t.LineHeight, t.Thickness, t.SymbolGap, t.Tint)
+			continue
+		}
+
 		var _, symbols = t.formatSymbols()
 		var lastThickness = t.Thickness
 		var assetTag = string(t.EmbeddedAssetsTag)
 		var thickSmooth = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
-
 		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
+
 		for _, s := range symbols {
 			var camX, camY = t.PointToCamera(c, s.X, s.Y)
 			var pos = rl.Vector2{X: camX, Y: camY}
@@ -242,7 +248,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			}
 
 			if s.Value != assetTag {
-				rl.DrawTextPro(*s.Font, s.Value, pos, rl.Vector2{}, s.Angle, s.Height, 0, getColor(s.Color))
+				rl.DrawTextPro(*s.Font, s.Value, pos, rl.Vector2{}, s.Angle, s.Height, t.SymbolGap, getColor(s.Color))
 			}
 		}
 	}

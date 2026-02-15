@@ -52,12 +52,13 @@ const (
 	TextSymbolGap         = "textSymbolGap"         // [widget] [theme] default: "0.2"
 	TextAlignmentX        = "textAlignmentX"        // [widget] [theme]
 	TextAlignmentY        = "textAlignmentY"        // [widget] [theme]
-	TextWordWrap          = "textWordWrap"          // [widget] [theme] example: "on" & "" = true, all else = false
+	TextWordWrap          = "textWordWrap"          // [widget] [theme] example: "" = true, all else = false
 	TextThickness         = "textThickness"         // [widget] [theme] default: "0.5"
 	TextSmoothness        = "textSmoothness"        // [widget] [theme] default: "0.02"
 	TextThicknessOutline  = "textThicknessOutline"  // [widget] [theme] default: "0.92"
 	TextSmoothnessOutline = "textSmoothnessOutline" // [widget] [theme] default: "0.08"
 	TextColorOutline      = "textColorOutline"      // [widget] [theme] example: "255 0 0 255"
+	TextFast              = "textFast"              // [widget] [theme] skip advanced features, example: "1"
 
 	TextEmbeddedAssetsTag      = "textEmbeddedAssetsTag"      // [widget] [theme] default: "^"
 	TextEmbeddedAssetId1       = "textEmbeddedAssetId1"       // [widget] [theme]

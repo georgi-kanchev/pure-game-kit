@@ -7,6 +7,7 @@ package file
 import (
 	"os"
 	"pure-game-kit/debug"
+	"pure-game-kit/utility/text"
 )
 
 func Exists(path string) bool {
@@ -53,7 +54,7 @@ func LoadBytes(path string) []byte {
 	return data
 }
 func LoadText(path string) string {
-	return string(LoadBytes(path))
+	return text.Remove(string(LoadBytes(path)), "\r") // FUCK windows pt1
 }
 
 func SaveBytes(path string, content []byte) bool {
@@ -64,7 +65,7 @@ func SaveBytes(path string, content []byte) bool {
 	return err == nil
 }
 func SaveText(path, content string) bool {
-	return SaveBytes(path, []byte(content))
+	return SaveBytes(path, []byte(text.Remove(content, "\r"))) // FUCK windows pt2
 }
 func SaveTextAppend(path string, content string) bool {
 	if !Exists(path) {
@@ -87,80 +88,3 @@ func SaveTextAppend(path string, content string) bool {
 
 	return true
 }
-
-/*
-func Delete(path string) bool {
-	if !IsExisting(path) {
-		debug.LogError("Failed to find file: \"", path, "\"")
-		return false
-	}
-	var err = os.Remove(path)
-	if err != nil {
-		debug.LogError("Failed to delete file: \"", path, "\"\n", err)
-	}
-
-	return err == nil
-}
-func Rename(path, newName string) bool {
-	if !IsExisting(path) {
-		debug.LogError("Failed to find file: \"", path, "\"")
-		return false
-	}
-
-	var newpath = ph.New(ph.Folder(path), newName)
-	var err = os.Rename(path, newpath)
-	if err != nil {
-		debug.LogError("Failed to rename file: \"", path, "\"\n", err)
-	}
-	return err == nil
-}
-func Move(path, toFolderPath string) bool {
-	if !IsExisting(path) {
-		debug.LogError("Failed to find file: \"", path, "\"")
-		return false
-	}
-
-	var info, err = os.Stat(toFolderPath)
-	if err != nil || !info.IsDir() {
-		debug.LogError("Failed to find target folder: \"", path, "\"\n", err)
-		return false
-	}
-
-	return Rename(path, ph.New(toFolderPath, path))
-}
-func Duplicate(path, toFolderPath string) bool {
-	if !IsExisting(path) {
-		debug.LogError("Failed to find file: \"", path, "\"")
-		return false
-	}
-
-	var info, err = os.Stat(toFolderPath)
-	if err != nil || !info.IsDir() {
-		debug.LogError("Failed to find target folder: \"", toFolderPath, "\"\n", err)
-		return false
-	}
-
-	var from, err2 = os.Open(path)
-	if err2 != nil {
-		debug.LogError("Failed to open file: \"", path, "\"\n", err2)
-		return false
-	}
-	defer from.Close()
-
-	var targetPath = ph.New(toFolderPath, path)
-	var to, err3 = os.Create(targetPath)
-	if err3 != nil {
-		debug.LogError("Failed to create file: \"", targetPath, "\"\n", err3)
-		return false
-	}
-	defer to.Close()
-
-	var _, err4 = io.Copy(to, from)
-	if err4 != nil {
-		debug.LogError("Failed to copy file: \"", path, "\" -> \"", targetPath, "\"\n", err4)
-		return false
-	}
-
-	return true
-}
-*/

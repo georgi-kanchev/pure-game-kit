@@ -127,7 +127,6 @@ func SplitWords(text string) []string {
 	return re.FindAllString(strings.ToLower(text), -1)
 }
 func Split(text, divider string) []string {
-	text = Remove(text, "\r")
 	if text == "" {
 		return nil
 	}
@@ -328,6 +327,9 @@ func Contains(text string, parts ...string) bool {
 		}
 	}
 	return true
+}
+func CountOccurrences(text, part string) int {
+	return strings.Count(text, part)
 }
 
 // Same as IsEmpty(...)

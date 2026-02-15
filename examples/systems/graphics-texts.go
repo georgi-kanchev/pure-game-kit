@@ -2,7 +2,6 @@ package example
 
 import (
 	"pure-game-kit/data/assets"
-	"pure-game-kit/debug"
 	"pure-game-kit/graphics"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
@@ -24,8 +23,6 @@ func Texts() {
 	textBox.LineHeight = 100
 
 	var a float32 = 0
-
-	debug.ProfileCPU(10)
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()

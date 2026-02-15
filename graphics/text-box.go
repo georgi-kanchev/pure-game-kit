@@ -23,6 +23,10 @@ type TextBox struct {
 	EmbeddedColors      []uint
 	EmbeddedThicknesses []float32
 
+	// Skip advanced feature properties for faster render. Properties used:
+	// 	FontId, Text, X, Y, Width, LineHeight, WordWrap, Thickness, SymbolGap, Tint
+	Fast bool
+
 	hash         uint32
 	cacheChars   []string
 	cacheSymbols []symbol
@@ -45,8 +49,12 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 
 // Does not wrap the text - use TextWrap(...) beforehand if intended.
 func (t *TextBox) TextMeasure(text string) (width, height float32) {
-	var size = rl.MeasureTextEx(*t.font(), text, t.LineHeight+t.gapLines(), t.gapSymbols())
-	height = float32(len(txt.SplitLines(text))) * (t.LineHeight + t.gapLines())
+	var size = rl.MeasureTextEx(*t.font(), text, t.LineHeight, t.gapSymbols())
+	if t.Fast {
+		height = size.Y
+	} else {
+		height = float32(len(txt.SplitLines(text))) * (t.LineHeight + t.gapLines())
+	}
 	return size.X, height // raylib doesn't seem to calculate height correctly
 }
 func (t *TextBox) TextWrap(text string) string {
