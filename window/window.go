@@ -22,7 +22,6 @@ var Color uint = 0
 var IsVSynced = false     // Requires window recreation to take effect.
 var IsAntialiased = false // Requires window recreation to take effect.
 var FrameRateLimit byte = 60
-var IsOpen = false
 
 //=================================================================
 
@@ -32,6 +31,7 @@ func Recreate() {
 }
 func KeepOpen() bool {
 	if terminate {
+		rl.CloseWindow()
 		return false
 	}
 
@@ -54,13 +54,7 @@ func KeepOpen() bool {
 	return !rl.WindowShouldClose()
 }
 func Close() {
-	if !rl.IsWindowReady() {
-		return
-	}
-
-	IsOpen = false
 	terminate = true
-	rl.CloseWindow()
 }
 
 func ApplyState(state int) {
@@ -246,7 +240,6 @@ func tryCreate() {
 	internal.WindowReady = true
 
 	tryUpdateProperties()
-	IsOpen = true
 	terminate = false
 	MoveToMonitor(0)
 }

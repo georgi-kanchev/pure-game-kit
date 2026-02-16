@@ -14,6 +14,7 @@ import (
 )
 
 func main() {
+	rl.SetConfigFlags(rl.FlagWindowMaximized | rl.FlagWindowResizable)
 	rl.InitWindow(800, 450, "Raylib Go - 2D Mesh Example")
 	defer rl.CloseWindow()
 
@@ -33,16 +34,16 @@ func main() {
 	// Positions (X, Y, Z) - Keep Z at 0 for 2D
 	vertices := []float32{
 		// QUAD A (Background)
-		100, 100, -0.1, // Top-Left
-		100, 200, -0.1, // Bottom-Left
-		200, 200, -0.1, // Bottom-Right
-		200, 100, -0.1, // Top-Right
+		100, 100, 0, // Top-Left
+		100, 200, 0, // Bottom-Left
+		200, 200, 0, // Bottom-Right
+		200, 100, 0, // Top-Right
 
 		// QUAD B (Foreground - Offset slightly)
-		150, 150, -0.2, // Top-Left
-		150, 250, -0.2, // Bottom-Left
-		250, 250, -0.2, // Bottom-Right
-		250, 150, -0.2, // Top-Right
+		150, 150, 0, // Top-Left
+		150, 250, 0, // Bottom-Left
+		250, 250, 0, // Bottom-Right
+		250, 150, 0, // Top-Right
 	}
 
 	// Texture Coordinates (U, V) - 0.0 to 1.0
@@ -69,7 +70,7 @@ func main() {
 	mesh.Colors = &colors[0]
 
 	// Upload to GPU
-	rl.UploadMesh(&mesh, false)
+	rl.UploadMesh(&mesh, true)
 	defer rl.UnloadMesh(&mesh)
 
 	// 3. Setup 2D Camera
@@ -79,16 +80,12 @@ func main() {
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
-		rl.ClearBackground(rl.RayWhite)
+		rl.ClearBackground(rl.Black)
 
 		rl.BeginMode2D(camera)
-		rl.EnableDepthTest()
-		// Draw the mesh using the identity matrix (no extra 3D translation)
 		rl.DrawMesh(mesh, mat, rl.MatrixIdentity())
-		rl.DisableDepthTest()
 		rl.EndMode2D()
 
-		rl.DrawText("Rendering 2D sprites via a single Mesh buffer", 10, 10, 20, rl.DarkGray)
 		rl.EndDrawing()
 	}
 

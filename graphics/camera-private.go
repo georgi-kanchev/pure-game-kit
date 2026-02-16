@@ -219,31 +219,24 @@ func (c *Camera) end() {
 func (c *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
 	c.update()
 	// optimized for speed
-	var angleRad = ang.ToRadians(angle)
-	var angle90Rad = ang.ToRadians(angle + 90)
+	var angleRad, angle90Rad = ang.ToRadians(angle), ang.ToRadians(angle + 90)
 	var cosA, sinA = number.Cosine(angleRad), number.Sine(angleRad)
 	var cosB, sinB = number.Cosine(angle90Rad), number.Sine(angle90Rad)
 	var tlx, tly = x, y
-	var trx = tlx + cosA*width
-	var try = tly + sinA*width
-	var blx = tlx + cosB*height
-	var bly = tly + sinB*height
-	var brx = trx + cosB*height
-	var bry = try + sinB*height
-	var tx = float32(rlCam.Target.X)
-	var ty = float32(rlCam.Target.Y)
+	var trx, try = tlx + cosA*width, tly + sinA*width
+	var blx, bly = tlx + cosB*height, tly + sinB*height
+	var brx, bry = trx + cosB*height, try + sinB*height
+	var tx, ty = float32(rlCam.Target.X), float32(rlCam.Target.Y)
 	var zoom = float32(rlCam.Zoom)
 	var camRotRad = ang.ToRadians(rlCam.Rotation)
 	var cosR, sinR = number.Cosine(camRotRad), number.Sine(camRotRad)
-	var offX = float32(rlCam.Offset.X)
-	var offY = float32(rlCam.Offset.Y)
+	var offX, offY = float32(rlCam.Offset.X), float32(rlCam.Offset.Y)
 	var pointToScreen = func(px, py float32) (float32, float32) { // inlined to skip cam.update() on each call
 		px -= tx
 		py -= ty
 		px *= zoom
 		py *= zoom
-		var rx = px*cosR - py*sinR
-		var ry = px*sinR + py*cosR
+		var rx, ry = px*cosR - py*sinR, px*sinR + py*cosR
 		return rx + offX, ry + offY
 	}
 	var stlx, stly = pointToScreen(tlx, tly)
@@ -254,10 +247,8 @@ func (c *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
 	var maxX = number.Biggest(stlx, strx, sbrx, sblx)
 	var minY = number.Smallest(stly, stry, sbry, sbly)
 	var maxY = number.Biggest(stly, stry, sbry, sbly)
-	var mtlx = float32(c.MaskX)
-	var mtly = float32(c.MaskY)
-	var mbrx = mtlx + float32(c.MaskWidth)
-	var mbry = mtly + float32(c.MaskHeight)
+	var mtlx, mtly = float32(c.MaskX), float32(c.MaskY)
+	var mbrx, mbry = mtlx + float32(c.MaskWidth), mtly + float32(c.MaskHeight)
 	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
 }
 
