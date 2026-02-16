@@ -353,12 +353,8 @@ func (c *Camera) DrawShapesFast(color uint, points ...[2]float32) {
 }
 
 func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
-	if !c.isAreaVisible(x, y, width, height, angle) {
-		return
-	}
-
 	var texture, has = internal.Textures[textureId]
-	if !has {
+	if !c.isAreaVisible(x, y, width, height, angle) || !has {
 		return
 	}
 

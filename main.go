@@ -15,7 +15,7 @@ import (
 
 func main() {
 	rl.SetConfigFlags(rl.FlagWindowMaximized | rl.FlagWindowResizable)
-	rl.InitWindow(800, 450, "Raylib Go - 2D Mesh Example")
+	rl.InitWindow(800, 450, "")
 	defer rl.CloseWindow()
 
 	// 1. Load Texture and Material
@@ -26,52 +26,8 @@ func main() {
 	mat := rl.LoadMaterialDefault()
 	rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
 
-	// 2. Define the Mesh (2 Quads = 8 Vertices, 4 Triangles)
-	mesh := rl.Mesh{}
-	mesh.VertexCount = 8
-	mesh.TriangleCount = 4
-
-	// Positions (X, Y, Z) - Keep Z at 0 for 2D
-	vertices := []float32{
-		// QUAD A (Background)
-		100, 100, 0, // Top-Left
-		100, 200, 0, // Bottom-Left
-		200, 200, 0, // Bottom-Right
-		200, 100, 0, // Top-Right
-
-		// QUAD B (Foreground - Offset slightly)
-		150, 150, 0, // Top-Left
-		150, 250, 0, // Bottom-Left
-		250, 250, 0, // Bottom-Right
-		250, 150, 0, // Top-Right
-	}
-
-	// Texture Coordinates (U, V) - 0.0 to 1.0
-	texCoords := []float32{
-		0, 0, 0, 1, 1, 1, 1, 0,
-		0, 0, 0, 1, 1, 1, 1, 0,
-	}
-
-	// Colors (R, G, B, A)
-	colors := make([]uint8, mesh.VertexCount*4)
-	for i := 0; i < int(mesh.VertexCount*4); i++ {
-		colors[i] = 255 // White tint for all
-	}
-
-	// Indices (Connecting vertices into triangles)
-	indices := []uint16{
-		0, 1, 2, 0, 2, 3, // Quad 1
-		4, 5, 6, 4, 6, 7, // Quad 2
-	}
-
-	mesh.Vertices = &vertices[0]
-	mesh.Texcoords = &texCoords[0]
-	mesh.Indices = &indices[0]
-	mesh.Colors = &colors[0]
-
-	// Upload to GPU
-	rl.UploadMesh(&mesh, true)
-	defer rl.UnloadMesh(&mesh)
+	var batch = graphics.Batch{}
+	batch.Init(5)
 
 	// 3. Setup 2D Camera
 	camera := rl.NewCamera2D(rl.NewVector2(0, 0), rl.NewVector2(0, 0), 0.0, 1.0)
@@ -83,7 +39,21 @@ func main() {
 		rl.ClearBackground(rl.Black)
 
 		rl.BeginMode2D(camera)
-		rl.DrawMesh(mesh, mat, rl.MatrixIdentity())
+		batch.Queue(
+			tex,
+			rl.NewRectangle(0, 0, float32(tex.Width), float32(tex.Height)),
+			rl.NewRectangle(0, 0, 100, 100),
+			rl.Vector2{},
+			0,
+			rl.White)
+		batch.Queue(
+			tex,
+			rl.NewRectangle(0, 0, float32(tex.Width), float32(tex.Height)),
+			rl.NewRectangle(25, 25, 200, 100),
+			rl.Vector2{},
+			0,
+			rl.Red)
+		batch.Draw(mat)
 		rl.EndMode2D()
 
 		rl.EndDrawing()

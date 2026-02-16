@@ -33,6 +33,7 @@ var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]*rl.Font)
 
+var MatrixDefault rl.Matrix
 var ShaderText, Shader rl.Shader
 var ShaderTextLoc, ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 
@@ -251,4 +252,5 @@ func tryInitShaders() {
 		Shader = rl.LoadShaderFromMemory(vert, frag)
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 	}
+	MatrixDefault = rl.MatrixIdentity()
 }
