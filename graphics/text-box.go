@@ -66,9 +66,10 @@ func (t *TextBox) TextWrap(text string) string {
 
 		var wordSize, _ = t.TextMeasure(txt.Trim(word))
 		var wordEndOfBox = curX+wordSize > t.Width
-		var firstWord = w == 0
+		var wordFirst = w == 0
+		var wordNewLine = !wordFirst && t.WordWrap && wordEndOfBox
 
-		if !firstWord && t.WordWrap && wordEndOfBox {
+		if wordNewLine {
 			curX = 0
 			curY += t.LineHeight + t.gapLines()
 			buffer.WriteSymbol('\n')
@@ -76,11 +77,12 @@ func (t *TextBox) TextWrap(text string) string {
 
 		for i, c := range word {
 			var char = string(c)
-			var charSize, _ = t.TextMeasure(string(char))
+			var charSize, _ = t.TextMeasure(char)
 			var charEndOfBoxX = curX+charSize > t.Width
-			var charFirst = i == 0 && firstWord
+			var charFirst = i == 0 && wordFirst
+			var charNewLine = !charFirst && char != " " && (char == "\n" || charEndOfBoxX)
 
-			if !charFirst && char != " " && (char == "\n" || charEndOfBoxX) {
+			if charNewLine {
 				curX = 0
 				curY += t.LineHeight + t.gapLines()
 
@@ -90,11 +92,6 @@ func (t *TextBox) TextWrap(text string) string {
 			}
 
 			buffer.WriteText(char)
-
-			//if char == string(t.EmbeddedColorsTag) || char == string(t.EmbeddedThicknessesTag) {
-			//	continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
-			//} // however, the assets tag has width and it should
-
 			curX += charSize + t.gapSymbols()
 		}
 	}
@@ -143,10 +140,10 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	var _, _, ang, _, _ = t.TransformToCamera()
 	var curX, curY float32 = 0, 0
 	var font = t.font()
+	var gapX = t.gapSymbols()
 	var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
-	var curColor = t.Tint
-	var curThick = t.Thickness
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
+	var curColor = t.Tint
 	var lineIndex = 0
 
 	for l, line := range lines {
@@ -161,57 +158,32 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 		curX = (t.Width - lineWidth) * alignX
 		curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
 
-		// hide text outside the box left, top & bottom
-		if curX < 0 || curY < 0 || curY+t.LineHeight-1 > t.Height {
-			skip = true // no need for right cuz text wraps there
+		var outsideLeftTopOrBottom = curX < 0 || curY < 0 || curY+t.LineHeight-1 > t.Height
+		if outsideLeftTopOrBottom {
+			skip = true
 		}
 
-		if !skip && lineIndex == 0 && l > 0 && txt.Length(line) > 3 {
-			line = "..." + line[3:] // invisible lines before this one, indicate it
-		}
-		if curY+t.LineHeight*1.5-1 > t.Height && l < len(lines)-1 && txt.Length(line) > 3 {
-			line = line[:len(line)-3] + "..." // invisible lines after this one, indicate it
-		}
+		var invisibleLinesBefore = !skip && lineIndex == 0 && l > 0 && txt.Length(line) > 3
+		var invisibleLinesAfter = curY+t.LineHeight*1.5-1 > t.Height && l < len(lines)-1 && txt.Length(line) > 3
+		line = condition.If(invisibleLinesBefore, "..."+line[3:], line)
+		line = condition.If(invisibleLinesAfter, line[:len(line)-3]+"...", line)
 
 		for _, c := range line {
+			if skip {
+				continue
+			}
+
 			var char = condition.If(emptyLine, "", string(c))
 			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
+			var symbol = t.createSymbol(font, cam, curX, curY, ang, c, char, curColor)
+			result = append(result, symbol)
 
-			if curX+charSize.X > t.Width+1 {
-				skip = true
+			if lineIndex == len(resultLines) {
+				resultLines = append(resultLines, "")
 			}
 
-			if !skip {
-				var scaleFactor = float32(t.LineHeight) / float32(font.BaseSize)
-				var glyph = rl.GetGlyphInfo(*font, int32(c))
-				var atlasRec = rl.GetGlyphAtlasRec(*font, int32(c))
-				var padding = float32(font.CharsPadding)
-				var rect = rl.NewRectangle(
-					curX+(float32(glyph.OffsetX)-padding)*scaleFactor,
-					curY+(float32(glyph.OffsetY)-padding)*scaleFactor,
-					(atlasRec.Width+2.0*padding)*scaleFactor,
-					(atlasRec.Height+2.0*padding)*scaleFactor)
-				var texRect = rl.NewRectangle(
-					atlasRec.X-padding,
-					atlasRec.Y-padding,
-					atlasRec.Width+2.0*padding,
-					atlasRec.Height+2.0*padding)
-
-				rect.X, rect.Y = t.PointToCamera(cam, rect.X, rect.Y)
-
-				var symbol = symbol{
-					Angle: ang, Thickness: curThick, Value: char, Color: curColor, Rect: rect, TexRect: texRect,
-				}
-
-				result = append(result, symbol)
-
-				if lineIndex == len(resultLines) {
-					resultLines = append(resultLines, "")
-				}
-
-				resultLines[lineIndex] += symbol.Value
-				curX += charSize.X + t.gapSymbols()
-			}
+			resultLines[lineIndex] += symbol.Value
+			curX += charSize.X + gapX
 		}
 
 		if !skip {
@@ -223,6 +195,24 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	t.cacheChars = resultLines
 	t.cacheSymbols = result
 	return resultLines, result
+}
+
+func (t *TextBox) createSymbol(font *rl.Font, cam *Camera, x, y, ang float32, c rune, char string, col uint) symbol {
+	var scaleFactor = float32(t.LineHeight) / float32(font.BaseSize)
+	var glyph = rl.GetGlyphInfo(*font, int32(c))
+	var atlasRec = rl.GetGlyphAtlasRec(*font, int32(c))
+	var padding = float32(font.CharsPadding)
+	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
+	var tw, th = atlasRec.Width + 2.0*padding, atlasRec.Height + 2.0*padding
+	var rx = x + (float32(glyph.OffsetX)-padding)*scaleFactor
+	var ry = y + (float32(glyph.OffsetY)-padding)*scaleFactor
+	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
+	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
+	var src = rl.NewRectangle(tx, ty, tw, th)
+	var dst = rl.NewRectangle(rx, ry, rw, rh)
+	dst.X, dst.Y = t.PointToCamera(cam, dst.X, dst.Y)
+	var symbol = symbol{Angle: ang, Thickness: t.Thickness, Value: char, Color: col, Rect: dst, TexRect: src}
+	return symbol
 }
 
 func (t *TextBox) font() *rl.Font {
