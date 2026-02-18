@@ -197,9 +197,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 }
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
-	var prevBatch = c.Batch
 	var prevShader = batch.material.Shader
-	c.Batch = true
 	batch.material.Shader = internal.ShaderText
 	for _, t := range textBoxes {
 		if t == nil {
@@ -218,44 +216,15 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 
 		var _, symbols = t.formatSymbols(c)
-		var lastThickness = t.Thickness
-		var assetTag = string(t.EmbeddedAssetsTag)
 		var thickSmooth = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
 		var font = t.font()
 		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
 
 		for _, s := range symbols {
-			if s.Thickness != lastThickness {
-				thickSmooth[0] = s.Thickness
-				rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
-				lastThickness = s.Thickness
-			}
-
-			if s.Value == assetTag && s.AssetId != "" {
-				var w, h = internal.AssetSize(s.AssetId)
-				var sprite = NewSprite(s.AssetId, s.Rect.X, s.Rect.Y)
-				var aspect = float32(h / w)
-
-				sprite.Height = t.LineHeight
-				sprite.Width = sprite.Height * aspect
-				sprite.PivotX, sprite.PivotY = 0, 0
-				sprite.Angle = s.Angle
-				sprite.Tint = s.Color
-
-				c.update()
-				rl.BeginShaderMode(internal.ShaderText)
-				c.DrawSprites(sprite)
-				rl.EndShaderMode()
-				continue
-			}
-
-			if s.Value != assetTag {
-				batch.Queue(font.Texture, s.TexRect, s.Rect, rl.Vector2{}, s.Angle, getColor(s.Color))
-			}
+			batch.Queue(font.Texture, s.TexRect, s.Rect, rl.Vector2{}, s.Angle, getColor(s.Color))
 		}
+		batch.Draw()
 	}
-	batch.Draw()
 	batch.material.Shader = prevShader
-	c.Batch = prevBatch
 	c.end()
 }

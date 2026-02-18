@@ -58,12 +58,8 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 		return
 	}
 
-	var disabled = widget.isDisabled(owner)
 	widget.textBox.ScaleX, widget.textBox.ScaleY = 1, 1
 	widget.textBox.X, widget.textBox.Y = widget.X, widget.Y
-	widget.textBox.EmbeddedColorsTag = '`'
-	widget.textBox.EmbeddedAssetsTag = '^'
-	widget.textBox.EmbeddedThicknessesTag = '*'
 	widget.textBox.Text = text
 	widget.textBox.WordWrap = defaultValue(root.themedField(f.TextWordWrap, owner, widget), "1") == "1"
 	widget.textBox.PivotX, widget.textBox.PivotY = 0, 0
@@ -75,36 +71,6 @@ func setupVisualsText(root *root, widget *widget, skipEmpty bool) {
 	widget.textBox.AlignmentY = parseNum(root.themedField(f.TextAlignmentY, owner, widget), 0)
 	widget.textBox.Width, widget.textBox.Height = widget.Width, widget.Height
 	widget.textBox.Fast = root.themedField(f.TextFast, owner, widget) != ""
-
-	widget.textBox.EmbeddedAssetsTag =
-		rune(defaultValue(root.themedField(f.TextEmbeddedAssetsTag, owner, widget), "^")[0])
-	widget.textBox.EmbeddedAssetIds = []string{
-		root.themedField(f.TextEmbeddedAssetId1, owner, widget),
-		root.themedField(f.TextEmbeddedAssetId2, owner, widget),
-		root.themedField(f.TextEmbeddedAssetId3, owner, widget),
-		root.themedField(f.TextEmbeddedAssetId4, owner, widget),
-		root.themedField(f.TextEmbeddedAssetId5, owner, widget),
-	}
-
-	widget.textBox.EmbeddedColorsTag =
-		rune(defaultValue(root.themedField(f.TextEmbeddedColorsTag, owner, widget), "`")[0])
-	widget.textBox.EmbeddedColors = []uint{
-		parseColor(root.themedField(f.TextEmbeddedColor1, owner, widget), disabled),
-		parseColor(root.themedField(f.TextEmbeddedColor2, owner, widget), disabled),
-		parseColor(root.themedField(f.TextEmbeddedColor3, owner, widget), disabled),
-		parseColor(root.themedField(f.TextEmbeddedColor4, owner, widget), disabled),
-		parseColor(root.themedField(f.TextEmbeddedColor5, owner, widget), disabled),
-	}
-
-	widget.textBox.EmbeddedThicknessesTag =
-		rune(defaultValue(root.themedField(f.TextEmbeddedThicknessesTag, owner, widget), "*")[0])
-	widget.textBox.EmbeddedThicknesses = []float32{
-		parseNum(root.themedField(f.TextEmbeddedThickness1, owner, widget), 0.5),
-		parseNum(root.themedField(f.TextEmbeddedThickness2, owner, widget), 0.5),
-		parseNum(root.themedField(f.TextEmbeddedThickness3, owner, widget), 0.5),
-		parseNum(root.themedField(f.TextEmbeddedThickness4, owner, widget), 0.5),
-		parseNum(root.themedField(f.TextEmbeddedThickness5, owner, widget), 0.5),
-	}
 }
 func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool, betweenVisualAndText func()) {
 	var owner = root.Containers[widget.OwnerId]
@@ -150,13 +116,10 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		var disabled = widget.isDisabled(owner)
 		var outlineCol = root.themedField(f.TextColorOutline, owner, widget)
 		if outlineCol != "" {
-			var embeddedColors = widget.textBox.EmbeddedColors
-			widget.textBox.EmbeddedColors = []uint{}
 			widget.textBox.Thickness = parseNum(root.themedField(f.TextThicknessOutline, owner, widget), 0.92)
 			widget.textBox.Smoothness = parseNum(root.themedField(f.TextSmoothnessOutline, owner, widget), 0.08)
 			widget.textBox.Tint = parseColor(outlineCol, disabled)
 			cam.DrawTextBoxes(widget.textBox)
-			widget.textBox.EmbeddedColors = embeddedColors
 		}
 
 		var colVal = defaultValue(root.themedField(f.TextColor, owner, widget), "127 127 127")

@@ -48,7 +48,6 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 	var textBox = graphics.NewTextBox(assets.LoadDefaultFont(), 5, 5, "")
 	textBox.LineGap, textBox.Tint = -1, palette.Red
 	textBox.PivotX, textBox.PivotY = 0, 0
-	textBox.EmbeddedAssetsTag, textBox.EmbeddedColorsTag = 0, 0
 	var fullSz = tileSize + gap
 	var txt = ""
 	var aw, ah = assets.Size(txt)

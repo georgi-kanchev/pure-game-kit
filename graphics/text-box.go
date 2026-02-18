@@ -17,11 +17,6 @@ type TextBox struct {
 	AlignmentX, AlignmentY,
 	Thickness, Smoothness,
 	SymbolGap, LineHeight, LineGap float32
-	EmbeddedColorsTag, EmbeddedAssetsTag,
-	EmbeddedThicknessesTag rune
-	EmbeddedAssetIds    []string
-	EmbeddedColors      []uint
-	EmbeddedThicknesses []float32
 
 	// Skip advanced feature properties for faster render. Properties used:
 	// 	FontId, Text, X, Y, Width, LineHeight, WordWrap, Thickness, SymbolGap, Tint
@@ -38,7 +33,6 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 	var textBox = &TextBox{
 		FontId: fontId, Node: *node, Text: txt.New(text...), LineHeight: 100,
 		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
-		EmbeddedColorsTag: '`', EmbeddedAssetsTag: '^', EmbeddedThicknessesTag: '*',
 	}
 	var font = textBox.font()
 	var measure = rl.MeasureTextEx(*font, textBox.Text, textBox.LineHeight, textBox.gapSymbols())
@@ -97,9 +91,9 @@ func (t *TextBox) TextWrap(text string) string {
 
 			buffer.WriteText(char)
 
-			if char == string(t.EmbeddedColorsTag) || char == string(t.EmbeddedThicknessesTag) {
-				continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
-			} // however, the assets tag has width and it should
+			//if char == string(t.EmbeddedColorsTag) || char == string(t.EmbeddedThicknessesTag) {
+			//	continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
+			//} // however, the assets tag has width and it should
 
 			curX += charSize + t.gapSymbols()
 		}
@@ -144,9 +138,6 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 
 	var result = []symbol{}
 	var resultLines = []string{}
-	var assetTag = string(t.EmbeddedAssetsTag)
-	var colorTag = string(t.EmbeddedColorsTag)
-	var thickTag = string(t.EmbeddedThicknessesTag)
 	var wrapped = t.TextWrap(t.Text)
 	var lines = txt.SplitLines(wrapped)
 	var _, _, ang, _, _ = t.TransformToCamera()
@@ -156,10 +147,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	var curColor = t.Tint
 	var curThick = t.Thickness
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
-	var colorIndex, assetIndex, thickIndex = 0, 0, 0
-	var lastChar = ""
 	var lineIndex = 0
-	// although some chars are "outside" of the box, they still need to be iterated cuz of colorIndex and assetIndex
 
 	for l, line := range lines {
 		var emptyLine = line == ""
@@ -167,8 +155,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 			line = " " // empty lines shouldn't be skipped
 		}
 
-		var tagless = txt.Remove(line, colorTag, thickTag)
-		var lineWidth, _ = t.TextMeasure(tagless)
+		var lineWidth, _ = t.TextMeasure(line)
 		var skip = false // replaces 'continue' to avoid skipping the offset calculations
 
 		curX = (t.Width - lineWidth) * alignX
@@ -190,37 +177,9 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 			var char = condition.If(emptyLine, "", string(c))
 			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
 
-			if char == "\r" {
-				lastChar = char
-				continue // use as zerospace character or skip anyway
-			}
-
 			if curX+charSize.X > t.Width+1 {
 				skip = true
 			}
-
-			if char == colorTag {
-				if colorIndex < len(t.EmbeddedColors) {
-					curColor = t.EmbeddedColors[colorIndex]
-					colorIndex++
-					continue
-				}
-				curColor = t.Tint
-				continue
-			}
-
-			if char == thickTag {
-				if thickIndex < len(t.EmbeddedThicknesses) {
-					curThick = t.EmbeddedThicknesses[thickIndex]
-					thickIndex++
-					continue
-
-				}
-				curThick = t.Thickness
-				continue
-			}
-
-			var isAsset = char == assetTag && lastChar != assetTag && assetIndex < len(t.EmbeddedAssetIds)
 
 			if !skip {
 				var scaleFactor = float32(t.LineHeight) / float32(font.BaseSize)
@@ -243,9 +202,6 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 				var symbol = symbol{
 					Angle: ang, Thickness: curThick, Value: char, Color: curColor, Rect: rect, TexRect: texRect,
 				}
-				if isAsset {
-					symbol.AssetId = t.EmbeddedAssetIds[assetIndex]
-				}
 
 				result = append(result, symbol)
 
@@ -255,15 +211,6 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 
 				resultLines[lineIndex] += symbol.Value
 				curX += charSize.X + t.gapSymbols()
-
-			}
-
-			if isAsset {
-				assetIndex++
-			}
-
-			if char != "\n" {
-				lastChar = char
 			}
 		}
 

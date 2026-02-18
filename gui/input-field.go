@@ -49,9 +49,6 @@ func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 	widget.textBox.X = widget.textBox.X + margin - scroll
 	widget.textBox.Y += margin / 2
 	widget.textBox.Text = txt.Remove(widget.textBox.Text, "\n")
-	widget.textBox.EmbeddedAssetsTag = 0
-	widget.textBox.EmbeddedColorsTag = 0
-	widget.textBox.EmbeddedThicknessesTag = 0
 }
 func inputField(cam *graphics.Camera, root *root, widget *widget) {
 	if widget.textBox == nil {

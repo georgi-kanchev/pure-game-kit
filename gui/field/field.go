@@ -60,25 +60,6 @@ const (
 	TextColorOutline      = "textColorOutline"      // [widget] [theme] example: "255 0 0 255"
 	TextFast              = "textFast"              // [widget] [theme] skip advanced features, example: "1"
 
-	TextEmbeddedAssetsTag      = "textEmbeddedAssetsTag"      // [widget] [theme] default: "^"
-	TextEmbeddedAssetId1       = "textEmbeddedAssetId1"       // [widget] [theme]
-	TextEmbeddedAssetId2       = "textEmbeddedAssetId2"       // [widget] [theme]
-	TextEmbeddedAssetId3       = "textEmbeddedAssetId3"       // [widget] [theme]
-	TextEmbeddedAssetId4       = "textEmbeddedAssetId4"       // [widget] [theme]
-	TextEmbeddedAssetId5       = "textEmbeddedAssetId5"       // [widget] [theme]
-	TextEmbeddedColorsTag      = "textEmbeddedColorsTag"      // [widget] [theme] default: "`"
-	TextEmbeddedColor1         = "textEmbeddedColor1"         // [widget] [theme]
-	TextEmbeddedColor2         = "textEmbeddedColor2"         // [widget] [theme]
-	TextEmbeddedColor3         = "textEmbeddedColor3"         // [widget] [theme]
-	TextEmbeddedColor4         = "textEmbeddedColor4"         // [widget] [theme]
-	TextEmbeddedColor5         = "textEmbeddedColor5"         // [widget] [theme]
-	TextEmbeddedThicknessesTag = "textEmbeddedThicknessesTag" // [widget] [theme] default: "*"
-	TextEmbeddedThickness1     = "textEmbeddedThickness1"     // [widget] [theme] default: "0.5"
-	TextEmbeddedThickness2     = "textEmbeddedThickness2"     // [widget] [theme] default: "0.5"
-	TextEmbeddedThickness3     = "textEmbeddedThickness3"     // [widget] [theme] default: "0.5"
-	TextEmbeddedThickness4     = "textEmbeddedThickness4"     // [widget] [theme] default: "0.5"
-	TextEmbeddedThickness5     = "textEmbeddedThickness5"     // [widget] [theme] default: "0.5"
-
 	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
 	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
 	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
