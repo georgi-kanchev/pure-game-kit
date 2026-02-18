@@ -14,7 +14,20 @@ func Color(text string, color uint) string {
 	var r, g, b, a = col.Channels(color)
 	return ColorRGBA(text, r, g, b, a)
 }
-func ColorRGB(text string, r, g, b, a byte) string { return ColorRGBA(text, r, g, b, 255) }
+func ColorRGB(text string, r, g, b, a byte) string {
+	return ColorRGBA(text, r, g, b, 255)
+}
 func ColorRGBA(text string, r, g, b, a byte) string {
 	return t.New("{#", r, " ", g, " ", b, " ", a, "}", text, "{#}")
+}
+
+func ColorOutline(text string, color uint) string {
+	var r, g, b, a = col.Channels(color)
+	return ColorOutlineRGBA(text, r, g, b, a)
+}
+func ColorOutlineRGB(text string, r, g, b, a byte) string {
+	return ColorOutlineRGBA(text, r, g, b, 255)
+}
+func ColorOutlineRGBA(text string, r, g, b, a byte) string {
+	return t.New("{&", r, " ", g, " ", b, " ", a, "}", text, "{&}")
 }

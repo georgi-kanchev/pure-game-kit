@@ -16,7 +16,7 @@ type TextBox struct {
 	WordWrap     bool
 	AlignmentX, AlignmentY,
 	Thickness, Smoothness,
-	SymbolGap, LineHeight, LineGap float32
+	LineHeight, SymbolGap, LineGap float32
 
 	// Skip advanced feature properties for faster render. Properties used:
 	// 	FontId, Text, X, Y, Width, LineHeight, WordWrap, Thickness, SymbolGap, Tint
@@ -121,10 +121,10 @@ func (t *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, c
 // private
 
 type symbol struct {
-	Angle, Thickness float32
-	Value, AssetId   string
-	Rect, TexRect    rl.Rectangle
-	Color            uint
+	Angle, Thickness    float32
+	Value, AssetId      string
+	Rect, TexRect       rl.Rectangle
+	Color, ColorOutline uint
 }
 
 func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
@@ -137,7 +137,6 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	var resultLines = []string{}
 	var wrapped = t.TextWrap(t.Text)
 	var lines = txt.SplitLines(wrapped)
-	var _, _, ang, _, _ = t.TransformToCamera()
 	var curX, curY float32 = 0, 0
 	var font = t.font()
 	var gapX = t.gapSymbols()
@@ -163,19 +162,30 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 			skip = true
 		}
 
-		var invisibleLinesBefore = !skip && lineIndex == 0 && l > 0 && txt.Length(line) > 3
-		var invisibleLinesAfter = curY+t.LineHeight*1.5-1 > t.Height && l < len(lines)-1 && txt.Length(line) > 3
-		line = condition.If(invisibleLinesBefore, "..."+line[3:], line)
-		line = condition.If(invisibleLinesAfter, line[:len(line)-3]+"...", line)
+		var invisibleLinesBefore = !skip && lineIndex == 0 && l > 0 && txt.Length(line) > 2
+		var invisibleLinesAfter = curY+t.LineHeight*2-1 > t.Height && l < len(lines)-1 && txt.Length(line) > 2
+		if invisibleLinesBefore {
+			line = "..." + line[3:]
+		}
+		if invisibleLinesAfter {
+			line = line[:len(line)-3] + "..."
+		}
 
 		for _, c := range line {
 			if skip {
-				continue
+				break
 			}
 
 			var char = condition.If(emptyLine, "", string(c))
 			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
-			var symbol = t.createSymbol(font, cam, curX, curY, ang, c, char, curColor)
+			var symbol = t.createSymbol(font, cam, curX, curY, t.Angle, c, char, curColor)
+			var outsideRight = curX+charSize.X > t.Width
+
+			if outsideRight {
+				skip = true
+				break // rare cases but happens with single symbol & small width
+			}
+
 			result = append(result, symbol)
 
 			if lineIndex == len(resultLines) {
@@ -198,18 +208,15 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 }
 
 func (t *TextBox) createSymbol(font *rl.Font, cam *Camera, x, y, ang float32, c rune, char string, col uint) symbol {
-	var scaleFactor = float32(t.LineHeight) / float32(font.BaseSize)
-	var glyph = rl.GetGlyphInfo(*font, int32(c))
-	var atlasRec = rl.GetGlyphAtlasRec(*font, int32(c))
-	var padding = float32(font.CharsPadding)
+	var scaleFactor, padding = float32(t.LineHeight) / float32(font.BaseSize), float32(font.CharsPadding)
+	var glyph, atlasRec = rl.GetGlyphInfo(*font, int32(c)), rl.GetGlyphAtlasRec(*font, int32(c))
 	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
 	var tw, th = atlasRec.Width + 2.0*padding, atlasRec.Height + 2.0*padding
 	var rx = x + (float32(glyph.OffsetX)-padding)*scaleFactor
 	var ry = y + (float32(glyph.OffsetY)-padding)*scaleFactor
 	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
 	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
-	var src = rl.NewRectangle(tx, ty, tw, th)
-	var dst = rl.NewRectangle(rx, ry, rw, rh)
+	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
 	dst.X, dst.Y = t.PointToCamera(cam, dst.X, dst.Y)
 	var symbol = symbol{Angle: ang, Thickness: t.Thickness, Value: char, Color: col, Rect: dst, TexRect: src}
 	return symbol
