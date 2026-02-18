@@ -26,7 +26,7 @@ Command examples:
 */
 func Execute(command string) (output string) {
 	command = text.Trim(text.Remove(command, "\r", "\n"))
-	var replaced, originals = internal.ReplaceQuotedStrings(command, quote, internal.Placeholder)
+	var replaced, originals = internal.ReplaceStrings(command, quote, quote, internal.Placeholder)
 	command = replaced
 
 	var parts = text.Split(command, dividerParts)

@@ -211,19 +211,27 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 		if t.Fast {
 			var text = condition.If(t.WordWrap, t.TextWrap(t.Text), t.Text)
-			c.DrawText(t.FontId, text, t.X, t.Y, t.LineHeight, t.Thickness, t.SymbolGap, t.Tint)
+			text = removeTags(text)
+			c.DrawText(t.FontId, text, t.X+marginX, t.Y, t.LineHeight, t.Thickness, t.SymbolGap, t.Tint)
 			continue
 		}
 
 		var _, symbols = t.formatSymbols(c)
-		var thickSmooth = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
+		var symb = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
 		var font = t.font()
-		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
 
 		for _, s := range symbols {
 			batch.Queue(font.Texture, s.TexRect, s.Rect, rl.Vector2{}, s.Angle, getColor(s.Color))
+
+			if s.UnderlineSize > 0 {
+				var src = rl.NewRectangle(float32(font.Texture.Width)-0.75, float32(font.Texture.Height)-0.75, 0.5, 0.5)
+				var dst = rl.NewRectangle(s.Rect.X, s.BottomY, s.Rect.Width, s.UnderlineSize)
+				batch.Queue(font.Texture, src, dst, rl.Vector2{}, s.Angle, getColor(s.Color))
+			}
 		}
+		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, symb, rl.ShaderUniformVec2)
 		batch.Draw()
+
 	}
 	batch.material.Shader = prevShader
 	c.end()

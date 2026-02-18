@@ -11,29 +11,30 @@ import txt "pure-game-kit/utility/text"
 
 const Placeholder = '╌'
 
-func ReplaceQuotedStrings(text string, quote, placeholder rune) (replaced string, originals []string) {
+func ReplaceStrings(text string, open, close, placeholder rune) (replaced string, originals []string) {
 	var result = txt.NewBuilder()
-	var inQuotes bool
 	var current = txt.NewBuilder()
+	var inside = false
 
 	for i, char := range text {
-		if char == quote {
-			if inQuotes { // closing quote found
-				inQuotes = false
-				originals = append(originals, current.ToText())
-				result.WriteSymbol(placeholder)
-				current.Clear()
-			} else { // opening quote found
-				inQuotes = true
-			}
+		if char == open && !inside {
+			inside = true
 			continue
 		}
 
-		if inQuotes {
-			current.WriteSymbol(char)
+		if char == close && inside {
+			inside = false
+			originals = append(originals, current.ToText())
+			result.WriteSymbol(placeholder)
+			current.Clear()
+			continue
+		}
 
-			if i == len(text)-1 { // no closing quote found results in no replacement
-				result.WriteText(string(quote) + current.ToText())
+		if inside {
+			current.WriteSymbol(char)
+			if i == len(text)-1 {
+				result.WriteSymbol(open)
+				result.WriteText(current.ToText())
 			}
 		} else {
 			result.WriteSymbol(char)
