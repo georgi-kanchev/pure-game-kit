@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/button"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/angle"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/window"
 
@@ -18,8 +17,7 @@ type Camera struct {
 
 	// Makes sequencial Draw calls faster.
 	// All of the drawing to the camera can be batched, as long as the other parameters don't change.
-	// Make sure to turn off batching after done drawing the batch,
-	// otherwise the other camera parameters will never take effect visually again.
+	// Make sure to turn off batching after done drawing the batch.
 	// No other camera should be drawing during batching.
 	//
 	// 	// recommended
@@ -49,6 +47,11 @@ type Camera struct {
 func NewCamera(zoom float32) *Camera {
 	var cam = Camera{Zoom: zoom}
 	cam.SetScreenAreaToWindow()
+
+	if batch == nil {
+		batch = &Batch{}
+		batch.Init(16)
+	}
 	return &cam
 }
 
@@ -59,8 +62,7 @@ func (c *Camera) MouseDragAndZoom() {
 
 	if mouse.IsButtonPressed(button.Middle) {
 		var dx, dy = mouse.CursorDelta()
-		var rad = angle.ToRadians(-c.Angle)
-		var sin, cos = number.Sine(rad), number.Cosine(rad)
+		var sin, cos = internal.SinCos(-c.Angle)
 		c.X -= (dx*cos - dy*sin) / c.Zoom
 		c.Y -= (dx*sin + dy*cos) / c.Zoom
 	}
@@ -75,8 +77,7 @@ func (c *Camera) MouseDragAndZoomSmoothly() {
 	c.velocityY *= decay
 
 	if mouse.IsButtonPressed(button.Middle) {
-		var rad = angle.ToRadians(-c.Angle)
-		var sin, cos = number.Sine(rad), number.Cosine(rad)
+		var sin, cos = internal.SinCos(-c.Angle)
 		var dx, dy = mouse.CursorDelta()
 
 		dx /= dt
@@ -141,8 +142,7 @@ func (c *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	sx -= float32(rlCam.Offset.X)
 	sy -= float32(rlCam.Offset.Y)
 
-	var angle = angle.ToRadians(-rlCam.Rotation)
-	var cos, sin = number.Cosine(angle), number.Sine(angle)
+	var sin, cos = internal.SinCos(-rlCam.Rotation)
 	var rotX, rotY = sx*cos - sy*sin, sx*sin + sy*cos
 
 	rotX /= float32(rlCam.Zoom)
@@ -159,8 +159,7 @@ func (c *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 	x *= float32(rlCam.Zoom)
 	y *= float32(rlCam.Zoom)
 
-	var angle = angle.ToRadians(rlCam.Rotation)
-	var cos, sin = number.Cosine(angle), number.Sine(angle)
+	var sin, cos = internal.SinCos(rlCam.Rotation)
 	var rotX, rotY = x*cos - y*sin, x*sin + y*cos
 
 	rotX += float32(rlCam.Offset.X)

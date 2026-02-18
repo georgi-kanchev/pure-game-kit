@@ -2,7 +2,6 @@ package graphics
 
 import (
 	"pure-game-kit/internal"
-	ang "pure-game-kit/utility/angle"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
@@ -271,16 +270,14 @@ func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int,
 	var points = make([]rl.Vector2, segments+2)
 	var radiusH, radiusV = width / 2, height / 2
 	var halfPie = fillAngle / 2.0
-	var rotationRad = ang.ToRadians(angle)
-	var cosRot = number.Cosine(rotationRad)
-	var sinRot = number.Sine(rotationRad)
+	var sinRot, cosRot = internal.SinCos(angle)
 
 	points[0] = rl.Vector2{X: x, Y: y}
 	for i := 0; i <= segments; i++ {
 		var t = float32(i) / float32(segments)
 		var localAngDeg = (halfPie - (t * fillAngle))
-		var localAngRad = ang.ToRadians(localAngDeg)
-		var localX, localY = number.Cosine(localAngRad) * radiusH, number.Sine(localAngRad) * radiusV
+		var sin, cos = internal.SinCos(localAngDeg)
+		var localX, localY = cos * radiusH, sin * radiusV
 		var rotatedX, rotatedY = localX*cosRot - localY*sinRot, localX*sinRot + localY*cosRot
 		points[i+1] = rl.Vector2{X: x + rotatedX, Y: y + rotatedY}
 	}

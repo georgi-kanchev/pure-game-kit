@@ -30,6 +30,7 @@ type TextBox struct {
 	hash         uint32
 	cacheChars   []string
 	cacheSymbols []symbol
+	cacheWrap    string
 }
 
 func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
@@ -50,15 +51,15 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 // Does not wrap the text - use TextWrap(...) beforehand if intended.
 func (t *TextBox) TextMeasure(text string) (width, height float32) {
 	var size = rl.MeasureTextEx(*t.font(), text, t.LineHeight, t.gapSymbols())
-	if t.Fast {
-		height = size.Y
-	} else {
-		height = float32(len(txt.SplitLines(text))) * (t.LineHeight + t.gapLines())
-	}
+	height = float32(txt.CountOccurrences(text, "\n")+1) * (t.LineHeight + t.gapLines())
 	return size.X, height // raylib doesn't seem to calculate height correctly
 }
 func (t *TextBox) TextWrap(text string) string {
-	var font = t.font()
+	var curHash = random.Hash(t)
+	if t.hash == curHash {
+		return t.cacheWrap
+	}
+
 	var words = txt.Split(text, " ")
 	var curX, curY float32 = 0, 0
 	var buffer = txt.NewBuilder()
@@ -69,8 +70,8 @@ func (t *TextBox) TextWrap(text string) string {
 			word += " " // split removes spaces, add it for all words but last one
 		}
 
-		var wordSize = rl.MeasureTextEx(*font, txt.Trim(word), t.LineHeight, t.gapSymbols())
-		var wordEndOfBox = curX+wordSize.X > t.Width
+		var wordSize, _ = t.TextMeasure(txt.Trim(word))
+		var wordEndOfBox = curX+wordSize > t.Width
 		var firstWord = w == 0
 
 		if !firstWord && t.WordWrap && wordEndOfBox {
@@ -81,8 +82,8 @@ func (t *TextBox) TextWrap(text string) string {
 
 		for i, c := range word {
 			var char = string(c)
-			var charSize = rl.MeasureTextEx(*font, string(char), t.LineHeight, 0)
-			var charEndOfBoxX = curX+charSize.X > t.Width
+			var charSize, _ = t.TextMeasure(string(char))
+			var charEndOfBoxX = curX+charSize > t.Width
 			var charFirst = i == 0 && firstWord
 
 			if !charFirst && char != " " && (char == "\n" || charEndOfBoxX) {
@@ -100,50 +101,42 @@ func (t *TextBox) TextWrap(text string) string {
 				continue // these tags have 0 width when rendering so wrapping shouldn't be affected by them
 			} // however, the assets tag has width and it should
 
-			curX += charSize.X + t.gapSymbols()
+			curX += charSize + t.gapSymbols()
 		}
 	}
 
 	var result = buffer.ToText()
 	result = txt.Replace(result, " \n", "\n")
-
+	t.hash = curHash
+	t.cacheWrap = result
 	return result
 }
-func (t *TextBox) TextSymbols() string {
-	var lines = t.TextLines()
-	var result = ""
-	for _, v := range lines {
-		result += v
-	}
-	return result
-}
-func (t *TextBox) TextLines() []string {
-	var lines, _ = t.formatSymbols()
+func (t *TextBox) TextLines(camera *Camera) []string {
+	var lines, _ = t.formatSymbols(camera)
 	return lines
 }
 func (t *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, cHeight, cAngle float32) {
-	var _, symbols = t.formatSymbols()
+	var _, symbols = t.formatSymbols(camera)
 	if symbolIndex < 0 || symbolIndex >= len(symbols) {
 		return number.NaN(), number.NaN(), number.NaN(), number.NaN(), number.NaN()
 	}
 
 	var symbol = symbols[symbolIndex]
-	cX, cY = t.PointToCamera(camera, symbol.X, symbol.Y)
-	return cX, cY, symbol.Width, symbol.Height, symbol.Angle
+	cX, cY = t.PointToCamera(camera, symbol.Rect.X, symbol.Rect.Y)
+	return cX, cY, symbol.Rect.Width, symbol.Rect.Height, symbol.Angle
 }
 
 //=================================================================
 // private
 
 type symbol struct {
-	X, Y, Angle, Width, Height,
-	Thickness float32
-	Value, AssetId string
-	Font           *rl.Font
-	Color          uint
+	Angle, Thickness float32
+	Value, AssetId   string
+	Rect, TexRect    rl.Rectangle
+	Color            uint
 }
 
-func (t *TextBox) formatSymbols() ([]string, []symbol) {
+func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	var curHash = random.Hash(t)
 	if t.hash == curHash {
 		return t.cacheChars, t.cacheSymbols
@@ -155,7 +148,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var colorTag = string(t.EmbeddedColorsTag)
 	var thickTag = string(t.EmbeddedThicknessesTag)
 	var wrapped = t.TextWrap(t.Text)
-	var lines = txt.Split(wrapped, "\n")
+	var lines = txt.SplitLines(wrapped)
 	var _, _, ang, _, _ = t.TransformToCamera()
 	var curX, curY float32 = 0, 0
 	var font = t.font()
@@ -175,10 +168,10 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		}
 
 		var tagless = txt.Remove(line, colorTag, thickTag)
-		var lineSize = rl.MeasureTextEx(*font, tagless, t.LineHeight, t.gapSymbols())
+		var lineWidth, _ = t.TextMeasure(tagless)
 		var skip = false // replaces 'continue' to avoid skipping the offset calculations
 
-		curX = (t.Width - lineSize.X) * alignX
+		curX = (t.Width - lineWidth) * alignX
 		curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
 
 		// hide text outside the box left, top & bottom
@@ -230,14 +223,25 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			var isAsset = char == assetTag && lastChar != assetTag && assetIndex < len(t.EmbeddedAssetIds)
 
 			if !skip {
+				var scaleFactor = float32(t.LineHeight) / float32(font.BaseSize)
+				var glyph = rl.GetGlyphInfo(*font, int32(c))
+				var atlasRec = rl.GetGlyphAtlasRec(*font, int32(c))
+				var padding = float32(font.CharsPadding)
+				var rect = rl.NewRectangle(
+					curX+(float32(glyph.OffsetX)-padding)*scaleFactor,
+					curY+(float32(glyph.OffsetY)-padding)*scaleFactor,
+					(atlasRec.Width+2.0*padding)*scaleFactor,
+					(atlasRec.Height+2.0*padding)*scaleFactor)
+				var texRect = rl.NewRectangle(
+					atlasRec.X-padding,
+					atlasRec.Y-padding,
+					atlasRec.Width+2.0*padding,
+					atlasRec.Height+2.0*padding)
+
+				rect.X, rect.Y = t.PointToCamera(cam, rect.X, rect.Y)
+
 				var symbol = symbol{
-					X: curX, Y: curY,
-					Width: charSize.X, Height: t.LineHeight,
-					Angle:     ang,
-					Thickness: curThick,
-					Value:     char,
-					Color:     curColor,
-					Font:      font,
+					Angle: ang, Thickness: curThick, Value: char, Color: curColor, Rect: rect, TexRect: texRect,
 				}
 				if isAsset {
 					symbol.AssetId = t.EmbeddedAssetIds[assetIndex]

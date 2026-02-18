@@ -16,10 +16,6 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 		}
 
 		var x, y, ang, scX, scY = n.TransformToCamera()
-		if !c.isAreaVisible(x, y, n.Width*scX, n.Height*scY, ang) {
-			continue
-		}
-
 		var w, h = n.Width, n.Height
 		c.DrawQuad(x, y, w*scX, h*scY, ang, n.Tint)
 	}
@@ -27,6 +23,7 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	c.begin()
 	var usingShader = false
+	var shouldBatch = len(sprites) > 8
 	for _, s := range sprites {
 		if s == nil {
 			continue
@@ -114,7 +111,14 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			}
 		}
 
-		rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
+		if shouldBatch {
+			batch.Queue(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
+		} else {
+			rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
+		}
+	}
+	if shouldBatch {
+		batch.Draw()
 	}
 	if usingShader && c.Effects == nil {
 		rl.EndShaderMode()
@@ -194,8 +198,9 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
 	var prevBatch = c.Batch
+	var prevShader = batch.material.Shader
 	c.Batch = true
-	rl.BeginShaderMode(internal.ShaderText)
+	batch.material.Shader = internal.ShaderText
 	for _, t := range textBoxes {
 		if t == nil {
 			continue
@@ -212,16 +217,14 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
-		var _, symbols = t.formatSymbols()
+		var _, symbols = t.formatSymbols(c)
 		var lastThickness = t.Thickness
 		var assetTag = string(t.EmbeddedAssetsTag)
 		var thickSmooth = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
+		var font = t.font()
 		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
 
 		for _, s := range symbols {
-			var camX, camY = t.PointToCamera(c, s.X, s.Y)
-			var pos = rl.Vector2{X: camX, Y: camY}
-
 			if s.Thickness != lastThickness {
 				thickSmooth[0] = s.Thickness
 				rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
@@ -230,7 +233,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 			if s.Value == assetTag && s.AssetId != "" {
 				var w, h = internal.AssetSize(s.AssetId)
-				var sprite = NewSprite(s.AssetId, camX, camY)
+				var sprite = NewSprite(s.AssetId, s.Rect.X, s.Rect.Y)
 				var aspect = float32(h / w)
 
 				sprite.Height = t.LineHeight
@@ -239,20 +242,20 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 				sprite.Angle = s.Angle
 				sprite.Tint = s.Color
 
-				rl.EndShaderMode()
 				c.update()
-				c.DrawSprites(sprite)
 				rl.BeginShaderMode(internal.ShaderText)
-				rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, thickSmooth, rl.ShaderUniformVec2)
+				c.DrawSprites(sprite)
+				rl.EndShaderMode()
 				continue
 			}
 
 			if s.Value != assetTag {
-				rl.DrawTextPro(*s.Font, s.Value, pos, rl.Vector2{}, s.Angle, s.Height, t.SymbolGap, getColor(s.Color))
+				batch.Queue(font.Texture, s.TexRect, s.Rect, rl.Vector2{}, s.Angle, getColor(s.Color))
 			}
 		}
 	}
-	rl.EndShaderMode()
+	batch.Draw()
+	batch.material.Shader = prevShader
 	c.Batch = prevBatch
 	c.end()
 }

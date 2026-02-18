@@ -9,12 +9,10 @@ type Sprite struct {
 
 	AssetId string
 	Effects *Effects
-
-	renderId int32 // index in the GPU memory buffer
 }
 
 func NewSprite(assetId string, x, y float32) *Sprite {
-	var sprite = Sprite{Node: *NewNode(x, y), AssetId: assetId, TextureRepeat: false, renderId: -1}
+	var sprite = Sprite{Node: *NewNode(x, y), AssetId: assetId, TextureRepeat: false}
 	var tex, has = internal.Textures[assetId]
 	if has {
 		sprite.Width, sprite.Height = float32(tex.Width), float32(tex.Height)

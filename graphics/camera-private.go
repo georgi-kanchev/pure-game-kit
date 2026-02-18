@@ -3,7 +3,6 @@ package graphics
 import (
 	"image/color"
 	"pure-game-kit/internal"
-	ang "pure-game-kit/utility/angle"
 	col "pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/window"
@@ -219,17 +218,15 @@ func (c *Camera) end() {
 func (c *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
 	c.update()
 	// optimized for speed
-	var angleRad, angle90Rad = ang.ToRadians(angle), ang.ToRadians(angle + 90)
-	var cosA, sinA = number.Cosine(angleRad), number.Sine(angleRad)
-	var cosB, sinB = number.Cosine(angle90Rad), number.Sine(angle90Rad)
+	var sinA, cosA = internal.SinCos(angle)
+	var sinB, cosB = internal.SinCos(angle + 90)
 	var tlx, tly = x, y
 	var trx, try = tlx + cosA*width, tly + sinA*width
 	var blx, bly = tlx + cosB*height, tly + sinB*height
 	var brx, bry = trx + cosB*height, try + sinB*height
 	var tx, ty = float32(rlCam.Target.X), float32(rlCam.Target.Y)
 	var zoom = float32(rlCam.Zoom)
-	var camRotRad = ang.ToRadians(rlCam.Rotation)
-	var cosR, sinR = number.Cosine(camRotRad), number.Sine(camRotRad)
+	var sinR, cosR = internal.SinCos(rlCam.Rotation)
 	var offX, offY = float32(rlCam.Offset.X), float32(rlCam.Offset.Y)
 	var pointToScreen = func(px, py float32) (float32, float32) { // inlined to skip cam.update() on each call
 		px -= tx

@@ -2,6 +2,7 @@
 package point
 
 import (
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/angle"
 	"pure-game-kit/utility/direction"
 	"pure-game-kit/utility/number"
@@ -57,10 +58,8 @@ func MoveByPercent(x, y, targetX, targetY float32, percent float32) (float32, fl
 }
 
 func RotateAroundPoint(x, y, targetX, targetY, angle float32) (float32, float32) {
-	var rad = rad(angle)
 	var tx, ty = x - targetX, y - targetY
-	var cosA = number.Cosine(rad)
-	var sinA = number.Sine(rad)
+	var sinA, cosA = internal.SinCos(angle)
 	var rx, ry = tx*cosA - ty*sinA, tx*sinA + ty*cosA
 
 	return rx + targetX, ry + targetY
@@ -80,7 +79,4 @@ func DirectionToPoint(x, y, targetX, targetY float32) (dirX, dirY float32) {
 
 func dir(ang float32) (float32, float32) {
 	return direction.FromAngle(ang)
-}
-func rad(ang float32) float32 {
-	return angle.ToRadians(ang)
 }

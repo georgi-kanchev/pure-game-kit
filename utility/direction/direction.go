@@ -5,13 +5,13 @@ Useful for working with 2D objects.
 package direction
 
 import (
-	"pure-game-kit/utility/angle"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 )
 
 func FromAngle(angle float32) (x, y float32) {
-	var rad = rad(angle)
-	return number.Cosine(rad), number.Sine(rad)
+	var sin, cos = internal.SinCos(angle)
+	return cos, sin
 }
 
 func Dot(ax, ay, bx, by float32) float32 {
@@ -29,11 +29,4 @@ func Length(x, y float32) float32 {
 }
 func BetweenPoints(x, y, targetX, targetY float32) (float32, float32) {
 	return Normalize(targetX-x, targetY-y)
-}
-
-//=================================================================
-// private
-
-func rad(ang float32) float32 {
-	return angle.ToRadians(ang)
 }

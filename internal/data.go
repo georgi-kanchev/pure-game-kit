@@ -61,6 +61,8 @@ var MouseDeltaX, MouseDeltaY, SmoothScroll float32
 var Keys, KeysPrev, Buttons, ButtonsPrev = []int{}, []int{}, []int{}, []int{}
 var AnyButtonJustPressed, AnyButtonJustReleased, AnyKeyJustPressed, AnyKeyJustReleased = false, false, false, false
 
+var sineTable [3600]float32
+
 //=================================================================
 
 func AssetSize(assetId string) (width, height int) {
@@ -125,6 +127,15 @@ func IsLoaded(assetId string) bool {
 
 func Path(path string) string {
 	return strings.ReplaceAll(path, "\\", "/")
+}
+
+// optimized for speed via lookup table
+func SinCos(degrees float32) (sin, cos float32) {
+	idx := int(degrees * 10)           // convert to index (0.1 degree precision)
+	idx = ((idx % 3600) + 3600) % 3600 // and wrap 0-3599
+
+	// sine is direct lookup, cosine is sine shifted by 90 degrees (900 indices)
+	return sineTable[idx], sineTable[(idx+900)%3600]
 }
 
 //=================================================================
@@ -243,7 +254,7 @@ func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, millisec
 	return
 }
 
-func tryInitShaders() {
+func initData() {
 	if ShaderText.ID == 0 {
 		ShaderText = rl.LoadShaderFromMemory("", fragText)
 		ShaderTextLoc = rl.GetLocationUniform(ShaderText.ID, "thickSmooth")
@@ -253,4 +264,9 @@ func tryInitShaders() {
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 	}
 	MatrixDefault = rl.MatrixIdentity()
+
+	for i := 0; i < 3600; i++ {
+		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
+		sineTable[i] = float32(math.Sin(rad))
+	}
 }

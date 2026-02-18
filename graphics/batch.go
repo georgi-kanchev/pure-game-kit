@@ -1,21 +1,23 @@
 package graphics
 
 import (
-	"math"
+	"pure-game-kit/internal"
+	"pure-game-kit/utility/number"
 	"unsafe"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Batch struct {
-	mesh *rl.Mesh
+	mesh     *rl.Mesh
+	material rl.Material
 
-	quadCountCurrent, quadCountCapacity   int32
-	vertices, texCoords, colors, indices  []byte
-	dirtyVerts, dirtyTexCoords, dirtyCols bool
+	quadCountCurrent, quadCountCapacity  int32
+	vertices, texCoords, colors, indices []byte
 }
 
-// var batches = make(map[*rl.Texture2D]*Batch)
+var batch *Batch
+var prevColor rl.Color
 
 func (b *Batch) Init(quadCountCapacity int32) {
 	if b.mesh != nil {
@@ -47,13 +49,25 @@ func (b *Batch) Init(quadCountCapacity int32) {
 	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indices[0]))
 
 	rl.UploadMesh(b.mesh, true)
+	b.material = rl.LoadMaterialDefault()
 }
-
 func (b *Batch) Queue(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vector2, rotation float32, color rl.Color) {
+	if b.quadCountCurrent != 0 && (b.material.Maps.Texture != tex || b.quadCountCurrent >= b.quadCountCapacity) {
+		b.Draw()
+	}
+
+	if b.quadCountCurrent == 0 { // only after draw (first in queue or new texture)
+		var mat = b.material // create a local copy on the stack
+		rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
+		b.material = mat // copy the modified material back to the heap struct
+	}
+
+	dst.Width = number.Absolute(dst.Width)
+	dst.Height = number.Absolute(dst.Height)
+
 	var id = b.quadCountCurrent
 	var vertices = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[id*48])), 12)
-	var rad = rotation * rl.Deg2rad
-	var cosA, sinA = float32(math.Cos(float64(rad))), float32(math.Sin(float64(rad)))
+	var sinA, cosA = internal.SinCos(rotation)
 	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
 
 	for i := range 4 {
@@ -75,9 +89,8 @@ func (b *Batch) Queue(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vector2
 	texCoords[4], texCoords[5] = u2, v2 // br
 	texCoords[6], texCoords[7] = u2, v1 // tr
 
-	var cOffset = id * 16
-	var colors = b.colors[cOffset : cOffset+16]
-
+	var colorOffset = id * 16
+	var colors = b.colors[colorOffset : colorOffset+16]
 	for i := range 4 {
 		colors[i*4+0] = color.R
 		colors[i*4+1] = color.G
@@ -85,36 +98,23 @@ func (b *Batch) Queue(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vector2
 		colors[i*4+3] = color.A
 	}
 
-	b.dirtyVerts = true
-	b.dirtyTexCoords = true
-	b.dirtyCols = true
 	b.quadCountCurrent++
 }
-
-func (b *Batch) Draw(material rl.Material) {
+func (b *Batch) Draw() {
 	if b.quadCountCurrent == 0 {
 		return
 	}
 
-	if b.dirtyVerts {
-		rl.UpdateMeshBuffer(*b.mesh, 0, b.vertices, 0)
-	}
-	if b.dirtyTexCoords {
-		rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords, 0)
-	}
-	if b.dirtyCols {
-		rl.UpdateMeshBuffer(*b.mesh, 3, b.colors, 0)
-	}
+	rl.UpdateMeshBuffer(*b.mesh, 0, b.vertices, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 3, b.colors, 0)
 
 	b.mesh.TriangleCount = b.quadCountCurrent * 2
-	rl.DrawMesh(*b.mesh, material, rl.MatrixIdentity())
+	rl.DrawMesh(*b.mesh, b.material, internal.MatrixDefault)
 
 	if b.quadCountCurrent >= b.quadCountCapacity {
 		b.Init(b.quadCountCapacity * 2)
 	}
 
 	b.quadCountCurrent = 0
-	b.dirtyVerts = false
-	b.dirtyTexCoords = false
-	b.dirtyCols = false
 }

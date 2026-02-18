@@ -1,9 +1,8 @@
 package graphics
 
 import (
-	"pure-game-kit/utility/angle"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/color/palette"
-	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 )
 
@@ -15,12 +14,12 @@ type Node struct {
 	Parent         *Node
 	Tint           uint
 
-	Z float32 // Make sure to render semi-transparent objects last when relying on this field.
+	renderId int32
 }
 
 func NewNode(x, y float32) *Node {
 	return &Node{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
-		PivotX: 0.5, PivotY: 0.5, Tint: palette.White}
+		PivotX: 0.5, PivotY: 0.5, Tint: palette.White, renderId: -1}
 }
 
 //=================================================================
@@ -76,8 +75,7 @@ func (n *Node) TransformToCamera() (cx, cy, cAngle, cScaleX, cScaleY float32) {
 	var originPixelY = n.PivotY * float32(h)
 	var offsetX = -originPixelX * n.ScaleX
 	var offsetY = -originPixelY * n.ScaleY
-	var localRad = angle.ToRadians(n.Angle)
-	var sinL, cosL = number.Sine(localRad), number.Cosine(localRad)
+	var sinL, cosL = internal.SinCos(n.Angle)
 	var originOffsetX = offsetX*cosL - offsetY*sinL
 	var originOffsetY = offsetX*sinL + offsetY*cosL
 	var localX = n.X + originOffsetX
@@ -95,8 +93,7 @@ func (n *Node) TransformToCamera() (cx, cy, cAngle, cScaleX, cScaleY float32) {
 	localX *= psx
 	localY *= psy
 
-	var parentRad = angle.ToRadians(pa)
-	var sinP, cosP = number.Sine(parentRad), number.Cosine(parentRad)
+	var sinP, cosP = internal.SinCos(pa)
 	var worldX = localX*cosP - localY*sinP + px
 	var worldY = localX*sinP + localY*cosP + py
 
@@ -114,8 +111,7 @@ func (n *Node) TransformFromCamera(cx, cy, cAngle, cScaleX, cScaleY float32) (x,
 
 	var dx = cx - n.X
 	var dy = cy - n.Y
-	var angleRad = toRad(-n.Angle)
-	var sin, cos = number.Sine(angleRad), number.Cosine(angleRad)
+	var sin, cos = internal.SinCos(-n.Angle)
 	var localX = dx*cos - dy*sin
 	var localY = dx*sin + dy*cos
 	var w, h = n.Width, n.Height
@@ -143,8 +139,7 @@ func (n *Node) PointToCamera(camera *Camera, x, y float32) (cx, cy float32) {
 	var originPixelY = n.PivotY * float32(h)
 	var localX = (x - originPixelX) * n.ScaleX
 	var localY = (y - originPixelY) * n.ScaleY
-	var localRad = toRad(n.Angle)
-	var sinL, cosL = number.Sine(localRad), number.Cosine(localRad)
+	var sinL, cosL = internal.SinCos(n.Angle)
 	var rotX = localX*cosL - localY*sinL
 	var rotY = localX*sinL + localY*cosL
 	var worldX = rotX + n.X
@@ -192,8 +187,6 @@ const (
 	bottomRight
 	bottomLeft
 )
-
-func toRad(ang float32) float32 { return angle.ToRadians(ang) }
 
 func (n *Node) getCorner(corner corner) (x, y float32) {
 	var width, height = n.Width, n.Height

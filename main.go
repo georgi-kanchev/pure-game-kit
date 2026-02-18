@@ -9,56 +9,9 @@ import (
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/window"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
-	rl.SetConfigFlags(rl.FlagWindowMaximized | rl.FlagWindowResizable)
-	rl.InitWindow(800, 450, "")
-	defer rl.CloseWindow()
-
-	// 1. Load Texture and Material
-	tex := rl.LoadTexture("examples/data/logo.PNG") // Replace with your image path
-	defer rl.UnloadTexture(tex)
-
-	// Materials define how the mesh is shaded. We use the default.
-	mat := rl.LoadMaterialDefault()
-	rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
-
-	var batch = graphics.Batch{}
-	batch.Init(5)
-
-	// 3. Setup 2D Camera
-	camera := rl.NewCamera2D(rl.NewVector2(0, 0), rl.NewVector2(0, 0), 0.0, 1.0)
-
-	rl.SetTargetFPS(60)
-
-	for !rl.WindowShouldClose() {
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.Black)
-
-		rl.BeginMode2D(camera)
-		batch.Queue(
-			tex,
-			rl.NewRectangle(0, 0, float32(tex.Width), float32(tex.Height)),
-			rl.NewRectangle(0, 0, 100, 100),
-			rl.Vector2{},
-			0,
-			rl.White)
-		batch.Queue(
-			tex,
-			rl.NewRectangle(0, 0, float32(tex.Width), float32(tex.Height)),
-			rl.NewRectangle(25, 25, 200, 100),
-			rl.Vector2{},
-			0,
-			rl.Red)
-		batch.Draw(mat)
-		rl.EndMode2D()
-
-		rl.EndDrawing()
-	}
-
 	// example.Randoms()
 	// example.StorageBinary()
 	example.StorageYAML()
