@@ -59,10 +59,10 @@ func (t *TextBox) TextWrap(text string) string {
 
 	var replaced, originals = internal.ReplaceStrings(text, '{', '}', internal.Placeholder)
 	var words = txt.Split(replaced, " ")
-	var curX, curY float32 = marginX, 0
+	var curX, curY float32 = 0, 0
 	var buffer = txt.NewBuilder()
 	var tagIndex = 0
-	var width = t.Width - marginX
+	var width = t.Width
 
 	for w := range words {
 		var word = words[w]
@@ -77,7 +77,7 @@ func (t *TextBox) TextWrap(text string) string {
 		var wordNewLine = !wordFirst && t.WordWrap && wordEndOfBox
 
 		if wordNewLine {
-			curX = marginX
+			curX = 0
 			curY += t.LineHeight + t.gapLines()
 			buffer.WriteSymbol('\n')
 		}
@@ -91,7 +91,7 @@ func (t *TextBox) TextWrap(text string) string {
 			var charNewLine = !charFirst && char != " " && (char == "\n" || charEndOfBoxX)
 
 			if charNewLine {
-				curX = marginX
+				curX = 0
 				curY += t.LineHeight + t.gapLines()
 
 				if char != "\n" {
@@ -123,15 +123,12 @@ func (t *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, c
 		return number.NaN(), number.NaN(), number.NaN(), number.NaN(), number.NaN()
 	}
 
-	var symbol = symbols[symbolIndex]
-	cX, cY = t.PointToCamera(camera, symbol.Rect.X, symbol.Rect.Y)
-	return cX, cY, symbol.Rect.Width, symbol.Rect.Height, symbol.Angle
+	var s = symbols[symbolIndex]
+	return s.X, s.Y, s.Width, t.LineHeight, s.Angle
 }
 
 //=================================================================
 // private
-
-const marginX = 10
 
 type symbol struct {
 	Angle, Thickness float32
@@ -140,7 +137,7 @@ type symbol struct {
 	Color            uint
 
 	UnderlineSize float32
-	TopY, BottomY float32
+	X, Y, Width   float32
 }
 
 func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
@@ -153,7 +150,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	var resultLines = []string{}
 	var wrapped = t.TextWrap(t.Text)
 	var lines = txt.SplitLines(wrapped)
-	var curX, curY float32 = marginX, 0
+	var curX, curY float32 = 0, 0
 	var font = t.font()
 	var gapX = t.gapSymbols()
 	var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
@@ -163,7 +160,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	var lineIndex = 0
 	var reading = false
 	var curTag = text.NewBuilder()
-	var w = t.Width - marginX
+	var w = t.Width
 
 	for l, line := range lines {
 		var emptyLine = line == ""
@@ -175,10 +172,10 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 		var lineWidth, _ = t.TextMeasure(tagless)
 		var skip = false // replaces 'continue' to avoid skipping the offset calculations
 
-		curX = marginX + ((w - lineWidth) * alignX)
+		curX = (w - lineWidth) * alignX
 		curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
 
-		var outsideLeftTopOrBottom = curX < marginX || curY < 0 || curY+t.LineHeight-1 > t.Height
+		var outsideLeftTopOrBottom = curX < 0 || curY < 0 || curY+t.LineHeight-1 > t.Height
 		if outsideLeftTopOrBottom {
 			skip = true
 		}
@@ -194,7 +191,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 
 			var char = condition.If(emptyLine, "", string(c))
 			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
-			var symbol = t.createSymbol(font, cam, curX, curY, t.Angle, curUnderline, c, char, curColor)
+			var symbol = t.createSymbol(font, cam, curX, curY, charSize.X, t.Angle, curUnderline, c, char, curColor)
 			var outsideRight = curX+charSize.X > w
 
 			if outsideRight {
@@ -256,7 +253,7 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, col *uint,
 	return false
 }
 
-func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y, a, un float32, c rune, char string, col uint) symbol {
+func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y, w, a, un float32, c rune, ch string, col uint) symbol {
 	var scaleFactor, padding = float32(t.LineHeight) / float32(f.BaseSize), float32(f.CharsPadding)
 	var glyph, atlasRec = rl.GetGlyphInfo(*f, int32(c)), rl.GetGlyphAtlasRec(*f, int32(c))
 	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
@@ -269,8 +266,8 @@ func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y, a, un float32, c r
 	dst.X, dst.Y = t.PointToCamera(cam, dst.X, dst.Y)
 	x, y = t.PointToCamera(cam, x, y)
 	var symbol = symbol{
-		Angle: a, Thickness: t.Thickness, Value: char, Color: col, Rect: dst, TexRect: src, UnderlineSize: un,
-		TopY: y, BottomY: y + t.LineHeight}
+		Angle: a, Thickness: t.Thickness, Value: ch, Color: col, Rect: dst, TexRect: src, UnderlineSize: un,
+		X: x, Y: y, Width: w}
 	return symbol
 }
 

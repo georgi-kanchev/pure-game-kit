@@ -42,7 +42,7 @@ const cursorWidth float32 = 2
 func setupText(margin float32, root *root, widget *widget, skipEmpty bool) {
 	setupVisualsText(root, widget, skipEmpty)
 	widget.textBox.AlignmentX, widget.textBox.AlignmentY = 0, 0
-	widget.textBox.Width = 9999
+	widget.textBox.Width = 99999
 	widget.textBox.Height = widget.Height - margin
 	widget.textBox.LineHeight = widget.Height - margin
 	var scroll = condition.If(typingIn == widget, scrollX, 0)
@@ -96,9 +96,6 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 
 		scrollX = condition.If(txt.Length(text) == 0, 0, scrollX)
 		cursorTime += internal.DeltaTime
-	} else {
-		indexCursor = 0
-		indexSelect = 0
 	}
 
 	var isPlaceholder = false
@@ -110,6 +107,10 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		isPlaceholder = true
 	}
 
+	draw(margin, cam, root, widget, isPlaceholder)
+	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
+}
+func draw(margin float32, cam *graphics.Camera, root *root, widget *widget, isPlaceholder bool) {
 	maskText = true
 	textMargin = margin
 	drawVisuals(cam, root, widget, isPlaceholder, func() {
@@ -138,89 +139,44 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		cam.DrawQuad(x, y, w, h, 0, palette.White)
 		cam.DrawQuadFrame(x, y, w, h, 0, w/2, palette.Black)
 	}
-	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
 }
 
 func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin float32, root *root) {
 	var ctrl = keyboard.IsKeyPressed(key.LeftControl) || keyboard.IsKeyPressed(key.RightControl)
-	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
+	var home = keyboard.IsKeyJustPressed(key.UpArrow) || keyboard.IsKeyJustPressed(key.Home)
+	var end = keyboard.IsKeyJustPressed(key.DownArrow) || keyboard.IsKeyJustPressed(key.End)
 	var length = txt.Length(text)
-	var a, b = indexSelect, indexCursor
-	var teleport = indexCursor != indexSelect
 
 	if keyboard.IsKeyJustPressed(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow) {
 		var max = number.Biggest(indexCursor-1, 0)
 		cursorTime = 0
 		indexCursor = condition.If(ctrl, wordIndex(text, true), max)
-
-		if !shift {
-			indexSelect = indexCursor
-
-			if teleport {
-				indexCursor = condition.If(a < b, a, b)
-				indexSelect = indexCursor
-			}
-		}
+		trySelect()
 	}
 	if keyboard.IsKeyJustPressed(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow) {
 		var min = number.Smallest(length, indexCursor+1)
 		cursorTime = 0
 		indexCursor = condition.If(ctrl, wordIndex(text, false), min)
-
-		if !shift {
-			indexSelect = indexCursor
-
-			if teleport {
-				indexCursor = condition.If(a < b, b, a)
-				indexSelect = indexCursor
-			}
-		}
-
+		trySelect()
 	}
-	if keyboard.IsKeyJustPressed(key.UpArrow) || keyboard.IsKeyJustPressed(key.End) {
+	if home || end {
 		cursorTime = 0
-		indexCursor = 0
-		indexSelect = indexCursor
-	}
-	if keyboard.IsKeyJustPressed(key.DownArrow) || keyboard.IsKeyJustPressed(key.Home) {
-		cursorTime = 0
-		indexCursor = length
-		indexSelect = indexCursor
+		indexCursor = condition.If(end, length, 0)
+		trySelect()
 	}
 
 	if mouse.IsButtonPressed(btn.Left) {
 		cursorTime = 0
-		var closestIndex = func(cam *graphics.Camera) int {
-			var mx, _ = cam.MousePosition()
-			mx += scrollX
-
-			if len(symbolXs) == 0 {
-				return 0
-			}
-
-			var closestIndex = 0
-			var minDist = number.Unsign(mx - symbolXs[0])
-
-			for i, v := range symbolXs[1:] {
-				var dist = number.Unsign(mx - v)
-				if dist < minDist {
-					minDist = dist
-					closestIndex = i + 1
-				}
-			}
-
-			return closestIndex
-		}
 
 		if length == 0 {
 			symbolXs = []float32{}
 			indexCursor = 0
 		} else {
-			indexCursor = closestIndex(cam)
+			indexCursor = closestIndexToMouse(cam)
 
 			if mouse.IsButtonJustPressed(btn.Left) {
 				calculateXs(widget, cam) // calculate once and update indexes to not drop performance
-				indexCursor = closestIndex(cam)
+				indexCursor = closestIndexToMouse(cam)
 				indexSelect = indexCursor
 			}
 		}
@@ -235,6 +191,41 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 	if cx > right && indexCursor <= length {
 		scrollX += cx - right
 		setupText(margin, root, widget, true)
+	}
+}
+func closestIndexToMouse(cam *graphics.Camera) int {
+	var mx, _ = cam.MousePosition()
+	mx += scrollX
+
+	if len(symbolXs) == 0 {
+		return 0
+	}
+
+	var closestIndex = 0
+	var minDist = number.Unsign(mx - symbolXs[0])
+
+	for i, v := range symbolXs[1:] {
+		var dist = number.Unsign(mx - v)
+		if dist < minDist {
+			minDist = dist
+			closestIndex = i + 1
+		}
+	}
+
+	return closestIndex
+}
+
+func trySelect() {
+	if keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift) {
+		return
+	}
+
+	var a, b = indexSelect, indexCursor
+	indexSelect = indexCursor
+
+	if indexCursor != indexSelect {
+		indexCursor = condition.If(a < b, a, b)
+		indexSelect = indexCursor
 	}
 }
 func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, margin float32) {
@@ -331,7 +322,7 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	for _, wId := range owner.Widgets {
 		var w = root.Widgets[wId]
 
-		if w.Class == "inputField" {
+		if w.Class == "inputField" && !w.IsCulled && !w.isHidden(root, owner) {
 			allInputFields = append(allInputFields, w)
 		}
 		if w == self {
@@ -353,9 +344,9 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	var margin = parseNum(root.themedField(field.InputFieldMargin, owner, typingIn), 10)
 	setupText(margin, root, typingIn, true)
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
-		self.textBox.Text = ""
+		typingIn.textBox.Text = ""
 	}
-	calculateXs(self, cam)
+	calculateXs(typingIn, cam)
 }
 
 func calculateXs(self *widget, cam *graphics.Camera) {
