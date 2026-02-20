@@ -1,8 +1,8 @@
 // TODO:
 inputfield bug, set cursor & select indices to 0 if not typing fixes it but causes another bug
 textbox rework
-optimize shape/lines rendering with new batching
 graphics node parent rework for simpler API
+
 test scale texture repeat sprite
 gui button would be nice to be able to press multiple hotkeys at once
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
