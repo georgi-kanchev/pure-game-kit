@@ -1,6 +1,7 @@
 package example
 
 import (
+	"fmt"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
@@ -47,6 +48,8 @@ func Shapes() {
 		{150, 200}, {250, 200}, {300, 100},
 	}
 
+	window.FrameRateLimit = 0
+
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
@@ -60,23 +63,25 @@ func Shapes() {
 		triangle.X, triangle.Y = mx, my
 
 		var crossPoints = hexagon.CrossPointsWithShapes(shape)
-
 		var hexagonPts = hexagon.CornerPoints()
+		var rectPts = rectangle.CornerPoints()
+		var triPts = triangle.CornerPoints()
+		var shPts = shape.CornerPoints()
+		var ellPts = ellipse.CornerPoints()
+		var roundPts = squircle.CornerPoints()
+
 		cam.DrawShapesFast(color.Darken(colCircle, 0.5), hexagonPts...)
 		cam.DrawLinesPath(8, colCircle, hexagonPts...)
 		cam.DrawPoints(4, colCircle, hexagonPts...)
 
-		var rectPts = rectangle.CornerPoints()
 		cam.DrawShapesFast(color.Darken(colRect, 0.5), rectPts...)
 		cam.DrawLinesPath(8, colRect, rectPts...)
 		cam.DrawPoints(4, colRect, rectPts...)
 
-		var triPts = triangle.CornerPoints()
 		cam.DrawShapesFast(palette.Gray, triPts...)
 		cam.DrawLinesPath(8, palette.White, triPts...)
 		cam.DrawPoints(4, palette.White, triPts...)
 
-		var shPts = shape.CornerPoints()
 		cam.DrawLinesPath(8, colShape, shPts...)
 		cam.DrawPoints(4, colShape, shPts...)
 
@@ -85,12 +90,10 @@ func Shapes() {
 		cam.DrawLinesPath(8, palette.Violet, stars...)
 		cam.DrawPoints(4, palette.Violet, stars...)
 
-		var ellPts = ellipse.CornerPoints()
 		cam.DrawShapesFast(palette.DarkGreen, ellPts...)
 		cam.DrawLinesPath(8, palette.Green, ellPts...)
 		cam.DrawPoints(4, palette.Green, ellPts...)
 
-		var roundPts = squircle.CornerPoints()
 		cam.DrawShapesFast(palette.Magenta, roundPts...)
 		cam.DrawLinesPath(8, palette.DarkMagenta, roundPts...)
 		cam.DrawPoints(4, palette.DarkMagenta, roundPts...)
@@ -98,5 +101,7 @@ func Shapes() {
 		for _, v := range crossPoints {
 			cam.DrawCircle(v[0], v[1], 16, palette.Green)
 		}
+
+		fmt.Printf("time.FrameRate(): %v\n", time.FrameRate())
 	}
 }

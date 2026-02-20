@@ -15,28 +15,6 @@ type Camera struct {
 	MaskX, MaskY, MaskWidth, MaskHeight, Blend int
 	X, Y, Angle, Zoom float32
 
-	// Makes sequencial Draw calls faster.
-	// All of the drawing to the camera can be batched, as long as the other parameters don't change.
-	// Make sure to turn off batching after done drawing the batch.
-	// No other camera should be drawing during batching.
-	//
-	// 	// recommended
-	// 	camera.Angle = 45
-	// 	camera.Batch = true
-	// 	camera.Draw...
-	// 	camera.Draw...
-	// 	camera.Batch = false
-	// 	camera.X = 300
-	//
-	//	// not recommended
-	// 	camera.Batch = true
-	// 	camera.Draw...
-	// 	camera.Angle = 45
-	// 	camera.X = 300
-	// 	camera.Draw...
-	// 	camera.Batch = false
-	Batch bool
-
 	Effects *Effects
 
 	//=================================================================

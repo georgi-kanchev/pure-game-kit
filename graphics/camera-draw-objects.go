@@ -112,7 +112,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		if shouldBatch {
-			batch.Queue(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
+			batch.QueueQuad(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
 		} else {
 			rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
 		}
@@ -128,12 +128,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 }
 func (c *Camera) DrawBoxes(boxes ...*Box) {
 	c.begin()
-	var prevBatch = c.Batch
-	c.Batch = true
-	defer func() {
-		c.Batch = prevBatch
-		c.end()
-	}()
+	defer c.end()
 
 	for _, s := range boxes {
 		if s == nil {
@@ -212,7 +207,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		if t.Fast {
 			var text = condition.If(t.WordWrap, t.TextWrap(t.Text), t.Text)
 			text = removeTags(text)
-			c.DrawText(t.FontId, text, t.X, t.Y, t.LineHeight, t.Thickness, t.SymbolGap, t.Tint)
+			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.Thickness, t.SymbolGap, t.Tint)
 			continue
 		}
 
@@ -221,12 +216,12 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var font = t.font()
 
 		for _, s := range symbols {
-			batch.Queue(font.Texture, s.TexRect, s.Rect, rl.Vector2{}, s.Angle, getColor(s.Color))
+			batch.QueueQuad(font.Texture, s.TexRect, s.Rect, rl.Vector2{}, s.Angle, getColor(s.Color))
 
 			if s.UnderlineSize > 0 {
 				var src = rl.NewRectangle(float32(font.Texture.Width)-0.75, float32(font.Texture.Height)-0.75, 0.5, 0.5)
 				var dst = rl.NewRectangle(s.Rect.X, s.Y+t.LineHeight, s.Rect.Width, s.UnderlineSize)
-				batch.Queue(font.Texture, src, dst, rl.Vector2{}, s.Angle, getColor(s.Color))
+				batch.QueueQuad(font.Texture, src, dst, rl.Vector2{}, s.Angle, getColor(s.Color))
 			}
 		}
 		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, symb, rl.ShaderUniformVec2)

@@ -1,7 +1,7 @@
 package geometry
 
 import (
-	"pure-game-kit/utility/angle"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 )
@@ -112,8 +112,7 @@ func (s *Shape) CornerPoints() [][2]float32 {
 		x *= s.ScaleX
 		y *= s.ScaleY
 
-		var rad = angle.ToRadians(s.Angle)
-		var sin, cos = number.Sine(rad), number.Cosine(rad)
+		var sin, cos = internal.SinCos(s.Angle)
 		var resultX = s.gridX + s.X + (x*cos - y*sin)
 		var resultY = s.gridY + s.Y + (x*sin + y*cos)
 

@@ -29,71 +29,68 @@ func drawBoxPart(camera *Camera, parent *Node, x, y, w, h float32, id string, co
 //=================================================================
 // primitives
 
-func triangulate(points [][2]float32) [][3][2]float32 {
-	var n = len(points)
+func triangulate(points []float32) []float32 {
+	n := len(points) / 2
 	if n < 3 {
 		return nil
 	}
 
-	var triangles [][3][2]float32
+	var triangles []float32
 	var verts = make([]int, n)
-	for i := range n {
+	for i := 0; i < n; i++ {
 		verts[i] = i
 	}
 
-	var ccw = area(points) > 0
+	ccw := area(points) > 0
 	for len(verts) > 3 {
-		var earFound = false
-
+		earFound := false
 		for i := 0; i < len(verts); i++ {
-			var prev = verts[(i+len(verts)-1)%len(verts)]
-			var curr = verts[i]
-			var next = verts[(i+1)%len(verts)]
-			var p1 = points[prev]
-			var p2 = points[curr]
-			var p3 = points[next]
+			prev := verts[(i+len(verts)-1)%len(verts)]
+			curr := verts[i]
+			next := verts[(i+1)%len(verts)]
 
 			if !isEar(points, verts, prev, curr, next, ccw) {
 				continue
 			}
 
-			triangles = append(triangles, [3][2]float32{p1, p2, p3})
+			// Add triangle vertices to flat slice
+			triangles = append(triangles,
+				points[prev*2], points[prev*2+1],
+				points[curr*2], points[curr*2+1],
+				points[next*2], points[next*2+1],
+			)
 			verts = append(verts[:i], verts[i+1:]...)
 			earFound = true
 			break
 		}
-
 		if !earFound {
-			break // If no ear found, polygon might be degenerate or self-intersecting
+			break
 		}
 	}
 
 	if len(verts) == 3 {
-		triangles = append(triangles, [3][2]float32{
-			points[verts[0]],
-			points[verts[1]],
-			points[verts[2]],
-		})
+		for _, v := range verts {
+			triangles = append(triangles, points[v*2], points[v*2+1])
+		}
 	}
 
 	return triangles
 }
-func area(points [][2]float32) float32 {
+func area(points []float32) float32 {
 	var a float32
-	for i := range points {
-		var j = (i + 1) % len(points)
-		a += points[i][0]*points[j][1] - points[j][0]*points[i][1]
+	n := len(points) / 2
+	for i := 0; i < n; i++ {
+		j := (i + 1) % n
+		a += points[i*2]*points[j*2+1] - points[j*2]*points[i*2+1]
 	}
 	return a / 2
 }
-func isClockwise(points [3][2]float32) bool {
-	var p = points
-	var area = (p[1][0]-p[0][0])*(p[2][1]-p[0][1]) - (p[2][0]-p[0][0])*(p[1][1]-p[0][1])
-	return area < 0 // negative => clockwise
-}
-func isEar(points [][2]float32, verts []int, i1, i2, i3 int, ccw bool) bool {
-	var p1, p2, p3 = points[i1], points[i2], points[i3]
-	var cross = (p2[0]-p1[0])*(p3[1]-p1[1]) - (p2[1]-p1[1])*(p3[0]-p1[0])
+func isEar(points []float32, verts []int, i1, i2, i3 int, ccw bool) bool {
+	p1x, p1y := points[i1*2], points[i1*2+1]
+	p2x, p2y := points[i2*2], points[i2*2+1]
+	p3x, p3y := points[i3*2], points[i3*2+1]
+
+	cross := (p2x-p1x)*(p3y-p1y) - (p2y-p1y)*(p3x-p1x)
 	if ccw && cross <= 0 {
 		return false
 	}
@@ -105,50 +102,51 @@ func isEar(points [][2]float32, verts []int, i1, i2, i3 int, ccw bool) bool {
 		if vi == i1 || vi == i2 || vi == i3 {
 			continue
 		}
-		if pointInTriangle(points[vi], p1, p2, p3) {
+		if pointInTriangle(points[vi*2], points[vi*2+1], p1x, p1y, p2x, p2y, p3x, p3y) {
 			return false
 		}
 	}
-
 	return true
 }
-func pointInTriangle(p, a, b, c [2]float32) bool {
-	var v0 = [2]float32{c[0] - a[0], c[1] - a[1]}
-	var v1 = [2]float32{b[0] - a[0], b[1] - a[1]}
-	var v2 = [2]float32{p[0] - a[0], p[1] - a[1]}
-	var dot00 = v0[0]*v0[0] + v0[1]*v0[1]
-	var dot01 = v0[0]*v1[0] + v0[1]*v1[1]
-	var dot02 = v0[0]*v2[0] + v0[1]*v2[1]
-	var dot11 = v1[0]*v1[0] + v1[1]*v1[1]
-	var dot12 = v1[0]*v2[0] + v1[1]*v2[1]
-	var invDenom = 1 / (dot00*dot11 - dot01*dot01)
-	var u = (dot11*dot02 - dot01*dot12) * invDenom
-	var v = (dot00*dot12 - dot01*dot02) * invDenom
+func pointInTriangle(px, py, ax, ay, bx, by, cx, cy float32) bool {
+	v0x, v0y := cx-ax, cy-ay
+	v1x, v1y := bx-ax, by-ay
+	v2x, v2y := px-ax, py-ay
+
+	dot00 := v0x*v0x + v0y*v0y
+	dot01 := v0x*v1x + v0y*v1y
+	dot02 := v0x*v2x + v0y*v2y
+	dot11 := v1x*v1x + v1y*v1y
+	dot12 := v1x*v2x + v1y*v2y
+
+	invDenom := 1 / (dot00*dot11 - dot01*dot01)
+	u := (dot11*dot02 - dot01*dot12) * invDenom
+	v := (dot00*dot12 - dot01*dot02) * invDenom
 
 	return (u >= 0) && (v >= 0) && (u+v <= 1)
 }
+func isClockwiseFlat(tri []float32) bool {
+	area := (tri[2]-tri[0])*(tri[5]-tri[1]) - (tri[4]-tri[0])*(tri[3]-tri[1])
+	return area < 0
+}
 
-func separateShapes(points [][2]float32) [][][2]float32 {
-	var result [][][2]float32
-	var current = [][2]float32{}
-
+func separateShapes(points [][2]float32) (flatPoints []float32, shapeCounts []int) {
+	var currentCount int
 	for _, p := range points {
 		if number.IsNaN(p[0]) || number.IsNaN(p[1]) {
-			if len(current) > 0 { // finish current shape and start a new one
-				result = append(result, current)
-				current = [][2]float32{}
+			if currentCount >= 3 {
+				shapeCounts = append(shapeCounts, currentCount)
 			}
+			currentCount = 0
 			continue
 		}
-
-		current = append(current, p)
+		flatPoints = append(flatPoints, p[0], p[1])
+		currentCount++
 	}
-
-	if len(current) > 0 { // add the last shape if it has points
-		result = append(result, current)
+	if currentCount >= 3 {
+		shapeCounts = append(shapeCounts, currentCount)
 	}
-
-	return result
+	return flatPoints, shapeCounts
 }
 
 //=================================================================
@@ -181,7 +179,7 @@ func (c *Camera) update() {
 // call before draw to update camera and use camera space
 func (c *Camera) begin() {
 	c.update()
-	if c.Batch {
+	if skipStartEnd {
 		return
 	}
 
@@ -199,7 +197,7 @@ func (c *Camera) begin() {
 
 // call after draw to get back to using screen space
 func (c *Camera) end() {
-	if c.Batch {
+	if skipStartEnd {
 		return
 	}
 

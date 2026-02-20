@@ -2,7 +2,6 @@ package graphics
 
 import (
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
@@ -31,8 +30,7 @@ func (c *Camera) DrawScreenFrame(thickness int, color uint) {
 
 func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	c.begin()
-	var prevBatch = c.Batch
-	c.Batch = true
+	skipStartEnd = true
 	var sx, sy, sw, sh = c.ScreenX, c.ScreenY, c.ScreenWidth, c.ScreenHeight
 	var ulx, uly = c.PointFromScreen(sx, sy)
 	var urx, ury = c.PointFromScreen(sx+sw, sy)
@@ -86,9 +84,11 @@ func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	if left <= 0 && right >= 0 { // y
 		c.DrawLine(0, top, 0, bottom, thickness*6, color)
 	}
-	c.Batch = prevBatch
+	skipStartEnd = false
 	c.end()
 }
+
+//=================================================================
 
 func (c *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 	c.begin()
@@ -99,11 +99,14 @@ func (c *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 // multiple line paths can be separated by a [NaN, NaN]
 func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float32) {
 	c.begin()
+	var col = getColor(color)
 	for i := 1; i < len(points); i++ {
-		var a = rl.Vector2{X: points[i-1][0], Y: points[i-1][1]}
-		var b = rl.Vector2{X: points[i][0], Y: points[i][1]}
-		rl.DrawLineEx(a, b, thickness, getColor(color))
+		var p1, p2 = points[i-1], points[i]
+		if !number.IsNaN(p1[0]) && !number.IsNaN(p2[0]) {
+			batch.QueueLine(p1[0], p1[1], p2[0], p2[1], thickness, col)
+		}
 	}
+	batch.Draw()
 	c.end()
 }
 
@@ -113,10 +116,9 @@ func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, co
 	}
 
 	c.begin()
-	var prevBatch = c.Batch
-	c.Batch = true
+	skipStartEnd = true
 	defer func() {
-		c.Batch = prevBatch
+		skipStartEnd = false
 		c.end()
 	}()
 
@@ -195,8 +197,7 @@ func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 }
 func (c *Camera) DrawQuadRounded(x, y, width, height, radius, angle float32, color uint) {
 	c.begin()
-	var prevBatch = c.Batch
-	c.Batch = true
+	skipStartEnd = true
 	var maxRadius = width / 2
 	if height/2 < maxRadius {
 		maxRadius = height / 2
@@ -219,18 +220,17 @@ func (c *Camera) DrawQuadRounded(x, y, width, height, radius, angle float32, col
 	c.DrawArc(trx, try, sz, sz, 1, 0, 24, color)
 	c.DrawArc(blx, bly, sz, sz, 1, 0, 24, color)
 	c.DrawArc(brx, bry, sz, sz, 1, 0, 24, color)
-	c.Batch = prevBatch
+	skipStartEnd = false
 	c.end()
 }
 
 func (c *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
 	c.begin()
-	var prevBatch = c.Batch
-	c.Batch = true
+	skipStartEnd = true
 	for _, pt := range points {
 		c.DrawCircle(pt[0], pt[1], radius, color)
 	}
-	c.Batch = prevBatch
+	skipStartEnd = false
 	c.end()
 }
 func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
@@ -292,35 +292,40 @@ func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int,
 // multiple shapes can be separated by a [NaN, NaN]
 func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 	c.begin()
-	defer c.end()
 
-	var shapes = separateShapes(points)
-	for _, shape := range shapes {
-		if len(shape) < 3 {
-			return
+	var flatPoints, shapeCounts = separateShapes(points)
+	var offset = 0
+	var renderColor = getColor(color)
+
+	for _, count := range shapeCounts {
+		var shape = flatPoints[offset : offset+(count*2)]
+		offset += (count * 2)
+
+		// Remove closing point if duplicate
+		if shape[0] == shape[len(shape)-2] && shape[1] == shape[len(shape)-1] {
+			shape = shape[:len(shape)-2]
 		}
-
-		if shape[0] == shape[len(shape)-1] {
-			shape = collection.RemoveAt(shape, len(shape)-1)
-		} // remove repeated start if present
 
 		var triangles = triangulate(shape)
 		if len(triangles) == 0 {
-			return
+			continue
 		}
 
-		for _, tri := range triangles {
-			var v1 = rl.NewVector2(tri[0][0], tri[0][1])
-			var v2 = rl.NewVector2(tri[1][0], tri[1][1])
-			var v3 = rl.NewVector2(tri[2][0], tri[2][1])
+		for i := 0; i < len(triangles); i += 6 {
+			var x1, y1 = triangles[i+0], triangles[i+1]
+			var x2, y2 = triangles[i+2], triangles[i+3]
+			var x3, y3 = triangles[i+4], triangles[i+5]
 
-			if !isClockwise(tri) {
-				v1, v3 = v3, v1
+			if !isClockwiseFlat(triangles[i : i+6]) {
+				x1, y1, x3, y3 = x3, y3, x1, y1
 			}
 
-			rl.DrawTriangle(v1, v2, v3, getColor(color))
+			batch.QueueTriangle(x1, y1, x2, y2, x3, y3, renderColor)
 		}
 	}
+
+	batch.Draw()
+	c.end()
 }
 
 // works with convex shapes only
@@ -328,26 +333,42 @@ func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 // multiple shapes can be separated by a [NaN, NaN] point
 func (c *Camera) DrawShapesFast(color uint, points ...[2]float32) {
 	c.begin()
-	defer c.end()
 
-	var shapes = separateShapes(points)
-	for _, shape := range shapes {
-		if len(shape) < 3 {
-			return
+	var flatPoints, shapeCounts = separateShapes(points)
+	var offset = 0
+	var renderColor = getColor(color)
+
+	for _, count := range shapeCounts {
+		var shapeData = flatPoints[offset : offset+(count*2)]
+		offset += (count * 2)
+
+		var isReverse = area(shapeData) >= 0
+		var x0, y0 = shapeData[0], shapeData[1]
+
+		for i := 1; i < count-1; i++ {
+			var x1, y1, x2, y2 float32
+
+			if isReverse {
+				var idx1 = (count - i) * 2
+				var idx2 = (count - i - 1) * 2
+				x1, y1 = shapeData[idx1], shapeData[idx1+1]
+				x2, y2 = shapeData[idx2], shapeData[idx2+1]
+			} else {
+				var idx1 = i * 2
+				var idx2 = (i + 1) * 2
+				x1, y1 = shapeData[idx1], shapeData[idx1+1]
+				x2, y2 = shapeData[idx2], shapeData[idx2+1]
+			}
+
+			batch.QueueTriangle(x0, y0, x1, y1, x2, y2, renderColor)
 		}
-
-		var vectors = make([]rl.Vector2, len(shape))
-		for i, p := range shape {
-			vectors[i] = rl.NewVector2(p[0], p[1])
-		}
-
-		if area(shape) >= 0 {
-			collection.Reverse(vectors)
-		}
-
-		rl.DrawTriangleFan(vectors, getColor(color))
 	}
+
+	batch.Draw()
+	c.end()
 }
+
+//=================================================================
 
 func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
 	var texture, has = internal.Textures[textureId]
@@ -374,7 +395,10 @@ func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float3
 	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, getColor(color))
 	c.end()
 }
-func (c *Camera) DrawText(fontId, text string, x, y, height, thickness, symbolGap float32, color uint) {
+func (c *Camera) DrawText(text string, x, y, height float32) {
+	c.DrawTextAdvanced("", text, x, y, height, 0.5, 0, palette.White)
+}
+func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, thickness, symbolGap float32, color uint) {
 	c.begin()
 
 	var sh = internal.ShaderText

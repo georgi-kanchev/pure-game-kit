@@ -18,6 +18,8 @@ func main() {
 	example.StorageXML()
 	example.StorageJSON()
 
+	example.Batch()
+
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()
 	var hud = gui.NewFromXMLs(gui.NewElementsXML(

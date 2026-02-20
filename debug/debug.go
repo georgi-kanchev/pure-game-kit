@@ -52,7 +52,6 @@ func LogError(message ...any) {
 		fmt.Println(content)
 	}
 }
-
 func Print(message ...any) {
 	fmt.Println(elements(message...))
 
@@ -60,14 +59,15 @@ func Print(message ...any) {
 		appendFile("\n" + elements(message...))
 	}
 }
-func PrintLinesOfCode() {
+
+func LinesOfCode() string {
 	var directory, _ = os.Getwd()
 	var cmd = exec.Command("bash", "-c", fmt.Sprintf(`find "%s" -name "*.go" -type f -exec wc -l {} +`, directory))
 	var cmdOut bytes.Buffer
 	cmd.Stdout = &cmdOut
 	cmd.Stderr = &cmdOut
 	if err := cmd.Run(); err != nil {
-		return
+		return ""
 	}
 
 	var results = make(map[string]int)
@@ -159,9 +159,9 @@ func PrintLinesOfCode() {
 		printTree(t, "", i == len(topLevel)-1)
 	}
 
-	fmt.Print(out.String())
+	return out.String()
 }
-func PrintDependencies() {
+func Dependencies() string {
 	var out strings.Builder
 	var cmd = exec.Command("go", "list", "-f", "{{.ImportPath}} -> {{.Imports}}", "./...")
 	var cmdOut bytes.Buffer
@@ -199,47 +199,49 @@ func PrintDependencies() {
 		fmt.Fprintln(&out)
 	}
 
-	fmt.Print(out.String())
+	return out.String()
 }
-func PrintMemoryUsage() {
+func MemoryUsage() string {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
+	var b strings.Builder
 
-	fmt.Printf("\nMemory:\n")
-	fmt.Printf("UsedNow = %v (current heap in use)\n", byteSize(int(m.Alloc)))
-	fmt.Printf("UsedTotal = %v (total allocated since start)\n", byteSize(int(m.TotalAlloc)))
-	fmt.Printf("FromOS = %v (memory reserved from OS)\n", byteSize(int(m.Sys)))
+	fmt.Fprintf(&b, "Memory:\n")
+	fmt.Fprintf(&b, "UsedNow = %v (current heap in use)\n", byteSize(int(m.Alloc)))
+	fmt.Fprintf(&b, "UsedTotal = %v (total allocated since start)\n", byteSize(int(m.TotalAlloc)))
+	fmt.Fprintf(&b, "FromOS = %v (memory reserved from OS)\n", byteSize(int(m.Sys)))
 
-	fmt.Printf("\nHeap:\n")
-	fmt.Printf("Used = %v \n", byteSize(int(m.HeapAlloc)))
-	fmt.Printf("Reserved = %v \n", byteSize(int(m.HeapSys)))
-	fmt.Printf("Idle = %v (not used but still reserved)\n", byteSize(int(m.HeapIdle)))
-	fmt.Printf("Active = %v (actively in use)\n", byteSize(int(m.HeapInuse)))
-	fmt.Printf("Released = %v (given back to OS)\n", byteSize(int(m.HeapReleased)))
+	fmt.Fprintf(&b, "\nHeap:\n")
+	fmt.Fprintf(&b, "Used = %v \n", byteSize(int(m.HeapAlloc)))
+	fmt.Fprintf(&b, "Reserved = %v \n", byteSize(int(m.HeapSys)))
+	fmt.Fprintf(&b, "Idle = %v (not used but still reserved)\n", byteSize(int(m.HeapIdle)))
+	fmt.Fprintf(&b, "Active = %v (actively in use)\n", byteSize(int(m.HeapInuse)))
+	fmt.Fprintf(&b, "Released = %v (given back to OS)\n", byteSize(int(m.HeapReleased)))
 
-	fmt.Printf("\nObject:\n")
-	fmt.Printf("Allocs = %v (objects allocated)\n", m.Mallocs)
-	fmt.Printf("Frees = %v (objects freed)\n", m.Frees)
-	fmt.Printf("Live = %v (currently alive)\n", m.HeapObjects)
+	fmt.Fprintf(&b, "\nObject:\n")
+	fmt.Fprintf(&b, "Allocs = %v (objects allocated)\n", m.Mallocs)
+	fmt.Fprintf(&b, "Frees = %v (objects freed)\n", m.Frees)
+	fmt.Fprintf(&b, "Live = %v (currently alive)\n", m.HeapObjects)
 
-	fmt.Printf("\nGarbage Collection:\n")
-	fmt.Printf("Total = %v (total collections)\n", m.NumGC)
-	fmt.Printf("Forced = %v (manual triggers)\n", m.NumForcedGC)
-	fmt.Printf("Next = %v (target heap size of the next GC)\n", byteSize(int(m.NextGC)))
-	fmt.Printf("PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
+	fmt.Fprintf(&b, "\nGarbage Collection:\n")
+	fmt.Fprintf(&b, "Total = %v (total collections)\n", m.NumGC)
+	fmt.Fprintf(&b, "Forced = %v (manual triggers)\n", m.NumForcedGC)
+	fmt.Fprintf(&b, "Next = %v (target heap size of the next GC)\n", byteSize(int(m.NextGC)))
+	fmt.Fprintf(&b, "PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
 
 	if m.LastGC == 0 {
-		fmt.Printf("SinceLast = never\n")
+		fmt.Fprintf(&b, "SinceLast = never\n")
 	} else {
-		fmt.Printf("SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
+		fmt.Fprintf(&b, "SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
 	}
 
-	fmt.Printf("\nStack:\n")
-	fmt.Printf("Used = %v\n", byteSize(int(m.StackInuse)))
-	fmt.Printf("Reserved = %v\n", byteSize(int(m.StackSys)))
-	fmt.Printf("Other = %v (misc runtime overhead)\n", byteSize(int(m.OtherSys)))
-}
+	fmt.Fprintf(&b, "\nStack:\n")
+	fmt.Fprintf(&b, "Used = %v\n", byteSize(int(m.StackInuse)))
+	fmt.Fprintf(&b, "Reserved = %v\n", byteSize(int(m.StackSys)))
+	fmt.Fprintf(&b, "Other = %v (misc runtime overhead)\n", byteSize(int(m.OtherSys)))
 
+	return b.String()
+}
 func ProfileCPU(seconds float32) {
 	go func() {
 		// timestamp for filenames

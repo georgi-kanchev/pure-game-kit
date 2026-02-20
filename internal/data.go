@@ -26,6 +26,7 @@ var WindowReady = false
 
 //=================================================================
 
+var White *rl.Texture2D
 var Textures = make(map[string]*rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
@@ -265,7 +266,12 @@ func initData() {
 	}
 	MatrixDefault = rl.MatrixIdentity()
 
-	for i := 0; i < 3600; i++ {
+	var img = rl.GenImageColor(1, 1, rl.White)
+	var tex = rl.LoadTextureFromImage(img)
+	White = &tex
+	rl.UnloadImage(img)
+
+	for i := range 3600 {
 		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
 		sineTable[i] = float32(math.Sin(rad))
 	}

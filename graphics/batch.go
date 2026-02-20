@@ -2,7 +2,9 @@ package graphics
 
 import (
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/angle"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/point"
 	"unsafe"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -12,36 +14,30 @@ type Batch struct {
 	mesh     *rl.Mesh
 	material rl.Material
 
-	quadCountCurrent, quadCountCapacity  int32
+	vertsCur, indCur, quadsCapacity int32
+
 	vertices, texCoords, colors, indices []byte
 }
 
 var batch *Batch
 var prevColor rl.Color
+var skipStartEnd bool
 
 func (b *Batch) Init(quadCountCapacity int32) {
 	if b.mesh != nil {
 		rl.UnloadMesh(b.mesh)
 	}
 
+	b.vertsCur = 0
+	b.indCur = 0
+	b.quadsCapacity = quadCountCapacity
+
 	b.mesh = &rl.Mesh{VertexCount: 4 * quadCountCapacity, TriangleCount: 2 * quadCountCapacity}
-	b.quadCountCurrent, b.quadCountCapacity = 0, quadCountCapacity
 
-	b.vertices = make([]byte, b.mesh.VertexCount*3*4)  // 4 verts * 3 floats (xyz) * 4 bytes per float
-	b.texCoords = make([]byte, b.mesh.VertexCount*2*4) // 4 verts * 2 floats (uv) * 4 bytes per float
-	b.colors = make([]byte, b.mesh.VertexCount*4)      // 4 verts * 4 bytes (rgba)
-	b.indices = make([]byte, b.mesh.TriangleCount*3*2) // 6 indices * 2 bytes (uint16)
-
-	var rawIndices = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[0])), len(b.indices)/2)
-	for i := range quadCountCapacity {
-		var baseVert, baseInd = uint16(i * 4), i * 6
-		rawIndices[baseInd+0] = baseVert + 0
-		rawIndices[baseInd+1] = baseVert + 1
-		rawIndices[baseInd+2] = baseVert + 2
-		rawIndices[baseInd+3] = baseVert + 0
-		rawIndices[baseInd+4] = baseVert + 2
-		rawIndices[baseInd+5] = baseVert + 3
-	}
+	b.vertices = make([]byte, b.mesh.VertexCount*3*4)
+	b.texCoords = make([]byte, b.mesh.VertexCount*2*4)
+	b.colors = make([]byte, b.mesh.VertexCount*4)
+	b.indices = make([]byte, b.mesh.TriangleCount*3*2)
 
 	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.vertices[0]))
 	b.mesh.Texcoords = (*float32)(unsafe.Pointer(&b.texCoords[0]))
@@ -51,70 +47,152 @@ func (b *Batch) Init(quadCountCapacity int32) {
 	rl.UploadMesh(b.mesh, true)
 	b.material = rl.LoadMaterialDefault()
 }
-func (b *Batch) Queue(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vector2, rotation float32, color rl.Color) {
-	if b.quadCountCurrent != 0 && (b.material.Maps.Texture != tex || b.quadCountCurrent >= b.quadCountCapacity) {
+func (b *Batch) QueueQuad(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vector2, ang float32, col rl.Color) {
+	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+4 > b.mesh.VertexCount) {
 		b.Draw()
 	}
 
-	if b.quadCountCurrent == 0 { // only after draw (first in queue or new texture)
-		var mat = b.material // create a local copy on the stack
+	if b.vertsCur == 0 {
+		var mat = b.material
 		rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
-		b.material = mat // copy the modified material back to the heap struct
+		b.material = mat
 	}
 
-	dst.Width = number.Absolute(dst.Width)
-	dst.Height = number.Absolute(dst.Height)
+	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
-	var id = b.quadCountCurrent
-	var vertices = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[id*48])), 12)
-	var sinA, cosA = internal.SinCos(rotation)
+	var vOffset = b.vertsCur * 12
+	var vertices = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[vOffset])), 12)
+	var sinA, cosA = internal.SinCos(ang)
 	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
 
 	for i := range 4 {
-		rx := dx[i] - origin.X
-		ry := dy[i] - origin.Y
-
+		rx, ry := dx[i]-origin.X, dy[i]-origin.Y
 		vertices[i*3+0] = (rx*cosA - ry*sinA) + dst.X
 		vertices[i*3+1] = (rx*sinA + ry*cosA) + dst.Y
-		vertices[i*3+2] = 0 // z always 0
+		vertices[i*3+2] = 0
 	}
 
-	var texCoords = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[id*32])), 8)
+	var tOffset = b.vertsCur * 8
+	var texCoords = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[tOffset])), 8)
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1 = src.X * invTexW, src.Y * invTexH
 	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
 
-	texCoords[0], texCoords[1] = u1, v1 // tl
-	texCoords[2], texCoords[3] = u1, v2 // bl
-	texCoords[4], texCoords[5] = u2, v2 // br
-	texCoords[6], texCoords[7] = u2, v1 // tr
+	texCoords[0], texCoords[1] = u1, v1
+	texCoords[2], texCoords[3] = u1, v2
+	texCoords[4], texCoords[5] = u2, v2
+	texCoords[6], texCoords[7] = u2, v1
 
-	var colorOffset = id * 16
-	var colors = b.colors[colorOffset : colorOffset+16]
+	var cOffset = b.vertsCur * 4
+	var colors = b.colors[cOffset : cOffset+16]
 	for i := range 4 {
-		colors[i*4+0] = color.R
-		colors[i*4+1] = color.G
-		colors[i*4+2] = color.B
-		colors[i*4+3] = color.A
+		colors[i*4+0], colors[i*4+1], colors[i*4+2], colors[i*4+3] = col.R, col.G, col.B, col.A
 	}
 
-	b.quadCountCurrent++
+	var iOffset = b.indCur * 2
+	var indices = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[iOffset])), 6)
+	var base = uint16(b.vertsCur)
+	indices[0], indices[1], indices[2] = base+0, base+1, base+2
+	indices[3], indices[4], indices[5] = base+0, base+2, base+3
+
+	b.vertsCur += 4
+	b.indCur += 6
 }
+func (b *Batch) QueueTriangles(points []float32, color rl.Color) {
+	var vertCount = int32(len(points) / 2)
+	if vertCount%3 != 0 {
+		return
+	}
+
+	var whiteTex = internal.White
+	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != whiteTex.ID || b.vertsCur+vertCount > b.mesh.VertexCount) {
+		b.Draw()
+	}
+
+	if b.vertsCur == 0 {
+		var mat = b.material
+		rl.SetMaterialTexture(&mat, rl.MapDiffuse, *whiteTex)
+		b.material = mat
+	}
+
+	var vOffset = b.vertsCur * 12
+	var vertices = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[vOffset])), vertCount*3)
+	for i := range vertCount {
+		vertices[i*3+0] = points[i*2+0]
+		vertices[i*3+1] = points[i*2+1]
+		vertices[i*3+2] = 0
+	}
+
+	var tOffset = b.vertsCur * 8
+	var texCoords = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[tOffset])), vertCount*2)
+	for i := range texCoords {
+		texCoords[i] = 0
+	}
+
+	var cOffset = b.vertsCur * 4
+	var colors = b.colors[cOffset : cOffset+(vertCount*4)]
+	for i := range vertCount {
+		colors[i*4+0], colors[i*4+1], colors[i*4+2], colors[i*4+3] = color.R, color.G, color.B, color.A
+	}
+
+	var iOffset = b.indCur * 2
+	var indices = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[iOffset])), vertCount)
+	var base = uint16(b.vertsCur)
+	for i := uint16(0); i < uint16(vertCount); i++ {
+		indices[i] = base + i
+	}
+
+	b.vertsCur += vertCount
+	b.indCur += vertCount
+}
+func (b *Batch) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color) {
+	b.QueueTriangles([]float32{x1, y1, x2, y2, x3, y3}, color)
+}
+func (b *Batch) QueueTriangleFanFloats(points []float32, color rl.Color) {
+	var count = len(points) / 2
+	if count < 3 {
+		return
+	}
+
+	var x0, y0 = points[0], points[1]
+	for i := 1; i < count-1; i++ {
+		b.QueueTriangle(x0, y0, points[i*2], points[i*2+1], points[(i+1)*2], points[(i+1)*2+1], color)
+	}
+}
+func (b *Batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
+	if thickness <= 0 {
+		return
+	}
+
+	var angle = angle.BetweenPoints(x1, y1, x2, y2)
+	var perpAngle = angle + 90
+	var halfThickness = thickness * 0.5
+	var v1x, v1y = point.MoveAtAngle(x1, y1, perpAngle, halfThickness)
+	var v2x, v2y = point.MoveAtAngle(x1, y1, perpAngle, -halfThickness)
+	var v3x, v3y = point.MoveAtAngle(x2, y2, perpAngle, -halfThickness)
+	var v4x, v4y = point.MoveAtAngle(x2, y2, perpAngle, halfThickness)
+
+	b.QueueTriangle(v1x, v1y, v3x, v3y, v2x, v2y, color)
+	b.QueueTriangle(v1x, v1y, v4x, v4y, v3x, v3y, color)
+}
+
 func (b *Batch) Draw() {
-	if b.quadCountCurrent == 0 {
+	if b.vertsCur == 0 {
 		return
 	}
 
 	rl.UpdateMeshBuffer(*b.mesh, 0, b.vertices, 0)
 	rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords, 0)
 	rl.UpdateMeshBuffer(*b.mesh, 3, b.colors, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 6, b.indices, 0)
 
-	b.mesh.TriangleCount = b.quadCountCurrent * 2
+	b.mesh.TriangleCount = b.indCur / 3
 	rl.DrawMesh(*b.mesh, b.material, internal.MatrixDefault)
 
-	if b.quadCountCurrent >= b.quadCountCapacity {
-		b.Init(b.quadCountCapacity * 2)
+	if b.vertsCur >= b.mesh.VertexCount {
+		b.Init(b.quadsCapacity * 2)
 	}
 
-	b.quadCountCurrent = 0
+	b.vertsCur = 0
+	b.indCur = 0
 }
