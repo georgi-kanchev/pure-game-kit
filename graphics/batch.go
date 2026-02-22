@@ -189,16 +189,16 @@ func (b *Batch) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) 
 	if s.BackColor > 0 {
 		queueQuad(s.X, s.Y, s.Width+gapX, lineHeight, s.BackColor)
 	}
+	if s.Underline {
+		var x, y = point.MoveAtAngle(s.X, s.Y, s.Angle+90, lineHeight-lineThickness)
+		queueQuad(x, y, s.Width+gapX, lineThickness, s.Color)
+	}
 	if s.AssetId != "" {
 		var texture, src, rotations, flip = asset(s.AssetId)
 		editAssetRects(&src, &s.Rect, s.Angle, rotations, flip)
 		batch.QueueQuad(texture, src, s.Rect, s.Angle, packSymbolColor(s))
 	} else if text.Trim(s.Value) != "" {
 		b.QueueQuad(&font.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
-	}
-	if s.Underline {
-		var x, y = point.MoveAtAngle(s.X, s.Y, s.Angle+90, lineHeight-lineThickness)
-		queueQuad(x, y, s.Width+gapX, lineThickness, s.Color)
 	}
 	if s.Strikethrough {
 		var x, y = point.MoveAtAngle(s.X, s.Y, s.Angle+90, lineHeight*0.55-lineThickness/2)
