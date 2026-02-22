@@ -66,7 +66,7 @@ func (o *Object) ExtractTextBox() *graphics.TextBox {
 	var font = o.Properties[property.ObjectTextFont].(string)
 	var txt = o.Properties[property.ObjectText]
 	var x, y, w, h, ang = o.getArea()
-	var bold = o.Properties[property.ObjectTextBold].(bool)
+	//var bold = o.Properties[property.ObjectTextBold].(bool)
 
 	for id := range internal.Fonts {
 		var name = path.LastPart(path.RemoveExtension(id))
@@ -82,7 +82,7 @@ func (o *Object) ExtractTextBox() *graphics.TextBox {
 	textBox.AlignmentY = o.Properties[property.ObjectTextAlignY].(float32)
 	textBox.WordWrap = o.Properties[property.ObjectTextWordWrap].(bool)
 	textBox.Tint = o.Properties[property.ObjectTextColor].(uint)
-	textBox.Thickness = condition.If(bold, float32(0.8), 0.5)
+	//textBox.Thickness = condition.If(bold, float32(0.8), 0.5)
 	textBox.LineHeight = float32(o.Properties[property.ObjectTextFontSize].(int))
 	textBox.PivotX, textBox.PivotY = 0, 0
 	return textBox

@@ -42,7 +42,7 @@ func StateMachines() {
 		cam.DrawQuad(player.x-size/2, player.y-height, size, height, 0, palette.White)
 
 		var tlx, tly = cam.PointFromEdge(0, 0)
-		cam.DrawTextAdvanced("", text.New("State: ", player.state), tlx, tly, 100, 0.5, 0, palette.Gray)
+		cam.DrawTextAdvanced("", text.New("State: ", player.state), tlx, tly, 100, 0, palette.Gray)
 	}
 }
 

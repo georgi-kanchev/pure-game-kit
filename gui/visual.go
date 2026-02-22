@@ -116,8 +116,8 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		var disabled = widget.isDisabled(owner)
 		var outlineCol = root.themedField(f.TextColorOutline, owner, widget)
 		if outlineCol != "" {
-			widget.textBox.Thickness = parseNum(root.themedField(f.TextThicknessOutline, owner, widget), 0.92)
-			widget.textBox.Smoothness = parseNum(root.themedField(f.TextSmoothnessOutline, owner, widget), 0.08)
+			//widget.textBox.Thickness = parseNum(root.themedField(f.TextThicknessOutline, owner, widget), 0.92)
+			//widget.textBox.Smoothness = parseNum(root.themedField(f.TextSmoothnessOutline, owner, widget), 0.08)
 			widget.textBox.Tint = parseColor(outlineCol, disabled)
 			cam.DrawTextBoxes(widget.textBox)
 		}
@@ -125,8 +125,8 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		var colVal = defaultValue(root.themedField(f.TextColor, owner, widget), "127 127 127")
 		var c = parseColor(colVal, disabled || fadeText)
 		widget.textBox.Tint = c
-		widget.textBox.Thickness = parseNum(root.themedField(f.TextThickness, owner, widget), 0.5)
-		widget.textBox.Smoothness = parseNum(root.themedField(f.TextSmoothness, owner, widget), 0.02)
+		//widget.textBox.Thickness = parseNum(root.themedField(f.TextThickness, owner, widget), 0.5)
+		//widget.textBox.Smoothness = parseNum(root.themedField(f.TextSmoothness, owner, widget), 0.02)
 		cam.DrawTextBoxes(widget.textBox)
 
 		cam.Mask(mx, my, mw, mh)

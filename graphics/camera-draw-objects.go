@@ -162,7 +162,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			var symbol = &symbol{Color: t.Tint, OutlineColor: 255, ShadowColor: 0}
 			var pack = packSymbolColor(symbol)
 			var col = color.RGBA(pack.R, pack.G, pack.B, pack.A)
-			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.Thickness, t.gapSymbols(), col)
+			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.gapSymbols(), col)
 			continue
 		}
 
@@ -173,7 +173,8 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		for _, s := range symbols {
 			batch.QueueSymbol(font, s, t.LineHeight, gapX)
 		}
-		// rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, symb, rl.ShaderUniformVec2)
+		var shadowOffset = []float32{t.ShadowOffsetX / 200, t.ShadowOffsetY / 200}
+		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextShOffLoc, shadowOffset, rl.ShaderUniformVec2)
 		batch.Draw()
 
 	}

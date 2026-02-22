@@ -20,8 +20,8 @@ type TextBox struct {
 	Text, FontId string
 	WordWrap     bool
 	AlignmentX, AlignmentY,
-	Thickness, Smoothness,
-	LineHeight, SymbolGap, LineGap float32
+	LineHeight, SymbolGap, LineGap,
+	ShadowOffsetX, ShadowOffsetY float32
 
 	// Skip advanced feature properties for faster render. Properties used:
 	// 	FontId, Text, X, Y, Width, LineHeight, WordWrap, Thickness, SymbolGap, Tint
@@ -36,8 +36,7 @@ type TextBox struct {
 func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 	var node = NewNode(x, y)
 	var textBox = &TextBox{
-		FontId: fontId, Node: *node, Text: txt.New(text...), LineHeight: 100,
-		Thickness: 0.5, Smoothness: 0.02, SymbolGap: 0.2, WordWrap: true,
+		FontId: fontId, Node: *node, Text: txt.New(text...), LineHeight: 100, SymbolGap: 0.2, WordWrap: true,
 	}
 	var font = textBox.font()
 	var measure = rl.MeasureTextEx(*font, textBox.Text, textBox.LineHeight, textBox.gapSymbols())
@@ -77,7 +76,7 @@ func (t *TextBox) TextWrap(text string) string {
 		var trimWord = txt.Remove(txt.Trim(word), ph)
 		var wordSize, _ = t.TextMeasure(trimWord)
 
-		if !t.Fast && txt.Contains(trimWord, "\v") { // has embeded asset
+		if !t.Fast && txt.Contains(trimWord, string(placeholderCharAsset)) {
 			wordSize += t.LineHeight
 		}
 
@@ -96,7 +95,7 @@ func (t *TextBox) TextWrap(text string) string {
 			var char = string(c)
 			var charSize, _ = t.TextMeasure(char)
 			charSize = condition.If(c == internal.Placeholder, 0, charSize)
-			charSize = condition.If(!t.Fast && c == '\v', t.LineHeight, charSize) // has embeded asset
+			charSize = condition.If(!t.Fast && c == placeholderCharAsset, t.LineHeight, charSize)
 			var charEndOfBoxX = charSize > 0 && curX+charSize > t.Width+1
 			var charFirst = i == 0 && wordFirst
 			var charNewLine = !charFirst && char != " " && (char == "\n" || charEndOfBoxX)
@@ -146,14 +145,13 @@ func (t *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, c
 // private
 
 type symbol struct {
-	Angle, Thickness,
-	X, Y, Width float32
-	Value, AssetId string
-	Rect, TexRect  rl.Rectangle
+	X, Y, Width, Angle float32
+	Value, AssetId     string
+	Rect, TexRect      rl.Rectangle
 
 	Color, BackColor, OutlineColor, ShadowColor uint
 
-	Weight, OutlineWeight, ShadowWeight byte
+	Weight, OutlineWeight, ShadowWeight, ShadowBlur byte
 
 	Underline, Strikethrough bool
 }
@@ -228,10 +226,11 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []*symbol) {
 			symb.Weight = getOrDefault(curValues, "weight", byte(1)).(byte)
 			symb.OutlineWeight = getOrDefault(curValues, "outlineWeight", byte(1)).(byte)
 			symb.ShadowWeight = getOrDefault(curValues, "shadowWeight", byte(1)).(byte)
+			symb.ShadowBlur = getOrDefault(curValues, "shadowBlur", byte(0)).(byte)
 			symb.Underline = getOrDefault(curValues, "_", false).(bool)
 			symb.Strikethrough = getOrDefault(curValues, "-", false).(bool)
 
-			if c != '\v' && curX+charSize > w { // outside right
+			if c != placeholderCharAsset && curX+charSize > w { // outside right
 				skip = true // rare cases but happens with single symbol & small width
 			}
 
@@ -302,14 +301,16 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues 
 		curValues[name] = parseCol(value, 0)
 	case "outlineColor", "shadowColor":
 		curValues[name] = parseCol(value, palette.Black)
+	case "_", "-": // underline, strikethrough
+		toggleBool(curValues, name)
+	case "shadowBlur":
+		curValues[name] = byte(parseNum(value, 0))
 	case "weight", "outlineWeight", "shadowWeight":
 		var val = 1
 		val = condition.If(value == "thin", 0, val)
 		val = condition.If(value == "semiBold", 2, val)
 		val = condition.If(value == "bold", 3, val)
 		curValues[name] = byte(val)
-	case "_", "-": // underline, strikethrough
-		toggleBool(curValues, name)
 	default:
 		curValues[name] = value
 	}
@@ -329,7 +330,7 @@ func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y float32, c rune) sy
 	dst.X, dst.Y = t.PointToCamera(cam, dst.X, dst.Y)
 	x, y = t.PointToCamera(cam, x, y)
 
-	var symbol = symbol{Thickness: t.Thickness, Rect: dst, TexRect: src, X: x, Y: y}
+	var symbol = symbol{Rect: dst, TexRect: src, X: x, Y: y}
 	return symbol
 }
 

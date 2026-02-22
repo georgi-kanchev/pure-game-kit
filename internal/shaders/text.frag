@@ -4,6 +4,7 @@ in vec2 fragTexCoord;
 in vec4 fragColor;
 
 uniform sampler2D texture0;
+uniform vec2 shadowOffset;
 
 out vec4 finalColor;
 
@@ -29,7 +30,6 @@ void main() {
     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
 
-    vec2 shadowOffset = vec2(0.002, 0.005);
     float shadowDistance = texture(texture0, fragTexCoord - shadowOffset).a - (1.0 - thick[shadIdx]);
     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);

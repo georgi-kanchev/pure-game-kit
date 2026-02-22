@@ -39,15 +39,7 @@ var Fonts = make(map[string]*rl.Font)
 var MatrixDefault rl.Matrix
 var ShaderText, Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
-
-//go:embed shaders/text.frag
-var fragText string
-
-//go:embed shaders/sprite.frag
-var fragSprite string
-
-//go:embed shaders/default.vert
-var vertDefault string
+var ShaderTextShOffLoc int32
 
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
@@ -74,6 +66,15 @@ var Keys, KeysPrev, Buttons, ButtonsPrev = []int{}, []int{}, []int{}, []int{}
 var AnyButtonJustPressed, AnyButtonJustReleased, AnyKeyJustPressed, AnyKeyJustReleased = false, false, false, false
 
 var sineTable [3600]float32
+
+//go:embed shaders/text.frag
+var fragText string
+
+//go:embed shaders/sprite.frag
+var fragSprite string
+
+//go:embed shaders/default.vert
+var vertDefault string
 
 //=================================================================
 
@@ -269,7 +270,7 @@ func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, millisec
 func initData() {
 	if ShaderText.ID == 0 {
 		ShaderText = rl.LoadShaderFromMemory("", fragText)
-		// ShaderTextLoc = rl.GetLocationUniform(ShaderText.ID, "thickSmooth")
+		ShaderTextShOffLoc = rl.GetLocationUniform(ShaderText.ID, "shadowOffset")
 	}
 	if Shader.ID == 0 {
 		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragSprite))

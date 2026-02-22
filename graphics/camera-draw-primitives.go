@@ -396,9 +396,9 @@ func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float3
 	c.end()
 }
 func (c *Camera) DrawText(text string, x, y, height float32) {
-	c.DrawTextAdvanced("", text, x, y, height, 0.5, 0, palette.White)
+	c.DrawTextAdvanced("", text, x, y, height, 0, palette.White)
 }
-func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, thickness, symbolGap float32, color uint) {
+func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap float32, color uint) {
 	c.begin()
 
 	var sh = internal.ShaderText
@@ -417,7 +417,7 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, thickness, 
 
 	if sh.ID != 0 {
 		rl.BeginShaderMode(sh)
-		//rl.SetShaderValue(sh, internal.ShaderTextLoc, []float32{thickness, 0.02}, rl.ShaderUniformVec2)
+		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextShOffLoc, []float32{0, 0}, rl.ShaderUniformVec2)
 	}
 
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, getColor(color))

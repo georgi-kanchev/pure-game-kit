@@ -2,6 +2,7 @@ package tag
 
 import (
 	col "pure-game-kit/utility/color"
+	"pure-game-kit/utility/number"
 	t "pure-game-kit/utility/text"
 )
 
@@ -13,7 +14,7 @@ func SemiBold(text string) string { return t.New("{weight=semiBold}", text, "{we
 func Bold(text string) string     { return t.New("{weight=bold}", text, "{weight}") }
 
 func Asset(assetId string) string {
-	return t.New("{assetId=", assetId, "}\v") // \v is a placeholder symbol
+	return t.New("{assetId=", assetId, "}@") // @ is a placeholder symbol that gets replaced with the asset
 }
 
 func Color(text string, color uint) string {
@@ -51,4 +52,9 @@ func ShadowSemiBold(text string) string {
 }
 func ShadowBold(text string) string {
 	return t.New("{shadowWeight=bold}", text, "{shadowWeight}")
+}
+
+// Strength is ranged & limited to 0..3
+func ShadowBlur(text string, strength byte) string {
+	return t.New("{shadowBlur=", number.Limit(strength, 0, 3), "}", text, "{shadowBlur}")
 }

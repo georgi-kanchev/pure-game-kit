@@ -1,7 +1,7 @@
 // TODO:
-textbox rework
 inputfield bug, set cursor & select indices to 0 if not typing fixes it but causes another bug
 graphics node parent rework for simpler API
+single tilemap object & render through shader, multiple textures as uniforms
 
 test scale texture repeat sprite
 gui button would be nice to be able to press multiple hotkeys at once
