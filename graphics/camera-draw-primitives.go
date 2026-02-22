@@ -417,7 +417,7 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, thickness, 
 
 	if sh.ID != 0 {
 		rl.BeginShaderMode(sh)
-		rl.SetShaderValue(sh, internal.ShaderTextLoc, []float32{thickness, 0.02}, rl.ShaderUniformVec2)
+		//rl.SetShaderValue(sh, internal.ShaderTextLoc, []float32{thickness, 0.02}, rl.ShaderUniformVec2)
 	}
 
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, getColor(color))

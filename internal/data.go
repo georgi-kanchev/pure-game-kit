@@ -6,6 +6,8 @@ import (
 	"pure-game-kit/utility/number"
 	"strings"
 
+	_ "embed"
+
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -36,7 +38,16 @@ var Fonts = make(map[string]*rl.Font)
 
 var MatrixDefault rl.Matrix
 var ShaderText, Shader rl.Shader
-var ShaderTextLoc, ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
+var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
+
+//go:embed shaders/text.frag
+var fragText string
+
+//go:embed shaders/sprite.frag
+var fragSprite string
+
+//go:embed shaders/default.vert
+var vertDefault string
 
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
@@ -258,10 +269,10 @@ func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, millisec
 func initData() {
 	if ShaderText.ID == 0 {
 		ShaderText = rl.LoadShaderFromMemory("", fragText)
-		ShaderTextLoc = rl.GetLocationUniform(ShaderText.ID, "thickSmooth")
+		// ShaderTextLoc = rl.GetLocationUniform(ShaderText.ID, "thickSmooth")
 	}
 	if Shader.ID == 0 {
-		Shader = rl.LoadShaderFromMemory(vert, frag)
+		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragSprite))
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 	}
 	MatrixDefault = rl.MatrixIdentity()

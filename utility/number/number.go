@@ -65,18 +65,20 @@ func Limit[T Number](number, a, b T) T {
 	return Biggest(a, Smallest(number, b))
 }
 func Map[T Number](number, fromA, fromB, toA, toB T) T {
-	var value T
-	var deltaFrom = fromB - fromA
-	if math.Abs(float64(deltaFrom)) < 0.001 {
-		value = (toA + toB) / 2
-		return value
+	// Convert inputs to float64 for high-precision math
+	var n, fa, fb, ta, tb = float64(number), float64(fromA), float64(fromB), float64(toA), float64(toB)
+	var deltaFrom = fb - fa
+
+	if math.Abs(deltaFrom) < 1e-9 { // is zero
+		return T((ta + tb) / 2)
 	}
 
-	value = ((number-fromA)/deltaFrom)*(toB-toA) + toA
-	if math.IsNaN(float64(value)) || math.IsInf(float64(value), 0) {
-		value = toA
+	var value = ((n-fa)/deltaFrom)*(tb-ta) + ta
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return toA
 	}
-	return value
+
+	return T(value)
 }
 func Wrap[T Number](number, a, b T) T {
 	if a > b {

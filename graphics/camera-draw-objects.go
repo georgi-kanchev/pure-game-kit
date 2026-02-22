@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -34,75 +33,25 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			continue
 		}
 
-		var texture, hasTexture = internal.Textures[s.AssetId]
-		var texX, texY float32 = 0.0, 0.0
-		var texW, texH = 0, 0
-		var rotations, flip = 0, false
-
-		if !hasTexture {
-			var rect, hasArea = internal.AtlasRects[s.AssetId]
-			if hasArea {
-				var atlas, _ = internal.Atlases[rect.AtlasId]
-				var tex, _ = internal.Textures[atlas.TextureId]
-
-				texture = tex
-				texX = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
-				texY = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
-				texW, texH = atlas.CellWidth*int(rect.CountX), atlas.CellHeight*int(rect.CountY)
-				rotations, flip = rect.Rotations, rect.Flip
-			} else {
-				var font, hasFont = internal.Fonts[s.AssetId]
-				if !hasFont {
-					continue
-				}
-				texture = &font.Texture
-				texW, texH = int(texture.Width), int(texture.Height)
-			}
-		} else {
-			texW, texH = int(texture.Width), int(texture.Height)
-		}
-
+		var texture, src, rotations, flip = asset(s.AssetId)
 		if texture == nil {
 			continue
 		}
 
 		var w, h = s.Width, s.Height
 		if s.TextureRepeat {
-			texW, texH = int(w*scX), int(h*scY)
+			src.Width, src.Height = w*scX, h*scY
 		}
-		texX, texY = texX+s.TextureScrollX, texY+s.TextureScrollY
+		src.X, src.Y = src.X+s.TextureScrollX, src.Y+s.TextureScrollY
 
-		var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
-		var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w) * scX, Height: float32(h) * scY}
-
-		if rectWorld.Width < 0 { // raylib doesn't seem to support negative width/height???
-			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+180, -rectWorld.Width)
-			rectTexture.Width *= -1
-		}
-		if rectWorld.Height < 0 {
-			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+270, -rectWorld.Height)
-			rectTexture.Height *= -1
-		}
-
-		if flip {
-			rectTexture.Width *= -1
-		}
-		switch rotations % 4 {
-		case 1: // 90
-			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang, rectWorld.Height)
-		case 2: // 180
-			rectTexture.Height *= -1
-			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang, rectWorld.Width)
-			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+90, rectWorld.Width)
-		case 3: // 270
-			rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, ang+90, rectWorld.Width)
-		}
+		var dst = rl.Rectangle{X: x, Y: y, Width: w * scX, Height: h * scY}
+		editAssetRects(&src, &dst, ang, rotations, flip)
 
 		ang += float32(rotations * 90)
 
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
 		if effects != nil {
-			effects.updateUniforms(texW, texH)
+			effects.updateUniforms(int(src.Width), int(src.Height))
 
 			if !usingShader && c.Effects == nil {
 				rl.BeginShaderMode(internal.Shader)
@@ -112,9 +61,9 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		if shouldBatch {
-			batch.QueueQuad(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
+			batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
 		} else {
-			rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, ang, getColor(s.Tint))
+			rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, ang, getColor(s.Tint))
 		}
 	}
 	if shouldBatch {
@@ -126,6 +75,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	}
 	c.end()
 }
+
 func (c *Camera) DrawBoxes(boxes ...*Box) {
 	c.begin()
 	defer c.end()
@@ -212,19 +162,13 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 
 		var _, symbols = t.formatSymbols(c)
-		var symb = []float32{number.Limit(t.Thickness, 0, 0.999), t.Smoothness * t.LineHeight / 5}
 		var font = t.font()
+		var gapX = t.gapSymbols()
 
 		for _, s := range symbols {
-			batch.QueueQuad(font.Texture, s.TexRect, s.Rect, rl.Vector2{}, s.Angle, getColor(s.Color))
-
-			if s.UnderlineSize > 0 {
-				var src = rl.NewRectangle(float32(font.Texture.Width)-0.75, float32(font.Texture.Height)-0.75, 0.5, 0.5)
-				var dst = rl.NewRectangle(s.Rect.X, s.Y+t.LineHeight, s.Rect.Width, s.UnderlineSize)
-				batch.QueueQuad(font.Texture, src, dst, rl.Vector2{}, s.Angle, getColor(s.Color))
-			}
+			batch.QueueSymbol(font, s, t.LineHeight, gapX)
 		}
-		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, symb, rl.ShaderUniformVec2)
+		// rl.SetShaderValue(internal.ShaderText, internal.ShaderTextLoc, symb, rl.ShaderUniformVec2)
 		batch.Draw()
 
 	}

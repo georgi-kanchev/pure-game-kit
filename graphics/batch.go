@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/utility/angle"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
+	"pure-game-kit/utility/text"
 	"unsafe"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -47,14 +48,14 @@ func (b *Batch) Init(quadCountCapacity int32) {
 	rl.UploadMesh(b.mesh, true)
 	b.material = rl.LoadMaterialDefault()
 }
-func (b *Batch) QueueQuad(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vector2, ang float32, col rl.Color) {
+func (b *Batch) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
 	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+4 > b.mesh.VertexCount) {
 		b.Draw()
 	}
 
 	if b.vertsCur == 0 {
 		var mat = b.material
-		rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
+		rl.SetMaterialTexture(&mat, rl.MapDiffuse, *tex)
 		b.material = mat
 	}
 
@@ -66,9 +67,8 @@ func (b *Batch) QueueQuad(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vec
 	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
 
 	for i := range 4 {
-		rx, ry := dx[i]-origin.X, dy[i]-origin.Y
-		vertices[i*3+0] = (rx*cosA - ry*sinA) + dst.X
-		vertices[i*3+1] = (rx*sinA + ry*cosA) + dst.Y
+		vertices[i*3+0] = (dx[i]*cosA - dy[i]*sinA) + dst.X
+		vertices[i*3+1] = (dx[i]*sinA + dy[i]*cosA) + dst.Y
 		vertices[i*3+2] = 0
 	}
 
@@ -98,7 +98,7 @@ func (b *Batch) QueueQuad(tex rl.Texture2D, src, dst rl.Rectangle, origin rl.Vec
 	b.vertsCur += 4
 	b.indCur += 6
 }
-func (b *Batch) QueueTriangles(points []float32, color rl.Color) {
+func (b *Batch) QueueTriangles(points []float32, col rl.Color) {
 	var vertCount = int32(len(points) / 2)
 	if vertCount%3 != 0 {
 		return
@@ -132,7 +132,7 @@ func (b *Batch) QueueTriangles(points []float32, color rl.Color) {
 	var cOffset = b.vertsCur * 4
 	var colors = b.colors[cOffset : cOffset+(vertCount*4)]
 	for i := range vertCount {
-		colors[i*4+0], colors[i*4+1], colors[i*4+2], colors[i*4+3] = color.R, color.G, color.B, color.A
+		colors[i*4+0], colors[i*4+1], colors[i*4+2], colors[i*4+3] = col.R, col.G, col.B, col.A
 	}
 
 	var iOffset = b.indCur * 2
@@ -174,6 +174,26 @@ func (b *Batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
 
 	b.QueueTriangle(v1x, v1y, v3x, v3y, v2x, v2y, color)
 	b.QueueTriangle(v1x, v1y, v4x, v4y, v3x, v3y, color)
+}
+func (b *Batch) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) {
+	if s.UnderlineSize > 0 {
+		var x, y = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
+		var src = rl.NewRectangle(x, y, 0.2, 0.2)
+		var dst = rl.NewRectangle(s.Rect.X-gapX/2, s.Y+lineHeight, s.Rect.Width+gapX, s.UnderlineSize)
+		var r, g, bb, a = packSymbolColor(getColor(s.Color), getColor(255), getColor(255), 0, 0, 0, 0)
+		batch.QueueQuad(&font.Texture, src, dst, s.Angle, rl.NewColor(r, g, bb, a))
+	}
+	if s.AssetId != "" {
+		var texture, src, rotations, flip = asset(s.AssetId)
+		editAssetRects(&src, &s.Rect, s.Angle, rotations, flip)
+		var r, g, bb, a = packSymbolColor(getColor(s.Color), getColor(255), getColor(255), 1, 3, 3, 0)
+		batch.QueueQuad(texture, src, s.Rect, s.Angle, rl.NewColor(r, g, bb, a))
+		return
+	}
+	if text.Trim(s.Value) != "" {
+		var r, g, bb, a = packSymbolColor(getColor(s.Color), getColor(255), getColor(255), 1, 2, 3, 0)
+		b.QueueQuad(&font.Texture, s.TexRect, s.Rect, s.Angle, rl.NewColor(r, g, bb, a))
+	}
 }
 
 func (b *Batch) Draw() {

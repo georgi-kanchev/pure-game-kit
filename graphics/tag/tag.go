@@ -5,8 +5,10 @@ import (
 	t "pure-game-kit/utility/text"
 )
 
-func Asset(assetId string) string                    { return t.New("{@", assetId, "}") }
-func Underline(text string, size float32) string     { return t.New("{_", size, "}", text, "{_}") }
+func Asset(assetId string) string { return t.New("{assetId=", assetId, "}") }
+func Underline(text string, size float32) string {
+	return t.New("{underline=", size, "}", text, "{underline}")
+}
 func Strikethrough(text string, size float32) string { return t.New("{-", size, "}", text, "{-}") }
 func Box(text string, size float32) string           { return t.New("{=", size, "}", text, "{=}") }
 
@@ -18,5 +20,5 @@ func ColorRGB(text string, r, g, b, a byte) string {
 	return ColorRGBA(text, r, g, b, 255)
 }
 func ColorRGBA(text string, r, g, b, a byte) string {
-	return t.New("{#", r, " ", g, " ", b, " ", a, "}", text, "{#}")
+	return t.New("{color=", r, " ", g, " ", b, " ", a, "}", text, "{color}")
 }

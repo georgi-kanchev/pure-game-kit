@@ -3,6 +3,7 @@ package graphics
 import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/random"
@@ -27,7 +28,7 @@ type TextBox struct {
 
 	hash         uint32
 	cacheChars   []string
-	cacheSymbols []symbol
+	cacheSymbols []*symbol
 	cacheWrap    string
 }
 
@@ -63,6 +64,7 @@ func (t *TextBox) TextWrap(text string) string {
 	var buffer = txt.NewBuilder()
 	var tagIndex = 0
 	var width = t.Width
+	var ph = string(internal.Placeholder)
 
 	for w := range words {
 		var word = words[w]
@@ -71,7 +73,8 @@ func (t *TextBox) TextWrap(text string) string {
 			word += " " // split removes spaces, add it for all words but last one
 		}
 
-		var wordSize, _ = t.TextMeasure(txt.Trim(word))
+		var trimWord = txt.Remove(txt.Trim(word), ph)
+		var wordSize, _ = t.TextMeasure(trimWord)
 		var wordEndOfBox = curX+wordSize > width
 		var wordFirst = w == 0
 		var wordNewLine = !wordFirst && t.WordWrap && wordEndOfBox
@@ -140,13 +143,13 @@ type symbol struct {
 	X, Y, Width   float32
 }
 
-func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
+func (t *TextBox) formatSymbols(cam *Camera) ([]string, []*symbol) {
 	var curHash = random.Hash(t)
 	if t.hash == curHash {
 		return t.cacheChars, t.cacheSymbols
 	}
 
-	var result = []symbol{}
+	var result = []*symbol{}
 	var resultLines = []string{}
 	var wrapped = t.TextWrap(t.Text)
 	var lines = txt.SplitLines(wrapped)
@@ -155,8 +158,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	var gapX = t.gapSymbols()
 	var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
-	var curColor = t.Tint
-	var curUnderline float32
+	var curValues = make(map[string]any)
 	var lineIndex = 0
 	var reading = false
 	var curTag = text.NewBuilder()
@@ -170,7 +172,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 
 		var tagless = removeTags(line)
 		var lineWidth, _ = t.TextMeasure(tagless)
-		var skip = false // replaces 'continue' to avoid skipping the offset calculations
+		var skip = false // avoids interrupting the tags if partially culled
 
 		curX = (w - lineWidth) * alignX
 		curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
@@ -181,33 +183,48 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 		}
 
 		for _, c := range line {
-			if skip {
-				break
-			}
-
-			if t.readTag(&reading, c, curTag, &curColor, &curUnderline) {
+			if t.readTag(&reading, c, curTag, curValues) {
 				continue
 			}
 
-			var char = condition.If(emptyLine, "", string(c))
-			var charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0)
-			var symbol = t.createSymbol(font, cam, curX, curY, charSize.X, t.Angle, curUnderline, c, char, curColor)
-			var outsideRight = curX+charSize.X > w
+			var col = getOrDefault(curValues, "color", t.Tint).(uint)
+			var underline = getOrDefault(curValues, "underline", float32(0)).(float32)
+			var symb symbol
+			var charSize float32
 
-			if outsideRight {
-				skip = true
-				break // rare cases but happens with single symbol & small width
+			var assetId, has = curValues["assetId"]
+			if has {
+				var x, y = t.PointToCamera(cam, curX, curY)
+				charSize = t.LineHeight * 0.9
+				y += t.LineHeight * 0.05
+				var rect = rl.NewRectangle(x, y, charSize, t.LineHeight*0.9)
+				symb = symbol{AssetId: assetId.(string), Angle: t.Angle, Color: col, Rect: rect,
+					UnderlineSize: underline, Value: "@"}
+				delete(curValues, "assetId")
+			} else {
+				var char = condition.If(emptyLine, "", string(c))
+				charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0).X
+				symb = t.createSymbol(font, cam, curX, curY, c)
+
+				symb.Width, symb.Angle = charSize, t.Angle
+				symb.Color, symb.Value = col, char
+				symb.UnderlineSize = underline
+			}
+			if curX+charSize > w { // outside right
+				skip = true // rare cases but happens with single symbol & small width
 			}
 
-			result = append(result, symbol)
+			if !skip {
+				result = append(result, &symb)
+			}
 
 			lineIndex = number.Limit(lineIndex, 0, len(resultLines))
 			if lineIndex == len(resultLines) {
 				resultLines = append(resultLines, "")
 			}
 
-			resultLines[lineIndex] += symbol.Value
-			curX += charSize.X + gapX
+			resultLines[lineIndex] += symb.Value
+			curX += charSize + gapX
 		}
 
 		if !skip {
@@ -221,7 +238,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []symbol) {
 	return resultLines, result
 }
 
-func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, col *uint, un *float32) (nextChar bool) {
+func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues map[string]any) (nextChar bool) {
 	if !*reading && char == '{' {
 		*reading = true
 	}
@@ -237,23 +254,40 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, col *uint,
 	}
 
 	var tag = cur.ToText()
-	if tag == "{#}" {
-		*col = t.Tint
-	} else if text.StartsWith(tag, "{#") {
-		*col = parseCol(tag, "#", t.Tint)
-	} else if tag == "{_}" {
-		*un = 0
-	} else if text.StartsWith(tag, "{_") {
-		*un = parseNum(tag, "_", 0)
-	}
-
 	if tag != "" {
 		cur.Clear()
 	}
+
+	if !text.StartsWith(tag, "{") {
+		return false
+	}
+
+	tag = text.Remove(tag, "{", "}")
+
+	if tag == "" {
+		collection.MapClear(curValues)
+		return false
+	}
+
+	var parts = text.Split(tag, "=")
+	var name, value = parts[0], ""
+	if len(parts) > 1 {
+		value = parts[1]
+	}
+
+	switch name {
+	case "color":
+		curValues[name] = parseCol(value, t.Tint)
+	case "underline":
+		curValues[name] = parseNum(value, 0)
+	default:
+		curValues[name] = value
+	}
+
 	return false
 }
 
-func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y, w, a, un float32, c rune, ch string, col uint) symbol {
+func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y float32, c rune) symbol {
 	var scaleFactor, padding = float32(t.LineHeight) / float32(f.BaseSize), float32(f.CharsPadding)
 	var glyph, atlasRec = rl.GetGlyphInfo(*f, int32(c)), rl.GetGlyphAtlasRec(*f, int32(c))
 	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
@@ -265,9 +299,8 @@ func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y, w, a, un float32, 
 	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
 	dst.X, dst.Y = t.PointToCamera(cam, dst.X, dst.Y)
 	x, y = t.PointToCamera(cam, x, y)
-	var symbol = symbol{
-		Angle: a, Thickness: t.Thickness, Value: ch, Color: col, Rect: dst, TexRect: src, UnderlineSize: un,
-		X: x, Y: y, Width: w}
+
+	var symbol = symbol{Thickness: t.Thickness, Rect: dst, TexRect: src, X: x, Y: y}
 	return symbol
 }
 
@@ -293,9 +326,8 @@ func (t *TextBox) gapLines() float32 {
 	return t.LineGap * t.LineHeight / 5
 }
 
-func parseCol(tag, symbol string, defaultValue uint) uint {
-	tag = text.Remove(tag, "{"+symbol, "}")
-	var rgba = text.Split(tag, " ")
+func parseCol(value string, defaultValue uint) uint {
+	var rgba = text.Split(value, " ")
 	if len(rgba) == 4 {
 		var r, g = text.ToNumber[byte](rgba[0]), text.ToNumber[byte](rgba[1])
 		var b, a = text.ToNumber[byte](rgba[2]), text.ToNumber[byte](rgba[3])
@@ -303,9 +335,8 @@ func parseCol(tag, symbol string, defaultValue uint) uint {
 	}
 	return defaultValue
 }
-func parseNum(tag, symbol string, defaultValue float32) float32 {
-	tag = text.Remove(tag, "{"+symbol, "}")
-	var result = text.ToNumber[float32](tag)
+func parseNum(value string, defaultValue float32) float32 {
+	var result = text.ToNumber[float32](value)
 	if number.IsNaN(result) {
 		return defaultValue
 	}
@@ -313,4 +344,12 @@ func parseNum(tag, symbol string, defaultValue float32) float32 {
 }
 func removeTags(text string) string {
 	return regexp.MustCompile(`{.*?}`).ReplaceAllString(text, "")
+}
+
+func getOrDefault(curValues map[string]any, name string, defaultValue any) any {
+	var val, has = curValues[name]
+	if has {
+		return val
+	}
+	return defaultValue
 }

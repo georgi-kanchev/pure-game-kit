@@ -13,12 +13,12 @@ import (
 	"pure-game-kit/window"
 )
 
-func Batch() {
+func Batches() {
 	var cam = graphics.NewCamera(1)
-	var count = 30_000
+	var count = 10_000
 	var points = make([][2]float32, 0, count*4)
 
-	condition.CallAfter(1, func() {
+	condition.CallAfter(0, func() {
 		var w, h = cam.Size()
 
 		for range count {
@@ -46,10 +46,10 @@ func Batch() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawShapesFast(palette.Red, points...)
-		cam.DrawText(fps, 0, 0, 100)
+		cam.DrawText(fps, 0, 0, 50)
 
 		if condition.TrueEvery(0.1, "fps") {
-			fps = text.New("FPS: ", time.FrameRate())
+			fps = text.New("Triangles: ", count, " FPS: ", time.FrameRate())
 		}
 	}
 }

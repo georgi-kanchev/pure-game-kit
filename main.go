@@ -18,8 +18,6 @@ func main() {
 	example.StorageXML()
 	example.StorageJSON()
 
-	example.Batch()
-
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()
 	var hud = gui.NewFromXMLs(gui.NewElementsXML(
@@ -58,6 +56,7 @@ func main() {
 		gui.Button("boxes", f.Text, " Boxes (graphics-boxes.go)", f.NewRow, ""),
 		gui.Button("texts", f.Text, " Texts (graphics-texts.go)", f.NewRow, ""),
 		gui.Button("effects", f.Text, " Effects (graphics-effects.go)", f.NewRow, ""),
+		gui.Button("batches", f.Text, " Batches (graphics-batches.go)", f.NewRow, ""),
 		gui.Button("guis", f.Text, " Graphical User Interfaces (GUIs) (guis.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("input", f.ThemeId, "label", f.Text, "Input:", f.NewRow, ""),
@@ -102,6 +101,7 @@ func main() {
 		"texts":            example.Texts,
 		"guis":             example.GUIs,
 		"effects":          example.Effects,
+		"batches":          example.Batches,
 		//=================================================================
 		"mouse input":    example.Mouse,
 		"keyboard input": example.Keyboard,

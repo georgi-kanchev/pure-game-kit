@@ -1,9 +1,12 @@
 package example
 
 import (
+	"fmt"
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
 	"pure-game-kit/graphics/tag"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/text"
 	"pure-game-kit/window"
@@ -31,16 +34,12 @@ func Texts() {
 
 		textBox.Width, textBox.Height = textBox.MousePosition(cam)
 
-		textBox.Text = text.New("Lorem ", tag.Color("ipsum dolor", palette.Red), " sit amet, consectetur adipiscing elit, sed do ", tag.Color("eiusmod tempor", palette.Azure), " incididunt ut labore et ", tag.Underline("dolore magna", 5), " aliqua. Ut enim ad minim veniam, quis nostrud ", tag.Asset(tiles[162]), " exercitation ullamco laboris nisi ut ", tag.Box("aliquip", 1), " ex ea commodo consequat. ", tag.Color("Duis aute", palette.Blue), " irure dolor in reprehenderit in voluptate ", tag.Strikethrough("velit esse", 1), " cillum doloreeu fugiat nulla pariatur.")
+		textBox.Text = text.New("Lorem ", tag.Color("ipsum dolor", palette.Red), " sit amet, consectetur adipiscing elit, sed do ", tag.Color("eiusmod tempor", palette.Azure), " incididunt ut labore et ", tag.Underline("dolore magna", 5), " aliqua. Ut enim ad minim veniam, quis", tag.Asset(tiles[162]), "exercitation ullamco laboris nisi ut ", tag.Box("aliquip", 1), " ex ea commodo consequat. ", tag.Color("Duis aute", palette.Blue), " irure dolor in reprehenderit in voluptate ", tag.Strikethrough("velit esse", 1), " cillum doloreeu fugiat nulla pariatur.")
 
-		var y = textBox.Y
-		textBox.Thickness = 0.9
-		textBox.Tint = palette.Black
-		textBox.Y += 5
 		cam.DrawTextBoxes(textBox)
-		textBox.Y = y
-		textBox.Thickness = 0.5
-		textBox.Tint = palette.White
-		cam.DrawTextBoxes(textBox)
+
+		if keyboard.IsKeyJustPressed(key.A) {
+			fmt.Printf("textBox.Text: %v\n", textBox.Text)
+		}
 	}
 }

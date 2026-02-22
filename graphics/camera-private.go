@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/internal"
 	col "pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/point"
 	"pure-game-kit/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -250,11 +251,6 @@ func (c *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
 //=================================================================
 // other
 
-func getColor(value uint) color.RGBA {
-	var r, g, b, a = col.Channels(value)
-	return color.RGBA{R: r, G: g, B: b, A: a}
-}
-
 func tryRecreateWindow() {
 	if internal.WindowReady {
 		return
@@ -263,4 +259,77 @@ func tryRecreateWindow() {
 	if !rl.IsWindowReady() {
 		window.Recreate()
 	}
+}
+
+func getColor(value uint) color.RGBA {
+	var r, g, b, a = col.Channels(value)
+	return color.RGBA{R: r, G: g, B: b, A: a}
+}
+func packSymbolColor(base, outline, shadow rl.Color, thick, out, sh, shSmooth byte) (r, g, b, a byte) {
+	var packLayer = func(c rl.Color) uint8 {
+		var r = (c.R >> 6) & 0x03
+		var g = (c.G >> 6) & 0x03
+		var b = (c.B >> 6) & 0x03
+		var a = (c.A >> 6) & 0x03
+		return (r << 6) | (g << 4) | (b << 2) | a
+	}
+
+	r = packLayer(base)
+	g = packLayer(outline)
+	b = packLayer(shadow)
+	a = ((thick & 0x03) << 6) | ((out & 0x03) << 4) | ((sh & 0x03) << 2) | (shSmooth & 0x03)
+	return
+}
+
+func editAssetRects(src, dst *rl.Rectangle, ang float32, rotations int, flip bool) {
+	if dst.Width < 0 { // raylib doesn't seem to support negative width/height???
+		dst.X, dst.Y = point.MoveAtAngle(dst.X, dst.Y, ang+180, -dst.Width)
+		src.Width *= -1
+	}
+	if dst.Height < 0 {
+		dst.X, dst.Y = point.MoveAtAngle(dst.X, dst.Y, ang+270, -dst.Height)
+		src.Height *= -1
+	}
+
+	if flip {
+		src.Width *= -1
+	}
+	switch rotations % 4 {
+	case 1: // 90
+		dst.X, dst.Y = point.MoveAtAngle(dst.X, dst.Y, ang, dst.Height)
+	case 2: // 180
+		src.Height *= -1
+		dst.X, dst.Y = point.MoveAtAngle(dst.X, dst.Y, ang, dst.Width)
+		dst.X, dst.Y = point.MoveAtAngle(dst.X, dst.Y, ang+90, dst.Width)
+	case 3: // 270
+		dst.X, dst.Y = point.MoveAtAngle(dst.X, dst.Y, ang+90, dst.Width)
+	}
+}
+func asset(assetId string) (tex *rl.Texture2D, src rl.Rectangle, rotations int, flip bool) {
+	var texture, hasTexture = internal.Textures[assetId]
+	src = rl.NewRectangle(0, 0, 0, 0)
+	if !hasTexture {
+		var rect, hasArea = internal.AtlasRects[assetId]
+		if hasArea {
+			var atlas, _ = internal.Atlases[rect.AtlasId]
+			var tex, _ = internal.Textures[atlas.TextureId]
+
+			texture = tex
+			src.X = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
+			src.Y = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
+			src.Width = float32(atlas.CellWidth * int(rect.CountX))
+			src.Height = float32(atlas.CellHeight * int(rect.CountY))
+			rotations, flip = rect.Rotations, rect.Flip
+		} else {
+			var font, hasFont = internal.Fonts[assetId]
+			if hasFont {
+				texture = &font.Texture
+				src.Width, src.Height = float32(texture.Width), float32(texture.Height)
+			}
+		}
+	} else {
+		src.Width, src.Height = float32(texture.Width), float32(texture.Height)
+	}
+	tex = texture
+	return
 }
