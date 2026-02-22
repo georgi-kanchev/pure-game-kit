@@ -265,7 +265,7 @@ func getColor(value uint) color.RGBA {
 	var r, g, b, a = col.Channels(value)
 	return color.RGBA{R: r, G: g, B: b, A: a}
 }
-func packSymbolColor(base, outline, shadow rl.Color, thick, out, sh, shSmooth byte) (r, g, b, a byte) {
+func packSymbolColor(symbol *symbol) rl.Color {
 	var packLayer = func(c rl.Color) uint8 {
 		var r = (c.R >> 6) & 0x03
 		var g = (c.G >> 6) & 0x03
@@ -274,11 +274,12 @@ func packSymbolColor(base, outline, shadow rl.Color, thick, out, sh, shSmooth by
 		return (r << 6) | (g << 4) | (b << 2) | a
 	}
 
-	r = packLayer(base)
-	g = packLayer(outline)
-	b = packLayer(shadow)
-	a = ((thick & 0x03) << 6) | ((out & 0x03) << 4) | ((sh & 0x03) << 2) | (shSmooth & 0x03)
-	return
+	var thick, out, sh, shSmooth byte = symbol.Weight, symbol.OutlineWeight, symbol.ShadowWeight, 1
+	var r = packLayer(getColor(symbol.Color))
+	var g = packLayer(getColor(symbol.OutlineColor))
+	var b = packLayer(getColor(symbol.ShadowColor))
+	var a = ((thick & 0x03) << 6) | ((out & 0x03) << 4) | ((sh & 0x03) << 2) | (shSmooth & 0x03)
+	return rl.NewColor(r, g, b, a)
 }
 
 func editAssetRects(src, dst *rl.Rectangle, ang float32, rotations int, flip bool) {

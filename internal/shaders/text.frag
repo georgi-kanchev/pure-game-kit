@@ -26,21 +26,20 @@ void main() {
     uint shadIdx   = (c.a >> 2) & 0x03u;
     uint smoothIdx = (c.a)      & 0x03u;
     
-    float thicknesses[4] = float[](0.35, 0.50, 0.65, 0.80);
-    float shadThicks[4]  = float[](0.20, 0.30, 0.40, 0.50);
-    float smooths[4]     = float[](0.50, 4.00, 8.00, 12.0);
+    float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
+    float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
 
     vec2 shadowOffset = vec2(0.002, 0.005);
-    float shadowDistance = texture(texture0, fragTexCoord - shadowOffset).a - (1.0 - shadThicks[shadIdx]);
+    float shadowDistance = texture(texture0, fragTexCoord - shadowOffset).a - (1.0 - thick[shadIdx]);
     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
     
-    float distance = texture(texture0, fragTexCoord).a - (1.0 - thicknesses[thickIdx]);
+    float distance = texture(texture0, fragTexCoord).a - (1.0 - thick[thickIdx]);
     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
     
     float compressedOutlIdx = (outlIdx * 0.7) + (1.5 * 0.3);
-    float outlineThick = (1.0 - thicknesses[thickIdx]) * (compressedOutlIdx / 3.0);
+    float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
     
     vec3 finalRGB = shadowColor.rgb;

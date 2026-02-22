@@ -3,7 +3,9 @@ package graphics
 import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
+	txt "pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -155,9 +157,12 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 
 		if t.Fast {
-			var text = condition.If(t.WordWrap, t.TextWrap(t.Text), t.Text)
-			text = removeTags(text)
-			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.Thickness, t.SymbolGap, t.Tint)
+			var text = removeTags(txt.Remove(t.Text, "\v"))
+			text = condition.If(t.WordWrap, t.TextWrap(text), text)
+			var symbol = &symbol{Color: t.Tint, OutlineColor: 255, ShadowColor: 0}
+			var pack = packSymbolColor(symbol)
+			var col = color.RGBA(pack.R, pack.G, pack.B, pack.A)
+			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.Thickness, t.gapSymbols(), col)
 			continue
 		}
 

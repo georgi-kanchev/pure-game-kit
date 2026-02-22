@@ -17,29 +17,52 @@ func Texts() {
 	var font = assets.LoadDefaultFont()
 	var _, tiles = assets.LoadDefaultAtlasIcons()
 	var textBox = graphics.NewTextBox(font, 0, 0, "")
-	textBox.PivotX, textBox.PivotY = 0, 0
+	textBox.PivotX, textBox.PivotY = 0.5, 0.5
 	textBox.AlignmentX = 0
 	textBox.AlignmentY = 1
 	textBox.Angle = 0
-	// textBox.EmbeddedAssetIds = []string{tiles[162], tiles[256], tiles[156], tiles[154], tiles[157]}
-	textBox.LineHeight = 100
-	textBox.Width, textBox.Height = 2000, 1500
+	textBox.LineHeight = 200
+	// textBox.Width, textBox.Height = 1090, 1496
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		textBox.X, textBox.Y = cam.PointFromScreen(50, 50)
 		textBox.Tint = palette.DarkGray
 		cam.DrawNodes(&textBox.Node)
 		textBox.Tint = palette.White
 
 		textBox.Width, textBox.Height = textBox.MousePosition(cam)
 
-		textBox.Text = text.New("Lorem ", tag.Color("ipsum dolor", palette.Red), " sit amet, consectetur adipiscing elit, sed do ", tag.Color("eiusmod tempor", palette.Azure), " incididunt ut labore et ", tag.Underline("dolore magna", 5), " aliqua. Ut enim ad minim veniam, quis", tag.Asset(tiles[162]), "exercitation ullamco laboris nisi ut ", tag.Box("aliquip", 1), " ex ea commodo consequat. ", tag.Color("Duis aute", palette.Blue), " irure dolor in reprehenderit in voluptate ", tag.Strikethrough("velit esse", 1), " cillum doloreeu fugiat nulla pariatur.")
+		textBox.Text = text.New(
+			"Lorem ",
+			tag.Color("ipsum dolor", palette.Red),
+			" sit amet, ",
+			tag.ShadowBold("consectetur"),
+			" adipiscing elit, sed do ",
+			tag.BackColor("eiusmod tempor", palette.Green),
+			" incididunt ut labore et ",
+			tag.Underline("dolore magna"),
+			" aliqua. Ut ",
+			tag.Bold("enim ad minim"),
+			" veniam, quis ",
+			tag.Asset(tiles[162]),
+			"exercitation ullamco laboris nisi ut ",
+			tag.OutlineColor("aliquip ex ea commodo", palette.Red),
+			" consequat. ",
+			tag.Color("Duis aute", palette.Blue),
+			" irure dolor ",
+			tag.ShadowColor("in reprehenderit", palette.Green),
+			" in voluptate ",
+			tag.Crossout("velit esse incididunt ut labore"),
+			" cillum ",
+			tag.Thin("doloreeu"),
+			" fugiat nulla pariatur.")
 
 		cam.DrawTextBoxes(textBox)
 
 		if keyboard.IsKeyJustPressed(key.A) {
 			fmt.Printf("textBox.Text: %v\n", textBox.Text)
 		}
+
+		fmt.Printf("%v, %v\n", textBox.Width, textBox.Height)
 	}
 }

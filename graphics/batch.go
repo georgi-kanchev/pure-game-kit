@@ -176,23 +176,33 @@ func (b *Batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
 	b.QueueTriangle(v1x, v1y, v4x, v4y, v3x, v3y, color)
 }
 func (b *Batch) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) {
-	if s.UnderlineSize > 0 {
+	var queueQuad = func(dstX, dstY, dstW, dstH float32, col uint) {
+		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 		var x, y = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
-		var src = rl.NewRectangle(x, y, 0.2, 0.2)
-		var dst = rl.NewRectangle(s.Rect.X-gapX/2, s.Y+lineHeight, s.Rect.Width+gapX, s.UnderlineSize)
-		var r, g, bb, a = packSymbolColor(getColor(s.Color), getColor(255), getColor(255), 0, 0, 0, 0)
-		batch.QueueQuad(&font.Texture, src, dst, s.Angle, rl.NewColor(r, g, bb, a))
+		var prevCol = s.Color
+		s.Color = col
+		batch.QueueQuad(&font.Texture, rl.NewRectangle(x, y, 0.2, 0.2), dst, s.Angle, packSymbolColor(s))
+		s.Color = prevCol
+	}
+	var lineThickness = lineHeight / 15
+
+	if s.BackColor > 0 {
+		queueQuad(s.X, s.Y, s.Width+gapX, lineHeight, s.BackColor)
 	}
 	if s.AssetId != "" {
 		var texture, src, rotations, flip = asset(s.AssetId)
 		editAssetRects(&src, &s.Rect, s.Angle, rotations, flip)
-		var r, g, bb, a = packSymbolColor(getColor(s.Color), getColor(255), getColor(255), 1, 3, 3, 0)
-		batch.QueueQuad(texture, src, s.Rect, s.Angle, rl.NewColor(r, g, bb, a))
-		return
+		batch.QueueQuad(texture, src, s.Rect, s.Angle, packSymbolColor(s))
+	} else if text.Trim(s.Value) != "" {
+		b.QueueQuad(&font.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
 	}
-	if text.Trim(s.Value) != "" {
-		var r, g, bb, a = packSymbolColor(getColor(s.Color), getColor(255), getColor(255), 1, 2, 3, 0)
-		b.QueueQuad(&font.Texture, s.TexRect, s.Rect, s.Angle, rl.NewColor(r, g, bb, a))
+	if s.Underline {
+		var x, y = point.MoveAtAngle(s.X, s.Y, s.Angle+90, lineHeight-lineThickness)
+		queueQuad(x, y, s.Width+gapX, lineThickness, s.Color)
+	}
+	if s.Strikethrough {
+		var x, y = point.MoveAtAngle(s.X, s.Y, s.Angle+90, lineHeight*0.55-lineThickness/2)
+		queueQuad(x, y, s.Width+gapX, lineThickness, s.Color)
 	}
 }
 

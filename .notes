@@ -1,6 +1,6 @@
 // TODO:
-inputfield bug, set cursor & select indices to 0 if not typing fixes it but causes another bug
 textbox rework
+inputfield bug, set cursor & select indices to 0 if not typing fixes it but causes another bug
 graphics node parent rework for simpler API
 
 test scale texture repeat sprite
