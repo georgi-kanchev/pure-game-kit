@@ -69,7 +69,7 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 
 	setupVisualsText(root, tooltip, true)
 
-	var lines = tooltip.textBox.TextLines(cam)
+	var lines = tooltip.textBox.TextLines()
 	var lh = tooltip.textBox.LineHeight
 	var textH = float32(len(lines)*int(lh+tooltip.textBox.LineGap)) + lh
 	tooltip.textBox.Height = textH

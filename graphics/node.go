@@ -3,7 +3,7 @@ package graphics
 import (
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/color/palette"
-	"pure-game-kit/utility/point"
+	"pure-game-kit/utility/number"
 )
 
 type Node struct {
@@ -11,7 +11,6 @@ type Node struct {
 	Width, Height  float32
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
-	Parent         *Node
 	Tint           uint
 
 	renderId int32
@@ -25,182 +24,78 @@ func NewNode(x, y float32) *Node {
 //=================================================================
 
 func (n *Node) CameraFit(camera *Camera) {
-	var x, y = camera.PointFromScreen(
-		camera.ScreenX+camera.ScreenWidth/2,
-		camera.ScreenY+camera.ScreenHeight/2,
-	)
-	var w, h = n.Width, n.Height
+	var x, y = camera.PointFromScreen(camera.ScreenX+camera.ScreenWidth/2, camera.ScreenY+camera.ScreenHeight/2)
 	var cw, ch = camera.Size()
-	var scale = min(cw/w, ch/h)
+	var scale = min(cw/n.Width, ch/n.Height)
 
-	n.X = x - (0.5-n.PivotX)*w*scale
-	n.Y = y - (0.5-n.PivotY)*h*scale
+	n.X = x - (0.5-n.PivotX)*n.Width*scale
+	n.Y = y - (0.5-n.PivotY)*n.Height*scale
 	n.ScaleX, n.ScaleY = scale, scale
 	n.Angle = 0
 }
 func (n *Node) CameraFill(camera *Camera) {
-	var x, y = camera.PointFromScreen(
-		camera.ScreenX+camera.ScreenWidth/2,
-		camera.ScreenY+camera.ScreenHeight/2,
-	)
-	var w, h = n.Width, n.Height
+	var x, y = camera.PointFromScreen(camera.ScreenX+camera.ScreenWidth/2, camera.ScreenY+camera.ScreenHeight/2)
 	var cw, ch = camera.Size()
-	var scale = max(cw/w, ch/h)
+	var scale = max(cw/n.Width, ch/n.Height)
 
-	n.X = x - (0.5-n.PivotX)*w*scale
-	n.Y = y - (0.5-n.PivotY)*h*scale
+	n.X = x - (0.5-n.PivotX)*n.Width*scale
+	n.Y = y - (0.5-n.PivotY)*n.Height*scale
 	n.ScaleX, n.ScaleY = scale, scale
 	n.Angle = 0
 }
 func (n *Node) CameraStretch(camera *Camera) {
-	var x, y = camera.PointFromScreen(
-		camera.ScreenX+camera.ScreenWidth/2,
-		camera.ScreenY+camera.ScreenHeight/2,
-	)
-	var w, h = n.Width, n.Height
+	var x, y = camera.PointFromScreen(camera.ScreenX+camera.ScreenWidth/2, camera.ScreenY+camera.ScreenHeight/2)
 	var cw, ch = camera.Size()
-	var scaleX, scaleY = cw / w, ch / h
+	var scaleX, scaleY = cw / n.Width, ch / n.Height
 
-	n.X = x - (0.5-n.PivotX)*w*scaleX
-	n.Y = y - (0.5-n.PivotY)*h*scaleY
+	n.X = x - (0.5-n.PivotX)*n.Width*scaleX
+	n.Y = y - (0.5-n.PivotY)*n.Height*scaleY
 	n.ScaleX, n.ScaleY = scaleX, scaleY
 	n.Angle = 0
 }
 
 //=================================================================
 
-func (n *Node) TransformToCamera() (cx, cy, cAngle, cScaleX, cScaleY float32) {
-	var w, h = n.Width, n.Height
-	var originPixelX = n.PivotX * float32(w)
-	var originPixelY = n.PivotY * float32(h)
-	var offsetX = -originPixelX * n.ScaleX
-	var offsetY = -originPixelY * n.ScaleY
-	var sinL, cosL = internal.SinCos(n.Angle)
-	var originOffsetX = offsetX*cosL - offsetY*sinL
-	var originOffsetY = offsetX*sinL + offsetY*cosL
-	var localX = n.X + originOffsetX
-	var localY = n.Y + originOffsetY
-
-	if n.Parent == nil {
-		return localX, localY, n.Angle, n.ScaleX, n.ScaleY
-	}
-
-	localX -= offsetX
-	localY -= offsetY
-
-	var px, py, pa, psx, psy = n.Parent.TransformToCamera()
-
-	localX *= psx
-	localY *= psy
-
-	var sinP, cosP = internal.SinCos(pa)
-	var worldX = localX*cosP - localY*sinP + px
-	var worldY = localX*sinP + localY*cosP + py
-
-	cx = worldX
-	cy = worldY
-	cAngle = pa + n.Angle
-	cScaleX = psx * n.ScaleX
-	cScaleY = psy * n.ScaleY
-	return
+func (n *Node) Area() (x, y, width, height float32) {
+	var x1, y1 = n.CornerTopLeft()
+	var x2, y2 = n.CornerTopRight()
+	var x3, y3 = n.CornerBottomRight()
+	var x4, y4 = n.CornerBottomLeft()
+	var minX = number.Smallest(x1, x2, x3, x4)
+	var minY = number.Smallest(y1, y2, y3, y4)
+	var maxX = number.Biggest(x1, x2, x3, x4)
+	var maxY = number.Biggest(y1, y2, y3, y4)
+	return minX, minY, maxX - minX, maxY - minY
 }
-func (n *Node) TransformFromCamera(cx, cy, cAngle, cScaleX, cScaleY float32) (x, y, angle, scaleX, scaleY float32) {
-	if n.Parent != nil {
-		cx, cy, cAngle, cScaleX, cScaleY = n.Parent.TransformFromCamera(cx, cy, cAngle, cScaleX, cScaleY)
+func (n *Node) PointFromCamera(cx, cy float32) (x, y float32) {
+	if n.ScaleX == 0 || n.ScaleY == 0 {
+		return 0, 0
 	}
 
-	var dx = cx - n.X
-	var dy = cy - n.Y
-	var sin, cos = internal.SinCos(-n.Angle)
-	var localX = dx*cos - dy*sin
-	var localY = dx*sin + dy*cos
-	var w, h = n.Width, n.Height
-	var pivotOffsetX = n.PivotX * w
-	var pivotOffsetY = n.PivotY * h
-
-	if n.ScaleX != 0 {
-		localX /= n.ScaleX
-	}
-	if n.ScaleY != 0 {
-		localY /= n.ScaleY
-	}
-
-	x = localX + pivotOffsetX
-	y = localY + pivotOffsetY
-
-	angle = cAngle - n.Angle
-	scaleX = cScaleX / n.ScaleX
-	scaleY = cScaleY / n.ScaleY
-	return
-}
-func (n *Node) PointToCamera(camera *Camera, x, y float32) (cx, cy float32) {
-	var w, h = n.Width, n.Height
-	var originPixelX = n.PivotX * float32(w)
-	var originPixelY = n.PivotY * float32(h)
-	var localX = (x - originPixelX) * n.ScaleX
-	var localY = (y - originPixelY) * n.ScaleY
-	var sinL, cosL = internal.SinCos(n.Angle)
-	var rotX = localX*cosL - localY*sinL
-	var rotY = localX*sinL + localY*cosL
-	var worldX = rotX + n.X
-	var worldY = rotY + n.Y
-
-	if n.Parent != nil {
-		return n.Parent.PointToCamera(camera, worldX, worldY)
-	}
-
-	return worldX, worldY
-}
-func (n *Node) PointFromCamera(camera *Camera, cx, cy float32) (x, y float32) {
-	x, y, _, _, _ = n.TransformFromCamera(cx, cy, 0, 1, 1)
+	var dx, dy = cx - n.X, cy - n.Y
+	var sinL, cosL = internal.SinCos(-n.Angle)
+	var rotX = (dx*cosL - dy*sinL) / n.ScaleX
+	var rotY = (dx*sinL + dy*cosL) / n.ScaleY
+	x = rotX + n.PivotX*n.Width
+	y = rotY + n.PivotY*n.Height
 	return x, y
 }
+func (n *Node) PointToCamera(x, y float32) (cx, cy float32) {
+	var localX = (x - (n.PivotX * n.Width)) * n.ScaleX
+	var localY = (y - (n.PivotY * n.Height)) * n.ScaleY
+	var sinL, cosL = internal.SinCos(n.Angle)
+	cx = (localX*cosL - localY*sinL) + n.X
+	cy = (localX*sinL + localY*cosL) + n.Y
+	return cx, cy
+}
 
-func (n *Node) ContainsPoint(camera *Camera, cx, cy float32) bool {
-	var x, y = n.PointFromCamera(camera, cx, cy)
+func (n *Node) ContainsPoint(cx, cy float32) bool {
+	var x, y = n.PointFromCamera(cx, cy)
 	var w, h = n.Width, n.Height
 	return x >= 0 && y >= 0 && x < w && y < h
 }
 
-func (n *Node) MousePosition(camera *Camera) (x, y float32) {
-	x, y = camera.MousePosition()
-	return n.PointFromCamera(camera, x, y)
-}
-func (n *Node) IsHovered(camera *Camera) bool {
-	var x, y = camera.MousePosition()
-	return n.ContainsPoint(camera, x, y)
-}
-
-func (n *Node) CornerTopLeft() (x, y float32)     { return n.getCorner(topLeft) }
-func (n *Node) CornerTopRight() (x, y float32)    { return n.getCorner(topRight) }
-func (n *Node) CornerBottomRight() (x, y float32) { return n.getCorner(bottomRight) }
-func (n *Node) CornerBottomLeft() (x, y float32)  { return n.getCorner(bottomLeft) }
-
-//=================================================================
-// private
-
-type corner byte
-
-const (
-	topLeft corner = iota
-	topRight
-	bottomRight
-	bottomLeft
-)
-
-func (n *Node) getCorner(corner corner) (x, y float32) {
-	var width, height = n.Width, n.Height
-	var nx, ny, na, _, _ = n.TransformToCamera()
-	switch corner {
-	case topLeft:
-		return nx, ny
-	case topRight:
-		return point.MoveAtAngle(nx, ny, na, width)
-	case bottomRight:
-		var trx, try = point.MoveAtAngle(nx, ny, na, width)
-		return point.MoveAtAngle(trx, try, na+90, height)
-	case bottomLeft:
-		return point.MoveAtAngle(nx, ny, na+90, height)
-	}
-	return
-}
+func (n *Node) CornerTopLeft() (x, y float32)     { return n.PointToCamera(0, 0) }
+func (n *Node) CornerTopRight() (x, y float32)    { return n.PointToCamera(n.Width, 0) }
+func (n *Node) CornerBottomRight() (x, y float32) { return n.PointToCamera(n.Width, n.Height) }
+func (n *Node) CornerBottomLeft() (x, y float32)  { return n.PointToCamera(0, n.Height) }

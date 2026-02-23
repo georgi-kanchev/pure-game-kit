@@ -98,6 +98,15 @@ func (c *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
 
 //=================================================================
 
+func (c *Camera) IsAreaVisible(x, y, width, height float32) bool {
+	c.update()
+	var sx1, sy1 = c.PointToScreen(x, y)
+	var sx2, sy2 = c.PointToScreen(x+width, y+height)
+	var sMinX, sMaxX = min(sx1, sx2), max(sx1, sx2)
+	var sMinY, sMaxY = min(sy1, sy2), max(sy1, sy2)
+	var maskR, maskB = c.MaskX + c.MaskWidth, c.MaskY + c.MaskHeight
+	return sMaxX > c.MaskX && sMinX < maskR && sMaxY > c.MaskY && sMinY < maskB
+}
 func (c *Camera) IsHovered() bool {
 	var mousePos = rl.GetMousePosition()
 	return float32(mousePos.X) > float32(c.ScreenX) &&

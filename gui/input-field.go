@@ -89,10 +89,10 @@ func inputField(cam *graphics.Camera, root *root, widget *widget) {
 		widget.textBox.Text = text
 	}
 	if typingIn == widget {
-		text = tryInput(text, widget, margin, root, cam)
-		tryRemove(cam, text, root, widget, margin)
+		text = tryInput(text, widget, margin, root)
+		tryRemove(text, root, widget, margin)
 		tryMoveCursor(widget, text, cam, margin, root)
-		tryFocusNextField(cam, root, widget)
+		tryFocusNextField(root, widget)
 
 		scrollX = condition.If(txt.Length(text) == 0, 0, scrollX)
 		cursorTime += internal.DeltaTime
@@ -175,7 +175,7 @@ func tryMoveCursor(widget *widget, text string, cam *graphics.Camera, margin flo
 			indexCursor = closestIndexToMouse(cam)
 
 			if mouse.IsButtonJustPressed(btn.Left) {
-				calculateXs(widget, cam) // calculate once and update indexes to not drop performance
+				calculateXs(widget) // calculate once and update indexes to not drop performance
 				indexCursor = closestIndexToMouse(cam)
 				indexSelect = indexCursor
 			}
@@ -228,7 +228,7 @@ func trySelect() {
 		indexSelect = indexCursor
 	}
 }
-func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, margin float32) {
+func tryRemove(text string, root *root, widget *widget, margin float32) {
 	var left, right = widget.X + margin, widget.X + widget.Width - margin
 	var ctrl = keyboard.IsKeyPressed(key.LeftControl) || keyboard.IsKeyPressed(key.RightControl)
 	var remove = func(back, front int) {
@@ -244,7 +244,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		setText(widget, text)
 		indexCursor -= back
 		indexSelect = indexCursor
-		calculateXs(widget, cam)
+		calculateXs(widget)
 
 		var owner = root.Containers[widget.OwnerId]
 		sound.AssetId = defaultValue(root.themedField(field.InputFieldSoundErase, owner, widget), "~erase")
@@ -278,7 +278,7 @@ func tryRemove(cam *graphics.Camera, text string, root *root, widget *widget, ma
 		remove(0, condition.If(ctrl, wordIndex(text, false)-indexCursor, 1))
 	}
 }
-func tryInput(text string, widget *widget, margin float32, root *root, cam *graphics.Camera) string {
+func tryInput(text string, widget *widget, margin float32, root *root) string {
 	var input = keyboard.Input()
 	if input == "" {
 		return text
@@ -286,7 +286,7 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 
 	if indexCursor != indexSelect { // text is selected, we should remove it and then type
 		simulateRemove = true
-		tryRemove(cam, text, root, widget, margin)
+		tryRemove(text, root, widget, margin)
 		text = widget.textBox.Text
 		simulateRemove = false
 	}
@@ -308,10 +308,10 @@ func tryInput(text string, widget *widget, margin float32, root *root, cam *grap
 	indexCursor += txt.Length(input)
 	indexSelect = indexCursor
 	cursorTime = 0
-	calculateXs(widget, cam)
+	calculateXs(widget)
 	return text
 }
-func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
+func tryFocusNextField(root *root, self *widget) {
 	if !keyboard.IsKeyJustPressed(key.Tab) || frame == int(time.FrameCount()) {
 		return
 	}
@@ -346,15 +346,15 @@ func tryFocusNextField(cam *graphics.Camera, root *root, self *widget) {
 	if text == "" { // empty text is skipped in setupText so Xs should affect that
 		typingIn.textBox.Text = ""
 	}
-	calculateXs(typingIn, cam)
+	calculateXs(typingIn)
 }
 
-func calculateXs(self *widget, cam *graphics.Camera) {
+func calculateXs(self *widget) {
 	var textLength = txt.Length(self.textBox.Text)
 	symbolXs = []float32{}
 
 	for i := range textLength {
-		var x, _, _, _, _ = self.textBox.TextSymbol(cam, i)
+		var x, _, _, _, _ = self.textBox.TextSymbol(i)
 		symbolXs = append(symbolXs, x+scrollX)
 	}
 	if len(symbolXs) > 0 {

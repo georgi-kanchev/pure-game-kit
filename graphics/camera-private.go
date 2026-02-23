@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"pure-game-kit/internal"
 	col "pure-game-kit/utility/color"
+	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 	"pure-game-kit/window"
@@ -15,15 +16,16 @@ import (
 // objects
 
 var reusableSprite = NewSprite("", 0, 0)
+var defaultTextPack = &symbol{Color: palette.White, Weight: 1, OutlineColor: 255, OutlineWeight: 1}
 
-func drawBoxPart(camera *Camera, parent *Node, x, y, w, h float32, id string, color uint) {
+func drawBoxPart(parent *Sprite, camera *Camera, x, y, w, h float32, id string, color uint) {
 	reusableSprite.AssetId = id
-	reusableSprite.X, reusableSprite.Y = x, y
-	reusableSprite.Parent = parent
+	reusableSprite.X, reusableSprite.Y = parent.PointToCamera(x, y)
+	reusableSprite.Angle = parent.Angle
+	reusableSprite.ScaleX, reusableSprite.ScaleY = parent.ScaleX, parent.ScaleY
 	reusableSprite.Width, reusableSprite.Height = w, h
-	reusableSprite.ScaleX, reusableSprite.ScaleY = 1, 1
+	reusableSprite.PivotX, reusableSprite.PivotY = 0, 0
 	reusableSprite.Tint = color
-
 	camera.DrawSprites(reusableSprite)
 }
 
@@ -214,40 +216,6 @@ func (c *Camera) end() {
 
 	rl.EndScissorMode()
 	rl.EndMode2D()
-}
-
-func (c *Camera) isAreaVisible(x, y, width, height, angle float32) bool {
-	c.update()
-	// optimized for speed
-	var sinA, cosA = internal.SinCos(angle)
-	var sinB, cosB = internal.SinCos(angle + 90)
-	var tlx, tly = x, y
-	var trx, try = tlx + cosA*width, tly + sinA*width
-	var blx, bly = tlx + cosB*height, tly + sinB*height
-	var brx, bry = trx + cosB*height, try + sinB*height
-	var tx, ty = float32(rlCam.Target.X), float32(rlCam.Target.Y)
-	var zoom = float32(rlCam.Zoom)
-	var sinR, cosR = internal.SinCos(rlCam.Rotation)
-	var offX, offY = float32(rlCam.Offset.X), float32(rlCam.Offset.Y)
-	var pointToScreen = func(px, py float32) (float32, float32) { // inlined to skip cam.update() on each call
-		px -= tx
-		py -= ty
-		px *= zoom
-		py *= zoom
-		var rx, ry = px*cosR - py*sinR, px*sinR + py*cosR
-		return rx + offX, ry + offY
-	}
-	var stlx, stly = pointToScreen(tlx, tly)
-	var strx, stry = pointToScreen(trx, try)
-	var sbrx, sbry = pointToScreen(brx, bry)
-	var sblx, sbly = pointToScreen(blx, bly)
-	var minX = number.Smallest(stlx, strx, sbrx, sblx)
-	var maxX = number.Biggest(stlx, strx, sbrx, sblx)
-	var minY = number.Smallest(stly, stry, sbry, sbly)
-	var maxY = number.Biggest(stly, stry, sbry, sbly)
-	var mtlx, mtly = float32(c.MaskX), float32(c.MaskY)
-	var mbrx, mbry = mtlx + float32(c.MaskWidth), mtly + float32(c.MaskHeight)
-	return maxY > mtly && minY < mbry && maxX > mtlx && minX < mbrx
 }
 
 //=================================================================

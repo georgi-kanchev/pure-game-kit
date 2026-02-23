@@ -17,7 +17,8 @@ func Mouse() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
-		if node.IsHovered(cam) && mouse.IsButtonPressed(b.Left) {
+		var mx, my = cam.MousePosition()
+		if node.ContainsPoint(mx, my) && mouse.IsButtonPressed(b.Left) {
 			node.Angle -= time.FrameDelta() * 60
 		}
 		if mouse.IsButtonJustReleased(b.Left) {
@@ -29,7 +30,7 @@ func Mouse() {
 			node.Height = node.Width
 		}
 
-		if node.IsHovered(cam) {
+		if node.ContainsPoint(mx, my) {
 			mouse.SetCursor(cursor.Hand)
 		} else {
 			mouse.SetCursor(cursor.Arrow)

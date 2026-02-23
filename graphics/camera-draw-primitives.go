@@ -2,7 +2,7 @@ package graphics
 
 import (
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/color"
+	col "pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
@@ -154,10 +154,6 @@ func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, co
 	c.DrawQuad(tlx, tly, thickness, height+thickness*2, angle, color)
 }
 func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
-	if !c.isAreaVisible(x, y, width, height, angle) {
-		return
-	}
-
 	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
 
 	// raylib doesn't seem to have negative width/height???
@@ -250,11 +246,11 @@ func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
 			var ang1, ang2 = float32(i) * step, float32(i+1) * step
 			var p1x, p1y = point.MoveAtAngle(x, y, ang1, radius)
 			var p2x, p2y = point.MoveAtAngle(x, y, ang2, radius)
-			rl.Color4ub(color.Channels(colors[1]))
+			rl.Color4ub(col.Channels(colors[1]))
 			rl.Vertex2f(p2x, p2y)
-			rl.Color4ub(color.Channels(colors[1]))
+			rl.Color4ub(col.Channels(colors[1]))
 			rl.Vertex2f(p1x, p1y)
-			rl.Color4ub(color.Channels(colors[0]))
+			rl.Color4ub(col.Channels(colors[0]))
 			rl.Vertex2f(x, y)
 		}
 		rl.End()
@@ -372,7 +368,7 @@ func (c *Camera) DrawShapesFast(color uint, points ...[2]float32) {
 
 func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
 	var texture, has = internal.Textures[textureId]
-	if !c.isAreaVisible(x, y, width, height, angle) || !has {
+	if !has {
 		return
 	}
 
@@ -420,7 +416,9 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap f
 		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextShOffLoc, []float32{0, 0}, rl.ShaderUniformVec2)
 	}
 
-	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, getColor(color))
+	defaultTextPack.Color = color
+	var pack = packSymbolColor(defaultTextPack)
+	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
 
 	if sh.ID != 0 {
 		rl.EndShaderMode()

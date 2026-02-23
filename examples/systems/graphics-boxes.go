@@ -29,7 +29,8 @@ func Boxes() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawBoxes(&box, &bar)
 
-		var mx, my = box.MousePosition(cam)
+		var mx, my = cam.MousePosition()
+		mx, my = box.PointFromCamera(mx, my)
 		box.Width, box.Height = mx, my
 		bar.Width = mx
 	}

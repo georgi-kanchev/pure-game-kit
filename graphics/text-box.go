@@ -127,12 +127,12 @@ func (t *TextBox) TextWrap(text string) string {
 	t.cacheWrap = result
 	return result
 }
-func (t *TextBox) TextLines(camera *Camera) []string {
-	var lines, _ = t.formatSymbols(camera)
+func (t *TextBox) TextLines() []string {
+	var lines, _ = t.formatSymbols()
 	return lines
 }
-func (t *TextBox) TextSymbol(camera *Camera, symbolIndex int) (cX, cY, cWidth, cHeight, cAngle float32) {
-	var _, symbols = t.formatSymbols(camera)
+func (t *TextBox) TextSymbol(symbolIndex int) (x, y, width, height, angle float32) {
+	var _, symbols = t.formatSymbols()
 	if symbolIndex < 0 || symbolIndex >= len(symbols) {
 		return number.NaN(), number.NaN(), number.NaN(), number.NaN(), number.NaN()
 	}
@@ -156,7 +156,7 @@ type symbol struct {
 	Underline, Strikethrough bool
 }
 
-func (t *TextBox) formatSymbols(cam *Camera) ([]string, []*symbol) {
+func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 	var curHash = random.Hash(t)
 	if t.hash == curHash {
 		return t.cacheChars, t.cacheSymbols
@@ -206,7 +206,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []*symbol) {
 			var assetId, has = curValues["assetId"]
 
 			if has {
-				var x, y = t.PointToCamera(cam, curX, curY)
+				var x, y = t.PointToCamera(curX, curY)
 				var shrink float32 = 1
 				var shrinkHeight = t.LineHeight * shrink
 				var shrinkOffset = t.LineHeight * ((1 - shrink) / 2)
@@ -216,7 +216,7 @@ func (t *TextBox) formatSymbols(cam *Camera) ([]string, []*symbol) {
 				delete(curValues, "assetId")
 			} else {
 				charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0).X
-				symb = t.createSymbol(font, cam, curX, curY, c)
+				symb = t.createSymbol(font, curX, curY, c)
 			}
 			symb.Width, symb.Angle, symb.Value = charSize, t.Angle, char
 			symb.Color = getOrDefault(curValues, "color", t.Tint).(uint)
@@ -317,7 +317,7 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues 
 
 	return false
 }
-func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y float32, c rune) symbol {
+func (t *TextBox) createSymbol(f *rl.Font, x, y float32, c rune) symbol {
 	var scaleFactor, padding = float32(t.LineHeight) / float32(f.BaseSize), float32(f.CharsPadding)
 	var glyph, atlasRec = rl.GetGlyphInfo(*f, int32(c)), rl.GetGlyphAtlasRec(*f, int32(c))
 	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
@@ -327,8 +327,8 @@ func (t *TextBox) createSymbol(f *rl.Font, cam *Camera, x, y float32, c rune) sy
 	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
 	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
 	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
-	dst.X, dst.Y = t.PointToCamera(cam, dst.X, dst.Y)
-	x, y = t.PointToCamera(cam, x, y)
+	dst.X, dst.Y = t.PointToCamera(dst.X, dst.Y)
+	x, y = t.PointToCamera(x, y)
 
 	var symbol = symbol{Rect: dst, TexRect: src, X: x, Y: y}
 	return symbol

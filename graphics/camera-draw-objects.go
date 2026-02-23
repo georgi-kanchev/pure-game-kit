@@ -12,13 +12,10 @@ import (
 
 func (c *Camera) DrawNodes(nodes ...*Node) {
 	for _, n := range nodes {
-		if n == nil {
-			continue
+		if n != nil {
+			var x, y = n.PointToCamera(0, 0) // apply pivot
+			c.DrawQuad(x, y, n.Width*n.ScaleX, n.Height*n.ScaleY, n.Angle, n.Tint)
 		}
-
-		var x, y, ang, scX, scY = n.TransformToCamera()
-		var w, h = n.Width, n.Height
-		c.DrawQuad(x, y, w*scX, h*scY, ang, n.Tint)
 	}
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
@@ -30,8 +27,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			continue
 		}
 
-		var x, y, ang, scX, scY = s.TransformToCamera()
-		if !c.isAreaVisible(x, y, s.Width*scX, s.Height*scY, ang) {
+		if !c.IsAreaVisible(s.Area()) {
 			continue
 		}
 
@@ -40,13 +36,14 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			continue
 		}
 
-		var w, h = s.Width, s.Height
 		if s.TextureRepeat {
-			src.Width, src.Height = w*scX, h*scY
+			src.Width, src.Height = s.Width*s.ScaleX, s.Height*s.ScaleY
 		}
 		src.X, src.Y = src.X+s.TextureScrollX, src.Y+s.TextureScrollY
 
-		var dst = rl.Rectangle{X: x, Y: y, Width: w * scX, Height: h * scY}
+		var x, y = s.CornerTopLeft() // applying pivot
+		var ang = s.Angle
+		var dst = rl.Rectangle{X: x, Y: y, Width: s.Width * s.ScaleX, Height: s.Height * s.ScaleY}
 		editAssetRects(&src, &dst, ang, rotations, flip)
 
 		ang += float32(rotations * 90)
@@ -127,19 +124,17 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 		}
 
 		reusableSprite.Effects = s.Effects
-		drawBoxPart(c, &s.Node, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], col) // center
+		drawBoxPart(&s.Sprite, c, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], col) // center
 
-		// edges
-		drawBoxPart(c, &s.Node, l, 0, w-l-r, u, asset[1], col)   // top
-		drawBoxPart(c, &s.Node, 0, u, l, h-u-d, asset[3], col)   // left
-		drawBoxPart(c, &s.Node, w-r, u, r, h-u-d, asset[5], col) // right
-		drawBoxPart(c, &s.Node, l, h-d, w-l-r, d, asset[7], col) // bottom
+		drawBoxPart(&s.Sprite, c, l, 0, w-l-r, u, asset[1], col)   // top
+		drawBoxPart(&s.Sprite, c, 0, u, l, h-u-d, asset[3], col)   // left
+		drawBoxPart(&s.Sprite, c, w-r, u, r, h-u-d, asset[5], col) // right
+		drawBoxPart(&s.Sprite, c, l, h-d, w-l-r, d, asset[7], col) // bottom
 
-		// corners
-		drawBoxPart(c, &s.Node, 0, 0, l, u, asset[0], col)     // top left
-		drawBoxPart(c, &s.Node, w-r, 0, r, u, asset[2], col)   // top right
-		drawBoxPart(c, &s.Node, 0, h-d, l, d, asset[6], col)   // bottom left
-		drawBoxPart(c, &s.Node, w-r, h-d, r, d, asset[8], col) // bottom right
+		drawBoxPart(&s.Sprite, c, 0, 0, l, u, asset[0], col)     // top left
+		drawBoxPart(&s.Sprite, c, w-r, 0, r, u, asset[2], col)   // top right
+		drawBoxPart(&s.Sprite, c, 0, h-d, l, d, asset[6], col)   // bottom left
+		drawBoxPart(&s.Sprite, c, w-r, h-d, r, d, asset[8], col) // bottom right
 	}
 }
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
@@ -151,22 +146,21 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
-		var x, y, ang, scX, scY = t.TransformToCamera()
-		if !c.isAreaVisible(x, y, t.Width*scX, t.Height*scY, ang) {
+		if !c.IsAreaVisible(t.Area()) {
 			continue
 		}
 
 		if t.Fast {
 			var text = removeTags(txt.Remove(t.Text, "\v"))
 			text = condition.If(t.WordWrap, t.TextWrap(text), text)
-			var symbol = &symbol{Color: t.Tint, OutlineColor: 255, ShadowColor: 0}
-			var pack = packSymbolColor(symbol)
+			defaultTextPack.Color = t.Tint
+			var pack = packSymbolColor(defaultTextPack)
 			var col = color.RGBA(pack.R, pack.G, pack.B, pack.A)
 			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.gapSymbols(), col)
 			continue
 		}
 
-		var _, symbols = t.formatSymbols(c)
+		var _, symbols = t.formatSymbols()
 		var font = t.font()
 		var gapX = t.gapSymbols()
 
