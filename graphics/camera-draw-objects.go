@@ -13,7 +13,7 @@ import (
 func (c *Camera) DrawNodes(nodes ...*Node) {
 	for _, n := range nodes {
 		if n != nil {
-			var x, y = n.PointToCamera(0, 0) // apply pivot
+			var x, y = n.PointToGlobal(0, 0) // apply pivot
 			c.DrawQuad(x, y, n.Width*n.ScaleX, n.Height*n.ScaleY, n.Angle, n.Tint)
 		}
 	}

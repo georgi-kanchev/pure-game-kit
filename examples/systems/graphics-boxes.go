@@ -30,7 +30,7 @@ func Boxes() {
 		cam.DrawBoxes(&box, &bar)
 
 		var mx, my = cam.MousePosition()
-		mx, my = box.PointFromCamera(mx, my)
+		mx, my = box.PointToLocal(mx, my)
 		box.Width, box.Height = mx, my
 		bar.Width = mx
 	}

@@ -206,7 +206,7 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 			var assetId, has = curValues["assetId"]
 
 			if has {
-				var x, y = t.PointToCamera(curX, curY)
+				var x, y = t.PointToGlobal(curX, curY)
 				var shrink float32 = 1
 				var shrinkHeight = t.LineHeight * shrink
 				var shrinkOffset = t.LineHeight * ((1 - shrink) / 2)
@@ -327,8 +327,8 @@ func (t *TextBox) createSymbol(f *rl.Font, x, y float32, c rune) symbol {
 	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
 	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
 	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
-	dst.X, dst.Y = t.PointToCamera(dst.X, dst.Y)
-	x, y = t.PointToCamera(x, y)
+	dst.X, dst.Y = t.PointToGlobal(dst.X, dst.Y)
+	x, y = t.PointToGlobal(x, y)
 
 	var symbol = symbol{Rect: dst, TexRect: src, X: x, Y: y}
 	return symbol

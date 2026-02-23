@@ -67,35 +67,35 @@ func (n *Node) Area() (x, y, width, height float32) {
 	var maxY = number.Biggest(y1, y2, y3, y4)
 	return minX, minY, maxX - minX, maxY - minY
 }
-func (n *Node) PointFromCamera(cx, cy float32) (x, y float32) {
+func (n *Node) PointToLocal(x, y float32) (localX, localY float32) {
 	if n.ScaleX == 0 || n.ScaleY == 0 {
 		return 0, 0
 	}
 
-	var dx, dy = cx - n.X, cy - n.Y
+	var dx, dy = x - n.X, y - n.Y
 	var sinL, cosL = internal.SinCos(-n.Angle)
 	var rotX = (dx*cosL - dy*sinL) / n.ScaleX
 	var rotY = (dx*sinL + dy*cosL) / n.ScaleY
-	x = rotX + n.PivotX*n.Width
-	y = rotY + n.PivotY*n.Height
-	return x, y
+	localX = rotX + n.PivotX*n.Width
+	localY = rotY + n.PivotY*n.Height
+	return localX, localY
 }
-func (n *Node) PointToCamera(x, y float32) (cx, cy float32) {
-	var localX = (x - (n.PivotX * n.Width)) * n.ScaleX
-	var localY = (y - (n.PivotY * n.Height)) * n.ScaleY
+func (n *Node) PointToGlobal(localX, localY float32) (x, y float32) {
+	var locX = (localX - (n.PivotX * n.Width)) * n.ScaleX
+	var locY = (localY - (n.PivotY * n.Height)) * n.ScaleY
 	var sinL, cosL = internal.SinCos(n.Angle)
-	cx = (localX*cosL - localY*sinL) + n.X
-	cy = (localX*sinL + localY*cosL) + n.Y
-	return cx, cy
+	x = (locX*cosL - locY*sinL) + n.X
+	y = (locX*sinL + locY*cosL) + n.Y
+	return x, y
 }
 
 func (n *Node) ContainsPoint(cx, cy float32) bool {
-	var x, y = n.PointFromCamera(cx, cy)
+	var x, y = n.PointToLocal(cx, cy)
 	var w, h = n.Width, n.Height
 	return x >= 0 && y >= 0 && x < w && y < h
 }
 
-func (n *Node) CornerTopLeft() (x, y float32)     { return n.PointToCamera(0, 0) }
-func (n *Node) CornerTopRight() (x, y float32)    { return n.PointToCamera(n.Width, 0) }
-func (n *Node) CornerBottomRight() (x, y float32) { return n.PointToCamera(n.Width, n.Height) }
-func (n *Node) CornerBottomLeft() (x, y float32)  { return n.PointToCamera(0, n.Height) }
+func (n *Node) CornerTopLeft() (x, y float32)     { return n.PointToGlobal(0, 0) }
+func (n *Node) CornerTopRight() (x, y float32)    { return n.PointToGlobal(n.Width, 0) }
+func (n *Node) CornerBottomRight() (x, y float32) { return n.PointToGlobal(n.Width, n.Height) }
+func (n *Node) CornerBottomLeft() (x, y float32)  { return n.PointToGlobal(0, n.Height) }

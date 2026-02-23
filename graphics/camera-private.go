@@ -20,7 +20,7 @@ var defaultTextPack = &symbol{Color: palette.White, Weight: 1, OutlineColor: 255
 
 func drawBoxPart(parent *Sprite, camera *Camera, x, y, w, h float32, id string, color uint) {
 	reusableSprite.AssetId = id
-	reusableSprite.X, reusableSprite.Y = parent.PointToCamera(x, y)
+	reusableSprite.X, reusableSprite.Y = parent.PointToGlobal(x, y)
 	reusableSprite.Angle = parent.Angle
 	reusableSprite.ScaleX, reusableSprite.ScaleY = parent.ScaleX, parent.ScaleY
 	reusableSprite.Width, reusableSprite.Height = w, h
