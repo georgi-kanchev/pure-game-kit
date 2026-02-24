@@ -88,11 +88,9 @@ func (n *Node) PointToGlobal(localX, localY float32) (x, y float32) {
 	y = (locX*sinL + locY*cosL) + n.Y
 	return x, y
 }
-
 func (n *Node) ContainsPoint(cx, cy float32) bool {
 	var x, y = n.PointToLocal(cx, cy)
-	var w, h = n.Width, n.Height
-	return x >= 0 && y >= 0 && x < w && y < h
+	return x >= 0 && y >= 0 && x < n.Width && y < n.Height
 }
 
 func (n *Node) CornerTopLeft() (x, y float32)     { return n.PointToGlobal(0, 0) }

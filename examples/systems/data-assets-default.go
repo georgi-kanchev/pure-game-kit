@@ -65,8 +65,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			aw, ah = int(tileSize), int(tileSize)
 		}
 
-		var mx, my = camera.MousePosition()
-		mx, my = sprite.PointToLocal(mx, my)
+		var mx, my = sprite.PointToLocal(camera.MousePosition())
 		var sx, sy = number.Snap(mx-fullSz/2, fullSz), number.Snap(my-fullSz/2, fullSz)
 		var mmx, mmy = sprite.PointToGlobal(sx, sy)
 		var imx, imy = int(mx / fullSz), int(my / fullSz)

@@ -9,9 +9,47 @@ import (
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/window"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+func test() {
+	rl.InitWindow(1600, 1600, "Raylib-Go Visible Data Texture")
+	defer rl.CloseWindow()
+
+	dataTex := rl.LoadRenderTexture(1024, 1024)
+	rl.SetTextureFilter(dataTex.Texture, rl.FilterPoint)
+
+	rl.BeginTextureMode(dataTex)
+	rl.ClearBackground(rl.Blank)
+	rl.DrawCircle(512, 512, 200, rl.Blue)
+	rl.EndTextureMode()
+
+	shader := rl.LoadShader("internal/shaders/default.vert", "internal/shaders/tilemap.frag")
+	dataTexLoc := rl.GetShaderLocation(shader, "dataTex")
+
+	var test = rl.LoadTexture("examples/data/logo.PNG")
+
+	for !rl.WindowShouldClose() {
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.Black)
+
+		rl.BeginShaderMode(shader)
+		rl.SetShaderValueTexture(shader, dataTexLoc, dataTex.Texture)
+		sourceRec := rl.NewRectangle(0, 0, float32(test.Width), float32(test.Height))
+		destRec := rl.NewRectangle(0, 0, float32(test.Width), float32(test.Height))
+		origin := rl.NewVector2(0, 0)
+
+		rl.DrawTexturePro(test, sourceRec, destRec, origin, 0, rl.White)
+		rl.EndShaderMode()
+
+		rl.EndDrawing()
+	}
+}
+
 func main() {
+	test()
+
 	// example.Randoms()
 	// example.StorageBinary()
 	example.StorageYAML()
