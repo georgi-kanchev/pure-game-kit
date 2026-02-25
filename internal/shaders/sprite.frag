@@ -26,24 +26,28 @@ out vec4 finalColor;
 #define SILHOUETTE_G 18
 #define SILHOUETTE_B 19
 #define SILHOUETTE_A 20
+#define TILE_COLUMNS 21
+#define TILE_ROWS 22
+#define TILE_WIDTH 23
+#define TILE_HEIGHT 24
 
 uniform sampler2D texture0;
-uniform float u[21];
+uniform sampler2D tileData;
+uniform float u[25];
 
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
-vec2 compute_pixelated_uv() {
+vec2 compute_pixelated_uv(vec2 uv) {
     float pixelSize = u[PIXEL_SIZE];
     if (pixelSize <= 1.0)
-        return fragTexCoord;
+        return uv;
     
 	vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
     vec2 numBlocks = texSize / pixelSize;
-    return (floor(fragTexCoord * numBlocks) + 0.5) / numBlocks;
+    return (floor(uv * numBlocks) + 0.5) / numBlocks;
 }
-
 vec4 compute_blur(vec2 uv) {
     vec2 blur = vec2(u[BLUR_X], u[BLUR_Y]);
     if (blur.x == 0.0 && blur.y == 0.0)
@@ -58,7 +62,6 @@ vec4 compute_blur(vec2 uv) {
     sum += texture(texture0, uv + vec2(offset.x, offset.y));
     return sum * 0.25;
 }
-
 vec4 compute_outline(vec4 color, vec2 uv) {
     float outline = u[OUTLINE_SIZE];
     if (color.a > 0 || outline == 0.0)
@@ -79,7 +82,6 @@ vec4 compute_outline(vec4 color, vec2 uv) {
     
     return color;
 }
-
 vec4 compute_color_adjust(vec4 color) {
     float gam = u[GAMMA];
     float sat = u[SATURATION];
@@ -104,26 +106,88 @@ vec4 compute_color_adjust(vec4 color) {
     color.rgb *= brightness;
     return color;
 }
-
 vec4 compute_silhouette(vec4 color) {
     vec4 c = vec4(u[SILHOUETTE_R], u[SILHOUETTE_G], u[SILHOUETTE_B], u[SILHOUETTE_A]);
     if (c.a > 0.0)
         color.rgb = mix(color.rgb, c.rgb, c.a);
     return color;
 }
+vec2 compute_tile(vec2 uv) {
+    // 1. Setup constants
+    float mapCols = u[21]; 
+    float mapRows = u[22];
+    float atlasW  = u[0];
+    float atlasH  = u[1];
+    float tileW   = u[23];
+    float tileH   = u[24];
+    
+    float dataTexSize = 256.0; 
 
-void main()
-{
-    vec2 uv = compute_pixelated_uv();
+    // 2. Identify map cell
+    float tileX = floor(uv.x * mapCols);
+    float tileY = floor(uv.y * mapRows);
+    float linearTileID = tileY * mapCols + tileX;
+
+    // 3. Data Texture Lookup (with Y-Flip)
+    float dataCol = mod(linearTileID, dataTexSize);
+    float dataRow = floor(linearTileID / dataTexSize);
+    float flippedDataRow = (dataTexSize - 1.0) - dataRow;
+    
+    vec2 dataUV = (vec2(dataCol, flippedDataRow) + 0.5) / dataTexSize;
+    vec4 data = texture(tileData, dataUV);
+    
+    // 4. RECONSTRUCTION
+    // We use round() or floor(... + 0.5) to snap to the nearest integer 0-255
+    float r = floor(data.r * 255.0 + 0.5);
+    float g = floor(data.g * 255.0 + 0.5);
+    float b = floor(data.b * 255.0 + 0.5);
+    float a = floor(data.a * 255.0 + 0.5);
+    
+    // Based on your observation (12 -> 1, 24 -> 2):
+    // If your index is actually stored in Alpha, but being divided by 12:
+    // We multiply by 1.0 to keep it 1:1. 
+    float atlasIndex = a + (b * 256.0) + (g * 65536.0) + (r * 16777216.0);
+
+    // 5. Atlas Math
+    // How many tiles exist in one row of the atlas?
+    float atlasCols = floor(atlasW / tileW);
+    
+    // col and row in the atlas
+    float col = mod(atlasIndex, atlasCols);
+    float row = floor(atlasIndex / atlasCols);
+    
+    // 6. Local UV (Relative position inside the current tile)
+    vec2 localUV = fract(uv * vec2(mapCols, mapRows));
+    
+    // 7. Final Atlas UV
+    // The total number of tiles wide/high the atlas is
+    vec2 atlasSizeInTiles = vec2(atlasW / tileW, atlasH / tileH);
+    
+    // (TileCoord + progress inside tile) / total tiles
+    vec2 finalUV = (vec2(col, row) + localUV) / atlasSizeInTiles;
+    
+    return finalUV;
+}
+
+void main() {
+    vec2 uv = fragTexCoord;
+    uv = compute_tile(uv);
+    uv = compute_pixelated_uv(uv);
     vec4 color = compute_blur(uv);
     color = compute_outline(color, uv);
-    
+
     if (color.a * fragColor.a < 0.004)
         discard;
-        
+     
     color = compute_color_adjust(color);
     color = compute_silhouette(color);
 
     finalColor = color * fragColor;
     gl_FragDepth = u[DEPTH_Z];
+
+    vec4 col = texture(tileData, fragTexCoord);
+    if (col.a > 0)
+        finalColor.rgb = col.rgb;
+    //finalColor = ;
+    //finalColor.a = 1.0;
 }

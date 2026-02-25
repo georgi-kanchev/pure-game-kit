@@ -19,6 +19,25 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 	}
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
+	if Tex.ID == 0 {
+		Tex = rl.LoadRenderTexture(256, 256)
+		rl.SetTextureFilter(Tex.Texture, rl.FilterPoint)
+		rl.BeginTextureMode(Tex)
+		rl.DisableColorBlend()
+		// rl.BeginBlendMode(rl.BlendCustom)
+		// rl.SetBlendFactorsSeparate(rl.One, rl.Zero, rl.One, rl.Zero, rl.FuncAdd, rl.FuncAdd)
+		rl.ClearBackground(rl.Blank)
+
+		// tileColor := IDToColor(42)
+		// for x := range int32(256) {
+		// 	rl.DrawPixel(x, 10, tileColor)
+		// }
+		// rl.DrawCircle(128, 128, 64, rl.SkyBlue)
+		rl.DrawPixel(0, 0, rl.NewColor(0, 0, 0, 12))
+		rl.EnableColorBlend()
+		rl.EndTextureMode()
+	}
+
 	c.begin()
 	var usingShader = false
 	var shouldBatch = len(sprites) > 8
@@ -54,6 +73,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 			if !usingShader && c.Effects == nil {
 				rl.BeginShaderMode(internal.Shader)
+				effects.updateUniforms(int(src.Width), int(src.Height))
 				rl.EnableDepthTest()
 				usingShader = true
 			}
