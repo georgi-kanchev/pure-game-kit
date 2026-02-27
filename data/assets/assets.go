@@ -39,6 +39,10 @@ func ReloadAll() {
 
 //=================================================================
 
+// For Audio:
+//
+//	width // seconds
+//	height // milliseconds
 func Size(assetId string) (width, height int) {
 	return internal.AssetSize(assetId)
 }

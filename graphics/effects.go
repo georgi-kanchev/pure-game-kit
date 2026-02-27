@@ -27,13 +27,13 @@ func NewEffects() *Effects {
 //=================================================================
 // private
 
-var Tex rl.RenderTexture2D
+var Tex rl.Texture2D
 
-var u = make([]float32, 25) // this is cached and passed to the shader packed to spare some cgo calls
+var u = make([]float32, 26) // this is cached and passed to the shader packed to spare some cgo calls
 
 func (e *Effects) updateUniforms(texW, texH int) {
 	tileDataLoc := rl.GetShaderLocation(internal.Shader, "tileData")
-	rl.SetShaderValueTexture(internal.Shader, tileDataLoc, Tex.Texture)
+	rl.SetShaderValueTexture(internal.Shader, tileDataLoc, Tex)
 
 	var hash = random.Hash(e)
 	if e.hash == hash {
@@ -51,7 +51,8 @@ func (e *Effects) updateUniforms(texW, texH int) {
 	u[17], u[18], u[19], u[20] = float32(sr)/255, float32(sg)/255, float32(sb)/255, float32(sa)/255
 	u[21], u[22] = float32(e.TileColumns), float32(e.TileRows)
 	u[23], u[24] = float32(e.TileWidth), float32(e.TileHeight)
-	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 25)
+	u[25] = 256
+	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 26)
 }
 
 func IDToColor(id uint32) rl.Color {

@@ -30,10 +30,11 @@ out vec4 finalColor;
 #define TILE_ROWS 22
 #define TILE_WIDTH 23
 #define TILE_HEIGHT 24
+#define TILE_DATA_TEX_SIZE 25
 
 uniform sampler2D texture0;
 uniform sampler2D tileData;
-uniform float u[25];
+uniform float u[26];
 
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
@@ -113,59 +114,21 @@ vec4 compute_silhouette(vec4 color) {
     return color;
 }
 vec2 compute_tile(vec2 uv) {
-    // 1. Setup constants
-    float mapCols = u[21]; 
-    float mapRows = u[22];
-    float atlasW  = u[0];
-    float atlasH  = u[1];
-    float tileW   = u[23];
-    float tileH   = u[24];
+    ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
+    ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
+    tile.x = clamp(tile.x, 0, mapSize.x - 1);
+    tile.y = clamp(tile.y, 0, mapSize.y - 1);
+    int linearTileID = tile.y * mapSize.x + tile.x;
+    ivec2 dataUv = ivec2(linearTileID % int(u[25]), linearTileID / int(u[25]));
+    vec4 data = texelFetch(tileData, dataUv, 0);
+    uvec4 bytes = uvec4(data * 255.0 + 0.5);
+    uint atlasIndex = (bytes.r << 24) | (bytes.g << 16) | (bytes.b << 8) | bytes.a;
     
-    float dataTexSize = 256.0; 
-
-    // 2. Identify map cell
-    float tileX = floor(uv.x * mapCols);
-    float tileY = floor(uv.y * mapRows);
-    float linearTileID = tileY * mapCols + tileX;
-
-    // 3. Data Texture Lookup (with Y-Flip)
-    float dataCol = mod(linearTileID, dataTexSize);
-    float dataRow = floor(linearTileID / dataTexSize);
-    float flippedDataRow = (dataTexSize - 1.0) - dataRow;
-    
-    vec2 dataUV = (vec2(dataCol, flippedDataRow) + 0.5) / dataTexSize;
-    vec4 data = texture(tileData, dataUV);
-    
-    // 4. RECONSTRUCTION
-    // We use round() or floor(... + 0.5) to snap to the nearest integer 0-255
-    float r = floor(data.r * 255.0 + 0.5);
-    float g = floor(data.g * 255.0 + 0.5);
-    float b = floor(data.b * 255.0 + 0.5);
-    float a = floor(data.a * 255.0 + 0.5);
-    
-    // Based on your observation (12 -> 1, 24 -> 2):
-    // If your index is actually stored in Alpha, but being divided by 12:
-    // We multiply by 1.0 to keep it 1:1. 
-    float atlasIndex = a + (b * 256.0) + (g * 65536.0) + (r * 16777216.0);
-
-    // 5. Atlas Math
-    // How many tiles exist in one row of the atlas?
-    float atlasCols = floor(atlasW / tileW);
-    
-    // col and row in the atlas
-    float col = mod(atlasIndex, atlasCols);
-    float row = floor(atlasIndex / atlasCols);
-    
-    // 6. Local UV (Relative position inside the current tile)
-    vec2 localUV = fract(uv * vec2(mapCols, mapRows));
-    
-    // 7. Final Atlas UV
-    // The total number of tiles wide/high the atlas is
-    vec2 atlasSizeInTiles = vec2(atlasW / tileW, atlasH / tileH);
-    
-    // (TileCoord + progress inside tile) / total tiles
-    vec2 finalUV = (vec2(col, row) + localUV) / atlasSizeInTiles;
-    
+    float atlasCols = floor(u[TEXTURE_W] / u[TILE_WIDTH]);
+    vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
+    vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
+    vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_WIDTH], u[TEXTURE_H] / u[TILE_HEIGHT]);
+    vec2 finalUV = (coord + localUV) / atlasSizeInTiles;
     return finalUV;
 }
 
@@ -184,10 +147,4 @@ void main() {
 
     finalColor = color * fragColor;
     gl_FragDepth = u[DEPTH_Z];
-
-    vec4 col = texture(tileData, fragTexCoord);
-    if (col.a > 0)
-        finalColor.rgb = col.rgb;
-    //finalColor = ;
-    //finalColor.a = 1.0;
 }

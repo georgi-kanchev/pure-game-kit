@@ -44,6 +44,11 @@ var ShaderTextShOffLoc int32
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 
+var TileMaps = make(map[string]struct {
+	Image   *rl.Image
+	Texture *rl.Texture2D
+})
+
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
 var TiledProjects = make(map[string]*Project)

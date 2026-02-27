@@ -1,12 +1,10 @@
 package assets
 
 import (
-	"maps"
 	"pure-game-kit/data/file"
 	"pure-game-kit/debug"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
-	"slices"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -45,7 +43,7 @@ func UnloadTexture(textureId string) {
 }
 
 func ReloadAllTextures() {
-	var loaded = slices.Collect(maps.Keys(internal.Textures))
+	var loaded = collection.MapKeys(internal.Textures)
 	UnloadAllTextures()
 	for _, id := range loaded {
 		LoadTexture(id)

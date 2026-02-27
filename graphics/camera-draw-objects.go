@@ -20,22 +20,18 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	if Tex.ID == 0 {
-		Tex = rl.LoadRenderTexture(256, 256)
-		rl.SetTextureFilter(Tex.Texture, rl.FilterPoint)
-		rl.BeginTextureMode(Tex)
-		rl.DisableColorBlend()
-		// rl.BeginBlendMode(rl.BlendCustom)
-		// rl.SetBlendFactorsSeparate(rl.One, rl.Zero, rl.One, rl.Zero, rl.FuncAdd, rl.FuncAdd)
-		rl.ClearBackground(rl.Blank)
+		// 1. Generate data on the CPU to ensure pixel-perfect memory
+		img := rl.GenImageColor(256, 256, rl.Blank)
+		// 2. Write exact bytes directly to RAM
+		rl.ImageDrawPixel(img, 0, 0, rl.NewColor(0, 0, 0, 1))
+		rl.ImageDrawPixel(img, 255, 3, rl.NewColor(0, 0, 0, 255))
 
-		// tileColor := IDToColor(42)
-		// for x := range int32(256) {
-		// 	rl.DrawPixel(x, 10, tileColor)
-		// }
-		// rl.DrawCircle(128, 128, 64, rl.SkyBlue)
-		rl.DrawPixel(0, 0, rl.NewColor(0, 0, 0, 12))
-		rl.EnableColorBlend()
-		rl.EndTextureMode()
+		// 3. Upload raw data directly to the GPU texture
+		Tex = rl.LoadTextureFromImage(img)
+		rl.SetTextureFilter(Tex, rl.FilterPoint)
+
+		// 4. Free the CPU memory
+		rl.UnloadImage(img)
 	}
 
 	c.begin()

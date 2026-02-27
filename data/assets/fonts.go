@@ -44,6 +44,12 @@ func UnloadFont(fontId string) {
 	}
 }
 
+func UnloadAllFonts() {
+	for id := range internal.Sounds {
+		UnloadFont(id)
+	}
+}
+
 //=================================================================
 // private
 

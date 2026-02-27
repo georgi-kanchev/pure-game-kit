@@ -8,5 +8,6 @@ The concept map of the package looks like this:
   - Sprite, extends Node
   - Box, extends Sprite
   - TextBox, extends Node
+  - Grid, extends Node
 */
 package graphics

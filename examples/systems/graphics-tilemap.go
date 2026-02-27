@@ -12,7 +12,7 @@ func Tilemap() {
 	var tilemap = graphics.NewSprite(atlas, 0, 0)
 
 	tilemap.Effects = graphics.NewEffects()
-	tilemap.Effects.TileColumns, tilemap.Effects.TileRows = 32, 32
+	tilemap.Effects.TileColumns, tilemap.Effects.TileRows = 255, 255
 	tilemap.Effects.TileWidth, tilemap.Effects.TileHeight = 16, 16
 	tilemap.Width, tilemap.Height = 400, 400
 

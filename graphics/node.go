@@ -12,13 +12,11 @@ type Node struct {
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
 	Tint           uint
-
-	renderId int32
 }
 
 func NewNode(x, y float32) *Node {
 	return &Node{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
-		PivotX: 0.5, PivotY: 0.5, Tint: palette.White, renderId: -1}
+		PivotX: 0.5, PivotY: 0.5, Tint: palette.White}
 }
 
 //=================================================================
