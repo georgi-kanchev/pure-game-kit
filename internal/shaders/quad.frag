@@ -115,20 +115,28 @@ vec4 compute_silhouette(vec4 color) {
 vec2 compute_tile(vec2 uv) {
     ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
     ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
-    tile.x = clamp(tile.x, 0, mapSize.x - 1);
-    tile.y = clamp(tile.y, 0, mapSize.y - 1);
+    tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
     ivec2 dataUv = ivec2(linearTileID % mapSize.x, linearTileID / mapSize.x);
-    vec4 data = texelFetch(tileData, dataUv, 0);
-    uvec4 bytes = uvec4(data * 255.0 + 0.5);
-    uint atlasIndex = (bytes.r << 24) | (bytes.g << 16) | (bytes.b << 8) | bytes.a;
+    vec4 texColor = texelFetch(tileData, dataUv, 0);
+    uvec4 b = uvec4(texColor * 255.0 + 0.5);
+    uint gid = (b.r << 24) | (b.g << 16) | (b.b << 8) | b.a;
+    bool flipX = (gid & 0x80000000u) != 0u; // bit 31
+    uint rot   = (gid & 0x60000000u) >> 29; // bits 30 & 29 (values: 0, 1, 2, 3)
+    uint atlasIndex = gid & 0xFFFFu;        // bits 15..0
     
     float atlasCols = floor(u[TEXTURE_W] / u[TILE_W]);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
+    localUV -= 0.5;
+    localUV.x = flipX ? -localUV.x : localUV.x;
+    localUV = rot == 1u ? vec2(localUV.y, -localUV.x) : localUV;  // 90 degrees
+    localUV = rot == 2u ? vec2(-localUV.x, -localUV.y) : localUV; // 180 degrees
+    localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV;  // 270 degrees
+    localUV += 0.5;
+    
     vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_W], u[TEXTURE_H] / u[TILE_H]);
-    vec2 finalUV = (coord + localUV) / atlasSizeInTiles;
-    return finalUV;
+    return (coord + localUV) / atlasSizeInTiles;
 }
 
 void main() {

@@ -61,21 +61,47 @@ func UnloadAllTileData() {
 	}
 }
 
-func SetTile(tileDataId string, column, row int, tile uint32) {
-	SetTileArea(tileDataId, column, row, 1, 1, tile)
+func SetTile(tileDataId string, column, row int, tile uint16, rotation int, flip bool) {
+	SetTileArea(tileDataId, column, row, 1, 1, tile, rotation, flip)
 }
-func SetTileArea(tileDataId string, column, row, width, height int, tile uint32) {
+
+func SetTileArea(tileDataId string, column, row, width, height int, tile uint16, rotation int, flip bool) {
 	var data = internal.TileDatas[tileDataId]
 	if data == nil {
 		return
 	}
 
-	var r = uint8((tile >> 24) & 0xFF)
-	var g = uint8((tile >> 16) & 0xFF)
-	var b = uint8((tile >> 8) & 0xFF)
-	var a = uint8((tile >> 0) & 0xFF)
-	var col = rl.NewColor(r, g, b, a)
+	// bits 0..15 = tile id
+	// bit 29 & 30 = rotation
+	// bit 31 = flip
+	var packed = uint32(tile) | uint32(rotation%4)<<29
+	if flip {
+		packed |= 0x80000000
+	}
+
+	var r = uint8((packed >> 24) & 0xFF)
+	var g = uint8((packed >> 16) & 0xFF)
+	var b = uint8((packed >> 8) & 0xFF)
+	var a = uint8((packed >> 0) & 0xFF)
+
+	var colr = rl.NewColor(r, g, b, a)
 	var rect = rl.NewRectangle(float32(column), float32(row), float32(width), float32(height))
-	rl.ImageDrawPixel(data.Image, int32(column), int32(row), col)
-	rl.UpdateTextureRec(*data.Texture, rect, collection.SameItems(width*height, col))
+
+	rl.ImageDrawRectangle(data.Image, int32(column), int32(row), int32(width), int32(height), colr)
+	rl.UpdateTextureRec(*data.Texture, rect, collection.SameItems(width*height, colr))
+}
+
+func Tile(tileDataId string, column, row int) (tile uint16, rotation int, flipX bool) {
+	var data = internal.TileDatas[tileDataId]
+	if data == nil {
+		return 0, 0, false
+	}
+
+	var c = rl.GetImageColor(*data.Image, int32(column), int32(row))
+	var packed = uint32(c.R)<<24 | uint32(c.G)<<16 | uint32(c.B)<<8 | uint32(c.A)
+
+	tile = uint16(packed & 0xFFFF)
+	rotation = int((packed >> 29) & 0x03)
+	flipX = (packed & 0x80000000) != 0
+	return
 }
