@@ -23,6 +23,14 @@ type Atlas struct {
 	CellWidth, CellHeight,
 	Gap int
 }
+type TileData struct {
+	Image   *rl.Image
+	Texture *rl.Texture2D
+}
+type TileAtlas struct {
+	TextureId             string
+	TileWidth, TileHeight int
+}
 
 var WindowReady = false
 
@@ -44,10 +52,8 @@ var ShaderTextShOffLoc int32
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 
-var TileMaps = make(map[string]struct {
-	Image   *rl.Image
-	Texture *rl.Texture2D
-})
+var TileDatas = make(map[string]*TileData)
+var TileAtlases = make(map[string]*TileAtlas)
 
 var TiledTilesets = make(map[string]*Tileset)
 var TiledMaps = make(map[string]*Map)
@@ -75,8 +81,8 @@ var sineTable [3600]float32
 //go:embed shaders/text.frag
 var fragText string
 
-//go:embed shaders/sprite.frag
-var fragSprite string
+//go:embed shaders/quad.frag
+var fragQuad string
 
 //go:embed shaders/default.vert
 var vertDefault string
@@ -114,6 +120,11 @@ func AssetSize(assetId string) (width, height int) {
 	var font, hasFont = Fonts[assetId]
 	if hasFont {
 		return int(font.Texture.Width), int(font.Texture.Height)
+	}
+
+	var tileData, hasTileData = TileDatas[assetId]
+	if hasTileData {
+		return int(tileData.Image.Width), int(tileData.Image.Height)
 	}
 
 	var tileset, hasTileset = TiledTilesets[assetId]
@@ -278,7 +289,7 @@ func initData() {
 		ShaderTextShOffLoc = rl.GetLocationUniform(ShaderText.ID, "shadowOffset")
 	}
 	if Shader.ID == 0 {
-		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragSprite))
+		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 	}
 	MatrixDefault = rl.MatrixIdentity()

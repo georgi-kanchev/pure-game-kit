@@ -1,7 +1,6 @@
 package example
 
 import (
-	"pure-game-kit/data/assets"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
 	"pure-game-kit/utility/collection"
@@ -39,7 +38,6 @@ func Batches() {
 	})
 
 	window.FrameRateLimit = 0
-	assets.LoadDefaultFont()
 
 	var fps = ""
 

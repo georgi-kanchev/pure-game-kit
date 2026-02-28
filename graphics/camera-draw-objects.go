@@ -19,21 +19,6 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 	}
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
-	if Tex.ID == 0 {
-		// 1. Generate data on the CPU to ensure pixel-perfect memory
-		img := rl.GenImageColor(256, 256, rl.Blank)
-		// 2. Write exact bytes directly to RAM
-		rl.ImageDrawPixel(img, 0, 0, rl.NewColor(0, 0, 0, 1))
-		rl.ImageDrawPixel(img, 255, 3, rl.NewColor(0, 0, 0, 255))
-
-		// 3. Upload raw data directly to the GPU texture
-		Tex = rl.LoadTextureFromImage(img)
-		rl.SetTextureFilter(Tex, rl.FilterPoint)
-
-		// 4. Free the CPU memory
-		rl.UnloadImage(img)
-	}
-
 	c.begin()
 	var usingShader = false
 	var shouldBatch = len(sprites) > 8
@@ -55,21 +40,20 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			src.Width, src.Height = s.Width*s.ScaleX, s.Height*s.ScaleY
 		}
 		src.X, src.Y = src.X+s.TextureScrollX, src.Y+s.TextureScrollY
-
 		var x, y = s.CornerTopLeft() // applying pivot
 		var ang = s.Angle
-		var dst = rl.Rectangle{X: x, Y: y, Width: s.Width * s.ScaleX, Height: s.Height * s.ScaleY}
+		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
 		editAssetRects(&src, &dst, ang, rotations, flip)
 
 		ang += float32(rotations * 90)
 
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
 		if effects != nil {
-			effects.updateUniforms(int(src.Width), int(src.Height))
+			effects.updateUniforms(int(src.Width), int(src.Height), nil)
 
 			if !usingShader && c.Effects == nil {
 				rl.BeginShaderMode(internal.Shader)
-				effects.updateUniforms(int(src.Width), int(src.Height))
+				effects.updateUniforms(int(src.Width), int(src.Height), nil)
 				rl.EnableDepthTest()
 				usingShader = true
 			}
@@ -172,7 +156,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			defaultTextPack.Color = t.Tint
 			var pack = packSymbolColor(defaultTextPack)
 			var col = color.RGBA(pack.R, pack.G, pack.B, pack.A)
-			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.gapSymbols(), col)
+			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.gapSymbols(), t.gapLines(), col)
 			continue
 		}
 
@@ -189,5 +173,47 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 	}
 	batch.material.Shader = prevShader
+	c.end()
+}
+func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
+	c.begin()
+	var shouldBatch = len(tileMaps) > 8
+	rl.BeginShaderMode(internal.Shader)
+	for _, t := range tileMaps {
+		if t == nil {
+			continue
+		}
+
+		if !c.IsAreaVisible(t.Area()) {
+			continue
+		}
+
+		var atlas = internal.TileAtlases[t.TileAtlasId]
+		var data = internal.TileDatas[t.TileDataId]
+		if atlas == nil && data == nil {
+			continue
+		}
+
+		var texture = internal.Textures[atlas.TextureId]
+		if texture == nil {
+			continue
+		}
+
+		var x, y = t.CornerTopLeft() // applying pivot
+		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
+		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
+
+		t.effects.updateUniforms(int(texture.Width), int(texture.Height), t)
+
+		if shouldBatch {
+			batch.QueueQuad(texture, src, dst, t.Angle, getColor(t.Tint))
+		} else {
+			rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, t.Angle, getColor(t.Tint))
+		}
+	}
+	if shouldBatch {
+		batch.Draw()
+	}
+	rl.EndShaderMode()
 	c.end()
 }

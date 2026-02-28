@@ -20,8 +20,6 @@ func Tiled() {
 	var grass = tiled.NewMap(mapIds[0], project)
 	var sprites = grass.ExtractSprites()
 
-	assets.LoadDefaultFont()
-
 	cam.X, cam.Y = 128, 128
 
 	for window.KeepOpen() {

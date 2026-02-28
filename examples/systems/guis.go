@@ -175,7 +175,6 @@ func GUIs() {
 		gui.Container("tooltips", "", "", "", "", f.ThemeId, "button", f.Hidden, "1"),
 		gui.Tooltip("tooltip", f.AssetId, box[7], f.Width, "700", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5"),
 	))
-	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)

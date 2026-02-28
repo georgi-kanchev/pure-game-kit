@@ -11,9 +11,8 @@ import (
 
 func Texts() {
 	var cam = graphics.NewCamera(1)
-	var font = assets.LoadDefaultFont()
 	var _, tiles = assets.LoadDefaultAtlasIcons()
-	var textBox = graphics.NewTextBox(font, 0, 0, "")
+	var textBox = graphics.NewTextBox("", 0, 0, "")
 	textBox.PivotX, textBox.PivotY = 0.5, 0.5
 	textBox.AlignmentX, textBox.AlignmentY = 0.5, 1
 	textBox.Angle = 0

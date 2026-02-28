@@ -15,8 +15,6 @@ type Effects struct {
 
 	OutlineColor, SilhouetteColor uint
 
-	TileColumns, TileRows, TileWidth, TileHeight byte
-
 	hash uint32
 }
 
@@ -27,14 +25,9 @@ func NewEffects() *Effects {
 //=================================================================
 // private
 
-var Tex rl.Texture2D
+var u = make([]float32, 27) // this is cached and passed to the shader packed to spare some cgo calls
 
-var u = make([]float32, 26) // this is cached and passed to the shader packed to spare some cgo calls
-
-func (e *Effects) updateUniforms(texW, texH int) {
-	tileDataLoc := rl.GetShaderLocation(internal.Shader, "tileData")
-	rl.SetShaderValueTexture(internal.Shader, tileDataLoc, Tex)
-
+func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap) {
 	var hash = random.Hash(e)
 	if e.hash == hash {
 		return // no change in values, no need to update shader
@@ -49,17 +42,19 @@ func (e *Effects) updateUniforms(texW, texH int) {
 	u[10], u[11], u[12] = e.PixelSize, e.DepthZ, e.OutlineSize
 	u[13], u[14], u[15], u[16] = float32(or)/255, float32(og)/255, float32(ob)/255, float32(oa)/255
 	u[17], u[18], u[19], u[20] = float32(sr)/255, float32(sg)/255, float32(sb)/255, float32(sa)/255
-	u[21], u[22] = float32(e.TileColumns), float32(e.TileRows)
-	u[23], u[24] = float32(e.TileWidth), float32(e.TileHeight)
-	u[25] = 256
-	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 26)
-}
 
-func IDToColor(id uint32) rl.Color {
-	return rl.Color{
-		R: uint8(id & 0xFF),         // Lower 8 bits
-		G: uint8((id >> 8) & 0xFF),  // Next 8 bits
-		B: uint8((id >> 16) & 0xFF), // Next 8 bits
-		A: uint8((id >> 24) & 0xFF), // Upper 8 bits
+	if tileMap != nil {
+		var tileData = internal.TileDatas[tileMap.TileDataId]
+		var atlas = internal.TileAtlases[tileMap.TileAtlasId]
+
+		if tileData != nil && atlas != nil && tileData.Texture != nil {
+			u[21], u[22] = float32(tileData.Image.Width), float32(tileData.Image.Height)
+			u[23], u[24] = float32(atlas.TileWidth), float32(atlas.TileHeight)
+
+			var loc = rl.GetShaderLocation(internal.Shader, "tileData")
+			rl.SetShaderValueTexture(internal.Shader, loc, *tileData.Texture)
+		}
 	}
+
+	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 27)
 }

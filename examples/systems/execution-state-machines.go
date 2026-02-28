@@ -1,7 +1,6 @@
 package example
 
 import (
-	"pure-game-kit/data/assets"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/execution/flow"
 	"pure-game-kit/graphics"
@@ -23,8 +22,6 @@ type player struct {
 }
 
 func StateMachines() {
-	assets.LoadDefaultFont()
-
 	var cam = graphics.NewCamera(1)
 	var player = player{behavior: flow.NewStateMachine()}
 	player.behavior.GoToState(player.ground)
@@ -42,7 +39,7 @@ func StateMachines() {
 		cam.DrawQuad(player.x-size/2, player.y-height, size, height, 0, palette.White)
 
 		var tlx, tly = cam.PointFromEdge(0, 0)
-		cam.DrawTextAdvanced("", text.New("State: ", player.state), tlx, tly, 100, 0, palette.Gray)
+		cam.DrawText(text.New("State: ", player.state), tlx, tly, 100)
 	}
 }
 

@@ -28,13 +28,12 @@ out vec4 finalColor;
 #define SILHOUETTE_A 20
 #define TILE_COLUMNS 21
 #define TILE_ROWS 22
-#define TILE_WIDTH 23
-#define TILE_HEIGHT 24
-#define TILE_DATA_TEX_SIZE 25
+#define TILE_W 23
+#define TILE_H 24
 
 uniform sampler2D texture0;
 uniform sampler2D tileData;
-uniform float u[26];
+uniform float u[27];
 
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
@@ -119,15 +118,15 @@ vec2 compute_tile(vec2 uv) {
     tile.x = clamp(tile.x, 0, mapSize.x - 1);
     tile.y = clamp(tile.y, 0, mapSize.y - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
-    ivec2 dataUv = ivec2(linearTileID % int(u[25]), linearTileID / int(u[25]));
+    ivec2 dataUv = ivec2(linearTileID % mapSize.x, linearTileID / mapSize.x);
     vec4 data = texelFetch(tileData, dataUv, 0);
     uvec4 bytes = uvec4(data * 255.0 + 0.5);
     uint atlasIndex = (bytes.r << 24) | (bytes.g << 16) | (bytes.b << 8) | bytes.a;
     
-    float atlasCols = floor(u[TEXTURE_W] / u[TILE_WIDTH]);
+    float atlasCols = floor(u[TEXTURE_W] / u[TILE_W]);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
-    vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_WIDTH], u[TEXTURE_H] / u[TILE_HEIGHT]);
+    vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_W], u[TEXTURE_H] / u[TILE_H]);
     vec2 finalUV = (coord + localUV) / atlasSizeInTiles;
     return finalUV;
 }

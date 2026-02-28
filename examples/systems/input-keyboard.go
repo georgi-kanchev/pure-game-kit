@@ -2,18 +2,15 @@ package example
 
 import (
 	"fmt"
-	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
-	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
 
 func Keyboard() {
 	var cam = graphics.NewCamera(1)
 	var text = "Type..."
-	var font = assets.LoadDefaultFont()
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -33,6 +30,6 @@ func Keyboard() {
 		}
 
 		var x, y = cam.PointFromScreen(0, 0)
-		cam.DrawTextAdvanced(font, text, x, y, 200, 0, palette.White)
+		cam.DrawText(text, x, y, 200)
 	}
 }
