@@ -187,6 +187,12 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 		var lineWidth, _ = t.TextMeasure(tagless)
 		var skip = false // avoids interrupting the tags if partially culled
 
+		var assetCount = text.CountOccurrences(tagless, string(placeholderCharAsset))
+		if assetCount > 0 { // account embedded assets in line width
+			var placeholderWidth, _ = t.TextMeasure(string(placeholderCharAsset))
+			lineWidth += (t.LineHeight - placeholderWidth) * float32(assetCount)
+		}
+
 		curX = (w - lineWidth) * alignX
 		curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
 
@@ -207,12 +213,9 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 
 			if has {
 				var x, y = t.PointToGlobal(curX, curY)
-				var shrink float32 = 1
-				var shrinkHeight = t.LineHeight * shrink
-				var shrinkOffset = t.LineHeight * ((1 - shrink) / 2)
-				charSize = shrinkHeight
-				var rect = rl.NewRectangle(x, y+shrinkOffset, charSize, charSize)
-				symb = symbol{AssetId: assetId.(string), Rect: rect, X: rect.X, Y: rect.Y - shrinkOffset}
+				charSize = t.LineHeight
+				var rect = rl.NewRectangle(x, y, charSize, charSize)
+				symb = symbol{AssetId: assetId.(string), Rect: rect, X: rect.X, Y: rect.Y}
 				delete(curValues, "assetId")
 			} else {
 				charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0).X

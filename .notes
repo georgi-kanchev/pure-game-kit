@@ -1,5 +1,4 @@
 // TODO:
-textbox bug after embedded asset, missing character - see example graphics-texts.go: "@exercitatio(n)"
 inputfield cycle selection with double click
 inputfield bug, set cursor & select indices to 0 if not typing fixes it but causes another bug
 
