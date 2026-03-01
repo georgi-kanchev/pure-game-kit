@@ -30,10 +30,13 @@ out vec4 finalColor;
 #define TILE_ROWS 22
 #define TILE_W 23
 #define TILE_H 24
+#define TIME 25
 
 uniform sampler2D texture0;
 uniform sampler2D tileData;
 uniform float u[27];
+
+const float ANIM_SPEEDS[8] = float[](0.0, 0.5, 0.75, 1.0, 2.0, 4.0, 6.0, 8.0);
 
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
@@ -121,15 +124,22 @@ vec2 compute_tile(vec2 uv) {
     vec4 texColor = texelFetch(tileData, dataUv, 0);
     uvec4 b = uvec4(texColor * 255.0 + 0.5);
     uint gid = (b.r << 24) | (b.g << 16) | (b.b << 8) | b.a;
-    bool flipX = (gid & 0x80000000u) != 0u; // bit 31
-    uint rot   = (gid & 0x60000000u) >> 29; // bits 30 & 29 (values: 0, 1, 2, 3)
-    uint atlasIndex = gid & 0xFFFFu;        // bits 15..0
     
+    bool flip = (gid & 0x80000000u) != 0u;       // bits 31..31
+    uint rot = (gid & 0x60000000u) >> 29;        // bits 30..29
+    uint animCount = (gid & 0x1C000000u) >> 26;  // bits 28..26
+    uint speedIndex = (gid & 0x03800000u) >> 23; // bits 25..23
+    uint animOffset = (gid & 0x00700000u) >> 20; // bits 22..20 (bits 20..16 custom gameplay flags, unused in shader)
+    uint atlasIndex = gid & 0xFFFFu;             // bits 15..00
+    
+    atlasIndex += uint(mod(floor(u[TIME] * ANIM_SPEEDS[speedIndex]), float(animCount + 1u)));
+    atlasIndex += animOffset;
+
     float atlasCols = floor(u[TEXTURE_W] / u[TILE_W]);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
     localUV -= 0.5;
-    localUV.x = flipX ? -localUV.x : localUV.x;
+    localUV.x = flip ? -localUV.x : localUV.x;
     localUV = rot == 1u ? vec2(localUV.y, -localUV.x) : localUV;  // 90 degrees
     localUV = rot == 2u ? vec2(-localUV.x, -localUV.y) : localUV; // 180 degrees
     localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV;  // 270 degrees

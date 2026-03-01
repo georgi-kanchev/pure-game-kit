@@ -111,8 +111,7 @@ func Hash(value any) uint32 {
 	if val.Kind() == reflect.Pointer {
 		val = val.Elem()
 	}
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
+	for _, field := range val.Fields() {
 		if field.CanInterface() { // only exported fields
 			h.Write(fmt.Appendf(nil, "%v", field.Interface()))
 		}

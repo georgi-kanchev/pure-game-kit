@@ -1,11 +1,15 @@
 package example
 
 import (
-	"fmt"
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/button"
+	"pure-game-kit/utility/random"
+	"pure-game-kit/utility/text"
+	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -15,21 +19,39 @@ func Tilemap() {
 	var tileDataId = assets.LoadTileData("tilemap", 32, 32)
 	var tilemap = graphics.NewTileMap(atlasId, tileDataId)
 
-	assets.SetTileArea(tileDataId, 0, 0, 32, 32, 29, 0, false)
+	tilemap.SetTileArea(0, 0, 32, 32, graphics.NewTile(29))
 
-	var ang = 0
+	var fps = ""
+
+	tilemap.Effects = graphics.NewEffects()
+	tilemap.Effects.Saturation = 0.8
+
+	window.FrameRateLimit = 0
+
+	for y := range 2048 {
+		for x := range 2048 {
+			tilemap.SetTile(x, y, graphics.NewTile(random.Range[uint16](0, 335)))
+		}
+	}
+
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawTileMaps(tilemap)
 
-		if mouse.IsButtonJustPressed(button.Left) {
+		if mouse.IsButtonPressed(button.Left) {
 			var mx, my = cam.MousePosition()
 			var x, y = tilemap.PointToLocal(mx, my)
-			var tile, rot, flip = assets.Tile(tileDataId, int(x/16), int(y/16))
-			fmt.Printf("%v %v %v\n", tile, rot, flip)
-			assets.SetTile(tileDataId, int(x/16), int(y/16), 106, ang, true)
-			ang++
+			tilemap.SetTile(int(x/16), int(y/16), graphics.NewTileAnimated(106, 7, 0, byte(x/16)))
+			var tile = tilemap.TileAt(int(x/16), int(y/16))
+			debug.Print(text.New(tile))
 		}
+
+		if condition.TrueEvery(0.1, "fps") {
+			fps = text.New("Current FPS: ", time.FrameRate(), "\n", "Average FPS: ", time.FrameRateAverage())
+		}
+
+		var tlx, tly = cam.PointFromEdge(0, 0)
+		cam.DrawText(fps, tlx, tly, 50/cam.Zoom)
 	}
 }

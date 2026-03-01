@@ -203,8 +203,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 
-		t.effects.updateUniforms(int(texture.Width), int(texture.Height), t)
-
+		t.Effects.updateUniforms(int(texture.Width), int(texture.Height), t)
 		if shouldBatch {
 			batch.QueueQuad(texture, src, dst, t.Angle, getColor(t.Tint))
 		} else {
