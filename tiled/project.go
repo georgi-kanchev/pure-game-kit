@@ -9,8 +9,8 @@ import (
 
 type Project struct {
 	Properties     map[string]any
-	Classes        map[string]any      // a collection of custom properties that anything in the project can use
-	UniqueTilesets map[string]*Tileset // maps in the same project will try to reuse these instead of loading them
+	Classes        map[string]any      // A collection of custom properties that anything in the Project can use.
+	UniqueTilesets map[string]*Tileset // Maps in the same Project will try to reuse these instead of loading them.
 
 	assetId string
 }

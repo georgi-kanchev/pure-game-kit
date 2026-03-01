@@ -82,6 +82,7 @@ func (t *Tileset) Draw(camera *graphics.Camera) {
 }
 
 //=================================================================
+// private
 
 func newTileset(tilesetId string, project *Project) *Tileset {
 	var data, _ = internal.TiledTilesets[tilesetId]

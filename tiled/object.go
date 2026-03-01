@@ -177,6 +177,7 @@ func (o *Object) Draw(camera *graphics.Camera) {
 }
 
 //=================================================================
+// private
 
 var aligns = map[string]float32{"left": 0, "center": 0.5, "right": 1, "top": 0, "bottom": 1, "justify": 0}
 

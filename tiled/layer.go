@@ -21,7 +21,7 @@ type Layer struct {
 	TileIds    []uint32  // used by Tile Layers only
 	Objects    []*Object // used by Object Layers only
 
-	OwnerMap   *Map
+	OwnerMap   *Scene
 	OwnerGroup *Layer
 }
 
@@ -38,6 +38,11 @@ func (l *Layer) FindObjectsBy(property string, value any) []*Object {
 	return result
 }
 
+func (l *Layer) ExtractTileMaps() []*graphics.TileMap {
+	var result = []*graphics.TileMap{}
+
+	return result
+}
 func (l *Layer) ExtractSprites() []*graphics.Sprite {
 	var result = []*graphics.Sprite{}
 	var image, hasImage = l.Properties[property.LayerImage]
@@ -187,24 +192,25 @@ func (layer *Layer) Draw(camera *graphics.Camera) {
 }
 
 //=================================================================
+// private
 
-func newLayerTiles(data *it.LayerTiles, owner *Map, group *Layer) *Layer {
+func newLayerTiles(data *it.LayerTiles, owner *Scene, group *Layer) *Layer {
 	var layer = Layer{TileIds: collection.Clone(data.Tiles), OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, nil, nil, "")
 	return &layer
 }
-func newLayerObjects(data *it.LayerObjects, owner *Map, group *Layer) *Layer {
+func newLayerObjects(data *it.LayerObjects, owner *Scene, group *Layer) *Layer {
 	var layer = Layer{OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, data, nil, "")
 	layer.initObjects(data)
 	return &layer
 }
-func newLayerImage(directory string, data *it.LayerImage, owner *Map, group *Layer) *Layer {
+func newLayerImage(directory string, data *it.LayerImage, owner *Scene, group *Layer) *Layer {
 	var layer = Layer{OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, nil, data, directory)
 	return &layer
 }
-func newLayerGroup(data *it.LayerGroup, owner *Map, group *Layer) *Layer {
+func newLayerGroup(data *it.LayerGroup, owner *Scene, group *Layer) *Layer {
 	var layer = Layer{OwnerMap: owner, OwnerGroup: group}
 	layer.initProperties(&data.Layer, nil, nil, "")
 	return &layer

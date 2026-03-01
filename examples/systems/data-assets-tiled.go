@@ -17,8 +17,7 @@ func Tiled() {
 	var mapIds = assets.LoadTiledMapsFromWorld("examples/data/world.world")
 	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
 	var project = tiled.NewProject(projectId)
-	var grass = tiled.NewMap(mapIds[0], project)
-	var sprites = grass.ExtractSprites()
+	var scene = tiled.NewScene(mapIds[0], project)
 
 	cam.X, cam.Y = 128, 128
 
@@ -27,11 +26,11 @@ func Tiled() {
 		cam.MouseDragAndZoomSmoothly()
 
 		cam.DrawGrid(0.5, 16, 16, palette.DarkGray)
-		cam.DrawSprites(sprites...)
+		scene.Draw(cam)
 
 		if keyboard.IsKeyJustPressed(key.F5) {
 			assets.ReloadAllTiledMaps()
-			grass.Recreate()
+			scene.Recreate()
 			project.Recreate()
 		}
 	}

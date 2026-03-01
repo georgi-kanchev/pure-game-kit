@@ -36,7 +36,16 @@ func NewCamera(zoom float32) *Camera {
 // =================================================================
 
 func (c *Camera) MouseDragAndZoom() {
-	c.Zoom *= 1 + 0.05*mouse.Scroll()
+	var oldZoom = c.Zoom
+	var scroll = mouse.Scroll()
+
+	if scroll != 0 {
+		c.Zoom *= 1 + 0.05*scroll
+		var mx, my = c.MousePosition()
+
+		c.X += (mx - c.X) * (c.Zoom/oldZoom - 1)
+		c.Y += (my - c.Y) * (c.Zoom/oldZoom - 1)
+	}
 
 	if mouse.IsButtonPressed(button.Middle) {
 		var dx, dy = mouse.CursorDelta()
@@ -46,7 +55,16 @@ func (c *Camera) MouseDragAndZoom() {
 	}
 }
 func (c *Camera) MouseDragAndZoomSmoothly() {
-	c.Zoom *= 1 + 0.001*mouse.ScrollSmooth()
+	var oldZoom = c.Zoom
+	var scroll = mouse.ScrollSmooth()
+
+	if scroll != 0 {
+		c.Zoom *= 1 + 0.001*scroll
+		var mx, my = c.MousePosition()
+
+		c.X += (mx - c.X) * (c.Zoom/oldZoom - 1)
+		c.Y += (my - c.Y) * (c.Zoom/oldZoom - 1)
+	}
 
 	const dragFriction, dragStrength = 8.0, 8.0
 	var dt = internal.DeltaTime
