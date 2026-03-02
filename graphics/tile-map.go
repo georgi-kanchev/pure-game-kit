@@ -18,21 +18,18 @@ type Tile struct {
 	// data in bits (32)
 	// bits 31..31 = flip					(0 or 1)
 	// bits 30..29 = rotations 				(4 values: 0, 90, 180, 270)
-	// bits 28..26 = animation frame count 	(0 to 7)
-	// bits 25..23 = animation frames/s		(0 to 7)
-	// bits 22..20 = animation offset		(0 to 7)
-	// bits 19..16 = custom flags			(0 to 16 or 4 flags, for gameplay)
+	// bits 28..25 = animation frame count 	(0 to 15)
+	// bits 24..21 = animation offset		(0 to 15)
+	// bits 20..16 = animation frames/s		(0 to 31)
 	// bits 15..00 = tile id				(0 to 65535)
 
 	Id       uint16
 	Rotation byte // 90 degree turns, ranged 0..3 (possible values: 0, 90, 180, 270)
 	Flip     bool
 
-	AnimationFrameCount byte // Ranged 0..7 (sequential tile id count in the atlas)
-	AnimationSpeed      byte // Ranged 0..7
-	AnimationOffset     byte // Ranged 0..7
-
-	CustomFlags [4]bool // Useful for holding per-tile gameplay data.
+	FrameCount  byte // Ranged 0..15 (sequential tile count in the atlas)
+	FrameOffset byte // Ranged 0..15
+	FrameSpeed  byte // Ranged 0..31
 }
 
 func NewTileMap(tileAtlasId, tileDataId string) *TileMap {
@@ -53,8 +50,8 @@ func NewTile(id uint16) *Tile {
 func NewTileOriented(id uint16, rotation byte, flip bool) *Tile {
 	return &Tile{Id: id, Rotation: rotation, Flip: flip}
 }
-func NewTileAnimated(id uint16, frameCount, speed, offset byte) *Tile {
-	return &Tile{Id: id, AnimationFrameCount: frameCount, AnimationSpeed: speed, AnimationOffset: offset}
+func NewTileAnimated(id uint16, frameCount, frameOffset, frameSpeed byte) *Tile {
+	return &Tile{Id: id, FrameCount: frameCount, FrameSpeed: frameSpeed, FrameOffset: frameOffset}
 }
 
 //=================================================================
@@ -68,27 +65,20 @@ func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
 		return
 	}
 
-	var packed = uint32(tile.Id) |
-		uint32(tile.Rotation%4)<<29 |
-		uint32(tile.AnimationFrameCount&0x07)<<26 |
-		uint32(tile.AnimationSpeed&0x07)<<23 |
-		uint32(tile.AnimationOffset&0x07)<<20
+	var packed = uint32(tile.Id&0xFFFF) |
+		uint32(tile.FrameSpeed&0x1F)<<16 |
+		uint32(tile.FrameOffset&0x0F)<<21 |
+		uint32(tile.FrameCount&0x0F)<<25 |
+		uint32(tile.Rotation&0x03)<<29
 
 	if tile.Flip {
-		packed |= 0x80000000
-	}
-
-	for i := 0; i < 4; i++ {
-		if tile.CustomFlags[i] {
-			packed |= (1 << (16 + i))
-		}
+		packed |= (1 << 31)
 	}
 
 	var r = uint8((packed >> 24) & 0xFF)
 	var g = uint8((packed >> 16) & 0xFF)
 	var b = uint8((packed >> 8) & 0xFF)
 	var a = uint8((packed >> 0) & 0xFF)
-
 	var colr = rl.NewColor(r, g, b, a)
 	var rect = rl.NewRectangle(float32(column), float32(row), float32(width), float32(height))
 
@@ -107,18 +97,12 @@ func (tm *TileMap) TileAt(column, row int) *Tile {
 	var c = rl.GetImageColor(*data.Image, int32(column), int32(row))
 	var packed = uint32(c.R)<<24 | uint32(c.G)<<16 | uint32(c.B)<<8 | uint32(c.A)
 
-	var tile = &Tile{
-		Id:                  uint16(packed & 0xFFFF),
-		Rotation:            byte((packed >> 29) & 0x03),
-		Flip:                (packed & 0x80000000) != 0,
-		AnimationFrameCount: byte((packed >> 26) & 0x07),
-		AnimationSpeed:      byte((packed >> 23) & 0x07),
-		AnimationOffset:     byte((packed >> 20) & 0x07),
+	return &Tile{
+		Id:          uint16(packed & 0xFFFF),
+		FrameSpeed:  byte((packed >> 16) & 0x1F),
+		FrameOffset: byte((packed >> 21) & 0x0F),
+		FrameCount:  byte((packed >> 25) & 0x0F),
+		Rotation:    byte((packed >> 29) & 0x03),
+		Flip:        (packed >> 31) == 1,
 	}
-
-	for i := range 4 {
-		tile.CustomFlags[i] = (packed & (1 << (16 + i))) != 0
-	}
-
-	return tile
 }

@@ -42,7 +42,7 @@ func Tilemap() {
 		if mouse.IsButtonPressed(button.Left) {
 			var mx, my = cam.MousePosition()
 			var x, y = tilemap.PointToLocal(mx, my)
-			tilemap.SetTile(int(x/16), int(y/16), graphics.NewTileAnimated(106, 7, 0, byte(x/16)))
+			tilemap.SetTile(int(x/16), int(y/16), graphics.NewTileAnimated(106, 15, byte(x/16), 20))
 			var tile = tilemap.TileAt(int(x/16), int(y/16))
 			debug.Print(text.New(tile))
 		}

@@ -36,8 +36,6 @@ uniform sampler2D texture0;
 uniform sampler2D tileData;
 uniform float u[27];
 
-const float ANIM_SPEEDS[8] = float[](0.0, 0.5, 0.75, 1.0, 2.0, 4.0, 6.0, 8.0);
-
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
@@ -127,14 +125,17 @@ vec2 compute_tile(vec2 uv) {
     
     bool flip = (gid & 0x80000000u) != 0u;       // bits 31..31
     uint rot = (gid & 0x60000000u) >> 29;        // bits 30..29
-    uint animCount = (gid & 0x1C000000u) >> 26;  // bits 28..26
-    uint speedIndex = (gid & 0x03800000u) >> 23; // bits 25..23
-    uint animOffset = (gid & 0x00700000u) >> 20; // bits 22..20 (bits 20..16 custom gameplay flags, unused in shader)
-    uint atlasIndex = gid & 0xFFFFu;             // bits 15..00
+    uint animCount = (gid & 0x1E000000u) >> 25;  // bits 28..25
+    uint animOffset = (gid & 0x01E00000u) >> 21; // bits 24..21
+    uint speedRaw = (gid & 0x001F0000u) >> 16;   // bits 20..16
+    uint atlasBase = gid & 0xFFFFu;             // bits 15..00
     
-    atlasIndex += uint(mod(floor(u[TIME] * ANIM_SPEEDS[speedIndex]), float(animCount + 1u)));
-    atlasIndex += animOffset;
-
+    float s = float(speedRaw); // Multiplier logic: 0..10 maps to 0.00..1.00; 11..31 maps to 1.33..8.00
+    float multiplier = (s <= 10.0) ? (s * 0.1) : (1.0 + (s - 10.0) * 0.333);
+    uint frameRange = animCount + 1u;
+    uint currentFrame = uint(mod(floor(u[TIME] * multiplier) + float(animOffset), float(frameRange)));
+    uint atlasIndex = atlasBase + currentFrame;
+    
     float atlasCols = floor(u[TEXTURE_W] / u[TILE_W]);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
