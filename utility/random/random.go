@@ -109,6 +109,9 @@ func Hash(value any) uint32 {
 	var h = fnv.New32a()
 	var val = reflect.ValueOf(value)
 	if val.Kind() == reflect.Pointer {
+		if val.IsNil() {
+			return 0
+		}
 		val = val.Elem()
 	}
 	for _, field := range val.Fields() {

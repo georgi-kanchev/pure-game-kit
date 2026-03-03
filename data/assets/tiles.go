@@ -8,17 +8,17 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadedTileAtlasIds() []string {
-	return collection.MapKeys(internal.TileAtlases)
+func LoadedTileSetIds() []string {
+	return collection.MapKeys(internal.TileSets)
 }
 func LoadedTileDataIds() []string {
 	return collection.MapKeys(internal.TileDatas)
 }
 
-func LoadTileAtlas(imageFilePath string, tileWidth, tileHeight int) string {
+func LoadTileSet(imageFilePath string, tileWidth, tileHeight int) string {
 	var textureId = LoadTexture(imageFilePath)
-	var atlas = &internal.TileAtlas{TextureId: textureId, TileWidth: tileWidth, TileHeight: tileHeight}
-	internal.TileAtlases[textureId] = atlas
+	var atlas = &internal.TileSet{TextureId: textureId, TileWidth: tileWidth, TileHeight: tileHeight}
+	internal.TileSets[textureId] = atlas
 	return textureId
 }
 func LoadTileData(id string, columns, rows int) string {
@@ -35,12 +35,12 @@ func LoadTileData(id string, columns, rows int) string {
 	return id
 }
 
-func UnloadTileAtlas(tileAtlasId string) {
-	var atlas, has = internal.TileAtlases[tileAtlasId]
+func UnloadTileSet(tileSetId string) {
+	var atlas, has = internal.TileSets[tileSetId]
 
 	if has {
 		UnloadTexture(atlas.TextureId)
-		delete(internal.TileAtlases, tileAtlasId)
+		delete(internal.TileSets, tileSetId)
 	}
 }
 func UnloadTileData(tileMapId string) {
@@ -50,9 +50,9 @@ func UnloadTileData(tileMapId string) {
 		delete(internal.TileDatas, tileMapId)
 	}
 }
-func UnloadAllTileAtlases() {
-	for id := range internal.TileAtlases {
-		UnloadTileAtlas(id)
+func UnloadAllTileSets() {
+	for id := range internal.TileSets {
+		UnloadTileSet(id)
 	}
 }
 func UnloadAllTileData() {

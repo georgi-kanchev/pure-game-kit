@@ -14,16 +14,20 @@ func Effects() {
 	assets.SetTextureSmoothness(tex, true)
 
 	spr.Effects = graphics.NewEffects()
-	spr.Effects.Contrast = 0.7
 	spr.Effects.SilhouetteColor = color.RGBA(255, 0, 0, 255)
 	spr.Effects.PixelSize = 3
-	spr.Effects.BlurX = 5
-	spr.Effects.BlurY = 5
+	spr.Effects.BlurX, spr.Effects.BlurY = 5, 5
+	spr.ScaleX, spr.ScaleY = 0.2, 0.2
+
+	var spr2 = graphics.NewSprite(tex, 100, 0)
+	spr2.Effects = graphics.NewEffects()
+	spr2.Effects.Saturation = 0.7
+	spr2.ScaleX, spr2.ScaleY = 0.2, 0.2
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 
-		cam.DrawSprites(spr)
+		cam.DrawSprites(spr, spr2)
 	}
 }

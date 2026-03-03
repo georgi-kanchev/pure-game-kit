@@ -15,7 +15,7 @@ import (
 
 func Tilemap() {
 	var cam = graphics.NewCamera(2)
-	var atlasId = assets.LoadTileAtlas("examples/data/atlas.png", 16, 16)
+	var atlasId = assets.LoadTileSet("examples/data/atlas.png", 16, 16)
 	var tileDataId = assets.LoadTileData("tilemap", 32, 32)
 	var tilemap = graphics.NewTileMap(atlasId, tileDataId)
 
@@ -28,8 +28,8 @@ func Tilemap() {
 
 	window.FrameRateLimit = 0
 
-	for y := range 2048 {
-		for x := range 2048 {
+	for y := range 32 {
+		for x := range 32 {
 			tilemap.SetTile(x, y, graphics.NewTile(random.Range[uint16](0, 335)))
 		}
 	}

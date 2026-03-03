@@ -5,33 +5,38 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
-	"pure-game-kit/tiled"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
 
 func Tiled() {
-	assets.LoadFont(32, "examples/data/monogram.ttf")
-
 	var cam = graphics.NewCamera(4)
-	var mapIds = assets.LoadTiledMapsFromWorld("examples/data/world.world")
-	var projectId = assets.LoadTiledProject("examples/data/game-name.tiled-project")
-	var project = tiled.NewProject(projectId)
-	var scene = tiled.NewScene(mapIds[0], project)
+	var tileSetId string
+	var tileDataIds []string
+	var pts [][2]float32
+	var hotreload = func() {
+		tileSetId = assets.LoadTileSet("examples/data/atlas.png", 16, 16)
+		tileDataIds = assets.LoadTiledData("examples/data/map.tmx")
+		pts = assets.LoadTiledPoints("examples/data/map.tmx", "Objects")
+	}
 
-	cam.X, cam.Y = 128, 128
+	hotreload()
+
+	var tileMaps = make([]*graphics.TileMap, len(tileDataIds))
+	for i, t := range tileDataIds {
+		tileMaps[i] = graphics.NewTileMap(tileSetId, t)
+		tileMaps[i].PivotX, tileMaps[i].PivotY = 0, 0
+	}
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
-
-		cam.DrawGrid(0.5, 16, 16, palette.DarkGray)
-		scene.Draw(cam)
+		cam.DrawTileMaps(tileMaps...)
+		cam.DrawShapesFast(palette.Red, pts...)
+		cam.DrawPoints(2, palette.White, pts...)
 
 		if keyboard.IsKeyJustPressed(key.F5) {
-			assets.ReloadAllTiledMaps()
-			scene.Recreate()
-			project.Recreate()
+			hotreload()
 		}
 	}
 }

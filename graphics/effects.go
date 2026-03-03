@@ -8,9 +8,10 @@ import (
 )
 
 type Effects struct {
-	BlurX, BlurY, Grayscale, Inversion,
-	Gamma, Saturation, Contrast, Brightness,
+	Gamma, Saturation, Contrast, Brightness, Grayscale, Inversion float32 // Ranged -1..1
+
 	DepthZ, PixelSize, OutlineSize float32
+	BlurX, BlurY                   float32
 
 	OutlineColor, SilhouetteColor uint
 }
@@ -25,8 +26,11 @@ func NewEffects() *Effects {
 var u = make([]float32, 27) // this is cached and passed to the shader packed to spare some cgo calls
 
 func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap) {
+	clear(u)
 	u[0], u[1] = float32(texW), float32(texH)
 	u[4], u[5], u[6], u[7] = 0.5, 0.5, 0.5, 0.5
+	u[21], u[22] = 0, 0
+	u[25] = internal.Runtime
 
 	if e != nil {
 		var or, og, ob, oa = color.Channels(e.OutlineColor)
@@ -40,16 +44,14 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap) {
 
 	if tileMap != nil {
 		var data = internal.TileDatas[tileMap.TileDataId]
-		var atlas = internal.TileAtlases[tileMap.TileAtlasId]
+		var atlas = internal.TileSets[tileMap.TileSetId]
 		if data != nil && atlas != nil && data.Texture != nil {
 			u[21], u[22] = float32(data.Image.Width), float32(data.Image.Height)
 			u[23], u[24] = float32(atlas.TileWidth), float32(atlas.TileHeight)
 
-			var loc = rl.GetShaderLocation(internal.Shader, "tileData")
-			rl.SetShaderValueTexture(internal.Shader, loc, *data.Texture)
+			rl.SetShaderValueTexture(internal.Shader, internal.ShaderTileMapLoc, *data.Texture)
 		}
 	}
 
-	u[25] = internal.Runtime
 	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 27)
 }

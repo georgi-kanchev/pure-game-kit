@@ -115,6 +115,9 @@ vec4 compute_silhouette(vec4 color) {
 }
 vec2 compute_tile(vec2 uv) {
     ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
+    if (mapSize.x == 0 || mapSize.y == 0)
+        return uv; // this is a regular sprite, not a tilemap
+
     ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
@@ -128,9 +131,9 @@ vec2 compute_tile(vec2 uv) {
     uint animCount = (gid & 0x1E000000u) >> 25;  // bits 28..25
     uint animOffset = (gid & 0x01E00000u) >> 21; // bits 24..21
     uint speedRaw = (gid & 0x001F0000u) >> 16;   // bits 20..16
-    uint atlasBase = gid & 0xFFFFu;             // bits 15..00
+    uint atlasBase = gid & 0xFFFFu;              // bits 15..00
     
-    float s = float(speedRaw); // Multiplier logic: 0..10 maps to 0.00..1.00; 11..31 maps to 1.33..8.00
+    float s = float(speedRaw); // multiplier logic: 0..10 maps to 0.00..1.00; 11..31 maps to 1.33..8.00
     float multiplier = (s <= 10.0) ? (s * 0.1) : (1.0 + (s - 10.0) * 0.333);
     uint frameRange = animCount + 1u;
     uint currentFrame = uint(mod(floor(u[TIME] * multiplier) + float(animOffset), float(frameRange)));

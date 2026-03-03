@@ -9,7 +9,7 @@ import (
 
 type TileMap struct {
 	Node
-	TileAtlasId, TileDataId string
+	TileSetId, TileDataId string
 
 	Effects *Effects
 }
@@ -32,9 +32,9 @@ type Tile struct {
 	FrameSpeed  byte // Ranged 0..31
 }
 
-func NewTileMap(tileAtlasId, tileDataId string) *TileMap {
-	var tileMap = &TileMap{Node: *NewNode(0, 0), TileAtlasId: tileAtlasId, TileDataId: tileDataId}
-	var atlas = internal.TileAtlases[tileAtlasId]
+func NewTileMap(tileSetId, tileDataId string) *TileMap {
+	var tileMap = &TileMap{Node: *NewNode(0, 0), TileSetId: tileSetId, TileDataId: tileDataId}
+	var atlas = internal.TileSets[tileSetId]
 	var data = internal.TileDatas[tileDataId]
 	if atlas != nil && data != nil {
 		tileMap.Width = float32(data.Image.Width * int32(atlas.TileWidth))

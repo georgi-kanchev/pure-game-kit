@@ -20,14 +20,17 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	c.begin()
-	var usingShader = false
-	var shouldBatch = len(sprites) > 8
-	for _, s := range sprites {
-		if s == nil {
-			continue
-		}
 
-		if !c.IsAreaVisible(s.Area()) {
+	var prevShader = batch.material.Shader
+	batch.material.Shader = internal.Shader
+
+	var lastEffects *Effects
+	lastEffects.updateUniforms(int(0), int(0), nil) // init shader params
+
+	var initUniforms = false
+
+	for _, s := range sprites {
+		if s == nil || !c.IsAreaVisible(s.Area()) {
 			continue
 		}
 
@@ -48,30 +51,23 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		ang += float32(rotations * 90)
 
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
-		if effects != nil {
+
+		if !initUniforms {
 			effects.updateUniforms(int(src.Width), int(src.Height), nil)
-
-			if !usingShader && c.Effects == nil {
-				rl.BeginShaderMode(internal.Shader)
-				effects.updateUniforms(int(src.Width), int(src.Height), nil)
-				rl.EnableDepthTest()
-				usingShader = true
-			}
+			initUniforms = true
 		}
 
-		if shouldBatch {
-			batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
-		} else {
-			rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, ang, getColor(s.Tint))
+		if lastEffects != nil && effects != nil && *lastEffects != *effects {
+			batch.Draw() // effects are different & break the batch
+			effects.updateUniforms(int(src.Width), int(src.Height), nil)
 		}
+		batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
+		lastEffects = effects
 	}
-	if shouldBatch {
-		batch.Draw()
-	}
-	if usingShader && c.Effects == nil {
-		rl.EndShaderMode()
-		rl.DisableDepthTest()
-	}
+
+	batch.Draw()
+	batch.material.Shader = prevShader
+
 	c.end()
 }
 
@@ -142,11 +138,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	var prevShader = batch.material.Shader
 	batch.material.Shader = internal.ShaderText
 	for _, t := range textBoxes {
-		if t == nil {
-			continue
-		}
-
-		if !c.IsAreaVisible(t.Area()) {
+		if t == nil || !c.IsAreaVisible(t.Area()) {
 			continue
 		}
 
@@ -177,18 +169,12 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 }
 func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 	c.begin()
-	var shouldBatch = len(tileMaps) > 8
-	rl.BeginShaderMode(internal.Shader)
 	for _, t := range tileMaps {
-		if t == nil {
+		if t == nil || !c.IsAreaVisible(t.Area()) {
 			continue
 		}
 
-		if !c.IsAreaVisible(t.Area()) {
-			continue
-		}
-
-		var atlas = internal.TileAtlases[t.TileAtlasId]
+		var atlas = internal.TileSets[t.TileSetId]
 		var data = internal.TileDatas[t.TileDataId]
 		if atlas == nil && data == nil {
 			continue
@@ -203,16 +189,12 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 
+		rl.BeginShaderMode(internal.Shader)
+		rl.EnableDepthTest()
 		t.Effects.updateUniforms(int(texture.Width), int(texture.Height), t)
-		if shouldBatch {
-			batch.QueueQuad(texture, src, dst, t.Angle, getColor(t.Tint))
-		} else {
-			rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, t.Angle, getColor(t.Tint))
-		}
+		rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, t.Angle, getColor(t.Tint))
+		rl.EndShaderMode()
+		rl.DisableDepthTest()
 	}
-	if shouldBatch {
-		batch.Draw()
-	}
-	rl.EndShaderMode()
 	c.end()
 }

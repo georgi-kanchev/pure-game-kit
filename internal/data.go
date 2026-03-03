@@ -27,7 +27,7 @@ type TileData struct {
 	Image   *rl.Image
 	Texture *rl.Texture2D
 }
-type TileAtlas struct {
+type TileSet struct {
 	TextureId             string
 	TileWidth, TileHeight int
 }
@@ -47,18 +47,14 @@ var Fonts = make(map[string]*rl.Font)
 var MatrixDefault rl.Matrix
 var ShaderText, Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
+var ShaderTileMapLoc int32
 var ShaderTextShOffLoc int32
 
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 
 var TileDatas = make(map[string]*TileData)
-var TileAtlases = make(map[string]*TileAtlas)
-
-var TiledTilesets = make(map[string]*Tileset)
-var TiledMaps = make(map[string]*Map)
-var TiledProjects = make(map[string]*Project)
-var TiledWorlds = make(map[string][2]float32) // used to store map offsets in the world when reloading maps
+var TileSets = make(map[string]*TileSet)
 
 var Screens []interface {
 	OnLoad()
@@ -125,16 +121,6 @@ func AssetSize(assetId string) (width, height int) {
 	var tileData, hasTileData = TileDatas[assetId]
 	if hasTileData {
 		return int(tileData.Image.Width), int(tileData.Image.Height)
-	}
-
-	var tileset, hasTileset = TiledTilesets[assetId]
-	if hasTileset {
-		return int(tileset.Columns), int(tileset.TileCount / tileset.Columns)
-	}
-
-	var tiledMap, hasMap = TiledMaps[assetId]
-	if hasMap {
-		return int(tiledMap.Width), int(tiledMap.Height)
 	}
 
 	var sound, hasSound = Sounds[assetId]
@@ -251,13 +237,6 @@ func updateMusic() {
 		rl.UpdateMusicStream(*v)
 	}
 }
-func updateAnimatedTiles() {
-	for _, tileset := range TiledTilesets {
-		for _, tile := range tileset.AnimatedTiles {
-			tile.Update()
-		}
-	}
-}
 func updateScreens() {
 	if CurrentScreen >= 0 && CurrentScreen < len(Screens) {
 		Screens[CurrentScreen].OnUpdate()
@@ -291,6 +270,7 @@ func initData() {
 	if Shader.ID == 0 {
 		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
+		ShaderTileMapLoc = rl.GetLocationUniform(Shader.ID, "tileData")
 	}
 	MatrixDefault = rl.MatrixIdentity()
 

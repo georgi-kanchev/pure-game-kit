@@ -22,7 +22,6 @@ func Update() {
 	updateTimers()
 	updateInput()
 	updateMusic()
-	updateAnimatedTiles()
 	updateScreens()
 }
 

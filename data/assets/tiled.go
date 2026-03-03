@@ -1,270 +1,231 @@
 package assets
 
 import (
-	"maps"
+	"bytes"
+	"encoding/binary"
 	"pure-game-kit/data/file"
-	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
-	"slices"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadedTiledProjectIds() []string {
-	return collection.MapKeys(internal.TiledProjects)
-}
-func LoadedTiledMapIds() []string {
-	return collection.MapKeys(internal.TiledMaps)
-}
-func LoadedTiledTilesetIds() []string {
-	return collection.MapKeys(internal.TiledTilesets)
-}
+func LoadTiledPoints(tmxFilePath string, layerName string) [][2]float32 {
+	var tiled *tiled
+	var fileContent = file.LoadText(tmxFilePath)
+	storage.FromXML(fileContent, &tiled)
+	if tiled == nil {
+		return nil // error is in storage
+	}
 
-func LoadTiledProject(filePath string) string {
+	return loadLayerObjectsRecursively(layerName, &tiled.layers)
+}
+func LoadTiledData(tmxFilePath string) []string {
 	tryCreateWindow()
 
-	var _, has = internal.TiledProjects[filePath]
-	if has {
-		return filePath
+	var tiled *tiled
+	var fileContent = file.LoadText(tmxFilePath)
+	storage.FromXML(fileContent, &tiled)
+	if tiled == nil {
+		return nil // error is in storage
 	}
 
-	var data *internal.Project
-	storage.FromJSON(file.LoadText(filePath), &data)
-	if data == nil {
-		return "" // error is in storage
-	}
-
-	internal.TiledProjects[filePath] = data
-	return filePath
+	return loadLayerTilesRecursively(tiled.Width, tiled.Height, &tiled.layers)
 }
-func LoadTiledMapsFromWorld(filePath string) (mapIds []string) {
-	tryCreateWindow()
 
-	var resultIds = []string{}
-	var world *internal.World
+//=================================================================
+// private
 
-	storage.FromJSON(file.LoadText(filePath), &world)
-	if world == nil {
-		return resultIds // error is in storage
-	}
-
-	world.Directory = path.Folder(filePath)
-	world.Name = path.RemoveExtension(path.LastPart(filePath))
-
-	for _, m := range world.Maps {
-		var mapId = LoadTiledMap(path.New(world.Directory, m.FileName))
-
-		if !collection.Contains(resultIds, mapId) {
-			resultIds = append(resultIds, mapId)
-		}
-
-		var mp, _ = internal.TiledMaps[mapId]
-		mp.WorldX, mp.WorldY = float32(m.X), float32(m.Y)
-		internal.TiledWorlds[mapId] = [2]float32{mp.WorldX, mp.WorldY}
-	}
-
-	return resultIds
+type tiled struct {
+	Width  int `xml:"width,attr"`
+	Height int `xml:"height,attr"`
+	layers
 }
-func LoadTiledMap(filePath string) string {
-	tryCreateWindow()
-
-	var _, has = internal.TiledMaps[filePath]
-	if has {
-		return filePath
-	}
-
-	var mapData *internal.Map
-	var fileContent = file.LoadText(filePath)
-	storage.FromXML(fileContent, &mapData)
-	if mapData == nil {
-		return "" // error is in storage
-	}
-
-	var layersInOrder *internal.LayersInOrder
-	storage.FromXML(fileContent, &layersInOrder)
-	mapData.LayersInOrder = getLayersOrder(layersInOrder.Layers)
-	collection.Reverse(mapData.LayersInOrder)
-
-	mapData.Name = path.LastPart(path.RemoveExtension(filePath))
-	mapData.Directory = path.Folder(filePath)
-	mapData.FirstTileIds = make([]uint32, len(mapData.Tilesets))
-	internal.TiledMaps[filePath] = mapData
-
-	var worldOffset, hasWorld = internal.TiledWorlds[filePath]
-	if hasWorld { // keeps world offsets when reloading maps
-		mapData.WorldX, mapData.WorldY = worldOffset[0], worldOffset[1]
-	}
-
-	for i, t := range mapData.Tilesets {
-		LoadTiledTileset(path.New(mapData.Directory, t.Source))
-
-		// the tileset has no concept of first tile ids, it's a map concept
-		// even though it's a tileset field (because of map embedded tilesets)
-		mapData.FirstTileIds[i] = t.FirstTileId // so store it in map
-		t.FirstTileId = 0                       // and zero it out in tileset to prevent any confusion
-	}
-
-	tryCacheLayerTileIds(mapData, &mapData.Layers)
-
-	if mapData.LayersObjects != nil {
-		tryTemplate(mapData.LayersObjects, mapData.Directory)
-	}
-	for _, grp := range mapData.LayersGroups {
-		tryTemplate(grp.LayersObjects, mapData.Directory)
-	}
-
-	return filePath
+type layers struct {
+	LayersGroups  []*layers       `xml:"group"`
+	LayersTiles   []*layerTiles   `xml:"layer"`
+	LayersObjects []*layerObjects `xml:"objectgroup"`
 }
-func LoadTiledTileset(filePath string) string {
-	tryCreateWindow()
+type layerTiles struct {
+	Name     string `xml:"name,attr"`
+	TileData struct {
+		Encoding    string `xml:"encoding,attr"`
+		Compression string `xml:"compression,attr"`
+		Tiles       string `xml:",chardata"`
+	} `xml:"data"`
+}
+type layerObjects struct {
+	Name    string `xml:"name,attr"`
+	Objects []*struct {
+		Width    float32       `xml:"width,attr"`
+		Height   float32       `xml:"height,attr"`
+		X        float32       `xml:"x,attr"`
+		Y        float32       `xml:"y,attr"`
+		Rotation float32       `xml:"rotation,attr"`
+		Polygon  *objectPoints `xml:"polygon"`
+		Polyline *objectPoints `xml:"polyline"`
+		Ellipse  *struct{}     `xml:"ellipse"`
+		Point    *struct{}     `xml:"point"`
+	} `xml:"object"`
+}
+type objectPoints struct {
+	Points string `xml:"points,attr"`
+}
 
-	var _, has = internal.TiledTilesets[filePath]
-	if has {
-		return filePath
+const flipX, flipY, flipDiag uint32 = 0x80000000, 0x40000000, 0x20000000
+const flips = flipX | flipY | flipDiag
+
+var flipTable = [8]uint32{ // Index: [X Y D]
+	(0 << 31) | (0 << 29), // 0: 000 | default
+	(1 << 31) | (1 << 29), // 1: 001 | flip x + rotation 270
+	(1 << 31) | (2 << 29), // 2: 010 | flip x + rotation 180
+	(0 << 31) | (3 << 29), // 3: 011 | rotation 270
+	(1 << 31) | (0 << 29), // 4: 100 | flip x only
+	(0 << 31) | (1 << 29), // 5: 101 | rotation 90
+	(0 << 31) | (2 << 29), // 6: 110 | rotation 180
+	(1 << 31) | (3 << 29), // 7: 111 | flip x + rotation 90
+}
+
+func loadLayerTilesRecursively(w, h int, layers *layers) []string {
+	var result []string
+	for _, layer := range layers.LayersTiles {
+		result = append(result, loadLayerTiles(w, h, layer))
+	}
+	for _, group := range layers.LayersGroups {
+		result = append(result, loadLayerTilesRecursively(w, h, group)...)
+	}
+	return result
+}
+func loadLayerTiles(w, h int, layer *layerTiles) string {
+	var tileData = text.Trim(layer.TileData.Tiles)
+	var tiles = make([]uint32, w*h)
+	var csv = layer.TileData.Encoding == "csv"
+	var dataId = LoadTileData(layer.Name, w, h)
+
+	if layer.TileData.Encoding == "base64" {
+		var b64 = text.FromBase64(text.Trim(tileData))
+		switch layer.TileData.Compression {
+		case "gzip":
+			tiles = tilesFromBytes(storage.DecompressGZIP([]byte(b64)))
+		case "zlib":
+			tiles = tilesFromBytes(storage.DecompressZLIB([]byte(b64)))
+		}
 	}
 
-	var tileset *internal.Tileset
-	var w, h = 0, 0
-
-	storage.FromXML(file.LoadText(filePath), &tileset)
-	if tileset == nil {
-		return "" // error is in storage
+	var rows []string
+	if csv {
+		rows = text.Split(tileData, "\n")
 	}
 
-	tileset.AssetId = filePath
-
-	if tileset.Image != nil {
-		var textureId = LoadTexture(path.New(path.Folder(filePath), tileset.Image.Source))
-		var atlasId = SetTextureAtlas(textureId, tileset.TileWidth, tileset.TileHeight, tileset.Spacing)
-
-		w, h = tileset.Columns, tileset.TileCount/tileset.Columns
-
-		for id := range w * h {
-			var x, y = number.Index1DToIndexes2D(id, w, h)
-			var rectId = path.New(atlasId, text.New(id))
-			SetTextureAtlasTile(atlasId, rectId, float32(x), float32(y), 1, 1, 0, false)
-		}
-	}
-
-	internal.TiledTilesets[tileset.AssetId] = tileset
-	tileset.MappedTiles = map[uint32]*internal.TilesetTile{}
-	for _, tile := range tileset.Tiles {
-		tileset.MappedTiles[tile.Id] = tile
-
-		if len(tile.CollisionLayers) > 0 { // detect templates
-			tryTemplate(tile.CollisionLayers, path.Folder(filePath))
+	for i := range h {
+		var columns []string
+		if csv {
+			var row = rows[i]
+			if text.EndsWith(row, ",") {
+				row = text.Part(row, 0, text.Length(row)-1)
+			}
+			columns = text.Split(row, ",")
 		}
 
-		if tileset.Image == nil && tile.Image != nil {
-			tile.TextureId = LoadTexture(path.New(path.Folder(filePath), tile.Image.Source))
-		}
-
-		if tile.Animation == nil {
-			continue
-		} // animated tiles below
-
-		if tileset.Image == nil { // tiles are separate images, not in atlas
-			w, h = tile.Image.Width, tile.Image.Height
-		}
-
-		var frame = 0
-		var atlasId = path.New(path.Folder(tileset.AssetId), tileset.Image.Source)
-		var tileId = path.New(atlasId, text.New(tile.Id))
-		var totalAnimDuration float32
-		for _, f := range tile.Animation.Frames {
-			totalAnimDuration += float32(f.Duration) / 1000
-		}
-
-		var tileTime = totalAnimDuration
-		tileset.AnimatedTiles = append(tileset.AnimatedTiles, tile)
-		tile.IsAnimating = true
-		tile.Update = func() {
-			if !tile.IsAnimating {
-				return
+		for j := range w {
+			var index = number.Indexes2DToIndex1D(i, j, w, h)
+			if csv {
+				tiles[index] = text.ToNumber[uint32](columns[j])
 			}
 
-			var dur = float32(tile.Animation.Frames[frame].Duration) / 1000 // ms -> sec
-			tileTime += internal.DeltaTime
-			if tileTime > float32(dur) {
-				tileTime = 0
-				var newId = tile.Animation.Frames[frame].TileId
-				var x, y = number.Index1DToIndexes2D(newId, uint32(w), uint32(h)) // new tile id coords
-				SetTextureAtlasTile(atlasId, tileId, float32(x), float32(y), 1, 1, 0, false)
-				frame++
-				frame = frame % len(tile.Animation.Frames)
+			if tiles[index] == 0 {
+				continue
+			}
+
+			var raw = tiles[index]
+			var packed = flipTable[raw>>29] | ((raw & 0x1FFFFFFF) - 1)
+			var data = internal.TileDatas[dataId]
+			var r = uint8((packed >> 24) & 0xFF)
+			var g = uint8((packed >> 16) & 0xFF)
+			var b = uint8((packed >> 8) & 0xFF)
+			var a = uint8((packed >> 0) & 0xFF)
+			var colr = rl.NewColor(r, g, b, a)
+			var rect = rl.NewRectangle(float32(j), float32(i), float32(1), float32(1))
+
+			rl.ImageDrawPixel(data.Image, int32(j), int32(i), colr)
+			rl.UpdateTextureRec(*data.Texture, rect, []rl.Color{colr})
+		}
+	}
+	return dataId
+}
+func tilesFromBytes(data []byte) []uint32 {
+	if len(data)%4 != 0 {
+		return nil
+	}
+
+	var numElements = len(data) / 4
+	var result = make([]uint32, numElements)
+	var reader = bytes.NewReader(data)
+	var err = binary.Read(reader, binary.LittleEndian, &result)
+	if err != nil {
+		return nil
+	}
+	return result
+}
+
+func loadLayerObjectsRecursively(name string, layers *layers) [][2]float32 {
+	var result [][2]float32
+	for _, layer := range layers.LayersObjects {
+		result = append(result, loadLayerObjects(name, layer)...)
+	}
+	for _, group := range layers.LayersGroups {
+		result = append(result, loadLayerObjectsRecursively(name, group)...)
+	}
+	return result
+}
+func loadLayerObjects(name string, layer *layerObjects) [][2]float32 {
+	if layer.Name != name {
+		return nil
+	}
+
+	var result [][2]float32
+	for _, o := range layer.Objects {
+		var data = ""
+		if o.Polyline != nil {
+			data = o.Polyline.Points
+		}
+		if o.Polygon != nil {
+			data = o.Polygon.Points
+		}
+		if data == "" {
+			if o.Point != nil {
+				data = text.New(0, ",", 0)
+			} else if o.Ellipse != nil {
+				const segments = 32
+				var rx, ry = o.Width / 2, o.Height / 2
+				var step = 360.0 / float32(segments)
+
+				for i := range segments {
+					var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
+					var x, y = (cx + 1) * rx, (cy + 1) * ry // shift from center-based to tiled's top-left-based
+					var value = text.New(x, ",", y, " ")
+					data += value
+				}
+			} else { // assume it's a rectangle
+				data = text.New(0, ",", 0, " ", o.Width, ",", 0, " ", o.Width, ",", o.Height, " ", 0, ",", o.Height)
 			}
 		}
-	}
 
-	return filePath
-}
-
-func UnloadTiledMapsFromWorld(worldFilePath string) {
-	var ids = LoadTiledMapsFromWorld(worldFilePath)
-	for _, id := range ids {
-		UnloadTiledMap(id)
-	}
-}
-func UnloadTiledMap(tilemapId string) {
-	delete(internal.TiledMaps, tilemapId)
-}
-func UnloadTiledTileset(tilesetId string) {
-	var tileset, has = internal.TiledTilesets[tilesetId]
-	if !has {
-		return
-	}
-
-	for _, v := range tileset.Tiles {
-		if v.TextureId != "" {
-			UnloadTexture(v.TextureId)
+		var corners = [][2]float32{}
+		var pts = text.Split(text.Trim(data), " ")
+		for _, pt := range pts {
+			var xy = text.Split(pt, ",")
+			if len(xy) == 2 {
+				var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
+				x, y = point.RotateAroundPoint(o.X+x, o.Y+y, o.X, o.Y, o.Rotation)
+				corners = append(corners, [2]float32{x, y})
+			}
 		}
+		corners = append(corners, [2]float32{number.NaN(), number.NaN()})
+		result = append(result, corners...)
 	}
-	if tileset.AssetId != "" {
-		UnloadTexture(tileset.AssetId)
-	}
-
-	delete(internal.TiledTilesets, tilesetId)
-}
-func UnloadTiledProject(projectId string) {
-	delete(internal.TiledProjects, projectId)
-}
-
-func UnloadAllTiledMaps() {
-	for id := range internal.TiledMaps {
-		UnloadTiledMap(id)
-	}
-}
-func UnloadAllTiledTilesets() {
-	for id := range internal.TiledTilesets {
-		UnloadTiledTileset(id)
-	}
-}
-func UnloadAllTiledProjects() {
-	for id := range internal.TiledProjects {
-		UnloadTiledProject(id)
-	}
-}
-
-func ReloadAllTiledMaps() {
-	var loaded = slices.Collect(maps.Keys(internal.TiledMaps))
-	UnloadAllTiledMaps()
-	for _, id := range loaded {
-		LoadTiledMap(id)
-	}
-}
-func ReloadAllTiledTilesets() {
-	var loaded = slices.Collect(maps.Keys(internal.TiledTilesets))
-	UnloadAllTiledTilesets()
-	for _, id := range loaded {
-		LoadTiledTileset(id)
-	}
-}
-func ReloadAllTiledProjects() {
-	var loaded = slices.Collect(maps.Keys(internal.TiledProjects))
-	UnloadAllTiledProjects()
-	for _, id := range loaded {
-		LoadTiledProject(id)
-	}
+	return result
 }

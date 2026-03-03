@@ -14,7 +14,7 @@ import (
 
 func Batches() {
 	var cam = graphics.NewCamera(1)
-	var count = 10_000
+	var count = 20_000
 	var points = make([][2]float32, 0, count*4)
 
 	condition.CallAfter(0, func() {

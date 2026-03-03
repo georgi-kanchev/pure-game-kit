@@ -24,17 +24,13 @@ func UnloadAll() {
 	UnloadAllTextures()
 	UnloadAllSounds()
 	UnloadAllMusic()
-	UnloadAllTiledMaps()
-	UnloadAllTiledTilesets()
-	UnloadAllTiledProjects()
+	UnloadAllTileData()
+	UnloadAllTileSets()
 }
 func ReloadAll() {
 	ReloadAllTextures()
 	ReloadAllSounds()
 	ReloadAllMusic()
-	ReloadAllTiledMaps()
-	ReloadAllTiledTilesets()
-	ReloadAllTiledProjects()
 }
 
 //=================================================================

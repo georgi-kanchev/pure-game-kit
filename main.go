@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
@@ -95,6 +97,8 @@ func main() {
 	assets.LoadDefaultSoundsUI()
 
 	hud.Scale = 2.01 // removes tearing artifacts
+
+	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
 
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
