@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"pure-game-kit/data/file"
+	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
@@ -33,7 +34,7 @@ func LoadTiledData(tmxFilePath string) []string {
 		return nil // error is in storage
 	}
 
-	return loadLayerTilesRecursively(tiled.Width, tiled.Height, &tiled.layers)
+	return loadLayerTilesRecursively(tmxFilePath, tiled.Width, tiled.Height, &tiled.layers)
 }
 
 //=================================================================
@@ -89,21 +90,21 @@ var flipTable = [8]uint32{ // Index: [X Y D]
 	(1 << 31) | (3 << 29), // 7: 111 | flip x + rotation 90
 }
 
-func loadLayerTilesRecursively(w, h int, layers *layers) []string {
+func loadLayerTilesRecursively(tmxFilePath string, w, h int, layers *layers) []string {
 	var result []string
 	for _, layer := range layers.LayersTiles {
-		result = append(result, loadLayerTiles(w, h, layer))
+		result = append(result, loadLayerTiles(tmxFilePath, w, h, layer))
 	}
 	for _, group := range layers.LayersGroups {
-		result = append(result, loadLayerTilesRecursively(w, h, group)...)
+		result = append(result, loadLayerTilesRecursively(tmxFilePath, w, h, group)...)
 	}
 	return result
 }
-func loadLayerTiles(w, h int, layer *layerTiles) string {
+func loadLayerTiles(tmxFilePath string, w, h int, layer *layerTiles) string {
 	var tileData = text.Trim(layer.TileData.Tiles)
 	var tiles = make([]uint32, w*h)
 	var csv = layer.TileData.Encoding == "csv"
-	var dataId = LoadTileData(layer.Name, w, h)
+	var dataId = LoadTileData(path.New(tmxFilePath, layer.Name), w, h)
 
 	if layer.TileData.Encoding == "base64" {
 		var b64 = text.FromBase64(text.Trim(tileData))

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"pure-game-kit/data/assets"
-	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
@@ -83,7 +81,7 @@ func main() {
 		gui.Button("state machines", f.Text, " State Machines (execution-state-machines.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("data", f.ThemeId, "label", f.Text, "Assets:", f.NewRow, ""),
-		gui.Button("tiled scenes", f.Text, " Tiled Scenes (assets-tiled.go)", f.NewRow, ""),
+		gui.Button("tiled maps", f.Text, " Tiled Maps (assets-tiled.go)", f.NewRow, ""),
 		gui.Button("default font asset", f.Text, " Default Font (assets-default.go)", f.NewRow, ""),
 		gui.Button("default icons asset", f.Text, " Default Icons (assets-default.go)", f.NewRow, ""),
 		gui.Button("default cursors asset", f.Text, " Default Cursors (assets-default.go)", f.NewRow, ""),
@@ -97,8 +95,6 @@ func main() {
 	assets.LoadDefaultSoundsUI()
 
 	hud.Scale = 2.01 // removes tearing artifacts
-
-	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
 
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
@@ -125,7 +121,7 @@ func main() {
 		//=================================================================
 		"state machines": example.StateMachines,
 		//=================================================================
-		"tiled scenes":              example.Tiled,
+		"tiled maps":                example.Tiled,
 		"default font asset":        example.DefaultAssetFont,
 		"default icons asset":       example.DefaultAssetIcons,
 		"default cursors asset":     example.DefaultAssetCursors,

@@ -22,6 +22,8 @@ func Tiled() {
 
 	hotreload()
 
+	cam.X, cam.Y = 128, 128
+
 	var tileMaps = make([]*graphics.TileMap, len(tileDataIds))
 	for i, t := range tileDataIds {
 		tileMaps[i] = graphics.NewTileMap(tileSetId, t)
