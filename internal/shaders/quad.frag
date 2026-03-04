@@ -133,8 +133,8 @@ vec2 compute_tile(vec2 uv) {
     uint speedRaw = (gid & 0x001F0000u) >> 16;   // bits 20..16
     uint atlasBase = gid & 0xFFFFu;              // bits 15..00
     
-    float s = float(speedRaw); // multiplier logic: 0..10 maps to 0.00..1.00; 11..31 maps to 1.33..8.00
-    float multiplier = (s <= 10.0) ? (s * 0.1) : (1.0 + (s - 10.0) * 0.333);
+    float s = float(speedRaw); // multiplier logic: 0..10 maps to 0.00..1.00; 11..31 maps to 1.33..10.00
+    float multiplier = (s <= 10.0) ? (s * 0.1) : (1.0 + (s - 10.0) * 0.45);
     uint frameRange = animCount + 1u;
     uint currentFrame = uint(mod(floor(u[TIME] * multiplier) + float(animOffset), float(frameRange)));
     uint atlasIndex = atlasBase + currentFrame;

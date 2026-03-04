@@ -15,7 +15,7 @@
         "atlas.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1.5,
-            "scaleInEditor": 2
+            "scaleInEditor": 8
         },
         "desert.tmx": {
             "expandedObjectLayers": [
@@ -37,11 +37,11 @@
             "expandedGroupLayers": [
                 3
             ],
-            "scale": 2,
-            "selectedLayer": 1,
+            "scale": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 202.5,
-                "y": 166.25
+                "x": 404,
+                "y": 239.5
             }
         },
         "map.tmx#atlas": {
@@ -51,6 +51,17 @@
         "map.tmx#objects": {
             "scaleInDock": 0.75,
             "scaleInEditor": 4
+        },
+        "map2.tmx": {
+            "scale": 5.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 183.09090909090907,
+                "y": 145.54545454545456
+            }
+        },
+        "map2.tmx#atlas2": {
+            "scaleInDock": 1
         },
         "objects.tsx": {
             "dynamicWrapping": false,
@@ -71,18 +82,22 @@
             }
         }
     },
+    "frame.defaultDuration": 300,
     "last.imagePath": "/home/gojur/code/pure-game-kit/examples/data",
     "map.height": 32,
     "map.lastUsedFormat": "tmx",
+    "map.layerDataFormat": "3",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "map.width": 32,
     "openFiles": [
         "map.tmx",
-        "atlas.tsx"
+        "atlas.tsx",
+        "map2.tmx"
     ],
     "project": "game-name.tiled-project",
     "recentFiles": [
+        "map2.tmx",
         "atlas.tsx",
         "map.tmx",
         "images.tsx",
@@ -91,6 +106,7 @@
         "terrain.tmx",
         "sizes.tsx"
     ],
+    "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
         "height": 16,

@@ -15,8 +15,7 @@ func Tiled() {
 	var tileDataIds []string
 	var pts [][2]float32
 	var hotreload = func() {
-		tileSetId = assets.LoadTileSet("examples/data/atlas.png", 16, 16)
-		tileDataIds = assets.LoadTiledData("examples/data/map.tmx")
+		tileSetId, tileDataIds = assets.LoadTiledData("examples/data/map.tmx")
 		pts = assets.LoadTiledPoints("examples/data/map.tmx", "Objects")
 	}
 

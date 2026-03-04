@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="3" nextobjectid="1">
+ <tileset firstgid="1" name="atlas2" tilewidth="16" tileheight="16" tilecount="336" columns="21">
+  <image source="atlas.png" width="336" height="256"/>
+  <tile id="21">
+   <animation>
+    <frame tileid="21" duration="100"/>
+    <frame tileid="22" duration="100"/>
+    <frame tileid="23" duration="100"/>
+   </animation>
+  </tile>
+ </tileset>
+ <layer id="1" name="Tile Layer 1" width="32" height="32">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKEL9P3zrcdQcNVUVVXV1w/Cj7AB
+  </data>
+ </layer>
+ <layer id="2" name="Tile Layer 2" width="32" height="32">
+  <data encoding="base64" compression="zlib">
+   eJztzUENgDAAxdCpGPMAeIB5YHgA/J+pBBIO/9KX9NxSJOmbShO10H+mhdbQf6Odeuh/0KAz9L/opif0lyRJ0j8v9hUD0A==
+  </data>
+ </layer>
+</map>

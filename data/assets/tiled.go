@@ -6,6 +6,7 @@ import (
 	"pure-game-kit/data/file"
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
@@ -15,34 +16,26 @@ import (
 )
 
 func LoadTiledPoints(tmxFilePath string, layerName string) [][2]float32 {
-	var tiled *tiled
-	var fileContent = file.LoadText(tmxFilePath)
-	storage.FromXML(fileContent, &tiled)
-	if tiled == nil {
-		return nil // error is in storage
-	}
-
+	var _, tiled = loadTiled(tmxFilePath)
 	return loadLayerObjectsRecursively(layerName, &tiled.layers)
 }
-func LoadTiledData(tmxFilePath string) []string {
+func LoadTiledData(tmxFilePath string) (tileSetId string, tileDataIds []string) {
 	tryCreateWindow()
 
-	var tiled *tiled
-	var fileContent = file.LoadText(tmxFilePath)
-	storage.FromXML(fileContent, &tiled)
-	if tiled == nil {
-		return nil // error is in storage
-	}
-
-	return loadLayerTilesRecursively(tmxFilePath, tiled.Width, tiled.Height, &tiled.layers)
+	var tileset, tiled = loadTiled(tmxFilePath)
+	var dir = path.Folder(tmxFilePath)
+	tileSetId = LoadTileSet(path.New(dir, tileset.Image.Source), tileset.TileWidth, tileset.TileHeight)
+	tileDataIds = loadLayerTilesRecursively(tmxFilePath, tiled, &tiled.layers)
+	return tileSetId, tileDataIds
 }
 
 //=================================================================
 // private
 
 type tiled struct {
-	Width  int `xml:"width,attr"`
-	Height int `xml:"height,attr"`
+	Width   int      `xml:"width,attr"`
+	Height  int      `xml:"height,attr"`
+	TileSet *tileset `xml:"tileset"`
 	layers
 }
 type layers struct {
@@ -75,9 +68,30 @@ type layerObjects struct {
 type objectPoints struct {
 	Points string `xml:"points,attr"`
 }
+type tileset struct {
+	Source string `xml:"source,attr"`
+	Image  *struct {
+		Source string `xml:"source,attr"`
+	} `xml:"image"`
+	TileWidth  int     `xml:"tilewidth,attr"`
+	TileHeight int     `xml:"tileheight,attr"`
+	Tiles      []*tile `xml:"tile"`
 
-const flipX, flipY, flipDiag uint32 = 0x80000000, 0x40000000, 0x20000000
-const flips = flipX | flipY | flipDiag
+	TilesLookUp map[uint32]*tile
+}
+type tile struct {
+	Id              uint32          `xml:"id,attr"`
+	CollisionLayers []*layerObjects `xml:"objectgroup"`
+	Animation       *struct {
+		Frames []*tileFrame `xml:"frame"`
+	} `xml:"animation"`
+}
+type tileFrame struct {
+	TileId   uint32 `xml:"tileid,attr"`
+	Duration int    `xml:"duration,attr"`
+}
+
+const flips = 0x80000000 | 0x40000000 | 0x20000000 // flipX | flipY | flipDiag
 
 var flipTable = [8]uint32{ // Index: [X Y D]
 	(0 << 31) | (0 << 29), // 0: 000 | default
@@ -90,21 +104,47 @@ var flipTable = [8]uint32{ // Index: [X Y D]
 	(1 << 31) | (3 << 29), // 7: 111 | flip x + rotation 90
 }
 
-func loadLayerTilesRecursively(tmxFilePath string, w, h int, layers *layers) []string {
+func loadTiled(tmxFilePath string) (*tileset, *tiled) {
+	var tiled *tiled
+	var mapContent = file.LoadText(tmxFilePath)
+	storage.FromXML(mapContent, &tiled)
+	if tiled == nil {
+		return nil, nil // error is in storage
+	}
+
+	var tileset = tiled.TileSet
+	var dir = path.Folder(tmxFilePath)
+	if tileset.Image == nil {
+		storage.FromXML(file.LoadText(path.New(dir, tileset.Source)), &tileset)
+		if tileset == nil {
+			return nil, nil // error is in storage
+		}
+	}
+
+	tileset.TilesLookUp = map[uint32]*tile{}
+	for _, t := range tileset.Tiles {
+		tileset.TilesLookUp[t.Id] = t
+	}
+
+	return tileset, tiled
+}
+
+func loadLayerTilesRecursively(tmxFilePath string, tiled *tiled, layers *layers) []string {
 	var result []string
 	for _, layer := range layers.LayersTiles {
-		result = append(result, loadLayerTiles(tmxFilePath, w, h, layer))
+		result = append(result, loadLayerTiles(tmxFilePath, tiled, layer))
 	}
 	for _, group := range layers.LayersGroups {
-		result = append(result, loadLayerTilesRecursively(tmxFilePath, w, h, group)...)
+		result = append(result, loadLayerTilesRecursively(tmxFilePath, tiled, group)...)
 	}
 	return result
 }
-func loadLayerTiles(tmxFilePath string, w, h int, layer *layerTiles) string {
+func loadLayerTiles(tmxFilePath string, tiled *tiled, layer *layerTiles) string {
 	var tileData = text.Trim(layer.TileData.Tiles)
-	var tiles = make([]uint32, w*h)
+	var tiles = make([]uint32, tiled.Width*tiled.Height)
 	var csv = layer.TileData.Encoding == "csv"
-	var dataId = LoadTileData(path.New(tmxFilePath, layer.Name), w, h)
+	var dataId = LoadTileData(path.New(tmxFilePath, layer.Name), tiled.Width, tiled.Height)
+	var data = internal.TileDatas[dataId]
 
 	if layer.TileData.Encoding == "base64" {
 		var b64 = text.FromBase64(text.Trim(tileData))
@@ -121,7 +161,7 @@ func loadLayerTiles(tmxFilePath string, w, h int, layer *layerTiles) string {
 		rows = text.Split(tileData, "\n")
 	}
 
-	for i := range h {
+	for i := range tiled.Height {
 		var columns []string
 		if csv {
 			var row = rows[i]
@@ -131,8 +171,8 @@ func loadLayerTiles(tmxFilePath string, w, h int, layer *layerTiles) string {
 			columns = text.Split(row, ",")
 		}
 
-		for j := range w {
-			var index = number.Indexes2DToIndex1D(i, j, w, h)
+		for j := range tiled.Width {
+			var index = number.Indexes2DToIndex1D(i, j, tiled.Width, tiled.Height)
 			if csv {
 				tiles[index] = text.ToNumber[uint32](columns[j])
 			}
@@ -142,12 +182,36 @@ func loadLayerTiles(tmxFilePath string, w, h int, layer *layerTiles) string {
 			}
 
 			var raw = tiles[index]
-			var packed = flipTable[raw>>29] | ((raw & 0x1FFFFFFF) - 1)
-			var data = internal.TileDatas[dataId]
-			var r = uint8((packed >> 24) & 0xFF)
-			var g = uint8((packed >> 16) & 0xFF)
-			var b = uint8((packed >> 8) & 0xFF)
-			var a = uint8((packed >> 0) & 0xFF)
+			var id = ((raw & 0x1FFFFFFF) - 1)
+			var frameCount uint32 = 0
+			var frameSpeed uint32 = 0
+			var animOffset uint32 = 0
+
+			var tile = tiled.TileSet.TilesLookUp[id]
+			if tile != nil && tile.Animation != nil && len(tile.Animation.Frames) > 0 {
+				var totalDuration = 0
+				for _, f := range tile.Animation.Frames {
+					totalDuration += f.Duration
+				}
+				var avgDuration = float32(totalDuration) / float32(len(tile.Animation.Frames))
+				var targetFPS = 1000.0 / avgDuration // speed (0..31)
+				var s = condition.If(targetFPS <= 1.0, targetFPS*10.0, ((targetFPS-1.0)/0.45)+10.0)
+				frameSpeed = uint32(number.Limit(int(s), 0, 31))
+				frameCount = uint32(number.Limit(len(tile.Animation.Frames)-1, 0, 15))
+				animOffset = uint32((j ^ i) % 16) // semi-random offset
+			}
+
+			var finalTile uint32 = 0
+			finalTile |= (uint32(flipTable[raw>>29]) << 29) // bits 31..29: flip & rotation
+			finalTile |= (frameCount << 25)                 // bits 28..25: frame count
+			finalTile |= (animOffset << 21)                 // bits 24..21: frame offset
+			finalTile |= (frameSpeed << 16)                 // bits 20..16: frame speed
+			finalTile |= (id & 0xFFFF)                      // bits 15..00: id
+
+			var r = uint8((finalTile >> 24) & 0xFF)
+			var g = uint8((finalTile >> 16) & 0xFF)
+			var b = uint8((finalTile >> 8) & 0xFF)
+			var a = uint8((finalTile >> 0) & 0xFF)
 			var colr = rl.NewColor(r, g, b, a)
 			var rect = rl.NewRectangle(float32(j), float32(i), float32(1), float32(1))
 
@@ -156,20 +220,6 @@ func loadLayerTiles(tmxFilePath string, w, h int, layer *layerTiles) string {
 		}
 	}
 	return dataId
-}
-func tilesFromBytes(data []byte) []uint32 {
-	if len(data)%4 != 0 {
-		return nil
-	}
-
-	var numElements = len(data) / 4
-	var result = make([]uint32, numElements)
-	var reader = bytes.NewReader(data)
-	var err = binary.Read(reader, binary.LittleEndian, &result)
-	if err != nil {
-		return nil
-	}
-	return result
 }
 
 func loadLayerObjectsRecursively(name string, layers *layers) [][2]float32 {
@@ -227,6 +277,21 @@ func loadLayerObjects(name string, layer *layerObjects) [][2]float32 {
 		}
 		corners = append(corners, [2]float32{number.NaN(), number.NaN()})
 		result = append(result, corners...)
+	}
+	return result
+}
+
+func tilesFromBytes(data []byte) []uint32 {
+	if len(data)%4 != 0 {
+		return nil
+	}
+
+	var numElements = len(data) / 4
+	var result = make([]uint32, numElements)
+	var reader = bytes.NewReader(data)
+	var err = binary.Read(reader, binary.LittleEndian, &result)
+	if err != nil {
+		return nil
 	}
 	return result
 }
