@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="6">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="7">
  <tileset firstgid="1" source="atlas.tsx"/>
  <layer id="1" name="Ground" width="32" height="32">
   <data encoding="base64" compression="gzip">
@@ -15,7 +15,7 @@
   <object id="4" x="267.237" y="228.967" width="52" height="88" rotation="27.4801">
    <ellipse/>
   </object>
-  <object id="5" x="280" y="88">
+  <object id="6" x="308" y="92">
    <point/>
   </object>
  </objectgroup>

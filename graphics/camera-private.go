@@ -137,16 +137,16 @@ func separateShapes(points [][2]float32) (flatPoints []float32, shapeCounts []in
 	var currentCount int
 	for _, p := range points {
 		if number.IsNaN(p[0]) || number.IsNaN(p[1]) {
-			if currentCount >= 3 {
+			if currentCount > 0 {
 				shapeCounts = append(shapeCounts, currentCount)
+				currentCount = 0
 			}
-			currentCount = 0
 			continue
 		}
 		flatPoints = append(flatPoints, p[0], p[1])
 		currentCount++
 	}
-	if currentCount >= 3 {
+	if currentCount > 0 {
 		shapeCounts = append(shapeCounts, currentCount)
 	}
 	return flatPoints, shapeCounts

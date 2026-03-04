@@ -38,10 +38,10 @@
                 3
             ],
             "scale": 1,
-            "selectedLayer": 3,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 404,
-                "y": 239.5
+                "x": 315,
+                "y": 157.5
             }
         },
         "map.tmx#atlas": {
@@ -53,11 +53,11 @@
             "scaleInEditor": 4
         },
         "map2.tmx": {
-            "scale": 5.5,
+            "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 183.09090909090907,
-                "y": 145.54545454545456
+                "x": 240.66666666666669,
+                "y": 222.33333333333334
             }
         },
         "map2.tmx#atlas2": {
