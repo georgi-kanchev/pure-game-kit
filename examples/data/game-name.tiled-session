@@ -37,11 +37,14 @@
             "expandedGroupLayers": [
                 3
             ],
-            "scale": 1,
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 315,
-                "y": 157.5
+                "x": 267,
+                "y": 163.83333333333331
             }
         },
         "map.tmx#atlas": {
