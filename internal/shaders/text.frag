@@ -38,7 +38,7 @@ void main() {
     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
     
-    float compressedOutlIdx = (outlIdx * 0.7) + (1.5 * 0.3);
+    float compressedOutlIdx = (float(outlIdx) * 0.7) + (1.5 * 0.3);
     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
     

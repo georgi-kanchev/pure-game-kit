@@ -26,6 +26,10 @@ var skipStartEnd bool
 
 func (b *Batch) Init(quadCountCapacity int32) {
 	if b.mesh != nil {
+		b.mesh.Vertices = nil
+		b.mesh.Texcoords = nil
+		b.mesh.Colors = nil
+		b.mesh.Indices = nil
 		rl.UnloadMesh(b.mesh)
 	}
 

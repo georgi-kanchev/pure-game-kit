@@ -233,7 +233,7 @@ func tryCreate() {
 	}
 
 	rl.SetConfigFlags(flags)
-	rl.SetTraceLogLevel(rl.LogNone)
+	rl.SetTraceLogLevel(rl.LogAll)
 	rl.InitWindow(1280, 720, Title)
 	rl.SetExitKey(rl.KeyNull)
 	rl.MaximizeWindow()
