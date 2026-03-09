@@ -293,6 +293,8 @@ func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 	var offset = 0
 	var renderColor = getColor(color)
 
+	c.Effects.updateUniforms(1, 1, nil, nil)
+
 	for _, count := range shapeCounts {
 		var shape = flatPoints[offset : offset+(count*2)]
 		offset += (count * 2)
@@ -333,6 +335,8 @@ func (c *Camera) DrawShapesFast(color uint, points ...[2]float32) {
 	var flatPoints, shapeCounts = separateShapes(points)
 	var offset = 0
 	var renderColor = getColor(color)
+
+	c.Effects.updateUniforms(1, 1, nil, nil)
 
 	for _, count := range shapeCounts {
 		var shapeData = flatPoints[offset : offset+(count*2)]
@@ -409,16 +413,12 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, 
 		}
 	}
 
-	rl.BeginShaderMode(internal.Shader)
-	var effects *Effects
-	var textBox = &TextBox{}
-	effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, textBox)
+	c.Effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, &TextBox{})
 
 	defaultTextPack.Color = color
 	var pack = packSymbolColor(defaultTextPack)
 	rl.SetTextLineSpacing(int(lineGap))
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
-	rl.EndShaderMode()
 
 	c.end()
 }

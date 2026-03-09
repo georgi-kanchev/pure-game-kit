@@ -51,6 +51,7 @@ func (b *Batch) Init(quadCountCapacity int32) {
 
 	rl.UploadMesh(b.mesh, true)
 	b.material = rl.LoadMaterialDefault()
+	b.material.Shader = internal.Shader
 }
 func (b *Batch) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
 	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+4 > b.mesh.VertexCount) {
@@ -61,6 +62,7 @@ func (b *Batch) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32,
 		var mat = b.material
 		rl.SetMaterialTexture(&mat, rl.MapDiffuse, *tex)
 		b.material = mat
+		b.material.Shader = internal.Shader
 	}
 
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
@@ -117,6 +119,7 @@ func (b *Batch) QueueTriangles(points []float32, col rl.Color) {
 		var mat = b.material
 		rl.SetMaterialTexture(&mat, rl.MapDiffuse, *whiteTex)
 		b.material = mat
+		b.material.Shader = internal.Shader
 	}
 
 	var vOffset = b.vertsCur * 12

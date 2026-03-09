@@ -160,7 +160,6 @@ vec2 compute_tile(vec2 uv) {
     vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_W], u[TEXTURE_H] / u[TILE_H]);
     return (coord + localUV) / atlasSizeInTiles;
 }
-
 vec4 compute_sdf_text(vec2 uv) {
     uvec4 c = uvec4(fragColor * 255.0 + 0.5);
     vec4 base = unpackRGB222(c.r);
@@ -218,7 +217,7 @@ void main() {
     vec4 color = compute_blur(uv);
     color = compute_outline(color, uv);
     
-    if (color.a * color.a < 0.004)
+    if (color.a * fragColor.a < 0.004)
         discard;
      
     color = compute_color_adjust(color);

@@ -21,9 +21,6 @@ func (c *Camera) DrawNodes(nodes ...*Node) {
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	c.begin()
 
-	var prevShader = batch.material.Shader
-	batch.material.Shader = internal.Shader
-
 	var lastEffects *Effects
 	var initUniforms = false
 
@@ -56,20 +53,14 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		if lastEffects != nil && effects != nil && *lastEffects != *effects {
-			rl.EnableDepthTest()
 			batch.Draw() // effects are different & break the batch
-			rl.DisableDepthTest()
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil)
 		}
 		batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
 	}
 
-	rl.EnableDepthTest()
 	batch.Draw()
-	rl.DisableDepthTest()
-
-	batch.material.Shader = prevShader
 
 	c.end()
 }
@@ -137,8 +128,6 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 }
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
-	var prevShader = batch.material.Shader
-	batch.material.Shader = internal.Shader
 	for _, t := range textBoxes {
 		if t == nil || !c.IsAreaVisible(t.Area()) {
 			continue
@@ -157,17 +146,15 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var _, symbols = t.formatSymbols()
 		var font = t.font()
 		var gapX = t.gapSymbols()
+		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
+		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t)
 
 		for _, s := range symbols {
 			batch.QueueSymbol(font, s, t.LineHeight, gapX)
 		}
 
-		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
-		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t)
 		batch.Draw()
-
 	}
-	batch.material.Shader = prevShader
 	c.end()
 }
 func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
@@ -191,13 +178,12 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var x, y = t.CornerTopLeft() // applying pivot
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
+		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
 
 		rl.BeginShaderMode(internal.Shader)
-		rl.EnableDepthTest()
-		t.Effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil)
+		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil)
 		rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, t.Angle, getColor(t.Tint))
 		rl.EndShaderMode()
-		rl.DisableDepthTest()
 	}
 	c.end()
 }

@@ -30,7 +30,6 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *Text
 	clear(u)
 	u[0], u[1] = float32(texW), float32(texH)
 	u[4], u[5], u[6], u[7] = 0.5, 0.5, 0.5, 0.5
-	u[21], u[22] = 0, 0
 	u[25] = internal.Runtime
 
 	if e != nil {
