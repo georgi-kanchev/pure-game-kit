@@ -10,8 +10,9 @@ import (
 type Effects struct {
 	Gamma, Saturation, Contrast, Brightness, Grayscale, Inversion float32 // Ranged -1..1
 
-	DepthZ, PixelSize, OutlineSize float32
-	BlurX, BlurY                   float32
+	BlurX, BlurY, PixelSize, OutlineSize float32
+
+	DepthZ float32 // Requires semi-transparent pixels to be drawn last. Fully opaque pixels work in any sorting.
 
 	OutlineColor, SilhouetteColor uint
 }
@@ -23,7 +24,7 @@ func NewEffects() *Effects {
 //=================================================================
 // private
 
-var u = make([]float32, 27) // this is cached and passed to the shader packed to spare some cgo calls
+var u = make([]float32, 32) // this is cached and passed to the shader packed to spare some cgo calls
 
 func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap) {
 	clear(u)
@@ -40,6 +41,10 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap) {
 		u[10], u[11], u[12] = e.PixelSize, e.DepthZ, e.OutlineSize
 		u[13], u[14], u[15], u[16] = float32(or)/255, float32(og)/255, float32(ob)/255, float32(oa)/255
 		u[17], u[18], u[19], u[20] = float32(sr)/255, float32(sg)/255, float32(sb)/255, float32(sa)/255
+
+		if u[4] == 0.5 && u[5] == 0.5 && u[6] == 0.5 && u[7] == 0.5 && u[8] == 0 && u[9] == 0 {
+			u[26] = 1.0 // skip calculations for color adjust in the shader
+		}
 	}
 
 	if tileMap != nil {
@@ -53,5 +58,5 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap) {
 		}
 	}
 
-	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 27)
+	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 32)
 }

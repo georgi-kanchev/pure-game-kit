@@ -31,10 +31,11 @@ out vec4 finalColor;
 #define TILE_W 23
 #define TILE_H 24
 #define TIME 25
+#define SKIP_COLOR_ADJUST 26
 
 uniform sampler2D texture0;
 uniform sampler2D tileData;
-uniform float u[27];
+uniform float u[32];
 
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
@@ -42,12 +43,10 @@ float map(float value, float min1, float max1, float min2, float max2) {
 
 vec2 compute_pixelated_uv(vec2 uv) {
     float pixelSize = u[PIXEL_SIZE];
-    if (pixelSize <= 1.0)
-        return uv;
-    
-	vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
-    vec2 numBlocks = texSize / pixelSize;
-    return (floor(uv * numBlocks) + 0.5) / numBlocks;
+    vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
+    vec2 numBlocks = texSize / max(pixelSize, 0.001); // Avoid div by zero
+    vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
+    return pixelSize <= 1.0 ? uv : pixelated;
 }
 vec4 compute_blur(vec2 uv) {
     vec2 blur = vec2(u[BLUR_X], u[BLUR_Y]);
@@ -84,16 +83,13 @@ vec4 compute_outline(vec4 color, vec2 uv) {
     return color;
 }
 vec4 compute_color_adjust(vec4 color) {
+    if (u[SKIP_COLOR_ADJUST] > 0.0)
+        return color;
+
     float gam = u[GAMMA];
     float sat = u[SATURATION];
     float con = u[CONTRAST];
     float bri = u[BRIGHTNESS];
-    float gra = u[GRAYSCALE];
-    float inv = u[INVERSION];
-    
-    if (gam == 0.5 && sat == 0.5 && con == 0.5 && bri == 0.5 && gra == 0.0 && inv == 0.0)
-        return color;
-    
     float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     float gamma = gam < 0.5 ? map(gam, 0.0, 0.5, 6.0, 1.0) : map(gam, 0.5, 1.0, 1.0, 0.0);
     float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 10.0);
@@ -102,22 +98,21 @@ vec4 compute_color_adjust(vec4 color) {
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
     color.rgb = mix(vec3(luminance), color.rgb, saturation);
     color.rgb = mix(vec3(0.5), color.rgb, contrast);
-    color.rgb = mix(color.rgb, vec3(luminance), gra);
-    color.rgb = mix(color.rgb, 1.0 - color.rgb, inv);
+    color.rgb = mix(color.rgb, vec3(luminance), u[GRAYSCALE]);
+    color.rgb = mix(color.rgb, 1.0 - color.rgb, u[INVERSION]);
     color.rgb *= brightness;
     return color;
 }
 vec4 compute_silhouette(vec4 color) {
-    vec4 c = vec4(u[SILHOUETTE_R], u[SILHOUETTE_G], u[SILHOUETTE_B], u[SILHOUETTE_A]);
-    if (c.a > 0.0)
-        color.rgb = mix(color.rgb, c.rgb, c.a);
+    vec4 silColor = vec4(u[SILHOUETTE_R], u[SILHOUETTE_G], u[SILHOUETTE_B], u[SILHOUETTE_A]);
+    color.rgb = mix(color.rgb, silColor.rgb, silColor.a);
     return color;
 }
 vec2 compute_tile(vec2 uv) {
     ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
-    if (mapSize.x == 0 || mapSize.y == 0)
+    if (mapSize.x == 0)
         return uv; // this is a regular sprite, not a tilemap
-
+    
     ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;

@@ -58,14 +58,19 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		if lastEffects != nil && effects != nil && *lastEffects != *effects {
+			rl.EnableDepthTest()
 			batch.Draw() // effects are different & break the batch
+			rl.DisableDepthTest()
 			effects.updateUniforms(int(src.Width), int(src.Height), nil)
 		}
 		batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
 	}
 
+	rl.EnableDepthTest()
 	batch.Draw()
+	rl.DisableDepthTest()
+
 	batch.material.Shader = prevShader
 
 	c.end()
