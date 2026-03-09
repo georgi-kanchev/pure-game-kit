@@ -31,7 +31,10 @@ out vec4 finalColor;
 #define TILE_W 23
 #define TILE_H 24
 #define TIME 25
-#define SKIP_COLOR_ADJUST 26
+#define CALCULATE_COLOR_ADJUST 26
+#define CALCULATE_SDF_TEXT 27
+#define TEXT_SHADOW_X 28
+#define TEXT_SHADOW_Y 29
 
 uniform sampler2D texture0;
 uniform sampler2D tileData;
@@ -39,6 +42,13 @@ uniform float u[32];
 
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
+vec4 unpackRGB222(uint val) {
+    float r = float((val >> 6u) & 0x03u) / 3.0;
+    float g = float((val >> 4u) & 0x03u) / 3.0;
+    float b = float((val >> 2u) & 0x03u) / 3.0;
+    float a = float(val & 0x03u) / 3.0;
+    return vec4(r, g, b, a);
 }
 
 vec2 compute_pixelated_uv(vec2 uv) {
@@ -82,10 +92,15 @@ vec4 compute_outline(vec4 color, vec2 uv) {
     
     return color;
 }
+vec4 compute_silhouette(vec4 color) {
+    vec4 silColor = vec4(u[SILHOUETTE_R], u[SILHOUETTE_G], u[SILHOUETTE_B], u[SILHOUETTE_A]);
+    color.rgb = mix(color.rgb, silColor.rgb, silColor.a);
+    return color;
+}
 vec4 compute_color_adjust(vec4 color) {
-    if (u[SKIP_COLOR_ADJUST] > 0.0)
+    if (u[CALCULATE_COLOR_ADJUST] < 0.5)
         return color;
-
+    
     float gam = u[GAMMA];
     float sat = u[SATURATION];
     float con = u[CONTRAST];
@@ -96,18 +111,16 @@ vec4 compute_color_adjust(vec4 color) {
     float contrast = con < 0.5 ? map(con, 0.0, 0.5, 0.0, 1.0) : map(con, 0.5, 1.0, 1.0, 3.0);
     float brightness = bri < 0.5 ? map(bri, 0.0, 0.5, 0.0, 1.0) : map(bri, 0.5, 1.0, 1.0, 4.0);
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
-    color.rgb = mix(vec3(luminance), color.rgb, saturation);
+    float lum_pre_sat = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+    color.rgb = mix(vec3(lum_pre_sat), color.rgb, saturation);
     color.rgb = mix(vec3(0.5), color.rgb, contrast);
-    color.rgb = mix(color.rgb, vec3(luminance), u[GRAYSCALE]);
+    float lum_post_con = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+    color.rgb = mix(color.rgb, vec3(lum_post_con), u[GRAYSCALE]);
     color.rgb = mix(color.rgb, 1.0 - color.rgb, u[INVERSION]);
     color.rgb *= brightness;
     return color;
 }
-vec4 compute_silhouette(vec4 color) {
-    vec4 silColor = vec4(u[SILHOUETTE_R], u[SILHOUETTE_G], u[SILHOUETTE_B], u[SILHOUETTE_A]);
-    color.rgb = mix(color.rgb, silColor.rgb, silColor.a);
-    return color;
-}
+
 vec2 compute_tile(vec2 uv) {
     ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
     if (mapSize.x == 0)
@@ -148,19 +161,69 @@ vec2 compute_tile(vec2 uv) {
     return (coord + localUV) / atlasSizeInTiles;
 }
 
+vec4 compute_sdf_text(vec2 uv) {
+    uvec4 c = uvec4(fragColor * 255.0 + 0.5);
+    vec4 base = unpackRGB222(c.r);
+    vec4 outlineColor = unpackRGB222(c.g);
+    vec4 shadowColor = unpackRGB222(c.b);
+    
+    uint thickIdx  = (c.a >> 6) & 0x03u;
+    uint outlIdx   = (c.a >> 4) & 0x03u;
+    uint shadIdx   = (c.a >> 2) & 0x03u;
+    uint smoothIdx = (c.a)      & 0x03u;
+    
+    float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
+    float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
+    
+    vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
+    float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
+    float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
+    float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
+    
+    float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
+    float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
+    float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
+    
+    float compressedOutlIdx = (float(outlIdx) * 0.7) + (1.5 * 0.3);
+    float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
+    float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
+    
+    vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
+    mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
+    float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
+    
+    vec3 finalRGB = (distance > sdfAlpha) ? base.rgb : mixedRGB;
+    float finalAlpha = (distance > sdfAlpha) ? base.a : mixedAlpha;
+    
+    return vec4(finalRGB, finalAlpha);
+}
+
 void main() {
     vec2 uv = fragTexCoord;
+    if (u[CALCULATE_SDF_TEXT] > 0.5) {
+        uv = compute_pixelated_uv(uv);
+        
+        vec4 color = compute_sdf_text(uv);
+        color = compute_outline(color, uv);
+        color = compute_color_adjust(color);
+        color = compute_silhouette(color);
+        finalColor = color;
+        gl_FragDepth = u[DEPTH_Z];
+        return;
+    }
+
     uv = compute_tile(uv);
     uv = compute_pixelated_uv(uv);
+    
     vec4 color = compute_blur(uv);
     color = compute_outline(color, uv);
-
-    if (color.a * fragColor.a < 0.004)
+    
+    if (color.a * color.a < 0.004)
         discard;
      
     color = compute_color_adjust(color);
     color = compute_silhouette(color);
-
+    
     finalColor = color * fragColor;
     gl_FragDepth = u[DEPTH_Z];
 }

@@ -13,7 +13,7 @@ import (
 func (c *Camera) DrawNodes(nodes ...*Node) {
 	for _, n := range nodes {
 		if n != nil {
-			var x, y = n.PointToGlobal(0, 0) // apply pivot
+			var x, y = n.CornerTopLeft() // apply pivot
 			c.DrawQuad(x, y, n.Width*n.ScaleX, n.Height*n.ScaleY, n.Angle, n.Tint)
 		}
 	}
@@ -25,8 +25,6 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	batch.material.Shader = internal.Shader
 
 	var lastEffects *Effects
-	lastEffects.updateUniforms(int(0), int(0), nil) // init shader params
-
 	var initUniforms = false
 
 	for _, s := range sprites {
@@ -53,7 +51,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
 
 		if !initUniforms {
-			effects.updateUniforms(int(src.Width), int(src.Height), nil)
+			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil)
 			initUniforms = true
 		}
 
@@ -61,7 +59,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			rl.EnableDepthTest()
 			batch.Draw() // effects are different & break the batch
 			rl.DisableDepthTest()
-			effects.updateUniforms(int(src.Width), int(src.Height), nil)
+			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil)
 		}
 		batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
@@ -75,7 +73,6 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 	c.end()
 }
-
 func (c *Camera) DrawBoxes(boxes ...*Box) {
 	c.begin()
 	defer c.end()
@@ -141,7 +138,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
 	var prevShader = batch.material.Shader
-	batch.material.Shader = internal.ShaderText
+	batch.material.Shader = internal.Shader
 	for _, t := range textBoxes {
 		if t == nil || !c.IsAreaVisible(t.Area()) {
 			continue
@@ -164,8 +161,9 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		for _, s := range symbols {
 			batch.QueueSymbol(font, s, t.LineHeight, gapX)
 		}
-		var shadowOffset = []float32{t.ShadowOffsetX / 200, t.ShadowOffsetY / 200}
-		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextShOffLoc, shadowOffset, rl.ShaderUniformVec2)
+
+		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
+		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t)
 		batch.Draw()
 
 	}
@@ -196,7 +194,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 
 		rl.BeginShaderMode(internal.Shader)
 		rl.EnableDepthTest()
-		t.Effects.updateUniforms(int(texture.Width), int(texture.Height), t)
+		t.Effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil)
 		rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, t.Angle, getColor(t.Tint))
 		rl.EndShaderMode()
 		rl.DisableDepthTest()

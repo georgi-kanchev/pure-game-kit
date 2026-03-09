@@ -5,7 +5,9 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/graphics/tag"
 	"pure-game-kit/utility/color/palette"
+	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
+	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -46,11 +48,15 @@ func Texts() {
 		tag.Thin("doloreeu"),
 		" fugiat nulla pariatur.")
 
+	textBox.Effects = graphics.NewEffects()
+
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		textBox.Tint = palette.DarkGray
 		cam.DrawNodes(&textBox.Node)
-		textBox.Tint = palette.White
+		textBox.Tint = palette.DarkGreen
+
+		textBox.Effects.Saturation = ((number.Sine(time.Clock()) + 1) / 2)
 
 		cam.DrawTextBoxes(textBox)
 	}

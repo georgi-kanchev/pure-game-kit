@@ -397,7 +397,6 @@ func (c *Camera) DrawText(text string, x, y, height float32) {
 func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, lineGap float32, color uint) {
 	c.begin()
 
-	var sh = internal.ShaderText
 	var font, has = internal.Fonts[fontId]
 
 	if !has {
@@ -408,22 +407,18 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, 
 			var fallback = rl.GetFontDefault()
 			font = &fallback
 		}
-
 	}
 
-	if sh.ID != 0 {
-		rl.BeginShaderMode(sh)
-		rl.SetShaderValue(internal.ShaderText, internal.ShaderTextShOffLoc, []float32{0, 0}, rl.ShaderUniformVec2)
-	}
+	rl.BeginShaderMode(internal.Shader)
+	var effects *Effects
+	var textBox = &TextBox{}
+	effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, textBox)
 
 	defaultTextPack.Color = color
 	var pack = packSymbolColor(defaultTextPack)
 	rl.SetTextLineSpacing(int(lineGap))
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
-
-	if sh.ID != 0 {
-		rl.EndShaderMode()
-	}
+	rl.EndShaderMode()
 
 	c.end()
 }

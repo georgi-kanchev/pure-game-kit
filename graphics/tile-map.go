@@ -10,8 +10,6 @@ import (
 type TileMap struct {
 	Node
 	TileSetId, TileDataId string
-
-	Effects *Effects
 }
 
 type Tile struct {

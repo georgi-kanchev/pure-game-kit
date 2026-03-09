@@ -12,6 +12,7 @@ type Node struct {
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
 	Tint           uint
+	Effects        *Effects
 }
 
 func NewNode(x, y float32) *Node {

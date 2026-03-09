@@ -8,7 +8,6 @@ type Sprite struct {
 	TextureScrollX, TextureScrollY float32
 
 	AssetId string
-	Effects *Effects
 }
 
 func NewSprite(assetId string, x, y float32) *Sprite {
