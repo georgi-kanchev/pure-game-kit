@@ -33,7 +33,7 @@ func Tiled() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawTileMaps(tileMaps...)
-		cam.DrawShapesFast(palette.Red, pts...)
+		cam.DrawShapes(palette.Red, pts...)
 		cam.DrawPoints(2, palette.White, pts...)
 
 		if keyboard.IsKeyJustPressed(key.F5) {

@@ -70,31 +70,30 @@ func Shapes() {
 		var ellPts = ellipse.CornerPoints()
 		var roundPts = squircle.CornerPoints()
 
-		cam.DrawShapesFast(color.Darken(colCircle, 0.5), hexagonPts...)
+		cam.DrawShapes(color.Darken(colCircle, 0.5), hexagonPts...)
 		cam.DrawLinesPath(8, colCircle, hexagonPts...)
 		cam.DrawPoints(4, colCircle, hexagonPts...)
 
-		cam.DrawShapesFast(color.Darken(colRect, 0.5), rectPts...)
+		cam.DrawShapes(color.Darken(colRect, 0.5), rectPts...)
 		cam.DrawLinesPath(8, colRect, rectPts...)
 		cam.DrawPoints(4, colRect, rectPts...)
 
-		cam.DrawShapesFast(palette.Gray, triPts...)
+		cam.DrawShapes(palette.Gray, triPts...)
 		cam.DrawLinesPath(8, palette.White, triPts...)
 		cam.DrawPoints(4, palette.White, triPts...)
 
 		cam.DrawLinesPath(8, colShape, shPts...)
 		cam.DrawPoints(4, colShape, shPts...)
 
-		// not DrawShapesFast because stars are concave
 		cam.DrawShapes(color.Darken(palette.Violet, 0.5), stars...)
 		cam.DrawLinesPath(8, palette.Violet, stars...)
 		cam.DrawPoints(4, palette.Violet, stars...)
 
-		cam.DrawShapesFast(palette.DarkGreen, ellPts...)
+		cam.DrawShapes(palette.DarkGreen, ellPts...)
 		cam.DrawLinesPath(8, palette.Green, ellPts...)
 		cam.DrawPoints(4, palette.Green, ellPts...)
 
-		cam.DrawShapesFast(palette.Magenta, roundPts...)
+		cam.DrawShapes(palette.Magenta, roundPts...)
 		cam.DrawLinesPath(8, palette.DarkMagenta, roundPts...)
 		cam.DrawPoints(4, palette.DarkMagenta, roundPts...)
 

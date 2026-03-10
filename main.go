@@ -67,7 +67,7 @@ func main() {
 		gui.Visual("geometry", f.ThemeId, "label", f.Text, "Geometry:", f.NewRow, ""),
 		gui.Button("line geometry", f.Text, " Lines (geometry-lines.go)", f.NewRow, ""),
 		gui.Button("shape geometry", f.Text, " Shapes (geometry-shapes.go)", f.NewRow, ""),
-		gui.Button("shape grids geometry", f.Text, " Chunks (geometry-shapes-grids.go)", f.NewRow, ""),
+		gui.Button("shape grids geometry", f.Text, " Shape Grids (geometry-shapes-grids.go)", f.NewRow, ""),
 		gui.Button("shape collision geometry", f.Text, " Collisions (geometry-shapes-collisions.go)", f.NewRow, ""),
 		gui.Button("pathfind around geometry", f.Text, " Pathfinding (geometry-pathfinding.go)", f.NewRow, ""),
 		gui.Button("path following geometry", f.Text, " Path Following (geometry-path-following.go)", f.NewRow, ""),

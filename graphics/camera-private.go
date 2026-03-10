@@ -33,30 +33,29 @@ func drawBoxPart(parent *Sprite, camera *Camera, x, y, w, h float32, id string, 
 // primitives
 
 func triangulate(points []float32) []float32 {
-	n := len(points) / 2
+	var n = len(points) / 2
 	if n < 3 {
 		return nil
 	}
 
 	var triangles []float32
 	var verts = make([]int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		verts[i] = i
 	}
 
 	ccw := area(points) > 0
 	for len(verts) > 3 {
-		earFound := false
+		var earFound = false
 		for i := 0; i < len(verts); i++ {
-			prev := verts[(i+len(verts)-1)%len(verts)]
-			curr := verts[i]
-			next := verts[(i+1)%len(verts)]
+			var prev = verts[(i+len(verts)-1)%len(verts)]
+			var curr = verts[i]
+			var next = verts[(i+1)%len(verts)]
 
 			if !isEar(points, verts, prev, curr, next, ccw) {
 				continue
 			}
 
-			// Add triangle vertices to flat slice
 			triangles = append(triangles,
 				points[prev*2], points[prev*2+1],
 				points[curr*2], points[curr*2+1],
@@ -81,19 +80,18 @@ func triangulate(points []float32) []float32 {
 }
 func area(points []float32) float32 {
 	var a float32
-	n := len(points) / 2
-	for i := 0; i < n; i++ {
-		j := (i + 1) % n
+	var n = len(points) / 2
+	for i := range n {
+		var j = (i + 1) % n
 		a += points[i*2]*points[j*2+1] - points[j*2]*points[i*2+1]
 	}
 	return a / 2
 }
 func isEar(points []float32, verts []int, i1, i2, i3 int, ccw bool) bool {
-	p1x, p1y := points[i1*2], points[i1*2+1]
-	p2x, p2y := points[i2*2], points[i2*2+1]
-	p3x, p3y := points[i3*2], points[i3*2+1]
-
-	cross := (p2x-p1x)*(p3y-p1y) - (p2y-p1y)*(p3x-p1x)
+	var p1x, p1y = points[i1*2], points[i1*2+1]
+	var p2x, p2y = points[i2*2], points[i2*2+1]
+	var p3x, p3y = points[i3*2], points[i3*2+1]
+	var cross = (p2x-p1x)*(p3y-p1y) - (p2y-p1y)*(p3x-p1x)
 	if ccw && cross <= 0 {
 		return false
 	}
@@ -112,27 +110,22 @@ func isEar(points []float32, verts []int, i1, i2, i3 int, ccw bool) bool {
 	return true
 }
 func pointInTriangle(px, py, ax, ay, bx, by, cx, cy float32) bool {
-	v0x, v0y := cx-ax, cy-ay
-	v1x, v1y := bx-ax, by-ay
-	v2x, v2y := px-ax, py-ay
-
-	dot00 := v0x*v0x + v0y*v0y
-	dot01 := v0x*v1x + v0y*v1y
-	dot02 := v0x*v2x + v0y*v2y
-	dot11 := v1x*v1x + v1y*v1y
-	dot12 := v1x*v2x + v1y*v2y
-
-	invDenom := 1 / (dot00*dot11 - dot01*dot01)
-	u := (dot11*dot02 - dot01*dot12) * invDenom
-	v := (dot00*dot12 - dot01*dot02) * invDenom
-
+	var v0x, v0y = cx - ax, cy - ay
+	var v1x, v1y = bx - ax, by - ay
+	var v2x, v2y = px - ax, py - ay
+	var dot00 = v0x*v0x + v0y*v0y
+	var dot01 = v0x*v1x + v0y*v1y
+	var dot02 = v0x*v2x + v0y*v2y
+	var dot11 = v1x*v1x + v1y*v1y
+	var dot12 = v1x*v2x + v1y*v2y
+	var invDenom = 1 / (dot00*dot11 - dot01*dot01)
+	var u = (dot11*dot02 - dot01*dot12) * invDenom
+	var v = (dot00*dot12 - dot01*dot02) * invDenom
 	return (u >= 0) && (v >= 0) && (u+v <= 1)
 }
 func isClockwiseFlat(tri []float32) bool {
-	area := (tri[2]-tri[0])*(tri[5]-tri[1]) - (tri[4]-tri[0])*(tri[3]-tri[1])
-	return area < 0
+	return (tri[2]-tri[0])*(tri[5]-tri[1])-(tri[4]-tri[0])*(tri[3]-tri[1]) < 0
 }
-
 func separateShapes(points [][2]float32) (flatPoints []float32, shapeCounts []int) {
 	var currentCount int
 	for _, p := range points {
@@ -150,6 +143,32 @@ func separateShapes(points [][2]float32) (flatPoints []float32, shapeCounts []in
 		shapeCounts = append(shapeCounts, currentCount)
 	}
 	return flatPoints, shapeCounts
+}
+func isConvex(pts []float32, count int) bool {
+	if count < 3 {
+		return true // a point or a line block (1 or 2 points) is trivially convex
+	}
+
+	var gotPositive, gotNegative bool
+
+	for i := range count {
+		var p0, p1, p2 = i * 2, ((i + 1) % count) * 2, ((i + 2) % count) * 2
+		var dx1, dy1 = pts[p1] - pts[p0], pts[p1+1] - pts[p0+1]
+		var dx2, dy2 = pts[p2] - pts[p1], pts[p2+1] - pts[p1+1]
+		var crossProduct = dx1*dy2 - dy1*dx2
+
+		if crossProduct > 0 {
+			gotPositive = true
+		} else if crossProduct < 0 {
+			gotNegative = true
+		}
+
+		if gotPositive && gotNegative {
+			return false // found both left & right turn - definitively concave
+		}
+	}
+
+	return true
 }
 
 //=================================================================

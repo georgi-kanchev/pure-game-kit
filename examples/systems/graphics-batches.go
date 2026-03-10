@@ -43,7 +43,7 @@ func Batches() {
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
-		cam.DrawShapesFast(palette.Red, points...)
+		cam.DrawShapes(palette.Red, points...)
 		cam.DrawText(fps, 0, 0, 50)
 
 		if condition.TrueEvery(0.1, "fps") {

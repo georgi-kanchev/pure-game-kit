@@ -17,20 +17,13 @@ func (c *Camera) DrawColor(color uint) {
 	var x, y, w, h = c.ScreenX, c.ScreenY, c.ScreenWidth, c.ScreenHeight
 	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(h), getColor(color))
 }
-func (c *Camera) DrawScreenFrame(thickness int, color uint) {
-	c.begin()
-	c.end()
-
-	var x, y, w, h = c.ScreenX, c.ScreenY, c.ScreenWidth, c.ScreenHeight
-	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(thickness), getColor(color))             // top
-	rl.DrawRectangle(int32(x+w-thickness), int32(y), int32(thickness), int32(h), getColor(color)) // right
-	rl.DrawRectangle(int32(x), int32(y+h-thickness), int32(w), int32(thickness), getColor(color)) // bottom
-	rl.DrawRectangle(int32(x), int32(y), int32(thickness), int32(h), getColor(color))             // left
-}
-
 func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
+	if spacingX*c.Zoom < 1 && spacingY*c.Zoom < 1 {
+		return // way too dense grid - give up
+	}
 	c.begin()
-	skipStartEnd = true
+
+	var renderColor = getColor(color)
 	var sx, sy, sw, sh = c.ScreenX, c.ScreenY, c.ScreenWidth, c.ScreenHeight
 	var ulx, uly = c.PointFromScreen(sx, sy)
 	var urx, ury = c.PointFromScreen(sx+sw, sy)
@@ -61,30 +54,29 @@ func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	var top = number.RoundDown(minY/spacingY) * spacingY
 	var bottom = number.RoundUp(maxY/spacingY) * spacingY
 
-	for x := left; x <= right; x += spacingX { // vertical
+	for x := left; x <= right; x += spacingX {
 		var myThickness = thickness
 		if number.DivisionRemainder(x, spacingX*10) == 0 {
 			myThickness *= 3
 		}
-
-		c.DrawLine(x, top, x, bottom, myThickness, color)
+		batch.QueueLine(x, top, x, bottom, myThickness, renderColor)
 	}
-	for y := top; y <= bottom; y += spacingY { // horizontal
+	for y := top; y <= bottom; y += spacingY {
 		var myThickness = thickness
 		if number.DivisionRemainder(y, spacingY*10) == 0 {
 			myThickness *= 3
 		}
-
-		c.DrawLine(left, y, right, y, myThickness, color)
+		batch.QueueLine(left, y, right, y, myThickness, renderColor)
 	}
 
-	if top <= 0 && bottom >= 0 { // x
-		c.DrawLine(left, 0, right, 0, thickness*6, color)
+	if top <= 0 && bottom >= 0 {
+		batch.QueueLine(left, 0, right, 0, thickness*6, renderColor)
 	}
-	if left <= 0 && right >= 0 { // y
-		c.DrawLine(0, top, 0, bottom, thickness*6, color)
+	if left <= 0 && right >= 0 {
+		batch.QueueLine(0, top, 0, bottom, thickness*6, renderColor)
 	}
-	skipStartEnd = false
+
+	batch.Draw()
 	c.end()
 }
 
@@ -156,7 +148,7 @@ func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, co
 func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
 
-	// raylib doesn't seem to have negative width/height???
+	// raylib doesn't seem to support negative width/height???
 	if rect.Width < 0 && rect.Height > 0 {
 		rect.X, rect.Y = point.MoveAtAngle(rect.X, rect.Y, angle+180, -rect.Width)
 		rect.Width *= -1
@@ -297,14 +289,42 @@ func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 
 	for _, count := range shapeCounts {
 		var shape = flatPoints[offset : offset+(count*2)]
-		offset += (count * 2)
+		offset += count * 2
 
-		// Remove closing point if duplicate
-		if shape[0] == shape[len(shape)-2] && shape[1] == shape[len(shape)-1] {
+		if count > 2 && shape[0] == shape[len(shape)-2] && shape[1] == shape[len(shape)-1] {
 			shape = shape[:len(shape)-2]
+			count--
 		}
 
-		var triangles = triangulate(shape)
+		if count < 3 {
+			continue
+		}
+
+		if isConvex(shape, count) { // fast path - triangle fan (convex only)
+			var isReverse = area(shape) >= 0
+			var x0, y0 = shape[0], shape[1]
+
+			for i := 1; i < count-1; i++ {
+				var x1, y1, x2, y2 float32
+
+				if isReverse {
+					idx1 := (count - i) * 2
+					idx2 := (count - i - 1) * 2
+					x1, y1 = shape[idx1], shape[idx1+1]
+					x2, y2 = shape[idx2], shape[idx2+1]
+				} else {
+					idx1 := i * 2
+					idx2 := (i + 1) * 2
+					x1, y1 = shape[idx1], shape[idx1+1]
+					x2, y2 = shape[idx2], shape[idx2+1]
+				}
+
+				batch.QueueTriangle(x0, y0, x1, y1, x2, y2, renderColor)
+			}
+			continue
+		}
+
+		var triangles = triangulate(shape) // slow path - ear clipping/triangulation (concave only)
 		if len(triangles) == 0 {
 			continue
 		}
@@ -326,48 +346,6 @@ func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 	c.end()
 }
 
-// works with convex shapes only
-//
-// multiple shapes can be separated by a [NaN, NaN] point
-func (c *Camera) DrawShapesFast(color uint, points ...[2]float32) {
-	c.begin()
-
-	var flatPoints, shapeCounts = separateShapes(points)
-	var offset = 0
-	var renderColor = getColor(color)
-
-	c.Effects.updateUniforms(1, 1, nil, nil)
-
-	for _, count := range shapeCounts {
-		var shapeData = flatPoints[offset : offset+(count*2)]
-		offset += (count * 2)
-
-		var isReverse = area(shapeData) >= 0
-		var x0, y0 = shapeData[0], shapeData[1]
-
-		for i := 1; i < count-1; i++ {
-			var x1, y1, x2, y2 float32
-
-			if isReverse {
-				var idx1 = (count - i) * 2
-				var idx2 = (count - i - 1) * 2
-				x1, y1 = shapeData[idx1], shapeData[idx1+1]
-				x2, y2 = shapeData[idx2], shapeData[idx2+1]
-			} else {
-				var idx1 = i * 2
-				var idx2 = (i + 1) * 2
-				x1, y1 = shapeData[idx1], shapeData[idx1+1]
-				x2, y2 = shapeData[idx2], shapeData[idx2+1]
-			}
-
-			batch.QueueTriangle(x0, y0, x1, y1, x2, y2, renderColor)
-		}
-	}
-
-	batch.Draw()
-	c.end()
-}
-
 //=================================================================
 
 func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
@@ -376,7 +354,6 @@ func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float3
 		return
 	}
 
-	c.begin()
 	var texX, texY float32 = 0.0, 0.0
 	var w, h = width, height
 	var texW, texH = texture.Width, texture.Height
@@ -392,6 +369,7 @@ func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float3
 		rectTexture.Height *= -1
 	}
 
+	c.begin()
 	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, getColor(color))
 	c.end()
 }
@@ -400,7 +378,6 @@ func (c *Camera) DrawText(text string, x, y, height float32) {
 }
 func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, lineGap float32, color uint) {
 	c.begin()
-
 	var font, has = internal.Fonts[fontId]
 
 	if !has {
@@ -419,6 +396,5 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, 
 	var pack = packSymbolColor(defaultTextPack)
 	rl.SetTextLineSpacing(int(lineGap))
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
-
 	c.end()
 }
