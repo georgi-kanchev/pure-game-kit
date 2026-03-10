@@ -134,11 +134,11 @@ func main() {
 
 	for window.KeepOpen() {
 		window.Title = "pure-game-kit: hub"
-		window.FrameRateLimit = 60
+		window.FrameRateLimit = 0
 
 		cam.SetScreenAreaToWindow()
-
 		hud.UpdateAndDraw(cam)
+		cam.DrawTextFPS()
 
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k) {

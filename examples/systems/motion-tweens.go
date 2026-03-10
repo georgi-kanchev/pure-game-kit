@@ -1,13 +1,11 @@
 package example
 
 import (
-	"fmt"
 	"pure-game-kit/graphics"
 	"pure-game-kit/motion"
 	"pure-game-kit/motion/curve"
 	"pure-game-kit/motion/easing"
 	"pure-game-kit/utility/color/palette"
-	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -25,8 +23,6 @@ func Tweens() {
 		GoTo(3, easing.CubicOut, 0, 0).
 		GoTo(2, easing.BackInOut, -200, 200)
 
-	window.FrameRateLimit = 0
-
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
@@ -40,6 +36,6 @@ func Tweens() {
 			position.Restart()
 		}
 
-		fmt.Printf("time.FrameRate(): %v\n", time.FrameRate())
+		cam.DrawTextFPS()
 	}
 }

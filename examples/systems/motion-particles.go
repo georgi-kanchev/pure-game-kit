@@ -22,11 +22,11 @@ func Particles() {
 			p.Color = palette.Cyan
 		}
 		p.VelocityY += time.FrameDelta() * 9.8 // gravity
-		p.X, p.Y = p.X+p.VelocityX, p.Y+p.VelocityY
+		p.X, p.Y = p.X+p.VelocityX*time.FrameDelta()*60, p.Y+p.VelocityY*time.FrameDelta()*60
 
-		if p.Y > 0 {
+		if p.Y > -p.Scale/2 {
 			var bounces = p.CustomData["bounces"].(float32) + 1
-			p.VelocityX, p.Y = p.VelocityX/p.Age, 0
+			p.VelocityX, p.Y = p.VelocityX/p.Age, -p.Scale/2
 
 			if bounces < 5 {
 				p.VelocityY = -random.Range[float32](5, 6) / bounces
@@ -35,7 +35,8 @@ func Particles() {
 		}
 
 		p.Age += time.FrameDelta()
-		cam.DrawCircle(p.X, p.Y-5, 10, p.Color)
+		p.Scale = (6 - p.Age) * 5
+		cam.DrawCircle(p.X, p.Y-5, p.Scale, p.Color)
 
 		if p.Age > 5 {
 			p.Color = color.FadeOut(palette.Cyan, number.Map(p.Age, 5, 6, 0, 1))
@@ -49,11 +50,13 @@ func Particles() {
 		var clx, cly = cam.PointFromEdge(0, 0.5)
 		var cw, ch = cam.Size()
 		cam.DrawQuad(clx, cly, cw, ch, 0, palette.DarkGray)
+
 		particles.Update()
 
 		if mouse.IsButtonJustPressed(button.Left) {
 			var mx, my = cam.MousePosition()
 			particles.EmitFromLine(30, mx-100, my, mx+100, my)
 		}
+		cam.DrawTextFPS()
 	}
 }

@@ -53,5 +53,6 @@ func Texts() {
 		textBox.Tint = palette.DarkGreen
 
 		cam.DrawTextBoxes(textBox)
+		cam.DrawTextFPS()
 	}
 }

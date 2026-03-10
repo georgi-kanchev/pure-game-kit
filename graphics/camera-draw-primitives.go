@@ -1,11 +1,13 @@
 package graphics
 
 import (
+	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	col "pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
+	"pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -397,4 +399,13 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, 
 	rl.SetTextLineSpacing(int(lineGap))
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
 	c.end()
+}
+func (c *Camera) DrawTextFPS() {
+	if condition.TrueEvery(0.1, "fps") {
+		var fr, avg = int(internal.FrameRate), int(internal.FrameRateAverage)
+		fps = text.New("Current FPS: ", fr, "\n", "Average FPS: ", avg)
+	}
+
+	var tlx, tly = c.PointFromEdge(0, 0)
+	c.DrawText(fps, tlx+10/c.Zoom, tly, 50/c.Zoom)
 }

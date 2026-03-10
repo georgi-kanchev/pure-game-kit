@@ -16,7 +16,7 @@ import (
 // objects
 
 var reusableSprite = NewSprite("", 0, 0)
-var defaultTextPack = &symbol{Color: palette.White, Weight: 1, OutlineColor: 255, OutlineWeight: 1}
+var defaultTextPack = &symbol{Color: palette.White, Weight: 1, OutlineColor: palette.Black, OutlineWeight: 3}
 
 func drawBoxPart(parent *Sprite, camera *Camera, x, y, w, h float32, id string, color uint) {
 	reusableSprite.AssetId = id
@@ -176,6 +176,7 @@ func isConvex(pts []float32, count int) bool {
 
 var rlCam = rl.Camera2D{}
 var maskX, maskY, maskW, maskH int
+var fps string
 
 const placeholderCharAsset = '@'
 

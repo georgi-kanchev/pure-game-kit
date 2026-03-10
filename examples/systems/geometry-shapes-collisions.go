@@ -46,7 +46,7 @@ func Collisions() {
 		if keyboard.IsKeyPressed(key.S) {
 			dirY += 1
 		}
-		shape4.Angle++
+		shape4.Angle += time.FrameDelta() * 100
 
 		dirX, dirY = direction.Normalize(dirX, dirY)
 		dirX, dirY = shape.Collide(dirX*step, dirY*step, shape2, shape3, shape4)
@@ -56,5 +56,6 @@ func Collisions() {
 		cam.DrawLinesPath(8, palette.Red, shape3.CornerPoints()...)
 		cam.DrawLinesPath(8, palette.Red, shape4.CornerPoints()...)
 		cam.DrawLinesPath(8, palette.Green, shape.CornerPoints()...)
+		cam.DrawTextFPS()
 	}
 }

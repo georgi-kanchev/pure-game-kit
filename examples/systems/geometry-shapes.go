@@ -1,7 +1,6 @@
 package example
 
 import (
-	"fmt"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
@@ -47,8 +46,6 @@ func Shapes() {
 		{400, 360}, {300, 300}, {200, 360}, {230, 260},
 		{150, 200}, {250, 200}, {300, 100},
 	}
-
-	window.FrameRateLimit = 0
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -101,6 +98,6 @@ func Shapes() {
 			cam.DrawCircle(v[0], v[1], 16, palette.Green)
 		}
 
-		fmt.Printf("time.FrameRate(): %v\n", time.FrameRate())
+		cam.DrawTextFPS()
 	}
 }

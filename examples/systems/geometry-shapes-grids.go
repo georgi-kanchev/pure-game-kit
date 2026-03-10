@@ -1,7 +1,6 @@
 package example
 
 import (
-	"fmt"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
@@ -26,8 +25,6 @@ func ShapesGrids() {
 			grid.SetAtCell(i, j, geometry.NewShapeQuad(24, 24, 0.5, 0.5))
 		}
 	}
-
-	window.FrameRateLimit = 0
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -57,6 +54,6 @@ func ShapesGrids() {
 			cam.DrawCircle(v[0], v[1], 3, palette.Magenta)
 		}
 
-		fmt.Printf("time.FrameRate(): %v\n", time.FrameRate())
+		cam.DrawTextFPS()
 	}
 }

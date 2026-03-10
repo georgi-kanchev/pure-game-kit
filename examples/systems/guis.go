@@ -63,7 +63,7 @@ func GUIs() {
 			f.GapY, "20", f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
 			f.AssetId, box[9]),
 		// ======================================================
-		gui.Container("panel", d.CameraLeftX+"+10", d.CameraTopY+"+10", d.CameraWidth+"-20", "1100",
+		gui.Container("panel", d.CameraLeftX+"+50", d.CameraCenterY+"-550", d.CameraWidth+"-100", "1100",
 			f.ThemeId, "button", f.GapX, "40", f.GapY, "20"),
 		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
 		// ======================================================
@@ -199,5 +199,6 @@ func GUIs() {
 		}
 
 		hud.UpdateAndDraw(cam)
+		cam.DrawTextFPS()
 	}
 }

@@ -7,8 +7,6 @@ import (
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/random"
-	"pure-game-kit/utility/text"
-	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -37,17 +35,9 @@ func Batches() {
 		}
 	})
 
-	window.FrameRateLimit = 0
-
-	var fps = ""
-
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawShapes(palette.Red, points...)
-		cam.DrawText(fps, 0, 0, 50)
-
-		if condition.TrueEvery(0.1, "fps") {
-			fps = text.New("Triangles: ", count, " FPS: ", time.FrameRate())
-		}
+		cam.DrawTextFPS()
 	}
 }

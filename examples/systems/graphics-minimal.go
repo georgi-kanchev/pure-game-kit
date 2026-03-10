@@ -11,5 +11,6 @@ func MinimalRender() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawCircle(0, 0, 200, palette.Red, palette.Yellow)
+		cam.DrawTextFPS()
 	}
 }
