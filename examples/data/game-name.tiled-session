@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "map.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
         "."
     ],
@@ -43,7 +43,7 @@
             "scale": 3,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 267,
+                "x": 291,
                 "y": 163.83333333333331
             }
         },
@@ -59,7 +59,7 @@
             "scale": 1.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 240.66666666666669,
+                "x": 288.6666666666667,
                 "y": 222.33333333333334
             }
         },
@@ -87,16 +87,13 @@
     },
     "frame.defaultDuration": 300,
     "last.imagePath": "/home/gojur/code/pure-game-kit/examples/data",
-    "map.height": 32,
+    "map.height": 1,
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": "3",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
-    "map.width": 32,
+    "map.width": 1,
     "openFiles": [
-        "map.tmx",
-        "atlas.tsx",
-        "map2.tmx"
     ],
     "project": "game-name.tiled-project",
     "recentFiles": [

@@ -283,13 +283,13 @@ func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int,
 func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 	c.begin()
 
-	var flatPoints, shapeCounts = separateShapes(points)
+	var flatPoints, ptsCountsPerShape = separateShapes(points)
 	var offset = 0
 	var renderColor = getColor(color)
 
 	c.Effects.updateUniforms(1, 1, nil, nil)
 
-	for _, count := range shapeCounts {
+	for _, count := range ptsCountsPerShape {
 		var shape = flatPoints[offset : offset+(count*2)]
 		offset += count * 2
 
@@ -310,13 +310,13 @@ func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 				var x1, y1, x2, y2 float32
 
 				if isReverse {
-					idx1 := (count - i) * 2
-					idx2 := (count - i - 1) * 2
+					var idx1 = (count - i) * 2
+					var idx2 = (count - i - 1) * 2
 					x1, y1 = shape[idx1], shape[idx1+1]
 					x2, y2 = shape[idx2], shape[idx2+1]
 				} else {
-					idx1 := i * 2
-					idx2 := (i + 1) * 2
+					var idx1 = i * 2
+					var idx2 = (i + 1) * 2
 					x1, y1 = shape[idx1], shape[idx1+1]
 					x2, y2 = shape[idx2], shape[idx2+1]
 				}

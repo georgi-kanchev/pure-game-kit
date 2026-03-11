@@ -130,7 +130,7 @@ func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 }
 
 /*
-Diagonals take 1.5 cells distance-wise. This way, round range calculations are rounded & have no weird left-overs.
+Diagonals take 1.5 cells distance-wise. This way, range calculations are rounded & have no weird left-overs.
 This quirk makes regular 2D distances incorrect, instead use:
 
 	shapeGrid.RangeDistance(...)

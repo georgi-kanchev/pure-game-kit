@@ -126,12 +126,12 @@ func pointInTriangle(px, py, ax, ay, bx, by, cx, cy float32) bool {
 func isClockwiseFlat(tri []float32) bool {
 	return (tri[2]-tri[0])*(tri[5]-tri[1])-(tri[4]-tri[0])*(tri[3]-tri[1]) < 0
 }
-func separateShapes(points [][2]float32) (flatPoints []float32, shapeCounts []int) {
+func separateShapes(points [][2]float32) (flatPoints []float32, ptsCountsPerShape []int) {
 	var currentCount int
 	for _, p := range points {
 		if number.IsNaN(p[0]) || number.IsNaN(p[1]) {
 			if currentCount > 0 {
-				shapeCounts = append(shapeCounts, currentCount)
+				ptsCountsPerShape = append(ptsCountsPerShape, currentCount)
 				currentCount = 0
 			}
 			continue
@@ -140,9 +140,9 @@ func separateShapes(points [][2]float32) (flatPoints []float32, shapeCounts []in
 		currentCount++
 	}
 	if currentCount > 0 {
-		shapeCounts = append(shapeCounts, currentCount)
+		ptsCountsPerShape = append(ptsCountsPerShape, currentCount)
 	}
-	return flatPoints, shapeCounts
+	return flatPoints, ptsCountsPerShape
 }
 func isConvex(pts []float32, count int) bool {
 	if count < 3 {

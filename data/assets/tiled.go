@@ -115,6 +115,10 @@ func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
 		return nil, nil // error is in storage
 	}
 
+	if tiled.TileSet == nil {
+		return nil, tiled
+	}
+
 	var tileSet = tiled.TileSet
 	var dir = path.Folder(tmxFilePath)
 	if tileSet.Image == nil {

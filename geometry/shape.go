@@ -14,6 +14,23 @@ type Shape struct {
 	corners [][2]float32
 }
 
+// Shapes separated by [NaN, NaN].
+func NewShapes(corners ...[2]float32) []*Shape {
+	var curPts [][2]float32
+	var result []*Shape
+	for _, p := range corners {
+		if number.IsNaN(p[0]) || number.IsNaN(p[1]) {
+			result = append(result, NewShapeCorners(curPts...))
+			curPts = [][2]float32{}
+			continue
+		}
+		curPts = append(curPts, p)
+	}
+	if len(curPts) > 0 {
+		result = append(result, NewShapeCorners(curPts...))
+	}
+	return result
+}
 func NewShapeCorners(corners ...[2]float32) *Shape {
 	if len(corners) == 0 {
 		return &Shape{}
