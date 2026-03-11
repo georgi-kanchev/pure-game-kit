@@ -3,14 +3,23 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "/home/gojur/code/battle-brothers-clone/data/worlds/01/shapes.tmx",
     "expandedProjectPaths": [
         "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
             "scaleInDock": 0.75,
             "scaleInEditor": 8
+        },
+        "/home/gojur/code/battle-brothers-clone/data/worlds/01/shapes.tmx": {
+            "scale": 0.125,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 4872,
+                "y": 1788
+            }
         },
         "atlas.tsx": {
             "dynamicWrapping": false,
@@ -94,9 +103,11 @@
     "map.tileWidth": 16,
     "map.width": 1,
     "openFiles": [
+        "/home/gojur/code/battle-brothers-clone/data/worlds/01/shapes.tmx"
     ],
     "project": "game-name.tiled-project",
     "recentFiles": [
+        "/home/gojur/code/battle-brothers-clone/data/worlds/01/shapes.tmx",
         "map2.tmx",
         "atlas.tsx",
         "map.tmx",
