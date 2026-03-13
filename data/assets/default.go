@@ -14,9 +14,6 @@ func LoadDefaultFont() (fontId string) {
 	loadFont(defaultFont, 49, storage.DecompressGZIP(font))
 	return defaultFont
 }
-func LoadDefaultTexture() string {
-	return loadTexture(defaultTexture, texture)
-}
 func LoadDefaultAtlasCursors() (atlasId string, tileIds []string) {
 	var tex = loadTexture(defaultCursors, cursors)
 	var id = SetTextureAtlas(tex, 32, 32, 0)
@@ -259,9 +256,6 @@ func LoadDefaultSoundsUI() []string {
 
 //=================================================================
 // private
-
-//go:embed default/texture.png
-var texture []byte
 
 //go:embed default/cursors.png
 var cursors []byte

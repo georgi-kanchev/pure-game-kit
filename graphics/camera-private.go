@@ -296,12 +296,6 @@ func asset(assetId string) (tex *rl.Texture2D, src rl.Rectangle, rotations int, 
 			src.Width = float32(atlas.CellWidth * int(rect.CountX))
 			src.Height = float32(atlas.CellHeight * int(rect.CountY))
 			rotations, flip = rect.Rotations, rect.Flip
-		} else {
-			var font, hasFont = internal.Fonts[assetId]
-			if hasFont {
-				texture = &font.Texture
-				src.Width, src.Height = float32(texture.Width), float32(texture.Height)
-			}
 		}
 	} else {
 		src.Width, src.Height = float32(texture.Width), float32(texture.Height)

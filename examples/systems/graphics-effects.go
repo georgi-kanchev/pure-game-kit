@@ -20,11 +20,12 @@ func Effects() {
 	spr.Effects.BlurX, spr.Effects.BlurY = 5, 5
 	spr.ScaleX, spr.ScaleY = 0.2, 0.2
 
-	var spr2 = graphics.NewSprite(tex, 50, 0)
+	var spr2 = graphics.NewSprite("", 50, 0)
 	spr2.Effects = graphics.NewEffects()
 	spr2.Effects.Saturation = 0.7
 	spr2.Effects.DepthZ = 0.2
 	spr2.ScaleX, spr2.ScaleY = 0.2, 0.2
+	spr2.Width, spr2.Height = 500, 500
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()

@@ -31,7 +31,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 		var texture, src, rotations, flip = asset(s.AssetId)
 		if texture == nil {
-			continue
+			texture = internal.White
 		}
 
 		if s.TextureRepeat {
@@ -142,7 +142,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 		for _, p := range parts {
 			var texture, src, rotations, flip = asset(p.id)
 			if texture == nil {
-				continue
+				texture = internal.White
 			}
 
 			globalX, globalY := b.PointToGlobal(p.x, p.y)
@@ -212,7 +212,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 
 		var texture = internal.Textures[atlas.TextureId]
 		if texture == nil {
-			continue
+			texture = internal.White
 		}
 
 		var x, y = t.CornerTopLeft() // applying pivot

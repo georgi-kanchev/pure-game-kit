@@ -89,7 +89,6 @@ func main() {
 		gui.Button("default ui asset", f.Text, " Default User Interface (UI) (assets-default.go)", f.NewRow, ""),
 		gui.Button("default retro atlas asset", f.Text, " Default Retro Atlas (assets-default.go)", f.NewRow, ""),
 		gui.Button("default patterns asset", f.Text, " Default Patterns (assets-default.go)", f.NewRow, ""),
-		gui.Button("default texture asset", f.Text, " Default Texture (assets-default.go)", f.NewRow, ""),
 	))
 	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
@@ -129,7 +128,6 @@ func main() {
 		"default ui asset":          example.DefaultAssetUI,
 		"default retro atlas asset": example.DefaultAssetRetro,
 		"default patterns asset":    example.DefaultAssetPatterns,
-		"default texture asset":     example.DefaultAssetTexture,
 	}
 
 	for window.KeepOpen() {

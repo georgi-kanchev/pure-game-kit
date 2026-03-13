@@ -3,6 +3,7 @@ package example
 import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
+	"pure-game-kit/internal"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
@@ -16,20 +17,16 @@ func DefaultAssetIcons() {
 	runDefaultAssetDisplay(0.7, 50, 0, 22, 13, assets.LoadDefaultAtlasIcons)
 }
 func DefaultAssetCursors() {
-	runDefaultAssetDisplay(0.9, 32, 0, 19, 8, assets.LoadDefaultAtlasCursors)
+	runDefaultAssetDisplay(0.75, 32, 0, 19, 8, assets.LoadDefaultAtlasCursors)
 }
 func DefaultAssetInput() {
-	runDefaultAssetDisplay(0.9, 50, 0, 17, 6, assets.LoadDefaultAtlasInput)
+	runDefaultAssetDisplay(0.85, 50, 0, 17, 6, assets.LoadDefaultAtlasInput)
 }
 func DefaultAssetPatterns() {
 	runDefaultAssetDisplay(0.7, 64, 1, 12, 7, assets.LoadDefaultAtlasPatterns)
 }
 func DefaultAssetFont() {
 	runDefaultAssetDisplay(0.7, 1024, 0, 0, 0, func() (string, []string) { return "", []string{} })
-}
-func DefaultAssetTexture() {
-	assets.LoadDefaultTexture()
-	runDefaultAssetDisplay(0.7, 256, 0, 0, 0, func() (string, []string) { return "", []string{} })
 }
 func DefaultAssetUI() {
 	runDefaultAssetDisplay(0.7, 16, 0, 9, 8, func() (string, []string) {
@@ -65,15 +62,23 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			aw, ah = int(tileSize), int(tileSize)
 		}
 
-		var mx, my = sprite.PointToLocal(camera.MousePosition())
+		var cmx, cmy = camera.MousePosition()
+		var mx, my = sprite.PointToLocal(cmx, cmy)
 		var sx, sy = number.Snap(mx-fullSz/2, fullSz), number.Snap(my-fullSz/2, fullSz)
 		var mmx, mmy = sprite.PointToGlobal(sx, sy)
 		var imx, imy = int(mx / fullSz), int(my / fullSz)
 		var index = number.Limit(number.Indexes2DToIndex1D(imy, imx, int(w), int(h)), 0, len(tileIds)-1)
 
+		if sprite.AssetId == "" { // default font display hacky wacky
+			var tex = internal.Fonts[""].Texture
+			var id = ";;;default-font-texture"
+			internal.Textures[id] = &tex
+			sprite.AssetId = id
+		}
+
 		camera.DrawSprites(sprite)
 
-		if !sprite.ContainsPoint(mx, my) {
+		if !sprite.ContainsPoint(cmx, cmy) {
 			continue
 		}
 
@@ -95,7 +100,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			"\ncoords: ", imx*int(tileSize+gap), ", ", imy*int(tileSize+gap),
 			"\nsize:", tileSize, "x", tileSize)
 
-		if txt == "" && len(tileIds) == 0 && imx == 0 && imy == 0 { // display default texture & font
+		if txt == "" && len(tileIds) == 0 && imx == 0 && imy == 0 { // display default font
 			info = text.New("id: '", txt, "'", "\nsize:", aw, "x", ah)
 		}
 
