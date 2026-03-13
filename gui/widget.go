@@ -16,9 +16,9 @@ type widget struct {
 	Fields        map[string]string
 	UpdateAndDraw func(cam *graphics.Camera, root *root, widget *widget)
 
-	// it is better to have many textbox instances instead of reusing a single one
-	// because of its internal field caching for the symbols formatting
 	textBox *graphics.TextBox
+	sprite  *graphics.Sprite
+	box     *graphics.Box
 }
 
 func newWidget(class, id string, properties ...string) string {

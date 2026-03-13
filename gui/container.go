@@ -60,7 +60,6 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	var maxHeight float32
 	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
 	var nonBgrIndex = 0 // new row shouldn't work for first widget, used to check first nonBgr widget
-	var draggables []*widget = make([]*widget, 0)
 	var anchorX = parseNum(c.Fields[field.AnchorX], 0)
 	var anchorY = parseNum(c.Fields[field.AnchorY], 0)
 
@@ -141,6 +140,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 
 	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY, root)
 	var contentW, contentH = maxX - minX, maxY - minY
+	var draggables []*widget = make([]*widget, 0)
 	for _, wId := range c.Widgets { // after-calculation loop
 		var widget = root.Widgets[wId]
 		if widget.isSkipped(root, c) || widget.IsCulled {

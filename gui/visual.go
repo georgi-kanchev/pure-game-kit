@@ -18,6 +18,13 @@ func setupVisualsTextured(root *root, widget *widget) {
 	var owner = root.Containers[widget.OwnerId]
 	var assetId = root.themedField(f.AssetId, owner, widget)
 
+	if widget.sprite == nil {
+		widget.sprite = &graphics.Sprite{}
+	}
+	if widget.box == nil {
+		widget.box = &graphics.Box{}
+	}
+
 	if assetId != "" {
 		var cLeft = parseNum(root.themedField(f.BoxEdgeLeft, owner, widget), 0)
 		var cRight = parseNum(root.themedField(f.BoxEdgeRight, owner, widget), 0)
@@ -25,6 +32,7 @@ func setupVisualsTextured(root *root, widget *widget) {
 		var cBottom = parseNum(root.themedField(f.BoxEdgeBottom, owner, widget), 0)
 		var col = parseColor(root.themedField(f.Color, owner, widget), widget.isDisabled(owner))
 		var _, has = internal.Boxes[assetId]
+		var sprite, box = widget.sprite, widget.box
 
 		if has {
 			box.X, box.Y = widget.X, widget.Y
@@ -82,9 +90,9 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 	if assetId != "" {
 		var _, has = internal.Boxes[assetId]
 		if has {
-			cam.DrawBoxes(&box)
+			cam.DrawBoxes(widget.box)
 		} else {
-			cam.DrawSprites(&sprite)
+			cam.DrawSprites(widget.sprite)
 		}
 
 	} else {
@@ -114,19 +122,9 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 		}
 
 		var disabled = widget.isDisabled(owner)
-		var outlineCol = root.themedField(f.TextColorOutline, owner, widget)
-		if outlineCol != "" {
-			//widget.textBox.Thickness = parseNum(root.themedField(f.TextThicknessOutline, owner, widget), 0.92)
-			//widget.textBox.Smoothness = parseNum(root.themedField(f.TextSmoothnessOutline, owner, widget), 0.08)
-			widget.textBox.Tint = parseColor(outlineCol, disabled)
-			cam.DrawTextBoxes(widget.textBox)
-		}
-
 		var colVal = defaultValue(root.themedField(f.TextColor, owner, widget), "127 127 127")
 		var c = parseColor(colVal, disabled || fadeText)
 		widget.textBox.Tint = c
-		//widget.textBox.Thickness = parseNum(root.themedField(f.TextThickness, owner, widget), 0.5)
-		//widget.textBox.Smoothness = parseNum(root.themedField(f.TextSmoothness, owner, widget), 0.02)
 		cam.DrawTextBoxes(widget.textBox)
 
 		cam.Mask(mx, my, mw, mh)

@@ -15,19 +15,7 @@ import (
 //=================================================================
 // objects
 
-var reusableSprite = NewSprite("", 0, 0)
 var defaultTextPack = &symbol{Color: palette.White, Weight: 1, OutlineColor: palette.Black, OutlineWeight: 3}
-
-func drawBoxPart(parent *Sprite, camera *Camera, x, y, w, h float32, id string, color uint) {
-	reusableSprite.AssetId = id
-	reusableSprite.X, reusableSprite.Y = parent.PointToGlobal(x, y)
-	reusableSprite.Angle = parent.Angle
-	reusableSprite.ScaleX, reusableSprite.ScaleY = parent.ScaleX, parent.ScaleY
-	reusableSprite.Width, reusableSprite.Height = w, h
-	reusableSprite.PivotX, reusableSprite.PivotY = 0, 0
-	reusableSprite.Tint = color
-	camera.DrawSprites(reusableSprite)
-}
 
 //=================================================================
 // primitives

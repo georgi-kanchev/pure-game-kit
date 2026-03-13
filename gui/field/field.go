@@ -44,21 +44,16 @@ const (
 	BoxEdgeTop     = "boxEdgeTop"     // [widget] [theme]
 	BoxEdgeBottom  = "boxEdgeBottom"  // [widget] [theme]
 
-	Text                  = "text"                  // [widget] [theme]
-	TextFontId            = "textFontId"            // [widget] [theme]
-	TextColor             = "textColor"             // [widget] [theme] default: "127 127 127 255"
-	TextLineHeight        = "textLineHeight"        // [widget] [theme] default: "30"
-	TextLineGap           = "textLineGap"           // [widget] [theme]
-	TextSymbolGap         = "textSymbolGap"         // [widget] [theme] default: "0.2"
-	TextAlignmentX        = "textAlignmentX"        // [widget] [theme]
-	TextAlignmentY        = "textAlignmentY"        // [widget] [theme]
-	TextWordWrap          = "textWordWrap"          // [widget] [theme] example: "" = true, all else = false
-	TextThickness         = "textThickness"         // [widget] [theme] default: "0.5"
-	TextSmoothness        = "textSmoothness"        // [widget] [theme] default: "0.02"
-	TextThicknessOutline  = "textThicknessOutline"  // [widget] [theme] default: "0.92"
-	TextSmoothnessOutline = "textSmoothnessOutline" // [widget] [theme] default: "0.08"
-	TextColorOutline      = "textColorOutline"      // [widget] [theme] example: "255 0 0 255"
-	TextFast              = "textFast"              // [widget] [theme] skip advanced features, example: "1"
+	Text           = "text"           // [widget] [theme]
+	TextFontId     = "textFontId"     // [widget] [theme]
+	TextColor      = "textColor"      // [widget] [theme] default: "127 127 127 255"
+	TextLineHeight = "textLineHeight" // [widget] [theme] default: "30"
+	TextLineGap    = "textLineGap"    // [widget] [theme]
+	TextSymbolGap  = "textSymbolGap"  // [widget] [theme] default: "0.2"
+	TextAlignmentX = "textAlignmentX" // [widget] [theme]
+	TextAlignmentY = "textAlignmentY" // [widget] [theme]
+	TextWordWrap   = "textWordWrap"   // [widget] [theme] example: "" = true, all else = false
+	TextFast       = "textFast"       // [widget] [theme] skip advanced features, example: "1"
 
 	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
 	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
@@ -85,8 +80,8 @@ const (
 	InputFieldSoundType   = "inputFieldSoundType"   // [widget] [theme] default: "~write"
 	InputFieldSoundErase  = "inputFieldSoundErase"  // [widget] [theme] default: "~erase"
 
-	DraggableSpriteId    = "draggableSpriteId"    // [widget] [theme]
-	DraggableSpriteColor = "draggableSpriteColor" // [widget] [theme] default: "255 255 255 255"
-	DraggableSpriteScale = "draggableSpriteScale" // [widget] [theme] default: "1"
-	DraggableSoundCancel = "draggableSoundCancel" // [widget] [theme] default: "~error"
+	DraggableAssetId       = "draggableAssetId"       // [widget] [theme]
+	DraggableAssetColor    = "draggableAssetColor"    // [widget] [theme] default: "255 255 255 255"
+	DraggableAssetScale    = "draggableAssetScale"    // [widget] [theme] default: "1"
+	DraggableCancelSoundId = "draggableCancelSoundId" // [widget] [theme] default: "~error"
 )

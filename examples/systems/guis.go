@@ -27,7 +27,7 @@ func GUIs() {
 			f.AssetId, box[2], f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.3", f.TextColor, "80 80 80 255",
 			f.TextLineHeight, "70", f.ButtonThemeIdHover, "button-hover", f.ButtonThemeIdPress, "button-press",
 			f.TooltipId, "tooltip", f.SliderStep, "0.1", f.SliderHandleAssetId, box[14],
-			f.SliderStepAssetId, ids[49], f.DraggableSpriteColor, "0 0 255", f.DraggableSpriteScale, "0.8"),
+			f.SliderStepAssetId, ids[49], f.DraggableAssetColor, "0 0 255", f.DraggableAssetScale, "0.8"),
 		gui.Theme("button-hover", f.Color, "255 255 255 255", f.Width, "300", f.Height, "100",
 			f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40",
 			f.BoxEdgeBottom, "40", f.AssetId, box[5], f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.3",
@@ -149,8 +149,8 @@ func GUIs() {
 			f.Width, "820", f.Height, "40"),
 
 		gui.Draggable("slot-1", f.NewRow, "50", f.Width, "200", f.Height, "200", f.AssetId, box[0],
-			f.DraggableSpriteId, icons[50]),
-		gui.Draggable("slot-2", f.Width, "200", f.Height, "200", f.AssetId, box[0], f.DraggableSpriteId, icons[100]),
+			f.DraggableAssetId, icons[50]),
+		gui.Draggable("slot-2", f.Width, "200", f.Height, "200", f.AssetId, box[0], f.DraggableAssetId, icons[100]),
 		gui.Draggable("slot-3", f.Width, "200", f.Height, "200", f.AssetId, box[0], f.TextColor, "test"),
 		gui.Draggable("slot-4", f.Width, "200", f.Height, "200", f.AssetId, box[0]),
 		gui.Draggable("slot-5", f.Width, "200", f.Height, "200", f.AssetId, box[0]),
@@ -192,10 +192,10 @@ func GUIs() {
 
 		var from, to = hud.DragOnDrop()
 		if from != "" && to != "" {
-			var fromId = hud.Field(from, f.DraggableSpriteId, cam)
-			var toId = hud.Field(to, f.DraggableSpriteId, cam)
-			hud.SetField(from, f.DraggableSpriteId, toId)
-			hud.SetField(to, f.DraggableSpriteId, fromId)
+			var fromId = hud.Field(from, f.DraggableAssetId, cam)
+			var toId = hud.Field(to, f.DraggableAssetId, cam)
+			hud.SetField(from, f.DraggableAssetId, toId)
+			hud.SetField(to, f.DraggableAssetId, fromId)
 		}
 
 		hud.UpdateAndDraw(cam)

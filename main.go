@@ -46,7 +46,7 @@ func main() {
 		gui.Visual("description", f.Text, "pure-game-kit - simple 2D game engine\nExamples",
 			f.AssetId, "", f.Color, "0 0 0 0", f.Width, d.OwnerWidth+"-30", f.Height, d.OwnerHeight+"-50",
 			f.OffsetX, "15", f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.5", f.TextColor, "255 255 255 255",
-			f.TextLineHeight, "50", f.TextColorOutline, "0 0 0 255", f.TextThicknessOutline, "0.8"),
+			f.TextLineHeight, "50"),
 		gui.Container("menu", d.CameraCenterX+"-400", d.CameraTopY+"+150", "800", d.CameraHeight+"-180",
 			f.ThemeId, "button", f.GapX, "20", f.GapY, "20"),
 		gui.Visual("bg", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),

@@ -39,10 +39,6 @@ var tooltip, tooltipForWidget *widget
 var tooltipAt float32
 var tooltipVisible, tooltipWasVisible bool
 
-// var textBox graphics.TextBox = graphics.TextBox{}
-var sprite graphics.Sprite = graphics.Sprite{}
-var box graphics.Box = graphics.Box{}
-
 var reusableWidget = &widget{Fields: map[string]string{}}
 
 var clickedId, clickedAndHeldId, sliderSlidId = "", "", ""

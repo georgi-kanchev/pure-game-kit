@@ -68,20 +68,24 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 	c.begin()
 	defer c.end()
 
-	for _, s := range boxes {
-		if s == nil {
+	skipStartEnd = true
+	var lastEffects *Effects
+	var initUniforms = false
+
+	for _, b := range boxes {
+		if b == nil || !c.IsAreaVisible(b.Area()) {
 			continue
 		}
 
-		var w, h = s.Width, s.Height
-		var u, r, d, l = s.EdgeBottom, s.EdgeRight, s.EdgeTop, s.EdgeLeft
-		var errX, errY float32 = 2, 2 // this adds margin of error to the middle part (it's behind all other parts)
-		var col = s.Tint
-		var asset, has = internal.Boxes[s.AssetId]
+		var w, h = b.Width, b.Height
+		var u, r, d, l = b.EdgeBottom, b.EdgeRight, b.EdgeTop, b.EdgeLeft
+		var errX, errY float32 = 2, 2
+		var col = getColor(b.Tint)
+		var assetIds, has = internal.Boxes[b.AssetId]
 
 		if !has {
-			c.DrawSprites(&s.Sprite)
-			return // fallback to sprite rendering if no 9slice asset found
+			c.DrawSprites(&b.Sprite) // fallback to sprite if no 9-slice exists
+			continue
 		}
 
 		if w < 0 {
@@ -112,19 +116,55 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 			}
 		}
 
-		reusableSprite.Effects = s.Effects
-		drawBoxPart(&s.Sprite, c, l-errX/2, u-errY/2, w-l-r+errX, h-u-d+errY, asset[4], col) // center
+		var effects = condition.If(b.Effects != nil, b.Effects, c.Effects)
+		if lastEffects != nil && effects != nil && *lastEffects != *effects {
+			batch.Draw() // break batch only when moving to a box with different effects
+			// delay updateUniforms until we get the first part's src.Width below
+		}
 
-		drawBoxPart(&s.Sprite, c, l, 0, w-l-r, u, asset[1], col)   // top
-		drawBoxPart(&s.Sprite, c, 0, u, l, h-u-d, asset[3], col)   // left
-		drawBoxPart(&s.Sprite, c, w-r, u, r, h-u-d, asset[5], col) // right
-		drawBoxPart(&s.Sprite, c, l, h-d, w-l-r, d, asset[7], col) // bottom
+		var parts = [9]struct {
+			x, y, w, h float32
+			id         string
+		}{
+			{0, 0, l, u, assetIds[0]},                                                 // Top Left
+			{l, 0, w - l - r, u, assetIds[1]},                                         // Top
+			{w - r, 0, r, u, assetIds[2]},                                             // Top Right
+			{0, u, l, h - u - d, assetIds[3]},                                         // Left
+			{l - errX/2, u - errY/2, w - l - r + errX, h - u - d + errY, assetIds[4]}, // Center
+			{w - r, u, r, h - u - d, assetIds[5]},                                     // Right
+			{0, h - d, l, d, assetIds[6]},                                             // Bottom Left
+			{l, h - d, w - l - r, d, assetIds[7]},                                     // Bottom
+			{w - r, h - d, r, d, assetIds[8]},                                         // Bottom Right
+		}
 
-		drawBoxPart(&s.Sprite, c, 0, 0, l, u, asset[0], col)     // top left
-		drawBoxPart(&s.Sprite, c, w-r, 0, r, u, asset[2], col)   // top right
-		drawBoxPart(&s.Sprite, c, 0, h-d, l, d, asset[6], col)   // bottom left
-		drawBoxPart(&s.Sprite, c, w-r, h-d, r, d, asset[8], col) // bottom right
+		var ang = b.Angle
+
+		for _, p := range parts {
+			var texture, src, rotations, flip = asset(p.id)
+			if texture == nil {
+				continue
+			}
+
+			globalX, globalY := b.PointToGlobal(p.x, p.y)
+
+			var dst = rl.NewRectangle(globalX, globalY, p.w*b.ScaleX, p.h*b.ScaleY)
+			var partAng = ang
+
+			editAssetRects(&src, &dst, partAng, rotations, flip)
+			partAng += float32(rotations * 90)
+
+			if !initUniforms || (lastEffects != nil && effects != nil && *lastEffects != *effects) {
+				effects.updateUniforms(int(src.Width), int(src.Height), nil, nil)
+				initUniforms = true
+			}
+
+			batch.QueueQuad(texture, src, dst, partAng, col)
+			lastEffects = effects
+		}
 	}
+
+	batch.Draw()
+	skipStartEnd = false
 }
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()

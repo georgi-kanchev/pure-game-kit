@@ -227,7 +227,7 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 			symb.OutlineColor = getOrDefault(curValues, "outlineColor", palette.Black).(uint)
 			symb.ShadowColor = getOrDefault(curValues, "shadowColor", palette.Black).(uint)
 			symb.Weight = getOrDefault(curValues, "weight", byte(1)).(byte)
-			symb.OutlineWeight = getOrDefault(curValues, "outlineWeight", byte(1)).(byte)
+			symb.OutlineWeight = getOrDefault(curValues, "outlineWeight", byte(2)).(byte)
 			symb.ShadowWeight = getOrDefault(curValues, "shadowWeight", byte(1)).(byte)
 			symb.ShadowBlur = getOrDefault(curValues, "shadowBlur", byte(0)).(byte)
 			symb.Underline = getOrDefault(curValues, "_", false).(bool)
