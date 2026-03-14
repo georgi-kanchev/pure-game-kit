@@ -131,7 +131,7 @@ func draw(margin float32, w *widget, isPlaceholder bool) {
 	maskText = false
 
 	if typingIn == w {
-		cam.DrawQuadFrame(w.X, w.Y, w.Width, w.Height, 0, -4, palette.Gray)
+		cam.DrawQuadFrame(w.X, w.Y, w.Width, w.Height, 0, -1, palette.Azure)
 	}
 
 	if typingIn == w && cursorTime < 0.5 {

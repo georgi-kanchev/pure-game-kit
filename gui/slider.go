@@ -41,6 +41,8 @@ func slider(w *widget) {
 	var step = parseNum(w.root.themedField(field.SliderStep, owner, w), 0)
 	var cam = w.root.cam
 
+	reusableWidget.root = w.root
+
 	if value != w.PrevValue && !sound.IsPlaying() {
 		sound.AssetId = defaultValue(w.root.themedField(field.SliderSound, owner, w), "~slider")
 		sound.Volume = w.root.Volume
