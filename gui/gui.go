@@ -2,7 +2,6 @@ package gui
 
 import (
 	"pure-game-kit/execution/condition"
-	"pure-game-kit/graphics"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
@@ -177,7 +176,7 @@ func (g *GUI) Area(id string) (x, y, width, height, angle float32) {
 	return
 }
 
-func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
+func (g *GUI) IsAnyHovered() bool {
 	var prAng, prZoom, prX, prY = g.reset(false)
 	defer func() { g.root.restore(prAng, prZoom, prX, prY) }()
 
