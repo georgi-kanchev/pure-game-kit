@@ -16,8 +16,9 @@ type widget struct {
 	Fields        map[string]string
 	UpdateAndDraw func(cam *graphics.Camera, root *root, widget *widget)
 
+	sprite,
+	top, left, right, bottom *graphics.Sprite
 	textBox *graphics.TextBox
-	sprite  *graphics.Sprite
 	box     *graphics.Box
 }
 

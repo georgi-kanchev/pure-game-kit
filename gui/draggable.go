@@ -16,10 +16,10 @@ func Draggable(id string, properties ...string) string {
 
 //=================================================================
 
-func (g *GUI) DragOnGrab() (draggableId string) {
+func (g *GUI) DragJustGrabbed() (id string) {
 	return onGrab(g.root)
 }
-func (g *GUI) DragOnDrop() (grabId, dropId string) {
+func (g *GUI) DragJustDropped() (grabId, dropId string) {
 	return onDrop(g.root)
 }
 func (g *GUI) DragCancel() {

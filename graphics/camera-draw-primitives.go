@@ -168,7 +168,7 @@ func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
 		c.begin()
 		rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, getColor(colors[0]))
 		c.end()
-		return // draw regular rect with one provided color
+		return
 	}
 
 	for len(colors) < 4 { // if fewer than 4 colors, pad with last provided color
@@ -287,7 +287,7 @@ func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 	var offset = 0
 	var renderColor = getColor(color)
 
-	c.Effects.updateUniforms(1, 1, nil, nil)
+	c.Effects.updateUniforms(1, 1, nil, nil, false)
 
 	for _, count := range ptsCountsPerShape {
 		var shape = flatPoints[offset : offset+(count*2)]
@@ -392,7 +392,7 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, 
 		}
 	}
 
-	c.Effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, &TextBox{})
+	c.Effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, &TextBox{}, false)
 
 	defaultTextPack.Color = color
 	var pack = packSymbolColor(defaultTextPack)

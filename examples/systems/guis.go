@@ -134,7 +134,7 @@ func GUIs() {
 			f.NewRow, "", f.Width, "500"),
 		gui.Visual("tab5", f.ThemeId, "label", f.Text, "Fifth Tab", f.ToggleButtonId, "outside5", f.Hidden, "1",
 			f.NewRow, "", f.Width, "500"),
-		gui.Visual("divider-2", f.AssetId, box[12], f.BoxEdgeTop, "0", f.BoxEdgeBottom, "0", f.NewRow, "",
+		gui.Visual("divider-2", f.AssetId, "", f.BoxEdgeTop, "0", f.BoxEdgeBottom, "0", f.NewRow, "",
 			f.Width, "820", f.Height, "40"),
 
 		gui.Button("btn1", f.Text, "Parent1", f.NewRow, ""),
@@ -185,12 +185,12 @@ func GUIs() {
 		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, palette.DarkGray)
 
-		var grab = hud.DragOnGrab()
+		var grab = hud.DragJustGrabbed()
 		if grab != "" {
 			fmt.Printf("grab: %v\n", grab)
 		}
 
-		var from, to = hud.DragOnDrop()
+		var from, to = hud.DragJustDropped()
 		if from != "" && to != "" {
 			var fromId = hud.Field(from, f.DraggableAssetId, cam)
 			var toId = hud.Field(to, f.DraggableAssetId, cam)

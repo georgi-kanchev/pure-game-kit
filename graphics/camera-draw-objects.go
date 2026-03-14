@@ -22,8 +22,6 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	c.begin()
 
 	var lastEffects *Effects
-	var initUniforms = false
-
 	for _, s := range sprites {
 		if s == nil || !c.IsAreaVisible(s.Area()) {
 			continue
@@ -47,14 +45,9 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
 
-		if !initUniforms {
-			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil)
-			initUniforms = true
-		}
-
 		if lastEffects != nil && effects != nil && *lastEffects != *effects {
 			batch.Draw() // effects are different & break the batch
-			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil)
+			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
 		batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
@@ -70,8 +63,6 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 
 	skipStartEnd = true
 	var lastEffects *Effects
-	var initUniforms = false
-
 	for _, b := range boxes {
 		if b == nil || !c.IsAreaVisible(b.Area()) {
 			continue
@@ -145,19 +136,17 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 				texture = internal.White
 			}
 
-			globalX, globalY := b.PointToGlobal(p.x, p.y)
-
+			var globalX, globalY = b.PointToGlobal(p.x, p.y)
 			var dst = rl.NewRectangle(globalX, globalY, p.w*b.ScaleX, p.h*b.ScaleY)
 			var partAng = ang
 
 			editAssetRects(&src, &dst, partAng, rotations, flip)
 			partAng += float32(rotations * 90)
 
-			if !initUniforms || (lastEffects != nil && effects != nil && *lastEffects != *effects) {
-				effects.updateUniforms(int(src.Width), int(src.Height), nil, nil)
-				initUniforms = true
+			if lastEffects != nil && effects != nil && *lastEffects != *effects {
+				batch.Draw() // effects are different & break the batch
+				effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 			}
-
 			batch.QueueQuad(texture, src, dst, partAng, col)
 			lastEffects = effects
 		}
@@ -187,7 +176,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var font = t.font()
 		var gapX = t.gapSymbols()
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
-		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t)
+		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t, false)
 
 		for _, s := range symbols {
 			batch.QueueSymbol(font, s, t.LineHeight, gapX)
@@ -221,7 +210,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
 
 		rl.BeginShaderMode(internal.Shader)
-		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil)
+		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
 		rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, t.Angle, getColor(t.Tint))
 		rl.EndShaderMode()
 	}

@@ -38,6 +38,7 @@ func KeepOpen() bool {
 	tryCreate()
 	tryUpdateProperties()
 
+	rl.DisableDepthTest()
 	rl.EndShaderMode()
 	rl.EndBlendMode()
 	rl.EndScissorMode()

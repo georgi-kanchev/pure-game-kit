@@ -200,7 +200,7 @@ func (c *Camera) begin() {
 	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
 	rl.BeginShaderMode(internal.Shader)
 	rl.EnableDepthTest()
-	c.Effects.updateUniforms(1, 1, nil, nil)
+	c.Effects.updateUniforms(1, 1, nil, nil, true)
 
 	if c.Blend != 0 {
 		rl.BeginBlendMode(rl.BlendMode(c.Blend))

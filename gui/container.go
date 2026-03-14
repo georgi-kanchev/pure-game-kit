@@ -140,10 +140,10 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 
 	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY, root)
 	var contentW, contentH = maxX - minX, maxY - minY
-	var draggables []*widget = make([]*widget, 0)
+	var draggables []*widget = make([]*widget, 0, len(c.Widgets))
 	for _, wId := range c.Widgets { // after-calculation loop
 		var widget = root.Widgets[wId]
-		if widget.isSkipped(root, c) || widget.IsCulled {
+		if widget.IsCulled || widget.isSkipped(root, c) {
 			continue
 		}
 

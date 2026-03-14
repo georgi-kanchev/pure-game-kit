@@ -26,11 +26,13 @@ func NewEffects() *Effects {
 
 var u = make([]float32, 32) // this is cached and passed to the shader packed to spare some cgo calls
 
-func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *TextBox) {
+func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *TextBox, force bool) {
 	clear(u)
 	u[0], u[1] = float32(texW), float32(texH)
 	u[4], u[5], u[6], u[7] = 0.5, 0.5, 0.5, 0.5
 	u[25] = internal.Runtime
+
+	var dirty = false
 
 	if e != nil {
 		var or, og, ob, oa = color.Channels(e.OutlineColor)
@@ -44,6 +46,7 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *Text
 		if u[4] != 0.5 || u[5] != 0.5 || u[6] != 0.5 || u[7] != 0.5 || u[8] != 0 || u[9] != 0 {
 			u[26] = 1.0 // do calculations for color adjust
 		}
+		dirty = true
 	}
 
 	if tileMap != nil {
@@ -55,12 +58,16 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *Text
 
 			rl.SetShaderValueTexture(internal.Shader, internal.ShaderTileMapLoc, *data.Texture)
 		}
+		dirty = true
 	}
 
 	if textBox != nil {
 		u[27] = 1.0 // do calculations for sdf text
 		u[28], u[29] = textBox.ShadowOffsetX/200, textBox.ShadowOffsetY/200
+		dirty = true
 	}
 
-	rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 32)
+	if dirty || force {
+		rl.SetShaderValueV(internal.Shader, internal.ShaderLoc, u, rl.ShaderUniformFloat, 32)
+	}
 }

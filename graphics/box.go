@@ -8,9 +8,9 @@ type Box struct {
 	EdgeTop, EdgeBottom float32
 }
 
-func NewBox(assetId string, x, y float32) Box {
+func NewBox(assetId string, x, y float32) *Box {
 	var sprite = NewSprite(assetId, x, y)
-	var result = Box{Sprite: *sprite}
+	var result = &Box{Sprite: *sprite}
 	var slices, has = internal.Boxes[assetId]
 
 	if !has {
