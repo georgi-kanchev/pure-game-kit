@@ -156,7 +156,3 @@ func drawVisuals(cam *graphics.Camera, root *root, widget *widget, fadeText bool
 	cam.DrawTextBoxes(widget.textBox)
 	cam.Mask(mx, my, mw, mh)
 }
-
-func drawText(cam *graphics.Camera, root *root, widget *widget, fadeText bool, betweenVisualAndText func()) {
-
-}
