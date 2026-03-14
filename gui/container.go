@@ -193,6 +193,7 @@ func (c *container) updateAndDraw() {
 	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
 	c.tryShowScrolls(minX, minY, maxX, maxY)
 }
+
 func (c *container) tryShowScrolls(minX, minY, maxX, maxY float32) {
 	var mx, my = c.root.cam.MousePosition()
 	var focused = c.isFocused()
@@ -213,10 +214,10 @@ func (c *container) tryShowScrolls(minX, minY, maxX, maxY float32) {
 	}
 
 	if horizontal {
-		c.handleHorizontalSlider(maxX, minX, scroll, vertical, focused, shift)
+		c.handleHorizontalSlider(maxX, minX, vertical, shift)
 	}
 	if vertical {
-		c.handleVerticalSlider(maxY, minY, scroll, focused, shift)
+		c.handleVerticalSlider(maxY, minY, shift)
 	}
 
 	if scroll != 0 && focused {
@@ -225,9 +226,10 @@ func (c *container) tryShowScrolls(minX, minY, maxX, maxY float32) {
 
 	c.prevMouseX, c.prevMouseY = mx, my
 }
-
-func (c *container) handleVerticalSlider(maxY, minY, scroll float32, focused, shift bool) {
+func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 	var cam = c.root.cam
+	var focused = c.isFocused()
+	var scroll = mouse.ScrollSmooth()
 	var _, my = cam.MousePosition()
 	var handleH = (c.Height / (maxY - minY)) * c.Height
 	var handleCol = color.Brighten(palette.Gray, 0.5)
@@ -288,9 +290,10 @@ func (c *container) handleVerticalSlider(maxY, minY, scroll float32, focused, sh
 	cam.DrawQuad(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
 	cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, palette.Black)
 }
-
-func (c *container) handleHorizontalSlider(maxX, minX, scroll float32, vertical, focused, shift bool) {
+func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift bool) {
 	var cam = c.root.cam
+	var focused = c.isFocused()
+	var scroll = mouse.ScrollSmooth()
 	var mx, _ = cam.MousePosition()
 	var barW = condition.If(vertical, c.Width-scrollSize, c.Width) // make space for vertical scroll
 	var handleW = barW / (maxX - minX) * barW
