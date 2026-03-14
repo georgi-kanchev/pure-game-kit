@@ -109,7 +109,7 @@ func (g *GUI) SetField(anyId, field string, value string) {
 
 // Works for Widgets & Containers. Use
 //
-//	gui.FieldNumber(...)
+//	FieldNumber(...)
 //
 // for dynamic values.
 func (g *GUI) Field(anyId, field string) string {

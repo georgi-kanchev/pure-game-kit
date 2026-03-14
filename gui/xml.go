@@ -124,33 +124,34 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 //	)
 //	var menu = gui.NewFromXMLs(xml) // <-- result
 func NewElementsXML(elements ...string) string {
-	var result = "<GUI scale=\"1\" volume=\"1\">"
+	var result = text.NewBuilder()
+	result.WriteText("<GUI scale=\"1\" volume=\"1\">")
 
 	// container is missing on top, add root container
 	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
-		result += "\n\t<Container " + f.Id + "=\"root\" " +
+		result.WriteText("\n\t<Container " + f.Id + "=\"root\" " +
 			f.X + "=\"" + dynamic.CameraLeftX + "\" " +
 			f.Y + "=\"" + dynamic.CameraTopY + "\" " +
 			f.Width + "=\"" + dynamic.CameraWidth + "\" " +
-			f.Height + "=\"" + dynamic.CameraHeight + "\">"
+			f.Height + "=\"" + dynamic.CameraHeight + "\">")
 	}
 
 	for i, v := range elements {
 		if text.StartsWith(v, "<Container") {
 			if i > 0 {
-				result += "\n\t</Container>"
+				result.WriteText("\n\t</Container>")
 			}
 		} else {
 			v = "\t" + v
 		}
 
-		result += "\n\t" + v
+		result.WriteText("\n\t" + v)
 
 		if i == len(elements)-1 {
-			result += "\n\t</Container>"
+			result.WriteText("\n\t</Container>")
 		}
 	}
 
-	result += "\n</GUI>"
-	return result
+	result.WriteText("\n</GUI>")
+	return result.ToText()
 }
