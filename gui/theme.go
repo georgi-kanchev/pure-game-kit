@@ -8,6 +8,7 @@ import (
 type theme struct {
 	XmlProps []xml.Attr `xml:",any,attr"`
 
+	Root   *root
 	Fields map[string]string
 }
 

@@ -14,7 +14,9 @@ type widget struct {
 	DragX, DragY, PrevValue float32
 	IsCulled      bool
 	Fields        map[string]string
-	UpdateAndDraw func(cam *graphics.Camera, root *root, widget *widget)
+	UpdateAndDraw func(widget *widget)
+
+	root *root
 
 	sprite,
 	top, left, right, bottom *graphics.Sprite
@@ -29,14 +31,14 @@ func newWidget(class, id string, properties ...string) string {
 
 //=================================================================
 
-func (w *widget) isHovered(owner *container, cam *graphics.Camera) bool {
-	return isHovered(owner.X, owner.Y, owner.Width, owner.Height, cam) &&
-		isHovered(w.X, w.Y, w.Width, w.Height, cam)
+func (w *widget) isHovered(owner *container) bool {
+	return isHovered(owner.X, owner.Y, owner.Width, owner.Height, w.root.cam) &&
+		isHovered(w.X, w.Y, w.Width, w.Height, w.root.cam)
 }
-func (w *widget) isFocused(root *root, cam *graphics.Camera) bool {
-	return root.wFocused == w &&
-		root.wWasHovered == w &&
-		w.isHovered(root.Containers[w.OwnerId], cam)
+func (w *widget) isFocused() bool {
+	return w.root.wFocused == w &&
+		w.root.wWasHovered == w &&
+		w.isHovered(w.root.Containers[w.OwnerId])
 }
 func (w *widget) isDisabled(owner *container) bool {
 	var disabled = w.Fields[field.Disabled] != ""
@@ -48,13 +50,13 @@ func (w *widget) isDisabled(owner *container) bool {
 
 	return disabled || ownerDisabled
 }
-func (w *widget) isHidden(root *root, owner *container) bool {
-	var toggleParentId = root.themedField(field.ToggleButtonId, owner, w)
-	var toggleParent = root.Widgets[toggleParentId]
+func (w *widget) isHidden(owner *container) bool {
+	var toggleParentId = w.root.themedField(field.ToggleButtonId, owner, w)
+	var toggleParent = w.root.Widgets[toggleParentId]
 	var hidden = w.Fields[field.Hidden] != ""
-	var parentHidden = toggleParent != nil && toggleParent.isHidden(root, owner)
+	var parentHidden = toggleParent != nil && toggleParent.isHidden(owner)
 	return hidden || parentHidden
 }
-func (w *widget) isSkipped(root *root, owner *container) bool {
-	return w.isHidden(root, owner) || w.Class == "tooltip"
+func (w *widget) isSkipped(owner *container) bool {
+	return w.isHidden(owner) || w.Class == "tooltip"
 }

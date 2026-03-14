@@ -15,7 +15,7 @@ import (
 
 var sound *audio.Audio = audio.New("")
 var mouseX, mouseY, prevMouseX, prevMouseY float32
-var updateAndDrawFuncs = map[string]func(cam *graphics.Camera, root *root, widget *widget){
+var updateAndDrawFuncs = map[string]func(widget *widget){
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 	"draggable": draggable,
 }
@@ -43,11 +43,12 @@ var reusableWidget = &widget{Fields: map[string]string{}}
 
 var clickedId, clickedAndHeldId, sliderSlidId = "", "", ""
 
-func (g *GUI) reset(camera *graphics.Camera, inputState bool) (prAng, prZoom, prX, prY float32) {
-	prAng, prZoom, prX, prY = camera.Angle, camera.Zoom, camera.X, camera.Y
+func (g *GUI) reset(inputState bool) (prAng, prZoom, prX, prY float32) {
+	var cam = g.root.cam
+	prAng, prZoom, prX, prY = cam.Angle, cam.Zoom, cam.X, cam.Y
 
 	if inputState {
-		mouseX, mouseY = camera.MousePosition()
+		mouseX, mouseY = cam.MousePosition()
 		if mouse.IsButtonJustPressed(b.Left) {
 			g.root.wPressedOn = nil
 			tooltip = nil
@@ -66,12 +67,12 @@ func (g *GUI) reset(camera *graphics.Camera, inputState bool) (prAng, prZoom, pr
 		}
 	}
 
-	camera.Zoom = g.Scale
-	camera.Angle = 0          // force no cam rotation for UI
-	camera.X, camera.Y = 0, 0 // force no position offset for UI
+	cam.Zoom = g.Scale
+	cam.Angle = 0       // force no cam rotation for UI
+	cam.X, cam.Y = 0, 0 // force no position offset for UI
 	return
 }
-func (root *root) themedField(fld string, c *container, w *widget) string {
+func (r *root) themedField(fld string, c *container, w *widget) string {
 	// priority for widget: widget -> widget theme -> container theme
 
 	var widgetSelf, containerSelf, widgetThemeField, containerThemeField = "", "", "", ""
@@ -81,7 +82,7 @@ func (root *root) themedField(fld string, c *container, w *widget) string {
 
 	if w != nil {
 		widgetSelf, hasWidget = w.Fields[fld]
-		widgetTheme, hasWidgetTheme = root.Themes[w.ThemeId]
+		widgetTheme, hasWidgetTheme = r.Themes[w.ThemeId]
 
 		if hasWidgetTheme {
 			widgetThemeField, hasWidgetThemeField = widgetTheme.Fields[fld]
@@ -89,7 +90,7 @@ func (root *root) themedField(fld string, c *container, w *widget) string {
 	}
 	if c != nil {
 		containerSelf, hasContainer = c.Fields[fld]
-		containerTheme, hasContainerTheme = root.Themes[c.Fields[field.ThemeId]]
+		containerTheme, hasContainerTheme = r.Themes[c.Fields[field.ThemeId]]
 
 		if hasContainerTheme {
 			containerThemeField, hasContainerThemeField = containerTheme.Fields[fld]
@@ -120,23 +121,23 @@ func (root *root) themedField(fld string, c *container, w *widget) string {
 
 	return ""
 }
-func (root *root) cacheDynTargetProps(targetId string) {
-	var targetContainer = root.Containers[targetId]
-	var targetWidget = root.Widgets[targetId]
+func (r *root) cacheDynTargetProps(targetId string) {
+	var targetContainer = r.Containers[targetId]
+	var targetWidget = r.Widgets[targetId]
 	var tx, ty, tw, th, tHid, tDis string
 	if targetContainer != nil {
-		tx = root.themedField(field.X, targetContainer, nil)
-		ty = root.themedField(field.Y, targetContainer, nil)
-		tw = root.themedField(field.Width, targetContainer, nil)
-		th = root.themedField(field.Height, targetContainer, nil)
+		tx = r.themedField(field.X, targetContainer, nil)
+		ty = r.themedField(field.Y, targetContainer, nil)
+		tw = r.themedField(field.Width, targetContainer, nil)
+		th = r.themedField(field.Height, targetContainer, nil)
 		tHid = targetContainer.Fields[field.Hidden]
 		tDis = targetContainer.Fields[field.Disabled]
 	} else if targetWidget != nil {
-		var owner = root.Containers[targetWidget.OwnerId]
-		tx = root.themedField(field.X, owner, targetWidget)
-		ty = root.themedField(field.Y, owner, targetWidget)
-		tw = root.themedField(field.Width, owner, targetWidget)
-		th = root.themedField(field.Height, owner, targetWidget)
+		var owner = r.Containers[targetWidget.OwnerId]
+		tx = r.themedField(field.X, owner, targetWidget)
+		ty = r.themedField(field.Y, owner, targetWidget)
+		tw = r.themedField(field.Width, owner, targetWidget)
+		th = r.themedField(field.Height, owner, targetWidget)
 		tHid = targetWidget.Fields[field.Hidden]
 		tDis = targetWidget.Fields[field.Disabled]
 	}
@@ -146,13 +147,14 @@ func (root *root) cacheDynTargetProps(targetId string) {
 	tarHid, tarDis = tHid, tDis
 }
 
-func (root *root) restore(camera *graphics.Camera, prAng, prZoom, prX, prY float32) {
-	camera.Angle, camera.Zoom = prAng, prZoom
-	camera.X, camera.Y = prX, prY
-	camera.SetScreenArea(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
+func (r *root) restore(prAng, prZoom, prX, prY float32) {
+	var cam = r.cam
+	cam.Angle, cam.Zoom = prAng, prZoom
+	cam.X, cam.Y = prX, prY
+	cam.SetScreenArea(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight)
 
-	root.wWasHovered = root.wHovered
-	root.cWasHovered = root.cHovered
+	r.wWasHovered = r.wHovered
+	r.cWasHovered = r.cHovered
 	prevMouseX, prevMouseY = mouseX, mouseY
 }
 func extraProps(props ...string) string {

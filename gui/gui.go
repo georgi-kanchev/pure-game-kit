@@ -1,53 +1,8 @@
-// The most complex package of all - handling graphical user interfaces by depending heavily on multiple
-// other packages used for file loading, drawing graphics, accepting input, playing sounds, etc.
-//
-// The GUI topic is long & thorough and there are many designs, but the few main ones for
-// games seem to be:
-//   - Object-oriented (OOP) - Offers the most freedom but way too verbose.
-//   - Immediate mode (Im) - The simplest one but lacks customization & serialization for re-usability.
-//   - Data-oriented (css) - Reusable and customizable but hard to parse, create with code, and handle custom logic.
-//
-// This package takes benefits from each one of them and tries to solve their problems.
-// It relies on a simple design idea but its usage remains a bit complex due to its sheer depth.
-// It is constructed of 3 types of elements: Containers, Widgets & Themes.
-//
-// The GUI creation relies on the Data-oriented approach by parsing XML. Its problems and how they are solved:
-//   - Hard to parse - by not allowing nesting, having a max depth of 2.
-//   - Hard to create with code + no autocomplete - by optionally chaining function calls to construct the XML.
-//   - Hard to handle custom logic - by mixing in the Immediate mode approach.
-//
-// The Immediate mode approach brings its problems as well, here is how they are solved:
-//   - Lacking customization - by separating creation details and functionality
-//   - Lacking serialization for re-usability - by the Data-oriented XML approach
-//   - Relying on code structures as existing elements - by a single GUI structure & accessing everything through ids.
-//
-// Another huge problem is GUI elements respecting any window aspect ratios. This is solved by replacing
-// certain dynamic variable keywords during the XML parsing while handling math expresions.
-// Due to the nature of those dynamic values, scaling the GUI comes for free by zooming its provided camera.
-//
-// While loading an XML is handled, saving is not and this is a deliberate choice. Saving a GUI state
-// has a risk of doing damage to the initial state and has to deal with versioning or multiple GUI states.
-// Another reason not to do it is that fundamentally it does not make sense to save a GUI.
-// It's rather better to save its data instead, then load the GUI in its initial state each time and
-// have it react to the separately loaded data.
-//
-// Alongside solving all of those problems, here are some of the very useful features in no particular order:
-//
-//   - Widgets inheriting/reusing properties from their Themes or Container owners and optionally overwriting them.
-//   - Elements supporting custom properties that only custom logic may rely on.
-//   - Dividing long & complex GUI systems into multiple XMLs by optionally merging them during parsing.
-//   - Containers handling scrolling, masking and ordering widgets out-of-the-box.
-//   - Easy to reference themes, widgets, containers and assets due to the nature of ids.
-//   - Rendering fallbacks to basic colored shapes in case no assets are provided.
-//   - Out-of-the-box Z ordering for input & drawing.
-//   - Having tooltips for all widgets, including text labels & images.
 package gui
 
 import (
-	"pure-game-kit/data/storage"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
-	"pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
@@ -65,156 +20,13 @@ type GUI struct {
 	root   *root
 }
 
-// Joins multiple XMLs into a single GUI - useful for splitting single large files into multiple.
-// Keep in mind that the GUI will have the Scale, Volume & Language of only the first XML root, the rest are ignored.
-//
-// Pseudo-XML format example:
-//
-//	GUI // root start
-//		Container // cannot contain other containers
-//			Theme // optional for buttons
-//			Theme // optional for labels
-//			...   // other themes
-//		Container // may contain only widgets & themes
-//			Widget // visual label
-//			Widget // button
-//			Widget // visual image
-//			Widget // slider
-//			...	   // other widgets
-//		Container
-//			Widget // input box
-//			Widget // check box
-//		... // other containers
-//	GUI // root end
-func NewFromXMLs(xmlsData ...string) *GUI {
-	var gui = GUI{root: &root{}}
-	var mergedXML = ""
-
-	for i, xmlData := range xmlsData {
-		xmlData = text.Trim(xmlData)
-		var lines = text.Split(xmlData, "\n")
-		if xmlData == "" || len(lines) < 3 {
-			continue
-		}
-
-		var startIndex = condition.If(i == 0, 0, 1)
-		var portion = lines[startIndex : len(lines)-1]
-		xmlData = collection.ToText(portion, "\n")
-		mergedXML += xmlData + "\n"
-	}
-	mergedXML += "</GUI>"
-
-	var root = &root{}
-	storage.FromXML(mergedXML, &root)
-	gui.root = root
-	gui.root.Containers = map[string]*container{}
-	gui.root.Widgets = map[string]*widget{}
-	gui.root.Themes = map[string]*theme{}
-	gui.root.ContainerIds = []string{}
-
-	for _, c := range gui.root.XmlContainers {
-		var cId = c.XmlProps[0].Value
-		c.Widgets = make([]string, len(c.XmlWidgets))
-		c.Fields = make(map[string]string, len(c.XmlProps))
-		c.WasHidden = true
-
-		for _, xmlProp := range c.XmlProps {
-			c.Fields[xmlProp.Name.Local] = xmlProp.Value
-		}
-
-		for j, w := range c.XmlWidgets {
-			var wClass = w.XmlProps[0].Value
-			var wId = w.XmlProps[1].Value
-			var fn, has = updateAndDrawFuncs[wClass]
-			c.Widgets[j] = wId
-			w.OwnerId = cId
-			w.Class = wClass
-			w.Fields = make(map[string]string, len(w.XmlProps))
-			w.Id = wId
-
-			if has {
-				w.UpdateAndDraw = fn
-			}
-
-			for _, xmlProp := range w.XmlProps {
-				w.Fields[xmlProp.Name.Local] = xmlProp.Value
-			}
-
-			gui.root.Widgets[wId] = w
-		}
-		for _, t := range c.XmlThemes {
-			var tId = t.XmlProps[0].Value
-			t.Fields = make(map[string]string, len(t.XmlProps))
-
-			for _, xmlProp := range t.XmlProps {
-				t.Fields[xmlProp.Name.Local] = xmlProp.Value
-			}
-			gui.root.Themes[tId] = t
-		}
-
-		gui.root.Containers[cId] = c
-		gui.root.ContainerIds = append(gui.root.ContainerIds, cId)
-	}
-
-	gui.Scale = gui.root.XmlScale
-	gui.Volume = gui.root.XmlVolume
-	return &gui
-}
-
-// Constructs an XML from a chain of elements (Widgets, Containers and Themes) with Scale & Volume of 1 & Language "".
-// Useful for creating the GUI in an autocompleted code environment instead of in a raw XML file, like so:
-//
-//	var xml = gui.NewElementsXML(
-//		gui.Container("menu", "0", "0", "800", "400"),
-//		gui.Visual("menu-bgr", field.FillContainer, "", field.Color, "200 200 200 255"),
-//		gui.Button("menu-1", field.ThemeId, "button", field.Text, "Monday"),
-//		gui.Button("menu-2", field.ThemeId, "button", field.Text, "Tuesday"),
-//		gui.Button("menu-3", field.ThemeId, "button", field.Text, "Wednesday"),
-//		gui.Button("menu-4", field.ThemeId, "button", field.Text, "Thursday"),
-//		gui.Button("menu-5", field.ThemeId, "button", field.Text, "Friday"),
-//		gui.Visual("weekend-label", field.ThemeId, "label", field.Text, "Weekend"),
-//		gui.Button("menu-6", field.ThemeId, "button", field.Text, "Saturday"),
-//		gui.Button("menu-7", field.ThemeId, "button", field.Text, "Sunday")
-//	)
-//	var menu = gui.NewFromXMLs(xml) // <-- result
-func NewElementsXML(elements ...string) string {
-	var result = "<GUI scale=\"1\" volume=\"1\">"
-
-	// container is missing on top, add root container
-	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
-		result += "\n\t<Container " + f.Id + "=\"root\" " +
-			f.X + "=\"" + dynamic.CameraLeftX + "\" " +
-			f.Y + "=\"" + dynamic.CameraTopY + "\" " +
-			f.Width + "=\"" + dynamic.CameraWidth + "\" " +
-			f.Height + "=\"" + dynamic.CameraHeight + "\">"
-	}
-
-	for i, v := range elements {
-		if text.StartsWith(v, "<Container") {
-			if i > 0 {
-				result += "\n\t</Container>"
-			}
-		} else {
-			v = "\t" + v
-		}
-
-		result += "\n\t" + v
-
-		if i == len(elements)-1 {
-			result += "\n\t</Container>"
-		}
-	}
-
-	result += "\n</GUI>"
-	return result
-}
-
 // =================================================================
 
-func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
+func (g *GUI) UpdateAndDraw() {
+	var cam = g.root.cam
 	var containers = g.root.ContainerIds
-	var prAng, prZoom, prX, prY = g.reset(camera, true) // keep order of variables & reset
-	cacheDynCamProps(camera)
+	var prAng, prZoom, prX, prY = g.reset(true) // keep order of variables & reset
+	cacheDynCamProps(cam)
 	g.root.Volume = g.Volume
 
 	sliderSlidId = condition.If(sliderSlidId != "", "", sliderSlidId)
@@ -238,7 +50,7 @@ func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
 		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2" // caching dynamic props
 
-		c.updateAndDraw(g.root, camera)
+		c.updateAndDraw()
 	}
 
 	if g.root.cWasHovered == g.root.cHovered {
@@ -249,22 +61,22 @@ func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 	}
 
 	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
-		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
-		drawDraggable(g.root.wPressedOn, g.root, camera)
+		cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight)
+		drawDraggable(g.root.wPressedOn)
 	}
 	if tooltip != nil {
-		camera.Mask(camera.ScreenX, camera.ScreenY, camera.ScreenWidth, camera.ScreenHeight)
-		drawTooltip(g.root, g.root.Containers[tooltip.OwnerId], camera)
+		cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight)
+		drawTooltip(g.root.Containers[tooltip.OwnerId])
 	}
 
 	clickedId = condition.If(clickedId != "", "", clickedId)
 	clickedAndHeldId = condition.If(clickedAndHeldId != "", "", clickedAndHeldId)
 
 	if g.root.wPressedOn != nil {
-		if g.root.IsButtonJustClicked(g.root.wPressedOn.Id, camera) {
+		if g.root.IsButtonJustClicked(g.root.wPressedOn.Id) {
 			clickedId = g.root.wPressedOn.Id
 		}
-		if g.root.IsButtonClickedAndHeld(g.root.wPressedOn.Id, camera) {
+		if g.root.IsButtonClickedAndHeld(g.root.wPressedOn.Id) {
 			clickedAndHeldId = g.root.wPressedOn.Id
 		}
 	}
@@ -274,7 +86,7 @@ func (g *GUI) UpdateAndDraw(camera *graphics.Camera) {
 		tooltip = nil
 	}
 
-	g.root.restore(camera, prAng, prZoom, prX, prY) // undo what reset does, everything as it was for cam
+	g.root.restore(prAng, prZoom, prX, prY) // undo what reset does, everything as it was for cam
 }
 
 // Works for Widgets & Containers.
@@ -301,7 +113,7 @@ func (g *GUI) SetField(id, field string, value string) {
 //	gui.FieldNumber(...)
 //
 // for dynamic values.
-func (g *GUI) Field(id, field string, camera *graphics.Camera) string {
+func (g *GUI) Field(id, field string) string {
 	var w, hasW = g.root.Widgets[id]
 	var c, hasC = g.root.Containers[id]
 	var t, hasT = g.root.Themes[id]
@@ -321,17 +133,17 @@ func (g *GUI) Field(id, field string, camera *graphics.Camera) string {
 }
 
 // Works for Widgets & Containers. Converts the appropriate fields to numbers while replacing their dynamic parts.
-func (g *GUI) FieldNumber(id, field string, camera *graphics.Camera) float32 {
+func (g *GUI) FieldNumber(id, field string) float32 {
 	var w, hasW = g.root.Widgets[id]
 	var owner *container
 	if hasW {
 		owner = g.root.Containers[w.OwnerId]
 	}
-	var value = dyn(owner, g.Field(id, field, camera), "NaN")
+	var value = dyn(owner, g.Field(id, field), "NaN")
 	return parseNum(value, number.NaN())
 }
 
-func (g *GUI) AreaText(widgetId string, camera *graphics.Camera) (width, height float32) {
+func (g *GUI) AreaText(widgetId string) (width, height float32) {
 	var w, hasW = g.root.Widgets[widgetId]
 
 	if hasW && w.textBox != nil {
@@ -344,8 +156,9 @@ func (g *GUI) AreaText(widgetId string, camera *graphics.Camera) (width, height 
 }
 
 // Works for Widgets & Containers.
-func (g *GUI) Area(id string, camera *graphics.Camera) (x, y, width, height, angle float32) {
-	var zoom = camera.Zoom / g.Scale
+func (g *GUI) Area(id string) (x, y, width, height, angle float32) {
+	var cam = g.root.cam
+	var zoom = cam.Zoom / g.Scale
 	var w, hasW = g.root.Widgets[id]
 	var c, hasC = g.root.Containers[id]
 	if hasC {
@@ -357,20 +170,20 @@ func (g *GUI) Area(id string, camera *graphics.Camera) (x, y, width, height, ang
 		x, y = w.X, w.Y
 		width, height = w.Width, w.Height
 	}
-	angle = -camera.Angle
-	x, y = camera.X+x/zoom, camera.Y+y/zoom
-	x, y = point.RotateAroundPoint(x, y, camera.X, camera.Y, angle)
+	angle = -cam.Angle
+	x, y = cam.X+x/zoom, cam.Y+y/zoom
+	x, y = point.RotateAroundPoint(x, y, cam.X, cam.Y, angle)
 	width, height = width/zoom, height/zoom
 	return
 }
 
 func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
-	var prAng, prZoom, prX, prY = g.reset(camera, false)
-	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
+	var prAng, prZoom, prX, prY = g.reset(false)
+	defer func() { g.root.restore(prAng, prZoom, prX, prY) }()
 
 	for _, c := range g.root.Containers {
 		var hidden = c.Fields[f.Hidden]
-		if hidden == "" && c.isHovered(camera) {
+		if hidden == "" && c.isHovered() {
 			return true
 		}
 	}
@@ -378,29 +191,29 @@ func (g *GUI) IsAnyHovered(camera *graphics.Camera) bool {
 }
 
 // Works for Widgets & Containers.
-func (g *GUI) IsHovered(id string, camera *graphics.Camera) bool {
-	var prAng, prZoom, prX, prY = g.reset(camera, false)
-	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
+func (g *GUI) IsHovered(id string) bool {
+	var prAng, prZoom, prX, prY = g.reset(false)
+	defer func() { g.root.restore(prAng, prZoom, prX, prY) }()
 
 	var w, hasW = g.root.Widgets[id]
 	var c, hasC = g.root.Containers[id]
 
 	if hasW {
-		return w.isFocused(g.root, camera)
+		return w.isFocused()
 	}
 	if hasC {
-		return c.isFocused(g.root, camera)
+		return c.isFocused()
 	}
 	return false
 }
 
 // Works for Widgets & Containers.
-func (g *GUI) IsFocused(widgetId string, camera *graphics.Camera) bool {
-	var prAng, prZoom, prX, prY = g.reset(camera, false)
-	defer func() { g.root.restore(camera, prAng, prZoom, prX, prY) }()
+func (g *GUI) IsFocused(widgetId string) bool {
+	var prAng, prZoom, prX, prY = g.reset(false)
+	defer func() { g.root.restore(prAng, prZoom, prX, prY) }()
 	var w, has = g.root.Widgets[widgetId]
 	if has {
-		return w.isFocused(g.root, camera)
+		return w.isFocused()
 	}
 	return false
 }

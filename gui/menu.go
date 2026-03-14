@@ -2,7 +2,6 @@ package gui
 
 import (
 	"pure-game-kit/execution/condition"
-	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
 	"pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
@@ -18,47 +17,47 @@ func Menu(id string, properties ...string) string {
 //=================================================================
 // private
 
-func menu(cam *graphics.Camera, root *root, widget *widget) {
-	var owner = root.Containers[widget.OwnerId]
-	button(cam, root, widget)
+func menu(w *widget) {
+	var owner = w.root.Containers[w.OwnerId]
+	button(w)
 
 	var escape = keyboard.IsKeyJustPressed(key.Escape)
-	var anyButton = mouse.IsAnyButtonJustPressed() && !widget.isHovered(owner, cam)
-	var containerId = root.themedField(field.MenuContainerId, owner, widget)
-	var c, has = root.Containers[containerId]
+	var anyButton = mouse.IsAnyButtonJustPressed() && !w.isHovered(owner)
+	var containerId = w.root.themedField(field.MenuContainerId, owner, w)
+	var c, has = w.root.Containers[containerId]
 
 	if !has {
 		return
 	}
 
 	var visible = c.Fields[field.Hidden] == ""
-	if root.IsButtonJustClicked(widget.Id, cam) {
+	if w.root.IsButtonJustClicked(w.Id) {
 		c.Fields[field.Hidden] = condition.If(visible, "1", "")
 		visible = !visible
 	}
-	c.Fields[field.X] = text.New(widget.X)
-	c.Fields[field.Y] = text.New(widget.Y + widget.Height)
+	c.Fields[field.X] = text.New(w.X)
+	c.Fields[field.Y] = text.New(w.Y + w.Height)
 
-	c.X = widget.X
-	c.Y = widget.Y + widget.Height
+	c.X = w.X
+	c.Y = w.Y + w.Height
 
-	var _, camH = cam.Size()
-	var h = parseNum(root.themedField(field.Height, c, nil), 0)
+	var _, camH = w.root.cam.Size()
+	var h = parseNum(w.root.themedField(field.Height, c, nil), 0)
 	if c.Y+h > camH/2 {
-		c.Fields[field.Y] = text.New(widget.Y - h)
-		c.Y = widget.Y - h
+		c.Fields[field.Y] = text.New(w.Y - h)
+		c.Y = w.Y - h
 	}
 
 	if anyButton || mouse.Scroll() != 0 || !window.IsHovered() || escape {
-		if escape || (has && !c.isFocused(root, cam)) {
+		if escape || (has && !c.isFocused()) {
 			c.Fields[field.Hidden] = "1"
 			visible = false
 		}
 	}
 
 	if c.WasHidden && visible {
-		sound.AssetId = defaultValue(root.themedField(field.MenuSound, owner, widget), "~popup")
-		sound.Volume = root.Volume
+		sound.AssetId = defaultValue(w.root.themedField(field.MenuSound, owner, w), "~popup")
+		sound.Volume = w.root.Volume
 		sound.Play()
 	}
 

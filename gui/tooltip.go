@@ -17,17 +17,17 @@ func Tooltip(id string, properties ...string) string {
 //=================================================================
 // private
 
-func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Camera) {
-	var hov = widget.isFocused(root, cam)
+func tryShowTooltip(w *widget, c *container) {
+	var hov = w.isFocused()
 
-	if condition.JustTurnedTrue(hov, ";;hoverrr-"+widget.Id) {
-		tooltipForWidget = widget
+	if condition.JustTurnedTrue(hov, ";;hoverrr-"+w.Id) {
+		tooltipForWidget = w
 		tooltipAt = internal.Runtime
-		var tooltipId = root.themedField(field.TooltipId, c, widget)
-		tooltip = root.Widgets[tooltipId]
+		var tooltipId = w.root.themedField(field.TooltipId, c, w)
+		tooltip = w.root.Widgets[tooltipId]
 
 		if tooltip != nil {
-			var text = root.themedField(field.TooltipText, c, widget)
+			var text = w.root.themedField(field.TooltipText, c, w)
 			tooltip.Fields[field.Text] = text
 
 			if text != "" {
@@ -35,26 +35,26 @@ func tryShowTooltip(widget *widget, root *root, c *container, cam *graphics.Came
 			}
 		}
 	}
-	if widget == tooltipForWidget && condition.JustTurnedTrue(!hov, ";;unhoverrr-"+widget.Id) {
+	if w == tooltipForWidget && condition.JustTurnedTrue(!hov, ";;unhoverrr-"+w.Id) {
 		tooltipForWidget = nil
 		tooltip = nil
 	}
 }
-func drawTooltip(root *root, c *container, cam *graphics.Camera) {
+func drawTooltip(c *container) {
 	if tooltip.textBox == nil {
 		tooltip.textBox = &graphics.TextBox{}
 	}
 
 	defer func() { tooltipWasVisible = tooltipVisible }()
 
-	var owner = root.Containers[tooltipForWidget.OwnerId]
+	var owner = c.root.Containers[tooltipForWidget.OwnerId]
 	var hidden = tooltip == nil || tooltipForWidget == nil || internal.Runtime < tooltipAt+0.5 ||
-		tooltip.Fields[field.Text] == "" || !tooltipForWidget.isFocused(root, cam)
+		tooltip.Fields[field.Text] == "" || !tooltipForWidget.isFocused()
 	tooltipVisible = !hidden
 
 	if !tooltipWasVisible && tooltipVisible {
-		sound.AssetId = defaultValue(root.themedField(field.TooltipSound, owner, tooltipForWidget), "~popup")
-		sound.Volume = root.Volume
+		sound.AssetId = defaultValue(c.root.themedField(field.TooltipSound, owner, tooltipForWidget), "~popup")
+		sound.Volume = c.root.Volume
 		sound.Play()
 	}
 
@@ -62,12 +62,12 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 		return
 	}
 
-	var camW, camH = cam.Size()
+	var camW, camH = c.root.cam.Size()
 	var width = parseNum(dyn(c, tooltip.Fields[field.Width], "500"), 500)
-	var margin = parseNum(root.themedField(field.TooltipMargin, c, tooltip), 50)
+	var margin = parseNum(c.root.themedField(field.TooltipMargin, c, tooltip), 50)
 	tooltip.Width, tooltip.Height = width-margin, camH
 
-	setupVisualsText(root, tooltip, true)
+	setupVisualsText(tooltip, true)
 
 	var lines = tooltip.textBox.TextLines()
 	var lh = tooltip.textBox.LineHeight
@@ -87,6 +87,6 @@ func drawTooltip(root *root, c *container, cam *graphics.Camera) {
 		tooltip.textBox.Y = tooltip.Y
 	}
 
-	setupVisualsTextured(root, tooltip)
-	drawVisuals(cam, root, tooltip, false, nil)
+	setupVisualsTextured(tooltip)
+	drawVisuals(tooltip, false, nil)
 }

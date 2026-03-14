@@ -17,10 +17,10 @@ func Draggable(id string, properties ...string) string {
 //=================================================================
 
 func (g *GUI) DragJustGrabbed() (id string) {
-	return onGrab(g.root)
+	return g.root.onGrab()
 }
 func (g *GUI) DragJustDropped() (grabId, dropId string) {
-	return onDrop(g.root)
+	return g.root.onDrop()
 }
 func (g *GUI) DragCancel() {
 	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
@@ -37,22 +37,22 @@ func (g *GUI) DragCancel() {
 //=================================================================
 // private
 
-func draggable(cam *graphics.Camera, root *root, widget *widget) {
-	if root.wPressedOn == widget {
+func draggable(w *widget) {
+	if w.root.wPressedOn == w {
 		mouse.SetCursor(cursor.Hand)
-		widget.DragX += mouseX - prevMouseX
-		widget.DragY += mouseY - prevMouseY
+		w.DragX += mouseX - prevMouseX
+		w.DragY += mouseY - prevMouseY
 	} else {
-		widget.DragX, widget.DragY = widget.X+widget.Width/2, widget.Y+widget.Height/2
+		w.DragX, w.DragY = w.X+w.Width/2, w.Y+w.Height/2
 	}
 
-	button(cam, root, widget)
+	button(w)
 }
 
-func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
-	var owner = root.Containers[widget.OwnerId]
-	var assetId = defaultValue(root.themedField(field.DraggableAssetId, owner, widget), "")
-	var scale = parseNum(root.themedField(field.DraggableAssetScale, owner, widget), 1)
+func drawDraggable(widget *widget) {
+	var owner = widget.root.Containers[widget.OwnerId]
+	var assetId = defaultValue(widget.root.themedField(field.DraggableAssetId, owner, widget), "")
+	var scale = parseNum(widget.root.themedField(field.DraggableAssetScale, owner, widget), 1)
 
 	if assetId == "" {
 		return
@@ -63,7 +63,7 @@ func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
 	var spriteRatio = widget.Width / widget.Height
 	var drawW, drawH float32
 	var disabled = widget.isDisabled(owner)
-	var col = defaultValue(root.themedField(field.DraggableAssetColor, owner, widget), "255 255 255")
+	var col = defaultValue(widget.root.themedField(field.DraggableAssetColor, owner, widget), "255 255 255")
 	var sprite = graphics.NewSprite(assetId, widget.DragX, widget.DragY)
 
 	if assetRatio > spriteRatio {
@@ -78,40 +78,40 @@ func drawDraggable(widget *widget, root *root, cam *graphics.Camera) {
 	sprite.Tint = parseColor(col, disabled)
 	sprite.PivotX, sprite.PivotY = 0.5, 0.5
 	sprite.ScaleX, sprite.ScaleY = scale, scale
-	cam.DrawSprites(sprite)
+	widget.root.cam.DrawSprites(sprite)
 }
 
-func onDrop(root *root) (string, string) {
+func (r *root) onDrop() (string, string) {
 	var left = mouse.IsButtonJustReleased(b.Left)
-	if root.wPressedOn != nil && root.wPressedOn.Class == "draggable" && left {
-		var owner = root.Containers[root.wPressedOn.OwnerId]
-		var assetId = defaultValue(root.themedField(field.DraggableAssetId, owner, root.wPressedOn), "")
+	if r.wPressedOn != nil && r.wPressedOn.Class == "draggable" && left {
+		var owner = r.Containers[r.wPressedOn.OwnerId]
+		var assetId = defaultValue(r.themedField(field.DraggableAssetId, owner, r.wPressedOn), "")
 		if assetId == "" {
-			return root.wPressedOn.Id, ""
+			return r.wPressedOn.Id, ""
 		}
 
-		sound.Volume = root.Volume
+		sound.Volume = r.Volume
 		defer sound.Play()
-		if root.wFocused == nil || root.wFocused.Class == "draggable" {
-			var val = root.themedField(field.ButtonSoundRelease, owner, root.wPressedOn)
+		if r.wFocused == nil || r.wFocused.Class == "draggable" {
+			var val = r.themedField(field.ButtonSoundRelease, owner, r.wPressedOn)
 			sound.AssetId = defaultValue(val, "~release")
-			return root.wPressedOn.Id, root.wFocused.Id
+			return r.wPressedOn.Id, r.wFocused.Id
 		}
 
-		sound.AssetId = defaultValue(root.themedField(field.DraggableCancelSoundId, owner, root.wPressedOn), "~error")
-		return root.wPressedOn.Id, ""
+		sound.AssetId = defaultValue(r.themedField(field.DraggableCancelSoundId, owner, r.wPressedOn), "~error")
+		return r.wPressedOn.Id, ""
 	}
 	return "", ""
 }
-func onGrab(root *root) string {
-	var cond = root.wPressedOn != nil && root.wPressedOn.Class == "draggable"
+func (r *root) onGrab() string {
+	var cond = r.wPressedOn != nil && r.wPressedOn.Class == "draggable"
 	var result = condition.JustTurnedTrue(cond, ";;;;draggg-start")
 	if result {
-		var owner = root.Containers[root.wPressedOn.OwnerId]
-		if root.themedField(field.DraggableAssetId, owner, root.wPressedOn) == "" {
+		var owner = r.Containers[r.wPressedOn.OwnerId]
+		if r.themedField(field.DraggableAssetId, owner, r.wPressedOn) == "" {
 			return ""
 		}
-		return root.wPressedOn.Id
+		return r.wPressedOn.Id
 	}
 	return ""
 }

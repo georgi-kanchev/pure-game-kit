@@ -3,7 +3,6 @@ package gui
 import (
 	"encoding/xml"
 	"pure-game-kit/execution/condition"
-	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/keyboard"
@@ -30,6 +29,7 @@ type container struct {
 	dragVelX, dragVelY,
 	targetScrollX, targetScrollY float32
 
+	root      *root
 	Fields    map[string]string
 	Widgets   []string
 	WasHidden bool
@@ -51,7 +51,8 @@ const scrollSize, handleSpeed, dragFriction, dragMomentum = 10.0, 12.0, 0.95, 30
 
 var rowWidths = map[*widget]float32{}
 
-func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
+func (c *container) updateAndDraw() {
+	var cam = c.root.cam
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
 	var cGapX = parseNum(c.Fields[f.GapX], 0)
@@ -66,27 +67,27 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
 
-	if c.isHovered(cam) {
-		root.cHovered = c
+	if c.isHovered() {
+		c.root.cHovered = c
 	}
-	if c.isFocused(root, cam) && mouse.IsButtonJustPressed(b.Middle) {
-		root.cMiddlePressed = c
+	if c.isFocused() && mouse.IsButtonJustPressed(b.Middle) {
+		c.root.cMiddlePressed = c
 	}
 
 	var rowWidth = cGapX * 2
 	var rowWidgets []*widget
 	collection.MapClear(rowWidths)
 	for _, wId := range c.Widgets { // loop for calculations, see below it
-		var widget = root.Widgets[wId]
-		if widget.isSkipped(root, c) {
+		var widget = c.root.Widgets[wId]
+		if widget.isSkipped(c) {
 			continue
 		}
 
 		var _, isBgr = widget.Fields[f.FillContainer]
-		var ww = parseNum(dyn(c, root.themedField(f.Width, c, widget), "0"), 0)
-		var wh = parseNum(dyn(c, root.themedField(f.Height, c, widget), "0"), 0)
-		var gapX = parseNum(root.themedField(f.GapX, c, widget), 0)
-		var gapY = parseNum(root.themedField(f.GapY, c, widget), 0)
+		var ww = parseNum(dyn(c, c.root.themedField(f.Width, c, widget), "0"), 0)
+		var wh = parseNum(dyn(c, c.root.themedField(f.Height, c, widget), "0"), 0)
+		var gapX = parseNum(c.root.themedField(f.GapX, c, widget), 0)
+		var gapY = parseNum(c.root.themedField(f.GapY, c, widget), 0)
 		var offX = parseNum(widget.Fields[f.OffsetX], 0)
 		var offY = parseNum(widget.Fields[f.OffsetY], 0)
 
@@ -117,7 +118,7 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 		}
 
 		widget.Width, widget.Height = ww, wh
-		widget.ThemeId = root.themedField(f.ThemeId, c, widget)
+		widget.ThemeId = c.root.themedField(f.ThemeId, c, widget)
 
 		if !isBgr {
 			widget.X -= c.ScrollX
@@ -138,12 +139,12 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	//=================================================================
 	// this is done in two loops because the content size of the container needs to be known to anchor it
 
-	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY, root)
+	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY)
 	var contentW, contentH = maxX - minX, maxY - minY
 	var draggables []*widget = make([]*widget, 0, len(c.Widgets))
 	for _, wId := range c.Widgets { // after-calculation loop
-		var widget = root.Widgets[wId]
-		if widget.IsCulled || widget.isSkipped(root, c) {
+		var widget = c.root.Widgets[wId]
+		if widget.IsCulled || widget.isSkipped(c) {
 			continue
 		}
 
@@ -160,18 +161,18 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 			}
 		}
 
-		if widget.isHovered(c, cam) {
-			root.wHovered = widget
+		if widget.isHovered(c) {
+			c.root.wHovered = widget
 		}
 
 		if widget.UpdateAndDraw != nil {
-			widget.UpdateAndDraw(cam, root, widget)
-			tryShowTooltip(widget, root, c, cam)
+			widget.UpdateAndDraw(widget)
+			tryShowTooltip(widget, c)
 		} else if widget.Class == "visual" {
-			setupVisualsTextured(root, widget)
-			setupVisualsText(root, widget, true)
-			drawVisuals(cam, root, widget, false, nil)
-			tryShowTooltip(widget, root, c, cam)
+			setupVisualsTextured(widget)
+			setupVisualsText(widget, true)
+			drawVisuals(widget, false, nil)
+			tryShowTooltip(widget, c)
 		}
 
 		if widget.Class == "draggable" {
@@ -184,18 +185,17 @@ func (c *container) updateAndDraw(root *root, cam *graphics.Camera) {
 	}
 
 	for _, draggable := range draggables {
-		if draggable != root.wPressedOn {
-			drawDraggable(draggable, root, cam)
+		if draggable != c.root.wPressedOn {
+			drawDraggable(draggable)
 		}
 	}
 
 	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
-	c.tryShowScroll(minX, minY, maxX, maxY, root, cam)
+	c.tryShowScrolls(minX, minY, maxX, maxY)
 }
-
-func (c *container) tryShowScroll(minX, minY, maxX, maxY float32, root *root, cam *graphics.Camera) {
-	var mx, my = cam.MousePosition()
-	var focused = c.isFocused(root, cam)
+func (c *container) tryShowScrolls(minX, minY, maxX, maxY float32) {
+	var mx, my = c.root.cam.MousePosition()
+	var focused = c.isFocused()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var scroll = mouse.ScrollSmooth()
 	var horizontal = minX+1 < c.X || maxX-1 > c.X+c.Width
@@ -206,160 +206,168 @@ func (c *container) tryShowScroll(minX, minY, maxX, maxY float32, root *root, ca
 	}
 
 	if mouse.Scroll() != 0 && focused {
-		root.cScrolledOn = c
+		c.root.cScrolledOn = c
 	}
-	if root.cWasScrolling == c && !focused {
-		root.cScrolledOn = nil
+	if c.root.cWasScrolling == c && !focused {
+		c.root.cScrolledOn = nil
 	}
 
 	if horizontal {
-		var barW = condition.If(vertical, c.Width-scrollSize, c.Width) // make space for vertical scroll
-		var handleW = barW / (maxX - minX) * barW
-		var handleCol = color.Brighten(palette.Gray, 0.5)
-
-		if scroll != 0 && focused && shift && root.cScrolledOn == c {
-			c.ScrollX -= float32(scroll)
-		}
-
-		if c == root.cMiddlePressed {
-			var dx = mx - c.prevMouseX
-			c.ScrollX -= dx
-			var instantVelX = -dx / internal.DeltaTime
-			const weight = 0.2
-			c.dragVelX = (c.dragVelX * (1.0 - weight)) + (instantVelX * weight)
-		} else {
-			c.ScrollX += c.dragVelX * internal.DeltaTime
-			var decay = number.Exponential(-10.0 * internal.DeltaTime)
-			c.dragVelX *= decay
-
-			if number.Absolute(c.dragVelX) < 0.1 {
-				c.dragVelX = 0
-			}
-		}
-
-		if focused && isHovered(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, cam) {
-			root.wHovered = nil
-			root.wWasHovered = nil
-			root.wFocused = nil
-			mouse.SetCursor(cursor.Hand)
-			handleCol = palette.White
-
-			if mouse.IsButtonJustPressed(b.Left) {
-				root.cPressedOnScrollH = c
-
-				var x = number.Map(c.ScrollX, 0, (maxX-minX)-barW, c.X, c.X+barW-handleW)
-				if !isHovered(x, c.Y+c.Height-scrollSize, handleW, scrollSize, cam) {
-					c.targetScrollX = number.Map(mx-c.X, handleW/2, barW-handleW/2, 0, maxX-minX-barW)
-				} // clicking on non-handle area moves the handle instantly
-			}
-		}
-
-		if c == root.cPressedOnScrollH {
-			c.targetScrollX += (mx - c.prevMouseX) / (handleW / barW)
-			handleCol = palette.Gray
-
-			// smooth handle dragging
-			var diff = c.targetScrollX - c.ScrollX
-			c.ScrollX += diff * handleSpeed * internal.DeltaTime
-			if number.Absolute(diff) < 0.5 {
-				c.ScrollX = c.targetScrollX
-			}
-		} else { // the scroll may have changed by MMB dragging or scrolling
-			c.targetScrollX = c.ScrollX
-		}
-
-		c.ScrollX = number.Limit(c.ScrollX, 0, (maxX-minX)-barW)
-		var x = number.Map(c.ScrollX, 0, (maxX-minX)-barW, c.X, c.X+barW-handleW)
-		cam.DrawQuad(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, 0, color.RGBA(0, 0, 0, 150))
-		cam.DrawQuad(x, c.Y+c.Height-scrollSize, handleW, scrollSize, 0, handleCol)
-		cam.DrawQuadFrame(x, c.Y+c.Height-scrollSize, handleW, scrollSize, 0, -scrollSize*0.3, palette.Black)
+		c.handleHorizontalSlider(maxX, minX, scroll, vertical, focused, shift)
 	}
-
-	//=================================================================
-
 	if vertical {
-		var handleH = (c.Height / (maxY - minY)) * c.Height
-		var handleCol = color.Brighten(palette.Gray, 0.5)
-
-		if scroll != 0 && focused && !shift && root.cScrolledOn == c {
-			c.ScrollY -= float32(scroll)
-		}
-
-		if c == root.cMiddlePressed {
-			var dy = my - c.prevMouseY
-			c.ScrollY -= dy
-			var instantVelY = -dy / internal.DeltaTime
-			const weight = 0.2
-			c.dragVelY = (c.dragVelY * (1.0 - weight)) + (instantVelY * weight)
-		} else {
-			c.ScrollY += c.dragVelY * internal.DeltaTime
-			var decay = number.Exponential(-10.0 * internal.DeltaTime)
-			c.dragVelY *= decay
-
-			if number.Absolute(c.dragVelY) < 0.1 {
-				c.dragVelY = 0
-			}
-		}
-
-		if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {
-			root.wHovered = nil
-			root.wWasHovered = nil
-			root.wFocused = nil
-			mouse.SetCursor(cursor.Hand)
-			handleCol = palette.White
-
-			if mouse.IsButtonJustPressed(b.Left) {
-				root.cPressedOnScrollV = c
-
-				var y = number.Map(c.ScrollY, 0, (maxY-minY)-c.Height, c.Y, c.Y+c.Height-handleH)
-				if !isHovered(c.X+c.Width-scrollSize, y, scrollSize, handleH, cam) {
-					c.targetScrollY = number.Map(my-c.Y, handleH/2, c.Height-handleH/2, 0, maxY-minY-c.Height)
-				} // clicking on non-handle area moves the handle instantly
-			}
-		}
-		if c == root.cPressedOnScrollV { // drag handle
-			c.targetScrollY += (my - c.prevMouseY) / (handleH / c.Height)
-			handleCol = palette.Gray
-
-			// smooth handle dragging
-			var diff = c.targetScrollY - c.ScrollY
-			c.ScrollY += diff * handleSpeed * internal.DeltaTime
-			if number.Absolute(diff) < 0.5 {
-				c.ScrollY = c.targetScrollY
-			}
-		} else { // the scroll may have changed by MMB dragging or scrolling
-			c.targetScrollY = c.ScrollY
-		}
-
-		c.ScrollY = number.Limit(c.ScrollY, 0, (maxY-minY)-c.Height)
-		var y = number.Map(c.ScrollY, 0, (maxY-minY)-c.Height, c.Y, c.Y+c.Height-handleH)
-		cam.DrawQuad(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, 0, color.RGBA(0, 0, 0, 150))
-		cam.DrawQuad(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
-		cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, palette.Black)
+		c.handleVerticalSlider(maxY, minY, scroll, focused, shift)
 	}
 
 	if scroll != 0 && focused {
-		root.cWasScrolling = c
+		c.root.cWasScrolling = c
 	}
 
 	c.prevMouseX, c.prevMouseY = mx, my
 }
 
-func (c *container) isHovered(cam *graphics.Camera) bool {
-	return isHovered(c.X, c.Y, c.Width, c.Height, cam)
-}
-func (c *container) isFocused(root *root, cam *graphics.Camera) bool {
-	return root.cFocused == c && root.cWasHovered == c && c.isHovered(cam)
+func (c *container) handleVerticalSlider(maxY, minY, scroll float32, focused, shift bool) {
+	var cam = c.root.cam
+	var _, my = cam.MousePosition()
+	var handleH = (c.Height / (maxY - minY)) * c.Height
+	var handleCol = color.Brighten(palette.Gray, 0.5)
+
+	if scroll != 0 && focused && !shift && c.root.cScrolledOn == c {
+		c.ScrollY -= float32(scroll)
+	}
+
+	if c == c.root.cMiddlePressed {
+		var dy = my - c.prevMouseY
+		c.ScrollY -= dy
+		var instantVelY = -dy / internal.DeltaTime
+		const weight = 0.2
+		c.dragVelY = (c.dragVelY * (1.0 - weight)) + (instantVelY * weight)
+	} else {
+		c.ScrollY += c.dragVelY * internal.DeltaTime
+		var decay = number.Exponential(-10.0 * internal.DeltaTime)
+		c.dragVelY *= decay
+
+		if number.Absolute(c.dragVelY) < 0.1 {
+			c.dragVelY = 0
+		}
+	}
+
+	if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {
+		c.root.wHovered = nil
+		c.root.wWasHovered = nil
+		c.root.wFocused = nil
+		mouse.SetCursor(cursor.Hand)
+		handleCol = palette.White
+
+		if mouse.IsButtonJustPressed(b.Left) {
+			c.root.cPressedOnScrollV = c
+
+			var y = number.Map(c.ScrollY, 0, (maxY-minY)-c.Height, c.Y, c.Y+c.Height-handleH)
+			if !isHovered(c.X+c.Width-scrollSize, y, scrollSize, handleH, cam) {
+				c.targetScrollY = number.Map(my-c.Y, handleH/2, c.Height-handleH/2, 0, maxY-minY-c.Height)
+			} // clicking on non-handle area moves the handle instantly
+		}
+	}
+	if c == c.root.cPressedOnScrollV { // drag handle
+		c.targetScrollY += (my - c.prevMouseY) / (handleH / c.Height)
+		handleCol = palette.Gray
+
+		// smooth handle dragging
+		var diff = c.targetScrollY - c.ScrollY
+		c.ScrollY += diff * handleSpeed * internal.DeltaTime
+		if number.Absolute(diff) < 0.5 {
+			c.ScrollY = c.targetScrollY
+		}
+	} else { // the scroll may have changed by MMB dragging or scrolling
+		c.targetScrollY = c.ScrollY
+	}
+
+	c.ScrollY = number.Limit(c.ScrollY, 0, (maxY-minY)-c.Height)
+	var y = number.Map(c.ScrollY, 0, (maxY-minY)-c.Height, c.Y, c.Y+c.Height-handleH)
+	cam.DrawQuad(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, 0, color.RGBA(0, 0, 0, 150))
+	cam.DrawQuad(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
+	cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, palette.Black)
 }
 
-func (c *container) contentMinMax(gapX, gapY float32, root *root) (minX, minY, maxX, maxY float32) {
+func (c *container) handleHorizontalSlider(maxX, minX, scroll float32, vertical, focused, shift bool) {
+	var cam = c.root.cam
+	var mx, _ = cam.MousePosition()
+	var barW = condition.If(vertical, c.Width-scrollSize, c.Width) // make space for vertical scroll
+	var handleW = barW / (maxX - minX) * barW
+	var handleCol = color.Brighten(palette.Gray, 0.5)
+
+	if scroll != 0 && focused && shift && c.root.cScrolledOn == c {
+		c.ScrollX -= float32(scroll)
+	}
+
+	if c == c.root.cMiddlePressed {
+		var dx = mx - c.prevMouseX
+		c.ScrollX -= dx
+		var instantVelX = -dx / internal.DeltaTime
+		const weight = 0.2
+		c.dragVelX = (c.dragVelX * (1.0 - weight)) + (instantVelX * weight)
+	} else {
+		c.ScrollX += c.dragVelX * internal.DeltaTime
+		var decay = number.Exponential(-10.0 * internal.DeltaTime)
+		c.dragVelX *= decay
+
+		if number.Absolute(c.dragVelX) < 0.1 {
+			c.dragVelX = 0
+		}
+	}
+
+	if focused && isHovered(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, cam) {
+		c.root.wHovered = nil
+		c.root.wWasHovered = nil
+		c.root.wFocused = nil
+		mouse.SetCursor(cursor.Hand)
+		handleCol = palette.White
+
+		if mouse.IsButtonJustPressed(b.Left) {
+			c.root.cPressedOnScrollH = c
+
+			var x = number.Map(c.ScrollX, 0, (maxX-minX)-barW, c.X, c.X+barW-handleW)
+			if !isHovered(x, c.Y+c.Height-scrollSize, handleW, scrollSize, cam) {
+				c.targetScrollX = number.Map(mx-c.X, handleW/2, barW-handleW/2, 0, maxX-minX-barW)
+			} // clicking on non-handle area moves the handle instantly
+		}
+	}
+
+	if c == c.root.cPressedOnScrollH {
+		c.targetScrollX += (mx - c.prevMouseX) / (handleW / barW)
+		handleCol = palette.Gray
+
+		// smooth handle dragging
+		var diff = c.targetScrollX - c.ScrollX
+		c.ScrollX += diff * handleSpeed * internal.DeltaTime
+		if number.Absolute(diff) < 0.5 {
+			c.ScrollX = c.targetScrollX
+		}
+	} else { // the scroll may have changed by MMB dragging or scrolling
+		c.targetScrollX = c.ScrollX
+	}
+
+	c.ScrollX = number.Limit(c.ScrollX, 0, (maxX-minX)-barW)
+	var x = number.Map(c.ScrollX, 0, (maxX-minX)-barW, c.X, c.X+barW-handleW)
+	cam.DrawQuad(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, 0, color.RGBA(0, 0, 0, 150))
+	cam.DrawQuad(x, c.Y+c.Height-scrollSize, handleW, scrollSize, 0, handleCol)
+	cam.DrawQuadFrame(x, c.Y+c.Height-scrollSize, handleW, scrollSize, 0, -scrollSize*0.3, palette.Black)
+}
+
+func (c *container) isHovered() bool {
+	return isHovered(c.X, c.Y, c.Width, c.Height, c.root.cam)
+}
+func (c *container) isFocused() bool {
+	return c.root.cFocused == c && c.root.cWasHovered == c && c.isHovered()
+}
+func (c *container) contentMinMax(gapX, gapY float32) (minX, minY, maxX, maxY float32) {
 	minX, minY = number.Infinity(), number.Infinity()
 	maxX, maxY = number.NegativeInfinity(), number.NegativeInfinity()
 
 	for _, w := range c.Widgets {
-		var widget = root.Widgets[w]
+		var widget = c.root.Widgets[w]
 		var _, isBgr = widget.Fields[f.FillContainer]
-		if isBgr || widget.isSkipped(root, c) { // even culled items are calculated for
+		if isBgr || widget.isSkipped(c) { // even culled items are calculated for
 			continue
 		}
 

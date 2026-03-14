@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
@@ -20,7 +22,7 @@ func main() {
 
 	var cam = graphics.NewCamera(1)
 	var _, _, box = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewFromXMLs(gui.NewElementsXML(
+	var hud = gui.NewFromXMLs(cam, gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, d.OwnerWidth+"-40", f.Height, "50", f.GapY, "20",
 			f.TextAlignmentX, "0", f.TextAlignmentY, "0.5", f.TextColor, "0 0 0 255",
@@ -95,6 +97,8 @@ func main() {
 
 	hud.Scale = 2.01 // removes tearing artifacts
 
+	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
+
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
 		"boxes":            example.Boxes,
@@ -135,7 +139,7 @@ func main() {
 		window.FrameRateLimit = 0
 
 		cam.SetScreenAreaToWindow()
-		hud.UpdateAndDraw(cam)
+		hud.UpdateAndDraw()
 		cam.DrawTextFPS()
 
 		for k, v := range buttons {

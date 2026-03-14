@@ -30,32 +30,34 @@ type root struct {
 	wPressedAt                                                  float32
 
 	cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container // for container slider
+
+	cam *graphics.Camera
 }
 
-func (root *root) IsButtonJustClicked(buttonId string, camera *graphics.Camera) bool {
-	var widget, exists = root.Widgets[buttonId]
+func (r *root) IsButtonJustClicked(buttonId string) bool {
+	var widget, exists = r.Widgets[buttonId]
 	if !exists {
 		return false
 	}
 
-	var owner = root.Containers[widget.OwnerId]
-	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
-	var focus = widget.isFocused(root, camera) && root.wPressedOn == widget
+	var owner = r.Containers[widget.OwnerId]
+	var hotkey = key.FromName(r.themedField(field.ButtonHotkey, owner, widget))
+	var focus = widget.isFocused() && r.wPressedOn == widget
 	var input = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustReleased(b.Left))
 	return input
 }
-func (root *root) IsButtonClickedAndHeld(buttonId string, camera *graphics.Camera) bool {
-	var widget, exists = root.Widgets[buttonId]
+func (r *root) IsButtonClickedAndHeld(buttonId string) bool {
+	var widget, exists = r.Widgets[buttonId]
 	if !exists {
 		return false
 	}
 
-	var focus = widget.isFocused(root, camera)
-	var owner = root.Containers[widget.OwnerId]
-	var hotkey = key.FromName(root.themedField(field.ButtonHotkey, owner, widget))
+	var focus = widget.isFocused()
+	var owner = r.Containers[widget.OwnerId]
+	var hotkey = key.FromName(r.themedField(field.ButtonHotkey, owner, widget))
 	var first = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustPressed(b.Left))
-	var tick = internal.Runtime > root.wPressedAt+0.5
-	var inputHold = k.IsKeyPressed(hotkey) || (focus && root.wPressedOn == widget && m.IsButtonPressed(b.Left))
+	var tick = internal.Runtime > r.wPressedAt+0.5
+	var inputHold = k.IsKeyPressed(hotkey) || (focus && r.wPressedOn == widget && m.IsButtonPressed(b.Left))
 	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId, "-", hotkey)) && tick
 
 	return first || hold

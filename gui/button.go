@@ -2,7 +2,6 @@ package gui
 
 import (
 	"pure-game-kit/execution/condition"
-	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
 	k "pure-game-kit/input/keyboard"
 	"pure-game-kit/input/keyboard/key"
@@ -28,45 +27,45 @@ func (g *GUI) IsButtonClickedAndHeld(buttonId string) bool {
 //=================================================================
 // private
 
-func button(cam *graphics.Camera, root *root, widget *widget) {
-	var owner = root.Containers[widget.OwnerId]
-	var prev = widget.ThemeId
-	var themePress = root.themedField(field.ButtonThemeIdPress, owner, widget)
-	var focus = widget.isFocused(root, cam)
+func button(w *widget) {
+	var owner = w.root.Containers[w.OwnerId]
+	var prev = w.ThemeId
+	var themePress = w.root.themedField(field.ButtonThemeIdPress, owner, w)
+	var focus = w.isFocused()
 
 	if focus {
 		m.SetCursor(cursor.Hand)
 
-		if widget.isDisabled(owner) {
+		if w.isDisabled(owner) {
 			m.SetCursor(cursor.NotAllowed)
 		}
 
-		var themeHover = root.themedField(field.ButtonThemeIdHover, owner, widget)
+		var themeHover = w.root.themedField(field.ButtonThemeIdHover, owner, w)
 		if themeHover != "" {
-			widget.ThemeId = themeHover
+			w.ThemeId = themeHover
 		}
 		var press, justPress = m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left)
-		tryPress(press, justPress, btnSounds, themePress, widget, root, owner)
+		tryPress(press, justPress, btnSounds, themePress, w, owner)
 	}
 
-	var hotkeyStr = root.themedField(field.ButtonHotkey, owner, widget)
+	var hotkeyStr = w.root.themedField(field.ButtonHotkey, owner, w)
 	if typingIn == nil {
 		if hotkeyStr != "" { // no hotkeys while typing
 			var hotkey = key.FromName(hotkeyStr)
-			tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, widget, root, owner)
+			tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, w, owner)
 		}
-		if btnSounds && root.IsButtonJustClicked(widget.Id, cam) {
-			sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), "~release")
-			sound.Volume = root.Volume
+		if btnSounds && w.root.IsButtonJustClicked(w.Id) {
+			sound.AssetId = defaultValue(w.root.themedField(field.ButtonSoundPress, owner, w), "~release")
+			sound.Volume = w.root.Volume
 			sound.Play()
 		}
 	}
 
-	if root.IsButtonJustClicked(widget.Id, cam) { // handling any widgets that this button toggles
+	if w.root.IsButtonJustClicked(w.Id) { // handling any widgets that this button toggles
 		for _, wId := range owner.Widgets {
-			var curWidget = root.Widgets[wId]
-			var toggleParentId = root.themedField(field.ToggleButtonId, owner, curWidget)
-			if toggleParentId == widget.Id {
+			var curWidget = w.root.Widgets[wId]
+			var toggleParentId = w.root.themedField(field.ToggleButtonId, owner, curWidget)
+			if toggleParentId == w.Id {
 				var hidden = curWidget.Fields[field.Hidden]
 				var newHidden = condition.If(hidden == "", "1", "")
 				curWidget.Fields[field.Hidden] = newHidden
@@ -74,24 +73,24 @@ func button(cam *graphics.Camera, root *root, widget *widget) {
 		}
 	}
 
-	setupVisualsTextured(root, widget)
-	setupVisualsText(root, widget, false)
-	drawVisuals(cam, root, widget, false, nil)
-	buttonColor = parseColor(root.themedField(field.Color, owner, widget), widget.isDisabled(owner))
-	widget.ThemeId = prev
+	setupVisualsTextured(w)
+	setupVisualsText(w, false)
+	drawVisuals(w, false, nil)
+	buttonColor = parseColor(w.root.themedField(field.Color, owner, w), w.isDisabled(owner))
+	w.ThemeId = prev
 }
 
-func tryPress(press, once, sounds bool, themePress string, widget *widget, root *root, owner *container) {
-	if press && root.wPressedOn == widget && themePress != "" {
+func tryPress(press, once, sounds bool, themePress string, widget *widget, owner *container) {
+	if press && widget.root.wPressedOn == widget && themePress != "" {
 		widget.ThemeId = themePress
 	}
 	if once {
 		if sounds {
-			sound.AssetId = defaultValue(root.themedField(field.ButtonSoundPress, owner, widget), "~press")
-			sound.Volume = root.Volume
+			sound.AssetId = defaultValue(widget.root.themedField(field.ButtonSoundPress, owner, widget), "~press")
+			sound.Volume = widget.root.Volume
 			sound.Play()
 		}
-		root.wPressedOn = widget
-		root.wPressedAt = time.Runtime()
+		widget.root.wPressedOn = widget
+		widget.root.wPressedAt = time.Runtime()
 	}
 }

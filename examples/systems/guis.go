@@ -15,7 +15,7 @@ func GUIs() {
 	var cam = graphics.NewCamera(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons()
 	var _, ids, box = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewFromXMLs(gui.NewElementsXML(
+	var hud = gui.NewFromXMLs(cam, gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, "300", f.Height, "100", f.GapX, "20", f.GapY, "20",
 			f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
@@ -192,13 +192,13 @@ func GUIs() {
 
 		var from, to = hud.DragJustDropped()
 		if from != "" && to != "" {
-			var fromId = hud.Field(from, f.DraggableAssetId, cam)
-			var toId = hud.Field(to, f.DraggableAssetId, cam)
+			var fromId = hud.Field(from, f.DraggableAssetId)
+			var toId = hud.Field(to, f.DraggableAssetId)
 			hud.SetField(from, f.DraggableAssetId, toId)
 			hud.SetField(to, f.DraggableAssetId, fromId)
 		}
 
-		hud.UpdateAndDraw(cam)
+		hud.UpdateAndDraw()
 		cam.DrawTextFPS()
 	}
 }
