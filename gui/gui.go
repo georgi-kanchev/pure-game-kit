@@ -89,10 +89,10 @@ func (g *GUI) UpdateAndDraw() {
 }
 
 // Works for Widgets & Containers.
-func (g *GUI) SetField(id, field string, value string) {
-	var w, hasW = g.root.Widgets[id]
-	var c, hasC = g.root.Containers[id]
-	var t, hasT = g.root.Themes[id]
+func (g *GUI) SetField(anyId, field string, value string) {
+	var w, hasW = g.root.Widgets[anyId]
+	var c, hasC = g.root.Containers[anyId]
+	var t, hasT = g.root.Themes[anyId]
 
 	if hasW {
 		w.Fields[field] = value
@@ -112,10 +112,10 @@ func (g *GUI) SetField(id, field string, value string) {
 //	gui.FieldNumber(...)
 //
 // for dynamic values.
-func (g *GUI) Field(id, field string) string {
-	var w, hasW = g.root.Widgets[id]
-	var c, hasC = g.root.Containers[id]
-	var t, hasT = g.root.Themes[id]
+func (g *GUI) Field(anyId, field string) string {
+	var w, hasW = g.root.Widgets[anyId]
+	var c, hasC = g.root.Containers[anyId]
+	var t, hasT = g.root.Themes[anyId]
 
 	if hasW {
 		var owner = g.root.Containers[w.OwnerId]
@@ -132,13 +132,13 @@ func (g *GUI) Field(id, field string) string {
 }
 
 // Works for Widgets & Containers. Converts the appropriate fields to numbers while replacing their dynamic parts.
-func (g *GUI) FieldNumber(id, field string) float32 {
-	var w, hasW = g.root.Widgets[id]
+func (g *GUI) FieldNumber(anyId, field string) float32 {
+	var w, hasW = g.root.Widgets[anyId]
 	var owner *container
 	if hasW {
 		owner = g.root.Containers[w.OwnerId]
 	}
-	var value = dyn(owner, g.Field(id, field), "NaN")
+	var value = dyn(owner, g.Field(anyId, field), "NaN")
 	return parseNum(value, number.NaN())
 }
 
@@ -155,11 +155,11 @@ func (g *GUI) AreaText(widgetId string) (width, height float32) {
 }
 
 // Works for Widgets & Containers.
-func (g *GUI) Area(id string) (x, y, width, height, angle float32) {
+func (g *GUI) Area(anyId string) (x, y, width, height, angle float32) {
 	var cam = g.root.cam
 	var zoom = cam.Zoom / g.Scale
-	var w, hasW = g.root.Widgets[id]
-	var c, hasC = g.root.Containers[id]
+	var w, hasW = g.root.Widgets[anyId]
+	var c, hasC = g.root.Containers[anyId]
 	if hasC {
 		x, y = c.X, c.Y
 		width, height = c.Width, c.Height
@@ -190,12 +190,12 @@ func (g *GUI) IsAnyHovered() bool {
 }
 
 // Works for Widgets & Containers.
-func (g *GUI) IsHovered(id string) bool {
+func (g *GUI) IsHovered(anyId string) bool {
 	var prAng, prZoom, prX, prY = g.reset(false)
 	defer func() { g.root.restore(prAng, prZoom, prX, prY) }()
 
-	var w, hasW = g.root.Widgets[id]
-	var c, hasC = g.root.Containers[id]
+	var w, hasW = g.root.Widgets[anyId]
+	var c, hasC = g.root.Containers[anyId]
 
 	if hasW {
 		return w.isFocused()
