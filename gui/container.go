@@ -57,10 +57,7 @@ func (c *container) updateAndDraw() {
 	var scx, scy = cam.PointToScreen(float32(x), float32(y))
 	var cGapX = parseNum(c.Fields[f.GapX], 0)
 	var cGapY = parseNum(c.Fields[f.GapY], 0)
-	var curX, curY = x + cGapX, y + cGapY
-	var maxHeight float32
 	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
-	var nonBgrIndex = 0 // new row shouldn't work for first widget, used to check first nonBgr widget
 	var anchorX = parseNum(c.Fields[field.AnchorX], 0)
 	var anchorY = parseNum(c.Fields[field.AnchorY], 0)
 
@@ -74,10 +71,74 @@ func (c *container) updateAndDraw() {
 		c.root.cMiddlePressed = c
 	}
 
+	c.alignWidgets(x, y, w, h, cGapX, cGapY)
+
+	//=================================================================
+	// this is done in two loops because the content size of the container needs to be known to anchor it
+
+	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY)
+	var contentW, contentH = maxX - minX, maxY - minY
+	var draggables []*widget = make([]*widget, 0, len(c.Widgets))
+	for _, wId := range c.Widgets {
+		var widget = c.root.Widgets[wId]
+		if widget.IsCulled || widget.isSkipped(c) {
+			continue
+		}
+
+		var _, isBgr = widget.Fields[f.FillContainer]
+		if isBgr {
+			cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight) // mask doesn't affect bgr
+		} else {
+			if contentW <= c.Width {
+				widget.X += c.Width*anchorX - contentW*anchorX
+				widget.X += (contentW - rowWidths[widget]) * anchorX
+			}
+			if contentH <= c.Height {
+				widget.Y += c.Height*anchorY - contentH*anchorY
+			}
+		}
+
+		if widget.isHovered(c) {
+			c.root.wHovered = widget
+		}
+
+		if widget.UpdateAndDraw != nil {
+			widget.UpdateAndDraw(widget)
+			tryShowTooltip(widget, c)
+		} else if widget.Class == "visual" {
+			setupVisualsTextured(widget)
+			setupVisualsText(widget, true)
+			drawVisuals(widget, false, nil)
+			tryShowTooltip(widget, c)
+		}
+
+		if widget.Class == "draggable" {
+			draggables = append(draggables, widget)
+		}
+
+		if isBgr { // back to gap clipping
+			cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
+		}
+	}
+
+	for _, draggable := range draggables {
+		if draggable != c.root.wPressedOn {
+			drawDraggable(draggable)
+		}
+	}
+
+	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
+	c.tryShowScrolls(minX, minY, maxX, maxY)
+}
+func (c *container) alignWidgets(x, y, w, h, cGapX, cGapY float32) {
+	var maxHeight float32
+	var curX, curY = x + cGapX, y + cGapY
 	var rowWidth = cGapX * 2
 	var rowWidgets []*widget
+	var nonBgrIndex = 0 // new row shouldn't work for first widget, used to check first nonBgr widget
+
 	collection.MapClear(rowWidths)
-	for _, wId := range c.Widgets { // loop for calculations, see below it
+	for _, wId := range c.Widgets {
 		var widget = c.root.Widgets[wId]
 		if widget.isSkipped(c) {
 			continue
@@ -135,63 +196,6 @@ func (c *container) updateAndDraw() {
 	for _, w := range rowWidgets { // apply for last row too, no new row to trigger it
 		rowWidths[w] = rowWidth
 	}
-
-	//=================================================================
-	// this is done in two loops because the content size of the container needs to be known to anchor it
-
-	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY)
-	var contentW, contentH = maxX - minX, maxY - minY
-	var draggables []*widget = make([]*widget, 0, len(c.Widgets))
-	for _, wId := range c.Widgets { // after-calculation loop
-		var widget = c.root.Widgets[wId]
-		if widget.IsCulled || widget.isSkipped(c) {
-			continue
-		}
-
-		var _, isBgr = widget.Fields[f.FillContainer]
-		if isBgr {
-			cam.Mask(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight) // mask doesn't affect bgr
-		} else {
-			if contentW <= c.Width {
-				widget.X += c.Width*anchorX - contentW*anchorX
-				widget.X += (contentW - rowWidths[widget]) * anchorX
-			}
-			if contentH <= c.Height {
-				widget.Y += c.Height*anchorY - contentH*anchorY
-			}
-		}
-
-		if widget.isHovered(c) {
-			c.root.wHovered = widget
-		}
-
-		if widget.UpdateAndDraw != nil {
-			widget.UpdateAndDraw(widget)
-			tryShowTooltip(widget, c)
-		} else if widget.Class == "visual" {
-			setupVisualsTextured(widget)
-			setupVisualsText(widget, true)
-			drawVisuals(widget, false, nil)
-			tryShowTooltip(widget, c)
-		}
-
-		if widget.Class == "draggable" {
-			draggables = append(draggables, widget)
-		}
-
-		if isBgr { // back to gap clipping
-			cam.Mask(scx+int(cGapX*cam.Zoom), scy+int(cGapY*cam.Zoom), int(maskW), int(maskH))
-		}
-	}
-
-	for _, draggable := range draggables {
-		if draggable != c.root.wPressedOn {
-			drawDraggable(draggable)
-		}
-	}
-
-	cam.Mask(scx, scy, int(w*cam.Zoom), int(h*cam.Zoom))
-	c.tryShowScrolls(minX, minY, maxX, maxY)
 }
 
 func (c *container) tryShowScrolls(minX, minY, maxX, maxY float32) {
