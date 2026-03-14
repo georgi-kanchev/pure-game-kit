@@ -1,8 +1,6 @@
-/*
-Contains checks for whether a certain keyboard key is interacted with in various ways.
-Also provides text input and the currently pressed keys. Meant to be checked every frame
-instead of subscribtion-based events/callbacks.
-*/
+// Contains checks for whether a certain keyboard key is interacted with in various ways.
+// Also provides text input and the currently pressed keys. Meant to be checked every frame
+// instead of subscribtion-based events/callbacks.
 package keyboard
 
 import (

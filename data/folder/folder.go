@@ -1,7 +1,5 @@
-/*
-Wraps some essential Operating System/Input-Output (OS/IO) folder features with helper functions
-to make them more digestible and clarify their API.
-*/
+// Wraps some essential Operating System/Input-Output (OS/IO) folder features with helper functions
+// to make them more digestible and clarify their API.
 package folder
 
 import (
@@ -120,136 +118,9 @@ func Create(path string) bool {
 	}
 	return err == nil
 }
-
-/*
 func Delete(path string) bool {
-	if !IsExisting(path) {
+	if !Exists(path) {
 		return false
 	}
 	return os.RemoveAll(path) == nil
 }
-func DeleteContents(path string) bool {
-	if !Delete(path) {
-		return false
-	}
-	if !Create(path) {
-		return false
-	}
-	return true
-}
-func Rename(path, newName string) bool {
-	var newPath = ph.New(ph.Folder(path), newName)
-
-	if !IsExisting(path) || IsExisting(newPath) {
-		return false
-	}
-
-	return os.Rename(path, newPath) == nil
-}
-func MoveContents(fromPath, toPath string) bool {
-	if !IsExisting(fromPath) || !IsExisting(toPath) {
-		return false
-	}
-
-	var files = Files(fromPath)
-	for _, file := range files {
-		var srcPath = ph.New(fromPath, file)
-		var destPath = ph.New(toPath, file)
-		var err = os.MkdirAll(ph.Folder(destPath), 0755)
-		if err != nil {
-			return false
-		}
-
-		var err2 = os.Rename(srcPath, destPath)
-		if err2 == nil {
-			continue
-		}
-
-		var srcFile, err3 = os.Open(srcPath)
-		if err3 != nil {
-			return false
-		}
-		defer srcFile.Close()
-
-		var destFile, err4 = os.Create(destPath)
-		if err4 != nil {
-			return false
-		}
-		defer destFile.Close()
-
-		var _, err5 = io.Copy(destFile, srcFile)
-		if err5 != nil {
-			return false
-		}
-
-		var err6 = os.Remove(srcPath)
-		if err6 != nil {
-			return false
-		}
-	}
-
-	var folders = Folders(fromPath)
-	for _, sub := range folders {
-		var srcSub = ph.New(fromPath, sub)
-		var destSub = ph.New(toPath, sub)
-
-		var err = os.MkdirAll(destSub, 0755)
-		if err != nil {
-			return false
-		}
-		if !MoveContents(srcSub, destSub) {
-			return false
-		}
-	}
-
-	return true
-}
-func CopyContents(fromPath, toPath string) bool {
-	if !IsExisting(fromPath) || !IsExisting(toPath) {
-		return false
-	}
-
-	var files = Files(fromPath)
-	for _, file := range files {
-		var srcPath = ph.New(fromPath, file)
-		var destPath = ph.New(toPath, file)
-		var srcFile, err = os.Open(srcPath)
-		if err != nil {
-			return false
-		}
-
-		defer srcFile.Close()
-
-		var err2 = os.MkdirAll(ph.Folder(destPath), 0755)
-		if err2 != nil {
-			return false
-		}
-
-		var destFile, err3 = os.Create(destPath)
-		if err3 != nil {
-			return false
-		}
-		defer destFile.Close()
-
-		var _, err4 = io.Copy(destFile, srcFile)
-		if err4 != nil {
-			return false
-		}
-	}
-
-	var folders = Folders(fromPath)
-	for _, sub := range folders {
-		var srcSub = ph.New(fromPath, sub)
-		var destSub = ph.New(toPath, sub)
-		var err = os.MkdirAll(destSub, 0755)
-		if err != nil {
-			return false
-		}
-		if !CopyContents(srcSub, destSub) {
-			return false
-		}
-	}
-
-	return true
-}
-*/

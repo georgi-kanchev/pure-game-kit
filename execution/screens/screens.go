@@ -1,9 +1,7 @@
-/*
-A dead-simple screen manager. Essentially a global state machine with some
-lifetime interface callback functions that update the screens.
-Does not require manual updating since it is hooked to the engine pump.
-Because of that, the main game loop may remain empty since each screen would be handled elsewhere.
-*/
+// A dead-simple screen manager. Essentially a global state machine with some
+// lifetime interface callback functions that update the screens.
+// Does not require manual updating since it is hooked to the engine pump.
+// Because of that, the main game loop may remain empty since each screen would be handled elsewhere.
 package screens
 
 import (

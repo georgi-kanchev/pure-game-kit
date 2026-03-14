@@ -1,8 +1,6 @@
-/*
-Contains checks for whether a certain mouse button is interacted with in various ways.
-Also provides the currently pressed buttons, scrolling and OS cursor customization.
-Meant to be checked every frame instead of subscribtion-based events/callbacks.
-*/
+// Contains checks for whether a certain mouse button is interacted with in various ways.
+// Also provides the currently pressed buttons, scrolling and OS cursor customization.
+// Meant to be checked every frame instead of subscribtion-based events/callbacks.
 package mouse
 
 import (

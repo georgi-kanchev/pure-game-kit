@@ -1,7 +1,5 @@
-/*
-Helper functions that operate on an RGBA color, represented by a single uint number.
-It can be constructed in different ways and then manipulated.
-*/
+// Helper functions that operate on an RGBA color, represented by a single uint number.
+// It can be constructed in different ways and then manipulated.
 package color
 
 import (

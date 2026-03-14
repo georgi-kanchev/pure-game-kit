@@ -1,9 +1,7 @@
-/*
-The very heart of the engine, quite literally - it is the start of the update pump chain throughout the packages.
-No graphical application can exist without it. It handles an Operating System (OS) window and anything that
-comes with it (other than drawing). It also has access to some monitor information, useful for
-positioning & sizing the window.
-*/
+// The very heart of the engine, quite literally - it is the start of the update pump chain throughout the packages.
+// No graphical application can exist without it. It handles an Operating System (OS) window and anything that
+// comes with it (other than drawing). It also has access to some monitor information, useful for
+// positioning & sizing the window.
 package window
 
 import (

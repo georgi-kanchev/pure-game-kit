@@ -1,8 +1,6 @@
-/*
-A few functions to follow a curve or smooth-out lines.
-Useful for describing a smooth movement or path for a point or a pair of numeric values
-(time & strength for example).
-*/
+// A few functions to follow a curve or smooth-out lines.
+// Useful for describing a smooth movement or path for a point or a pair of numeric values
+// (time & strength for example).
 package curve
 
 import (

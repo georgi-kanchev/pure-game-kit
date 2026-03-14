@@ -129,12 +129,10 @@ func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 	return result
 }
 
-/*
-Diagonals take 1.5 cells distance-wise. This way, range calculations are rounded & have no weird left-overs.
-This quirk makes regular 2D distances incorrect, instead use:
-
-	shapeGrid.RangeDistance(...)
-*/
+// Diagonals take 1.5 cells distance-wise. This way, range calculations are rounded & have no weird left-overs.
+// This quirk makes regular 2D distances incorrect, instead use:
+//
+//	shapeGrid.RangeDistance(...)
 func (s *ShapeGrid) Range(startX, startY int, maxDistance float32, diagonals bool) [][2]int {
 	type state struct {
 		x, y          int

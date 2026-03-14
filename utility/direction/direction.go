@@ -1,7 +1,5 @@
-/*
-Helper functions for a directional vector. Similar angle but interpreting data differently.
-Useful for working with 2D objects.
-*/
+// Helper functions for a directional vector. Similar angle but interpreting data differently.
+// Useful for working with 2D objects.
 package direction
 
 import (

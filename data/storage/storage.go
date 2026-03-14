@@ -1,26 +1,24 @@
-/*
-Wraps some well-known text data formats, as well as a binary format.
-Also contains a few binary compression/decompression solutions.
-
-Supported data formats:
-
-	| Feature             | JSON     | XML       | YAML      | Binary           |
-	|--------=------------|----------|-----------|-----------|------------------|
-	| Primary Use         | Config   | Config    | Config    | Game State       |
-	| Data Size           | Medium   | High      | Medium    | Very Low         |
-	| Parsing Speed       | Medium   | Slow      | Slow      | Fast             |
-	| Data Types          | Basic    | Basic     | Moderate  | All              |
-	| Struct Inheritance  | No       | No        | No        | Yes              |
-	| Mergability (Git)   | Good     | Moderate  | Excellent | Bad              |
-	| Breakability        | High     | Medium    | Low       | Critical         |
-	| Editability         | High     | Medium    | Very High | None             |
-	| Text Features ------------------------------------------------------------|
-	| Nesting Quality     | Moderate | Very Good | Excellent |
-	| Layout Readability  | Vertical | Ver + Hor | Vertical  |
-	| Overall Readability | High     | Medium    | Very High |
-	| Syntax Style        | Braces   | Tags      | Indent    |
-	| Comments Support    | No       | Yes       | Yes       |
-*/
+// Wraps some well-known text data formats, as well as a binary format.
+// Also contains a few binary compression/decompression solutions.
+//
+// Supported data formats:
+//
+//	| Feature             | JSON     | XML       | YAML      | Binary           |
+//	|---------------------|----------|-----------|-----------|------------------|
+//	| Primary Use         | Config   | Config    | Config    | Game State       |
+//	| Data Size           | Medium   | High      | Medium    | Very Low         |
+//	| Parsing Speed       | Medium   | Slow      | Slow      | Fast             |
+//	| Data Types          | Basic    | Basic     | Moderate  | All              |
+//	| Struct Inheritance  | No       | No        | No        | Yes              |
+//	| Mergability (Git)   | Good     | Moderate  | Excellent | Bad              |
+//	| Breakability        | High     | Medium    | Low       | Critical         |
+//	| Editability         | High     | Medium    | Very High | None             |
+//	| Text Features ------------------------------------------------------------|
+//	| Nesting Quality     | Moderate | Very Good | Excellent |
+//	| Layout Readability  | Vertical | Ver + Hor | Vertical  |
+//	| Overall Readability | High     | Medium    | Very High |
+//	| Syntax Style        | Braces   | Tags      | Indent    |
+//	| Comments Support    | No       | Yes       | Yes       |
 package storage
 
 import (
@@ -55,15 +53,13 @@ func FromYAML(yamlData string, objectPointer any) {
 	}
 }
 
-/*
-Populates an object (struct, slice, map) from bytes produced by:
-
-	storage.ToBytes(...)
-
-To populate the object correctly, optional types are required when the data (that was converted to bytes)
-contains interfaces. Does not work when interfaces with the same names are provided from different packages.
-Useful for loading from a file. See package description for features.
-*/
+// Populates an object (struct, slice, map) from bytes produced by:
+//
+//	storage.ToBytes(...)
+//
+// To populate the object correctly, optional types are required when the data (that was converted to bytes)
+// contains interfaces. Does not work when interfaces with the same names are provided from different packages.
+// Useful for loading from a file. See package description for features.
 func FromBytes(data []byte, objectPointer any, registerTypes ...any) {
 	for _, t := range registerTypes {
 		gob.Register(t)
@@ -107,15 +103,13 @@ func ToYAML(objectPointer any) string {
 	return string(data)
 }
 
-/*
-Converts any object (struct, slice, map) into bytes that can be used later to populate the object back with:
-
-	storage.FromBytes(...)
-
-To register interface implementations, optional types are required when the object contains interfaces.
-Does not work when interfaces with the same names are provided from different packages.
-Useful for saving to a file. See package description for features.
-*/
+// Converts any object (struct, slice, map) into bytes that can be used later to populate the object back with:
+//
+//	storage.FromBytes(...)
+//
+// To register interface implementations, optional types are required when the object contains interfaces.
+// Does not work when interfaces with the same names are provided from different packages.
+// Useful for saving to a file. See package description for features.
 func ToBytes(objectPointer any, registerTypes ...any) []byte {
 	for _, t := range registerTypes {
 		gob.Register(t)

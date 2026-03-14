@@ -1,8 +1,6 @@
-/*
-Easing functions. Similarly to math's Sine and Cosine, they interpolate a number according
-to a progress between (but not limited to) 0 and 1.
-Useful for describing a smooth movement or path for a numeric value.
-*/
+// Easing functions. Similarly to math's Sine and Cosine, they interpolate a number according
+// to a progress between (but not limited to) 0 and 1.
+// Useful for describing a smooth movement or path for a numeric value.
 package easing
 
 import "pure-game-kit/utility/number"

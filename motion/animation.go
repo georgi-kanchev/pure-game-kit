@@ -1,9 +1,7 @@
-/*
-Provides a solution for smooth number transitions in the form of the universally known Tweens
-(an animation term, short for "inbetween"), that make use of custom curves or pre-made easings,
-describing the movement. Also provides a solution for animation sequences - a collection of any data,
-iterated over time.
-*/
+// Provides a solution for smooth number transitions in the form of the universally known Tweens
+// (an animation term, short for "inbetween"), that make use of custom curves or pre-made easings,
+// describing the movement. Also provides a solution for animation sequences - a collection of any data,
+// iterated over time.
 package motion
 
 import (
