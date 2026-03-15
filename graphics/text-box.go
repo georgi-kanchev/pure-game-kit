@@ -16,7 +16,7 @@ import (
 )
 
 type TextBox struct {
-	Node
+	Quad
 	Text, FontId string
 	WordWrap     bool
 	AlignmentX, AlignmentY,
@@ -34,9 +34,9 @@ type TextBox struct {
 }
 
 func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
-	var node = NewNode(x, y)
+	var quad = NewQuad(x, y)
 	var textBox = &TextBox{
-		FontId: fontId, Node: *node, Text: txt.New(text...), LineHeight: 100, SymbolGap: 0.2, WordWrap: true,
+		FontId: fontId, Quad: *quad, Text: txt.New(text...), LineHeight: 100, SymbolGap: 0.2, WordWrap: true,
 	}
 	var font = textBox.font()
 	var measure = rl.MeasureTextEx(*font, textBox.Text, textBox.LineHeight, textBox.gapSymbols())

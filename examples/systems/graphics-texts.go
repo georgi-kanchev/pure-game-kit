@@ -49,7 +49,7 @@ func Texts() {
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 		textBox.Tint = palette.DarkGray
-		cam.DrawNodes(&textBox.Node)
+		cam.DrawQuads(&textBox.Quad)
 		textBox.Tint = palette.DarkGreen
 
 		cam.DrawTextBoxes(textBox)

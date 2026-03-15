@@ -8,7 +8,7 @@ import (
 )
 
 type TileMap struct {
-	Node
+	Quad
 	TileSetId, TileDataId string
 }
 
@@ -31,7 +31,7 @@ type Tile struct {
 }
 
 func NewTileMap(tileSetId, tileDataId string) *TileMap {
-	var tileMap = &TileMap{Node: *NewNode(0, 0), TileSetId: tileSetId, TileDataId: tileDataId}
+	var tileMap = &TileMap{Quad: *NewQuad(0, 0), TileSetId: tileSetId, TileDataId: tileDataId}
 	var atlas = internal.TileSets[tileSetId]
 	var data = internal.TileDatas[tileDataId]
 	if atlas != nil && data != nil {

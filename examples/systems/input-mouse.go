@@ -11,31 +11,31 @@ import (
 
 func Mouse() {
 	var cam = graphics.NewCamera(1)
-	var node = graphics.NewNode(0, 0)
-	node.Width, node.Height = 300, 300
+	var quad = graphics.NewQuad(0, 0)
+	quad.Width, quad.Height = 300, 300
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
 
 		var mx, my = cam.MousePosition()
-		if node.ContainsPoint(mx, my) && mouse.IsButtonPressed(b.Left) {
-			node.Angle -= time.FrameDelta() * 60
+		if quad.ContainsPoint(mx, my) && mouse.IsButtonPressed(b.Left) {
+			quad.Angle -= time.FrameDelta() * 60
 		}
 		if mouse.IsButtonJustReleased(b.Left) {
-			node.Angle = 0
+			quad.Angle = 0
 		}
 
 		if mouse.Scroll() != 0 {
-			node.Width += float32(mouse.Scroll() * 20)
-			node.Height = node.Width
+			quad.Width += float32(mouse.Scroll() * 20)
+			quad.Height = quad.Width
 		}
 
-		if node.ContainsPoint(mx, my) {
+		if quad.ContainsPoint(mx, my) {
 			mouse.SetCursor(cursor.Hand)
 		} else {
 			mouse.SetCursor(cursor.Arrow)
 		}
 
-		cam.DrawNodes(node)
+		cam.DrawQuads(quad)
 	}
 }

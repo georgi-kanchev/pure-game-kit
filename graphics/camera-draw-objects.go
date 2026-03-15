@@ -10,13 +10,30 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func (c *Camera) DrawNodes(nodes ...*Node) {
-	for _, n := range nodes {
-		if n != nil {
-			var x, y = n.CornerTopLeft() // apply pivot
-			c.DrawQuad(x, y, n.Width*n.ScaleX, n.Height*n.ScaleY, n.Angle, n.Tint)
+func (c *Camera) DrawQuads(quads ...*Quad) {
+	c.begin()
+
+	var lastEffects *Effects
+	for _, s := range quads {
+		if s == nil || !c.IsAreaVisible(s.Area()) {
+			continue
 		}
+
+		var x, y = s.CornerTopLeft() // applying pivot
+		var ang = s.Angle
+		var src = rl.NewRectangle(0, 0, 1, 1)
+		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
+		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
+
+		if lastEffects != nil && effects != nil && *lastEffects != *effects {
+			batch.Draw() // effects are different & break the batch
+			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
+		}
+		batch.QueueQuad(internal.White, src, dst, ang, getColor(s.Tint))
+		lastEffects = effects
 	}
+	batch.Draw()
+	c.end()
 }
 func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	c.begin()
@@ -44,7 +61,6 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		ang += float32(rotations * 90)
 
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
-
 		if lastEffects != nil && effects != nil && *lastEffects != *effects {
 			batch.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
@@ -52,9 +68,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
 	}
-
 	batch.Draw()
-
 	c.end()
 }
 func (c *Camera) DrawBoxes(boxes ...*Box) {
