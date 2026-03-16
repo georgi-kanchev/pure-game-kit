@@ -7,6 +7,7 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/random"
 	"pure-game-kit/utility/text"
 	txt "pure-game-kit/utility/text"
@@ -138,29 +139,28 @@ func (t *TextBox) TextSymbol(symbolIndex int) (x, y, width, height, angle float3
 	}
 
 	var s = symbols[symbolIndex]
-	return s.X, s.Y, s.Width, t.LineHeight, s.Angle
+	return s.Bounds.X, s.Bounds.Y, s.Bounds.Width, t.LineHeight, s.Angle
 }
 
 //=================================================================
 // private
 
 type symbol struct {
-	X, Y, Width, Angle float32
-	Value, AssetId     string
-	Rect, TexRect      rl.Rectangle
+	Angle                 float32
+	Value                 string
+	Bounds, Rect, TexRect rl.Rectangle
+	Texture               *rl.Texture2D
 
-	Color, BackColor, OutlineColor, ShadowColor uint
-
+	Color, BackColor, OutlineColor, ShadowColor     uint
 	Weight, OutlineWeight, ShadowWeight, ShadowBlur byte
-
-	Underline, Strikethrough bool
+	Underline, Strikethrough                        bool
 }
 
 func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 	var curHash = random.Hash(t)
-	if t.hash == curHash {
-		return t.cacheChars, t.cacheSymbols
-	}
+	//if t.hash == curHash {
+	//	return t.cacheChars, t.cacheSymbols
+	//}
 
 	var result = []*symbol{}
 	var resultLines = []string{}
@@ -175,7 +175,6 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 	var lineIndex = 0
 	var reading = false
 	var curTag = text.NewBuilder()
-	var w = t.Width
 
 	for l, line := range lines {
 		var emptyLine = line == ""
@@ -185,7 +184,6 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 
 		var tagless = removeTags(line)
 		var lineWidth, _ = t.TextMeasure(tagless)
-		var skip = false // avoids interrupting the tags if partially culled
 
 		var assetCount = text.CountOccurrences(tagless, string(placeholderCharAsset))
 		if assetCount > 0 { // account embedded assets in line width
@@ -193,13 +191,8 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 			lineWidth += (t.LineHeight - placeholderWidth) * float32(assetCount)
 		}
 
-		curX = (w - lineWidth) * alignX
+		curX = (t.Width - lineWidth) * alignX
 		curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
-
-		var outsideLeftTopOrBottom = curX < 0 || curY < 0 || curY+t.LineHeight-1 > t.Height
-		if outsideLeftTopOrBottom {
-			skip = true
-		}
 
 		for _, c := range line {
 			if t.readTag(&reading, c, curTag, curValues) {
@@ -215,13 +208,19 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 				var x, y = t.PointToGlobal(curX, curY)
 				charSize = t.LineHeight
 				var rect = rl.NewRectangle(x, y, charSize, charSize)
-				symb = symbol{AssetId: assetId.(string), Rect: rect, X: rect.X, Y: rect.Y}
+				var tex, src, rot, flip = internal.AssetData(assetId.(string))
+				internal.EditAssetRects(&src, &rect, t.Angle, rot, flip)
+				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
 				delete(curValues, "assetId")
 			} else {
+				if char == "L" {
+					print()
+				}
+
 				charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0).X
 				symb = t.createSymbol(font, curX, curY, c)
 			}
-			symb.Width, symb.Angle, symb.Value = charSize, t.Angle, char
+			symb.Bounds.Width, symb.Angle, symb.Value = charSize, t.Angle, char
 			symb.Color = getOrDefault(curValues, "color", t.Tint).(uint)
 			symb.BackColor = getOrDefault(curValues, "backColor", uint(0)).(uint)
 			symb.OutlineColor = getOrDefault(curValues, "outlineColor", palette.Black).(uint)
@@ -233,11 +232,7 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 			symb.Underline = getOrDefault(curValues, "_", false).(bool)
 			symb.Strikethrough = getOrDefault(curValues, "-", false).(bool)
 
-			if c != placeholderCharAsset && curX+charSize > w { // outside right
-				skip = true // rare cases but happens with single symbol & small width
-			}
-
-			if !skip {
+			if !t.cropSymbol(curX, &symb) {
 				result = append(result, &symb)
 			}
 
@@ -250,9 +245,7 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 			curX += condition.If(charSize > 0, charSize+gapX, 0)
 		}
 
-		if !skip {
-			lineIndex++
-		}
+		lineIndex++
 	}
 
 	t.hash = curHash
@@ -260,6 +253,7 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 	t.cacheSymbols = result
 	return resultLines, result
 }
+
 func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues map[string]any) (nextChar bool) {
 	if !*reading && char == '{' {
 		*reading = true
@@ -330,11 +324,51 @@ func (t *TextBox) createSymbol(f *rl.Font, x, y float32, c rune) symbol {
 	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
 	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
 	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
+	var bds = rl.Rectangle{}
 	dst.X, dst.Y = t.PointToGlobal(dst.X, dst.Y)
-	x, y = t.PointToGlobal(x, y)
+	bds.X, bds.Y = t.PointToGlobal(x, y)
 
-	var symbol = symbol{Rect: dst, TexRect: src, X: x, Y: y}
+	var symbol = symbol{Texture: &f.Texture, Rect: dst, TexRect: src, Bounds: bds}
 	return symbol
+}
+func (t *TextBox) cropSymbol(curX float32, symb *symbol) (skip bool) {
+	var outsideLeft = curX+symb.Rect.Width < 0
+	var outsideRight = curX > t.Width
+	skip = outsideLeft || outsideRight
+	var onEdgeLeft = !skip && curX < 0
+	var onEdgeRight = !skip && curX+symb.Rect.Width > t.Width
+	var onEdgeLeftBounds = !skip && curX < 0
+	var onEdgeRightBounds = !skip && curX+symb.Bounds.Width > t.Width
+
+	if onEdgeLeft {
+		var ratio = -curX / symb.Rect.Width
+		var rectCut = symb.Rect.Width * ratio
+		var texCut = symb.TexRect.Width * ratio
+		symb.Rect.Width -= rectCut
+		symb.Rect.X, symb.Rect.Y = point.MoveAtAngle(symb.Rect.X, symb.Rect.Y, t.Angle, rectCut)
+		symb.TexRect.X += texCut
+		symb.TexRect.Width -= texCut
+	}
+	if onEdgeRight {
+		var rightEdge = curX + symb.Rect.Width
+		var ratio = (rightEdge - t.Width) / symb.Rect.Width
+		symb.Rect.Width -= symb.Rect.Width * ratio
+		symb.TexRect.Width -= symb.TexRect.Width * ratio
+	}
+
+	if onEdgeLeftBounds {
+		var ratio = -curX / symb.Bounds.Width
+		var boundsCut = symb.Bounds.Width * ratio
+		symb.Bounds.X, symb.Bounds.Y = point.MoveAtAngle(symb.Bounds.X, symb.Bounds.Y, t.Angle, boundsCut)
+		symb.Bounds.Width -= boundsCut
+	}
+	if onEdgeRightBounds {
+		var rightEdge = curX + symb.Bounds.Width
+		var ratio = (rightEdge - t.Width) / symb.Bounds.Width
+		symb.Bounds.Width -= symb.Bounds.Width * ratio
+	}
+
+	return skip
 }
 
 func (t *TextBox) font() *rl.Font {

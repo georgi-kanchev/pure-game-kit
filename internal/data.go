@@ -81,6 +81,53 @@ var vertDefault string
 
 //=================================================================
 
+func AssetData(assetId string) (tex *rl.Texture2D, src rl.Rectangle, rotations int, flip bool) {
+	var texture, hasTexture = Textures[assetId]
+	src = rl.NewRectangle(0, 0, 0, 0)
+	if !hasTexture {
+		var rect, hasArea = AtlasRects[assetId]
+		if hasArea {
+			var atlas, _ = Atlases[rect.AtlasId]
+			var tex, _ = Textures[atlas.TextureId]
+
+			texture = tex
+			src.X = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
+			src.Y = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
+			src.Width = float32(atlas.CellWidth * int(rect.CountX))
+			src.Height = float32(atlas.CellHeight * int(rect.CountY))
+			rotations, flip = rect.Rotations, rect.Flip
+		}
+	} else {
+		src.Width, src.Height = float32(texture.Width), float32(texture.Height)
+	}
+	tex = texture
+	return
+}
+func EditAssetRects(src, dst *rl.Rectangle, ang float32, rotations int, flip bool) {
+	if dst.Width < 0 {
+		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+180, -dst.Width)
+		src.Width *= -1
+	}
+	if dst.Height < 0 {
+		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+270, -dst.Height)
+		src.Height *= -1
+	}
+
+	if flip {
+		src.Width *= -1
+	}
+	switch rotations % 4 {
+	case 1: // 90
+		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang, dst.Height)
+	case 2: // 180
+		src.Height *= -1
+		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang, dst.Width)
+		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+90, dst.Width)
+	case 3: // 270
+		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+90, dst.Width)
+	}
+}
+
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
 	width, height = -1, -1
@@ -275,4 +322,16 @@ func initData() {
 		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
 		sineTable[i] = float32(math.Sin(rad))
 	}
+}
+
+func moveAtAngle(x, y, angle, step float32) (float32, float32) {
+	var dirX, dirY = SinCos(angle)
+	if dirX == 0 && dirY == 0 {
+		return x, y
+	}
+
+	var length = number.SquareRoot(dirX*dirX + dirY*dirY)
+	x += (dirX / length) * step
+	y += (dirY / length) * step
+	return x, y
 }

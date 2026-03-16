@@ -194,22 +194,18 @@ func (b *Batch) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) 
 	var lineThickness = lineHeight / 15
 
 	if s.BackColor > 0 {
-		queueQuad(s.X, s.Y, s.Width+gapX, lineHeight, s.BackColor)
+		queueQuad(s.Bounds.X, s.Bounds.Y, s.Bounds.Width+gapX, lineHeight, s.BackColor)
 	}
 	if s.Underline {
-		var x, y = point.MoveAtAngle(s.X, s.Y, s.Angle+90, lineHeight-lineThickness)
-		queueQuad(x, y, s.Width+gapX, lineThickness, s.Color)
+		var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, lineHeight-lineThickness)
+		queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
 	}
-	if s.AssetId != "" {
-		var texture, src, rotations, flip = asset(s.AssetId)
-		editAssetRects(&src, &s.Rect, s.Angle, rotations, flip)
-		batch.QueueQuad(texture, src, s.Rect, s.Angle, packSymbolColor(s))
-	} else if text.Trim(s.Value) != "" {
-		b.QueueQuad(&font.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
+	if text.Trim(s.Value) != "" {
+		b.QueueQuad(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
 	}
 	if s.Strikethrough {
-		var x, y = point.MoveAtAngle(s.X, s.Y, s.Angle+90, lineHeight*0.55-lineThickness/2)
-		queueQuad(x, y, s.Width+gapX, lineThickness, s.Color)
+		var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, lineHeight*0.55-lineThickness/2)
+		queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
 	}
 }
 

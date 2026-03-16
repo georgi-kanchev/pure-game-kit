@@ -44,7 +44,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			continue
 		}
 
-		var texture, src, rotations, flip = asset(s.AssetId)
+		var texture, src, rotations, flip = internal.AssetData(s.AssetId)
 		if texture == nil {
 			texture = internal.White
 		}
@@ -56,7 +56,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		var x, y = s.CornerTopLeft() // applying pivot
 		var ang = s.Angle
 		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
-		editAssetRects(&src, &dst, ang, rotations, flip)
+		internal.EditAssetRects(&src, &dst, ang, rotations, flip)
 
 		ang += float32(rotations * 90)
 
@@ -145,7 +145,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 		var ang = b.Angle
 
 		for _, p := range parts {
-			var texture, src, rotations, flip = asset(p.id)
+			var texture, src, rotations, flip = internal.AssetData(p.id)
 			if texture == nil {
 				texture = internal.White
 			}
@@ -154,7 +154,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 			var dst = rl.NewRectangle(globalX, globalY, p.w*b.ScaleX, p.h*b.ScaleY)
 			var partAng = ang
 
-			editAssetRects(&src, &dst, partAng, rotations, flip)
+			internal.EditAssetRects(&src, &dst, partAng, rotations, flip)
 			partAng += float32(rotations * 90)
 
 			if lastEffects != nil && effects != nil && *lastEffects != *effects {
