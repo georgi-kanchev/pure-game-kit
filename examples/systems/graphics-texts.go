@@ -21,38 +21,35 @@ func Texts() {
 	textBox.AlignmentX, textBox.AlignmentY = 0, 1
 	textBox.Angle = 0
 	textBox.LineHeight = 160
-	textBox.Width, textBox.Height = 1000, 500
+	textBox.Width, textBox.Height = 2500, 1500
 	textBox.ShadowOffsetX, textBox.ShadowOffsetY = 0.5, 0.5
 	textBox.Text = text.New(
 		"Lorem ",
 		tag.Color("ipsum dolor", palette.Red),
 		" sit amet, ",
 		tag.ShadowBold("consectetur"),
-		" adipiscing elit, sed do\n",
+		" adipiscing elit, sed do ",
 		tag.BackColor("eiusmod tempor", palette.Green),
-		" aliqua.\nUt ",
+		" aliqua. Ut ",
 		tag.Bold("enim ad minim"),
-		" veniam, quis\n",
+		" veniam, quis ",
 		tag.Asset(tiles[162]),
 		" in voluptate ",
 		tag.Crossout("velit esse incididunt ut labore"),
-		" incididunt ut labore et\n",
+		" incididunt ut labore et ",
 		tag.Underline("dolore magna"),
 		" exercitation ",
 		tag.ShadowBlur("ullamco laboris", 3),
 		" nisi ut ",
 		tag.OutlineColor("aliquip ex ea commodo", palette.Red),
-		" consequat.\n",
+		" consequat. ",
 		tag.Color("Duis aute", palette.Blue),
 		" irure dolor ",
 		tag.ShadowColor("in reprehenderit", palette.Green),
 		" cillum ",
 		tag.Thin("doloreeu"),
 		" fugiat nulla pariatur.")
-	textBox.WordWrap = false
-	// textBox.Text = "Hello, World! Hello, World! Hello, World! Hello, World! Hello, World!"
 	textBox.Angle = 5
-	textBox.ScaleX, textBox.ScaleY = 2, 2
 
 	for window.KeepOpen() {
 		cam.SetScreenAreaToWindow()
@@ -75,8 +72,6 @@ func Texts() {
 
 		textBox.AlignmentX = number.Limit(textBox.AlignmentX, 0, 1)
 		textBox.AlignmentY = number.Limit(textBox.AlignmentY, 0, 1)
-
-		// textBox.Angle += time.FrameDelta() * 10
 
 		cam.DrawTextBoxes(textBox)
 		cam.DrawTextFPS()

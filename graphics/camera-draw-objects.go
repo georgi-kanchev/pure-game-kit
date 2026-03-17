@@ -188,12 +188,12 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 
 		var _, symbols = t.formatSymbols()
 		var font = t.font()
-		var gapX = t.gapSymbols()
+		var gapX = t.gapSymbols() * t.ScaleX
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
 		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t, false)
 
 		for _, s := range symbols {
-			batch.QueueSymbol(font, s, t.LineHeight, gapX)
+			batch.QueueSymbol(font, s, t.LineHeight*t.ScaleY, gapX)
 		}
 
 		batch.Draw()

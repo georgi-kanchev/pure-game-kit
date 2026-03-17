@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/random"
 	"pure-game-kit/utility/text"
 	txt "pure-game-kit/utility/text"
@@ -160,9 +159,9 @@ type symbol struct {
 
 func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 	var curHash = random.Hash(t)
-	//if t.hash == curHash {
-	//	return t.cacheChars, t.cacheSymbols
-	//}
+	if t.hash == curHash {
+		return t.cacheChars, t.cacheSymbols
+	}
 
 	var result = []*symbol{}
 	var resultLines = []string{}
@@ -212,13 +211,15 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 				var rect = rl.NewRectangle(x, y, charSize, charSize)
 				var tex, src, rot, flip = internal.AssetData(assetId.(string))
 				internal.EditAssetRects(&src, &rect, t.Angle, rot, flip)
+				rect.Width *= t.ScaleX
+				rect.Height *= t.ScaleY
 				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
 				delete(curValues, "assetId")
 			} else {
 				charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0).X
 				symb = t.createSymbol(font, curX, curY, c)
 			}
-			symb.Bounds.Width, symb.Angle, symb.Value = charSize, t.Angle, char
+			symb.Bounds.Width, symb.Angle, symb.Value = charSize*t.ScaleX, t.Angle, char
 			symb.Color = getOrDefault(curValues, "color", t.Tint).(uint)
 			symb.BackColor = getOrDefault(curValues, "backColor", uint(0)).(uint)
 			symb.OutlineColor = getOrDefault(curValues, "outlineColor", palette.Black).(uint)
@@ -250,6 +251,136 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 	t.cacheChars = resultLines
 	t.cacheSymbols = result
 	return resultLines, result
+}
+func (t *TextBox) createSymbol(f *rl.Font, x, y float32, c rune) symbol {
+	var scaleFactor, padding = float32(t.LineHeight) / float32(f.BaseSize), float32(f.CharsPadding)
+	var glyph, atlasRec = rl.GetGlyphInfo(*f, int32(c)), rl.GetGlyphAtlasRec(*f, int32(c))
+	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
+	var tw, th = atlasRec.Width + 2.0*padding, atlasRec.Height + 2.0*padding
+	var rx = x + (float32(glyph.OffsetX)-padding)*scaleFactor
+	var ry = y + (float32(glyph.OffsetY)-padding)*scaleFactor
+	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
+	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
+	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
+	var bds = rl.Rectangle{}
+	dst.X, dst.Y = t.PointToGlobal(dst.X, dst.Y)
+	bds.X, bds.Y = t.PointToGlobal(x, y)
+	dst.Width *= t.ScaleX
+	dst.Height *= t.ScaleY
+	bds.Height = t.LineHeight * t.ScaleY
+
+	var symbol = symbol{Texture: &f.Texture, Rect: dst, TexRect: src, Bounds: bds}
+	return symbol
+}
+func (t *TextBox) cropSymbol(symb *symbol) (skip bool) {
+	var rx, ry = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
+	var bx, by = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
+	var outsideHor = bx+symb.Bounds.Width/t.ScaleX+t.gapSymbols() < 0 || bx > t.Width
+	var outsideVer = by+symb.Bounds.Height/t.ScaleY+t.gapLines() < 0 || by > t.Height
+	skip = outsideHor || outsideVer
+
+	var onEdgeLeft = !skip && rx < 0
+	var onEdgeRight = !skip && rx+symb.Rect.Width/t.ScaleX > t.Width
+	var onEdgeTop = !skip && ry < 0
+	var onEdgeBottom = !skip && ry+symb.Rect.Height/t.ScaleY > t.Height
+
+	var onEdgeLeftBounds = !skip && bx < 0
+	var onEdgeRightBounds = !skip && bx+symb.Bounds.Width/t.ScaleX+t.gapSymbols() > t.Width
+	var onEdgeTopBounds = !skip && by < 0
+	var onEdgeBottomBounds = !skip && by+symb.Bounds.Height/t.ScaleY+t.gapLines() > t.Height
+
+	if onEdgeLeft {
+		var lx, ly = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
+		var ratio = -lx / (symb.Rect.Width / t.ScaleX)
+		var rectCut = symb.Rect.Width * ratio
+		var texCut = symb.TexRect.Width * ratio
+		symb.Rect.Width -= rectCut
+		symb.Rect.X, symb.Rect.Y = t.PointToGlobal(0, ly)
+		symb.TexRect.X += texCut
+		symb.TexRect.Width -= texCut
+	}
+	if onEdgeRight {
+		var lx, _ = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
+		var rightEdge = lx + (symb.Rect.Width / t.ScaleX)
+		var overflow = rightEdge - t.Width
+		var ratio = overflow / (symb.Rect.Width / t.ScaleX)
+		symb.Rect.Width -= symb.Rect.Width * ratio
+		symb.TexRect.Width -= symb.TexRect.Width * ratio
+	}
+	if onEdgeTop {
+		var lx, ly = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
+		var ratio = -ly / (symb.Rect.Height / t.ScaleY)
+		var rectCut = symb.Rect.Height * ratio
+		var texCut = symb.TexRect.Height * ratio
+		symb.Rect.Height -= rectCut
+		symb.Rect.Height = max(symb.Rect.Height, 0)
+		symb.Rect.X, symb.Rect.Y = t.PointToGlobal(lx, 0)
+		symb.TexRect.Y += texCut
+		symb.TexRect.Height -= texCut
+	}
+	if onEdgeBottom {
+		var _, ly = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
+		var bottomEdge = ly + (symb.Rect.Height / t.ScaleY)
+		var overflow = bottomEdge - t.Height
+		var ratio = overflow / (symb.Rect.Height / t.ScaleY)
+		symb.Rect.Height -= symb.Rect.Height * ratio
+		symb.Rect.Height = max(symb.Rect.Height, 0)
+		symb.TexRect.Height -= symb.TexRect.Height * ratio
+	}
+
+	if onEdgeLeftBounds {
+		var lx, ly = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
+		var ratio = -lx / (symb.Bounds.Width / t.ScaleX)
+		var boundsCut = symb.Bounds.Width * ratio
+		symb.Bounds.X, symb.Bounds.Y = t.PointToGlobal(0, ly)
+		symb.Bounds.Width -= boundsCut
+	}
+	if onEdgeRightBounds {
+		var lx, _ = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
+		var rightEdge = lx + (symb.Bounds.Width / t.ScaleX) + t.gapSymbols()
+		var overflow = rightEdge - t.Width
+		var ratio = overflow / (symb.Bounds.Width / t.ScaleX)
+		symb.Bounds.Width -= symb.Bounds.Width * ratio
+	}
+	if onEdgeTopBounds {
+		var lx, ly = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
+		var ratio = -ly / (symb.Bounds.Height / t.ScaleY)
+		var boundsCut = symb.Bounds.Height * ratio
+		symb.Bounds.X, symb.Bounds.Y = t.PointToGlobal(lx, 0)
+		symb.Bounds.Height -= boundsCut
+		symb.TopCrop += boundsCut
+	}
+	if onEdgeBottomBounds {
+		var _, ly = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
+		var bottomEdge = ly + (symb.Bounds.Height / t.ScaleY) + t.gapLines()
+		var overflow = bottomEdge - t.Height
+		var ratio = overflow / (symb.Bounds.Height / t.ScaleY)
+		symb.Bounds.Height -= symb.Bounds.Height * ratio
+	}
+
+	return skip
+}
+
+func (t *TextBox) font() *rl.Font {
+	var font, hasFont = internal.Fonts[t.FontId]
+	var defaultFont, hasDefault = internal.Fonts[""]
+
+	if !hasFont && hasDefault {
+		font = defaultFont
+		hasFont = true // fallback to engine default
+	}
+
+	if !hasFont {
+		var fallback = rl.GetFontDefault()
+		font = &fallback // fallback to raylib default
+	}
+	return font
+}
+func (t *TextBox) gapSymbols() float32 {
+	return t.SymbolGap * t.LineHeight / 5
+}
+func (t *TextBox) gapLines() float32 {
+	return t.LineGap * t.LineHeight / 5
 }
 
 func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues map[string]any) (nextChar bool) {
@@ -311,130 +442,6 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues 
 	}
 
 	return false
-}
-func (t *TextBox) createSymbol(f *rl.Font, x, y float32, c rune) symbol {
-	var scaleFactor, padding = float32(t.LineHeight) / float32(f.BaseSize), float32(f.CharsPadding)
-	var glyph, atlasRec = rl.GetGlyphInfo(*f, int32(c)), rl.GetGlyphAtlasRec(*f, int32(c))
-	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
-	var tw, th = atlasRec.Width + 2.0*padding, atlasRec.Height + 2.0*padding
-	var rx = x + (float32(glyph.OffsetX)-padding)*scaleFactor
-	var ry = y + (float32(glyph.OffsetY)-padding)*scaleFactor
-	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
-	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
-	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
-	var bds = rl.Rectangle{}
-	dst.X, dst.Y = t.PointToGlobal(dst.X, dst.Y)
-	bds.X, bds.Y = t.PointToGlobal(x, y)
-	bds.Height = t.LineHeight
-
-	var symbol = symbol{Texture: &f.Texture, Rect: dst, TexRect: src, Bounds: bds}
-	return symbol
-}
-func (t *TextBox) cropSymbol(symb *symbol) (skip bool) {
-	var rx, ry = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-	var bx, by = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-	var outsideHor = bx+symb.Bounds.Width+t.gapSymbols() < 0 || bx > t.Width
-	var outsideVer = by+symb.Bounds.Height+t.gapLines() < 0 || by > t.Height
-	skip = outsideHor || outsideVer
-
-	var onEdgeLeft = !skip && rx < 0
-	var onEdgeRight = !skip && rx+symb.Rect.Width > t.Width
-	var onEdgeTop = !skip && ry < 0
-	var onEdgeBottom = !skip && ry+symb.Rect.Height > t.Height
-
-	var onEdgeLeftBounds = !skip && bx < 0
-	var onEdgeRightBounds = !skip && bx+symb.Bounds.Width+t.gapSymbols() > t.Width
-	var onEdgeTopBounds = !skip && by < 0
-	var onEdgeBottomBounds = !skip && by+symb.Bounds.Height+t.gapLines() > t.Height
-
-	if onEdgeLeft {
-		var x, _ = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var ratio = -x / symb.Rect.Width
-		var rectCut = symb.Rect.Width * ratio
-		var texCut = symb.TexRect.Width * ratio
-		symb.Rect.Width -= rectCut
-		symb.Rect.X, symb.Rect.Y = point.MoveAtAngle(symb.Rect.X, symb.Rect.Y, t.Angle, rectCut)
-		symb.TexRect.X += texCut
-		symb.TexRect.Width -= texCut
-	}
-	if onEdgeRight {
-		var x, _ = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var rightEdge = x + symb.Rect.Width
-		var ratio = (rightEdge - t.Width) / symb.Rect.Width
-		symb.Rect.Width -= symb.Rect.Width * ratio
-		symb.TexRect.Width -= symb.TexRect.Width * ratio
-	}
-
-	if onEdgeTop {
-		var _, y = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var ratio = -y / symb.Rect.Height
-		var rectCut = symb.Rect.Height * ratio
-		var texCut = symb.TexRect.Height * ratio
-		symb.Rect.Height -= rectCut
-		symb.Rect.Height = max(symb.Rect.Height, 0)
-		symb.Rect.X, symb.Rect.Y = point.MoveAtAngle(symb.Rect.X, symb.Rect.Y, t.Angle+90, rectCut)
-		symb.TexRect.Y += texCut
-		symb.TexRect.Height -= texCut
-	}
-	if onEdgeBottom {
-		var _, y = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var bottomEdge = y + symb.Rect.Height
-		var ratio = (bottomEdge - t.Height) / symb.Rect.Height
-		symb.Rect.Height -= symb.Rect.Height * ratio
-		symb.Rect.Height = max(symb.Rect.Height, 0)
-		symb.TexRect.Height -= symb.TexRect.Height * ratio
-	}
-
-	if onEdgeLeftBounds {
-		var x, _ = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var ratio = -x / symb.Bounds.Width
-		var boundsCut = symb.Bounds.Width * ratio
-		symb.Bounds.X, symb.Bounds.Y = point.MoveAtAngle(symb.Bounds.X, symb.Bounds.Y, t.Angle, boundsCut)
-		symb.Bounds.Width -= boundsCut
-	}
-	if onEdgeRightBounds {
-		var x, _ = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var rightEdge = x + symb.Bounds.Width + t.gapSymbols()
-		symb.Bounds.Width -= rightEdge - t.Width
-	}
-
-	if onEdgeTopBounds {
-		var _, y = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var ratio = -y / symb.Bounds.Height
-		var boundsCut = symb.Bounds.Height * ratio
-		symb.Bounds.X, symb.Bounds.Y = point.MoveAtAngle(symb.Bounds.X, symb.Bounds.Y, t.Angle+90, boundsCut)
-		symb.Bounds.Height -= boundsCut
-		symb.TopCrop += boundsCut
-	}
-	if onEdgeBottomBounds {
-		var _, y = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var bottomEdge = y + symb.Bounds.Height + t.gapLines()
-		symb.Bounds.Height -= bottomEdge - t.Height
-	}
-
-	return skip
-}
-
-func (t *TextBox) font() *rl.Font {
-	var font, hasFont = internal.Fonts[t.FontId]
-	var defaultFont, hasDefault = internal.Fonts[""]
-
-	if !hasFont && hasDefault {
-		font = defaultFont
-		hasFont = true // fallback to engine default
-	}
-
-	if !hasFont {
-		var fallback = rl.GetFontDefault()
-		font = &fallback // fallback to raylib default
-	}
-	return font
-}
-func (t *TextBox) gapSymbols() float32 {
-	return t.SymbolGap * t.LineHeight / 5
-}
-func (t *TextBox) gapLines() float32 {
-	return t.LineGap * t.LineHeight / 5
 }
 
 func parseCol(value string, defaultValue uint) uint {
