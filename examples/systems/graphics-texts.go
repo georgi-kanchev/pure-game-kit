@@ -4,12 +4,8 @@ import (
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
 	"pure-game-kit/graphics/tag"
-	"pure-game-kit/input/keyboard"
-	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/utility/color/palette"
-	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/text"
-	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
 
@@ -56,22 +52,6 @@ func Texts() {
 		textBox.Tint = palette.DarkGray
 		cam.DrawQuads(&textBox.Quad)
 		textBox.Tint = palette.White
-
-		if keyboard.IsKeyPressed(key.D) {
-			textBox.AlignmentX += time.FrameDelta() * 0.3
-		}
-		if keyboard.IsKeyPressed(key.A) {
-			textBox.AlignmentX -= time.FrameDelta() * 0.3
-		}
-		if keyboard.IsKeyPressed(key.S) {
-			textBox.AlignmentY += time.FrameDelta() * 0.5
-		}
-		if keyboard.IsKeyPressed(key.W) {
-			textBox.AlignmentY -= time.FrameDelta() * 0.5
-		}
-
-		textBox.AlignmentX = number.Limit(textBox.AlignmentX, 0, 1)
-		textBox.AlignmentY = number.Limit(textBox.AlignmentY, 0, 1)
 
 		cam.DrawTextBoxes(textBox)
 		cam.DrawTextFPS()
