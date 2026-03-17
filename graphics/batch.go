@@ -194,18 +194,31 @@ func (b *Batch) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) 
 	var lineThickness = lineHeight / 15
 
 	if s.BackColor > 0 {
-		queueQuad(s.Bounds.X, s.Bounds.Y, s.Bounds.Width+gapX, lineHeight, s.BackColor)
+		queueQuad(s.Bounds.X, s.Bounds.Y, s.Bounds.Width+gapX, s.Bounds.Height, s.BackColor)
 	}
+
 	if s.Underline {
-		var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, lineHeight-lineThickness)
-		queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
+		// Shift the offset up by the amount the top was cropped
+		var offset = (lineHeight - lineThickness) - s.TopCrop
+
+		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
+			var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
+			queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
+		}
 	}
+
 	if text.Trim(s.Value) != "" {
 		b.QueueQuad(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
 	}
+
 	if s.Strikethrough {
-		var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, lineHeight*0.55-lineThickness/2)
-		queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
+		// Shift the offset up by the amount the top was cropped
+		var offset = (lineHeight*0.55 - lineThickness/2) - s.TopCrop
+
+		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
+			var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
+			queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
+		}
 	}
 }
 
