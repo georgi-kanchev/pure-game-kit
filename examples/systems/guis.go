@@ -26,7 +26,7 @@ func GUIs() {
 			f.AssetId, box[2], f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.3", f.TextColor, "80 80 80 255",
 			f.TextLineHeight, "35", f.ButtonThemeIdHover, "button-hover", f.ButtonThemeIdPress, "button-press",
 			f.TooltipId, "tooltip", f.SliderStep, "0.1", f.SliderHandleAssetId, box[14],
-			f.SliderStepAssetId, ids[49], f.DraggableAssetColor, "0 0 255", f.DraggableAssetScale, "0.4"),
+			f.SliderStepAssetId, ids[49], f.DraggableAssetColor, "0 0 255"),
 		gui.Theme("button-hover", f.Color, "255 255 255 255", f.Width, "150", f.Height, "50",
 			f.BoxEdgeLeft, "20", f.BoxEdgeRight, "20", f.BoxEdgeTop, "20",
 			f.BoxEdgeBottom, "20", f.AssetId, box[5], f.TextAlignmentX, "0.5", f.TextAlignmentY, "0.3",
@@ -167,10 +167,9 @@ func GUIs() {
 	assets.SetTextureAtlasTile(atlas, "arrow-left", 14, 9, 1, 1, 0, true)
 	assets.SetTextureAtlasTile(atlas, "arrow-down", 14, 9, 1, 1, 1, false)
 
-	hud.Scale = 2.01
+	hud.Scale = 2.0
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.DrawGrid(2, 100, 100, palette.DarkGray)
 
 		var grab = hud.DragJustGrabbed()

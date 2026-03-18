@@ -13,7 +13,6 @@ func Keyboard() {
 	var text = "Type..."
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		text += keyboard.Input()
 
 		if (keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace)) &&

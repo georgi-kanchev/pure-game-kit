@@ -24,7 +24,6 @@ func Tweens() {
 		GoTo(2, easing.BackInOut, -200, 200)
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 
 		cam.DrawGrid(1, 100, 100, palette.Gray)

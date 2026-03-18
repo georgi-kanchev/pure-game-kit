@@ -13,7 +13,6 @@ func Conditions() {
 	var quad = graphics.NewQuad(0, 0)
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.DrawQuads(quad)
 
 		if condition.TrueEvery(1.0, "") {

@@ -40,8 +40,8 @@ func (g *GUI) DragCancel() {
 func draggable(w *widget) {
 	if w.root.wPressedOn == w {
 		mouse.SetCursor(cursor.Hand)
-		w.DragX += mouseX - prevMouseX
-		w.DragY += mouseY - prevMouseY
+		w.DragX += (mouseX - prevMouseX) / w.root.cam.Zoom
+		w.DragY += (mouseY - prevMouseY) / w.root.cam.Zoom
 	} else {
 		w.DragX, w.DragY = w.X+w.Width/2, w.Y+w.Height/2
 	}

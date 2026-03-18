@@ -7,23 +7,25 @@ import (
 )
 
 type Quad struct {
-	X, Y, Angle    float32
-	Width, Height  float32
+	Area
+	Angle          float32
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
 	Tint           uint
+	Mask           *Area
 	Effects        *Effects
 }
 
 func NewQuad(x, y float32) *Quad {
-	return &Quad{X: x, Y: y, Width: 100, Height: 100, ScaleX: 1, ScaleY: 1,
+	return &Quad{Area: Area{X: x, Y: y, Width: 100, Height: 100}, ScaleX: 1, ScaleY: 1,
 		PivotX: 0.5, PivotY: 0.5, Tint: palette.White}
 }
 
 //=================================================================
 
 func (q *Quad) CameraFit(camera *Camera) {
-	var x, y = camera.PointFromScreen(camera.ScreenX+camera.ScreenWidth/2, camera.ScreenY+camera.ScreenHeight/2)
+	var sx, sy, sw, sh = camera.area()
+	var x, y = camera.PointFromScreen(int(sx+sw/2), int(sy+sh/2))
 	var cw, ch = camera.Size()
 	var scale = min(cw/q.Width, ch/q.Height)
 
@@ -33,7 +35,8 @@ func (q *Quad) CameraFit(camera *Camera) {
 	q.Angle = 0
 }
 func (q *Quad) CameraFill(camera *Camera) {
-	var x, y = camera.PointFromScreen(camera.ScreenX+camera.ScreenWidth/2, camera.ScreenY+camera.ScreenHeight/2)
+	var sx, sy, sw, sh = camera.area()
+	var x, y = camera.PointFromScreen(int(sx+sw/2), int(sy+sh/2))
 	var cw, ch = camera.Size()
 	var scale = max(cw/q.Width, ch/q.Height)
 
@@ -43,7 +46,8 @@ func (q *Quad) CameraFill(camera *Camera) {
 	q.Angle = 0
 }
 func (q *Quad) CameraStretch(camera *Camera) {
-	var x, y = camera.PointFromScreen(camera.ScreenX+camera.ScreenWidth/2, camera.ScreenY+camera.ScreenHeight/2)
+	var sx, sy, sw, sh = camera.area()
+	var x, y = camera.PointFromScreen(int(sx+sw/2), int(sy+sh/2))
 	var cw, ch = camera.Size()
 	var scaleX, scaleY = cw / q.Width, ch / q.Height
 
@@ -55,7 +59,7 @@ func (q *Quad) CameraStretch(camera *Camera) {
 
 //=================================================================
 
-func (q *Quad) Area() (x, y, width, height float32) {
+func (q *Quad) Bounds() (x, y, width, height float32) {
 	var x1, y1 = q.CornerTopLeft()
 	var x2, y2 = q.CornerTopRight()
 	var x3, y3 = q.CornerBottomRight()

@@ -48,8 +48,6 @@ func Shapes() {
 	}
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
-
 		squircle.Angle += time.FrameDelta() * 60
 		shape.Angle += time.FrameDelta() * 60
 		var mx, my = cam.MousePosition()

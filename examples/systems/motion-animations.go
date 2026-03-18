@@ -18,8 +18,6 @@ func Animations() {
 	assets.LoadDefaultAtlasInput()
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
-
 		animation.Update()
 		sprite.AssetId = *animation.Item()
 		cam.DrawSprites(sprite)

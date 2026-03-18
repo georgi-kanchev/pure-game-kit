@@ -50,7 +50,6 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 	var aw, ah = assets.Size(txt)
 
 	for window.KeepOpen() {
-		camera.SetScreenAreaToWindow()
 		textBox.Width, textBox.Height = camera.Size()
 		sprite.CameraFit(camera)
 		sprite.ScaleX *= scale

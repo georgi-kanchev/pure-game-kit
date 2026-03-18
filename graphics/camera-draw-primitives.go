@@ -16,7 +16,7 @@ func (c *Camera) DrawColor(color uint) {
 	c.begin()
 	c.end()
 
-	var x, y, w, h = c.ScreenX, c.ScreenY, c.ScreenWidth, c.ScreenHeight
+	var x, y, w, h = c.area()
 	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(h), getColor(color))
 }
 func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
@@ -26,11 +26,11 @@ func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	c.begin()
 
 	var renderColor = getColor(color)
-	var sx, sy, sw, sh = c.ScreenX, c.ScreenY, c.ScreenWidth, c.ScreenHeight
-	var ulx, uly = c.PointFromScreen(sx, sy)
-	var urx, ury = c.PointFromScreen(sx+sw, sy)
-	var lrx, lry = c.PointFromScreen(sx+sw, sy+sh)
-	var llx, lly = c.PointFromScreen(sx, sy+sh)
+	var sx, sy, sw, sh = c.area()
+	var ulx, uly = c.PointFromScreen(int(sx), int(sy))
+	var urx, ury = c.PointFromScreen(int(sx)+int(sw), int(sy))
+	var lrx, lry = c.PointFromScreen(int(sx)+int(sw), int(sy)+int(sh))
+	var llx, lly = c.PointFromScreen(int(sx), int(sy)+int(sh))
 	var xs = []float32{ulx, urx, llx, lrx}
 	var ys = []float32{uly, ury, lly, lry}
 	var minX, maxX = xs[0], xs[0]

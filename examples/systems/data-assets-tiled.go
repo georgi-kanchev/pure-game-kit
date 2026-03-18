@@ -30,7 +30,6 @@ func Tiled() {
 	}
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawTileMaps(tileMaps...)
 		cam.DrawShapes(palette.Red, pts...)

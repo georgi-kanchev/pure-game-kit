@@ -29,7 +29,6 @@ func Tilemap() {
 	}
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawTileMaps(tilemap)
 		cam.DrawTextFPS()

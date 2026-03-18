@@ -162,30 +162,48 @@ func isConvex(pts []float32, count int) bool {
 // camera
 
 var rlCam = rl.Camera2D{}
-var maskX, maskY, maskW, maskH int
+
 var fps string
 
 const placeholderCharAsset = '@'
+
+func (c *Camera) area() (x, y, w, h float32) {
+	if c.Area == nil {
+		var w, h = window.Size()
+		return 0, 0, float32(w), float32(h)
+	}
+	return c.Area.X, c.Area.Y, c.Area.Width, c.Area.Height
+}
+func (c *Camera) mask() (x, y, w, h float32) {
+	if c.Mask == nil {
+		var w, h = window.Size()
+		return 0, 0, float32(w), float32(h)
+	}
+	return c.Mask.X, c.Mask.Y, c.Mask.Width, c.Mask.Height
+}
 
 // call before draw to update camera but use screen space instead of camera space
 func (c *Camera) update() {
 	tryRecreateWindow()
 
+	var sx, sy, sw, sh = c.area()
 	rlCam.Target.X = float32(c.X)
 	rlCam.Target.Y = float32(c.Y)
 	rlCam.Rotation = float32(c.Angle)
 	rlCam.Zoom = float32(c.Zoom)
-	rlCam.Offset.X = float32(c.ScreenX) + float32(c.ScreenWidth/2)
-	rlCam.Offset.Y = float32(c.ScreenY) + float32(c.ScreenHeight/2)
+	rlCam.Offset.X = sx + sw/2
+	rlCam.Offset.Y = sy + sh/2
 
-	var mx = number.Biggest(c.MaskX, c.ScreenX)
-	var my = number.Biggest(c.MaskY, c.ScreenY)
-	var maxW = c.ScreenX + c.ScreenWidth - mx
-	var maxH = c.ScreenY + c.ScreenHeight - my
-	var mw = number.Smallest(c.MaskWidth, maxW)
-	var mh = number.Smallest(c.MaskHeight, maxH)
-
-	maskX, maskY, maskW, maskH = mx, my, mw, mh
+	if c.Mask != nil {
+		var mx, my, mw, mh = c.mask()
+		mx = number.Biggest(mx, sx)
+		my = number.Biggest(my, sy)
+		var maxW = sx + sw - mx
+		var maxH = sy + sh - my
+		mw = number.Smallest(mw, maxW)
+		mh = number.Smallest(mh, maxH)
+		c.Mask.X, c.Mask.Y, c.Mask.Width, c.Mask.Height = mx, my, mw, mh
+	}
 }
 
 // call before draw to update camera and use camera space
@@ -196,7 +214,10 @@ func (c *Camera) begin() {
 	}
 
 	rl.BeginMode2D(rlCam)
-	rl.BeginScissorMode(int32(maskX), int32(maskY), int32(maskW), int32(maskH))
+	if c.Mask != nil {
+		var mx, my, mw, mh = c.mask()
+		rl.BeginScissorMode(int32(mx), int32(my), int32(mw), int32(mh))
+	}
 	rl.BeginShaderMode(internal.Shader)
 	rl.EnableDepthTest()
 	c.Effects.updateUniforms(1, 1, nil, nil, true)
@@ -218,7 +239,9 @@ func (c *Camera) end() {
 
 	rl.DisableDepthTest()
 	rl.EndShaderMode()
-	rl.EndScissorMode()
+	if c.Mask != nil {
+		rl.EndScissorMode()
+	}
 	rl.EndMode2D()
 }
 

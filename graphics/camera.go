@@ -5,17 +5,17 @@ import (
 	"pure-game-kit/input/mouse/button"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Camera struct {
-	ScreenX, ScreenY, ScreenWidth, ScreenHeight,
-	MaskX, MaskY, MaskWidth, MaskHeight, Blend int
-	X, Y, Angle, Zoom float32
+	X, Y, Zoom, Angle float32
 
+	Area    *Area // The draw area in window space. Defaults to entire window if nil.
+	Mask    *Area // In window space. Everything drawn outside of it is cropped. Defaults to entire window if nil.
 	Effects *Effects
+	Blend   int
 
 	//=================================================================
 
@@ -23,8 +23,8 @@ type Camera struct {
 }
 
 func NewCamera(zoom float32) *Camera {
+	tryRecreateWindow()
 	var cam = Camera{Zoom: zoom}
-	cam.SetScreenAreaToWindow()
 
 	if batch == nil {
 		batch = &Batch{}
@@ -97,23 +97,6 @@ func (c *Camera) MouseDragAndZoomSmoothly() {
 	}
 }
 
-func (c *Camera) SetScreenArea(screenX, screenY, screenWidth, screenHeight int) {
-	c.ScreenX = screenX
-	c.ScreenY = screenY
-	c.ScreenWidth = screenWidth
-	c.ScreenHeight = screenHeight
-	c.Mask(screenX, screenY, screenWidth, screenHeight)
-}
-func (c *Camera) SetScreenAreaToWindow() {
-	tryRecreateWindow()
-	var w, h = window.Size()
-	c.SetScreenArea(0, 0, w, h)
-}
-func (c *Camera) Mask(screenX, screenY, screenWidth, screenHeight int) {
-	c.MaskX, c.MaskY = screenX, screenY
-	c.MaskWidth, c.MaskHeight = screenWidth, screenHeight
-}
-
 //=================================================================
 
 func (c *Camera) IsAreaVisible(x, y, width, height float32) bool {
@@ -122,22 +105,22 @@ func (c *Camera) IsAreaVisible(x, y, width, height float32) bool {
 	var sx2, sy2 = c.PointToScreen(x+width, y+height)
 	var sMinX, sMaxX = min(sx1, sx2), max(sx1, sx2)
 	var sMinY, sMaxY = min(sy1, sy2), max(sy1, sy2)
-	var maskR, maskB = c.MaskX + c.MaskWidth, c.MaskY + c.MaskHeight
-	return sMaxX > c.MaskX && sMinX < maskR && sMaxY > c.MaskY && sMinY < maskB
+	var mx, my, mw, mh = c.mask()
+	return sMaxX > int(mx) && sMinX < int(mx+mw) && sMaxY > int(my) && sMinY < int(my+mh)
 }
 func (c *Camera) IsHovered() bool {
 	var mousePos = rl.GetMousePosition()
-	return float32(mousePos.X) > float32(c.ScreenX) &&
-		float32(mousePos.Y) > float32(c.ScreenY) &&
-		float32(mousePos.X) < float32(c.ScreenX+c.ScreenWidth) &&
-		float32(mousePos.Y) < float32(c.ScreenY+c.ScreenHeight)
+	var sx, sy, sw, sh = c.area()
+	return float32(mousePos.X) > sx && float32(mousePos.Y) > sy &&
+		float32(mousePos.X) < sx+sw && float32(mousePos.Y) < sy+sh
 }
 func (c *Camera) MousePosition() (x, y float32) {
 	return c.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
 }
 func (c *Camera) Size() (width, height float32) {
 	c.update()
-	return float32(c.ScreenWidth) / c.Zoom, float32(c.ScreenHeight) / c.Zoom
+	var _, _, sw, sh = c.area()
+	return sw / c.Zoom, sh / c.Zoom
 }
 
 func (c *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
@@ -179,6 +162,7 @@ func (c *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (otherX, o
 	return otherCamera.PointFromCamera(c, myX, myY)
 }
 func (c *Camera) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
-	var scrX, scrY = float32(c.ScreenWidth) * edgeX, float32(c.ScreenHeight) * edgeY
+	var _, _, sw, sh = c.area()
+	var scrX, scrY = sw * edgeX, sh * edgeY
 	return c.PointFromScreen(int(scrX), int(scrY))
 }

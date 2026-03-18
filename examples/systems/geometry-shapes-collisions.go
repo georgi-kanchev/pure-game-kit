@@ -29,8 +29,6 @@ func Collisions() {
 	shape4.ScaleX, shape4.ScaleY = 2.5, 2.5
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
-
 		var dirX, dirY float32 = 0, 0
 		var step = time.FrameDelta() * 600
 

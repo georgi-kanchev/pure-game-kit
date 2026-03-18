@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/graphics"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/number"
 )
 
 func Visual(id string, fields ...string) string {
@@ -133,18 +132,18 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 		return
 	}
 
-	var mx, my, mw, mh = cam.MaskX, cam.MaskY, cam.MaskWidth, cam.MaskHeight
-	if maskText { // used for inputbox mask
-		var x, y = cam.PointToScreen(w.X+textMargin, w.Y+textMargin/2)
-		var realX = w.X + w.Width - textMargin
-		var realY = w.Y + w.Height - textMargin/2
-		var xw, yh = cam.PointToScreen(realX, realY)
-		xw = number.Limit(xw, cam.MaskX, cam.MaskX+cam.MaskWidth)
-		yh = number.Limit(yh, cam.MaskY, cam.MaskY+cam.MaskHeight)
-		x = number.Limit(x, cam.MaskX, cam.MaskX+cam.MaskWidth)
-		y = number.Limit(y, cam.MaskY, cam.MaskY+cam.MaskHeight)
-		cam.Mask(x, y, xw-x+1, yh-y)
-	}
+	// var mx, my, mw, mh = cam.Mask.X, cam.Mask.Y, cam.Mask.Width, cam.Mask.Height
+	// if maskText { // used for inputbox mask
+	// 	var x, y = cam.PointToScreen(w.X+textMargin, w.Y+textMargin/2)
+	// 	var realX = w.X + w.Width - textMargin
+	// 	var realY = w.Y + w.Height - textMargin/2
+	// 	var xw, yh = cam.PointToScreen(realX, realY)
+	// 	xw = number.Limit(xw, cam.MaskX, cam.MaskX+cam.MaskWidth)
+	// 	yh = number.Limit(yh, cam.MaskY, cam.MaskY+cam.MaskHeight)
+	// 	x = number.Limit(x, cam.MaskX, cam.MaskX+cam.MaskWidth)
+	// 	y = number.Limit(y, cam.MaskY, cam.MaskY+cam.MaskHeight)
+	// 	cam.Mask(x, y, xw-x+1, yh-y)
+	// }
 
 	if betweenVisualAndText != nil {
 		betweenVisualAndText()
@@ -155,5 +154,5 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 	var c = parseColor(colVal, disabled || fadeText)
 	w.textBox.Tint = c
 	cam.DrawTextBoxes(w.textBox)
-	cam.Mask(mx, my, mw, mh)
+	// cam.Mask(mx, my, mw, mh)
 }

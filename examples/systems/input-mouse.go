@@ -15,8 +15,6 @@ func Mouse() {
 	quad.Width, quad.Height = 300, 300
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
-
 		var mx, my = cam.MousePosition()
 		if quad.ContainsPoint(mx, my) && mouse.IsButtonPressed(b.Left) {
 			quad.Angle -= time.FrameDelta() * 60

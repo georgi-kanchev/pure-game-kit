@@ -14,7 +14,6 @@ func Lines() {
 	var lineB = geometry.NewLine(-400, 400, 0, 0)
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		lineB.Bx, lineB.By = cam.MousePosition()
 
 		var lineColor = condition.If(lineA.IsCrossingLine(lineB), palette.Red, palette.Green)

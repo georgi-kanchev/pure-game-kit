@@ -138,7 +138,6 @@ func main() {
 		window.Title = "pure-game-kit: hub"
 		window.FrameRateLimit = 0
 
-		cam.SetScreenAreaToWindow()
 		hud.UpdateAndDraw()
 		cam.DrawTextFPS()
 

@@ -28,7 +28,6 @@ func Effects() {
 	spr2.Width, spr2.Height = 500, 500
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 
 		cam.DrawSprites(spr, spr2)

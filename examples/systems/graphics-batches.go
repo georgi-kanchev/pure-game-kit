@@ -36,7 +36,6 @@ func Batches() {
 	})
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.DrawShapes(palette.Red, points...)
 		cam.DrawTextFPS()
 	}

@@ -151,7 +151,6 @@ func (r *root) restore(prAng, prZoom, prX, prY float32) {
 	var cam = r.cam
 	cam.Angle, cam.Zoom = prAng, prZoom
 	cam.X, cam.Y = prX, prY
-	cam.SetScreenArea(cam.ScreenX, cam.ScreenY, cam.ScreenWidth, cam.ScreenHeight)
 
 	r.wWasHovered = r.wHovered
 	r.cWasHovered = r.cHovered

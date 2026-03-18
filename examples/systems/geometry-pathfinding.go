@@ -28,7 +28,6 @@ func Pathfinding() {
 	var path = [][2]float32{}
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawGrid(1, 32, 32, palette.DarkGray)
 

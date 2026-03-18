@@ -27,8 +27,6 @@ func StateMachines() {
 	player.behavior.GoToState(player.ground)
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
-
 		var clx, cly = cam.PointFromEdge(0, 0.5)
 		var cw, ch = cam.Size()
 		cam.DrawQuad(clx, cly, cw, ch, 0, palette.DarkGray)

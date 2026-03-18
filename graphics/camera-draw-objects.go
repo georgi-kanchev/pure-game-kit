@@ -15,7 +15,7 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 
 	var lastEffects *Effects
 	for _, s := range quads {
-		if s == nil || !c.IsAreaVisible(s.Area()) {
+		if s == nil || !c.IsAreaVisible(s.Bounds()) {
 			continue
 		}
 
@@ -40,7 +40,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 	var lastEffects *Effects
 	for _, s := range sprites {
-		if s == nil || !c.IsAreaVisible(s.Area()) {
+		if s == nil || !c.IsAreaVisible(s.Bounds()) {
 			continue
 		}
 
@@ -78,7 +78,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 	skipStartEnd = true
 	var lastEffects *Effects
 	for _, b := range boxes {
-		if b == nil || !c.IsAreaVisible(b.Area()) {
+		if b == nil || !c.IsAreaVisible(b.Bounds()) {
 			continue
 		}
 
@@ -172,7 +172,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
 	for _, t := range textBoxes {
-		if t == nil || !c.IsAreaVisible(t.Area()) {
+		if t == nil || !c.IsAreaVisible(t.Bounds()) {
 			continue
 		}
 
@@ -203,7 +203,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 	c.begin()
 	for _, t := range tileMaps {
-		if t == nil || !c.IsAreaVisible(t.Area()) {
+		if t == nil || !c.IsAreaVisible(t.Bounds()) {
 			continue
 		}
 

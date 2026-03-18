@@ -48,7 +48,6 @@ func Texts() {
 	textBox.Angle = 5
 
 	for window.KeepOpen() {
-		cam.SetScreenAreaToWindow()
 		textBox.Tint = palette.DarkGray
 		cam.DrawQuads(&textBox.Quad)
 		textBox.Tint = palette.White
