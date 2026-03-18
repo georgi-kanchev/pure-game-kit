@@ -25,7 +25,7 @@ func NewQuad(x, y float32) *Quad {
 
 func (q *Quad) CameraFit(camera *Camera) {
 	var sx, sy, sw, sh = camera.area()
-	var x, y = camera.PointFromScreen(int(sx+sw/2), int(sy+sh/2))
+	var x, y = camera.PointFromScreen(sx+sw/2, sy+sh/2)
 	var cw, ch = camera.Size()
 	var scale = min(cw/q.Width, ch/q.Height)
 
@@ -36,7 +36,7 @@ func (q *Quad) CameraFit(camera *Camera) {
 }
 func (q *Quad) CameraFill(camera *Camera) {
 	var sx, sy, sw, sh = camera.area()
-	var x, y = camera.PointFromScreen(int(sx+sw/2), int(sy+sh/2))
+	var x, y = camera.PointFromScreen(sx+sw/2, sy+sh/2)
 	var cw, ch = camera.Size()
 	var scale = max(cw/q.Width, ch/q.Height)
 
@@ -47,7 +47,7 @@ func (q *Quad) CameraFill(camera *Camera) {
 }
 func (q *Quad) CameraStretch(camera *Camera) {
 	var sx, sy, sw, sh = camera.area()
-	var x, y = camera.PointFromScreen(int(sx+sw/2), int(sy+sh/2))
+	var x, y = camera.PointFromScreen(sx+sw/2, sy+sh/2)
 	var cw, ch = camera.Size()
 	var scaleX, scaleY = cw / q.Width, ch / q.Height
 

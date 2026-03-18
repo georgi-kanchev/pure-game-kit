@@ -67,7 +67,7 @@ var CurrentScreen int
 
 var Cursor int
 var Input = ""
-var MouseDeltaX, MouseDeltaY, SmoothScroll float32
+var MouseX, MouseY, MouseDeltaX, MouseDeltaY, Scroll, SmoothScroll float32
 var Keys, KeysPrev, Buttons, ButtonsPrev = []int{}, []int{}, []int{}, []int{}
 var AnyButtonJustPressed, AnyButtonJustReleased, AnyKeyJustPressed, AnyKeyJustReleased = false, false, false, false
 
@@ -241,15 +241,17 @@ func updateInput() {
 	prevCursor = Cursor
 
 	var delta = rl.GetMouseDelta()
+	var pos = rl.GetMousePosition()
 	MouseDeltaX, MouseDeltaY = delta.X, delta.Y
+	MouseX, MouseY = pos.X, pos.Y
+	Scroll = rl.GetMouseWheelMoveV().Y
 
 	const scrollAccel, scrollDecay = 600.0, 8.0
-	SmoothScroll += rl.GetMouseWheelMoveV().Y * scrollAccel * DeltaTime
+	SmoothScroll += Scroll * scrollAccel * DeltaTime
 	SmoothScroll *= number.Exponential(-scrollDecay * DeltaTime)
 	if SmoothScroll != 0 && number.IsWithin(SmoothScroll, 0, 0.0001) {
 		SmoothScroll = 0
 	}
-
 	if AnyButtonJustPressed || AnyButtonJustReleased || AnyKeyJustPressed || AnyKeyJustReleased {
 		SmoothScroll = 0
 	}

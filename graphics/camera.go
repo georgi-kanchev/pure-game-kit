@@ -5,8 +5,6 @@ import (
 	"pure-game-kit/input/mouse/button"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Camera struct {
@@ -106,16 +104,15 @@ func (c *Camera) IsAreaVisible(x, y, width, height float32) bool {
 	var sMinX, sMaxX = min(sx1, sx2), max(sx1, sx2)
 	var sMinY, sMaxY = min(sy1, sy2), max(sy1, sy2)
 	var mx, my, mw, mh = c.mask()
-	return sMaxX > int(mx) && sMinX < int(mx+mw) && sMaxY > int(my) && sMinY < int(my+mh)
+	return sMaxX > mx && sMinX < mx+mw && sMaxY > my && sMinY < my+mh
 }
 func (c *Camera) IsHovered() bool {
-	var mousePos = rl.GetMousePosition()
+	var mx, my = internal.MouseX, internal.MouseY
 	var sx, sy, sw, sh = c.area()
-	return float32(mousePos.X) > sx && float32(mousePos.Y) > sy &&
-		float32(mousePos.X) < sx+sw && float32(mousePos.Y) < sy+sh
+	return mx > sx && my > sy && mx < sx+sw && my < sy+sh
 }
 func (c *Camera) MousePosition() (x, y float32) {
-	return c.PointFromScreen(int(rl.GetMouseX()), int(rl.GetMouseY()))
+	return c.PointFromScreen(internal.MouseX, internal.MouseY)
 }
 func (c *Camera) Size() (width, height float32) {
 	c.update()
@@ -123,7 +120,7 @@ func (c *Camera) Size() (width, height float32) {
 	return sw / c.Zoom, sh / c.Zoom
 }
 
-func (c *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
+func (c *Camera) PointFromScreen(screenX, screenY float32) (x, y float32) {
 	c.update()
 
 	var sx, sy = float32(screenX), float32(screenY)
@@ -139,7 +136,7 @@ func (c *Camera) PointFromScreen(screenX, screenY int) (x, y float32) {
 	rotY += float32(rlCam.Target.Y)
 	return rotX, rotY
 }
-func (c *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
+func (c *Camera) PointToScreen(x, y float32) (screenX, screenY float32) {
 	c.update()
 
 	x -= float32(rlCam.Target.X)
@@ -152,7 +149,7 @@ func (c *Camera) PointToScreen(x, y float32) (screenX, screenY int) {
 
 	rotX += float32(rlCam.Offset.X)
 	rotY += float32(rlCam.Offset.Y)
-	return int(rotX), int(rotY)
+	return rotX, rotY
 }
 func (c *Camera) PointFromCamera(otherCamera *Camera, otherX, otherY float32) (myX, myY float32) {
 	var screenX, screenY = otherCamera.PointToScreen(otherX, otherY)
@@ -164,5 +161,5 @@ func (c *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (otherX, o
 func (c *Camera) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	var _, _, sw, sh = c.area()
 	var scrX, scrY = sw * edgeX, sh * edgeY
-	return c.PointFromScreen(int(scrX), int(scrY))
+	return c.PointFromScreen(scrX, scrY)
 }

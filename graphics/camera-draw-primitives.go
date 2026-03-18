@@ -27,10 +27,10 @@ func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 
 	var renderColor = getColor(color)
 	var sx, sy, sw, sh = c.area()
-	var ulx, uly = c.PointFromScreen(int(sx), int(sy))
-	var urx, ury = c.PointFromScreen(int(sx)+int(sw), int(sy))
-	var lrx, lry = c.PointFromScreen(int(sx)+int(sw), int(sy)+int(sh))
-	var llx, lly = c.PointFromScreen(int(sx), int(sy)+int(sh))
+	var ulx, uly = c.PointFromScreen(sx, sy)
+	var urx, ury = c.PointFromScreen(sx+sw, sy)
+	var lrx, lry = c.PointFromScreen(sx+sw, sy+sh)
+	var llx, lly = c.PointFromScreen(sx, sy+sh)
 	var xs = []float32{ulx, urx, llx, lrx}
 	var ys = []float32{uly, ury, lly, lry}
 	var minX, maxX = xs[0], xs[0]

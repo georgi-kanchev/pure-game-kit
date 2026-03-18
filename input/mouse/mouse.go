@@ -30,7 +30,7 @@ func CursorDelta() (x, y float32) {
 }
 
 func Scroll() float32 {
-	return rl.GetMouseWheelMoveV().Y
+	return internal.Scroll
 }
 func ScrollSmooth() float32 {
 	return internal.SmoothScroll
