@@ -1,4 +1,5 @@
 // TODO:
+points array should be []float32, not [][2]float32, (cam draw primitives and shapes etc)
 inputfield cycle selection with double click
 inputfield bug, set cursor & select indices to 0 if not typing fixes it but causes another bug
 
