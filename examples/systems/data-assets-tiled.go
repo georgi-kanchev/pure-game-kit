@@ -34,7 +34,7 @@ func Tiled() {
 		cam.DrawTileMaps(tileMaps...)
 		cam.DrawShapes(palette.Red, pts...)
 		cam.DrawPoints(2, palette.White, pts...)
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 
 		if keyboard.IsKeyJustPressed(key.F5) {
 			hotreload()

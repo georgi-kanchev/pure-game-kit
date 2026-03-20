@@ -91,6 +91,6 @@ func tryPress(press, once, sounds bool, themePress string, widget *widget, owner
 			sound.Play()
 		}
 		widget.root.wPressedOn = widget
-		widget.root.wPressedAt = time.Runtime()
+		widget.root.wPressedAt = time.Running()
 	}
 }

@@ -55,6 +55,6 @@ func Particles() {
 			var mx, my = cam.MousePosition()
 			particles.EmitFromLine(30, mx-100, my, mx+100, my)
 		}
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

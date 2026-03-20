@@ -1,6 +1,7 @@
 package graphics
 
 import (
+	"pure-game-kit/debug"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	col "pure-game-kit/utility/color"
@@ -8,6 +9,8 @@ import (
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
+	tm "pure-game-kit/utility/time"
+	"pure-game-kit/utility/time/unit"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -400,12 +403,36 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, 
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
 	c.end()
 }
-func (c *Camera) DrawTextFPS() {
-	if condition.TrueEvery(0.1, "fps") {
-		var fr, avg = int(internal.FrameRate), int(internal.FrameRateAverage)
-		fps = text.New("Current FPS: ", fr, "\n", "Average FPS: ", avg)
+func (c *Camera) DrawTextDebug(fps, time, assets, memory bool) {
+	if condition.TrueEvery(0.15, ";;;debug") {
+		debugStr = ""
+		if fps {
+			debugStr += text.New("FPS ", int(internal.FPS), " (", int(internal.AverageFPS), ")\n\n")
+		}
+		if time {
+			debugStr += text.New(
+				"Time: \n",
+				"Running = ", tm.AsClock12(internal.Runtime, ":", unit.Hour|unit.Timer, false), "\n",
+				"Frame Busy = ", number.Round(internal.FrameTime*1000, 3), "ms ",
+				"(", number.Round((internal.FrameTime/internal.DeltaTime)*100), "%)\n",
+				"Frame Idle = ", number.Round((internal.DeltaTime-internal.FrameTime)*1000, 3), "ms ",
+				"(", number.Round(((internal.DeltaTime-internal.FrameTime)/internal.DeltaTime)*100), "%)\n",
+				"Frame Total = ", number.Round((internal.DeltaTime)*1000, 3), "ms ",
+				"\n\n")
+		}
+		if assets {
+			debugStr += text.New("Assets: \n",
+				"Textures = ", len(internal.Textures), "\n",
+				"Fonts = ", len(internal.Fonts), "\n",
+				"Sounds = ", len(internal.Sounds), "\n",
+				"Music = ", len(internal.Music), "\n",
+				"Tile Data = ", len(internal.TileDatas), "\n\n")
+		}
+		if memory {
+			debugStr += debug.MemoryUsage()
+		}
 	}
 
 	var tlx, tly = c.PointFromEdge(0, 0)
-	c.DrawText(fps, tlx+10/c.Zoom, tly, 50/c.Zoom)
+	c.DrawText(debugStr, tlx+10/c.Zoom, tly, 40/c.Zoom)
 }

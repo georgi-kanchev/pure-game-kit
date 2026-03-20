@@ -67,6 +67,6 @@ func PathFollowing() {
 		cam.DrawLinesPath(5, randomColors[6], p7...)
 		cam.DrawLinesPath(5, randomColors[7], p8...)
 		cam.DrawLinesPath(2, palette.Red, result...)
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

@@ -37,6 +37,6 @@ func Batches() {
 
 	for window.KeepOpen() {
 		cam.DrawShapes(palette.Red, points...)
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

@@ -31,6 +31,6 @@ func Effects() {
 		cam.MouseDragAndZoomSmoothly()
 
 		cam.DrawSprites(spr, spr2)
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

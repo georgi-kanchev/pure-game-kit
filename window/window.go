@@ -9,6 +9,7 @@ import (
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/text"
+	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 
@@ -28,6 +29,8 @@ func Recreate() {
 	tryCreate()
 }
 func KeepOpen() bool {
+	internal.FrameTime = float32(time.Since(internal.FrameStart).Seconds())
+
 	if terminate {
 		rl.CloseWindow()
 		return false
@@ -49,6 +52,7 @@ func KeepOpen() bool {
 	w, h = rl.GetScreenWidth(), rl.GetScreenHeight()
 
 	internal.Update()
+	internal.FrameStart = time.Now()
 
 	return !rl.WindowShouldClose()
 }

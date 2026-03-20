@@ -40,6 +40,6 @@ func Pathfinding() {
 		path = curve.SmoothPath(grid.FindPathDiagonally(16, 16, mx, my, false))
 		cam.DrawLinesPath(1, palette.Green, path...)
 		cam.DrawPoints(2, palette.White, path...)
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

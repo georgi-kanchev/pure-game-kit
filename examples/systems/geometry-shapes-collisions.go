@@ -54,6 +54,6 @@ func Collisions() {
 		cam.DrawLinesPath(8, palette.Red, shape3.CornerPoints()...)
 		cam.DrawLinesPath(8, palette.Red, shape4.CornerPoints()...)
 		cam.DrawLinesPath(8, palette.Green, shape.CornerPoints()...)
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

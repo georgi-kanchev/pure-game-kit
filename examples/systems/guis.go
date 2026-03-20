@@ -186,6 +186,6 @@ func GUIs() {
 		}
 
 		hud.UpdateAndDraw()
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

@@ -35,6 +35,6 @@ func Tweens() {
 			position.Restart()
 		}
 
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

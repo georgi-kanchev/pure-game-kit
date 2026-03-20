@@ -96,6 +96,6 @@ func Shapes() {
 			cam.DrawCircle(v[0], v[1], 16, palette.Green)
 		}
 
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

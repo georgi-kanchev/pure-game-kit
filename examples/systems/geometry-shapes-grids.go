@@ -53,6 +53,6 @@ func ShapesGrids() {
 			cam.DrawCircle(v[0], v[1], 3, palette.Magenta)
 		}
 
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

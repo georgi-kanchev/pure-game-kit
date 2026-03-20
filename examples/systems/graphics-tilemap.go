@@ -31,7 +31,7 @@ func Tilemap() {
 	for window.KeepOpen() {
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawTileMaps(tilemap)
-		cam.DrawTextFPS()
+		cam.DrawTextDebug(true, true, true, true)
 
 		if mouse.IsButtonPressed(button.Left) {
 			var mx, my = cam.MousePosition()

@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"pure-game-kit/utility/number"
 	"reflect"
 	"runtime"
 	"runtime/pprof"
@@ -216,27 +217,26 @@ func MemoryUsage() string {
 	fmt.Fprintf(&b, "Active = %v (actively in use)\n", byteSize(int(m.HeapInuse)))
 	fmt.Fprintf(&b, "Released = %v (given back to OS)\n", byteSize(int(m.HeapReleased)))
 
-	fmt.Fprintf(&b, "\nObject:\n")
-	fmt.Fprintf(&b, "Allocs = %v (objects allocated)\n", m.Mallocs)
-	fmt.Fprintf(&b, "Frees = %v (objects freed)\n", m.Frees)
-	fmt.Fprintf(&b, "Live = %v (currently alive)\n", m.HeapObjects)
+	fmt.Fprintf(&b, "\nStack:\n")
+	fmt.Fprintf(&b, "Used = %v\n", byteSize(int(m.StackInuse)))
+	fmt.Fprintf(&b, "Reserved = %v\n", byteSize(int(m.StackSys)))
+	fmt.Fprintf(&b, "Other = %v (misc runtime overhead)\n", byteSize(int(m.OtherSys)))
+
+	fmt.Fprintf(&b, "\nObjects:\n")
+	fmt.Fprintf(&b, "Allocs = %v (objects allocated)\n", number.SeparateThousands(m.Mallocs))
+	fmt.Fprintf(&b, "Frees = %v (objects freed)\n", number.SeparateThousands(m.Frees))
+	fmt.Fprintf(&b, "Live = %v (currently alive)\n", number.SeparateThousands(m.HeapObjects))
 
 	fmt.Fprintf(&b, "\nGarbage Collection:\n")
-	fmt.Fprintf(&b, "Total = %v (total collections)\n", m.NumGC)
+	fmt.Fprintf(&b, "Total = %v (total collections)\n", number.SeparateThousands(m.NumGC))
 	fmt.Fprintf(&b, "Forced = %v (manual triggers)\n", m.NumForcedGC)
 	fmt.Fprintf(&b, "Next = %v (target heap size of the next GC)\n", byteSize(int(m.NextGC)))
 	fmt.Fprintf(&b, "PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
-
 	if m.LastGC == 0 {
 		fmt.Fprintf(&b, "SinceLast = never\n")
 	} else {
 		fmt.Fprintf(&b, "SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
 	}
-
-	fmt.Fprintf(&b, "\nStack:\n")
-	fmt.Fprintf(&b, "Used = %v\n", byteSize(int(m.StackInuse)))
-	fmt.Fprintf(&b, "Reserved = %v\n", byteSize(int(m.StackSys)))
-	fmt.Fprintf(&b, "Other = %v (misc runtime overhead)\n", byteSize(int(m.OtherSys)))
 
 	return b.String()
 }

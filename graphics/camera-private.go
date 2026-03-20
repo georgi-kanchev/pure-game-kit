@@ -163,7 +163,7 @@ func isConvex(pts []float32, count int) bool {
 
 var rlCam = rl.Camera2D{}
 
-var fps string
+var debugStr string
 
 const placeholderCharAsset = '@'
 
