@@ -60,14 +60,12 @@ func (q *Quad) CameraStretch(camera *Camera) {
 //=================================================================
 
 func (q *Quad) Bounds() (x, y, width, height float32) {
-	var x1, y1 = q.CornerTopLeft()
-	var x2, y2 = q.CornerTopRight()
-	var x3, y3 = q.CornerBottomRight()
-	var x4, y4 = q.CornerBottomLeft()
-	var minX = number.Smallest(x1, x2, x3, x4)
-	var minY = number.Smallest(y1, y2, y3, y4)
-	var maxX = number.Biggest(x1, x2, x3, x4)
-	var maxY = number.Biggest(y1, y2, y3, y4)
+	var x1, y1 = q.PointFromEdge(0, 0)
+	var x2, y2 = q.PointFromEdge(1, 0)
+	var x3, y3 = q.PointFromEdge(1, 1)
+	var x4, y4 = q.PointFromEdge(0, 1)
+	var minX, minY = number.Smallest(x1, x2, x3, x4), number.Smallest(y1, y2, y3, y4)
+	var maxX, maxY = number.Biggest(x1, x2, x3, x4), number.Biggest(y1, y2, y3, y4)
 	return minX, minY, maxX - minX, maxY - minY
 }
 func (q *Quad) PointToLocal(x, y float32) (localX, localY float32) {
@@ -96,7 +94,6 @@ func (q *Quad) ContainsPoint(cx, cy float32) bool {
 	return x >= 0 && y >= 0 && x < q.Width && y < q.Height
 }
 
-func (q *Quad) CornerTopLeft() (x, y float32)     { return q.PointToGlobal(0, 0) }
-func (q *Quad) CornerTopRight() (x, y float32)    { return q.PointToGlobal(q.Width, 0) }
-func (q *Quad) CornerBottomRight() (x, y float32) { return q.PointToGlobal(q.Width, q.Height) }
-func (q *Quad) CornerBottomLeft() (x, y float32)  { return q.PointToGlobal(0, q.Height) }
+func (q *Quad) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
+	return q.PointToGlobal(q.Width*edgeX, q.Height*edgeY)
+}

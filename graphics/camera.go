@@ -11,7 +11,7 @@ type Camera struct {
 	X, Y, Zoom, Angle float32
 
 	Area    *Area // The draw area in window space. Defaults to entire window if nil.
-	Mask    *Area // In window space. Everything drawn outside of it is cropped. Defaults to entire window if nil.
+	Mask    *Area // In camera space. Everything drawn outside of it is cropped. No masking if nil.
 	Effects *Effects
 	Blend   int
 
@@ -25,7 +25,7 @@ func NewCamera(zoom float32) *Camera {
 	var cam = Camera{Zoom: zoom}
 
 	if batch == nil {
-		batch = &Batch{}
+		batch = &batchData{}
 		batch.Init(16)
 	}
 	return &cam
@@ -103,7 +103,7 @@ func (c *Camera) IsAreaVisible(x, y, width, height float32) bool {
 	var sx2, sy2 = c.PointToScreen(x+width, y+height)
 	var sMinX, sMaxX = min(sx1, sx2), max(sx1, sx2)
 	var sMinY, sMaxY = min(sy1, sy2), max(sy1, sy2)
-	var mx, my, mw, mh = c.mask()
+	var mx, my, mw, mh = c.area()
 	return sMaxX > mx && sMinX < mx+mw && sMaxY > my && sMinY < my+mh
 }
 func (c *Camera) IsHovered() bool {
@@ -118,6 +118,15 @@ func (c *Camera) Size() (width, height float32) {
 	c.update()
 	var _, _, sw, sh = c.area()
 	return sw / c.Zoom, sh / c.Zoom
+}
+func (c *Camera) Bounds() (x, y, width, height float32) {
+	var x1, y1 = c.PointFromEdge(0, 0)
+	var x2, y2 = c.PointFromEdge(1, 0)
+	var x3, y3 = c.PointFromEdge(1, 1)
+	var x4, y4 = c.PointFromEdge(0, 1)
+	var minX, minY = number.Smallest(x1, x2, x3, x4), number.Smallest(y1, y2, y3, y4)
+	var maxX, maxY = number.Biggest(x1, x2, x3, x4), number.Biggest(y1, y2, y3, y4)
+	return minX, minY, maxX - minX, maxY - minY
 }
 
 func (c *Camera) PointFromScreen(screenX, screenY float32) (x, y float32) {

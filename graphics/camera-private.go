@@ -169,15 +169,15 @@ const placeholderCharAsset = '@'
 
 func (c *Camera) area() (x, y, w, h float32) {
 	if c.Area == nil {
-		var w, h = window.Size()
-		return 0, 0, float32(w), float32(h)
+		var ww, wh = window.Size()
+		return 0, 0, float32(ww), float32(wh)
 	}
 	return c.Area.X, c.Area.Y, c.Area.Width, c.Area.Height
 }
 func (c *Camera) mask() (x, y, w, h float32) {
 	if c.Mask == nil {
-		var w, h = window.Size()
-		return 0, 0, float32(w), float32(h)
+		var ww, wh = window.Size()
+		return 0, 0, float32(ww), float32(wh)
 	}
 	return c.Mask.X, c.Mask.Y, c.Mask.Width, c.Mask.Height
 }
@@ -193,17 +193,6 @@ func (c *Camera) update() {
 	rlCam.Zoom = float32(c.Zoom)
 	rlCam.Offset.X = sx + sw/2
 	rlCam.Offset.Y = sy + sh/2
-
-	if c.Mask != nil {
-		var mx, my, mw, mh = c.mask()
-		mx = number.Biggest(mx, sx)
-		my = number.Biggest(my, sy)
-		var maxW = sx + sw - mx
-		var maxH = sy + sh - my
-		mw = number.Smallest(mw, maxW)
-		mh = number.Smallest(mh, maxH)
-		c.Mask.X, c.Mask.Y, c.Mask.Width, c.Mask.Height = mx, my, mw, mh
-	}
 }
 
 // call before draw to update camera and use camera space
@@ -214,10 +203,13 @@ func (c *Camera) begin() {
 	}
 
 	rl.BeginMode2D(rlCam)
-	if c.Mask != nil {
-		var mx, my, mw, mh = c.mask()
+	mask = c.Mask
+
+	if c.Area != nil {
+		var mx, my, mw, mh = c.area()
 		rl.BeginScissorMode(int32(mx), int32(my), int32(mw), int32(mh))
 	}
+
 	rl.BeginShaderMode(internal.Shader)
 	rl.EnableDepthTest()
 	c.Effects.updateUniforms(1, 1, nil, nil, true)
@@ -239,7 +231,7 @@ func (c *Camera) end() {
 
 	rl.DisableDepthTest()
 	rl.EndShaderMode()
-	if c.Mask != nil {
+	if c.Area != nil {
 		rl.EndScissorMode()
 	}
 	rl.EndMode2D()

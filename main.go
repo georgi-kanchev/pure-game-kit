@@ -99,6 +99,8 @@ func main() {
 
 	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
 
+	cam.Mask = graphics.NewArea(-500, -500, 1000, 1000)
+
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
 		"boxes":            example.Boxes,
@@ -139,7 +141,7 @@ func main() {
 		window.FrameRateLimit = 0
 
 		hud.UpdateAndDraw()
-		cam.DrawTextDebug(true, true, true, true)
+		cam.DrawTextDebug(true, false, false, false)
 
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k) {

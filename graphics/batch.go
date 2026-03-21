@@ -11,7 +11,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type Batch struct {
+type batchData struct {
 	mesh     *rl.Mesh
 	material rl.Material
 
@@ -20,11 +20,12 @@ type Batch struct {
 	vertices, texCoords, colors, indices []byte
 }
 
-var batch *Batch
+var batch *batchData
 var prevColor rl.Color
 var skipStartEnd bool
+var mask *Area
 
-func (b *Batch) Init(quadCountCapacity int32) {
+func (b *batchData) Init(quadCountCapacity int32) {
 	if b.mesh != nil {
 		b.mesh.Vertices = nil
 		b.mesh.Texcoords = nil
@@ -53,11 +54,55 @@ func (b *Batch) Init(quadCountCapacity int32) {
 	b.material = rl.LoadMaterialDefault()
 	b.material.Shader = internal.Shader
 }
-func (b *Batch) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
-	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+4 > b.mesh.VertexCount) {
-		b.Draw()
+func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
+	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
+	var sinA, cosA = internal.SinCos(ang)
+	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
+	var u1, v1 = src.X * invTexW, src.Y * invTexH
+	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
+
+	// 1. Generate local corners
+	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
+	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
+
+	var poly [12]batchVertex // Max vertices after clipping is usually 8, 12 is safe
+	var vCount int
+
+	if mask == nil {
+		// FAST PATH: Direct vertex generation
+		vCount = 4
+		for i := range 4 {
+			poly[i] = batchVertex{
+				X: (dx[i]*cosA - dy[i]*sinA) + dst.X,
+				Y: (dx[i]*sinA + dy[i]*cosA) + dst.Y,
+				U: uvs[i*2],
+				V: uvs[i*2+1],
+			}
+		}
+	} else {
+		// CLIPPED PATH
+		var initial [4]batchVertex
+		for i := range 4 {
+			initial[i] = batchVertex{
+				X: (dx[i]*cosA - dy[i]*sinA) + dst.X,
+				Y: (dx[i]*sinA + dy[i]*cosA) + dst.Y,
+				U: uvs[i*2],
+				V: uvs[i*2+1],
+			}
+		}
+		var clipped [12]batchVertex
+		vCount = clipPolygonAABB(initial[:], clipped[:], mask)
+		if vCount < 3 {
+			return
+		}
+		copy(poly[:], clipped[:vCount])
 	}
 
+	// 2. Batch State Management
+	var vCount32 = int32(vCount)
+	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
+		b.Draw()
+	}
 	if b.vertsCur == 0 {
 		var mat = b.material
 		rl.SetMaterialTexture(&mat, rl.MapDiffuse, *tex)
@@ -65,97 +110,58 @@ func (b *Batch) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32,
 		b.material.Shader = internal.Shader
 	}
 
-	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
-
-	var vOffset = b.vertsCur * 12
-	var vertices = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[vOffset])), 12)
-	var sinA, cosA = internal.SinCos(ang)
-	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
-
-	for i := range 4 {
-		vertices[i*3+0] = (dx[i]*cosA - dy[i]*sinA) + dst.X
-		vertices[i*3+1] = (dx[i]*sinA + dy[i]*cosA) + dst.Y
-		vertices[i*3+2] = 0
-	}
-
-	var tOffset = b.vertsCur * 8
-	var texCoords = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[tOffset])), 8)
-	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
-	var u1, v1 = src.X * invTexW, src.Y * invTexH
-	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
-
-	texCoords[0], texCoords[1] = u1, v1
-	texCoords[2], texCoords[3] = u1, v2
-	texCoords[4], texCoords[5] = u2, v2
-	texCoords[6], texCoords[7] = u2, v1
-
-	var cOffset = b.vertsCur * 4
-	var colors = b.colors[cOffset : cOffset+16]
-	for i := range 4 {
-		colors[i*4+0], colors[i*4+1], colors[i*4+2], colors[i*4+3] = col.R, col.G, col.B, col.A
-	}
-
-	var iOffset = b.indCur * 2
-	var indices = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[iOffset])), 6)
-	var base = uint16(b.vertsCur)
-	indices[0], indices[1], indices[2] = base+0, base+1, base+2
-	indices[3], indices[4], indices[5] = base+0, base+2, base+3
-
-	b.vertsCur += 4
-	b.indCur += 6
+	// 3. Buffer Push
+	writeToBuffers(b, poly[:vCount], col)
 }
-func (b *Batch) QueueTriangles(points []float32, col rl.Color) {
-	var vertCount = int32(len(points) / 2)
-	if vertCount%3 != 0 {
+
+func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
+	var totalTriangles = int(len(points) / 6)
+	if totalTriangles == 0 {
 		return
 	}
-
 	var whiteTex = internal.White
-	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != whiteTex.ID || b.vertsCur+vertCount > b.mesh.VertexCount) {
-		b.Draw()
-	}
 
-	if b.vertsCur == 0 {
-		var mat = b.material
-		rl.SetMaterialTexture(&mat, rl.MapDiffuse, *whiteTex)
-		b.material = mat
-		b.material.Shader = internal.Shader
-	}
+	for i := range totalTriangles {
+		var pOffset = i * 6
+		var initial = [3]batchVertex{
+			{X: points[pOffset+0], Y: points[pOffset+1], U: 0, V: 0},
+			{X: points[pOffset+2], Y: points[pOffset+3], U: 0, V: 0},
+			{X: points[pOffset+4], Y: points[pOffset+5], U: 0, V: 0},
+		}
 
-	var vOffset = b.vertsCur * 12
-	var vertices = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[vOffset])), vertCount*3)
-	for i := range vertCount {
-		vertices[i*3+0] = points[i*2+0]
-		vertices[i*3+1] = points[i*2+1]
-		vertices[i*3+2] = 0
-	}
+		var poly [12]batchVertex
+		var vCount int
 
-	var tOffset = b.vertsCur * 8
-	var texCoords = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[tOffset])), vertCount*2)
-	for i := range texCoords {
-		texCoords[i] = 0
-	}
+		if mask == nil {
+			vCount = 3
+			copy(poly[:], initial[:])
+		} else {
+			var clipped [12]batchVertex
+			vCount = clipPolygonAABB(initial[:], clipped[:], mask)
+			if vCount < 3 {
+				continue
+			}
+			copy(poly[:], clipped[:vCount])
+		}
 
-	var cOffset = b.vertsCur * 4
-	var colors = b.colors[cOffset : cOffset+(vertCount*4)]
-	for i := range vertCount {
-		colors[i*4+0], colors[i*4+1], colors[i*4+2], colors[i*4+3] = col.R, col.G, col.B, col.A
-	}
+		var vCount32 = int32(vCount)
+		if b.vertsCur != 0 && (b.material.Maps.Texture.ID != whiteTex.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
+			b.Draw()
+		}
+		if b.vertsCur == 0 {
+			var mat = b.material
+			rl.SetMaterialTexture(&mat, rl.MapDiffuse, *whiteTex)
+			b.material = mat
+			b.material.Shader = internal.Shader
+		}
 
-	var iOffset = b.indCur * 2
-	var indices = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[iOffset])), vertCount)
-	var base = uint16(b.vertsCur)
-	for i := uint16(0); i < uint16(vertCount); i++ {
-		indices[i] = base + i
+		writeToBuffers(b, poly[:vCount], col)
 	}
-
-	b.vertsCur += vertCount
-	b.indCur += vertCount
 }
-func (b *Batch) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color) {
+func (b *batchData) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color) {
 	b.QueueTriangles([]float32{x1, y1, x2, y2, x3, y3}, color)
 }
-func (b *Batch) QueueTriangleFanFloats(points []float32, color rl.Color) {
+func (b *batchData) QueueTriangleFanFloats(points []float32, color rl.Color) {
 	var count = len(points) / 2
 	if count < 3 {
 		return
@@ -166,7 +172,7 @@ func (b *Batch) QueueTriangleFanFloats(points []float32, color rl.Color) {
 		b.QueueTriangle(x0, y0, points[i*2], points[i*2+1], points[(i+1)*2], points[(i+1)*2+1], color)
 	}
 }
-func (b *Batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
+func (b *batchData) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
 	if thickness <= 0 {
 		return
 	}
@@ -182,7 +188,7 @@ func (b *Batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
 	b.QueueTriangle(v1x, v1y, v3x, v3y, v2x, v2y, color)
 	b.QueueTriangle(v1x, v1y, v4x, v4y, v3x, v3y, color)
 }
-func (b *Batch) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) {
+func (b *batchData) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) {
 	var queueQuad = func(dstX, dstY, dstW, dstH float32, col uint) {
 		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 		var x, y = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
@@ -222,7 +228,7 @@ func (b *Batch) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) 
 	}
 }
 
-func (b *Batch) Draw() {
+func (b *batchData) Draw() {
 	if b.vertsCur == 0 {
 		return
 	}
@@ -241,4 +247,116 @@ func (b *Batch) Draw() {
 
 	b.vertsCur = 0
 	b.indCur = 0
+}
+
+//=================================================================
+// private
+
+type batchVertex struct {
+	X, Y, U, V float32
+}
+
+func clipPolygonAABB(poly, outBuf []batchVertex, mask *Area) int {
+	var temp [12]batchVertex // Intermediate buffer for ping-ponging edges
+	var minX, maxX = mask.X, mask.X + mask.Width
+	var minY, maxY = mask.Y, mask.Y + mask.Height
+	var count = clipPolyEdge(poly, temp[:], true, minX, true)
+	if count == 0 {
+		return 0
+	}
+
+	count = clipPolyEdge(temp[:count], outBuf, true, maxX, false)
+	if count == 0 {
+		return 0
+	}
+
+	count = clipPolyEdge(outBuf[:count], temp[:], false, minY, true)
+	if count == 0 {
+		return 0
+	}
+
+	count = clipPolyEdge(temp[:count], outBuf, false, maxY, false)
+	return count
+}
+func clipPolyEdge(in, out []batchVertex, isX bool, edgeVal float32, keepGreater bool) int {
+	var outCount = 0
+	if len(in) == 0 {
+		return 0
+	}
+
+	var prev = in[len(in)-1]
+	var prevVal float32
+	if isX {
+		prevVal = prev.X
+	} else {
+		prevVal = prev.Y
+	}
+	var prevInside = (keepGreater && prevVal >= edgeVal) || (!keepGreater && prevVal <= edgeVal)
+
+	for _, curr := range in {
+		var currVal float32
+		if isX {
+			currVal = curr.X
+		} else {
+			currVal = curr.Y
+		}
+		var currInside = (keepGreater && currVal >= edgeVal) || (!keepGreater && currVal <= edgeVal)
+
+		if currInside != prevInside {
+			var t float32
+			if isX {
+				t = (edgeVal - prev.X) / (curr.X - prev.X)
+			} else {
+				t = (edgeVal - prev.Y) / (curr.Y - prev.Y)
+			}
+
+			out[outCount] = batchVertex{
+				X: prev.X + t*(curr.X-prev.X),
+				Y: prev.Y + t*(curr.Y-prev.Y),
+				U: prev.U + t*(curr.U-prev.U),
+				V: prev.V + t*(curr.V-prev.V),
+			}
+			outCount++
+		}
+
+		if currInside {
+			out[outCount] = curr
+			outCount++
+		}
+
+		prev = curr
+		prevInside = currInside
+	}
+
+	return outCount
+}
+
+func writeToBuffers(b *batchData, vertices []batchVertex, col rl.Color) {
+	var vCount = int32(len(vertices))
+	var vOffset = b.vertsCur * 12
+	var vSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[vOffset])), vCount*3)
+	var tOffset = b.vertsCur * 8
+	var tSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[tOffset])), vCount*2)
+	var cOffset = b.vertsCur * 4
+	var cSlice = b.colors[cOffset : cOffset+(vCount*4)]
+
+	for i, v := range vertices {
+		vSlice[i*3+0], vSlice[i*3+1], vSlice[i*3+2] = v.X, v.Y, 0
+		tSlice[i*2+0], tSlice[i*2+1] = v.U, v.V
+		cSlice[i*4+0], cSlice[i*4+1], cSlice[i*4+2], cSlice[i*4+3] = col.R, col.G, col.B, col.A
+	}
+
+	var trisCount = vCount - 2
+	var iOffset = b.indCur * 2
+	var iSlice = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[iOffset])), trisCount*3)
+	var base = uint16(b.vertsCur)
+
+	for i := int32(0); i < trisCount; i++ {
+		iSlice[i*3+0] = base
+		iSlice[i*3+1] = base + uint16(i+1)
+		iSlice[i*3+2] = base + uint16(i+2)
+	}
+
+	b.vertsCur += vCount
+	b.indCur += trisCount * 3
 }

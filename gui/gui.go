@@ -2,7 +2,6 @@ package gui
 
 import (
 	"pure-game-kit/execution/condition"
-	"pure-game-kit/graphics"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
@@ -10,7 +9,6 @@ import (
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
-	"pure-game-kit/window"
 )
 
 // https://showcase.primefaces.org - basic default browser widgets showcase (scroll down to forms on the left)
@@ -33,8 +31,7 @@ func (g *GUI) UpdateAndDraw() {
 	sliderSlidId = condition.If(sliderSlidId != "", "", sliderSlidId)
 
 	var prevMask = g.root.cam.Mask
-	var ww, wh = window.Size()
-	g.root.cam.Mask = graphics.NewArea(0, 0, float32(ww), float32(wh))
+	g.root.cam.Mask = nil
 
 	for _, id := range containers {
 		var c = g.root.Containers[id]
@@ -66,11 +63,11 @@ func (g *GUI) UpdateAndDraw() {
 	}
 
 	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
-		cam.Mask.X, cam.Mask.Y, cam.Mask.Width, cam.Mask.Height = 0, 0, float32(ww), float32(wh)
+		cam.Mask = nil
 		drawDraggable(g.root.wPressedOn)
 	}
 	if tooltip != nil {
-		cam.Mask.X, cam.Mask.Y, cam.Mask.Width, cam.Mask.Height = 0, 0, float32(ww), float32(wh)
+		cam.Mask = nil
 		drawTooltip(g.root.Containers[tooltip.OwnerId])
 	}
 

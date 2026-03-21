@@ -19,7 +19,7 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 			continue
 		}
 
-		var x, y = s.CornerTopLeft() // applying pivot
+		var x, y = s.PointFromEdge(0, 0) // applying pivot
 		var ang = s.Angle
 		var src = rl.NewRectangle(0, 0, 1, 1)
 		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
@@ -53,7 +53,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			src.Width, src.Height = s.Width*s.ScaleX, s.Height*s.ScaleY
 		}
 		src.X, src.Y = src.X+s.TextureScrollX, src.Y+s.TextureScrollY
-		var x, y = s.CornerTopLeft() // applying pivot
+		var x, y = s.PointFromEdge(0, 0) // applying pivot
 		var ang = s.Angle
 		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
 		internal.EditAssetRects(&src, &dst, ang, rotations, flip)
@@ -218,7 +218,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 			texture = internal.White
 		}
 
-		var x, y = t.CornerTopLeft() // applying pivot
+		var x, y = t.PointFromEdge(0, 0) // applying pivot
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)

@@ -3,6 +3,7 @@ package gui
 import (
 	"encoding/xml"
 	"pure-game-kit/execution/condition"
+	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/keyboard"
@@ -15,7 +16,6 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/window"
 )
 
 type container struct {
@@ -55,16 +55,13 @@ var rowWidths = map[*widget]float32{}
 func (c *container) updateAndDraw() {
 	var cam = c.root.cam
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
-	var scx, scy = cam.PointToScreen(x, y)
 	var cGapX = parseNum(c.Fields[f.GapX], 0)
 	var cGapY = parseNum(c.Fields[f.GapY], 0)
-	var maskW, maskH = (w - cGapX*2) * cam.Zoom, (h - cGapY*2) * cam.Zoom
 	var anchorX = parseNum(c.Fields[field.AnchorX], 0)
 	var anchorY = parseNum(c.Fields[field.AnchorY], 0)
-	var ww, wh = window.Size()
+	var maskW, maskH = w - cGapX*2, h - cGapY*2
 
-	cam.Mask.X, cam.Mask.Y = float32(scx)+cGapX*cam.Zoom, float32(scy)+cGapY*cam.Zoom
-	cam.Mask.Width, cam.Mask.Height = maskW, maskH
+	cam.Mask = graphics.NewArea(x+cGapX, y+cGapY, maskW, maskH)
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
 
 	if c.isHovered() {
@@ -90,8 +87,7 @@ func (c *container) updateAndDraw() {
 
 		var _, isBgr = widget.Fields[f.FillContainer]
 		if isBgr {
-			cam.Mask.X, cam.Mask.Y = 0, 0
-			cam.Mask.Width, cam.Mask.Height = float32(ww), float32(wh) // mask doesn't affect bgr
+			cam.Mask = nil
 		} else {
 			if contentW <= c.Width {
 				widget.X += c.Width*anchorX - contentW*anchorX
@@ -121,8 +117,7 @@ func (c *container) updateAndDraw() {
 		}
 
 		if isBgr { // back to gap clipping
-			cam.Mask.X, cam.Mask.Y = float32(scx)+cGapX*cam.Zoom, float32(scy)+cGapY*cam.Zoom
-			cam.Mask.Width, cam.Mask.Height = maskW, maskH
+			cam.Mask = graphics.NewArea(x+cGapX, y+cGapY, maskW, maskH)
 		}
 	}
 
@@ -132,8 +127,8 @@ func (c *container) updateAndDraw() {
 		}
 	}
 
-	cam.Mask.X, cam.Mask.Y = float32(scx), float32(scy)
-	cam.Mask.Width, cam.Mask.Height = w*cam.Zoom, h*cam.Zoom
+	cam.Mask.X, cam.Mask.Y = x, y
+	cam.Mask.Width, cam.Mask.Height = w, h
 	c.tryShowScrolls(minX, minY, maxX, maxY)
 }
 func (c *container) alignWidgets(x, y, w, h, cGapX, cGapY float32) {
