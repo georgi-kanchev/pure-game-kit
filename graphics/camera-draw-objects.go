@@ -24,8 +24,9 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 		var src = rl.NewRectangle(0, 0, 1, 1)
 		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
-
-		if lastEffects != nil && effects != nil && *lastEffects != *effects {
+		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
+		var firstEffect = lastEffects == nil && effects != nil
+		if firstEffect || differentEffect {
 			batch.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
@@ -61,7 +62,9 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		ang += float32(rotations * 90)
 
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
-		if lastEffects != nil && effects != nil && *lastEffects != *effects {
+		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
+		var firstEffect = lastEffects == nil && effects != nil
+		if firstEffect || differentEffect {
 			batch.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
@@ -122,7 +125,9 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 		}
 
 		var effects = condition.If(b.Effects != nil, b.Effects, c.Effects)
-		if lastEffects != nil && effects != nil && *lastEffects != *effects {
+		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
+		var firstEffect = lastEffects == nil && effects != nil
+		if firstEffect || differentEffect {
 			batch.Draw() // break batch only when moving to a box with different effects
 			// delay updateUniforms until we get the first part's src.Width below
 		}
@@ -157,7 +162,9 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 			internal.EditAssetRects(&src, &dst, partAng, rotations, flip)
 			partAng += float32(rotations * 90)
 
-			if lastEffects != nil && effects != nil && *lastEffects != *effects {
+			var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
+			var firstEffect = lastEffects == nil && effects != nil
+			if firstEffect || differentEffect {
 				batch.Draw() // effects are different & break the batch
 				effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 			}
@@ -195,13 +202,13 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		for _, s := range symbols {
 			batch.QueueSymbol(font, s, t.LineHeight*t.ScaleY, gapX)
 		}
-
-		batch.Draw()
 	}
+	batch.Draw()
 	c.end()
 }
 func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 	c.begin()
+	var lastEffects *Effects
 	for _, t := range tileMaps {
 		if t == nil || !c.IsAreaVisible(t.Bounds()) {
 			continue
@@ -222,11 +229,15 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
-
-		rl.BeginShaderMode(internal.Shader)
+		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
+		var firstEffect = lastEffects == nil && effects != nil
 		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
-		rl.DrawTexturePro(*texture, src, dst, rl.Vector2{}, t.Angle, getColor(t.Tint))
-		rl.EndShaderMode()
+		if firstEffect || differentEffect {
+			batch.Draw() // effects are different & break the batch
+		}
+		batch.QueueQuad(texture, src, dst, t.Angle, getColor(t.Tint))
+		lastEffects = effects
 	}
+	batch.Draw()
 	c.end()
 }

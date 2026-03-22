@@ -60,16 +60,12 @@ func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang floa
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1 = src.X * invTexW, src.Y * invTexH
 	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
-
-	// 1. Generate local corners
 	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
-
-	var poly [12]batchVertex // Max vertices after clipping is usually 8, 12 is safe
+	var poly [12]batchVertex
 	var vCount int
 
-	if mask == nil {
-		// FAST PATH: Direct vertex generation
+	if mask == nil { // FAST PATH: Direct vertex generation
 		vCount = 4
 		for i := range 4 {
 			poly[i] = batchVertex{
@@ -79,8 +75,7 @@ func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang floa
 				V: uvs[i*2+1],
 			}
 		}
-	} else {
-		// CLIPPED PATH
+	} else { // CLIPPED PATH
 		var initial [4]batchVertex
 		for i := range 4 {
 			initial[i] = batchVertex{
@@ -98,7 +93,6 @@ func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang floa
 		copy(poly[:], clipped[:vCount])
 	}
 
-	// 2. Batch State Management
 	var vCount32 = int32(vCount)
 	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
 		b.Draw()
@@ -110,7 +104,6 @@ func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang floa
 		b.material.Shader = internal.Shader
 	}
 
-	// 3. Buffer Push
 	writeToBuffers(b, poly[:vCount], col)
 }
 
@@ -119,7 +112,7 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 	if totalTriangles == 0 {
 		return
 	}
-	var whiteTex = internal.White
+	var white = internal.White
 
 	for i := range totalTriangles {
 		var pOffset = i * 6
@@ -145,12 +138,12 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 		}
 
 		var vCount32 = int32(vCount)
-		if b.vertsCur != 0 && (b.material.Maps.Texture.ID != whiteTex.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
+		if b.vertsCur != 0 && (b.material.Maps.Texture.ID != white.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
 			b.Draw()
 		}
 		if b.vertsCur == 0 {
 			var mat = b.material
-			rl.SetMaterialTexture(&mat, rl.MapDiffuse, *whiteTex)
+			rl.SetMaterialTexture(&mat, rl.MapDiffuse, *white)
 			b.material = mat
 			b.material.Shader = internal.Shader
 		}

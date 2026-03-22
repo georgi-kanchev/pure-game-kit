@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"pure-game-kit/data/assets"
-	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
@@ -59,7 +57,7 @@ func main() {
 		gui.Button("texts", f.Text, " Texts (graphics-texts.go)", f.NewRow, ""),
 		gui.Button("effects", f.Text, " Effects (graphics-effects.go)", f.NewRow, ""),
 		gui.Button("batches", f.Text, " Batches (graphics-batches.go)", f.NewRow, ""),
-		gui.Button("tilemap", f.Text, " Tilemap (graphics-tilemap.go)", f.NewRow, ""),
+		gui.Button("tilemaps", f.Text, " Tilemaps (graphics-tilemaps.go)", f.NewRow, ""),
 		gui.Button("guis", f.Text, " Graphical User Interfaces (GUIs) (guis.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("input", f.ThemeId, "label", f.Text, "Input:", f.NewRow, ""),
@@ -95,11 +93,7 @@ func main() {
 	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
 
-	hud.Scale = 2.01 // removes tearing artifacts
-
-	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
-
-	cam.Mask = graphics.NewArea(-500, -500, 1000, 1000)
+	hud.Scale = 2
 
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
@@ -108,7 +102,7 @@ func main() {
 		"guis":             example.GUIs,
 		"effects":          example.Effects,
 		"batches":          example.Batches,
-		"tilemap":          example.Tilemap,
+		"tilemaps":         example.Tilemaps,
 		//=================================================================
 		"mouse input":    example.Mouse,
 		"keyboard input": example.Keyboard,

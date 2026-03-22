@@ -56,6 +56,9 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *Text
 			u[21], u[22] = float32(data.Image.Width), float32(data.Image.Height)
 			u[23], u[24] = float32(atlas.TileWidth), float32(atlas.TileHeight)
 
+			rl.ActiveTextureSlot(1)           // Switch to slot 1
+			rl.EnableTexture(data.Texture.ID) // Bind data texture
+			rl.ActiveTextureSlot(0)           // Switch BACK to slot 0 so the batcher works normally
 			rl.SetShaderValueTexture(internal.Shader, internal.ShaderTileMapLoc, *data.Texture)
 		}
 		dirty = true

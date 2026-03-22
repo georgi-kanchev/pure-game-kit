@@ -400,7 +400,9 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, 
 	defaultTextPack.Color = color
 	var pack = packSymbolColor(defaultTextPack)
 	rl.SetTextLineSpacing(int(lineGap))
+	rl.BeginShaderMode(internal.Shader)
 	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
+	rl.EndShaderMode()
 	c.end()
 }
 func (c *Camera) DrawTextDebug(fps, time, assets, memory bool) {

@@ -210,7 +210,6 @@ func (c *Camera) begin() {
 		rl.BeginScissorMode(int32(mx), int32(my), int32(mw), int32(mh))
 	}
 
-	rl.BeginShaderMode(internal.Shader)
 	rl.EnableDepthTest()
 	c.Effects.updateUniforms(1, 1, nil, nil, true)
 
@@ -230,7 +229,6 @@ func (c *Camera) end() {
 	}
 
 	rl.DisableDepthTest()
-	rl.EndShaderMode()
 	if c.Area != nil {
 		rl.EndScissorMode()
 	}
