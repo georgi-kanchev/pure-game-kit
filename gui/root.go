@@ -31,7 +31,10 @@ type root struct {
 
 	cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container // for container slider
 
-	cam *graphics.Camera
+	cam       *graphics.Camera
+	sprites   []*graphics.Sprite
+	boxes     []*graphics.Box
+	textBoxes []*graphics.TextBox
 }
 
 func (r *root) IsButtonJustClicked(buttonId string) bool {

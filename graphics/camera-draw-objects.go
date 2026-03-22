@@ -12,23 +12,27 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 	c.begin()
 
 	var lastEffects *Effects
-	for _, s := range quads {
-		if s == nil || !c.IsAreaVisible(s.Bounds()) {
+	for _, q := range quads {
+		if q == nil || !c.IsAreaVisible(q.Bounds()) {
 			continue
 		}
 
-		var x, y = s.PointFromEdge(0, 0) // applying pivot
-		var ang = s.Angle
+		if q.Mask != nil {
+			batch.mask = q.Mask
+		}
+
+		var x, y = q.PointFromEdge(0, 0) // applying pivot
+		var ang = q.Angle
 		var src = rl.NewRectangle(0, 0, 1, 1)
-		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
-		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
+		var dst = rl.NewRectangle(x, y, q.Width*q.ScaleX, q.Height*q.ScaleY)
+		var effects = condition.If(q.Effects != nil, q.Effects, c.Effects)
 		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
 		var firstEffect = lastEffects == nil && effects != nil
 		if firstEffect || differentEffect {
 			batch.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
-		batch.QueueTex(internal.White, src, dst, ang, getColor(s.Tint))
+		batch.QueueTex(internal.White, src, dst, ang, getColor(q.Tint))
 		lastEffects = effects
 	}
 	batch.Draw()
@@ -58,6 +62,10 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		internal.EditAssetRects(&src, &dst, ang, rotations, flip)
 
 		ang += float32(rotations * 90)
+
+		if s.Mask != nil {
+			batch.mask = s.Mask
+		}
 
 		var effects = condition.If(s.Effects != nil, s.Effects, c.Effects)
 		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
@@ -120,6 +128,10 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 				u *= scale
 				d *= scale
 			}
+		}
+
+		if b.Mask != nil {
+			batch.mask = b.Mask
 		}
 
 		var effects = condition.If(b.Effects != nil, b.Effects, c.Effects)

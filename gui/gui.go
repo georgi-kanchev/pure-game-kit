@@ -2,6 +2,7 @@ package gui
 
 import (
 	"pure-game-kit/execution/condition"
+	"pure-game-kit/graphics"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
@@ -32,6 +33,9 @@ func (g *GUI) UpdateAndDraw() {
 
 	var prevMask = g.root.cam.Mask
 	g.root.cam.Mask = nil
+	g.root.sprites = []*graphics.Sprite{}
+	g.root.boxes = []*graphics.Box{}
+	g.root.textBoxes = []*graphics.TextBox{}
 
 	for _, id := range containers {
 		var c = g.root.Containers[id]
@@ -63,11 +67,9 @@ func (g *GUI) UpdateAndDraw() {
 	}
 
 	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
-		cam.Mask = nil
 		drawDraggable(g.root.wPressedOn)
 	}
 	if tooltip != nil {
-		cam.Mask = nil
 		drawTooltip(g.root.Containers[tooltip.OwnerId])
 	}
 
@@ -87,6 +89,10 @@ func (g *GUI) UpdateAndDraw() {
 		g.root.wPressedOn = nil
 		tooltip = nil
 	}
+
+	g.root.cam.DrawBoxes(g.root.boxes...)
+	g.root.cam.DrawSprites(g.root.sprites...)
+	g.root.cam.DrawTextBoxes(g.root.textBoxes...)
 
 	g.root.restore(prAng, prZoom, prX, prY) // undo what reset does, everything as it was for cam
 	g.root.cam.Mask = prevMask

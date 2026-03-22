@@ -69,22 +69,14 @@ func (b *batchData) QueueTex(tex *rl.Texture2D, src, dst rl.Rectangle, ang float
 	if b.mask == nil { // FAST PATH: Direct vertex generation
 		vCount = 4
 		for i := range 4 {
-			poly[i] = batchVertex{
-				X: (dx[i]*cosA - dy[i]*sinA) + dst.X,
-				Y: (dx[i]*sinA + dy[i]*cosA) + dst.Y,
-				U: uvs[i*2],
-				V: uvs[i*2+1],
-			}
+			var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
+			poly[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
 		}
 	} else { // CLIPPED PATH
 		var initial [4]batchVertex
 		for i := range 4 {
-			initial[i] = batchVertex{
-				X: (dx[i]*cosA - dy[i]*sinA) + dst.X,
-				Y: (dx[i]*sinA + dy[i]*cosA) + dst.Y,
-				U: uvs[i*2],
-				V: uvs[i*2+1],
-			}
+			var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
+			initial[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
 		}
 		var clipped [12]batchVertex
 		vCount = clipPolygonAABB(initial[:], clipped[:], b.mask)
@@ -109,17 +101,7 @@ func (b *batchData) QueueTex(tex *rl.Texture2D, src, dst rl.Rectangle, ang float
 }
 
 func (b *batchData) QueueQuad(x, y, width, height, angle float32, color rl.Color) {
-	if width <= 0 || height <= 0 {
-		return
-	}
-
-	var perpAngle = angle + 90
-	var v1x, v1y = x, y
-	var v2x, v2y = point.MoveAtAngle(v1x, v1y, perpAngle, height)
-	var v4x, v4y = point.MoveAtAngle(v1x, v1y, angle, width)
-	var v3x, v3y = point.MoveAtAngle(v4x, v4y, perpAngle, height)
-	b.QueueTriangle(v1x, v1y, v2x, v2y, v3x, v3y, color)
-	b.QueueTriangle(v1x, v1y, v3x, v3y, v4x, v4y, color)
+	b.QueueTex(internal.White, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color)
 }
 func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 	var totalTriangles = int(len(points) / 6)
@@ -184,16 +166,12 @@ func (b *batchData) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color)
 		return
 	}
 
-	var angle = angle.BetweenPoints(x1, y1, x2, y2)
-	var perpAngle = angle + 90
-	var halfThickness = thickness * 0.5
-	var v1x, v1y = point.MoveAtAngle(x1, y1, perpAngle, halfThickness)
-	var v2x, v2y = point.MoveAtAngle(x1, y1, perpAngle, -halfThickness)
-	var v3x, v3y = point.MoveAtAngle(x2, y2, perpAngle, -halfThickness)
-	var v4x, v4y = point.MoveAtAngle(x2, y2, perpAngle, halfThickness)
-
-	b.QueueTriangle(v1x, v1y, v3x, v3y, v2x, v2y, color)
-	b.QueueTriangle(v1x, v1y, v4x, v4y, v3x, v3y, color)
+	var ang = angle.BetweenPoints(x1, y1, x2, y2)
+	var dx, dy = x2 - x1, y2 - y1
+	var length = number.SquareRoot(dx*dx + dy*dy)
+	var perpAngle = ang - 90
+	var startX, startY = point.MoveAtAngle(x1, y1, perpAngle, thickness*0.5)
+	b.QueueQuad(startX, startY, length, thickness, ang, color)
 }
 func (b *batchData) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) {
 	var queueQuad = func(dstX, dstY, dstW, dstH float32, col uint) {

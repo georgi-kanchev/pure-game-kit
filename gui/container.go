@@ -30,6 +30,7 @@ type container struct {
 	dragVelX, dragVelY,
 	targetScrollX, targetScrollY float32
 
+	mask      *graphics.Area
 	root      *root
 	Fields    map[string]string
 	Widgets   []string
@@ -53,15 +54,17 @@ const scrollSize, handleSpeed, dragFriction, dragMomentum = 10.0, 12.0, 0.95, 30
 var rowWidths = map[*widget]float32{}
 
 func (c *container) updateAndDraw() {
-	var cam = c.root.cam
 	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
-	var cGapX = parseNum(c.Fields[f.GapX], 0)
-	var cGapY = parseNum(c.Fields[f.GapY], 0)
 	var anchorX = parseNum(c.Fields[field.AnchorX], 0)
 	var anchorY = parseNum(c.Fields[field.AnchorY], 0)
-	var maskW, maskH = w - cGapX*2, h - cGapY*2
+	var cGapX = parseNum(c.Fields[f.GapX], 0)
+	var cGapY = parseNum(c.Fields[f.GapY], 0)
 
-	cam.Mask = graphics.NewArea(x+cGapX, y+cGapY, maskW, maskH)
+	if c.mask == nil {
+		c.mask = graphics.NewArea(0, 0, 0, 0)
+	} // create only once cuz textBoxes have prop cache and will regenerate when assigning them this mask
+	c.mask.X, c.mask.Y = x+cGapX, y+cGapY
+	c.mask.Width, c.mask.Height = w-cGapX*2, h-cGapY*2
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
 
 	if c.isHovered() {
@@ -86,9 +89,7 @@ func (c *container) updateAndDraw() {
 		}
 
 		var _, isBgr = widget.Fields[f.FillContainer]
-		if isBgr {
-			cam.Mask = nil
-		} else {
+		if !isBgr {
 			if contentW <= c.Width {
 				widget.X += c.Width*anchorX - contentW*anchorX
 				widget.X += (contentW - rowWidths[widget]) * anchorX
@@ -115,10 +116,6 @@ func (c *container) updateAndDraw() {
 		if widget.Class == "draggable" {
 			draggables = append(draggables, widget)
 		}
-
-		if isBgr { // back to gap clipping
-			cam.Mask = graphics.NewArea(x+cGapX, y+cGapY, maskW, maskH)
-		}
 	}
 
 	for _, draggable := range draggables {
@@ -127,8 +124,6 @@ func (c *container) updateAndDraw() {
 		}
 	}
 
-	cam.Mask.X, cam.Mask.Y = x, y
-	cam.Mask.Width, cam.Mask.Height = w, h
 	c.tryShowScrolls(minX, minY, maxX, maxY)
 }
 func (c *container) alignWidgets(x, y, w, h, cGapX, cGapY float32) {

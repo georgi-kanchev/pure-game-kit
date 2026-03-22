@@ -78,7 +78,7 @@ func drawDraggable(widget *widget) {
 	sprite.Tint = parseColor(col, disabled)
 	sprite.PivotX, sprite.PivotY = 0.5, 0.5
 	sprite.ScaleX, sprite.ScaleY = scale, scale
-	widget.root.cam.DrawSprites(sprite)
+	widget.root.sprites = append(widget.root.sprites, sprite)
 }
 
 func (r *root) onDrop() (string, string) {

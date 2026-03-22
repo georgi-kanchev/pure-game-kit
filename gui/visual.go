@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/graphics"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/number"
 )
 
 func Visual(id string, fields ...string) string {
@@ -16,6 +17,7 @@ func Visual(id string, fields ...string) string {
 func setupVisualsTextured(w *widget) {
 	var owner = w.root.Containers[w.OwnerId]
 	var assetId = w.root.themedField(f.AssetId, owner, w)
+	var _, isBgr = w.Fields[f.FillContainer]
 
 	if w.sprite == nil {
 		w.sprite = graphics.NewSprite("", 0, 0)
@@ -46,12 +48,18 @@ func setupVisualsTextured(w *widget) {
 		box.Width, box.Height = w.Width, w.Height
 		box.EdgeLeft, box.EdgeRight = cLeft, cRight
 		box.EdgeTop, box.EdgeBottom = cTop, cBottom
+		if owner != nil && !isBgr {
+			box.Mask = owner.mask
+		}
 	} else {
 		sprite.X, sprite.Y = w.X, w.Y
 		sprite.AssetId = assetId
 		sprite.Tint = col
 		sprite.TextureRepeat = false
 		sprite.Width, sprite.Height = w.Width, w.Height
+		if owner != nil && !isBgr {
+			sprite.Mask = owner.mask
+		}
 	}
 }
 func setupVisualsText(w *widget, skipEmpty bool) {
@@ -77,9 +85,11 @@ func setupVisualsText(w *widget, skipEmpty bool) {
 	w.textBox.AlignmentX = parseNum(w.root.themedField(f.TextAlignmentX, owner, w), 0)
 	w.textBox.AlignmentY = parseNum(w.root.themedField(f.TextAlignmentY, owner, w), 0)
 	w.textBox.Width, w.textBox.Height = w.Width, w.Height
+	if owner != nil {
+		w.textBox.Mask = owner.mask
+	}
 }
 func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
-	var cam = w.root.cam
 	var owner = w.root.Containers[w.OwnerId]
 	var assetId = w.root.themedField(f.AssetId, owner, w)
 	var frameCol = parseColor(w.root.themedField(f.FrameColor, owner, w), w.isDisabled(owner))
@@ -87,9 +97,9 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 
 	var _, has = internal.Boxes[assetId]
 	if has {
-		cam.DrawBoxes(w.box)
+		w.root.boxes = append(w.root.boxes, w.box)
 	} else {
-		cam.DrawSprites(w.sprite)
+		w.root.sprites = append(w.root.sprites, w.sprite)
 	}
 
 	if frameSz != 0 && frameCol != 0 {
@@ -124,20 +134,29 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 			w.left.X, w.left.Y = w.X-t, w.Y-t
 			w.left.Width, w.left.Height = t, w.Height+(t*2)
 		}
-		cam.DrawSprites(w.top, w.left, w.right, w.bottom)
+		w.root.sprites = append(w.root.sprites, w.top, w.left, w.right, w.bottom)
 	}
 
 	if w.textBox == nil || w.textBox.Text == "" {
 		return
 	}
 
-	var prevMask = cam.Mask
+	// var prevMask = w.textBox.Mask
 	if maskText { // used for inputbox mask
+		var cGapX = parseNum(owner.Fields[f.GapX], 0)
+		var cGapY = parseNum(owner.Fields[f.GapY], 0)
+		var ox, oy, ow, oh = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
+		var cx, cy, cw, ch = ox + cGapX, oy + cGapY, ow - cGapX*2, oh - cGapY*2
 		var x, y = w.X + textMargin, w.Y + textMargin/2
 		var realX = w.X + w.Width - textMargin
 		var realY = w.Y + w.Height - textMargin/2
 		var xw, yh = realX, realY
-		cam.Mask = graphics.NewArea(x, y, xw-x+1, yh-y)
+		var mx, my, mw, mh = x, y, xw - x + 1, yh - y
+		mx = number.Limit(mx, cx, cw)
+		my = number.Limit(my, cy, ch)
+		mw = number.Limit(mw, cw, cw)
+		mh = number.Limit(mh, ch, ch)
+		w.textBox.Mask = graphics.NewArea(mx, my, mw, mh)
 	}
 
 	if betweenVisualAndText != nil {
@@ -148,6 +167,6 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 	var colVal = defaultValue(w.root.themedField(f.TextColor, owner, w), "127 127 127")
 	var c = parseColor(colVal, disabled || fadeText)
 	w.textBox.Tint = c
-	cam.DrawTextBoxes(w.textBox)
-	cam.Mask = prevMask
+	w.root.textBoxes = append(w.root.textBoxes, w.textBox)
+	// w.textBox.Mask = prevMask
 }
