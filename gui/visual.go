@@ -77,7 +77,6 @@ func setupVisualsText(w *widget, skipEmpty bool) {
 	w.textBox.AlignmentX = parseNum(w.root.themedField(f.TextAlignmentX, owner, w), 0)
 	w.textBox.AlignmentY = parseNum(w.root.themedField(f.TextAlignmentY, owner, w), 0)
 	w.textBox.Width, w.textBox.Height = w.Width, w.Height
-	w.textBox.Fast = w.root.themedField(f.TextFast, owner, w) != ""
 }
 func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 	var cam = w.root.cam

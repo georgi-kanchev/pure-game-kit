@@ -93,7 +93,7 @@ func Shapes() {
 		cam.DrawPoints(4, palette.DarkMagenta, roundPts...)
 
 		for _, v := range crossPoints {
-			cam.DrawCircle(v[0], v[1], 16, palette.Green)
+			cam.DrawCircle(v[0], v[1], 16, 8, palette.Green)
 		}
 
 		cam.DrawTextDebug(true, true, true, true)

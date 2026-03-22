@@ -18,10 +18,6 @@ type TextBox struct {
 	LineHeight, SymbolGap, LineGap,
 	ShadowOffsetX, ShadowOffsetY float32
 
-	// Skip advanced feature properties for faster render. Properties used:
-	// 	FontId, Text, X, Y, Width, LineHeight, WordWrap, Thickness, SymbolGap, Tint
-	Fast bool
-
 	hash         uint32
 	cacheChars   []string
 	cacheSymbols []*symbol
@@ -71,7 +67,7 @@ func (t *TextBox) TextWrap(text string) string {
 		var trimWord = txt.Remove(txt.Trim(word), ph)
 		var wordSize, _ = t.TextMeasure(trimWord)
 
-		if !t.Fast && txt.Contains(trimWord, string(placeholderCharAsset)) {
+		if txt.Contains(trimWord, string(placeholderCharAsset)) {
 			wordSize += t.LineHeight
 		}
 
@@ -90,7 +86,7 @@ func (t *TextBox) TextWrap(text string) string {
 			var char = string(c)
 			var charSize, _ = t.TextMeasure(char)
 			charSize = condition.If(c == internal.Placeholder, 0, charSize)
-			charSize = condition.If(!t.Fast && c == placeholderCharAsset, t.LineHeight, charSize)
+			charSize = condition.If(c == placeholderCharAsset, t.LineHeight, charSize)
 			var charEndOfBoxX = charSize > 0 && curX+charSize > t.Width+1
 			var charFirst = i == 0 && wordFirst
 			var charNewLine = !charFirst && char != " " && (char == "\n" || charEndOfBoxX)
@@ -108,7 +104,7 @@ func (t *TextBox) TextWrap(text string) string {
 				}
 			}
 
-			if !t.Fast && c == internal.Placeholder {
+			if c == internal.Placeholder {
 				char = "{" + originals[tagIndex] + "}"
 				tagIndex++
 			}

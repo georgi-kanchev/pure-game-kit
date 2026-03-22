@@ -51,7 +51,6 @@ const (
 	TextAlignmentX = "textAlignmentX" // [widget] [theme]
 	TextAlignmentY = "textAlignmentY" // [widget] [theme]
 	TextWordWrap   = "textWordWrap"   // [widget] [theme] example: "" = true, all else = false
-	TextFast       = "textFast"       // [widget] [theme] skip advanced features, example: "1"
 
 	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
 	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]

@@ -1,26 +1,29 @@
 package graphics
 
 import (
+	"pure-game-kit/data/assets"
 	"pure-game-kit/debug"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
-	col "pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
 	tm "pure-game-kit/utility/time"
 	"pure-game-kit/utility/time/unit"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func (c *Camera) DrawColor(color uint) {
-	c.begin()
-	c.end()
+	var tlX, tlY = c.PointFromEdge(0, 0) // Top-Left
+	var trX, trY = c.PointFromEdge(1, 0) // Top-Right
+	var brX, brY = c.PointFromEdge(1, 1) // Bottom-Right
+	var blX, blY = c.PointFromEdge(0, 1) // Bottom-Left
+	var renderColor = getColor(color)
 
-	var x, y, w, h = c.area()
-	rl.DrawRectangle(int32(x), int32(y), int32(w), int32(h), getColor(color))
+	c.begin()
+	batch.QueueTriangle(tlX, tlY, trX, trY, brX, brY, renderColor)
+	batch.QueueTriangle(tlX, tlY, brX, brY, blX, blY, renderColor)
+	batch.Draw()
+	c.end()
 }
 func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	if spacingX*c.Zoom < 1 && spacingY*c.Zoom < 1 {
@@ -89,12 +92,17 @@ func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 
 func (c *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 	c.begin()
-	rl.DrawLineEx(rl.Vector2{X: ax, Y: ay}, rl.Vector2{X: bx, Y: by}, thickness, getColor(color))
+	batch.QueueLine(ax, ay, bx, by, thickness, getColor(color))
+	batch.Draw()
 	c.end()
 }
 
 // multiple line paths can be separated by a [NaN, NaN]
 func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float32) {
+	if thickness == 0 || color == 0 || len(points) == 0 {
+		return
+	}
+
 	c.begin()
 	var col = getColor(color)
 	for i := 1; i < len(points); i++ {
@@ -108,175 +116,170 @@ func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float
 }
 
 func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, color uint) {
-	if thickness == 0 {
+	if width == 0 || height == 0 {
 		return
 	}
-
 	c.begin()
-	skipStartEnd = true
-	defer func() {
-		skipStartEnd = false
-		c.end()
-	}()
 
 	if width < 0 {
-		x, y = point.MoveAtAngle(x, y, angle+180, -width)
+		x += width
 		width *= -1
 	}
 	if height < 0 {
-		x, y = point.MoveAtAngle(x, y, angle+270, -height)
+		y += height
 		height *= -1
 	}
 
+	var x0, y0, x1, y1 float32     // Outer
+	var ix0, iy0, ix1, iy1 float32 // Inner
+
 	if thickness < 0 {
-		thickness *= -1
-		var trx, try = point.MoveAtAngle(x, y, angle, width-thickness)
-		var brx, bry = point.MoveAtAngle(x, y, angle+90, height-thickness)
-
-		c.DrawQuad(x, y, width, thickness, angle, color)
-		c.DrawQuad(trx, try, thickness, height, angle, color)
-		c.DrawQuad(brx, bry, width, thickness, angle, color)
-		c.DrawQuad(x, y, thickness, height, angle, color)
-		return
+		var t = -thickness
+		x0, y0, x1, y1 = 0, 0, width, height
+		ix0, iy0, ix1, iy1 = t, t, width-t, height-t
+	} else {
+		x0, y0, x1, y1 = -thickness, -thickness, width+thickness, height+thickness
+		ix0, iy0, ix1, iy1 = 0, 0, width, height
 	}
 
-	var x1, y1 = point.MoveAtAngle(x, y, angle-90, thickness)
-	var tlx, tly = point.MoveAtAngle(x1, y1, angle-180, thickness)
-	var trx, try = point.MoveAtAngle(x1, y1, angle, width)
-	var blx, bly = point.MoveAtAngle(tlx, tly, angle+90, height+thickness)
-
-	c.DrawQuad(tlx, tly, width+thickness*2, thickness, angle, color)
-	c.DrawQuad(trx, try, thickness, height+thickness*2, angle, color)
-	c.DrawQuad(blx, bly, width+thickness*2, thickness, angle, color)
-	c.DrawQuad(tlx, tly, thickness, height+thickness*2, angle, color)
-}
-func (c *Camera) DrawQuad(x, y, width, height, angle float32, colors ...uint) {
-	var rect = rl.Rectangle{X: x, Y: y, Width: width, Height: height}
-
-	// raylib doesn't seem to support negative width/height???
-	if rect.Width < 0 && rect.Height > 0 {
-		rect.X, rect.Y = point.MoveAtAngle(rect.X, rect.Y, angle+180, -rect.Width)
-		rect.Width *= -1
-	}
-	if rect.Height < 0 && rect.Width > 0 {
-		rect.X, rect.Y = point.MoveAtAngle(rect.X, rect.Y, angle+270, -rect.Height)
-		rect.Height *= -1
+	var sinRot, cosRot = internal.SinCos(angle)
+	var renderColor = getColor(color)
+	var transform = func(px, py float32) (float32, float32) {
+		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
 	}
 
-	if len(colors) == 0 {
-		colors = append(colors, palette.White)
+	var drawRect = func(px1, py1, px2, py2, px3, py3, px4, py4 float32) {
+		var v1x, v1y = transform(px1, py1)
+		var v2x, v2y = transform(px2, py2)
+		var v3x, v3y = transform(px3, py3)
+		var v4x, v4y = transform(px4, py4)
+		batch.QueueTriangle(v1x, v1y, v2x, v2y, v3x, v3y, renderColor)
+		batch.QueueTriangle(v1x, v1y, v3x, v3y, v4x, v4y, renderColor)
 	}
 
-	if len(colors) == 1 {
-		c.begin()
-		rl.DrawRectanglePro(rect, rl.Vector2{X: 0, Y: 0}, angle, getColor(colors[0]))
-		c.end()
-		return
-	}
-
-	for len(colors) < 4 { // if fewer than 4 colors, pad with last provided color
-		colors = append(colors, colors[len(colors)-1])
-	}
-
-	var tl, tr = getColor(colors[0]), getColor(colors[1])
-	var br, bl = getColor(colors[2]), getColor(colors[3])
-	var prevAng = c.Angle
-	c.Angle = angle
-	c.begin()
-	rect.X, rect.Y = point.RotateAroundPoint(rect.X, rect.Y, c.X, c.Y, -angle)
-	rl.DrawRectangleGradientEx(rect, tl, bl, br, tr)
+	drawRect(x0, y0, x1, y0, x1, iy0, x0, iy0)     // Top
+	drawRect(x0, iy1, x1, iy1, x1, y1, x0, y1)     // Bottom
+	drawRect(x0, iy0, ix0, iy0, ix0, iy1, x0, iy1) // Left
+	drawRect(ix1, iy0, x1, iy0, x1, iy1, ix1, iy1) // Right
+	batch.Draw()
 	c.end()
-	c.Angle = prevAng
+}
+func (c *Camera) DrawQuad(x, y, width, height, angle float32, color uint) {
+	c.begin()
+	var sinRot, cosRot = internal.SinCos(angle)
+	var renderColor = getColor(color)
+	var transform = func(px, py float32) (float32, float32) {
+		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
+	}
+
+	var v1x, v1y = transform(0, 0)          // Top-Left
+	var v2x, v2y = transform(width, 0)      // Top-Right
+	var v3x, v3y = transform(width, height) // Bottom-Right
+	var v4x, v4y = transform(0, height)     // Bottom-Left
+
+	batch.QueueTriangle(v1x, v1y, v2x, v2y, v3x, v3y, renderColor)
+	batch.QueueTriangle(v1x, v1y, v3x, v3y, v4x, v4y, renderColor)
+	batch.Draw()
+	c.end()
 }
 func (c *Camera) DrawQuadRounded(x, y, width, height, radius, angle float32, color uint) {
 	c.begin()
-	skipStartEnd = true
-	var maxRadius = width / 2
-	if height/2 < maxRadius {
-		maxRadius = height / 2
+
+	var maxR = width / 2
+	if height/2 < maxR {
+		maxR = height / 2
 	}
-	radius = min(radius, maxRadius)
+	radius = min(radius, maxR)
 
-	var sz = radius * 2
-	var vw, vh = width - 2*radius, height
-	var vx, vy = point.RotateAroundPoint(x+radius, y, x, y, angle)
-	var hw, hh = width, height - 2*radius
-	var hx, hy = point.RotateAroundPoint(x, y+radius, x, y, angle)
-	var tlx, tly = point.RotateAroundPoint(x+radius, y+radius, x, y, angle)
-	var trx, try = point.RotateAroundPoint(x+width-radius, y+radius, x, y, angle)
-	var blx, bly = point.RotateAroundPoint(x+radius, y+height-radius, x, y, angle)
-	var brx, bry = point.RotateAroundPoint(x+width-radius, y+height-radius, x, y, angle)
+	var renderColor = getColor(color)
+	var sinRot, cosRot = internal.SinCos(angle)
+	var transform = func(px, py float32) (float32, float32) {
+		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
+	}
 
-	c.DrawQuad(vx, vy, vw, vh, angle, color)
-	c.DrawQuad(hx, hy, hw, hh, angle, color)
-	c.DrawArc(tlx, tly, sz, sz, 1, 0, 24, color)
-	c.DrawArc(trx, try, sz, sz, 1, 0, 24, color)
-	c.DrawArc(blx, bly, sz, sz, 1, 0, 24, color)
-	c.DrawArc(brx, bry, sz, sz, 1, 0, 24, color)
-	skipStartEnd = false
+	var x1, y1 = transform(0, radius)
+	var x2, y2 = transform(width, radius)
+	var x3, y3 = transform(width, height-radius)
+	var x4, y4 = transform(0, height-radius)
+	batch.QueueTriangle(x1, y1, x2, y2, x3, y3, renderColor)
+	batch.QueueTriangle(x1, y1, x3, y3, x4, y4, renderColor)
+
+	var x5, y5 = transform(radius, 0)
+	var x6, y6 = transform(width-radius, 0)
+	var x7, y7 = transform(width-radius, height)
+	var x8, y8 = transform(radius, height)
+	batch.QueueTriangle(x5, y5, x6, y6, x7, y7, renderColor)
+	batch.QueueTriangle(x5, y5, x7, y7, x8, y8, renderColor)
+
+	var segments = 8
+	var corners = [4][3]float32{
+		{radius, radius, 180},                // Top Left
+		{width - radius, radius, 270},        // Top Right
+		{width - radius, height - radius, 0}, // Bottom Right
+		{radius, height - radius, 90},        // Bottom Left
+	}
+
+	for _, corn := range corners {
+		var cx, cy = corn[0], corn[1]
+		var startAng = corn[2]
+		var s0, c0 = internal.SinCos(startAng)
+		var px, py = transform(cx+c0*radius, cy-s0*radius)
+
+		for i := 1; i <= segments; i++ {
+			var t = float32(i) / float32(segments)
+			var currAng = startAng - (t * 90)
+			var si, co = internal.SinCos(currAng)
+			var ctx, cty = transform(cx+co*radius, cy-si*radius)
+			var centX, centY = transform(cx, cy)
+
+			batch.QueueTriangle(centX, centY, px, py, ctx, cty, renderColor)
+			px, py = ctx, cty
+		}
+	}
+	batch.Draw()
 	c.end()
 }
 
 func (c *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
 	c.begin()
-	skipStartEnd = true
+	batch.skipStartEnd = true
 	for _, pt := range points {
-		c.DrawCircle(pt[0], pt[1], radius, color)
+		c.DrawCircle(pt[0], pt[1], radius, 16, color)
 	}
-	skipStartEnd = false
+	batch.skipStartEnd = false
 	c.end()
 }
-func (c *Camera) DrawCircle(x, y, radius float32, colors ...uint) {
-	const segments = 24
-
-	if len(colors) == 0 {
-		colors = append(colors, palette.White)
-	}
-
-	if len(colors) == 1 {
-		c.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, colors[0])
-	} else if len(colors) > 1 {
-		c.begin()
-		var step = float32(360.0 / float32(segments))
-		rl.Begin(rl.Triangles)
-		for i := range segments {
-			var ang1, ang2 = float32(i) * step, float32(i+1) * step
-			var p1x, p1y = point.MoveAtAngle(x, y, ang1, radius)
-			var p2x, p2y = point.MoveAtAngle(x, y, ang2, radius)
-			rl.Color4ub(col.Channels(colors[1]))
-			rl.Vertex2f(p2x, p2y)
-			rl.Color4ub(col.Channels(colors[1]))
-			rl.Vertex2f(p1x, p1y)
-			rl.Color4ub(col.Channels(colors[0]))
-			rl.Vertex2f(x, y)
-		}
-		rl.End()
-		c.end()
-	}
+func (c *Camera) DrawCircle(x, y, radius float32, segments int, color uint) {
+	c.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, color)
 }
 func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int, color uint) {
+	c.begin()
 	var fillAngle = number.Limit(fill, 0, 1) * 360
 	if fillAngle < 360 {
 		segments = max(int((fillAngle/360.0)*float32(segments)), 3)
 	}
 
-	var points = make([]rl.Vector2, segments+2)
 	var radiusH, radiusV = width / 2, height / 2
 	var halfPie = fillAngle / 2.0
 	var sinRot, cosRot = internal.SinCos(angle)
+	var renderColor = getColor(color)
+	var s0, c0 = internal.SinCos(halfPie)
+	var lx0, ly0 = c0 * radiusH, s0 * radiusV
+	var prevX = x + (lx0*cosRot - ly0*sinRot)
+	var prevY = y + (lx0*sinRot + ly0*cosRot)
 
-	points[0] = rl.Vector2{X: x, Y: y}
-	for i := 0; i <= segments; i++ {
+	for i := 1; i <= segments; i++ {
 		var t = float32(i) / float32(segments)
-		var localAngDeg = (halfPie - (t * fillAngle))
-		var sin, cos = internal.SinCos(localAngDeg)
-		var localX, localY = cos * radiusH, sin * radiusV
-		var rotatedX, rotatedY = localX*cosRot - localY*sinRot, localX*sinRot + localY*cosRot
-		points[i+1] = rl.Vector2{X: x + rotatedX, Y: y + rotatedY}
-	}
+		var ang = halfPie - (t * fillAngle)
+		var si, co = internal.SinCos(ang)
+		var lxi, lyi = co * radiusH, si * radiusV
+		var currX = x + (lxi*cosRot - lyi*sinRot)
+		var currY = y + (lxi*sinRot + lyi*cosRot)
 
-	c.begin()
-	rl.DrawTriangleFan(points, getColor(color))
+		batch.QueueTriangle(x, y, prevX, prevY, currX, currY, renderColor)
+		prevX, prevY = currX, currY
+	}
+	batch.Draw()
 	c.end()
 }
 
@@ -353,57 +356,28 @@ func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
 
 //=================================================================
 
-func (c *Camera) DrawTexture(textureId string, x, y, width, height, angle float32, color uint) {
-	var texture, has = internal.Textures[textureId]
-	if !has {
-		return
-	}
-
-	var texX, texY float32 = 0.0, 0.0
-	var w, h = width, height
-	var texW, texH = texture.Width, texture.Height
-	var rectTexture = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
-	var rectWorld = rl.Rectangle{X: x, Y: y, Width: float32(w), Height: float32(h)}
-
-	if rectWorld.Width < 0 {
-		rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, angle+180, -rectWorld.Width)
-		rectTexture.Width *= -1
-	}
-	if rectWorld.Height < 0 {
-		rectWorld.X, rectWorld.Y = point.MoveAtAngle(rectWorld.X, rectWorld.Y, angle+270, -rectWorld.Height)
-		rectTexture.Height *= -1
-	}
-
-	c.begin()
-	rl.DrawTexturePro(*texture, rectTexture, rectWorld, rl.Vector2{}, 0, getColor(color))
-	c.end()
+func (c *Camera) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32, color uint) {
+	var w, h = assets.Size(assetId)
+	drawTexture.AssetId, drawTexture.Tint = assetId, color
+	drawTexture.X, drawTexture.Y = x, y
+	drawTexture.PivotX, drawTexture.PivotY = 0, 0
+	drawTexture.Width, drawTexture.Height = float32(w), float32(h)
+	drawTexture.Angle = angle
+	drawTexture.ScaleX, drawTexture.ScaleY = scaleX, scaleY
+	c.DrawSprites(drawTexture)
 }
 func (c *Camera) DrawText(text string, x, y, height float32) {
-	c.DrawTextAdvanced("", text, x, y, height, 0, 0, palette.White)
+	c.DrawTextAdvanced("", text, x, y, height, 0, 0, 0, palette.White)
 }
-func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, height, symbolGap, lineGap float32, color uint) {
-	c.begin()
-	var font, has = internal.Fonts[fontId]
-
-	if !has {
-		var def, hasDefault = internal.Fonts[""]
-		if hasDefault {
-			font = def
-		} else {
-			var fallback = rl.GetFontDefault()
-			font = &fallback
-		}
-	}
-
-	c.Effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, &TextBox{}, false)
-
-	defaultTextPack.Color = color
-	var pack = packSymbolColor(defaultTextPack)
-	rl.SetTextLineSpacing(int(lineGap))
-	rl.BeginShaderMode(internal.Shader)
-	rl.DrawTextPro(*font, text, rl.Vector2{X: x, Y: y}, rl.Vector2{}, 0, height, symbolGap, pack)
-	rl.EndShaderMode()
-	c.end()
+func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, lineHeight, angle, symbolGap, lineGap float32, color uint) {
+	drawText.FontId, drawText.Tint = fontId, color
+	drawText.X, drawText.Y = x, y
+	drawText.PivotX, drawText.PivotY = 0, 0
+	drawText.Text, drawText.Angle = text, angle
+	drawText.SymbolGap, drawText.LineGap = symbolGap, lineGap
+	drawText.Width, drawText.Height = 99999, 99999
+	drawText.WordWrap, drawText.LineHeight = false, lineHeight
+	c.DrawTextBoxes(drawText)
 }
 func (c *Camera) DrawTextDebug(fps, time, assets, memory bool) {
 	if condition.TrueEvery(0.15, ";;;debug") {

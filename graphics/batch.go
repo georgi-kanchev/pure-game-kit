@@ -15,6 +15,9 @@ type batchData struct {
 	mesh     *rl.Mesh
 	material rl.Material
 
+	skipStartEnd bool
+	mask         *Area
+
 	vertsCur, indCur, quadsCapacity int32
 
 	vertices, texCoords, colors, indices []byte
@@ -22,8 +25,6 @@ type batchData struct {
 
 var batch *batchData
 var prevColor rl.Color
-var skipStartEnd bool
-var mask *Area
 
 func (b *batchData) Init(quadCountCapacity int32) {
 	if b.mesh != nil {
@@ -65,7 +66,7 @@ func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang floa
 	var poly [12]batchVertex
 	var vCount int
 
-	if mask == nil { // FAST PATH: Direct vertex generation
+	if b.mask == nil { // FAST PATH: Direct vertex generation
 		vCount = 4
 		for i := range 4 {
 			poly[i] = batchVertex{
@@ -86,7 +87,7 @@ func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang floa
 			}
 		}
 		var clipped [12]batchVertex
-		vCount = clipPolygonAABB(initial[:], clipped[:], mask)
+		vCount = clipPolygonAABB(initial[:], clipped[:], b.mask)
 		if vCount < 3 {
 			return
 		}
@@ -125,12 +126,12 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 		var poly [12]batchVertex
 		var vCount int
 
-		if mask == nil {
+		if b.mask == nil {
 			vCount = 3
 			copy(poly[:], initial[:])
 		} else {
 			var clipped [12]batchVertex
-			vCount = clipPolygonAABB(initial[:], clipped[:], mask)
+			vCount = clipPolygonAABB(initial[:], clipped[:], b.mask)
 			if vCount < 3 {
 				continue
 			}

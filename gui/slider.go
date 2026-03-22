@@ -80,8 +80,8 @@ func slider(w *widget) {
 	buttonColor = color.Brighten(buttonColor, 0.5)
 
 	if handleAssetId == "" {
-		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/2, color.Darken(buttonColor, 0.5))
-		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/3, buttonColor)
+		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/2, 8, color.Darken(buttonColor, 0.5))
+		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/3, 8, buttonColor)
 	} else {
 		reusableWidget.Width, reusableWidget.Height = handleWidth, handleHeight
 		drawReusableWidget(buttonColor, handleAssetId, x, handleY)

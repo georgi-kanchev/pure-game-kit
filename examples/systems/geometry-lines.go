@@ -23,8 +23,8 @@ func Lines() {
 
 		cam.DrawLine(lineA.Ax, lineA.Ay, lineA.Bx, lineA.By, 5, palette.White)
 		cam.DrawLine(lineB.Ax, lineB.Ay, lineB.Bx, lineB.By, 5, lineColor)
-		cam.DrawCircle(ax, ay, 15, palette.Cyan)
-		cam.DrawCircle(bx, by, 10, palette.Magenta)
-		cam.DrawCircle(lineA.Bx, lineA.By, 5, pointColor)
+		cam.DrawCircle(ax, ay, 15, 8, palette.Cyan)
+		cam.DrawCircle(bx, by, 10, 8, palette.Magenta)
+		cam.DrawCircle(lineA.Bx, lineA.By, 5, 8, pointColor)
 	}
 }

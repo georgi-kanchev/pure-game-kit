@@ -36,7 +36,7 @@ func Particles() {
 
 		p.Age += time.FrameDelta()
 		p.Scale = (6 - p.Age) * 5
-		cam.DrawCircle(p.X, p.Y-5, p.Scale, p.Color)
+		cam.DrawCircle(p.X, p.Y-5, p.Scale, 8, p.Color)
 
 		if p.Age > 5 {
 			p.Color = color.FadeOut(palette.Cyan, number.Map(p.Age, 5, 6, 0, 1))

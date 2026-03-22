@@ -16,7 +16,7 @@ func Texts() {
 	textBox.PivotX, textBox.PivotY = 0.5, 0.5
 	textBox.AlignmentX, textBox.AlignmentY = 0, 1
 	textBox.Angle = 0
-	textBox.LineHeight = 160
+	textBox.LineHeight = 60
 	textBox.Width, textBox.Height = 2500, 1500
 	textBox.ShadowOffsetX, textBox.ShadowOffsetY = 0.5, 0.5
 	textBox.Text = text.New(

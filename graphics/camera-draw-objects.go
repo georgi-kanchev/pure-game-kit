@@ -3,9 +3,7 @@ package graphics
 import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
-	txt "pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -78,7 +76,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 	c.begin()
 	defer c.end()
 
-	skipStartEnd = true
+	batch.skipStartEnd = true
 	var lastEffects *Effects
 	for _, b := range boxes {
 		if b == nil || !c.IsAreaVisible(b.Bounds()) {
@@ -174,7 +172,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 	}
 
 	batch.Draw()
-	skipStartEnd = false
+	batch.skipStartEnd = false
 }
 func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	c.begin()
@@ -183,14 +181,8 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
-		if t.Fast {
-			var text = removeTags(txt.Remove(t.Text, "\v"))
-			text = condition.If(t.WordWrap, t.TextWrap(text), text)
-			defaultTextPack.Color = t.Tint
-			var pack = packSymbolColor(defaultTextPack)
-			var col = color.RGBA(pack.R, pack.G, pack.B, pack.A)
-			c.DrawTextAdvanced(t.FontId, text, t.X, t.Y, t.LineHeight, t.gapSymbols(), t.gapLines(), col)
-			continue
+		if t.Mask != nil {
+			batch.mask = t.Mask
 		}
 
 		var _, symbols = t.formatSymbols()

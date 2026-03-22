@@ -50,7 +50,7 @@ func ShapesGrids() {
 		cam.DrawLinesPath(2, col, shape.CornerPoints()...)
 
 		for _, v := range crossPoints {
-			cam.DrawCircle(v[0], v[1], 3, palette.Magenta)
+			cam.DrawCircle(v[0], v[1], 3, 8, palette.Magenta)
 		}
 
 		cam.DrawTextDebug(true, true, true, true)

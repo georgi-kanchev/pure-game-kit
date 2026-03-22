@@ -4,17 +4,11 @@ import (
 	"image/color"
 	"pure-game-kit/internal"
 	col "pure-game-kit/utility/color"
-	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
-
-//=================================================================
-// objects
-
-var defaultTextPack = &symbol{Color: palette.White, Weight: 1, OutlineColor: palette.Black, OutlineWeight: 3}
 
 //=================================================================
 // primitives
@@ -162,6 +156,8 @@ func isConvex(pts []float32, count int) bool {
 // camera
 
 var rlCam = rl.Camera2D{}
+var drawText = NewTextBox("", 0, 0)
+var drawTexture = NewSprite("", 0, 0)
 
 var debugStr string
 
@@ -198,12 +194,12 @@ func (c *Camera) update() {
 // call before draw to update camera and use camera space
 func (c *Camera) begin() {
 	c.update()
-	if skipStartEnd {
+	if batch.skipStartEnd {
 		return
 	}
 
 	rl.BeginMode2D(rlCam)
-	mask = c.Mask
+	batch.mask = c.Mask
 
 	if c.Area != nil {
 		var mx, my, mw, mh = c.area()
@@ -220,7 +216,7 @@ func (c *Camera) begin() {
 
 // call after draw to get back to using screen space
 func (c *Camera) end() {
-	if skipStartEnd {
+	if batch.skipStartEnd {
 		return
 	}
 

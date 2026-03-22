@@ -12,8 +12,9 @@ type Quad struct {
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
 	Tint           uint
-	Mask           *Area
-	Effects        *Effects
+
+	Mask    *Area
+	Effects *Effects
 }
 
 func NewQuad(x, y float32) *Quad {
