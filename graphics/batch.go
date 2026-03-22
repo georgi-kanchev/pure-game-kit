@@ -55,7 +55,7 @@ func (b *batchData) Init(quadCountCapacity int32) {
 	b.material = rl.LoadMaterialDefault()
 	b.material.Shader = internal.Shader
 }
-func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
+func (b *batchData) QueueTex(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 	var sinA, cosA = internal.SinCos(ang)
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -108,6 +108,19 @@ func (b *batchData) QueueQuad(tex *rl.Texture2D, src, dst rl.Rectangle, ang floa
 	writeToBuffers(b, poly[:vCount], col)
 }
 
+func (b *batchData) QueueQuad(x, y, width, height, angle float32, color rl.Color) {
+	if width <= 0 || height <= 0 {
+		return
+	}
+
+	var perpAngle = angle + 90
+	var v1x, v1y = x, y
+	var v2x, v2y = point.MoveAtAngle(v1x, v1y, perpAngle, height)
+	var v4x, v4y = point.MoveAtAngle(v1x, v1y, angle, width)
+	var v3x, v3y = point.MoveAtAngle(v4x, v4y, perpAngle, height)
+	b.QueueTriangle(v1x, v1y, v2x, v2y, v3x, v3y, color)
+	b.QueueTriangle(v1x, v1y, v3x, v3y, v4x, v4y, color)
+}
 func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 	var totalTriangles = int(len(points) / 6)
 	if totalTriangles == 0 {
@@ -188,7 +201,7 @@ func (b *batchData) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float
 		var x, y = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
 		var prevCol = s.Color
 		s.Color = col
-		batch.QueueQuad(&font.Texture, rl.NewRectangle(x, y, 0.2, 0.2), dst, s.Angle, packSymbolColor(s))
+		batch.QueueTex(&font.Texture, rl.NewRectangle(x, y, 0.2, 0.2), dst, s.Angle, packSymbolColor(s))
 		s.Color = prevCol
 	}
 	var lineThickness = lineHeight / 15
@@ -208,7 +221,7 @@ func (b *batchData) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float
 	}
 
 	if text.Trim(s.Value) != "" {
-		b.QueueQuad(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
+		b.QueueTex(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
 	}
 
 	if s.Strikethrough {

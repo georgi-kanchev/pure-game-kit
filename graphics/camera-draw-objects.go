@@ -28,7 +28,7 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 			batch.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
-		batch.QueueQuad(internal.White, src, dst, ang, getColor(s.Tint))
+		batch.QueueTex(internal.White, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
 	}
 	batch.Draw()
@@ -66,7 +66,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			batch.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
-		batch.QueueQuad(texture, src, dst, ang, getColor(s.Tint))
+		batch.QueueTex(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
 	}
 	batch.Draw()
@@ -166,7 +166,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 				batch.Draw() // effects are different & break the batch
 				effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 			}
-			batch.QueueQuad(texture, src, dst, partAng, col)
+			batch.QueueTex(texture, src, dst, partAng, col)
 			lastEffects = effects
 		}
 	}
@@ -227,7 +227,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		if firstEffect || differentEffect {
 			batch.Draw() // effects are different & break the batch
 		}
-		batch.QueueQuad(texture, src, dst, t.Angle, getColor(t.Tint))
+		batch.QueueTex(texture, src, dst, t.Angle, getColor(t.Tint))
 		lastEffects = effects
 	}
 	batch.Draw()

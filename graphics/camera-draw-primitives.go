@@ -115,127 +115,48 @@ func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float
 	c.end()
 }
 
-func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, color uint) {
-	if width == 0 || height == 0 {
-		return
-	}
-	c.begin()
-
-	if width < 0 {
-		x += width
-		width *= -1
-	}
-	if height < 0 {
-		y += height
-		height *= -1
-	}
-
-	var x0, y0, x1, y1 float32     // Outer
-	var ix0, iy0, ix1, iy1 float32 // Inner
-
-	if thickness < 0 {
-		var t = -thickness
-		x0, y0, x1, y1 = 0, 0, width, height
-		ix0, iy0, ix1, iy1 = t, t, width-t, height-t
-	} else {
-		x0, y0, x1, y1 = -thickness, -thickness, width+thickness, height+thickness
-		ix0, iy0, ix1, iy1 = 0, 0, width, height
-	}
-
-	var sinRot, cosRot = internal.SinCos(angle)
-	var renderColor = getColor(color)
-	var transform = func(px, py float32) (float32, float32) {
-		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
-	}
-
-	var drawRect = func(px1, py1, px2, py2, px3, py3, px4, py4 float32) {
-		var v1x, v1y = transform(px1, py1)
-		var v2x, v2y = transform(px2, py2)
-		var v3x, v3y = transform(px3, py3)
-		var v4x, v4y = transform(px4, py4)
-		batch.QueueTriangle(v1x, v1y, v2x, v2y, v3x, v3y, renderColor)
-		batch.QueueTriangle(v1x, v1y, v3x, v3y, v4x, v4y, renderColor)
-	}
-
-	drawRect(x0, y0, x1, y0, x1, iy0, x0, iy0)     // Top
-	drawRect(x0, iy1, x1, iy1, x1, y1, x0, y1)     // Bottom
-	drawRect(x0, iy0, ix0, iy0, ix0, iy1, x0, iy1) // Left
-	drawRect(ix1, iy0, x1, iy0, x1, iy1, ix1, iy1) // Right
-	batch.Draw()
-	c.end()
-}
 func (c *Camera) DrawQuad(x, y, width, height, angle float32, color uint) {
 	c.begin()
-	var sinRot, cosRot = internal.SinCos(angle)
-	var renderColor = getColor(color)
-	var transform = func(px, py float32) (float32, float32) {
-		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
-	}
-
-	var v1x, v1y = transform(0, 0)          // Top-Left
-	var v2x, v2y = transform(width, 0)      // Top-Right
-	var v3x, v3y = transform(width, height) // Bottom-Right
-	var v4x, v4y = transform(0, height)     // Bottom-Left
-
-	batch.QueueTriangle(v1x, v1y, v2x, v2y, v3x, v3y, renderColor)
-	batch.QueueTriangle(v1x, v1y, v3x, v3y, v4x, v4y, renderColor)
+	batch.QueueQuad(x, y, width, height, angle, getColor(color))
 	batch.Draw()
 	c.end()
 }
-func (c *Camera) DrawQuadRounded(x, y, width, height, radius, angle float32, color uint) {
+func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, color uint) {
 	c.begin()
-
-	var maxR = width / 2
-	if height/2 < maxR {
-		maxR = height / 2
-	}
-	radius = min(radius, maxR)
-
-	var renderColor = getColor(color)
 	var sinRot, cosRot = internal.SinCos(angle)
 	var transform = func(px, py float32) (float32, float32) {
 		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
 	}
 
-	var x1, y1 = transform(0, radius)
-	var x2, y2 = transform(width, radius)
-	var x3, y3 = transform(width, height-radius)
-	var x4, y4 = transform(0, height-radius)
-	batch.QueueTriangle(x1, y1, x2, y2, x3, y3, renderColor)
-	batch.QueueTriangle(x1, y1, x3, y3, x4, y4, renderColor)
-
-	var x5, y5 = transform(radius, 0)
-	var x6, y6 = transform(width-radius, 0)
-	var x7, y7 = transform(width-radius, height)
-	var x8, y8 = transform(radius, height)
-	batch.QueueTriangle(x5, y5, x6, y6, x7, y7, renderColor)
-	batch.QueueTriangle(x5, y5, x7, y7, x8, y8, renderColor)
-
-	var segments = 8
-	var corners = [4][3]float32{
-		{radius, radius, 180},                // Top Left
-		{width - radius, radius, 270},        // Top Right
-		{width - radius, height - radius, 0}, // Bottom Right
-		{radius, height - radius, 90},        // Bottom Left
+	var absT = thickness
+	if absT < 0 {
+		absT = -absT
 	}
 
-	for _, corn := range corners {
-		var cx, cy = corn[0], corn[1]
-		var startAng = corn[2]
-		var s0, c0 = internal.SinCos(startAng)
-		var px, py = transform(cx+c0*radius, cy-s0*radius)
+	var h = thickness / 2
+	var hx1, hx2, vy1, vy2 float32
 
-		for i := 1; i <= segments; i++ {
-			var t = float32(i) / float32(segments)
-			var currAng = startAng - (t * 90)
-			var si, co = internal.SinCos(currAng)
-			var ctx, cty = transform(cx+co*radius, cy-si*radius)
-			var centX, centY = transform(cx, cy)
-
-			batch.QueueTriangle(centX, centY, px, py, ctx, cty, renderColor)
-			px, py = ctx, cty
-		}
+	if thickness > 0 {
+		hx1, hx2 = -absT, width+absT
+		vy1, vy2 = 0, height
+	} else {
+		hx1, hx2 = 0, width
+		vy1, vy2 = absT, height-absT
 	}
+
+	var x1, y1 = transform(hx1, -h)
+	var x2, y2 = transform(hx2, -h)
+	var x3, y3 = transform(hx2, height+h)
+	var x4, y4 = transform(hx1, height+h)
+	var x5, y5 = transform(width+h, vy1)
+	var x6, y6 = transform(width+h, vy2)
+	var x7, y7 = transform(-h, vy2)
+	var x8, y8 = transform(-h, vy1)
+	var col = getColor(color)
+	batch.QueueLine(x1, y1, x2, y2, absT, col)
+	batch.QueueLine(x3, y3, x4, y4, absT, col)
+	batch.QueueLine(x5, y5, x6, y6, absT, col)
+	batch.QueueLine(x7, y7, x8, y8, absT, col)
 	batch.Draw()
 	c.end()
 }
