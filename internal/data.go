@@ -106,10 +106,12 @@ func AssetData(assetId string) (tex *rl.Texture2D, src rl.Rectangle, rotations i
 func EditAssetRects(src, dst *rl.Rectangle, ang float32, rotations int, flip bool) {
 	if dst.Width < 0 {
 		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+180, -dst.Width)
+		src.X += src.Width
 		src.Width *= -1
 	}
 	if dst.Height < 0 {
 		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+270, -dst.Height)
+		src.Y += src.Height
 		src.Height *= -1
 	}
 
@@ -122,7 +124,7 @@ func EditAssetRects(src, dst *rl.Rectangle, ang float32, rotations int, flip boo
 	case 2: // 180
 		src.Height *= -1
 		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang, dst.Width)
-		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+90, dst.Width)
+		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+90, dst.Height)
 	case 3: // 270
 		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+90, dst.Width)
 	}
@@ -327,7 +329,8 @@ func initData() {
 }
 
 func moveAtAngle(x, y, angle, step float32) (float32, float32) {
-	var dirX, dirY = SinCos(angle)
+	var sin, cos = SinCos(angle)
+	var dirX, dirY = cos, sin
 	if dirX == 0 && dirY == 0 {
 		return x, y
 	}
