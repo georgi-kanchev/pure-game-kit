@@ -64,7 +64,10 @@ func drawDraggable(widget *widget) {
 	var drawW, drawH float32
 	var disabled = widget.isDisabled(owner)
 	var col = defaultValue(widget.root.themedField(field.DraggableAssetColor, owner, widget), "255 255 255")
-	var sprite = graphics.NewSprite(assetId, widget.DragX, widget.DragY)
+
+	if widget.handle == nil {
+		widget.handle = graphics.NewSprite("", 0, 0)
+	}
 
 	if assetRatio > spriteRatio {
 		drawW = widget.Width
@@ -74,11 +77,13 @@ func drawDraggable(widget *widget) {
 		drawW = drawH * assetRatio
 	}
 
-	sprite.Width, sprite.Height = drawW*scale, drawH*scale
-	sprite.Tint = parseColor(col, disabled)
-	sprite.PivotX, sprite.PivotY = 0.5, 0.5
-	sprite.ScaleX, sprite.ScaleY = scale, scale
-	widget.root.sprites = append(widget.root.sprites, sprite)
+	widget.handle.X, widget.handle.Y = widget.DragX, widget.DragY
+	widget.handle.Width, widget.handle.Height = drawW*scale, drawH*scale
+	widget.handle.AssetId, widget.handle.Tint = assetId, parseColor(col, disabled)
+	widget.handle.PivotX, widget.handle.PivotY = 0.5, 0.5
+	widget.handle.ScaleX, widget.handle.ScaleY = scale, scale
+	widget.handle.Mask = condition.If(widget.root.wPressedOn == widget, nil, owner.mask)
+	widget.root.sprites = append(widget.root.sprites, widget.handle)
 }
 
 func (r *root) onDrop() (string, string) {
@@ -92,10 +97,14 @@ func (r *root) onDrop() (string, string) {
 
 		sound.Volume = r.Volume
 		defer sound.Play()
-		if r.wFocused == nil || r.wFocused.Class == "draggable" {
+		if r.wFocused != nil && r.wFocused.Class == "draggable" {
 			var val = r.themedField(field.ButtonSoundRelease, owner, r.wPressedOn)
 			sound.AssetId = defaultValue(val, "~release")
-			return r.wPressedOn.Id, r.wFocused.Id
+			var id = ""
+			if r.wFocused != nil {
+				id = r.wFocused.Id
+			}
+			return r.wPressedOn.Id, id
 		}
 
 		sound.AssetId = defaultValue(r.themedField(field.DraggableCancelSoundId, owner, r.wPressedOn), "~error")

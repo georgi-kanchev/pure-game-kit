@@ -2,6 +2,7 @@ package gui
 
 import (
 	"pure-game-kit/data/assets"
+	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/number"
@@ -39,9 +40,10 @@ func slider(w *widget) {
 	var handleY = w.Y - (handleWidth)/3
 	var value = parseNum(w.Fields[field.Value], 0)
 	var step = parseNum(w.root.themedField(field.SliderStep, owner, w), 0)
-	var cam = w.root.cam
 
-	reusableWidget.root = w.root
+	if w.handle == nil {
+		w.handle = graphics.NewSprite("", 0, 0)
+	}
 
 	if value != w.PrevValue && !sound.IsPlaying() {
 		sound.AssetId = defaultValue(w.root.themedField(field.SliderSound, owner, w), "~slider")
@@ -59,15 +61,25 @@ func slider(w *widget) {
 		var totalSteps = int(number.RoundUp((1 - step) / step))
 		var stepAssetId = w.root.themedField(field.SliderStepAssetId, owner, w)
 
-		for i := 1; i <= totalSteps; i++ {
-			var stepX = (w.X + handleWidth/2) + float32(i)*stepPx
-			if stepAssetId != "" && stepPx > w.Height {
-				reusableWidget.Width, reusableWidget.Height = w.Height, w.Height
-				drawReusableWidget(buttonColor, stepAssetId, stepX-w.Height/2, w.Y)
-			} else {
-				cam.DrawQuad(stepX-2.5, w.Y, 5, w.Height, 0, buttonColor)
+		if len(w.steps) < totalSteps {
+			w.steps = make([]*graphics.Sprite, totalSteps)
+			for i := range w.steps {
+				w.steps[i] = graphics.NewSprite("", 0, 0)
 			}
 		}
+
+		for i := 1; i <= totalSteps; i++ {
+			var stepX = (w.X + handleWidth/2) + float32(i)*stepPx
+			var step = w.steps[i-1]
+			if stepPx > w.Height {
+				step.X, step.Y = stepX-w.Height/2, w.Y
+				step.Width, step.Height = w.Height, w.Height
+				step.AssetId, step.Tint = stepAssetId, buttonColor
+				step.Mask = owner.mask
+				step.PivotX, step.PivotY = 0, 0
+			}
+		}
+		w.root.sprites = append(w.root.sprites, w.steps...)
 	}
 
 	if w.root.wPressedOn == w {
@@ -79,13 +91,12 @@ func slider(w *widget) {
 	var x = number.Map(value, 0, 1, w.X, w.X+w.Width-handleWidth)
 	buttonColor = color.Brighten(buttonColor, 0.5)
 
-	if handleAssetId == "" {
-		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/2, 8, color.Darken(buttonColor, 0.5))
-		cam.DrawCircle(x+handleWidth/2, handleY+handleWidth*0.8, handleWidth/3, 8, buttonColor)
-	} else {
-		reusableWidget.Width, reusableWidget.Height = handleWidth, handleHeight
-		drawReusableWidget(buttonColor, handleAssetId, x, handleY)
-	}
+	w.handle.X, w.handle.Y = x, handleY
+	w.handle.Width, w.handle.Height = handleWidth, handleHeight
+	w.handle.AssetId, w.handle.Tint = handleAssetId, buttonColor
+	w.handle.PivotX, w.handle.PivotY = 0, 0
+	w.handle.Mask = owner.mask
+	w.root.sprites = append(w.root.sprites, w.handle)
 }
 
 func (w *widget) setSliderValue(value float32) float32 {
@@ -95,14 +106,4 @@ func (w *widget) setSliderValue(value float32) float32 {
 	value = number.Limit(value, 0, 1)
 	w.Fields[field.Value] = text.New(value)
 	return value
-}
-func drawReusableWidget(col uint, assetId string, x, y float32) {
-	var r, g, b, a = color.Channels(col)
-	clear(reusableWidget.Fields)
-	reusableWidget.Fields[field.AssetId] = assetId
-	reusableWidget.Fields[field.Color] = text.New(r, " ", g, " ", b, " ", a)
-	reusableWidget.X, reusableWidget.Y = x, y
-
-	setupVisualsTextured(reusableWidget)
-	drawVisuals(reusableWidget, false, nil)
 }

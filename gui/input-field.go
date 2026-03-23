@@ -51,6 +51,7 @@ func setupText(margin float32, w *widget, skipEmpty bool) {
 	w.textBox.Text = txt.Remove(w.textBox.Text, "\n")
 }
 func inputField(w *widget) {
+	maskText = true
 	if w.textBox == nil {
 		w.textBox = &graphics.TextBox{}
 	}
@@ -109,10 +110,21 @@ func inputField(w *widget) {
 
 	draw(margin, w, isPlaceholder)
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
+	maskText = false
 }
 func draw(margin float32, w *widget, isPlaceholder bool) {
-	var cam = w.root.cam
-	maskText = true
+	if typingIn == w {
+		if w.highlight == nil {
+			w.highlight = graphics.NewBox("", 0, 0)
+		}
+		w.highlight.X, w.highlight.Y = w.X-1, w.Y-1
+		w.highlight.Width, w.highlight.Height = w.Width+2, w.Height+2
+		w.highlight.Tint = palette.Azure
+		w.highlight.PivotX, w.highlight.PivotY = 0, 0
+		w.highlight.Mask = w.textBox.Mask
+		w.root.boxes = append(w.root.boxes, w.highlight)
+	}
+
 	textMargin = margin
 	drawVisuals(w, isPlaceholder, func() {
 		if indexCursor == indexSelect || typingIn != w || len(symbolXs) == 0 {
@@ -125,20 +137,36 @@ func draw(margin float32, w *widget, isPlaceholder bool) {
 			ax, bx = bx, ax
 		}
 
-		var y, h = w.textBox.Y + margin/2, w.textBox.Height - margin
-		cam.DrawQuad(ax, y, bx-ax, h, 0, palette.Azure)
-	})
-	maskText = false
+		if w.handle == nil {
+			w.handle = graphics.NewSprite("", 0, 0)
+		}
 
-	if typingIn == w {
-		cam.DrawQuadFrame(w.X, w.Y, w.Width, w.Height, 0, -1, palette.Azure)
-	}
+		w.handle.X, w.handle.Y = ax, w.textBox.Y+margin/2
+		w.handle.Width, w.handle.Height = bx-ax, w.textBox.Height-margin
+		w.handle.Tint, w.handle.Mask = palette.Azure, w.textBox.Mask
+		w.handle.PivotX, w.handle.PivotY = 0, 0
+		w.root.sprites = append(w.root.sprites, w.handle)
+	})
 
 	if typingIn == w && cursorTime < 0.5 {
 		var x, y = cursorX(margin, w), w.textBox.Y + margin/2
-		var w, h = cursorWidth, w.textBox.Height - margin
-		cam.DrawQuad(x, y, w, h, 0, palette.White)
-		cam.DrawQuadFrame(x, y, w, h, 0, w/2, palette.Black)
+		var cw, ch = cursorWidth, w.textBox.Height - margin
+
+		if w.cursor1 == nil || w.cursor2 == nil {
+			w.cursor1 = graphics.NewSprite("", 0, 0)
+			w.cursor2 = graphics.NewSprite("", 0, 0)
+		}
+
+		w.cursor1.X, w.cursor1.Y = x-cw/2, y-cw/2
+		w.cursor1.Width, w.cursor1.Height = cw+cw, ch+cw
+		w.cursor1.Tint, w.cursor1.Mask = palette.Black, w.textBox.Mask
+		w.cursor1.PivotX, w.cursor1.PivotY = 0, 0
+
+		w.cursor2.X, w.cursor2.Y = x, y
+		w.cursor2.Width, w.cursor2.Height = cw, ch
+		w.cursor2.Tint, w.cursor2.Mask = palette.White, w.textBox.Mask
+		w.cursor2.PivotX, w.cursor2.PivotY = 0, 0
+		w.root.spritesAbove = append(w.root.spritesAbove, w.cursor1, w.cursor2)
 	}
 }
 

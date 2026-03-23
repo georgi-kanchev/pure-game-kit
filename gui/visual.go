@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/graphics"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/number"
 )
 
 func Visual(id string, fields ...string) string {
@@ -88,6 +87,20 @@ func setupVisualsText(w *widget, skipEmpty bool) {
 	if owner != nil {
 		w.textBox.Mask = owner.mask
 	}
+
+	if maskText { // used for inputbox mask
+		var cGapX = parseNum(owner.Fields[f.GapX], 0)
+		var cGapY = parseNum(owner.Fields[f.GapY], 0)
+		var ox, oy, ow, oh = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
+		var cx, cy = ox + cGapX, oy + cGapY
+		var cxw, cyh = ox + ow - cGapX, oy + oh - cGapY
+		var tx, ty = w.X + textMargin, w.Y + textMargin/2
+		var txw, tyh = w.X + w.Width - textMargin, w.Y + w.Height - textMargin/2
+		var mx, my = max(cx, tx), max(cy, ty)
+		var mxw, myh = min(cxw, txw), min(cyh, tyh)
+		var mw, mh = max(0, mxw-mx+1), max(0, myh-my)
+		w.textBox.Mask = graphics.NewArea(mx, my, mw, mh)
+	}
 }
 func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 	var owner = w.root.Containers[w.OwnerId]
@@ -141,24 +154,6 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 		return
 	}
 
-	// var prevMask = w.textBox.Mask
-	if maskText { // used for inputbox mask
-		var cGapX = parseNum(owner.Fields[f.GapX], 0)
-		var cGapY = parseNum(owner.Fields[f.GapY], 0)
-		var ox, oy, ow, oh = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
-		var cx, cy, cw, ch = ox + cGapX, oy + cGapY, ow - cGapX*2, oh - cGapY*2
-		var x, y = w.X + textMargin, w.Y + textMargin/2
-		var realX = w.X + w.Width - textMargin
-		var realY = w.Y + w.Height - textMargin/2
-		var xw, yh = realX, realY
-		var mx, my, mw, mh = x, y, xw - x + 1, yh - y
-		mx = number.Limit(mx, cx, cw)
-		my = number.Limit(my, cy, ch)
-		mw = number.Limit(mw, cw, cw)
-		mh = number.Limit(mh, ch, ch)
-		w.textBox.Mask = graphics.NewArea(mx, my, mw, mh)
-	}
-
 	if betweenVisualAndText != nil {
 		betweenVisualAndText()
 	}
@@ -168,5 +163,4 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 	var c = parseColor(colVal, disabled || fadeText)
 	w.textBox.Tint = c
 	w.root.textBoxes = append(w.root.textBoxes, w.textBox)
-	// w.textBox.Mask = prevMask
 }

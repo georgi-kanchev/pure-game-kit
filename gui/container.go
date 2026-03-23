@@ -35,6 +35,9 @@ type container struct {
 	Fields    map[string]string
 	Widgets   []string
 	WasHidden bool
+
+	verScrollBase, verScrollHandle1, verScrollHandle2,
+	horScrollBase, horScrollHandle1, horScrollHandle2 *graphics.Sprite
 }
 
 func Container(id, x, y, width, height string, properties ...string) string {
@@ -49,7 +52,7 @@ func Container(id, x, y, width, height string, properties ...string) string {
 //=================================================================
 // private
 
-const scrollSize, handleSpeed, dragFriction, dragMomentum = 10.0, 12.0, 0.95, 30.0
+const scrollSize, scrollOutline, handleSpeed, dragFriction, dragMomentum = 10.0, 0.25, 12.0, 0.95, 30.0
 
 var rowWidths = map[*widget]float32{}
 
@@ -79,9 +82,9 @@ func (c *container) updateAndDraw() {
 	//=================================================================
 	// this is done in two loops because the content size of the container needs to be known to anchor it
 
+	c.root.drawStart()
 	var minX, minY, maxX, maxY = c.contentMinMax(cGapX, cGapY)
 	var contentW, contentH = maxX - minX, maxY - minY
-	var draggables []*widget = make([]*widget, 0, len(c.Widgets))
 	for _, wId := range c.Widgets {
 		var widget = c.root.Widgets[wId]
 		if widget.IsCulled || widget.isSkipped(c) {
@@ -113,18 +116,13 @@ func (c *container) updateAndDraw() {
 			tryShowTooltip(widget, c)
 		}
 
-		if widget.Class == "draggable" {
-			draggables = append(draggables, widget)
-		}
-	}
-
-	for _, draggable := range draggables {
-		if draggable != c.root.wPressedOn {
-			drawDraggable(draggable)
+		if widget.Class == "draggable" && widget != widget.root.wPressedOn {
+			drawDraggable(widget)
 		}
 	}
 
 	c.tryShowScrolls(minX, minY, maxX, maxY)
+	c.root.drawEnd()
 }
 func (c *container) alignWidgets(x, y, w, h, cGapX, cGapY float32) {
 	var maxHeight float32
@@ -286,9 +284,29 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 
 	c.ScrollY = number.Limit(c.ScrollY, 0, (maxY-minY)-c.Height)
 	var y = number.Map(c.ScrollY, 0, (maxY-minY)-c.Height, c.Y, c.Y+c.Height-handleH)
-	cam.DrawQuad(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, 0, color.RGBA(0, 0, 0, 150))
-	cam.DrawQuad(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, handleCol)
-	cam.DrawQuadFrame(c.X+c.Width-scrollSize, y, scrollSize, handleH, 0, -scrollSize*0.3, palette.Black)
+	var off = float32(scrollSize * scrollOutline)
+
+	if c.verScrollBase == nil || c.verScrollHandle1 == nil || c.verScrollHandle2 == nil {
+		c.verScrollBase = graphics.NewSprite("", 0, 0)
+		c.verScrollBase.PivotX, c.verScrollBase.PivotY = 0, 0
+		c.verScrollHandle1 = graphics.NewSprite("", 0, 0)
+		c.verScrollHandle1.PivotX, c.verScrollHandle1.PivotY = 0, 0
+		c.verScrollHandle2 = graphics.NewSprite("", 0, 0)
+		c.verScrollHandle2.PivotX, c.verScrollHandle2.PivotY = 0, 0
+	}
+
+	c.verScrollBase.X, c.verScrollBase.Y = c.X+c.Width-scrollSize, c.Y
+	c.verScrollBase.Width, c.verScrollBase.Height = scrollSize, c.Height
+	c.verScrollBase.Tint = color.RGBA(0, 0, 0, 150)
+
+	c.verScrollHandle1.X, c.verScrollHandle1.Y = c.X+c.Width-scrollSize, y
+	c.verScrollHandle1.Width, c.verScrollHandle1.Height = scrollSize, handleH
+	c.verScrollHandle1.Tint = palette.Black
+
+	c.verScrollHandle2.X, c.verScrollHandle2.Y = c.X+c.Width-scrollSize+off, y+off
+	c.verScrollHandle2.Width, c.verScrollHandle2.Height = scrollSize-off*2, handleH-off*2
+	c.verScrollHandle2.Tint = handleCol
+	c.root.sprites = append(c.root.sprites, c.verScrollBase, c.verScrollHandle1, c.verScrollHandle2)
 }
 func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift bool) {
 	var cam = c.root.cam
@@ -352,9 +370,29 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 
 	c.ScrollX = number.Limit(c.ScrollX, 0, (maxX-minX)-barW)
 	var x = number.Map(c.ScrollX, 0, (maxX-minX)-barW, c.X, c.X+barW-handleW)
-	cam.DrawQuad(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, 0, color.RGBA(0, 0, 0, 150))
-	cam.DrawQuad(x, c.Y+c.Height-scrollSize, handleW, scrollSize, 0, handleCol)
-	cam.DrawQuadFrame(x, c.Y+c.Height-scrollSize, handleW, scrollSize, 0, -scrollSize*0.3, palette.Black)
+	var off = float32(scrollSize * scrollOutline)
+
+	if c.horScrollBase == nil || c.horScrollHandle1 == nil || c.horScrollHandle2 == nil {
+		c.horScrollBase = graphics.NewSprite("", 0, 0)
+		c.horScrollBase.PivotX, c.horScrollBase.PivotY = 0, 0
+		c.horScrollHandle1 = graphics.NewSprite("", 0, 0)
+		c.horScrollHandle1.PivotX, c.horScrollHandle1.PivotY = 0, 0
+		c.horScrollHandle2 = graphics.NewSprite("", 0, 0)
+		c.horScrollHandle2.PivotX, c.horScrollHandle2.PivotY = 0, 0
+	}
+
+	c.horScrollBase.X, c.horScrollBase.Y = c.X, c.Y+c.Height-scrollSize
+	c.horScrollBase.Width, c.horScrollBase.Height = barW, scrollSize
+	c.horScrollBase.Tint = color.RGBA(0, 0, 0, 150)
+
+	c.horScrollHandle1.X, c.horScrollHandle1.Y = x, c.Y+c.Height-scrollSize
+	c.horScrollHandle1.Width, c.horScrollHandle1.Height = handleW, scrollSize
+	c.horScrollHandle1.Tint = palette.Black
+
+	c.horScrollHandle2.X, c.horScrollHandle2.Y = x+off, c.Y+c.Height-scrollSize+off
+	c.horScrollHandle2.Width, c.horScrollHandle2.Height = handleW-off*2, scrollSize-off*2
+	c.horScrollHandle2.Tint = handleCol
+	c.root.sprites = append(c.root.sprites, c.horScrollBase, c.horScrollHandle1, c.horScrollHandle2)
 }
 
 func (c *container) isHovered() bool {

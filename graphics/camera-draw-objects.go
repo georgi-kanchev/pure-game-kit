@@ -17,6 +17,7 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 			continue
 		}
 
+		batch.mask = c.Mask
 		if q.Mask != nil {
 			batch.mask = q.Mask
 		}
@@ -63,6 +64,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
+		batch.mask = c.Mask
 		if s.Mask != nil {
 			batch.mask = s.Mask
 		}
@@ -130,6 +132,7 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 			}
 		}
 
+		batch.mask = c.Mask
 		if b.Mask != nil {
 			batch.mask = b.Mask
 		}
@@ -193,6 +196,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
+		batch.mask = c.Mask
 		if t.Mask != nil {
 			batch.mask = t.Mask
 		}
@@ -222,6 +226,11 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var data = internal.TileDatas[t.TileDataId]
 		if atlas == nil && data == nil {
 			continue
+		}
+
+		batch.mask = c.Mask
+		if t.Mask != nil {
+			batch.mask = t.Mask
 		}
 
 		var texture = internal.Textures[atlas.TextureId]

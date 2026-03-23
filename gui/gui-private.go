@@ -5,6 +5,8 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/dynamic"
 	"pure-game-kit/gui/field"
+	"pure-game-kit/input/keyboard"
+	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
@@ -38,8 +40,6 @@ var frame int
 var tooltip, tooltipForWidget *widget
 var tooltipAt float32
 var tooltipVisible, tooltipWasVisible bool
-
-var reusableWidget = &widget{Fields: map[string]string{}}
 
 var clickedId, clickedAndHeldId, sliderSlidId = "", "", ""
 
@@ -156,6 +156,23 @@ func (r *root) restore(prAng, prZoom, prX, prY float32) {
 	r.cWasHovered = r.cHovered
 	prevMouseX, prevMouseY = mouseX, mouseY
 }
+
+func (r *root) drawStart() {
+	r.sprites = make([]*graphics.Sprite, 0, 64)
+	r.spritesAbove = make([]*graphics.Sprite, 0, 8)
+	r.boxes = make([]*graphics.Box, 0, 64)
+	r.textBoxes = make([]*graphics.TextBox, 0, 64)
+}
+func (r *root) drawEnd() {
+	r.cam.DrawBoxes(r.boxes...)
+	r.cam.DrawSprites(r.sprites...)
+	r.cam.DrawTextBoxes(r.textBoxes...)
+	r.cam.DrawSprites(r.spritesAbove...)
+	if keyboard.IsKeyJustPressed(key.A) {
+		print()
+	}
+}
+
 func extraProps(props ...string) string {
 	var result = ""
 	for i, v := range props {

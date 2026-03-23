@@ -18,10 +18,11 @@ type widget struct {
 
 	root *root
 
-	sprite,
+	sprite, handle, cursor1, cursor2,
 	top, left, right, bottom *graphics.Sprite
-	textBox *graphics.TextBox
-	box     *graphics.Box
+	steps          []*graphics.Sprite
+	textBox        *graphics.TextBox
+	box, highlight *graphics.Box
 }
 
 func newWidget(class, id string, properties ...string) string {
