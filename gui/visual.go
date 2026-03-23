@@ -120,10 +120,10 @@ func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 		w.left.PivotX, w.left.PivotY = 0, 0
 		w.right.PivotX, w.right.PivotY = 0, 0
 		w.bottom.PivotX, w.bottom.PivotY = 0, 0
-		w.top.Tint = frameCol
-		w.left.Tint = frameCol
-		w.right.Tint = frameCol
-		w.bottom.Tint = frameCol
+		w.top.Tint, w.top.Mask = frameCol, owner.mask
+		w.left.Tint, w.left.Mask = frameCol, owner.mask
+		w.right.Tint, w.right.Mask = frameCol, owner.mask
+		w.bottom.Tint, w.bottom.Mask = frameCol, owner.mask
 
 		if frameSz < 0 {
 			var t = -frameSz
