@@ -58,7 +58,7 @@ func slider(w *widget) {
 
 	if step > 0 {
 		var stepPx = (w.Width - handleWidth) * step
-		var totalSteps = int(number.RoundUp((1 - step) / step))
+		var totalSteps = int(number.RoundUp(1/step)) - 1
 		var stepAssetId = w.root.themedField(field.SliderStepAssetId, owner, w)
 
 		if len(w.steps) < totalSteps {
@@ -69,17 +69,20 @@ func slider(w *widget) {
 		}
 
 		for i := 1; i <= totalSteps; i++ {
-			var stepX = (w.X + handleWidth/2) + float32(i)*stepPx
+			var stepX = w.X + float32(i)*stepPx
 			var step = w.steps[i-1]
-			if stepPx > w.Height {
-				step.X, step.Y = stepX-w.Height/2, w.Y
-				step.Width, step.Height = w.Height, w.Height
-				step.AssetId, step.Tint = stepAssetId, buttonColor
-				step.Mask = owner.mask
-				step.PivotX, step.PivotY = 0, 0
+			step.X, step.Y = stepX, w.Y
+			step.Width, step.Height = w.Height, w.Height
+			step.AssetId, step.Tint = stepAssetId, buttonColor
+			step.Mask = owner.mask
+			step.PivotX, step.PivotY = 0, 0
+
+			if stepAssetId == "" {
+				step.X += handleWidth / 2
+				step.Width = 4
 			}
 		}
-		w.root.sprites = append(w.root.sprites, w.steps...)
+		w.root.sprites = append(w.root.sprites, w.steps[:totalSteps]...)
 	}
 
 	if w.root.wPressedOn == w {
@@ -96,6 +99,11 @@ func slider(w *widget) {
 	w.handle.AssetId, w.handle.Tint = handleAssetId, buttonColor
 	w.handle.PivotX, w.handle.PivotY = 0, 0
 	w.handle.Mask = owner.mask
+
+	if handleAssetId == "" {
+		w.handle.Y = w.Y
+	}
+
 	w.root.sprites = append(w.root.sprites, w.handle)
 }
 
