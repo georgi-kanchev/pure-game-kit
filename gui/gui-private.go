@@ -204,18 +204,23 @@ func cacheDynCamProps(camera *graphics.Camera) {
 }
 
 func dyn(c *container, value string, defaultValue string) string {
-	value = text.Replace(value, dynamic.TargetWidth, tarW)
-	value = text.Replace(value, dynamic.TargetHeight, tarH)
-	value = text.Replace(value, dynamic.TargetLeftX, tarLx)
-	value = text.Replace(value, dynamic.TargetRightX, tarRx)
-	value = text.Replace(value, dynamic.TargetTopY, tarTy)
-	value = text.Replace(value, dynamic.TargetBottomY, tarBy)
-	value = text.Replace(value, dynamic.TargetCenterX, tarCx)
-	value = text.Replace(value, dynamic.TargetCenterY, tarCy)
-	value = text.Replace(value, dynamic.TargetHidden, tarHid)
-	value = text.Replace(value, dynamic.TargetDisabled, tarDis)
+	if value == "" {
+		return defaultValue
+	}
 
-	if c != nil {
+	if text.Contains(value, "Target") {
+		value = text.Replace(value, dynamic.TargetWidth, tarW)
+		value = text.Replace(value, dynamic.TargetHeight, tarH)
+		value = text.Replace(value, dynamic.TargetLeftX, tarLx)
+		value = text.Replace(value, dynamic.TargetRightX, tarRx)
+		value = text.Replace(value, dynamic.TargetTopY, tarTy)
+		value = text.Replace(value, dynamic.TargetBottomY, tarBy)
+		value = text.Replace(value, dynamic.TargetCenterX, tarCx)
+		value = text.Replace(value, dynamic.TargetCenterY, tarCy)
+		value = text.Replace(value, dynamic.TargetHidden, tarHid)
+		value = text.Replace(value, dynamic.TargetDisabled, tarDis)
+	}
+	if c != nil && text.Contains(value, "Owner") {
 		value = text.Replace(value, dynamic.OwnerWidth, ownerW)
 		value = text.Replace(value, dynamic.OwnerHeight, ownerH)
 		value = text.Replace(value, dynamic.OwnerLeftX, ownerLx)
@@ -225,15 +230,16 @@ func dyn(c *container, value string, defaultValue string) string {
 		value = text.Replace(value, dynamic.OwnerCenterX, ownerCx)
 		value = text.Replace(value, dynamic.OwnerCenterY, ownerCy)
 	}
-
-	value = text.Replace(value, dynamic.CameraCenterX, camCx)
-	value = text.Replace(value, dynamic.CameraCenterY, camCy)
-	value = text.Replace(value, dynamic.CameraLeftX, camLx)
-	value = text.Replace(value, dynamic.CameraRightX, camRx)
-	value = text.Replace(value, dynamic.CameraTopY, camTy)
-	value = text.Replace(value, dynamic.CameraBottomY, camBy)
-	value = text.Replace(value, dynamic.CameraWidth, camW)
-	value = text.Replace(value, dynamic.CameraHeight, camH)
+	if text.Contains(value, "Camera") {
+		value = text.Replace(value, dynamic.CameraCenterX, camCx)
+		value = text.Replace(value, dynamic.CameraCenterY, camCy)
+		value = text.Replace(value, dynamic.CameraLeftX, camLx)
+		value = text.Replace(value, dynamic.CameraRightX, camRx)
+		value = text.Replace(value, dynamic.CameraTopY, camTy)
+		value = text.Replace(value, dynamic.CameraBottomY, camBy)
+		value = text.Replace(value, dynamic.CameraWidth, camW)
+		value = text.Replace(value, dynamic.CameraHeight, camH)
+	}
 
 	var calc = text.Calculate(value)
 	if number.IsNaN(calc) {
