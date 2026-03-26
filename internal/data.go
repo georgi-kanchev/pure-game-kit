@@ -312,8 +312,8 @@ func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, millisec
 func initData() {
 	if Shader.ID == 0 {
 		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
-		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 		ShaderTileMapLoc = rl.GetLocationUniform(Shader.ID, "tileData")
+		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 	}
 	MatrixDefault = rl.MatrixIdentity()
 

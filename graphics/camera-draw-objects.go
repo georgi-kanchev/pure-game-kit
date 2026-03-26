@@ -216,7 +216,6 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 }
 func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 	c.begin()
-	var lastEffects *Effects
 	for _, t := range tileMaps {
 		if t == nil || !c.IsAreaVisible(t.Bounds()) {
 			continue
@@ -242,15 +241,10 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
-		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
-		var firstEffect = lastEffects == nil && effects != nil
 		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
-		if firstEffect || differentEffect {
-			batch.Draw() // effects are different & break the batch
-		}
 		batch.QueueTex(texture, src, dst, t.Angle, getColor(t.Tint))
-		lastEffects = effects
+		batch.Draw()
+		// rl.EndMode2D()
 	}
-	batch.Draw()
 	c.end()
 }

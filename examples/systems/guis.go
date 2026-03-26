@@ -60,6 +60,7 @@ func GUIs() {
 		gui.Theme("checkbox-off-press", f.Color, "200 200 200 255", f.Width, "50", f.Height, "50", f.GapX, "10",
 			f.GapY, "10", f.BoxEdgeLeft, "20", f.BoxEdgeRight, "20", f.BoxEdgeTop, "20", f.BoxEdgeBottom, "20",
 			f.AssetId, box[9]),
+		//=================================================================
 		gui.Container("panel", d.CameraLeftX+"+400", d.CameraCenterY+"-275", d.CameraWidth+"-800", "550",
 			f.ThemeId, "button", f.GapX, "20", f.GapY, "10"),
 		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
@@ -149,6 +150,7 @@ func GUIs() {
 		gui.Draggable("slot-8", f.Width, "100", f.Height, "100", f.AssetId, box[0]),
 		gui.Draggable("slot-9", f.Width, "100", f.Height, "100", f.AssetId, box[0]),
 		gui.Draggable("slot-10", f.Width, "100", f.Height, "100", f.AssetId, box[0]),
+		//=================================================================
 		gui.Container("menu", "", "", "410", "150", f.ThemeId, "button", f.Hidden, "1", f.GapX, "5", f.GapY, "5"),
 		gui.Visual("menu-bgr", f.FillContainer, "", f.AssetId, box[0], f.Color, "200 200 200 255"),
 		gui.Button("menu-1", f.GapX, "0", f.Width, "500", f.Text, "Monday"),
