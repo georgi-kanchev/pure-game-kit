@@ -15,8 +15,9 @@ type batchData struct {
 	mesh     *rl.Mesh
 	material rl.Material
 
-	skipStartEnd bool
-	mask         *Area
+	skipStartEnd, skipDraw bool
+
+	mask *Area
 
 	vertsCur, indCur, quadsCapacity int32
 
@@ -97,7 +98,7 @@ func (b *batchData) QueueTex(tex *rl.Texture2D, src, dst rl.Rectangle, ang float
 		b.material.Shader = internal.Shader
 	}
 
-	writeToBuffers(b, poly[:vCount], col)
+	b.writeToBuffers(poly[:vCount], col)
 }
 
 func (b *batchData) QueueQuad(x, y, width, height, angle float32, color rl.Color) {
@@ -144,7 +145,7 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 			b.material.Shader = internal.Shader
 		}
 
-		writeToBuffers(b, poly[:vCount], col)
+		b.writeToBuffers(poly[:vCount], col)
 	}
 }
 func (b *batchData) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color) {
@@ -241,6 +242,36 @@ type batchVertex struct {
 	X, Y, U, V float32
 }
 
+func (b *batchData) writeToBuffers(vertices []batchVertex, col rl.Color) {
+	var vCount = int32(len(vertices))
+	var vOffset = b.vertsCur * 12
+	var vSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[vOffset])), vCount*3)
+	var tOffset = b.vertsCur * 8
+	var tSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[tOffset])), vCount*2)
+	var cOffset = b.vertsCur * 4
+	var cSlice = b.colors[cOffset : cOffset+(vCount*4)]
+
+	for i, v := range vertices {
+		vSlice[i*3+0], vSlice[i*3+1], vSlice[i*3+2] = v.X, v.Y, 0
+		tSlice[i*2+0], tSlice[i*2+1] = v.U, v.V
+		cSlice[i*4+0], cSlice[i*4+1], cSlice[i*4+2], cSlice[i*4+3] = col.R, col.G, col.B, col.A
+	}
+
+	var trisCount = vCount - 2
+	var iOffset = b.indCur * 2
+	var iSlice = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[iOffset])), trisCount*3)
+	var base = uint16(b.vertsCur)
+
+	for i := int32(0); i < trisCount; i++ {
+		iSlice[i*3+0] = base
+		iSlice[i*3+1] = base + uint16(i+1)
+		iSlice[i*3+2] = base + uint16(i+2)
+	}
+
+	b.vertsCur += vCount
+	b.indCur += trisCount * 3
+}
+
 func clipPolygonAABB(poly, outBuf []batchVertex, mask *Area) int {
 	var temp [12]batchVertex // Intermediate buffer for ping-ponging edges
 	var minX, maxX = mask.X, mask.X + mask.Width
@@ -314,34 +345,4 @@ func clipPolyEdge(in, out []batchVertex, isX bool, edgeVal float32, keepGreater 
 	}
 
 	return outCount
-}
-
-func writeToBuffers(b *batchData, vertices []batchVertex, col rl.Color) {
-	var vCount = int32(len(vertices))
-	var vOffset = b.vertsCur * 12
-	var vSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertices[vOffset])), vCount*3)
-	var tOffset = b.vertsCur * 8
-	var tSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[tOffset])), vCount*2)
-	var cOffset = b.vertsCur * 4
-	var cSlice = b.colors[cOffset : cOffset+(vCount*4)]
-
-	for i, v := range vertices {
-		vSlice[i*3+0], vSlice[i*3+1], vSlice[i*3+2] = v.X, v.Y, 0
-		tSlice[i*2+0], tSlice[i*2+1] = v.U, v.V
-		cSlice[i*4+0], cSlice[i*4+1], cSlice[i*4+2], cSlice[i*4+3] = col.R, col.G, col.B, col.A
-	}
-
-	var trisCount = vCount - 2
-	var iOffset = b.indCur * 2
-	var iSlice = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indices[iOffset])), trisCount*3)
-	var base = uint16(b.vertsCur)
-
-	for i := int32(0); i < trisCount; i++ {
-		iSlice[i*3+0] = base
-		iSlice[i*3+1] = base + uint16(i+1)
-		iSlice[i*3+2] = base + uint16(i+2)
-	}
-
-	b.vertsCur += vCount
-	b.indCur += trisCount * 3
 }

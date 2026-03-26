@@ -25,7 +25,7 @@ func Pathfinding() {
 		}
 	}
 
-	var path = [][2]float32{}
+	var path = []float32{}
 
 	for window.KeepOpen() {
 		cam.MouseDragAndZoomSmoothly()
@@ -37,7 +37,8 @@ func Pathfinding() {
 		}
 
 		var mx, my = cam.MousePosition()
-		path = curve.SmoothPath(grid.FindPathDiagonally(16, 16, mx, my, false))
+		path = grid.FindPathDiagonally(16, 16, mx, my, false)
+		path = curve.SmoothPath(path...)
 		cam.DrawLinesPath(1, palette.Green, path...)
 		cam.DrawPoints(2, palette.White, path...)
 		cam.DrawTextDebug(true, true, true, true)

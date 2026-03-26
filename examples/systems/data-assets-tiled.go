@@ -13,7 +13,7 @@ func Tiled() {
 	var cam = graphics.NewCamera(4)
 	var tileSetId string
 	var tileDataIds []string
-	var pts [][2]float32
+	var pts []float32
 	var hotreload = func() {
 		tileSetId, tileDataIds = assets.LoadTiledData("examples/data/map.tmx")
 		pts = assets.LoadTiledPoints("examples/data/map.tmx", "Objects", "Tile Layer 3")

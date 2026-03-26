@@ -7,10 +7,10 @@ import (
 	"pure-game-kit/utility/number"
 )
 
-func (s *ShapeGrid) FindPath(startX, startY, targetX, targetY float32, minimizePoints bool) [][2]float32 {
+func (s *ShapeGrid) FindPath(startX, startY, targetX, targetY float32, minimizePoints bool) []float32 {
 	return s.findPath(startX, startY, targetX, targetY, minimizePoints, false)
 }
-func (s *ShapeGrid) FindPathDiagonally(startX, startY, targetX, targetY float32, minimizePoints bool) [][2]float32 {
+func (s *ShapeGrid) FindPathDiagonally(startX, startY, targetX, targetY float32, minimizePoints bool) []float32 {
 	return s.findPath(startX, startY, targetX, targetY, minimizePoints, true)
 }
 
@@ -63,26 +63,29 @@ func heuristic(ax, ay, bx, by int) float32 {
 	return float32(math.Sqrt(float64(dx*dx + dy*dy)))
 }
 
-func removeRedundantPoints(points [][2]float32) [][2]float32 {
+func removeRedundantPoints(points []float32) []float32 {
 	var pts = collection.Clone(points)
-	if len(pts) < 3 {
+	if len(pts) < 6 {
 		return pts
 	}
 
-	for i := 1; i < len(pts)-1; i++ {
-		var a, b, c = pts[i-1], pts[i], pts[i+1]
-		var cross = (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0])
+	for i := 2; i < len(pts)-2; i += 2 {
+		var ax, ay = pts[i-2], pts[i-1]
+		var bx, by = pts[i], pts[i+1]
+		var cx, cy = pts[i+2], pts[i+3]
+
+		var cross = (bx-ax)*(cy-ay) - (by-ay)*(cx-ax)
 
 		if cross > -0.001 && cross < 0.001 {
-			pts = append(pts[:i], pts[i+1:]...)
-			i--
+			pts = append(pts[:i], pts[i+2:]...)
+			i -= 2
 		}
 	}
 
 	return pts
 }
 
-func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) [][2]float32 {
+func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []float32 {
 	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	stx, sty, tarx, tary = stx/w, sty/h, tarx/w, tary/h
 	var sx, sy = int(number.RoundDown(stx, 0)), int(number.RoundDown(sty, 0))
@@ -98,7 +101,7 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 	var _, startBlocked = s.cells[[2]int{sx, sy}]
 	var _, targetBlocked = s.cells[[2]int{tx, ty}]
 	if startBlocked || targetBlocked {
-		return [][2]float32{}
+		return []float32{}
 	}
 
 	currentDirs := directions
@@ -109,18 +112,15 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 	for i := 0; open.Len() > 0 && i < 9999; i++ {
 		var current = heap.Pop(open).(*node)
 		if current.x == tx && current.y == ty {
-			var result = make([][2]float32, 0)
+			var result = make([]float32, 0)
 			for cur := current; cur != nil; cur = cur.parent {
-				result = append(result, [2]float32{float32(cur.x) + 0.5, float32(cur.y) + 0.5})
+				result = append(result, (float32(cur.x)+0.5)*w, (float32(cur.y)+0.5)*h)
 			}
 
-			for i := range result {
-				result[i][0] *= w
-				result[i][1] *= h
-			}
-
-			for i := 0; i < len(result)/2; i++ {
-				result[i], result[len(result)-1-i] = result[len(result)-1-i], result[i]
+			for i := 0; i < len(result)/4; i++ {
+				var idx1, idx2 = i * 2, len(result) - 2 - (i * 2)
+				result[idx1], result[idx2] = result[idx2], result[idx1]
+				result[idx1+1], result[idx2+1] = result[idx2+1], result[idx1+1]
 			}
 
 			if minPts {
@@ -160,5 +160,5 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 		}
 	}
 
-	return [][2]float32{}
+	return []float32{}
 }

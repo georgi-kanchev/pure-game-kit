@@ -13,7 +13,7 @@ import (
 func Batches() {
 	var cam = graphics.NewCamera(1)
 	var count = 20_000
-	var points = make([][2]float32, 0, count*4)
+	var points = make([]float32, 0, count*4*2)
 
 	condition.CallAfter(0, func() {
 		var w, h = cam.Size()
@@ -28,10 +28,10 @@ func Batches() {
 				var dist = random.Range[float32](10, 50)
 				var x = cx + number.Cosine(angle)*dist
 				var y = cy + number.Sine(angle)*dist
-				points = collection.Add(points, [2]float32{x, y})
+				points = collection.Add(points, x, y)
 			}
 
-			points = append(points, [2]float32{number.NaN(), number.NaN()})
+			points = append(points, number.NaN(), number.NaN())
 		}
 	})
 

@@ -14,7 +14,7 @@ func Tweens() {
 	var angle = motion.NewTween(45).
 		GoTo(2, easing.BounceOut, 360).
 		GoTo(3, func(progress float32) float32 {
-			var _, value = curve.Bezier(progress, [][2]float32{{0, 0}, {0.25, 1}, {0.75, -0.5}, {1, 1}})
+			var _, value = curve.Bezier(progress, 0, 0, 0.25, 1, 0.75, -0.5, 1, 1)
 			return value
 		}, 0)
 

@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/geometry"
 	"pure-game-kit/graphics"
 	"pure-game-kit/utility/color/palette"
+	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/time"
 	"pure-game-kit/window"
 )
@@ -13,12 +14,12 @@ func ShapesGrids() {
 	var cam = graphics.NewCamera(2)
 	var grid = geometry.NewShapeGrid(32, 32)
 	var shape = geometry.NewShapeCorners(
-		[2]float32{},
-		[2]float32{50, -20},
-		[2]float32{100, 0},
-		[2]float32{0, 100},
-		[2]float32{50, 120},
-		[2]float32{100, 100})
+		0, 0,
+		50, -20,
+		100, 0,
+		0, 100,
+		50, 120,
+		100, 100)
 
 	for i := -8; i < 8; i++ {
 		for j := -8; j < 8; j++ {
@@ -36,12 +37,17 @@ func ShapesGrids() {
 
 		var allShapes = grid.All()
 		var potential = grid.AroundShape(shape)
+		var allPts, potentailPts []float32
 		for _, v := range allShapes {
-			cam.DrawLinesPath(1, palette.Gray, v.CornerPoints()...)
+			var pts = append(v.CornerPoints(), number.NaN(), number.NaN())
+			allPts = append(allPts, pts...)
 		}
 		for _, v := range potential {
-			cam.DrawLinesPath(2, palette.Green, v.CornerPoints()...)
+			var pts = append(v.CornerPoints(), number.NaN(), number.NaN())
+			potentailPts = append(potentailPts, pts...)
 		}
+		cam.DrawLinesPath(1, palette.Gray, allPts...)
+		cam.DrawLinesPath(2, palette.Green, potentailPts...)
 
 		var surroundingShapes = grid.AroundShape(shape)
 		var crossPoints = shape.CrossPointsWithShapes(surroundingShapes...)
@@ -49,9 +55,7 @@ func ShapesGrids() {
 
 		cam.DrawLinesPath(2, col, shape.CornerPoints()...)
 
-		for _, v := range crossPoints {
-			cam.DrawCircle(v[0], v[1], 3, 8, palette.Magenta)
-		}
+		cam.DrawPoints(3, palette.Magenta, crossPoints...)
 
 		cam.DrawTextDebug(true, true, true, true)
 	}

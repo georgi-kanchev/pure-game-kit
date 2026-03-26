@@ -11,59 +11,63 @@ type Shape struct {
 	minX, minY, maxX, maxY,
 	gridX, gridY float32
 
-	corners [][2]float32
+	corners []float32
 }
 
-// Shapes separated by [NaN, NaN].
-func NewShapes(corners ...[2]float32) []*Shape {
-	var curPts [][2]float32
+// Shapes separated by NaN pair.
+func NewShapes(corners ...float32) []*Shape {
+	var curPts []float32
 	var result []*Shape
-	for _, p := range corners {
-		if number.IsNaN(p[0]) || number.IsNaN(p[1]) {
-			result = append(result, NewShapeCorners(curPts...))
-			curPts = [][2]float32{}
+	for i := 0; i < len(corners); i += 2 {
+		var x, y = corners[i], corners[i+1]
+		if number.IsNaN(x) || number.IsNaN(y) {
+			if len(curPts) > 0 {
+				result = append(result, NewShapeCorners(curPts...))
+				curPts = []float32{}
+			}
 			continue
 		}
-		curPts = append(curPts, p)
+		curPts = append(curPts, x, y)
 	}
 	if len(curPts) > 0 {
 		result = append(result, NewShapeCorners(curPts...))
 	}
 	return result
 }
-func NewShapeCorners(corners ...[2]float32) *Shape {
+func NewShapeCorners(corners ...float32) *Shape {
 	if len(corners) == 0 {
 		return &Shape{}
 	}
 
-	if corners[0] != corners[len(corners)-1] {
-		corners = append(corners, corners[0])
-	} // close shape if it already isn't
+	var n = len(corners) // close shape if it already isn't (compare first pair to last pair)
+	if n >= 4 && (corners[0] != corners[n-2] || corners[1] != corners[n-1]) {
+		corners = append(corners, corners[0], corners[1])
+	}
 
 	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
 func NewShapeSides(radius float32, sides int) *Shape {
-	var corners = [][2]float32{}
+	var corners []float32
 	var step float32 = 360.0 / float32(sides)
 	for i := range sides {
 		var x, y = point.MoveAtAngle(0, 0, step*float32(i)-90, radius)
-		corners = append(corners, [2]float32{x, y})
+		corners = append(corners, x, y)
 	}
 
-	if len(corners) > 0 {
-		corners = append(corners, corners[0])
+	if len(corners) >= 2 {
+		corners = append(corners, corners[0], corners[1])
 	}
 
 	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
 func NewShapeQuad(width, height, pivotX, pivotY float32) *Shape {
 	var offX, offY = width * pivotX, height * pivotY
-	var corners = [][2]float32{
-		{-offX, -offY},
-		{width - offX, -offY},
-		{width - offX, height - offY},
-		{-offX, height - offY},
-		{-offX, -offY},
+	var corners = []float32{
+		-offX, -offY,
+		width - offX, -offY,
+		width - offX, height - offY,
+		-offX, height - offY,
+		-offX, -offY,
 	}
 	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
@@ -78,20 +82,22 @@ func NewShapeQuadRounded(width, height, radius, pivotX, pivotY float32, segments
 
 	const pi = 3.14159
 	var offX, offY = width * pivotX, height * pivotY
-	var corners = [][2]float32{}
+	var corners []float32
 	var addCorner = func(cx, cy, startAngle float32) {
 		for i := 0; i <= segments; i++ {
 			var angle = startAngle + (float32(i)/float32(segments))*(pi/2)
 			var px = cx + radius*number.Cosine(angle)
 			var py = cy + radius*number.Sine(angle)
-			corners = append(corners, [2]float32{px - offX, py - offY})
+			corners = append(corners, px-offX, py-offY)
 		}
 	}
 	addCorner(width-radius, radius, -pi/2)    // top right
 	addCorner(width-radius, height-radius, 0) // bottom right
 	addCorner(radius, height-radius, pi/2)    // bottom left
 	addCorner(radius, radius, pi)             // top left
-	corners = append(corners, corners[0])
+
+	// Close the shape
+	corners = append(corners, corners[0], corners[1])
 	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
 func NewShapeEllipse(width, height float32, segments int) *Shape {
@@ -100,36 +106,38 @@ func NewShapeEllipse(width, height float32, segments int) *Shape {
 	}
 
 	var rx, ry = width / 2, height / 2
-	var corners = make([][2]float32, 0, segments+1)
+	// Pre-allocate space for x,y pairs plus closing pair
+	var corners = make([]float32, 0, (segments+1)*2)
 	var step = 360.0 / float32(segments)
 
 	for i := 0; i < segments; i++ {
 		var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
-		corners = append(corners, [2]float32{cx * rx, cy * ry})
+		corners = append(corners, cx*rx, cy*ry)
 	}
-	corners = append(corners, corners[0])
+	corners = append(corners, corners[0], corners[1])
 
 	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
 }
 
 //=================================================================
 
-func (s *Shape) CornerPoints() [][2]float32 {
+func (s *Shape) CornerPoints() []float32 {
 	if s == nil {
 		return nil
 	}
 
-	var result = make([][2]float32, len(s.corners))
+	var result = make([]float32, len(s.corners))
 	s.minX, s.minY = number.Infinity(), number.Infinity()
 	s.maxX, s.maxY = number.NegativeInfinity(), number.NegativeInfinity()
 
-	for i := range s.corners {
-		var x, y = s.corners[i][0], s.corners[i][1]
+	var sin, cos = internal.SinCos(s.Angle)
+
+	for i := 0; i < len(s.corners); i += 2 {
+		var x, y = s.corners[i], s.corners[i+1]
 
 		x *= s.ScaleX
 		y *= s.ScaleY
 
-		var sin, cos = internal.SinCos(s.Angle)
 		var resultX = s.gridX + s.X + (x*cos - y*sin)
 		var resultY = s.gridY + s.Y + (x*sin + y*cos)
 
@@ -146,20 +154,17 @@ func (s *Shape) CornerPoints() [][2]float32 {
 			s.maxY = resultY
 		}
 
-		result[i] = [2]float32{resultX, resultY}
+		result[i], result[i+1] = resultX, resultY
 	}
 	return result
 }
-
 func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVelocityX, newVelocityY float32) {
 	for _, target := range targets {
-		var corners [][2]float32
-		var targetCorners [][2]float32
 		if s.minX == 0 && s.minY == 0 && s.maxX == 0 && s.maxY == 0 {
-			corners = s.CornerPoints()
+			s.CornerPoints()
 		}
 		if target.minX == 0 && target.minY == 0 && target.maxX == 0 && target.maxY == 0 {
-			corners = target.CornerPoints()
+			target.CornerPoints()
 		}
 
 		if !s.inBoundingBoxShape(*target) {
@@ -170,18 +175,24 @@ func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVel
 		var cay = s.minY + (s.maxY-s.minY)/2
 		var cbx = target.minX + (target.maxX-target.minX)/2
 		var cby = target.minY + (target.maxY-target.minY)/2
-		corners = s.CornerPoints()
-		targetCorners = target.CornerPoints()
-		corners = corners[:len(corners)-1]
-		targetCorners = targetCorners[:len(targetCorners)-1]
 
-		var projectPolygon = func(axisX, axisY float32, points [][2]float32) (min, max float32) {
-			var dot float32 = axisX*points[0][0] + axisY*points[0][1]
-			min = dot
-			max = dot
+		var corners = s.CornerPoints()
+		var targetCorners = target.CornerPoints()
 
-			for i := range points {
-				var d float32 = axisX*points[i][0] + axisY*points[i][1]
+		// Remove closing point for SAT calculation
+		if len(corners) >= 4 {
+			corners = corners[:len(corners)-2]
+		}
+		if len(targetCorners) >= 4 {
+			targetCorners = targetCorners[:len(targetCorners)-2]
+		}
+
+		var projectPolygon = func(axisX, axisY float32, points []float32) (min, max float32) {
+			var dot float32 = axisX*points[0] + axisY*points[1]
+			min, max = dot, dot
+
+			for i := 2; i < len(points); i += 2 {
+				var d float32 = axisX*points[i] + axisY*points[i+1]
 				if d < min {
 					min = d
 				} else if d > max {
@@ -190,33 +201,29 @@ func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVel
 			}
 			return
 		}
-		var computeEdges = func(points [][2]float32) [][2]float32 {
-			var edges = make([][2]float32, len(points))
-			var count int = len(points)
-			for i := range count {
-				var p1, p2 = points[i], points[(i+1)%count]
-				edges[i][0], edges[i][1] = p2[0]-p1[0], p2[1]-p1[1]
-			}
-			return edges
-		}
 
 		var willIntersect = true
-		var edgesA = computeEdges(corners)
-		var edgesB = computeEdges(targetCorners)
-		var edgeCountA = len(edgesA)
-		var edgeCountB = len(edgesB)
 		var minIntervalDistance = number.Infinity()
 		var tAxisX, tAxisY float32
 
-		for edgeIndex := 0; edgeIndex < edgeCountA+edgeCountB; edgeIndex++ {
-			var edgeX, edgeY float32
-			if edgeIndex < edgeCountA {
-				edgeX, edgeY = edgesA[edgeIndex][0], edgesA[edgeIndex][1]
+		// Combine edge checking loop
+		var totalPoints = len(corners) + len(targetCorners)
+		for i := 0; i < totalPoints; i += 2 {
+			var x1, y1, x2, y2 float32
+
+			if i < len(corners) {
+				x1, y1 = corners[i], corners[i+1]
+				var next = (i + 2) % len(corners)
+				x2, y2 = corners[next], corners[next+1]
 			} else {
-				edgeX, edgeY = edgesB[edgeIndex-edgeCountA][0], edgesB[edgeIndex-edgeCountA][1]
+				var idx = i - len(corners)
+				x1, y1 = targetCorners[idx], targetCorners[idx+1]
+				var next = (idx + 2) % len(targetCorners)
+				x2, y2 = targetCorners[next], targetCorners[next+1]
 			}
 
-			var axisX, axisY = -edgeY, edgeX
+			// Normal of the edge
+			var axisX, axisY = -(y2 - y1), (x2 - x1)
 			var axisLen = number.SquareRoot(axisX*axisX + axisY*axisY)
 			if axisLen != 0 {
 				axisX /= axisLen
@@ -242,9 +249,6 @@ func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVel
 
 			if iDist > 0 {
 				willIntersect = false
-			}
-
-			if !willIntersect {
 				break
 			}
 
@@ -253,9 +257,7 @@ func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVel
 				minIntervalDistance = absInterval
 				tAxisX, tAxisY = axisX, axisY
 
-				var dx = cax - cbx
-				var dy = cay - cby
-				if dx*tAxisX+dy*tAxisY < 0 {
+				if (cax-cbx)*tAxisX+(cay-cby)*tAxisY < 0 {
 					tAxisX, tAxisY = -tAxisX, -tAxisY
 				}
 			}
@@ -265,7 +267,6 @@ func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVel
 			velocityX += tAxisX * minIntervalDistance
 			velocityY += tAxisY * minIntervalDistance
 		}
-
 	}
 	return velocityX, velocityY
 }
@@ -285,13 +286,14 @@ func (s *Shape) IsContainingPoint(x, y float32) bool {
 	return s.internalIsContainingPoint(corners, x, y)
 }
 
-func (s *Shape) CrossPointsWithLines(lines ...Line) [][2]float32 {
+func (s *Shape) CrossPointsWithLines(lines ...Line) []float32 {
 	var corners = s.CornerPoints()
-	var result = [][2]float32{}
+	var result []float32
 
 	for _, line := range lines {
 		if s.inBoundingBoxLine(line) {
-			result = append(result, s.internalCrossPointsWithLine(corners, line)...)
+			var pts = s.internalCrossPointsWithLine(corners, line)
+			result = append(result, pts...)
 		}
 	}
 	return result
@@ -324,14 +326,15 @@ func (s *Shape) IsOverlappingLines(lines ...Line) bool {
 	return false
 }
 
-func (s *Shape) CrossPointsWithShapes(shapes ...*Shape) [][2]float32 {
+func (s *Shape) CrossPointsWithShapes(shapes ...*Shape) []float32 {
 	var corners = s.CornerPoints()
-	var result = [][2]float32{}
+	var result []float32
 
 	for _, target := range shapes {
 		var targetCorners = target.CornerPoints()
 		if s.inBoundingBoxShape(*target) {
-			result = append(result, s.internalCrossPointsWithShape(corners, targetCorners)...)
+			var pts = s.internalCrossPointsWithShape(corners, targetCorners)
+			result = append(result, pts...)
 		}
 	}
 	return result

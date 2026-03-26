@@ -122,8 +122,8 @@ func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 	var corners = shape.CornerPoints()
 	var result = []*Shape{}
 
-	for i := 1; i < len(corners); i++ {
-		var line = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
+	for i := 2; i < len(corners); i += 2 { // step by 2 and look back to the previous x, y pair
+		var line = NewLine(corners[i-2], corners[i-1], corners[i], corners[i+1])
 		result = append(result, s.AroundLine(line)...)
 	}
 	return result

@@ -7,25 +7,26 @@ import (
 	"pure-game-kit/utility/number"
 )
 
-func Bezier(progress float32, curvePoints [][2]float32) (x, y float32) {
-	if len(curvePoints) == 0 {
+func Bezier(progress float32, curvePoints ...float32) (x, y float32) {
+	var numCoords = len(curvePoints)
+	if numCoords == 0 {
 		return number.NaN(), number.NaN()
 	}
-	if len(curvePoints) == 1 {
-		return curvePoints[0][0], curvePoints[0][1]
+	if numCoords == 2 {
+		return curvePoints[0], curvePoints[1]
 	}
 
-	var numPoints = len(curvePoints)
+	var numPoints = numCoords / 2
 	var xPoints = make([]float32, numPoints)
 	var yPoints = make([]float32, numPoints)
 
-	for i := range numPoints {
-		xPoints[i] = curvePoints[i][0]
-		yPoints[i] = curvePoints[i][1]
+	for i := 0; i < numPoints; i++ {
+		xPoints[i] = curvePoints[i*2]
+		yPoints[i] = curvePoints[i*2+1]
 	}
 
 	for k := 1; k < numPoints; k++ {
-		for i := range numPoints - k {
+		for i := 0; i < numPoints-k; i++ {
 			xPoints[i] = (1-progress)*xPoints[i] + progress*xPoints[i+1]
 			yPoints[i] = (1-progress)*yPoints[i] + progress*yPoints[i+1]
 		}
@@ -33,106 +34,123 @@ func Bezier(progress float32, curvePoints [][2]float32) (x, y float32) {
 
 	return xPoints[0], yPoints[0]
 }
-func Spline(progress float32, curvePoints [][2]float32) (x, y float32) {
-	if len(curvePoints) < 4 {
+
+func Spline(progress float32, curvePoints ...float32) (x, y float32) {
+	if len(curvePoints) < 8 {
 		return number.NaN(), number.NaN()
 	}
 
-	var numSegments = len(curvePoints) - 3
+	var numPoints = len(curvePoints) / 2
+	var numSegments = numPoints - 3
 	var segmentFraction = 1.0 / float32(numSegments)
 	var segmentIndex = int(progress / segmentFraction)
 	if segmentIndex >= numSegments {
 		segmentIndex = numSegments - 1
 	}
 
-	var p0 = curvePoints[segmentIndex]
-	var p1 = curvePoints[segmentIndex+1]
-	var p2 = curvePoints[segmentIndex+2]
-	var p3 = curvePoints[segmentIndex+3]
+	var idx = segmentIndex * 2
+	var p0x, p0y = curvePoints[idx], curvePoints[idx+1]
+	var p1x, p1y = curvePoints[idx+2], curvePoints[idx+3]
+	var p2x, p2y = curvePoints[idx+4], curvePoints[idx+5]
+	var p3x, p3y = curvePoints[idx+6], curvePoints[idx+7]
+
 	var u = (progress - float32(segmentIndex)*segmentFraction) / segmentFraction
 	var u2 = u * u
 	var u3 = u2 * u
+
 	var c0 = -0.5*u3 + u2 - 0.5*u
 	var c1 = 1.5*u3 - 2.5*u2 + 1.0
 	var c2 = -1.5*u3 + 2.0*u2 + 0.5*u
 	var c3 = 0.5*u3 - 0.5*u2
-	var t0 = c0*p0[0] + c1*p1[0] + c2*p2[0] + c3*p3[0]
-	var t1 = c0*p0[1] + c1*p1[1] + c2*p2[1] + c3*p3[1]
+
+	var t0 = c0*p0x + c1*p1x + c2*p2x + c3*p3x
+	var t1 = c0*p0y + c1*p1y + c2*p2y + c3*p3y
 
 	return t0, t1
 }
 
-func SmoothPath(path [][2]float32) [][2]float32 {
-	if len(path) < 3 {
+func SmoothPath(path ...float32) []float32 {
+	if len(path) < 6 {
 		return path
 	}
 
-	var refined = path
-	var nextPath [][2]float32
-	nextPath = append(nextPath, refined[0])
+	var nextPath []float32
+	nextPath = append(nextPath, path[0], path[1])
 
-	for j := 0; j < len(refined)-1; j++ {
-		var p0, p1 = refined[j], refined[j+1]
-		var q = [2]float32{0.75*p0[0] + 0.25*p1[0], 0.75*p0[1] + 0.25*p1[1]}
-		var r = [2]float32{0.25*p0[0] + 0.75*p1[0], 0.25*p0[1] + 0.75*p1[1]}
+	for j := 0; j < len(path)-2; j += 2 {
+		var p0x, p0y = path[j], path[j+1]
+		var p1x, p1y = path[j+2], path[j+3]
 
-		nextPath = append(nextPath, q, r)
+		var qx, qy = 0.75*p0x + 0.25*p1x, 0.75*p0y + 0.25*p1y
+		var rx, ry = 0.25*p0x + 0.75*p1x, 0.25*p0y + 0.75*p1y
+
+		nextPath = append(nextPath, qx, qy, rx, ry)
 	}
-	nextPath = append(nextPath, refined[len(refined)-1])
-	refined = nextPath
-	return refined
+
+	nextPath = append(nextPath, path[len(path)-2], path[len(path)-1])
+	return nextPath
 }
-func SmoothPathSpline(path [][2]float32, stepsPerSegment int) [][2]float32 {
-	if len(path) < 3 {
+
+func SmoothPathSpline(stepsPerSegment int, path ...float32) []float32 {
+	if len(path) < 6 {
 		return path
 	}
 
-	var smoothed [][2]float32
-	var extendedPath = append([][2]float32{path[0]}, path...)
-	extendedPath = append(extendedPath, path[len(path)-1])
+	var smoothed []float32
+	var extendedPath = append([]float32{path[0], path[1]}, path...)
+	extendedPath = append(extendedPath, path[len(path)-2], path[len(path)-1])
 
-	for i := 0; i < len(extendedPath)-3; i++ {
-		for j := range stepsPerSegment {
+	for i := 0; i < len(extendedPath)-6; i += 2 {
+		for j := 0; j < stepsPerSegment; j++ {
 			var t = float32(j) / float32(stepsPerSegment)
-			var point = catmullRom(extendedPath[i], extendedPath[i+1], extendedPath[i+2], extendedPath[i+3], t)
-			smoothed = append(smoothed, point)
+			var px, py = catmullRom(
+				extendedPath[i], extendedPath[i+1],
+				extendedPath[i+2], extendedPath[i+3],
+				extendedPath[i+4], extendedPath[i+5],
+				extendedPath[i+6], extendedPath[i+7],
+				t,
+			)
+			smoothed = append(smoothed, px, py)
 		}
 	}
 
-	smoothed = append(smoothed, path[len(path)-1])
+	smoothed = append(smoothed, path[len(path)-2], path[len(path)-1])
 	return smoothed
 }
-func SmoothPathBezier(path [][2]float32, stepsPerSegment int) [][2]float32 {
-	if len(path) < 3 {
+
+func SmoothPathBezier(stepsPerSegment int, path ...float32) []float32 {
+	if len(path) < 6 {
 		return path
 	}
 
-	var smoothed [][2]float32
-	for i := 0; i < len(path)-2; i += 2 {
-		var p0, p1, p2 = path[i], path[i+1], path[i+2]
+	var smoothed []float32
+	for i := 0; i < len(path)-4; i += 4 {
+		var p0x, p0y = path[i], path[i+1]
+		var p1x, p1y = path[i+2], path[i+3]
+		var p2x, p2y = path[i+4], path[i+5]
+
 		for j := 0; j <= stepsPerSegment; j++ {
 			var t = float32(j) / float32(stepsPerSegment)
 			var invT = 1 - t
-			var x = invT*invT*p0[0] + 2*invT*t*p1[0] + t*t*p2[0]
-			var y = invT*invT*p0[1] + 2*invT*t*p1[1] + t*t*p2[1]
-			smoothed = append(smoothed, [2]float32{x, y})
+			var x = invT*invT*p0x + 2*invT*t*p1x + t*t*p2x
+			var y = invT*invT*p0y + 2*invT*t*p1y + t*t*p2y
+			smoothed = append(smoothed, x, y)
 		}
 	}
 	return smoothed
 }
 
-func StraightenPath(path [][2]float32) [][2]float32 {
-	if len(path) < 3 {
+func StraightenPath(path ...float32) []float32 {
+	if len(path) < 6 {
 		return path
 	}
 
-	smoothed := make([][2]float32, len(path))
+	var smoothed = make([]float32, len(path))
 	copy(smoothed, path)
 
-	// Weights: 0.25 (prev), 0.50 (curr), 0.25 (next)
-	for i := 1; i < len(path)-1; i++ {
-		smoothed[i][0] = 0.25*path[i-1][0] + 0.5*path[i][0] + 0.25*path[i+1][0]
-		smoothed[i][1] = 0.25*path[i-1][1] + 0.5*path[i][1] + 0.25*path[i+1][1]
+	for i := 2; i < len(path)-2; i += 2 {
+		smoothed[i] = 0.25*path[i-2] + 0.5*path[i] + 0.25*path[i+2]
+		smoothed[i+1] = 0.25*path[i-1] + 0.5*path[i+1] + 0.25*path[i+3]
 	}
 
 	return smoothed
@@ -141,13 +159,14 @@ func StraightenPath(path [][2]float32) [][2]float32 {
 //=================================================================
 // private
 
-func catmullRom(p0, p1, p2, p3 [2]float32, t float32) [2]float32 {
-	var res [2]float32
-	for i := range 2 {
-		res[i] = 0.5 * ((2 * p1[i]) +
-			(-p0[i]+p2[i])*t +
-			(2*p0[i]-5*p1[i]+4*p2[i]-p3[i])*t*t +
-			(-p0[i]+3*p1[i]-3*p2[i]+p3[i])*t*t*t)
-	}
-	return res
+func catmullRom(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t float32) (float32, float32) {
+	var tx = 0.5 * ((2 * p1x) +
+		(-p0x+p2x)*t +
+		(2*p0x-5*p1x+4*p2x-p3x)*t*t +
+		(-p0x+3*p1x-3*p2x+p3x)*t*t*t)
+	var ty = 0.5 * ((2 * p1y) +
+		(-p0y+p2y)*t +
+		(2*p0y-5*p1y+4*p2y-p3y)*t*t +
+		(-p0y+3*p1y-3*p2y+p3y)*t*t*t)
+	return tx, ty
 }

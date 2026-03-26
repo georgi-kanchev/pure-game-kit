@@ -17,11 +17,11 @@ func Collisions() {
 	var shape2 = geometry.NewShapeSides(300, 3)
 	var shape3 = geometry.NewShapeSides(420, 5)
 	var shape4 = geometry.NewShapeCorners(
-		[2]float32{10, 10},
-		[2]float32{150, -50},
-		[2]float32{180, 100},
-		[2]float32{120, 180},
-		[2]float32{40, 160},
+		10, 10,
+		150, -50,
+		180, 100,
+		120, 180,
+		40, 160,
 	)
 
 	shape2.Angle, shape3.Angle = 40, 33

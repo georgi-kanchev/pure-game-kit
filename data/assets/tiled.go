@@ -16,7 +16,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadTiledPoints(tmxFilePath string, layerNames ...string) [][2]float32 {
+func LoadTiledPoints(tmxFilePath string, layerNames ...string) []float32 {
 	var _, tiled = loadTiled(tmxFilePath)
 	var pts = loadLayerObjectsRecursively(layerNames, tiled, &tiled.layers)
 	pts = collection.RemoveAt(pts, len(pts)-1) // remove last point since it's always NaN, NaN
@@ -147,7 +147,7 @@ func loadLayerTilesRecursively(tmxFilePath string, wantedLayerNames []string, ti
 	}
 	return result
 }
-func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *layerTiles) (string, [][2]float32) {
+func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *layerTiles) (string, []float32) {
 	var extractOnlyPoints = tmxFilePath == ""
 	if extractOnlyPoints && !collection.Contains(lyrNames, layer.Name) {
 		return "", nil
@@ -156,7 +156,7 @@ func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *
 	var tileData = text.Trim(layer.TileData.Tiles)
 	var tiles = make([]uint32, tiled.Width*tiled.Height)
 	var csv = layer.TileData.Encoding == "csv"
-	var pts [][2]float32
+	var pts []float32
 	var dataId = ""
 	var data *internal.TileData
 
@@ -202,43 +202,44 @@ func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *
 
 			var raw = tiles[index]
 			var id = ((raw & 0x1FFFFFFF) - 1)
-			var frameCount uint32 = 0
-			var frameSpeed uint32 = 0
-			var animOffset uint32 = 0
 
 			var tile = tiled.TileSet.TilesLookUp[id]
 			if extractOnlyPoints {
 				if tile != nil && tile.Objects != nil {
 					tile.Objects.Name = layer.Name
 					var tilePts = loadLayerObjects([]string{layer.Name}, tile.Objects)
-					for p := range tilePts {
-						tilePts[p][0] += float32(j * tiled.TileSet.TileWidth)
-						tilePts[p][1] += float32(i * tiled.TileSet.TileHeight)
+					var offsetX = float32(j * tiled.TileSet.TileWidth)
+					var offsetY = float32(i * tiled.TileSet.TileHeight)
+
+					for p := 0; p < len(tilePts); p += 2 {
+						tilePts[p] += offsetX
+						tilePts[p+1] += offsetY
 					}
 					pts = append(pts, tilePts...)
 				}
 				continue
 			}
 
+			var frameCount, frameSpeed, animOffset uint32
 			if tile != nil && tile.Animation != nil && len(tile.Animation.Frames) > 0 {
 				var totalDuration = 0
 				for _, f := range tile.Animation.Frames {
 					totalDuration += f.Duration
 				}
 				var avgDuration = float32(totalDuration) / float32(len(tile.Animation.Frames))
-				var targetFPS = 1000.0 / avgDuration // speed (0..31)
+				var targetFPS = 1000.0 / avgDuration
 				var s = condition.If(targetFPS <= 1.0, targetFPS*10.0, ((targetFPS-1.0)/0.45)+10.0)
 				frameSpeed = uint32(number.Limit(int(s), 0, 31))
 				frameCount = uint32(number.Limit(len(tile.Animation.Frames)-1, 0, 15))
-				animOffset = uint32((j ^ i) % 16) // semi-random offset
+				animOffset = uint32((j ^ i) % 16)
 			}
 
 			var finalTile uint32 = 0
-			finalTile |= (uint32(flipTable[raw>>29]) << 29) // bits 31..29: flip & rotation
-			finalTile |= (frameCount << 25)                 // bits 28..25: frame count
-			finalTile |= (animOffset << 21)                 // bits 24..21: frame offset
-			finalTile |= (frameSpeed << 16)                 // bits 20..16: frame speed
-			finalTile |= (id & 0xFFFF)                      // bits 15..00: id
+			finalTile |= (uint32(flipTable[raw>>29]) << 29)
+			finalTile |= (frameCount << 25)
+			finalTile |= (animOffset << 21)
+			finalTile |= (frameSpeed << 16)
+			finalTile |= (id & 0xFFFF)
 
 			var r = uint8((finalTile >> 24) & 0xFF)
 			var g = uint8((finalTile >> 16) & 0xFF)
@@ -259,8 +260,8 @@ func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *
 	return dataId, nil
 }
 
-func loadLayerObjectsRecursively(wantedLayerNames []string, tiled *tiled, layers *layers) [][2]float32 {
-	var result [][2]float32
+func loadLayerObjectsRecursively(wantedLayerNames []string, tiled *tiled, layers *layers) []float32 {
+	var result []float32
 	for _, layer := range layers.LayersObjects {
 		result = append(result, loadLayerObjects(wantedLayerNames, layer)...)
 	}
@@ -273,12 +274,12 @@ func loadLayerObjectsRecursively(wantedLayerNames []string, tiled *tiled, layers
 	}
 	return result
 }
-func loadLayerObjects(wantedLayerNames []string, layer *layerObjects) [][2]float32 {
+func loadLayerObjects(wantedLayerNames []string, layer *layerObjects) []float32 {
 	if !collection.Contains(wantedLayerNames, layer.Name) {
 		return nil
 	}
 
-	var result [][2]float32
+	var result []float32
 	for _, o := range layer.Objects {
 		var data = ""
 		if o.Polyline != nil {
@@ -306,17 +307,17 @@ func loadLayerObjects(wantedLayerNames []string, layer *layerObjects) [][2]float
 			}
 		}
 
-		var corners = [][2]float32{}
+		var corners []float32
 		var pts = text.Split(text.Trim(data), " ")
 		for _, pt := range pts {
 			var xy = text.Split(pt, ",")
 			if len(xy) == 2 {
 				var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
 				x, y = point.RotateAroundPoint(o.X+x, o.Y+y, o.X, o.Y, o.Rotation)
-				corners = append(corners, [2]float32{x, y})
+				corners = append(corners, x, y)
 			}
 		}
-		corners = append(corners, [2]float32{number.NaN(), number.NaN()})
+		corners = append(corners, number.NaN(), number.NaN())
 		result = append(result, corners...)
 	}
 	return result

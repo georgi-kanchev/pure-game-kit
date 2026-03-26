@@ -11,18 +11,18 @@ import (
 // start and target point can be anywhere (not necessarily on the paths)
 //
 // multiple paths can be separated by [NaN, NaN]
-func FollowPaths(startX, startY, targetX, targetY float32, paths ...[2]float32) [][2]float32 {
+func FollowPaths(startX, startY, targetX, targetY float32, paths ...float32) []float32 {
 	var allNodes = createNodes(paths)
 	var sx, sy, startNode = closestPointOnPath(startX, startY, allNodes)
 	var tx, ty, targetNode = closestPointOnPath(targetX, targetY, allNodes)
 	var path = startNode.walk(targetNode)
-	var result = [][2]float32{{startX, startY}, {sx, sy}}
+	var result = []float32{startX, startY, sx, sy}
 	if len(path) == 0 { // no path was found, perhaps the end target is a disconnected one
 		return result
 	}
 
 	result = append(result, path...)
-	result = append(result, [2]float32{tx, ty}, [2]float32{targetX, targetY})
+	result = append(result, tx, ty, targetX, targetY)
 	result = remove180Turns(result)
 	return result
 }
@@ -51,19 +51,20 @@ func (pq *npq) Pop() any {
 	return n
 }
 
-func createNodes(points [][2]float32) []*n {
+func createNodes(points []float32) []*n {
 	var result = []*n{}
 	var pathIndex = 0
-	for i, point := range points {
-		if number.IsNaN(point[0]) || number.IsNaN(point[1]) {
+	for i := 0; i < len(points); i += 2 {
+		var px, py = points[i], points[i+1]
+		if number.IsNaN(px) || number.IsNaN(py) {
 			pathIndex++
 			continue
 		}
 		var prevNode *n
-		if i != 0 {
+		if len(result) > 0 {
 			prevNode = result[len(result)-1]
 		}
-		var newN = &n{X: point[0], Y: point[1], PathIndex: pathIndex, SearchDist: number.Infinity()}
+		var newN = &n{X: px, Y: py, PathIndex: pathIndex, SearchDist: number.Infinity()}
 		result = append(result, newN)
 
 		if prevNode != nil && prevNode.PathIndex == newN.PathIndex {
@@ -80,7 +81,7 @@ func createNodes(points [][2]float32) []*n {
 	}
 	return result
 }
-func (start *n) walk(end *n) [][2]float32 {
+func (start *n) walk(end *n) []float32 {
 	var all []*n
 	var stack []*n = []*n{start}
 	for len(stack) > 0 {
@@ -130,16 +131,16 @@ func (start *n) walk(end *n) [][2]float32 {
 
 	return nil
 }
-func (n *n) reconstructPath() [][2]float32 {
-	var result [][2]float32
+func (n *n) reconstructPath() []float32 {
+	var result []float32
 	var unique = map[[2]float32]any{}
 	for n != nil {
-		var point = [2]float32{n.X, n.Y}
-		var _, has = unique[point]
+		var p = [2]float32{n.X, n.Y}
+		var _, has = unique[p]
 		if !has {
-			result = append([][2]float32{point}, result...)
+			result = append([]float32{p[0], p[1]}, result...)
 		}
-		unique[point] = nil
+		unique[p] = nil
 		n = n.SearchPrev
 	}
 
@@ -183,23 +184,26 @@ func closestPointOnPath(x, y float32, nodes []*n) (closestX, closestY float32, n
 
 	return closestX, closestY, nil
 }
-func remove180Turns(path [][2]float32) [][2]float32 {
-	var n = len(path)
-	if n < 3 {
+func remove180Turns(path []float32) []float32 {
+	var nCount = len(path)
+	if nCount < 6 {
 		return path
 	}
 
-	var result = make([][2]float32, 0, n)
-	result = append(result, path[0])
-	for i := 1; i < n-1; i++ {
-		var a, b, c = result[len(result)-1], path[i], path[i+1]
-		var l1, l2 = NewLine(a[0], a[1], b[0], b[1]), NewLine(b[0], b[1], c[0], c[1])
+	var result = make([]float32, 0, nCount)
+	result = append(result, path[0], path[1])
+	for i := 2; i < nCount-2; i += 2 {
+		var ax, ay = result[len(result)-2], result[len(result)-1]
+		var bx, by = path[i], path[i+1]
+		var cx, cy = path[i+2], path[i+3]
+
+		var l1, l2 = NewLine(ax, ay, bx, by), NewLine(bx, by, cx, cy)
 		var ang1, ang2 = l1.Angle(), l2.Angle()
 		var diff = number.Wrap(ang2-ang1, 0, 360)
 		if !number.IsWithin(diff, 180, 0.1) {
-			result = append(result, b)
+			result = append(result, bx, by)
 		}
 	}
-	result = append(result, path[n-1])
+	result = append(result, path[nCount-2], path[nCount-1])
 	return result
 }

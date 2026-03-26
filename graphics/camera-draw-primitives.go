@@ -97,18 +97,20 @@ func (c *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 	c.end()
 }
 
-// multiple line paths can be separated by a [NaN, NaN]
-func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...[2]float32) {
+// multiple line paths can be separated by a NaN pair
+func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...float32) {
 	if thickness == 0 || color == 0 || len(points) == 0 {
 		return
 	}
 
 	c.begin()
 	var col = getColor(color)
-	for i := 1; i < len(points); i++ {
-		var p1, p2 = points[i-1], points[i]
-		if !number.IsNaN(p1[0]) && !number.IsNaN(p2[0]) {
-			batch.QueueLine(p1[0], p1[1], p2[0], p2[1], thickness, col)
+	for i := 2; i < len(points); i += 2 {
+		var x1, y1 = points[i-2], points[i-1]
+		var x2, y2 = points[i], points[i+1]
+
+		if !number.IsNaN(x1) && !number.IsNaN(x2) {
+			batch.QueueLine(x1, y1, x2, y2, thickness, col)
 		}
 	}
 	batch.Draw()
@@ -161,13 +163,21 @@ func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, co
 	c.end()
 }
 
-func (c *Camera) DrawPoints(radius float32, color uint, points ...[2]float32) {
+func (c *Camera) DrawPoints(radius float32, color uint, points ...float32) {
 	c.begin()
 	batch.skipStartEnd = true
-	for _, pt := range points {
-		c.DrawCircle(pt[0], pt[1], radius, 16, color)
+	batch.skipDraw = true
+	for i := 0; i < len(points); i += 2 {
+		if i+1 >= len(points) {
+			break
+		}
+
+		var x, y = points[i], points[i+1]
+		c.DrawCircle(x, y, radius, 16, color)
 	}
+	batch.skipDraw = false
 	batch.skipStartEnd = false
+	batch.Draw()
 	c.end()
 }
 func (c *Camera) DrawCircle(x, y, radius float32, segments int, color uint) {
@@ -200,24 +210,30 @@ func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int,
 		batch.QueueTriangle(x, y, prevX, prevY, currX, currY, renderColor)
 		prevX, prevY = currX, currY
 	}
-	batch.Draw()
+	if !batch.skipDraw {
+		batch.Draw()
+	}
 	c.end()
 }
 
 // works with convex + concave (non-self-intersacting) shapes
 //
-// multiple shapes can be separated by a [NaN, NaN]
-func (c *Camera) DrawShapes(color uint, points ...[2]float32) {
+// multiple shapes can be separated by a NaN pair
+func (c *Camera) DrawShapes(color uint, points ...float32) {
 	c.begin()
 
-	var flatPoints, ptsCountsPerShape = separateShapes(points)
+	var ptsCountsPerShape = separateShapes(points)
 	var offset = 0
 	var renderColor = getColor(color)
 
 	c.Effects.updateUniforms(1, 1, nil, nil, false)
 
 	for _, count := range ptsCountsPerShape {
-		var shape = flatPoints[offset : offset+(count*2)]
+		for offset < len(points) && number.IsNaN(points[offset]) {
+			offset += 2
+		}
+
+		var shape = points[offset : offset+(count*2)]
 		offset += count * 2
 
 		if count > 2 && shape[0] == shape[len(shape)-2] && shape[1] == shape[len(shape)-1] {

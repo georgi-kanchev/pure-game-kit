@@ -2,22 +2,22 @@ package geometry
 
 import "pure-game-kit/utility/number"
 
-func (s *Shape) internalIsContainingPoint(corners [][2]float32, x, y float32) bool {
+func (s *Shape) internalIsContainingPoint(corners []float32, x, y float32) bool {
 	var l = len(corners)
-	if l < 3 {
+	if l < 6 { // A closed shape needs at least 3 points + 1 closing point (8 floats)
 		return false
 	}
 
 	var inside = false
-	for i := range l {
-		var j = (i + 1) % l
-		var vi = corners[i]
-		var vj = corners[j]
+	// Step by 2 to process x,y pairs
+	for i := 0; i < l-2; i += 2 {
+		var xi, yi = corners[i], corners[i+1]
+		var xj, yj = corners[i+2], corners[i+3]
 
-		// check if edge (vi->vj) crosses horizontal ray from (px,py) to +inf X
-		if (vi[1] >= y && vj[1] < y) || (vi[1] < y && vj[1] >= y) {
+		// check if edge (vi->vj) crosses horizontal ray from (x,y) to +inf X
+		if (yi >= y && yj < y) || (yi < y && yj >= y) {
 			// x coordinate of intersection of the edge with line y = py
-			var xIntersect = (vj[0]-vi[0])*(y-vi[1])/(vj[1]-vi[1]) + vi[0]
+			var xIntersect = (xj-xi)*(y-yi)/(yj-yi) + xi
 			if x < xIntersect {
 				inside = !inside
 			}
@@ -26,83 +26,80 @@ func (s *Shape) internalIsContainingPoint(corners [][2]float32, x, y float32) bo
 	return inside
 }
 
-func (s *Shape) internalCrossPointsWithLine(corners [][2]float32, line Line) [][2]float32 {
-	var result = [][2]float32{}
+func (s *Shape) internalCrossPointsWithLine(corners []float32, line Line) []float32 {
+	var result []float32
 
-	for i := 1; i < len(corners); i++ {
-		var curLine = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
+	for i := 2; i < len(corners); i += 2 {
+		var curLine = NewLine(corners[i-2], corners[i-1], corners[i], corners[i+1])
 		var cx, cy = line.CrossPointWithLine(curLine)
 
 		if !number.IsNaN(cx) && !number.IsNaN(cy) {
-			result = append(result, [2]float32{cx, cy})
+			result = append(result, cx, cy)
 		}
 	}
 	return result
 }
-func (s *Shape) internalIsCrossingLine(corners [][2]float32, line Line) bool {
-	for i := 1; i < len(corners); i++ {
-		var curLine = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
+func (s *Shape) internalIsCrossingLine(corners []float32, line Line) bool {
+	for i := 2; i < len(corners); i += 2 {
+		var curLine = NewLine(corners[i-2], corners[i-1], corners[i], corners[i+1])
 		if line.IsCrossingLine(curLine) {
 			return true
 		}
 	}
 	return false
 }
-func (s *Shape) internalIsContainingLine(corners [][2]float32, line Line) bool {
+func (s *Shape) internalIsContainingLine(corners []float32, line Line) bool {
 	var containsA = s.internalIsContainingPoint(corners, line.Ax, line.Ay)
 	var containsB = s.internalIsContainingPoint(corners, line.Bx, line.By)
 	return containsA && containsB && !s.internalIsCrossingLine(corners, line)
 }
-func (s *Shape) internalIsOverlappingLine(corners [][2]float32, line Line) bool {
+func (s *Shape) internalIsOverlappingLine(corners []float32, line Line) bool {
 	var containsA = s.internalIsContainingPoint(corners, line.Ax, line.Ay)
 	var containsB = s.internalIsContainingPoint(corners, line.Bx, line.By)
 	var crossing = s.internalIsCrossingLine(corners, line)
 	return containsA || containsB || crossing
 }
 
-func (s *Shape) internalCrossPointsWithShape(corners, targetCorners [][2]float32) [][2]float32 {
-	var result = [][2]float32{}
+func (s *Shape) internalCrossPointsWithShape(corners, targetCorners []float32) []float32 {
+	var result []float32
 
-	for i := 1; i < len(targetCorners); i++ {
-		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
+	for i := 2; i < len(targetCorners); i += 2 {
+		var line = NewLine(targetCorners[i-2], targetCorners[i-1], targetCorners[i], targetCorners[i+1])
 		var pts = s.internalCrossPointsWithLine(corners, line)
 		result = append(result, pts...)
 	}
 	return result
 }
-func (s *Shape) internalIsCrossingShape(corners, targetCorners [][2]float32) bool {
-	for i := 1; i < len(targetCorners); i++ {
-		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
+func (s *Shape) internalIsCrossingShape(corners, targetCorners []float32) bool {
+	for i := 2; i < len(targetCorners); i += 2 {
+		var line = NewLine(targetCorners[i-2], targetCorners[i-1], targetCorners[i], targetCorners[i+1])
 		if s.internalIsCrossingLine(corners, line) {
 			return true
 		}
 	}
 	return false
 }
-func (s *Shape) internalIsContainingShapes(corners, targetCorners [][2]float32) bool {
-	for i := 1; i < len(targetCorners); i++ {
-		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
+func (s *Shape) internalIsContainingShapes(corners, targetCorners []float32) bool {
+	for i := 2; i < len(targetCorners); i += 2 {
+		var line = NewLine(targetCorners[i-2], targetCorners[i-1], targetCorners[i], targetCorners[i+1])
 		if !s.internalIsContainingLine(corners, line) {
 			return false
 		}
 	}
 	return true
 }
-func (s *Shape) internalIsOverlappingShape(corners, targetCorners [][2]float32, target *Shape) bool {
-	// overlap happens when:
-	// 		one of shape's corners is within target
-	//		one of target's corners is within shape
-	// 		or there is a crossing
-
-	for i := 1; i < len(targetCorners); i++ { // crossing + target inside shape checks
-		var line = NewLine(targetCorners[i-1][0], targetCorners[i-1][1], targetCorners[i][0], targetCorners[i][1])
+func (s *Shape) internalIsOverlappingShape(corners, targetCorners []float32, target *Shape) bool {
+	// crossing + target inside shape checks
+	for i := 2; i < len(targetCorners); i += 2 {
+		var line = NewLine(targetCorners[i-2], targetCorners[i-1], targetCorners[i], targetCorners[i+1])
 		if s.internalIsOverlappingLine(corners, line) {
 			return true
 		}
 	}
 
-	for i := 1; i < len(corners); i++ { // skipping crossing & straight to shape inside target check
-		var line = NewLine(corners[i-1][0], corners[i-1][1], corners[i][0], corners[i][1])
+	// skipping crossing & straight to shape inside target check
+	for i := 2; i < len(corners); i += 2 {
+		var line = NewLine(corners[i-2], corners[i-1], corners[i], corners[i+1])
 		if target.internalIsContainingLine(targetCorners, line) {
 			return true
 		}

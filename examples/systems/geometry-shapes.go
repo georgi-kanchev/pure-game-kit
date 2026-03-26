@@ -13,15 +13,15 @@ import (
 
 func Shapes() {
 	var cam = graphics.NewCamera(1)
-	var shape = geometry.NewShapeCorners([][2]float32{
-		{0, 0},
-		{50, -20},
-		{100, 0},
-		{0, 100},
-		{50, 120},
-		{100, 100},
-	}...)
-	var triangle = geometry.NewShapeCorners([2]float32{}, [2]float32{100, 100}, [2]float32{-100, 100})
+	var shape = geometry.NewShapeCorners(
+		0, 0,
+		50, -20,
+		100, 0,
+		0, 100,
+		50, 120,
+		100, 100,
+	)
+	var triangle = geometry.NewShapeCorners(0, 0, 100, 100, -100, 100)
 	var rectangle = geometry.NewShapeQuad(700, 500, 0.5, 0.5)
 	var hexagon = geometry.NewShapeSides(500, 6)
 	var ellipse = geometry.NewShapeEllipse(200, 500, 16)
@@ -37,14 +37,14 @@ func Shapes() {
 
 	squircle.X, squircle.Y = -650, 100
 
-	var stars = [][2]float32{
-		{600 + 300, 100}, {600 + 350, 200}, {600 + 450, 200}, {600 + 370, 260},
-		{600 + 400, 360}, {600 + 300, 300}, {600 + 200, 360}, {600 + 230, 260},
-		{600 + 150, 200}, {600 + 250, 200}, {600 + 300, 100},
-		{number.NaN(), number.NaN()},
-		{300, 100}, {350, 200}, {450, 200}, {370, 260},
-		{400, 360}, {300, 300}, {200, 360}, {230, 260},
-		{150, 200}, {250, 200}, {300, 100},
+	var stars = []float32{
+		600 + 300, 100, 600 + 350, 200, 600 + 450, 200, 600 + 370, 260,
+		600 + 400, 360, 600 + 300, 300, 600 + 200, 360, 600 + 230, 260,
+		600 + 150, 200, 600 + 250, 200, 600 + 300, 100,
+		number.NaN(), number.NaN(),
+		300, 100, 350, 200, 450, 200, 370, 260,
+		400, 360, 300, 300, 200, 360, 230, 260,
+		150, 200, 250, 200, 300, 100,
 	}
 
 	for window.KeepOpen() {
@@ -92,9 +92,7 @@ func Shapes() {
 		cam.DrawLinesPath(8, palette.DarkMagenta, roundPts...)
 		cam.DrawPoints(4, palette.DarkMagenta, roundPts...)
 
-		for _, v := range crossPoints {
-			cam.DrawCircle(v[0], v[1], 16, 8, palette.Green)
-		}
+		cam.DrawPoints(16, palette.Green, crossPoints...)
 
 		cam.DrawTextDebug(true, true, true, true)
 	}
