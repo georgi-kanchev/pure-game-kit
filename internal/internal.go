@@ -5,7 +5,10 @@
 //   - To pump updates every frame coming from the window package onto other packages that require them.
 package internal
 
-import txt "pure-game-kit/utility/text"
+import (
+	txt "pure-game-kit/utility/text"
+	"regexp"
+)
 
 const Placeholder = '╌'
 
@@ -40,4 +43,7 @@ func ReplaceStrings(text string, open, close, placeholder rune) (replaced string
 	}
 
 	return result.ToText(), originals
+}
+func RemoveTags(text string) string {
+	return regexp.MustCompile(`{.*?}`).ReplaceAllString(text, "")
 }

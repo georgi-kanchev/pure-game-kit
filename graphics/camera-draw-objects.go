@@ -244,7 +244,6 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
 		batch.QueueTex(texture, src, dst, t.Angle, getColor(t.Tint))
 		batch.Draw()
-		// rl.EndMode2D()
 	}
 	c.end()
 }

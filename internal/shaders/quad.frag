@@ -183,7 +183,7 @@ vec4 compute_sdf_text(vec2 uv) {
     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
     
-    float compressedOutlIdx = (float(outlIdx) * 0.7) + (1.5 * 0.3);
+    float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
     
@@ -191,8 +191,8 @@ vec4 compute_sdf_text(vec2 uv) {
     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
     
-    vec3 finalRGB = (distance > sdfAlpha) ? base.rgb : mixedRGB;
-    float finalAlpha = (distance > sdfAlpha) ? base.a : mixedAlpha;
+    vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
+    float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
     
     return vec4(finalRGB, finalAlpha);
 }

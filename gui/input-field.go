@@ -11,6 +11,7 @@ import (
 	"pure-game-kit/input/mouse/cursor"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/color/palette"
+	"pure-game-kit/utility/is"
 	"pure-game-kit/utility/number"
 	txt "pure-game-kit/utility/text"
 	"pure-game-kit/utility/time"
@@ -76,6 +77,7 @@ func inputField(w *widget) {
 	var focused = w.isFocused()
 	var meTyping = typingIn == w // each input field should disable its own typing
 	var text = txt.Remove(w.root.themedField(field.Text, owner, w), "\n")
+	text = internal.RemoveTags(text)
 
 	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyJustPressed(key.Escape)) {
 		typingIn = nil
@@ -91,7 +93,7 @@ func inputField(w *widget) {
 	}
 	if typingIn == w {
 		text = tryInput(text, w, margin)
-		tryRemove(text, w, margin)
+		text = tryRemove(text, w, margin)
 		tryMoveCursor(w, text, margin)
 		tryFocusNextField(w)
 
@@ -117,11 +119,11 @@ func draw(margin float32, w *widget, isPlaceholder bool) {
 		if w.highlight == nil {
 			w.highlight = graphics.NewBox("", 0, 0)
 		}
-		w.highlight.X, w.highlight.Y = w.X-1, w.Y-1
-		w.highlight.Width, w.highlight.Height = w.Width+2, w.Height+2
+		w.highlight.X, w.highlight.Y = w.X-0.5, w.Y-0.5
+		w.highlight.Width, w.highlight.Height = w.Width+0.5, w.Height+0.5
 		w.highlight.Tint = palette.Azure
 		w.highlight.PivotX, w.highlight.PivotY = 0, 0
-		w.highlight.Mask = w.textBox.Mask
+		w.highlight.Mask = w.root.Containers[w.OwnerId].mask
 		w.root.boxes = append(w.root.boxes, w.highlight)
 	}
 
@@ -159,12 +161,12 @@ func draw(margin float32, w *widget, isPlaceholder bool) {
 
 		w.cursor1.X, w.cursor1.Y = x-cw/2, y-cw/2
 		w.cursor1.Width, w.cursor1.Height = cw+cw, ch+cw
-		w.cursor1.Tint, w.cursor1.Mask = palette.Black, w.textBox.Mask
+		w.cursor1.Tint, w.cursor1.Mask = palette.Azure, w.textBox.Mask
 		w.cursor1.PivotX, w.cursor1.PivotY = 0, 0
 
 		w.cursor2.X, w.cursor2.Y = x, y
 		w.cursor2.Width, w.cursor2.Height = cw, ch
-		w.cursor2.Tint, w.cursor2.Mask = palette.White, w.textBox.Mask
+		w.cursor2.Tint, w.cursor2.Mask = palette.Black, w.textBox.Mask
 		w.cursor2.PivotX, w.cursor2.PivotY = 0, 0
 		w.root.spritesAbove = append(w.root.spritesAbove, w.cursor1, w.cursor2)
 	}
@@ -222,28 +224,6 @@ func tryMoveCursor(w *widget, text string, margin float32) {
 		setupText(margin, w, true)
 	}
 }
-func closestIndexToMouse(cam *graphics.Camera) int {
-	var mx, _ = cam.MousePosition()
-	mx += scrollX
-
-	if len(symbolXs) == 0 {
-		return 0
-	}
-
-	var closestIndex = 0
-	var minDist = number.Unsign(mx - symbolXs[0])
-
-	for i, v := range symbolXs[1:] {
-		var dist = number.Unsign(mx - v)
-		if dist < minDist {
-			minDist = dist
-			closestIndex = i + 1
-		}
-	}
-
-	return closestIndex
-}
-
 func trySelect() {
 	if keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift) {
 		return
@@ -257,7 +237,7 @@ func trySelect() {
 		indexSelect = indexCursor
 	}
 }
-func tryRemove(text string, w *widget, margin float32) {
+func tryRemove(text string, w *widget, margin float32) string {
 	var left, right = w.X + margin, w.X + w.Width - margin
 	var ctrl = keyboard.IsKeyPressed(key.LeftControl) || keyboard.IsKeyPressed(key.RightControl)
 	var remove = func(back, front int) {
@@ -284,10 +264,10 @@ func tryRemove(text string, w *widget, margin float32) {
 	if keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyJustPressed(key.Delete) || simulateRemove {
 		if indexSelect < indexCursor {
 			remove(indexCursor-indexSelect, 0)
-			return
+			return text
 		} else if indexCursor < indexSelect {
 			remove(0, indexSelect-indexCursor)
-			return
+			return text
 		}
 	}
 
@@ -306,17 +286,17 @@ func tryRemove(text string, w *widget, margin float32) {
 	if keyboard.IsKeyJustPressed(key.Delete) || keyboard.IsKeyHeld(key.Delete) {
 		remove(0, condition.If(ctrl, wordIndex(text, false)-indexCursor, 1))
 	}
+	return text
 }
 func tryInput(text string, w *widget, margin float32) string {
 	var input = keyboard.Input()
-	if input == "" {
+	if is.AnyOf(input, "", "{", "}") {
 		return text
 	}
 
 	if indexCursor != indexSelect { // text is selected, we should remove it and then type
 		simulateRemove = true
-		tryRemove(text, w, margin)
-		text = w.textBox.Text
+		text = tryRemove(text, w, margin)
 		simulateRemove = false
 	}
 
@@ -402,6 +382,27 @@ func cursorX(margin float32, w *widget) float32 {
 	}
 	return w.X + margin
 }
+func closestIndexToMouse(cam *graphics.Camera) int {
+	var mx, _ = cam.MousePosition()
+	mx += scrollX
+
+	if len(symbolXs) == 0 {
+		return 0
+	}
+
+	var closestIndex = 0
+	var minDist = number.Unsign(mx - symbolXs[0])
+
+	for i, v := range symbolXs[1:] {
+		var dist = number.Unsign(mx - v)
+		if dist < minDist {
+			minDist = dist
+			closestIndex = i + 1
+		}
+	}
+
+	return closestIndex
+}
 func wordIndex(text string, left bool) int {
 	if left && text == "" {
 		return 0
@@ -437,6 +438,7 @@ func wordIndex(text string, left bool) int {
 
 }
 func setText(widget *widget, text string) {
+	text = txt.Remove(text, "{", "}")
 	widget.Fields[field.Text] = text
 	widget.textBox.Text = text
 }

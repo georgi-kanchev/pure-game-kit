@@ -10,6 +10,7 @@ func Underline(text string) string { return t.New("{_}", text, "{_}") }
 func Crossout(text string) string  { return t.New("{-}", text, "{-}") }
 
 func Thin(text string) string     { return t.New("{weight=thin}", text, "{weight}") }
+func Regular(text string) string  { return t.New("{weight=regular}", text, "{weight}") }
 func SemiBold(text string) string { return t.New("{weight=semiBold}", text, "{weight}") }
 func Bold(text string) string     { return t.New("{weight=bold}", text, "{weight}") }
 
@@ -37,6 +38,9 @@ func ShadowColor(text string, color uint) string {
 func OutlineThin(text string) string {
 	return t.New("{outlineWeight=thin}", text, "{outlineWeight}")
 }
+func OutlineRegular(text string) string {
+	return t.New("{outlineWeight=regular}", text, "{outlineWeight}")
+}
 func OutlineSemiBold(text string) string {
 	return t.New("{outlineWeight=semiBold}", text, "{outlineWeight}")
 }
@@ -46,6 +50,9 @@ func OutlineBold(text string) string {
 
 func ShadowThin(text string) string {
 	return t.New("{shadowWeight=thin}", text, "{shadowWeight}")
+}
+func ShadowRegular(text string) string {
+	return t.New("{shadowWeight=regular}", text, "{shadowWeight}")
 }
 func ShadowSemiBold(text string) string {
 	return t.New("{shadowWeight=semiBold}", text, "{shadowWeight}")

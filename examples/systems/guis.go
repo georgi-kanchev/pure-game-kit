@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"pure-game-kit/data/assets"
 	"pure-game-kit/graphics"
+	"pure-game-kit/graphics/tag"
 	"pure-game-kit/gui"
 	d "pure-game-kit/gui/dynamic"
 	f "pure-game-kit/gui/field"
@@ -66,9 +67,10 @@ func GUIs() {
 		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
 		gui.Visual("name-label", f.ThemeId, "label", f.Text, "Name", f.TooltipText, "Wow, tooltip for labels!"),
 		gui.InputField("name", f.Width, "250", f.AssetId, box[9], f.Text, "Kenney", f.InputFieldMargin, "10",
-			f.InputFieldPlaceholder, "Your name..."),
-		gui.Visual("class-label", f.ThemeId, "label", f.Text, "Class", f.NewRow, ""),
-		gui.InputField("class", f.Width, "250", f.AssetId, box[9], f.Text, "Cool", f.InputFieldMargin, "10"),
+			f.InputFieldPlaceholder, tag.OutlineColor("Your name...", palette.LightGray)),
+		gui.Visual("class-label", f.ThemeId, "label", f.Text, tag.Bold("Class"), f.NewRow, ""),
+		gui.InputField("class", f.Width, "250", f.AssetId, box[9], f.Text, "Cool", f.InputFieldMargin, "10",
+			f.InputFieldPlaceholder, tag.OutlineColor("Type...", palette.LightGray)),
 		gui.Visual("stepper-label", f.ThemeId, "label", f.Text, "Stepper", f.NewRow, ""),
 		gui.Button("step-left", f.Width, "50", f.Text, "L",
 			f.TooltipText, "Press this button to do absolutely nothing.", f.ButtonHotkey, "A"),

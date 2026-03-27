@@ -262,7 +262,7 @@ func parseColor(value string, disabled ...bool) uint {
 	}
 
 	if len(disabled) == 1 && disabled[0] {
-		a /= 3
+		a = 0
 	}
 
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
