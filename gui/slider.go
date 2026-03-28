@@ -73,7 +73,7 @@ func slider(w *widget) {
 			var step = w.steps[i-1]
 			step.X, step.Y = stepX, w.Y
 			step.Width, step.Height = w.Height, w.Height
-			step.AssetId, step.Tint = stepAssetId, buttonColor
+			step.TextureId, step.Tint = stepAssetId, buttonColor
 			step.Mask = owner.mask
 			step.PivotX, step.PivotY = 0, 0
 
@@ -96,7 +96,7 @@ func slider(w *widget) {
 
 	w.handle.X, w.handle.Y = x, handleY
 	w.handle.Width, w.handle.Height = handleWidth, handleHeight
-	w.handle.AssetId, w.handle.Tint = handleAssetId, buttonColor
+	w.handle.TextureId, w.handle.Tint = handleAssetId, buttonColor
 	w.handle.PivotX, w.handle.PivotY = 0, 0
 	w.handle.Mask = owner.mask
 

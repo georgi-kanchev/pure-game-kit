@@ -2,7 +2,6 @@ package tag
 
 import (
 	col "pure-game-kit/utility/color"
-	"pure-game-kit/utility/number"
 	t "pure-game-kit/utility/text"
 )
 
@@ -61,7 +60,15 @@ func ShadowBold(text string) string {
 	return t.New("{shadowWeight=bold}", text, "{shadowWeight}")
 }
 
-// Strength is ranged & limited to 0..3
-func ShadowBlur(text string, strength byte) string {
-	return t.New("{shadowBlur=", number.Limit(strength, 0, 3), "}", text, "{shadowBlur}")
+func ShadowBlurNone(text string) string {
+	return t.New("{shadowBlur=0}", text, "{shadowBlur}")
+}
+func ShadowBlurLow(text string) string {
+	return t.New("{shadowBlur=1}", text, "{shadowBlur}")
+}
+func ShadowBlurMedium(text string) string {
+	return t.New("{shadowBlur=2}", text, "{shadowBlur}")
+}
+func ShadowBlurHigh(text string) string {
+	return t.New("{shadowBlur=3}", text, "{shadowBlur}")
 }

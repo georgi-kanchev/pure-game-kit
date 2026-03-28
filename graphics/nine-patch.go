@@ -2,16 +2,17 @@ package graphics
 
 import "pure-game-kit/internal"
 
-type Box struct {
-	Sprite
+type NinePatch struct {
+	Quad
+
+	BoxId string
 	EdgeLeft, EdgeRight,
 	EdgeTop, EdgeBottom float32
 }
 
-func NewBox(assetId string, x, y float32) *Box {
-	var sprite = NewSprite(assetId, x, y)
-	var result = &Box{Sprite: *sprite}
-	var slices, has = internal.Boxes[assetId]
+func NewNinePatch(boxId string, x, y float32) *NinePatch {
+	var result = &NinePatch{Quad: *NewQuad(x, y), BoxId: boxId}
+	var slices, has = internal.Boxes[boxId]
 
 	if !has {
 		slices = [9]string{}

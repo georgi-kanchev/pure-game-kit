@@ -79,7 +79,7 @@ func drawDraggable(widget *widget) {
 
 	widget.handle.X, widget.handle.Y = widget.DragX, widget.DragY
 	widget.handle.Width, widget.handle.Height = drawW*scale, drawH*scale
-	widget.handle.AssetId, widget.handle.Tint = assetId, parseColor(col, disabled)
+	widget.handle.TextureId, widget.handle.Tint = assetId, parseColor(col, disabled)
 	widget.handle.PivotX, widget.handle.PivotY = 0.5, 0.5
 	widget.handle.ScaleX, widget.handle.ScaleY = scale, scale
 	widget.handle.Mask = condition.If(widget.root.wPressedOn == widget, nil, owner.mask)

@@ -160,11 +160,11 @@ func (r *root) restore(prAng, prZoom, prX, prY float32) {
 func (r *root) drawStart() {
 	r.sprites = make([]*graphics.Sprite, 0, 64)
 	r.spritesAbove = make([]*graphics.Sprite, 0, 8)
-	r.boxes = make([]*graphics.Box, 0, 64)
+	r.boxes = make([]*graphics.NinePatch, 0, 64)
 	r.textBoxes = make([]*graphics.TextBox, 0, 64)
 }
 func (r *root) drawEnd() {
-	r.cam.DrawBoxes(r.boxes...)
+	r.cam.DrawNinePatches(r.boxes...)
 	r.cam.DrawSprites(r.sprites...)
 	r.cam.DrawTextBoxes(r.textBoxes...)
 	r.cam.DrawSprites(r.spritesAbove...)

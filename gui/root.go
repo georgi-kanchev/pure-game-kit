@@ -34,7 +34,7 @@ type root struct {
 	cam          *graphics.Camera
 	sprites      []*graphics.Sprite
 	spritesAbove []*graphics.Sprite
-	boxes        []*graphics.Box
+	boxes        []*graphics.NinePatch
 	textBoxes    []*graphics.TextBox
 }
 

@@ -19,7 +19,7 @@ func Animations() {
 
 	for window.KeepOpen() {
 		animation.Update()
-		sprite.AssetId = *animation.Item()
+		sprite.TextureId = *animation.Item()
 		cam.DrawSprites(sprite)
 
 		if keyboard.IsKeyJustPressed(key.A) {

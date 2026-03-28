@@ -22,7 +22,7 @@ type widget struct {
 	top, left, right, bottom *graphics.Sprite
 	steps          []*graphics.Sprite
 	textBox        *graphics.TextBox
-	box, highlight *graphics.Box
+	box, highlight *graphics.NinePatch
 }
 
 func newWidget(class, id string, properties ...string) string {

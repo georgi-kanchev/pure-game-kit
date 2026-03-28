@@ -27,7 +27,7 @@ func setupVisualsTextured(w *widget) {
 		w.sprite.PivotX, w.sprite.PivotY = 0, 0
 	}
 	if w.box == nil {
-		w.box = graphics.NewBox("", 0, 0)
+		w.box = graphics.NewNinePatch("", 0, 0)
 		w.box.PivotX, w.box.PivotY = 0, 0
 	}
 
@@ -36,13 +36,13 @@ func setupVisualsTextured(w *widget) {
 	var sprite, box = w.sprite, w.box
 
 	if has {
-		var cLeft = parseNum(w.root.themedField(f.BoxEdgeLeft, owner, w), 0)
-		var cRight = parseNum(w.root.themedField(f.BoxEdgeRight, owner, w), 0)
-		var cTop = parseNum(w.root.themedField(f.BoxEdgeTop, owner, w), 0)
-		var cBottom = parseNum(w.root.themedField(f.BoxEdgeBottom, owner, w), 0)
+		var cLeft = parseNum(w.root.themedField(f.EdgeLeft, owner, w), 0)
+		var cRight = parseNum(w.root.themedField(f.EdgeRight, owner, w), 0)
+		var cTop = parseNum(w.root.themedField(f.EdgeTop, owner, w), 0)
+		var cBottom = parseNum(w.root.themedField(f.EdgeBottom, owner, w), 0)
 
 		box.X, box.Y = w.X, w.Y
-		box.AssetId = assetId
+		box.BoxId = assetId
 		box.Tint = col
 		box.Width, box.Height = w.Width, w.Height
 		box.EdgeLeft, box.EdgeRight = cLeft, cRight
@@ -52,9 +52,8 @@ func setupVisualsTextured(w *widget) {
 		}
 	} else {
 		sprite.X, sprite.Y = w.X, w.Y
-		sprite.AssetId = assetId
+		sprite.TextureId = assetId
 		sprite.Tint = col
-		sprite.TextureRepeat = false
 		sprite.Width, sprite.Height = w.Width, w.Height
 		if owner != nil && !isBgr {
 			sprite.Mask = owner.mask

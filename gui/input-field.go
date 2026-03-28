@@ -117,7 +117,7 @@ func inputField(w *widget) {
 func draw(margin float32, w *widget, isPlaceholder bool) {
 	if typingIn == w {
 		if w.highlight == nil {
-			w.highlight = graphics.NewBox("", 0, 0)
+			w.highlight = graphics.NewNinePatch("", 0, 0)
 		}
 		w.highlight.X, w.highlight.Y = w.X-0.5, w.Y-0.5
 		w.highlight.Width, w.highlight.Height = w.Width+0.5, w.Height+0.5

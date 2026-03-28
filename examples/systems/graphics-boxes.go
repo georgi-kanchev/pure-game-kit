@@ -7,18 +7,18 @@ import (
 	"pure-game-kit/window"
 )
 
-func Boxes() {
+func NinePatches() {
 	var cam = graphics.NewCamera(1)
 	var _, _, b = assets.LoadDefaultAtlasUI()
-	var box = graphics.NewBox(b[0], 0, 0)
-	box.PivotX, box.PivotY = 0, 0
-	box.EdgeLeft = 100
-	box.EdgeRight = 100
-	box.EdgeBottom = 100
-	box.EdgeTop = 100
-	box.Tint = palette.Cyan
+	var ninePatch = graphics.NewNinePatch(b[0], 0, 0)
+	ninePatch.PivotX, ninePatch.PivotY = 0, 0
+	ninePatch.EdgeLeft = 100
+	ninePatch.EdgeRight = 100
+	ninePatch.EdgeBottom = 100
+	ninePatch.EdgeTop = 100
+	ninePatch.Tint = palette.Cyan
 
-	var bar = graphics.NewBox(b[11], 0, 0)
+	var bar = graphics.NewNinePatch(b[11], 0, 0)
 	bar.PivotX, bar.PivotY = 0, 0
 	bar.EdgeLeft = 100
 	bar.EdgeRight = 100
@@ -26,10 +26,10 @@ func Boxes() {
 	bar.EdgeTop = 0
 
 	for window.KeepOpen() {
-		cam.DrawBoxes(box, bar)
+		cam.DrawNinePatches(ninePatch, bar)
 
-		var mx, my = box.PointToLocal(cam.MousePosition())
-		box.Width, box.Height = mx, my
+		var mx, my = ninePatch.PointToLocal(cam.MousePosition())
+		ninePatch.Width, ninePatch.Height = mx, my
 		bar.Width = mx
 	}
 }

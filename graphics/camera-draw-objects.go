@@ -48,15 +48,15 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 			continue
 		}
 
-		var texture, src, rotations, flip = internal.AssetData(s.AssetId)
+		var texture, src, rotations, flip = internal.AssetData(s.TextureId)
 		if texture == nil {
 			texture = internal.White
 		}
 
-		if s.TextureRepeat {
-			src.Width, src.Height = s.Width*s.ScaleX, s.Height*s.ScaleY
+		if s.TextureArea != nil {
+			src.Width, src.Height = s.TextureArea.Width, s.TextureArea.Height
+			src.X, src.Y = s.TextureArea.X, s.TextureArea.Y
 		}
-		src.X, src.Y = src.X+s.TextureScrollX, src.Y+s.TextureScrollY
 		var x, y = s.PointFromEdge(0, 0) // applying pivot
 		var ang = s.Angle
 		var dst = rl.NewRectangle(x, y, s.Width*s.ScaleX, s.Height*s.ScaleY)
@@ -82,13 +82,13 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 	batch.Draw()
 	c.end()
 }
-func (c *Camera) DrawBoxes(boxes ...*Box) {
+func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 	c.begin()
 	defer c.end()
 
 	batch.skipStartEnd = true
 	var lastEffects *Effects
-	for _, b := range boxes {
+	for _, b := range ninePatches {
 		if b == nil || !c.IsAreaVisible(b.Bounds()) {
 			continue
 		}
@@ -97,10 +97,10 @@ func (c *Camera) DrawBoxes(boxes ...*Box) {
 		var u, r, d, l = b.EdgeBottom, b.EdgeRight, b.EdgeTop, b.EdgeLeft
 		var errX, errY float32 = 2, 2
 		var col = getColor(b.Tint)
-		var assetIds, has = internal.Boxes[b.AssetId]
+		var assetIds, has = internal.Boxes[b.BoxId]
 
 		if !has {
-			c.DrawSprites(&b.Sprite) // fallback to sprite if no 9-slice exists
+			c.DrawQuads(&b.Quad) // fallback to quad if no 9-slice exists
 			continue
 		}
 

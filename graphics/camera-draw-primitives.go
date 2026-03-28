@@ -295,7 +295,7 @@ func (c *Camera) DrawShapes(color uint, points ...float32) {
 
 func (c *Camera) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32, color uint) {
 	var w, h = assets.Size(assetId)
-	drawTexture.AssetId, drawTexture.Tint = assetId, color
+	drawTexture.TextureId, drawTexture.Tint = assetId, color
 	drawTexture.X, drawTexture.Y = x, y
 	drawTexture.PivotX, drawTexture.PivotY = 0, 0
 	drawTexture.Width, drawTexture.Height = float32(w), float32(h)

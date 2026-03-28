@@ -19,7 +19,7 @@ func main() {
 	example.StorageJSON()
 
 	var cam = graphics.NewCamera(1)
-	var _, _, box = assets.LoadDefaultAtlasUI()
+	var _, _, ninePatches = assets.LoadDefaultAtlasUI()
 	var hud = gui.NewFromXMLs(cam, gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, d.OwnerWidth+"-40", f.Height, "50", f.GapY, "20",
@@ -27,21 +27,21 @@ func main() {
 			f.TextLineHeight, "40"),
 		gui.Theme("button", f.Color, "220 220 220 255", f.Width, d.OwnerWidth+"-40",
 			f.Height, "55", f.GapX, "20", f.GapY, "0",
-			f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
-			f.AssetId, box[2], f.TextAlignmentX, "0", f.TextAlignmentY, "0.3", f.TextColor, "80 80 80 255",
+			f.EdgeLeft, "40", f.EdgeRight, "40", f.EdgeTop, "40", f.EdgeBottom, "40",
+			f.AssetId, ninePatches[2], f.TextAlignmentX, "0", f.TextAlignmentY, "0.3", f.TextColor, "80 80 80 255",
 			f.TextLineHeight, "35", f.ButtonThemeIdHover, "button-hover", f.ButtonThemeIdPress, "button-press"),
 		gui.Theme("button-hover", f.Color, "255 255 255 255", f.Width, "300", f.Height, "100",
-			f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40",
-			f.BoxEdgeBottom, "40", f.AssetId, box[5], f.TextAlignmentX, "0", f.TextAlignmentY, "0.3",
+			f.EdgeLeft, "40", f.EdgeRight, "40", f.EdgeTop, "40",
+			f.EdgeBottom, "40", f.AssetId, ninePatches[5], f.TextAlignmentX, "0", f.TextAlignmentY, "0.3",
 			f.TextColor, "127 127 127 255", f.TextLineHeight, "35", f.GapX, "20", f.GapY, "0"),
 		gui.Theme("button-press", f.Color, "200 200 200 255", f.Width, "300", f.Height, "100",
-			f.BoxEdgeLeft, "40", f.BoxEdgeRight, "40", f.BoxEdgeTop, "40", f.BoxEdgeBottom, "40",
-			f.AssetId, box[4], f.TextAlignmentX, "0", f.TextAlignmentY, "0.6", f.TextColor, "80 80 80 255",
+			f.EdgeLeft, "40", f.EdgeRight, "40", f.EdgeTop, "40", f.EdgeBottom, "40",
+			f.AssetId, ninePatches[4], f.TextAlignmentX, "0", f.TextAlignmentY, "0.6", f.TextColor, "80 80 80 255",
 			f.TextLineHeight, "35", f.GapX, "20", f.GapY, "0"),
 		// ======================================================
 		gui.Container("title", d.CameraCenterX+"-400", d.CameraTopY+"+20", "800", "150",
 			f.ThemeId, "button", f.GapY, "20"),
-		gui.Visual("background", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
+		gui.Visual("background", f.FillContainer, "", f.AssetId, ninePatches[8], f.Color, "200 200 200 255"),
 		// ======================================================
 		gui.Visual("description", f.Text, "pure-game-kit - simple 2D game engine\nExamples",
 			f.AssetId, "", f.Color, "0 0 0 0", f.Width, d.OwnerWidth+"-30", f.Height, d.OwnerHeight+"-50",
@@ -49,11 +49,11 @@ func main() {
 			f.TextLineHeight, "50"),
 		gui.Container("menu", d.CameraCenterX+"-400", d.CameraTopY+"+150", "800", d.CameraHeight+"-180",
 			f.ThemeId, "button", f.GapX, "20", f.GapY, "20"),
-		gui.Visual("bg", f.FillContainer, "", f.AssetId, box[8], f.Color, "200 200 200 255"),
+		gui.Visual("bg", f.FillContainer, "", f.AssetId, ninePatches[8], f.Color, "200 200 200 255"),
 		//=================================================================
 		gui.Visual("gfx", f.ThemeId, "label", f.Text, "Graphics:", f.GapY, "0", f.NewRow, ""),
 		gui.Button("minimal graphics", f.Text, " Minimal Render (graphics-minimal.go)", f.NewRow, ""),
-		gui.Button("boxes", f.Text, " Boxes (graphics-boxes.go)", f.NewRow, ""),
+		gui.Button("nine patches", f.Text, " Nine Patches (graphics-nine-patches.go)", f.NewRow, ""),
 		gui.Button("texts", f.Text, " Texts (graphics-texts.go)", f.NewRow, ""),
 		gui.Button("effects", f.Text, " Effects (graphics-effects.go)", f.NewRow, ""),
 		gui.Button("batches", f.Text, " Batches (graphics-batches.go)", f.NewRow, ""),
@@ -97,7 +97,7 @@ func main() {
 
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
-		"boxes":            example.Boxes,
+		"nine patches":     example.NinePatches,
 		"texts":            example.Texts,
 		"guis":             example.GUIs,
 		"effects":          example.Effects,

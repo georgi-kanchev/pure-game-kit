@@ -144,10 +144,10 @@ func SetTextureBox(boxId string, assetIds [9]string) string {
 	return boxId
 }
 
-func RemoveTextureAreas(areaId string) {
-	RemoveTextureAtlasTiles(areaId)
+func RemoveTextureArea(areaId string) {
+	RemoveTextureAtlasTile(areaId)
 }
-func RemoveTextureAtlases(atlasId string) {
+func RemoveTextureAtlas(atlasId string) {
 	if isDefault(atlasId) {
 		return
 	}
@@ -160,12 +160,12 @@ func RemoveTextureAtlases(atlasId string) {
 		}
 	}
 }
-func RemoveTextureAtlasTiles(tileId string) {
+func RemoveTextureAtlasTile(tileId string) {
 	if !isDefault(tileId) {
 		delete(internal.AtlasRects, tileId)
 	}
 }
-func RemoveTextureBoxes(boxId string) {
+func RemoveTextureBox(boxId string) {
 	if !isDefault(boxId) {
 		delete(internal.Boxes, boxId)
 	}
