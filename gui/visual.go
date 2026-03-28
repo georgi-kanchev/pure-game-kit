@@ -36,17 +36,17 @@ func setupVisualsTextured(w *widget) {
 	var sprite, box = w.sprite, w.box
 
 	if has {
-		var cLeft = parseNum(w.root.themedField(f.EdgeLeft, owner, w), 0)
-		var cRight = parseNum(w.root.themedField(f.EdgeRight, owner, w), 0)
-		var cTop = parseNum(w.root.themedField(f.EdgeTop, owner, w), 0)
-		var cBottom = parseNum(w.root.themedField(f.EdgeBottom, owner, w), 0)
+		// var cLeft = parseNum(w.root.themedField(f.EdgeLeft, owner, w), 0)
+		// var cRight = parseNum(w.root.themedField(f.EdgeRight, owner, w), 0)
+		// var cTop = parseNum(w.root.themedField(f.EdgeTop, owner, w), 0)
+		// var cBottom = parseNum(w.root.themedField(f.EdgeBottom, owner, w), 0)
 
 		box.X, box.Y = w.X, w.Y
 		box.BoxId = assetId
 		box.Tint = col
 		box.Width, box.Height = w.Width, w.Height
-		box.EdgeLeft, box.EdgeRight = cLeft, cRight
-		box.EdgeTop, box.EdgeBottom = cTop, cBottom
+		// box.EdgeLeft, box.EdgeRight = cLeft, cRight
+		// box.EdgeTop, box.EdgeBottom = cTop, cBottom
 		if owner != nil && !isBgr {
 			box.Mask = owner.mask
 		}

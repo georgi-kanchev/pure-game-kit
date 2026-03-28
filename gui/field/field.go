@@ -37,10 +37,6 @@ const (
 	Color          = "color"          // [widget] [theme] example: "255 0 0 255"
 	FrameColor     = "frameColor"     // [widget] [theme] example: "255 0 0 255"
 	FrameSize      = "frameSize"      // [widget] [theme] positive outward, negative inward
-	EdgeLeft       = "edgeLeft"       // [widget] [theme]
-	EdgeRight      = "edgeRight"      // [widget] [theme]
-	EdgeTop        = "edgeTop"        // [widget] [theme]
-	EdgeBottom     = "edgeBottom"     // [widget] [theme]
 
 	Text           = "text"           // [widget] [theme]
 	TextFontId     = "textFontId"     // [widget] [theme]

@@ -88,19 +88,32 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 
 	batch.skipStartEnd = true
 	var lastEffects *Effects
-	for _, b := range ninePatches {
-		if b == nil || !c.IsAreaVisible(b.Bounds()) {
+	for _, n := range ninePatches {
+		if n == nil || !c.IsAreaVisible(n.Bounds()) {
 			continue
 		}
 
-		var w, h = b.Width, b.Height
-		var u, r, d, l = b.EdgeBottom, b.EdgeRight, b.EdgeTop, b.EdgeLeft
-		var errX, errY float32 = 2, 2
-		var col = getColor(b.Tint)
-		var assetIds, has = internal.Boxes[b.BoxId]
+		var w, h = n.Width, n.Height
+		var slices, hasSlices = internal.Boxes[n.BoxId]
 
-		if !has {
-			c.DrawQuads(&b.Quad) // fallback to quad if no 9-slice exists
+		if !hasSlices {
+			slices = [9]string{}
+		}
+
+		var _, uh = internal.AssetSize(slices[1])
+		var lw, _ = internal.AssetSize(slices[3])
+		var rw, _ = internal.AssetSize(slices[4])
+		var _, dh = internal.AssetSize(slices[6])
+		var u = condition.If(slices[1] == "", 0, float32(uh)) * n.EdgeScale
+		var l = condition.If(slices[3] == "", 0, float32(lw)) * n.EdgeScale
+		var r = condition.If(slices[4] == "", 0, float32(rw)) * n.EdgeScale
+		var d = condition.If(slices[6] == "", 0, float32(dh)) * n.EdgeScale
+		var errX, errY float32 = 2, 2
+		var col = getColor(n.Tint)
+		var assetIds, has = internal.Boxes[n.BoxId]
+
+		if !has { // fallback to quad if no 9-slice exists
+			c.DrawQuads(&n.Quad)
 			continue
 		}
 
@@ -133,11 +146,11 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 		}
 
 		batch.mask = c.Mask
-		if b.Mask != nil {
-			batch.mask = b.Mask
+		if n.Mask != nil {
+			batch.mask = n.Mask
 		}
 
-		var effects = condition.If(b.Effects != nil, b.Effects, c.Effects)
+		var effects = condition.If(n.Effects != nil, n.Effects, c.Effects)
 		var differentEffect = lastEffects != nil && effects != nil && *lastEffects != *effects
 		var firstEffect = lastEffects == nil && effects != nil
 		if firstEffect || differentEffect {
@@ -160,7 +173,7 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 			{w - r, h - d, r, d, assetIds[8]},                                         // Bottom Right
 		}
 
-		var ang = b.Angle
+		var ang = n.Angle
 
 		for _, p := range parts {
 			var texture, src, rotations, flip = internal.AssetData(p.id)
@@ -168,8 +181,8 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 				texture = internal.White
 			}
 
-			var globalX, globalY = b.PointToGlobal(p.x, p.y)
-			var dst = rl.NewRectangle(globalX, globalY, p.w*b.ScaleX, p.h*b.ScaleY)
+			var globalX, globalY = n.PointToGlobal(p.x, p.y)
+			var dst = rl.NewRectangle(globalX, globalY, p.w*n.ScaleX, p.h*n.ScaleY)
 			var partAng = ang
 
 			internal.EditAssetRects(&src, &dst, partAng, rotations, flip)
