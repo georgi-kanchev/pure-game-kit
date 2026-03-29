@@ -86,6 +86,10 @@ func removeRedundantPoints(points []float32) []float32 {
 }
 
 func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []float32 {
+	if s == nil {
+		return nil
+	}
+
 	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	stx, sty, tarx, tary = stx/w, sty/h, tarx/w, tary/h
 	var sx, sy = int(number.RoundDown(stx, 0)), int(number.RoundDown(sty, 0))

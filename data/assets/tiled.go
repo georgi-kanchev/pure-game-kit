@@ -19,6 +19,7 @@ import (
 func LoadTiledPoints(tmxFilePath string, layerNames ...string) []float32 {
 	var _, tiled = loadTiled(tmxFilePath)
 	var pts = loadLayerObjectsRecursively(layerNames, tiled, &tiled.layers)
+	pts = collection.RemoveAt(pts, len(pts)-1)
 	pts = collection.RemoveAt(pts, len(pts)-1) // remove last point since it's always NaN, NaN
 	return pts
 }
@@ -27,7 +28,10 @@ func LoadTiledData(tmxFilePath string) (tileSetId string, tileDataIds []string) 
 
 	var tileset, tiled = loadTiled(tmxFilePath)
 	var dir = path.Folder(tmxFilePath)
-	tileSetId = LoadTileSet(path.New(dir, tileset.Image.Source), tileset.TileWidth, tileset.TileHeight)
+	var w, h = tileset.TileWidth, tileset.TileHeight
+	dir = path.New(dir, tileset.Source)
+	dir = path.New(path.Folder(dir), tileset.Image.Source)
+	tileSetId = LoadTileSet(dir, w, h)
 	tileDataIds = loadLayerTilesRecursively(tmxFilePath, nil, tiled, &tiled.layers)
 	return tileSetId, tileDataIds
 }

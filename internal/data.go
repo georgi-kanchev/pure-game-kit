@@ -132,7 +132,12 @@ func EditAssetRects(src, dst *rl.Rectangle, ang float32, rotations int, flip boo
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]
-	width, height = -1, -1
+	width, height = 0, 0
+
+	var tileSet, hasTileSet = TileSets[assetId]
+	if hasTileSet && hasTexture {
+		return int(texture.Width) / tileSet.TileWidth, int(texture.Height) / tileSet.TileHeight
+	}
 
 	if hasTexture {
 		return int(texture.Width), int(texture.Height)

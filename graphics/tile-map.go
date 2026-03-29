@@ -1,8 +1,10 @@
 package graphics
 
 import (
+	"pure-game-kit/data/assets"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
+	"pure-game-kit/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -103,4 +105,23 @@ func (tm *TileMap) TileAt(column, row int) *Tile {
 		Rotation:    byte((packed >> 29) & 0x03),
 		Flip:        (packed >> 31) == 1,
 	}
+}
+
+func (tm *TileMap) Size() (columns, rows int) {
+	return assets.Size(tm.TileDataId)
+}
+func (tm *TileMap) TileSize() (width, height float32) {
+	var tileSet = internal.TileSets[tm.TileSetId]
+	if tileSet == nil {
+		return number.NaN(), number.NaN()
+	}
+	return float32(tileSet.TileWidth), float32(tileSet.TileHeight)
+}
+func (tm *TileMap) TileSetSize() (columns, rows int) {
+	var tileSet = internal.TileSets[tm.TileSetId]
+	if tileSet == nil {
+		return 0, 0
+	}
+	var tw, th = assets.Size(tm.TileSetId)
+	return tw / tileSet.TileWidth, th / tileSet.TileHeight
 }

@@ -141,7 +141,7 @@ func (s *ShapeGrid) Range(startX, startY int, maxDistance float32, diagonals boo
 	var visited = make(map[[2]int]float32)
 	var queue = []state{{startX, startY, maxDistance + 0.1}}
 
-	for len(queue) > 0 {
+	for len(queue) > 0 && s != nil {
 		var curr = queue[0]
 		queue = queue[1:]
 		var currPos = [2]int{curr.x, curr.y}

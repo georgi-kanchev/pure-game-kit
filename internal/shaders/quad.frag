@@ -157,6 +157,8 @@ vec2 compute_tile(vec2 uv) {
     localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV;  // 270 degrees
     localUV += 0.5;
     
+    localUV = mix(localUV, vec2(0.5), 1.0 / vec2(u[TILE_W], u[TILE_H])); // prevents texture bleeding artifacts
+    
     vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_W], u[TEXTURE_H] / u[TILE_H]);
     return (coord + localUV) / atlasSizeInTiles;
 }
