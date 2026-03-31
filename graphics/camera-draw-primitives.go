@@ -339,7 +339,7 @@ func (c *Camera) DrawTextDebug(fps, time, assets, memory bool) {
 				"Fonts = ", len(internal.Fonts), "\n",
 				"Sounds = ", len(internal.Sounds), "\n",
 				"Music = ", len(internal.Music), "\n",
-				"Tile Data = ", len(internal.TileDatas), "\n\n")
+				"Tile Data = ", len(internal.TileLayers), "\n\n")
 		}
 		if memory {
 			debugStr += debug.MemoryUsage()

@@ -16,14 +16,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadTiledPoints(tmxFilePath string, layerNames ...string) []float32 {
-	var _, tiled = loadTiled(tmxFilePath)
-	var pts = loadLayerObjectsRecursively(layerNames, tiled, &tiled.layers)
-	pts = collection.RemoveAt(pts, len(pts)-1)
-	pts = collection.RemoveAt(pts, len(pts)-1) // remove last point since it's always NaN, NaN
-	return pts
-}
-func LoadTiledData(tmxFilePath string) (tileSetId string, tileDataIds []string) {
+func LoadTiledLayers(tmxFilePath string) (tileSetId string, tileLayerIds []string) {
 	tryCreateWindow()
 
 	var tileset, tiled = loadTiled(tmxFilePath)
@@ -32,8 +25,8 @@ func LoadTiledData(tmxFilePath string) (tileSetId string, tileDataIds []string) 
 	dir = path.New(dir, tileset.Source)
 	dir = path.New(path.Folder(dir), tileset.Image.Source)
 	tileSetId = LoadTileSet(dir, w, h)
-	tileDataIds = loadLayerTilesRecursively(tmxFilePath, nil, tiled, &tiled.layers)
-	return tileSetId, tileDataIds
+	tileLayerIds = loadLayersRecursively(tmxFilePath, tiled, &tiled.layers)
+	return tileSetId, tileLayerIds
 }
 
 //=================================================================
@@ -139,35 +132,32 @@ func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
 
 	return tileSet, tiled
 }
-
-func loadLayerTilesRecursively(tmxFilePath string, wantedLayerNames []string, tiled *tiled, layers *layers) []string {
+func loadLayersRecursively(tmxFilePath string, tiled *tiled, layers *layers) []string {
 	var result []string
 	for _, layer := range layers.LayersTiles {
-		var id, _ = loadLayerTiles(tmxFilePath, wantedLayerNames, tiled, layer)
+		var id = loadLayerTiles(tmxFilePath, tiled, layer)
 		result = append(result, id)
 	}
+	for _, layer := range layers.LayersObjects {
+		var dataId = path.New(tmxFilePath, layer.Name)
+		internal.TileLayers[dataId] = &internal.TileLayer{Points: loadLayerObjects(layer)}
+		result = append(result, dataId)
+	}
 	for _, group := range layers.LayersGroups {
-		result = append(result, loadLayerTilesRecursively(tmxFilePath, wantedLayerNames, tiled, group)...)
+		result = append(result, loadLayersRecursively(tmxFilePath, tiled, group)...)
 	}
 	return result
 }
-func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *layerTiles) (string, []float32) {
-	var extractOnlyPoints = tmxFilePath == ""
-	if extractOnlyPoints && !collection.Contains(lyrNames, layer.Name) {
-		return "", nil
-	}
-
+func loadLayerTiles(tmxFilePath string, tiled *tiled, layer *layerTiles) string {
 	var tileData = text.Trim(layer.TileData.Tiles)
 	var tiles = make([]uint32, tiled.Width*tiled.Height)
 	var csv = layer.TileData.Encoding == "csv"
 	var pts []float32
 	var dataId = ""
-	var data *internal.TileData
+	var data *internal.TileLayer
 
-	if !extractOnlyPoints {
-		dataId = LoadTileData(path.New(tmxFilePath, layer.Name), tiled.Width, tiled.Height)
-		data = internal.TileDatas[dataId]
-	}
+	dataId = LoadTileData(path.New(tmxFilePath, layer.Name), tiled.Width, tiled.Height)
+	data = internal.TileLayers[dataId]
 
 	if layer.TileData.Encoding == "base64" {
 		var b64 = text.FromBase64(text.Trim(tileData))
@@ -208,20 +198,20 @@ func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *
 			var id = ((raw & 0x1FFFFFFF) - 1)
 
 			var tile = tiled.TileSet.TilesLookUp[id]
-			if extractOnlyPoints {
-				if tile != nil && tile.Objects != nil {
-					tile.Objects.Name = layer.Name
-					var tilePts = loadLayerObjects([]string{layer.Name}, tile.Objects)
-					var offsetX = float32(j * tiled.TileSet.TileWidth)
-					var offsetY = float32(i * tiled.TileSet.TileHeight)
+			if tile != nil && tile.Objects != nil {
+				tile.Objects.Name = layer.Name
+				var tilePts = loadLayerObjects(tile.Objects)
 
-					for p := 0; p < len(tilePts); p += 2 {
-						tilePts[p] += offsetX
-						tilePts[p+1] += offsetY
-					}
-					pts = append(pts, tilePts...)
+				if data.PointsPerTile == nil {
+					data.PointsPerTile = make(map[uint16][]float32)
 				}
-				continue
+				data.PointsPerTile[uint16(tile.Id)] = collection.Copy(tilePts)
+
+				for p := 0; p < len(tilePts); p += 2 {
+					tilePts[p] += float32(j * tiled.TileSet.TileWidth)
+					tilePts[p+1] += float32(i * tiled.TileSet.TileHeight)
+				}
+				pts = append(pts, tilePts...)
 			}
 
 			var frameCount, frameSpeed, animOffset uint32
@@ -256,33 +246,10 @@ func loadLayerTiles(tmxFilePath string, lyrNames []string, tiled *tiled, layer *
 			rl.UpdateTextureRec(*data.Texture, rect, []rl.Color{colr})
 		}
 	}
-
-	if extractOnlyPoints {
-		return "", pts
-	}
-
-	return dataId, nil
+	data.Points = pts
+	return dataId
 }
-
-func loadLayerObjectsRecursively(wantedLayerNames []string, tiled *tiled, layers *layers) []float32 {
-	var result []float32
-	for _, layer := range layers.LayersObjects {
-		result = append(result, loadLayerObjects(wantedLayerNames, layer)...)
-	}
-	for _, layer := range layers.LayersTiles {
-		var _, pts = loadLayerTiles("", wantedLayerNames, tiled, layer)
-		result = append(result, pts...)
-	}
-	for _, group := range layers.LayersGroups {
-		result = append(result, loadLayerObjectsRecursively(wantedLayerNames, tiled, group)...)
-	}
-	return result
-}
-func loadLayerObjects(wantedLayerNames []string, layer *layerObjects) []float32 {
-	if !collection.Contains(wantedLayerNames, layer.Name) {
-		return nil
-	}
-
+func loadLayerObjects(layer *layerObjects) []float32 {
 	var result []float32
 	for _, o := range layer.Objects {
 		var data = ""
@@ -321,6 +288,7 @@ func loadLayerObjects(wantedLayerNames []string, layer *layerObjects) []float32 
 				corners = append(corners, x, y)
 			}
 		}
+		corners = append(corners, corners[0], corners[1])
 		corners = append(corners, number.NaN(), number.NaN())
 		result = append(result, corners...)
 	}

@@ -50,7 +50,7 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *Text
 	}
 
 	if tileMap != nil {
-		var data = internal.TileDatas[tileMap.TileDataId]
+		var data = internal.TileLayers[tileMap.TileLayerId]
 		var atlas = internal.TileSets[tileMap.TileSetId]
 		if data != nil && atlas != nil && data.Texture != nil {
 			u[21], u[22] = float32(data.Image.Width), float32(data.Image.Height)
@@ -60,8 +60,8 @@ func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *Text
 			rl.ActiveTextureSlot(1)           // switch to slot 1
 			rl.EnableTexture(data.Texture.ID) // bind data texture there
 			rl.SetShaderValueTexture(internal.Shader, internal.ShaderTileMapLoc, *data.Texture)
+			dirty = true
 		}
-		dirty = true
 	}
 
 	if textBox != nil {

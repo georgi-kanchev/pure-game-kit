@@ -12,7 +12,7 @@ func LoadedTileSetIds() []string {
 	return collection.MapKeys(internal.TileSets)
 }
 func LoadedTileDataIds() []string {
-	return collection.MapKeys(internal.TileDatas)
+	return collection.MapKeys(internal.TileLayers)
 }
 
 func LoadTileSet(imageFilePath string, tileWidth, tileHeight int) string {
@@ -27,11 +27,11 @@ func LoadTileData(id string, columns, rows int) string {
 	columns = number.Limit(columns, 1, 2048)
 	rows = number.Limit(rows, 1, 2048)
 
-	var data = &internal.TileData{Image: rl.GenImageColor(columns, rows, rl.Blank)}
+	var data = &internal.TileLayer{Image: rl.GenImageColor(columns, rows, rl.Blank)}
 	var tex = rl.LoadTextureFromImage(data.Image)
 	rl.SetTextureFilter(tex, rl.FilterPoint)
 	data.Texture = &tex
-	internal.TileDatas[id] = data
+	internal.TileLayers[id] = data
 	return id
 }
 
@@ -44,10 +44,10 @@ func UnloadTileSet(tileSetId string) {
 	}
 }
 func UnloadTileData(tileMapId string) {
-	var _, has = internal.TileDatas[tileMapId]
+	var _, has = internal.TileLayers[tileMapId]
 
 	if has && !isDefault(tileMapId) {
-		delete(internal.TileDatas, tileMapId)
+		delete(internal.TileLayers, tileMapId)
 	}
 }
 func UnloadAllTileSets() {
@@ -56,7 +56,7 @@ func UnloadAllTileSets() {
 	}
 }
 func UnloadAllTileData() {
-	for id := range internal.TileDatas {
+	for id := range internal.TileLayers {
 		UnloadTileData(id)
 	}
 }

@@ -23,9 +23,12 @@ type Atlas struct {
 	CellWidth, CellHeight,
 	Gap int
 }
-type TileData struct {
+type TileLayer struct {
 	Image   *rl.Image
 	Texture *rl.Texture2D
+
+	Points        []float32
+	PointsPerTile map[uint16][]float32
 }
 type TileSet struct {
 	TextureId             string
@@ -52,7 +55,7 @@ var ShaderTileMapLoc int32
 var Sounds = make(map[string]*rl.Sound)
 var Music = make(map[string]*rl.Music)
 
-var TileDatas = make(map[string]*TileData)
+var TileLayers = make(map[string]*TileLayer)
 var TileSets = make(map[string]*TileSet)
 
 var Screens []interface {
@@ -168,7 +171,7 @@ func AssetSize(assetId string) (width, height int) {
 		return int(font.Texture.Width), int(font.Texture.Height)
 	}
 
-	var tileData, hasTileData = TileDatas[assetId]
+	var tileData, hasTileData = TileLayers[assetId]
 	if hasTileData {
 		return int(tileData.Image.Width), int(tileData.Image.Height)
 	}

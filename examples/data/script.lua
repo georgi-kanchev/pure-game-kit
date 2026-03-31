@@ -1,9 +1,9 @@
 function Greet(name)
-    print("Hello, " .. name .. "!")
+	print("Hello, " .. name .. "!")
 end
 
 function Add(a, b)
-    return a + b
+	return a + b
 end
 
 function ToLowerAndHi(value)
@@ -11,5 +11,5 @@ function ToLowerAndHi(value)
 end
 
 function IsEven(num)
-    return num % 2 == 0
+	return num % 2 == 0
 end

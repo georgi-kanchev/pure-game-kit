@@ -62,8 +62,8 @@ vec4 compute_blur(vec2 uv) {
     vec2 blur = vec2(u[BLUR_X], u[BLUR_Y]);
     if (blur.x == 0.0 && blur.y == 0.0)
         return texture(texture0, uv);
-    
-	vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
+
+    vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
     vec2 res = 1.0 / texSize;
     vec2 offset = (blur + 0.5) * res;
     vec4 sum = texture(texture0, uv + vec2(-offset.x, -offset.y));
@@ -75,21 +75,21 @@ vec4 compute_blur(vec2 uv) {
 vec4 compute_outline(vec4 color, vec2 uv) {
     float outline = u[OUTLINE_SIZE];
     if (color.a > 0 || outline == 0.0)
-		return color;
-    
-	vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
+        return color;
+
+    vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
     vec2 texel = 1.0 / texSize;
-    
+
     if (texture(texture0, uv + vec2(texel.x * outline, 0.0)).a > 0.0 ||
-        texture(texture0, uv + vec2(-texel.x * outline, 0.0)).a > 0.0 ||
-        texture(texture0, uv + vec2(0.0, texel.y * outline)).a > 0.0 ||
-        texture(texture0, uv + vec2(0.0, -texel.y * outline)).a > 0.0 ||
-        texture(texture0, uv + vec2(texel.x * outline, texel.y * outline)).a > 0.0 ||
-        texture(texture0, uv + vec2(-texel.x * outline, texel.y * outline)).a > 0.0 ||
-        texture(texture0, uv + vec2(-texel.x * outline, -texel.y * outline)).a > 0.0 ||
-        texture(texture0, uv + vec2(texel.x * outline, -texel.y * outline)).a > 0.0)
-		return vec4(u[OUTLINE_R], u[OUTLINE_G], u[OUTLINE_B], u[OUTLINE_A]);
-    
+            texture(texture0, uv + vec2(-texel.x * outline, 0.0)).a > 0.0 ||
+            texture(texture0, uv + vec2(0.0, texel.y * outline)).a > 0.0 ||
+            texture(texture0, uv + vec2(0.0, -texel.y * outline)).a > 0.0 ||
+            texture(texture0, uv + vec2(texel.x * outline, texel.y * outline)).a > 0.0 ||
+            texture(texture0, uv + vec2(-texel.x * outline, texel.y * outline)).a > 0.0 ||
+            texture(texture0, uv + vec2(-texel.x * outline, -texel.y * outline)).a > 0.0 ||
+            texture(texture0, uv + vec2(texel.x * outline, -texel.y * outline)).a > 0.0)
+        return vec4(u[OUTLINE_R], u[OUTLINE_G], u[OUTLINE_B], u[OUTLINE_A]);
+
     return color;
 }
 vec4 compute_silhouette(vec4 color) {
@@ -100,7 +100,7 @@ vec4 compute_silhouette(vec4 color) {
 vec4 compute_color_adjust(vec4 color) {
     if (u[CALCULATE_COLOR_ADJUST] < 0.5)
         return color;
-    
+
     float gam = u[GAMMA];
     float sat = u[SATURATION];
     float con = u[CONTRAST];
@@ -125,7 +125,7 @@ vec2 compute_tile(vec2 uv) {
     ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
     if (mapSize.x == 0)
         return uv; // this is a regular sprite, not a tilemap
-    
+
     ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
@@ -133,32 +133,32 @@ vec2 compute_tile(vec2 uv) {
     vec4 texColor = texelFetch(tileData, dataUv, 0);
     uvec4 b = uvec4(texColor * 255.0 + 0.5);
     uint gid = (b.r << 24) | (b.g << 16) | (b.b << 8) | b.a;
-    
-    bool flip = (gid & 0x80000000u) != 0u;       // bits 31..31
-    uint rot = (gid & 0x60000000u) >> 29;        // bits 30..29
-    uint animCount = (gid & 0x1E000000u) >> 25;  // bits 28..25
+
+    bool flip = (gid & 0x80000000u) != 0u; // bits 31..31
+    uint rot = (gid & 0x60000000u) >> 29; // bits 30..29
+    uint animCount = (gid & 0x1E000000u) >> 25; // bits 28..25
     uint animOffset = (gid & 0x01E00000u) >> 21; // bits 24..21
-    uint speedRaw = (gid & 0x001F0000u) >> 16;   // bits 20..16
-    uint atlasBase = gid & 0xFFFFu;              // bits 15..00
-    
+    uint speedRaw = (gid & 0x001F0000u) >> 16; // bits 20..16
+    uint atlasBase = gid & 0xFFFFu; // bits 15..00
+
     float s = float(speedRaw); // multiplier logic: 0..10 maps to 0.00..1.00; 11..31 maps to 1.33..10.00
     float multiplier = (s <= 10.0) ? (s * 0.1) : (1.0 + (s - 10.0) * 0.45);
     uint frameRange = animCount + 1u;
     uint currentFrame = uint(mod(floor(u[TIME] * multiplier) + float(animOffset), float(frameRange)));
     uint atlasIndex = atlasBase + currentFrame;
-    
+
     float atlasCols = floor(u[TEXTURE_W] / u[TILE_W]);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
     localUV -= 0.5;
     localUV.x = flip ? -localUV.x : localUV.x;
-    localUV = rot == 1u ? vec2(localUV.y, -localUV.x) : localUV;  // 90 degrees
+    localUV = rot == 1u ? vec2(localUV.y, -localUV.x) : localUV; // 90 degrees
     localUV = rot == 2u ? vec2(-localUV.x, -localUV.y) : localUV; // 180 degrees
-    localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV;  // 270 degrees
+    localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV; // 270 degrees
     localUV += 0.5;
-    
+
     localUV = mix(localUV, vec2(0.5), 1.0 / vec2(u[TILE_W], u[TILE_H])); // prevents texture bleeding artifacts
-    
+
     vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_W], u[TEXTURE_H] / u[TILE_H]);
     return (coord + localUV) / atlasSizeInTiles;
 }
@@ -167,35 +167,35 @@ vec4 compute_sdf_text(vec2 uv) {
     vec4 base = unpackRGB222(c.r);
     vec4 outlineColor = unpackRGB222(c.g);
     vec4 shadowColor = unpackRGB222(c.b);
-    
-    uint thickIdx  = (c.a >> 6) & 0x03u;
-    uint outlIdx   = (c.a >> 4) & 0x03u;
-    uint shadIdx   = (c.a >> 2) & 0x03u;
-    uint smoothIdx = (c.a)      & 0x03u;
-    
+
+    uint thickIdx = (c.a >> 6) & 0x03u;
+    uint outlIdx = (c.a >> 4) & 0x03u;
+    uint shadIdx = (c.a >> 2) & 0x03u;
+    uint smoothIdx = (c.a) & 0x03u;
+
     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
-    
+
     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
     float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
-    
+
     float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
-    
+
     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
-    
+
     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
-    
+
     vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
     float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
-    
+
     return vec4(finalRGB, finalAlpha);
 }
 
@@ -203,7 +203,7 @@ void main() {
     vec2 uv = fragTexCoord;
     if (u[CALCULATE_SDF_TEXT] > 0.5) {
         uv = compute_pixelated_uv(uv);
-        
+
         vec4 color = compute_sdf_text(uv);
         color = compute_outline(color, uv);
         color = compute_color_adjust(color);
@@ -215,16 +215,16 @@ void main() {
 
     uv = compute_tile(uv);
     uv = compute_pixelated_uv(uv);
-    
+
     vec4 color = compute_blur(uv);
     color = compute_outline(color, uv);
-    
+
     if (color.a * fragColor.a < 0.004)
         discard;
-     
+
     color = compute_color_adjust(color);
     color = compute_silhouette(color);
-    
+
     finalColor = color * fragColor;
     gl_FragDepth = u[DEPTH_Z];
 }

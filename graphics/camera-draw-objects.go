@@ -235,7 +235,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		}
 
 		var atlas = internal.TileSets[t.TileSetId]
-		var data = internal.TileDatas[t.TileDataId]
+		var data = internal.TileLayers[t.TileLayerId]
 		if atlas == nil && data == nil {
 			continue
 		}
@@ -243,6 +243,10 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		batch.mask = c.Mask
 		if t.Mask != nil {
 			batch.mask = t.Mask
+		}
+
+		if data.Texture == nil {
+			continue // only object points, no tile data
 		}
 
 		var texture = internal.Textures[atlas.TextureId]

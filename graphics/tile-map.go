@@ -1,7 +1,6 @@
 package graphics
 
 import (
-	"pure-game-kit/data/assets"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
@@ -11,7 +10,7 @@ import (
 
 type TileMap struct {
 	Quad
-	TileSetId, TileDataId string
+	TileSetId, TileLayerId string
 }
 
 type Tile struct {
@@ -32,11 +31,11 @@ type Tile struct {
 	FrameSpeed  byte // Ranged 0..31
 }
 
-func NewTileMap(tileSetId, tileDataId string) *TileMap {
-	var tileMap = &TileMap{Quad: *NewQuad(0, 0), TileSetId: tileSetId, TileDataId: tileDataId}
+func NewTileMap(tileSetId, tileLayerId string) *TileMap {
+	var tileMap = &TileMap{Quad: *NewQuad(0, 0), TileSetId: tileSetId, TileLayerId: tileLayerId}
 	var atlas = internal.TileSets[tileSetId]
-	var data = internal.TileDatas[tileDataId]
-	if atlas != nil && data != nil {
+	var data = internal.TileLayers[tileLayerId]
+	if atlas != nil && data != nil && data.Image != nil {
 		tileMap.Width = float32(data.Image.Width * int32(atlas.TileWidth))
 		tileMap.Height = float32(data.Image.Height * int32(atlas.TileHeight))
 	}
@@ -60,7 +59,7 @@ func (tm *TileMap) SetTile(column, row int, tile *Tile) {
 	tm.SetTileArea(column, row, 1, 1, tile)
 }
 func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
-	var data = internal.TileDatas[tm.TileDataId]
+	var data = internal.TileLayers[tm.TileLayerId]
 	if data == nil {
 		return
 	}
@@ -88,8 +87,8 @@ func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
 
 //=================================================================
 
-func (tm *TileMap) TileAt(column, row int) *Tile {
-	var data = internal.TileDatas[tm.TileDataId]
+func (tm *TileMap) TileAtCell(column, row int) *Tile {
+	var data = internal.TileLayers[tm.TileLayerId]
 	if data == nil {
 		return nil
 	}
@@ -106,22 +105,61 @@ func (tm *TileMap) TileAt(column, row int) *Tile {
 		Flip:        (packed >> 31) == 1,
 	}
 }
+func (tm *TileMap) CellAtPoint(x, y float32) (column, row int) {
+	var localX, localY = tm.PointToLocal(x, y)
+	var tw, th = tm.SizeTile()
+	return int(localX / tw), int(localY / th)
+}
+
+func (tm *TileMap) Points() []float32 {
+	var data = internal.TileLayers[tm.TileLayerId]
+	if data == nil {
+		return nil
+	}
+	var pts = make([]float32, 0, len(data.Points))
+	for i := 1; i < len(data.Points); i += 2 {
+		var x, y = tm.PointToGlobal(data.Points[i-1], data.Points[i])
+		pts = append(pts, x, y)
+	}
+	return pts
+}
+func (tm *TileMap) PointsAtCell(column, row int) []float32 {
+	var tile = tm.TileAtCell(column, row)
+	if tile == nil {
+		return nil
+	}
+	var ptsPerTile = tm.PointsFromTile(tile.Id)
+	var pts = make([]float32, 0, len(ptsPerTile))
+	var tw, th = tm.SizeTile()
+	for i := 1; i < len(ptsPerTile); i += 2 {
+		var x, y = tm.PointToGlobal(ptsPerTile[i-1]+float32(column)*tw, ptsPerTile[i]+float32(row)*th)
+		pts = append(pts, x, y)
+	}
+	return pts
+}
+func (tm *TileMap) PointsFromTile(tileId uint16) []float32 {
+	var data = internal.TileLayers[tm.TileLayerId]
+	if data == nil {
+		return nil
+	}
+	return collection.Copy(data.PointsPerTile[tileId])
+}
 
 func (tm *TileMap) Size() (columns, rows int) {
-	return assets.Size(tm.TileDataId)
+	return internal.AssetSize(tm.TileLayerId)
 }
-func (tm *TileMap) TileSize() (width, height float32) {
+func (tm *TileMap) SizeTile() (width, height float32) {
 	var tileSet = internal.TileSets[tm.TileSetId]
 	if tileSet == nil {
 		return number.NaN(), number.NaN()
 	}
 	return float32(tileSet.TileWidth), float32(tileSet.TileHeight)
 }
-func (tm *TileMap) TileSetSize() (columns, rows int) {
+func (tm *TileMap) SizeTileSet() (columns, rows int) {
 	var tileSet = internal.TileSets[tm.TileSetId]
 	if tileSet == nil {
 		return 0, 0
 	}
-	var tw, th = assets.Size(tm.TileSetId)
+	var tw, th = internal.AssetSize(tm.TileSetId)
 	return tw / tileSet.TileWidth, th / tileSet.TileHeight
 }
