@@ -61,11 +61,11 @@
             "expandedObjectLayers": [
                 5
             ],
-            "scale": 11,
+            "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 251.72727272727275,
-                "y": 140.3181818181818
+                "x": 183,
+                "y": 256.5
             }
         },
         "map.tmx#atlas": {

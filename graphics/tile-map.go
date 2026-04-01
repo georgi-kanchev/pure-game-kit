@@ -13,9 +13,9 @@ type TileMap struct {
 	Quad
 	TileSetId, TileLayerId string
 
-	hash           uint64
-	cacheAllPoints []float32
-	lastDirtyTime  float32
+	hash           uint64    // used to track changes in this struct to update the allPointsCache
+	allPointsCache []float32 // the accumulation result of all tile points or all object points, in world space
+	lastDirtyTime  float32   // used to compare with the asset tile data one, tracking any tile (with points) changes
 }
 
 type Tile struct {
@@ -150,20 +150,20 @@ func (tm *TileMap) Points() []float32 {
 
 	if data.Image == nil || data.Texture == nil { // is object layer
 		if !isStructDirty {
-			return tm.cacheAllPoints
+			return tm.allPointsCache
 		}
 
 		var copy = collection.Copy(data.ObjectPoints)
 		for p := 0; p < len(copy); p += 2 {
 			copy[p], copy[p+1] = tm.PointToGlobal(copy[p], copy[p+1])
 		}
-		tm.cacheAllPoints = copy
+		tm.allPointsCache = copy
 		return copy
 	}
 
 	var isTileDataDirty = tm.lastDirtyTime != data.LastDirtyTime
 	if !isTileDataDirty && !isStructDirty {
-		return tm.cacheAllPoints
+		return tm.allPointsCache
 	}
 
 	var w, h = tm.Size()
@@ -172,7 +172,7 @@ func (tm *TileMap) Points() []float32 {
 		var row, column = number.Index1DToIndexes2D(cellIndex1D, w, h)
 		result = append(result, tm.PointsAtCell(column, row)...)
 	}
-	tm.cacheAllPoints = result
+	tm.allPointsCache = result
 	tm.lastDirtyTime = data.LastDirtyTime
 	return result
 }
@@ -190,6 +190,8 @@ func (tm *TileMap) PointsAtCell(column, row int) []float32 {
 	}
 	return result
 }
+
+// The points are in tile space.
 func (tm *TileMap) PointsFromTile(tileId uint16) []float32 {
 	var tileSet = internal.TileSets[tm.TileSetId]
 	if tileSet == nil {
