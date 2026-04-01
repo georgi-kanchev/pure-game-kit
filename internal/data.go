@@ -27,12 +27,14 @@ type TileLayer struct {
 	Image   *rl.Image
 	Texture *rl.Texture2D
 
-	Points        []float32
-	PointsPerTile map[uint16][]float32
+	LastDirtyTime   float32
+	CellsWithPoints map[int]struct{}
+	ObjectPoints    []float32
 }
 type TileSet struct {
 	TextureId             string
 	TileWidth, TileHeight int
+	PointsPerTile         map[uint16][]float32
 }
 
 var WindowReady = false

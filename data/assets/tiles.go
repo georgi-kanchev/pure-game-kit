@@ -17,7 +17,8 @@ func LoadedTileDataIds() []string {
 
 func LoadTileSet(imageFilePath string, tileWidth, tileHeight int) string {
 	var textureId = LoadTexture(imageFilePath)
-	var atlas = &internal.TileSet{TextureId: textureId, TileWidth: tileWidth, TileHeight: tileHeight}
+	var atlas = &internal.TileSet{TextureId: textureId, TileWidth: tileWidth, TileHeight: tileHeight,
+		PointsPerTile: make(map[uint16][]float32)}
 	internal.TileSets[textureId] = atlas
 	return textureId
 }
@@ -27,7 +28,7 @@ func LoadTileData(id string, columns, rows int) string {
 	columns = number.Limit(columns, 1, 2048)
 	rows = number.Limit(rows, 1, 2048)
 
-	var data = &internal.TileLayer{Image: rl.GenImageColor(columns, rows, rl.Blank)}
+	var data = &internal.TileLayer{Image: rl.GenImageColor(columns, rows, rl.Blank), CellsWithPoints: make(map[int]struct{})}
 	var tex = rl.LoadTextureFromImage(data.Image)
 	rl.SetTextureFilter(tex, rl.FilterPoint)
 	data.Texture = &tex

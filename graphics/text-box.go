@@ -18,7 +18,7 @@ type TextBox struct {
 	LineHeight, SymbolGap, LineGap,
 	ShadowOffsetX, ShadowOffsetY float32
 
-	hash         uint32
+	hash         uint64
 	cacheChars   []string
 	cacheSymbols []*symbol
 	cacheWrap    string

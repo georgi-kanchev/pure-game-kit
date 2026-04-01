@@ -5,11 +5,11 @@ package random
 
 import (
 	"fmt"
-	"hash/fnv"
 	"math"
 	"math/rand/v2"
 	"pure-game-kit/utility/number"
 	"reflect"
+	"strconv"
 )
 
 func CombineSeeds[T number.Number](seeds ...T) T {
@@ -103,8 +103,8 @@ func PickFrom[T any](items []T, seeds ...float32) T {
 	return items[Range(0, len(items), seeds...)]
 }
 
-func Hash(value any) uint32 {
-	var h = fnv.New32a()
+// For structs, only exported fields are accounted for
+func Hash(value any) uint64 {
 	var val = reflect.ValueOf(value)
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
@@ -112,16 +112,46 @@ func Hash(value any) uint32 {
 		}
 		val = val.Elem()
 	}
+
+	if val.Kind() != reflect.Struct {
+		return 0
+	}
+
+	var hash = uint64(fnvOffset64)
+	var buf [128]byte
+
 	for _, field := range val.Fields() {
-		if field.CanInterface() { // only exported fields
-			h.Write(fmt.Appendf(nil, "%v", field.Interface()))
+		var field = field
+		if !field.CanInterface() { // only exported fields
+			continue
+		}
+
+		var b = buf[:0]
+		switch field.Kind() {
+		case reflect.String:
+			b = append(b, field.String()...)
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			b = strconv.AppendInt(b, field.Int(), 10)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			b = strconv.AppendUint(b, field.Uint(), 10)
+		case reflect.Bool:
+			b = strconv.AppendBool(b, field.Bool())
+		default:
+			b = fmt.Appendf(b, "%v", field.Interface())
+		}
+
+		for _, c := range b {
+			hash ^= uint64(c)
+			hash *= fnvPrime64
 		}
 	}
-	return h.Sum32()
+	return hash
 }
 
 // =================================================================
 // private
+
+const fnvOffset64, fnvPrime64 = 14695981039346656037, 1099511628211
 
 func hashSeed(seed, value uint64) uint64 {
 	seed ^= value
@@ -176,3 +206,20 @@ func combineSeeds(seeds ...uint64) uint64 {
 	}
 	return seed
 }
+
+// func oldHash(value any) uint64 {
+// 	var hash = fnv.New64a()
+// 	var val = reflect.ValueOf(value)
+// 	if val.Kind() == reflect.Pointer {
+// 		if val.IsNil() {
+// 			return 0
+// 		}
+// 		val = val.Elem()
+// 	}
+// 	for _, field := range val.Fields() {
+// 		if field.CanInterface() { // only exported fields
+// 			hash.Write(fmt.Appendf(nil, "%v", field.Interface()))
+// 		}
+// 	}
+// 	return hash.Sum64()
+// }

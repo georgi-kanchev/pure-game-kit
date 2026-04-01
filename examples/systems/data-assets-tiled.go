@@ -7,6 +7,7 @@ import (
 	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/input/mouse"
 	"pure-game-kit/input/mouse/button"
+	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/window"
 )
@@ -15,7 +16,6 @@ func Tiled() {
 	var cam = graphics.NewCamera(4)
 	var tileSetId string
 	var tileDataIds []string
-	var pts []float32
 	var hotreload = func() {
 		tileSetId, tileDataIds = assets.LoadTiledLayers("examples/data/map.tmx")
 	}
@@ -34,23 +34,18 @@ func Tiled() {
 	for window.KeepOpen() {
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawTileMaps(tileMaps...)
-		cam.DrawShapes(palette.Red, pts...)
-		cam.DrawPoints(2, palette.White, pts...)
-		cam.DrawTextDebug(true, true, true, true)
 
-		cam.DrawShapes(palette.Red, tileMaps[3].Points()...)
+		cam.DrawShapes(color.FadeOut(palette.Red, 0.5), tileMaps[2].Points()...)
+		cam.DrawShapes(color.FadeOut(palette.Blue, 0.5), tileMaps[3].Points()...)
 
 		if mouse.IsButtonPressed(button.Left) {
 			var x, y = tileMaps[3].CellAtPoint(cam.MousePosition())
-			tileMaps[3].SetTile(x, y, graphics.NewTile(22))
+			tileMaps[3].SetTile(x, y, graphics.NewTile(0))
 		}
-		// fmt.Printf("cell: %v, %v\n", x, y)
-
-		// var tilePts = tileMaps[3].PointsAtCell(x, y)
-		// cam.DrawShapes(palette.Blue, tilePts...)
 
 		if keyboard.IsKeyJustPressed(key.F5) {
 			hotreload()
 		}
+		cam.DrawTextDebug(true, true, true, true)
 	}
 }

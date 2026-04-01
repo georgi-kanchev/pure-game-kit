@@ -8,7 +8,6 @@ import (
 	"pure-game-kit/data/storage"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
@@ -25,7 +24,7 @@ func LoadTiledLayers(tmxFilePath string) (tileSetId string, tileLayerIds []strin
 	dir = path.New(dir, tileset.Source)
 	dir = path.New(path.Folder(dir), tileset.Image.Source)
 	tileSetId = LoadTileSet(dir, w, h)
-	tileLayerIds = loadLayersRecursively(tmxFilePath, tiled, &tiled.layers)
+	tileLayerIds = loadLayersRecursively(tmxFilePath, tileSetId, tiled, &tiled.layers)
 	return tileSetId, tileLayerIds
 }
 
@@ -85,6 +84,8 @@ type tile struct {
 	Animation *struct {
 		Frames []*tileFrame `xml:"frame"`
 	} `xml:"animation"`
+
+	Points []float32
 }
 type tileFrame struct {
 	TileId   uint32 `xml:"tileid,attr"`
@@ -128,33 +129,37 @@ func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
 	tileSet.TilesLookUp = map[uint32]*tile{}
 	for _, t := range tileSet.Tiles {
 		tileSet.TilesLookUp[t.Id] = t
+
+		if t.Objects != nil {
+			t.Points = loadLayerObjects(t.Objects)
+		}
 	}
 
 	return tileSet, tiled
 }
-func loadLayersRecursively(tmxFilePath string, tiled *tiled, layers *layers) []string {
+func loadLayersRecursively(tmxFilePath, tileSetId string, tiled *tiled, layers *layers) []string {
 	var result []string
 	for _, layer := range layers.LayersTiles {
-		var id = loadLayerTiles(tmxFilePath, tiled, layer)
+		var id = loadLayerTiles(tmxFilePath, tileSetId, tiled, layer)
 		result = append(result, id)
 	}
 	for _, layer := range layers.LayersObjects {
 		var dataId = path.New(tmxFilePath, layer.Name)
-		internal.TileLayers[dataId] = &internal.TileLayer{Points: loadLayerObjects(layer)}
+		internal.TileLayers[dataId] = &internal.TileLayer{ObjectPoints: loadLayerObjects(layer)}
 		result = append(result, dataId)
 	}
 	for _, group := range layers.LayersGroups {
-		result = append(result, loadLayersRecursively(tmxFilePath, tiled, group)...)
+		result = append(result, loadLayersRecursively(tmxFilePath, tileSetId, tiled, group)...)
 	}
 	return result
 }
-func loadLayerTiles(tmxFilePath string, tiled *tiled, layer *layerTiles) string {
+func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTiles) string {
 	var tileData = text.Trim(layer.TileData.Tiles)
 	var tiles = make([]uint32, tiled.Width*tiled.Height)
 	var csv = layer.TileData.Encoding == "csv"
-	var pts []float32
 	var dataId = ""
 	var data *internal.TileLayer
+	var tileSet = internal.TileSets[tileSetId]
 
 	dataId = LoadTileData(path.New(tmxFilePath, layer.Name), tiled.Width, tiled.Height)
 	data = internal.TileLayers[dataId]
@@ -196,22 +201,17 @@ func loadLayerTiles(tmxFilePath string, tiled *tiled, layer *layerTiles) string 
 
 			var raw = tiles[index]
 			var id = ((raw & 0x1FFFFFFF) - 1)
-
 			var tile = tiled.TileSet.TilesLookUp[id]
-			if tile != nil && tile.Objects != nil {
-				tile.Objects.Name = layer.Name
-				var tilePts = loadLayerObjects(tile.Objects)
-
-				if data.PointsPerTile == nil {
-					data.PointsPerTile = make(map[uint16][]float32)
+			if tile != nil && tile.Objects != nil && tileSet != nil {
+				var tilePts, has = tileSet.PointsPerTile[uint16(tile.Id)]
+				if !has {
+					tilePts = loadLayerObjects(tile.Objects)
+					tileSet.PointsPerTile[uint16(tile.Id)] = tilePts
 				}
-				data.PointsPerTile[uint16(tile.Id)] = collection.Copy(tilePts)
 
-				for p := 0; p < len(tilePts); p += 2 {
-					tilePts[p] += float32(j * tiled.TileSet.TileWidth)
-					tilePts[p+1] += float32(i * tiled.TileSet.TileHeight)
-				}
-				pts = append(pts, tilePts...)
+				var cellIndex1D = number.Indexes2DToIndex1D(j, i, tiled.Width, tiled.Height)
+				data.CellsWithPoints[cellIndex1D] = struct{}{}
+				data.LastDirtyTime = internal.Runtime
 			}
 
 			var frameCount, frameSpeed, animOffset uint32
@@ -246,7 +246,6 @@ func loadLayerTiles(tmxFilePath string, tiled *tiled, layer *layerTiles) string 
 			rl.UpdateTextureRec(*data.Texture, rect, []rl.Color{colr})
 		}
 	}
-	data.Points = pts
 	return dataId
 }
 func loadLayerObjects(layer *layerObjects) []float32 {

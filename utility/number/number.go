@@ -373,14 +373,14 @@ func Indexes2DToIndex1D[T Integer](x, y, width, height T) T {
 	}
 	return result
 }
-func Index1DToIndexes2D[T Integer](index, width, height T) (T, T) {
+func Index1DToIndexes2D[T Integer](index, width, height T) (x, y T) {
 	var max = width * height
 	if index < 0 {
 		index = 0
 	} else if index > max {
 		index = max
 	}
-	var x = index % width
-	var y = index / width
+	x = index % width
+	y = index / width
 	return x, y
 }

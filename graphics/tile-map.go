@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/random"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -11,6 +12,10 @@ import (
 type TileMap struct {
 	Quad
 	TileSetId, TileLayerId string
+
+	hash           uint64
+	cacheAllPoints []float32
+	lastDirtyTime  float32
 }
 
 type Tile struct {
@@ -60,7 +65,8 @@ func (tm *TileMap) SetTile(column, row int, tile *Tile) {
 }
 func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
 	var data = internal.TileLayers[tm.TileLayerId]
-	if data == nil {
+	var tileSet = internal.TileSets[tm.TileSetId]
+	if data == nil || tileSet == nil {
 		return
 	}
 
@@ -80,6 +86,27 @@ func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
 	var a = uint8((packed >> 0) & 0xFF)
 	var colr = rl.NewColor(r, g, b, a)
 	var rect = rl.NewRectangle(float32(column), float32(row), float32(width), float32(height))
+	var w, h = tm.Size()
+	var _, cellHasPts = tileSet.PointsPerTile[tile.Id]
+
+	for i := row; i < row+height; i++ {
+		for j := column; j < column+width; j++ {
+			var prevTile = tm.TileAtCell(j, i)
+			var _, prevCellHasPts = tileSet.PointsPerTile[prevTile.Id]
+			if !prevCellHasPts && !cellHasPts {
+				continue
+			}
+
+			var index1D = number.Indexes2DToIndex1D(j, i, w, h)
+			data.LastDirtyTime = internal.Runtime
+
+			if cellHasPts {
+				data.CellsWithPoints[index1D] = struct{}{}
+			} else {
+				delete(data.CellsWithPoints, index1D)
+			}
+		}
+	}
 
 	rl.ImageDrawRectangle(data.Image, int32(column), int32(row), int32(width), int32(height), colr)
 	rl.UpdateTextureRec(*data.Texture, rect, collection.SameItems(width*height, colr))
@@ -116,12 +143,38 @@ func (tm *TileMap) Points() []float32 {
 	if data == nil {
 		return nil
 	}
-	var pts = make([]float32, 0, len(data.Points))
-	for i := 1; i < len(data.Points); i += 2 {
-		var x, y = tm.PointToGlobal(data.Points[i-1], data.Points[i])
-		pts = append(pts, x, y)
+
+	var hash = random.Hash(tm)
+	var isStructDirty = tm.hash != hash
+	defer func() { tm.hash = hash }()
+
+	if data.Image == nil || data.Texture == nil { // is object layer
+		if !isStructDirty {
+			return tm.cacheAllPoints
+		}
+
+		var copy = collection.Copy(data.ObjectPoints)
+		for p := 0; p < len(copy); p += 2 {
+			copy[p], copy[p+1] = tm.PointToGlobal(copy[p], copy[p+1])
+		}
+		tm.cacheAllPoints = copy
+		return copy
 	}
-	return pts
+
+	var isTileDataDirty = tm.lastDirtyTime != data.LastDirtyTime
+	if !isTileDataDirty && !isStructDirty {
+		return tm.cacheAllPoints
+	}
+
+	var w, h = tm.Size()
+	var result = make([]float32, 0, 32)
+	for cellIndex1D := range data.CellsWithPoints {
+		var row, column = number.Index1DToIndexes2D(cellIndex1D, w, h)
+		result = append(result, tm.PointsAtCell(column, row)...)
+	}
+	tm.cacheAllPoints = result
+	tm.lastDirtyTime = data.LastDirtyTime
+	return result
 }
 func (tm *TileMap) PointsAtCell(column, row int) []float32 {
 	var tile = tm.TileAtCell(column, row)
@@ -129,20 +182,20 @@ func (tm *TileMap) PointsAtCell(column, row int) []float32 {
 		return nil
 	}
 	var ptsPerTile = tm.PointsFromTile(tile.Id)
-	var pts = make([]float32, 0, len(ptsPerTile))
+	var result = make([]float32, 0, len(ptsPerTile))
 	var tw, th = tm.SizeTile()
 	for i := 1; i < len(ptsPerTile); i += 2 {
 		var x, y = tm.PointToGlobal(ptsPerTile[i-1]+float32(column)*tw, ptsPerTile[i]+float32(row)*th)
-		pts = append(pts, x, y)
+		result = append(result, x, y)
 	}
-	return pts
+	return result
 }
 func (tm *TileMap) PointsFromTile(tileId uint16) []float32 {
-	var data = internal.TileLayers[tm.TileLayerId]
-	if data == nil {
+	var tileSet = internal.TileSets[tm.TileSetId]
+	if tileSet == nil {
 		return nil
 	}
-	return collection.Copy(data.PointsPerTile[tileId])
+	return collection.Copy(tileSet.PointsPerTile[tileId])
 }
 
 func (tm *TileMap) Size() (columns, rows int) {

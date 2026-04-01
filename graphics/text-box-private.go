@@ -27,8 +27,8 @@ type symbol struct {
 }
 
 func (t *TextBox) formatSymbols() ([]string, []*symbol) {
-	var curHash = random.Hash(t)
-	if t.hash == curHash {
+	var hash = random.Hash(t)
+	if t.hash == hash {
 		return t.cacheChars, t.cacheSymbols
 	}
 
@@ -116,7 +116,7 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 		lineIndex++
 	}
 
-	t.hash = curHash
+	t.hash = hash
 	t.cacheChars = resultLines
 	t.cacheSymbols = result
 	return resultLines, result
