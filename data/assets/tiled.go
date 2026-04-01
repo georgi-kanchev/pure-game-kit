@@ -75,6 +75,7 @@ type layerObjects struct {
 		Polyline *objectPoints `xml:"polyline"`
 		Ellipse  *struct{}     `xml:"ellipse"`
 		Point    *struct{}     `xml:"point"`
+		Capsule  *struct{}     `xml:"capsule"`
 	} `xml:"object"`
 }
 type layerAny struct {
@@ -278,7 +279,7 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 func loadLayerObjects(layer *layerObjects) []float32 {
 	var result []float32
 	for _, o := range layer.Objects {
-		var data = ""
+		var data = "" // slow motherfucker but builder makes it complicated & slow loading doesn't really matter
 		if o.Polyline != nil {
 			data = o.Polyline.Points
 		}
@@ -298,6 +299,37 @@ func loadLayerObjects(layer *layerObjects) []float32 {
 					var x, y = (cx + 1) * rx, (cy + 1) * ry // shift from center-based to tiled's top-left-based
 					var value = text.New(x, ",", y, " ")
 					data += value
+				}
+			} else if o.Capsule != nil {
+				var segments = 16
+				var radius = o.Height / 2
+				if o.Width < o.Height {
+					radius = o.Width / 2
+				}
+				var step = 180.0 / float32(segments)
+				var isVertical = o.Height > o.Width
+				if isVertical {
+					for i := range segments + 1 {
+						var cx, cy = point.MoveAtAngle(0, 0, 180.0+float32(i)*step, 1)
+						var x, y = (cx + 1) * radius, (cy + 1) * radius
+						data += text.New(x, ",", y, " ")
+					}
+					for i := range segments + 1 {
+						var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
+						var x, y = (cx + 1) * radius, (cy+1)*radius + (o.Height - 2*radius)
+						data += text.New(x, ",", y, " ")
+					}
+				} else {
+					for i := range segments + 1 {
+						var cx, cy = point.MoveAtAngle(0, 0, 90.0+float32(i)*step, 1)
+						var x, y = (cx + 1) * radius, (cy + 1) * radius
+						data += text.New(x, ",", y, " ")
+					}
+					for i := range segments + 1 {
+						var cx, cy = point.MoveAtAngle(0, 0, 270.0+float32(i)*step, 1)
+						var x, y = (cx+1)*radius + (o.Width - 2*radius), (cy + 1) * radius
+						data += text.New(x, ",", y, " ")
+					}
 				}
 			} else { // assume it's a rectangle
 				data = text.New(0, ",", 0, " ", o.Width, ",", 0, " ", o.Width, ",", o.Height, " ", 0, ",", o.Height)

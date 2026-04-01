@@ -61,11 +61,11 @@
             "expandedObjectLayers": [
                 5
             ],
-            "scale": 1,
-            "selectedLayer": 3,
+            "scale": 1.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 183,
-                "y": 256.5
+                "x": 253.3333333333333,
+                "y": 200.33333333333334
             }
         },
         "map.tmx#atlas": {
@@ -119,6 +119,7 @@
         "atlas.tsx"
     ],
     "project": "game-name.tiled-project",
+    "property.type": "list",
     "recentFiles": [
         "atlas.tsx",
         "map.tmx",
