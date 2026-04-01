@@ -3,11 +3,14 @@ package assets
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/xml"
 	"pure-game-kit/data/file"
 	"pure-game-kit/data/path"
 	"pure-game-kit/data/storage"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
+	"pure-game-kit/utility/collection"
+	"pure-game-kit/utility/is"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/text"
@@ -21,10 +24,14 @@ func LoadTiledLayers(tmxFilePath string) (tileSetId string, tileLayerIds []strin
 	var tileset, tiled = loadTiled(tmxFilePath)
 	var dir = path.Folder(tmxFilePath)
 	var w, h = tileset.TileWidth, tileset.TileHeight
+	var result = make(map[int]string)
 	dir = path.New(dir, tileset.Source)
 	dir = path.New(path.Folder(dir), tileset.Image.Source)
 	tileSetId = LoadTileSet(dir, w, h)
-	tileLayerIds = loadLayersRecursively(tmxFilePath, tileSetId, tiled, &tiled.layers)
+	loadLayersRecursively(result, tmxFilePath, tileSetId, tiled, &tiled.layers)
+	for _, id := range tiled.LayerIdsInOrder {
+		tileLayerIds = append(tileLayerIds, result[id])
+	}
 	return tileSetId, tileLayerIds
 }
 
@@ -36,13 +43,18 @@ type tiled struct {
 	Height  int      `xml:"height,attr"`
 	TileSet *tileSet `xml:"tileset"`
 	layers
+	LayerIdsInOrder []int
 }
 type layers struct {
 	LayersGroups  []*layers       `xml:"group"`
 	LayersTiles   []*layerTiles   `xml:"layer"`
 	LayersObjects []*layerObjects `xml:"objectgroup"`
 }
+type layersInOrder struct {
+	Layers []*layerAny `xml:",any"`
+}
 type layerTiles struct {
+	Id       int    `xml:"id,attr"`
 	Name     string `xml:"name,attr"`
 	TileData struct {
 		Encoding    string `xml:"encoding,attr"`
@@ -51,6 +63,7 @@ type layerTiles struct {
 	} `xml:"data"`
 }
 type layerObjects struct {
+	Id      int    `xml:"id,attr"`
 	Name    string `xml:"name,attr"`
 	Objects []*struct {
 		Width    float32       `xml:"width,attr"`
@@ -63,6 +76,11 @@ type layerObjects struct {
 		Ellipse  *struct{}     `xml:"ellipse"`
 		Point    *struct{}     `xml:"point"`
 	} `xml:"object"`
+}
+type layerAny struct {
+	XMLName   xml.Name
+	Id        int         `xml:"id,attr"`
+	SubLayers []*layerAny `xml:",any"`
 }
 type objectPoints struct {
 	Points string `xml:"points,attr"`
@@ -126,6 +144,12 @@ func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
 		}
 	}
 
+	var layersInOrder *layersInOrder
+	storage.FromXML(mapContent, &layersInOrder)
+	var order = getLayersOrder(layersInOrder.Layers)
+	collection.Reverse(order)
+	tiled.LayerIdsInOrder = order
+
 	tileSet.TilesLookUp = map[uint32]*tile{}
 	for _, t := range tileSet.Tiles {
 		tileSet.TilesLookUp[t.Id] = t
@@ -134,24 +158,20 @@ func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
 			t.Points = loadLayerObjects(t.Objects)
 		}
 	}
-
 	return tileSet, tiled
 }
-func loadLayersRecursively(tmxFilePath, tileSetId string, tiled *tiled, layers *layers) []string {
-	var result []string
+func loadLayersRecursively(result map[int]string, tmxFilePath, tileSetId string, tiled *tiled, layers *layers) {
 	for _, layer := range layers.LayersTiles {
-		var id = loadLayerTiles(tmxFilePath, tileSetId, tiled, layer)
-		result = append(result, id)
+		result[layer.Id] = loadLayerTiles(tmxFilePath, tileSetId, tiled, layer)
 	}
 	for _, layer := range layers.LayersObjects {
 		var dataId = path.New(tmxFilePath, layer.Name)
 		internal.TileLayers[dataId] = &internal.TileLayer{ObjectPoints: loadLayerObjects(layer)}
-		result = append(result, dataId)
+		result[layer.Id] = dataId
 	}
 	for _, group := range layers.LayersGroups {
-		result = append(result, loadLayersRecursively(tmxFilePath, tileSetId, tiled, group)...)
+		loadLayersRecursively(result, tmxFilePath, tileSetId, tiled, group)
 	}
-	return result
 }
 func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTiles) string {
 	var tileData = text.Trim(layer.TileData.Tiles)
@@ -312,6 +332,18 @@ func tilesFromBytes(data []byte) []uint32 {
 	var err = binary.Read(reader, binary.LittleEndian, &result)
 	if err != nil {
 		return nil
+	}
+	return result
+}
+
+func getLayersOrder(layers []*layerAny) []int {
+	var result = []int{}
+	collection.Reverse(layers)
+	for _, layer := range layers {
+		if is.OneOf(layer.XMLName.Local, "layer", "objectgroup") {
+			result = append(result, layer.Id)
+		}
+		result = append(result, getLayersOrder(layer.SubLayers)...)
 	}
 	return result
 }

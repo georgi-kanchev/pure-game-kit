@@ -35,12 +35,12 @@ func Tiled() {
 		cam.MouseDragAndZoomSmoothly()
 		cam.DrawTileMaps(tileMaps...)
 
-		cam.DrawShapes(color.FadeOut(palette.Red, 0.5), tileMaps[2].Points()...)
+		cam.DrawShapes(color.FadeOut(palette.Red, 0.5), tileMaps[1].Points()...)
 		cam.DrawShapes(color.FadeOut(palette.Blue, 0.5), tileMaps[3].Points()...)
 
 		if mouse.IsButtonPressed(button.Left) {
 			var x, y = tileMaps[3].CellAtPoint(cam.MousePosition())
-			tileMaps[3].SetTile(x, y, graphics.NewTile(0))
+			tileMaps[3].SetTile(x, y, graphics.NewTile(22))
 		}
 
 		if keyboard.IsKeyJustPressed(key.F5) {

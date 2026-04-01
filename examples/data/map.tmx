@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="7">
  <tileset firstgid="1" source="atlas.tsx"/>
- <group id="3" name="Group Layer 1">
-  <layer id="4" name="Tile Layer 3" width="32" height="32">
-   <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA+3RsRFAQBRF0VcFekAP6AGpGEUrxWtgd0ew8wP3zNzoBz94EgB800hPKx1d0P/eDW4M+j+52S1B/1e3uT1x9z7yPqq1z+kudyfu7JPfp7bSPgAA4L9ereUkRAAQAAA=
-  </data>
-  </layer>
- </group>
  <layer id="1" name="Ground" width="32" height="32">
   <data encoding="base64" compression="gzip">
    H4sIAAAAAAAAA+3DAQkAAAwEoev0/butx1Bw1VRVVdXXD6EhNvgAEAAA
@@ -31,4 +24,11 @@
    H4sIAAAAAAAAA+3NUQ2AMADE0BkZ8wB4gHlgeAD8J9TFZUlf0u+WIknzqLRQC/1X2mgP/Q86qYf+Fw26Q/+HXvpCf0mSpJn9rWBXmQAQAAA=
   </data>
  </layer>
+ <group id="3" name="Group Layer 1">
+  <layer id="4" name="Tile Layer 3" width="32" height="32">
+   <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAA+3RsRFAQBRF0VcFekAP6AGpGEUrxWtgd0ew8wP3zNzoBz94EgB800hPKx1d0P/eDW4M+j+52S1B/1e3uT1x9z7yPqq1z+kudyfu7JPfp7bSPgAA4L9ereUkRAAQAAA=
+  </data>
+  </layer>
+ </group>
 </map>
