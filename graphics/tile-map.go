@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/point"
 	"pure-game-kit/utility/random"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -185,7 +186,12 @@ func (tm *TileMap) PointsAtCell(column, row int) []float32 {
 	var result = make([]float32, 0, len(ptsPerTile))
 	var tw, th = tm.SizeTile()
 	for i := 1; i < len(ptsPerTile); i += 2 {
-		var x, y = tm.PointToGlobal(ptsPerTile[i-1]+float32(column)*tw, ptsPerTile[i]+float32(row)*th)
+		var x, y = ptsPerTile[i-1], ptsPerTile[i]
+		x, y = point.RotateAroundPoint(x, y, tw/2, th/2, float32(tile.Rotation)*90)
+		if tile.Flip {
+			x = tw - x
+		}
+		x, y = tm.PointToGlobal(x+float32(column)*tw, y+float32(row)*th)
 		result = append(result, x, y)
 	}
 	return result

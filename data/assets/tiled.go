@@ -179,6 +179,7 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 		rows = text.Split(tileData, "\n")
 	}
 
+	var pixels = make([]rl.Color, data.Texture.Width*data.Texture.Height)
 	for i := range tiled.Height {
 		var columns []string
 		if csv {
@@ -228,24 +229,30 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 				animOffset = uint32((j ^ i) % 16)
 			}
 
+			if raw > 1000 {
+				print()
+			}
+
 			var finalTile uint32 = 0
-			finalTile |= (uint32(flipTable[raw>>29]) << 29)
-			finalTile |= (frameCount << 25)
-			finalTile |= (animOffset << 21)
-			finalTile |= (frameSpeed << 16)
-			finalTile |= (id & 0xFFFF)
+			finalTile |= flipTable[raw>>29]
+			finalTile |= frameCount << 25
+			finalTile |= animOffset << 21
+			finalTile |= frameSpeed << 16
+			finalTile |= id & 0xFFFF
 
 			var r = uint8((finalTile >> 24) & 0xFF)
 			var g = uint8((finalTile >> 16) & 0xFF)
 			var b = uint8((finalTile >> 8) & 0xFF)
 			var a = uint8((finalTile >> 0) & 0xFF)
-			var colr = rl.NewColor(r, g, b, a)
-			var rect = rl.NewRectangle(float32(j), float32(i), float32(1), float32(1))
+			var col = rl.NewColor(r, g, b, a)
 
-			rl.ImageDrawPixel(data.Image, int32(j), int32(i), colr)
-			rl.UpdateTextureRec(*data.Texture, rect, []rl.Color{colr})
+			var index1D = number.Indexes2DToIndex1D(i, j, int(data.Image.Width), int(data.Image.Height))
+			pixels[index1D] = col
+			rl.ImageDrawPixel(data.Image, int32(j), int32(i), col)
 		}
 	}
+	var rect = rl.NewRectangle(0, 0, float32(data.Texture.Width), float32(data.Texture.Height))
+	rl.UpdateTextureRec(*data.Texture, rect, pixels)
 	return dataId
 }
 func loadLayerObjects(layer *layerObjects) []float32 {

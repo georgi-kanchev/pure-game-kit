@@ -54,7 +54,7 @@ func main() {
 		gui.Button("texts", f.Text, " Texts (graphics-texts.go)", f.NewRow, ""),
 		gui.Button("effects", f.Text, " Effects (graphics-effects.go)", f.NewRow, ""),
 		gui.Button("batches", f.Text, " Batches (graphics-batches.go)", f.NewRow, ""),
-		gui.Button("tilemaps", f.Text, " Tilemaps (graphics-tilemaps.go)", f.NewRow, ""),
+		gui.Button("tile maps", f.Text, " Tile Maps (graphics-tile-maps.go)", f.NewRow, ""),
 		gui.Button("guis", f.Text, " Graphical User Interfaces (GUIs) (guis.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("input", f.ThemeId, "label", f.Text, "Input:", f.NewRow, ""),
@@ -78,7 +78,7 @@ func main() {
 		gui.Button("state machines", f.Text, " State Machines (execution-state-machines.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("data", f.ThemeId, "label", f.Text, "Assets:", f.NewRow, ""),
-		gui.Button("tiled maps", f.Text, " Tiled Maps (assets-tiled.go)", f.NewRow, ""),
+		gui.Button("tiled", f.Text, " Tiled (assets-tiled.go)", f.NewRow, ""),
 		gui.Button("default font asset", f.Text, " Default Font (assets-default.go)", f.NewRow, ""),
 		gui.Button("default icons asset", f.Text, " Default Icons (assets-default.go)", f.NewRow, ""),
 		gui.Button("default cursors asset", f.Text, " Default Cursors (assets-default.go)", f.NewRow, ""),
@@ -99,7 +99,7 @@ func main() {
 		"guis":             example.GUIs,
 		"effects":          example.Effects,
 		"batches":          example.Batches,
-		"tilemaps":         example.Tilemaps,
+		"tile maps":        example.TileMaps,
 		//=================================================================
 		"mouse input":    example.Mouse,
 		"keyboard input": example.Keyboard,
@@ -117,7 +117,7 @@ func main() {
 		//=================================================================
 		"state machines": example.StateMachines,
 		//=================================================================
-		"tiled maps":                example.Tiled,
+		"tiled":                     example.Tiled,
 		"default font asset":        example.DefaultAssetFont,
 		"default icons asset":       example.DefaultAssetIcons,
 		"default cursors asset":     example.DefaultAssetCursors,

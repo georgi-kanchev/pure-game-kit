@@ -9,7 +9,7 @@ import (
 	"pure-game-kit/window"
 )
 
-func Tilemaps() {
+func TileMaps() {
 	var cam = graphics.NewCamera(2)
 	var atlasId = assets.LoadTileSet("examples/data/atlas.png", 16, 16)
 	var tileDataId = assets.LoadTileData("tilemap", 320, 320)
