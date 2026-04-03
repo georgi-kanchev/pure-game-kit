@@ -15,6 +15,5 @@ func NewSprite(textureId string, x, y float32) *Sprite {
 	if has {
 		sprite.Width, sprite.Height = float32(tex.Width), float32(tex.Height)
 	}
-
 	return &sprite
 }

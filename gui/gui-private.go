@@ -241,6 +241,10 @@ func dyn(c *container, value string, defaultValue string) string {
 		value = text.Replace(value, dynamic.CameraHeight, camH)
 	}
 
+	if !text.Contains(value, "+") && !text.Contains(value, "-") && !text.Contains(value, "*") && !text.Contains(value, "/") {
+		return value
+	}
+
 	var calc = text.Calculate(value)
 	if number.IsNaN(calc) {
 		return defaultValue

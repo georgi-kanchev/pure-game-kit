@@ -83,7 +83,6 @@ func (a *Audio) Time() (current, duration float32) {
 
 //=================================================================
 // private
-// private
 
 // detects all changes in the values so that the audio can reflect them instantly
 func (a *Audio) update(float32) {
@@ -176,7 +175,6 @@ func (a *Audio) volume() float32 {
 
 	return a.Volume * VolumeSound * Volume * fadeIn * fadeOut
 }
-
 func currentTime(stream rl.AudioStream) float32 {
 	var processed = stream.Buffer.FramesProcessed
 	var cur = stream.Buffer.FrameCursorPos

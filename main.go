@@ -1,6 +1,9 @@
 package main
 
 import (
+	"log"
+	"net/http"
+	_ "net/http/pprof" // <--- CRITICAL: Registers the handlers
 	"pure-game-kit/data/assets"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
@@ -126,6 +129,13 @@ func main() {
 		"default retro atlas asset": example.DefaultAssetRetro,
 		"default patterns asset":    example.DefaultAssetPatterns,
 	}
+
+	go func() {
+		log.Println("Starting pprof server on :6060")
+		if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+			log.Fatalf("pprof failed: %v", err)
+		}
+	}()
 
 	for window.KeepOpen() {
 		window.Title = "pure-game-kit: hub"
