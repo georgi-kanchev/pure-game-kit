@@ -101,7 +101,7 @@ func setupVisualsText(w *widget, skipEmpty bool) {
 		w.textBox.Mask = graphics.NewArea(mx, my, mw, mh)
 	}
 }
-func drawVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
+func queueVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 	var owner = w.root.Containers[w.OwnerId]
 	var assetId = w.root.themedField(f.AssetId, owner, w)
 	var frameCol = parseColor(w.root.themedField(f.FrameColor, owner, w), w.isDisabled(owner))

@@ -12,9 +12,9 @@ type widget struct {
 	Id, Class, OwnerId, ThemeId string
 	X, Y, Width, Height,
 	DragX, DragY, PrevValue float32
-	IsCulled      bool
-	Fields        map[string]string
-	UpdateAndDraw func(widget *widget)
+	IsCulled bool
+	Fields   map[string]string
+	Update   func(widget *widget)
 
 	root *root
 

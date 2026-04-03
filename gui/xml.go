@@ -69,7 +69,7 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 		for j, w := range c.XmlWidgets {
 			var wClass = w.XmlProps[0].Value
 			var wId = w.XmlProps[1].Value
-			var fn, has = updateAndDrawFuncs[wClass]
+			var fn, has = updates[wClass]
 			c.Widgets[j] = wId
 			w.OwnerId = cId
 			w.Class = wClass
@@ -78,7 +78,7 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 			w.root = gui.root
 
 			if has {
-				w.UpdateAndDraw = fn
+				w.Update = fn
 			}
 
 			for _, xmlProp := range w.XmlProps {

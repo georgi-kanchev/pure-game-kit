@@ -110,11 +110,11 @@ func inputField(w *widget) {
 		isPlaceholder = true
 	}
 
-	draw(margin, w, isPlaceholder)
+	queue(margin, w, isPlaceholder)
 	cursorTime = condition.If(cursorTime > 1, 0, cursorTime)
 	maskText = false
 }
-func draw(margin float32, w *widget, isPlaceholder bool) {
+func queue(margin float32, w *widget, isPlaceholder bool) {
 	if typingIn == w {
 		if w.highlight == nil {
 			w.highlight = graphics.NewNinePatch("", 0, 0)
@@ -128,7 +128,7 @@ func draw(margin float32, w *widget, isPlaceholder bool) {
 	}
 
 	textMargin = margin
-	drawVisuals(w, isPlaceholder, func() {
+	queueVisuals(w, isPlaceholder, func() {
 		if indexCursor == indexSelect || typingIn != w || len(symbolXs) == 0 || indexCursor >= len(symbolXs) {
 			return
 		}

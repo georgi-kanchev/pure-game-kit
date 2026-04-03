@@ -75,7 +75,7 @@ func button(w *widget) {
 
 	setupVisualsTextured(w)
 	setupVisualsText(w, false)
-	drawVisuals(w, false, nil)
+	queueVisuals(w, false, nil)
 	buttonColor = parseColor(w.root.themedField(field.Color, owner, w), w.isDisabled(owner))
 	w.ThemeId = prev
 }

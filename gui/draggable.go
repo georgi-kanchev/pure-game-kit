@@ -49,7 +49,7 @@ func draggable(w *widget) {
 	button(w)
 }
 
-func drawDraggable(widget *widget) {
+func queueDraggable(widget *widget) {
 	var owner = widget.root.Containers[widget.OwnerId]
 	var assetId = defaultValue(widget.root.themedField(field.DraggableAssetId, owner, widget), "")
 	var scale = parseNum(widget.root.themedField(field.DraggableAssetScale, owner, widget), 1)

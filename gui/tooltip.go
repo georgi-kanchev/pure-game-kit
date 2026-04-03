@@ -40,7 +40,7 @@ func tryShowTooltip(w *widget, c *container) {
 		tooltip = nil
 	}
 }
-func drawTooltip(c *container) {
+func queueTooltip(c *container) {
 	if tooltip.textBox == nil {
 		tooltip.textBox = &graphics.TextBox{}
 	}
@@ -88,5 +88,5 @@ func drawTooltip(c *container) {
 	}
 
 	setupVisualsTextured(tooltip)
-	drawVisuals(tooltip, false, nil)
+	queueVisuals(tooltip, false, nil)
 }

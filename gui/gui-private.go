@@ -5,8 +5,6 @@ import (
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/dynamic"
 	"pure-game-kit/gui/field"
-	"pure-game-kit/input/keyboard"
-	"pure-game-kit/input/keyboard/key"
 	"pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
@@ -17,7 +15,7 @@ import (
 
 var sound *audio.Audio = audio.New("")
 var mouseX, mouseY, prevMouseX, prevMouseY float32
-var updateAndDrawFuncs = map[string]func(widget *widget){
+var updates = map[string]func(widget *widget){
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
 	"draggable": draggable,
 }
@@ -168,9 +166,6 @@ func (r *root) drawEnd() {
 	r.cam.DrawSprites(r.sprites...)
 	r.cam.DrawTextBoxes(r.textBoxes...)
 	r.cam.DrawSprites(r.spritesAbove...)
-	if keyboard.IsKeyJustPressed(key.A) {
-		print()
-	}
 }
 
 func extraProps(props ...string) string {
@@ -252,6 +247,10 @@ func dyn(c *container, value string, defaultValue string) string {
 	return text.New(calc)
 }
 func parseColor(value string, disabled ...bool) uint {
+	if value == "" || value == "0 0 0 0" {
+		return color.RGBA(0, 0, 0, 0)
+	}
+
 	var rgba = text.Split(value, " ")
 	var r, g, b, a byte
 
@@ -272,6 +271,9 @@ func parseColor(value string, disabled ...bool) uint {
 	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
 }
 func parseNum(value string, defaultValue float32) float32 {
+	if value == "" {
+		return defaultValue
+	}
 	var v = text.ToNumber[float32](value)
 	if number.IsNaN(v) {
 		return defaultValue

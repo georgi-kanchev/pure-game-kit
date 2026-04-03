@@ -52,7 +52,7 @@ func (g *GUI) UpdateAndDraw() {
 		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
 		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2" // caching dynamic props
 
-		c.updateAndDraw()
+		c.update()
 	}
 
 	if g.root.cWasHovered == g.root.cHovered {
@@ -64,10 +64,10 @@ func (g *GUI) UpdateAndDraw() {
 
 	g.root.drawStart()
 	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
-		drawDraggable(g.root.wPressedOn)
+		queueDraggable(g.root.wPressedOn)
 	}
 	if tooltip != nil {
-		drawTooltip(g.root.Containers[tooltip.OwnerId])
+		queueTooltip(g.root.Containers[tooltip.OwnerId])
 	}
 	g.root.drawEnd()
 
