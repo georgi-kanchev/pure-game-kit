@@ -49,7 +49,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		}
 
 		var texture, src, rotations, flip = internal.AssetData(s.TextureId)
-		if texture == nil {
+		if texture.Width == 0 {
 			texture = internal.White
 		}
 
@@ -177,7 +177,7 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 
 		for _, p := range parts {
 			var texture, src, rotations, flip = internal.AssetData(p.id)
-			if texture == nil {
+			if texture.Width == 0 {
 				texture = internal.White
 			}
 
@@ -250,7 +250,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		}
 
 		var texture = internal.Textures[atlas.TextureId]
-		if texture == nil {
+		if texture.Width == 0 {
 			texture = internal.White
 		}
 

@@ -56,7 +56,7 @@ func (b *batchData) Init(quadCountCapacity int32) {
 	b.material = rl.LoadMaterialDefault()
 	b.material.Shader = internal.Shader
 }
-func (b *batchData) QueueTex(tex *rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
+func (b *batchData) QueueTex(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 	var sinA, cosA = internal.SinCos(ang)
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -93,7 +93,7 @@ func (b *batchData) QueueTex(tex *rl.Texture2D, src, dst rl.Rectangle, ang float
 	}
 	if b.vertsCur == 0 {
 		var mat = b.material
-		rl.SetMaterialTexture(&mat, rl.MapDiffuse, *tex)
+		rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
 		b.material = mat
 		b.material.Shader = internal.Shader
 	}
@@ -140,7 +140,7 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 		}
 		if b.vertsCur == 0 {
 			var mat = b.material
-			rl.SetMaterialTexture(&mat, rl.MapDiffuse, *white)
+			rl.SetMaterialTexture(&mat, rl.MapDiffuse, white)
 			b.material = mat
 			b.material.Shader = internal.Shader
 		}
@@ -174,13 +174,13 @@ func (b *batchData) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color)
 	var startX, startY = point.MoveAtAngle(x1, y1, perpAngle, thickness*0.5)
 	b.QueueQuad(startX, startY, length, thickness, ang, color)
 }
-func (b *batchData) QueueSymbol(font *rl.Font, s *symbol, lineHeight, gapX float32) {
+func (b *batchData) QueueSymbol(font rl.Font, s *symbol, lineHeight, gapX float32) {
 	var queueQuad = func(dstX, dstY, dstW, dstH float32, col uint) {
 		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 		var x, y = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
 		var prevCol = s.Color
 		s.Color = col
-		batch.QueueTex(&font.Texture, rl.NewRectangle(x, y, 0.2, 0.2), dst, s.Angle, packSymbolColor(s))
+		batch.QueueTex(font.Texture, rl.NewRectangle(x, y, 0.2, 0.2), dst, s.Angle, packSymbolColor(s))
 		s.Color = prevCol
 	}
 	var lineThickness = lineHeight / 15

@@ -157,7 +157,7 @@ func SetIcon(assetId string) {
 
 	var texW, texH = internal.AssetSize(assetId)
 	var rect = rl.Rectangle{X: texX, Y: texY, Width: float32(texW), Height: float32(texH)}
-	var imgPtr = rl.LoadImageFromTexture(*texture)
+	var imgPtr = rl.LoadImageFromTexture(texture)
 
 	rl.ImageCrop(imgPtr, rect)
 	rl.SetWindowIcon(*imgPtr)

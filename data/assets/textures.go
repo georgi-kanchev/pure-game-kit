@@ -31,14 +31,14 @@ func LoadTexture(filePath string) string {
 		debug.LogError("Failed to load image file: \"", filePath, "\"")
 		return ""
 	}
-	internal.Textures[filePath] = &texture
+	internal.Textures[filePath] = texture
 	return filePath
 }
 func UnloadTexture(textureId string) {
 	var tex, has = internal.Textures[textureId]
 	if has && !isDefault(textureId) {
 		delete(internal.Textures, textureId)
-		rl.UnloadTexture(*tex)
+		rl.UnloadTexture(tex)
 	}
 }
 
@@ -58,10 +58,10 @@ func UnloadAllTextures() {
 func SetTextureSmoothness(textureId string, smooth bool) {
 	var tex, has = internal.Textures[textureId]
 	if has && smooth {
-		rl.SetTextureFilter(*tex, rl.FilterBilinear)
+		rl.SetTextureFilter(tex, rl.FilterBilinear)
 	}
 	if has && !smooth {
-		rl.SetTextureFilter(*tex, rl.FilterPoint)
+		rl.SetTextureFilter(tex, rl.FilterPoint)
 	}
 }
 func SetTextureArea(textureId, areaId string, x, y, width, height, rotations int, flip bool) string {

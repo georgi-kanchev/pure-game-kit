@@ -71,7 +71,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		if sprite.TextureId == "" { // default font display hacky wacky
 			var tex = internal.Fonts[""].Texture
 			var id = ";;;default-font-texture"
-			internal.Textures[id] = &tex
+			internal.Textures[id] = tex
 			sprite.TextureId = id
 		}
 

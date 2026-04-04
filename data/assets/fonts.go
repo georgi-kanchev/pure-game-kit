@@ -40,7 +40,7 @@ func UnloadFont(fontId string) {
 
 	if has && !isDefault(fontId) {
 		delete(internal.Fonts, fontId)
-		rl.UnloadFont(*font)
+		rl.UnloadFont(font)
 	}
 }
 
@@ -79,7 +79,7 @@ func loadFont(id string, size int, bytes []byte) bool {
 	rl.SetTextureFilter(font.Texture, rl.FilterBilinear)
 
 	if font.BaseSize != 0 {
-		internal.Fonts[id] = &font
+		internal.Fonts[id] = font
 	}
 
 	return font.BaseSize != 0

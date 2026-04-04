@@ -314,8 +314,7 @@ func loadTexture(id string, bytes []byte) string {
 	}
 
 	var image = rl.LoadImageFromMemory(".png", bytes, int32(len(bytes)))
-	var tex = rl.LoadTextureFromImage(image)
-	internal.Textures[id] = &tex
+	internal.Textures[id] = rl.LoadTextureFromImage(image)
 	rl.UnloadImage(image)
 	return id
 }

@@ -17,7 +17,7 @@ type symbol struct {
 	Angle                 float32
 	Value                 string
 	Bounds, Rect, TexRect rl.Rectangle
-	Texture               *rl.Texture2D
+	Texture               rl.Texture2D
 
 	TopCrop float32
 
@@ -85,7 +85,7 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
 				delete(curValues, "assetId")
 			} else {
-				charSize = rl.MeasureTextEx(*font, char, t.LineHeight, 0).X
+				charSize = rl.MeasureTextEx(font, char, t.LineHeight, 0).X
 				symb = t.createSymbol(font, curX, curY, c)
 			}
 			symb.Bounds.Width, symb.Angle, symb.Value = charSize*t.ScaleX, t.Angle, char
@@ -121,9 +121,9 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 	t.cacheSymbols = result
 	return resultLines, result
 }
-func (t *TextBox) createSymbol(f *rl.Font, x, y float32, c rune) symbol {
+func (t *TextBox) createSymbol(f rl.Font, x, y float32, c rune) symbol {
 	var scaleFactor, padding = float32(t.LineHeight) / float32(f.BaseSize), float32(f.CharsPadding)
-	var glyph, atlasRec = rl.GetGlyphInfo(*f, int32(c)), rl.GetGlyphAtlasRec(*f, int32(c))
+	var glyph, atlasRec = rl.GetGlyphInfo(f, int32(c)), rl.GetGlyphAtlasRec(f, int32(c))
 	var tx, ty = atlasRec.X - padding, atlasRec.Y - padding
 	var tw, th = atlasRec.Width + 2.0*padding, atlasRec.Height + 2.0*padding
 	var rx = x + (float32(glyph.OffsetX)-padding)*scaleFactor
@@ -138,7 +138,7 @@ func (t *TextBox) createSymbol(f *rl.Font, x, y float32, c rune) symbol {
 	dst.Height *= t.ScaleY
 	bds.Height = t.LineHeight * t.ScaleY
 
-	var symbol = symbol{Texture: &f.Texture, Rect: dst, TexRect: src, Bounds: bds}
+	var symbol = symbol{Texture: f.Texture, Rect: dst, TexRect: src, Bounds: bds}
 	return symbol
 }
 func (t *TextBox) cropSymbol(symb *symbol) (skip bool) {
@@ -230,7 +230,7 @@ func (t *TextBox) cropSymbol(symb *symbol) (skip bool) {
 	return skip
 }
 
-func (t *TextBox) font() *rl.Font {
+func (t *TextBox) font() rl.Font {
 	var font, hasFont = internal.Fonts[t.FontId]
 	var defaultFont, hasDefault = internal.Fonts[""]
 
@@ -241,7 +241,7 @@ func (t *TextBox) font() *rl.Font {
 
 	if !hasFont {
 		var fallback = rl.GetFontDefault()
-		font = &fallback // fallback to raylib default
+		font = fallback // fallback to raylib default
 	}
 	return font
 }

@@ -41,13 +41,13 @@ var WindowReady = false
 
 //=================================================================
 
-var White *rl.Texture2D
-var Textures = make(map[string]*rl.Texture2D)
+var White rl.Texture2D
+var Textures = make(map[string]rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
 
-var Fonts = make(map[string]*rl.Font)
+var Fonts = make(map[string]rl.Font)
 
 var MatrixDefault rl.Matrix
 var Shader rl.Shader
@@ -86,7 +86,7 @@ var vertDefault string
 
 //=================================================================
 
-func AssetData(assetId string) (tex *rl.Texture2D, src rl.Rectangle, rotations int, flip bool) {
+func AssetData(assetId string) (tex rl.Texture2D, src rl.Rectangle, rotations int, flip bool) {
 	var texture, hasTexture = Textures[assetId]
 	src = rl.NewRectangle(0, 0, 0, 0)
 	if !hasTexture {
@@ -328,8 +328,7 @@ func initData() {
 	MatrixDefault = rl.MatrixIdentity()
 
 	var img = rl.GenImageColor(1, 1, rl.White)
-	var tex = rl.LoadTextureFromImage(img)
-	White = &tex
+	White = rl.LoadTextureFromImage(img)
 	rl.UnloadImage(img)
 
 	for i := range 3600 {
