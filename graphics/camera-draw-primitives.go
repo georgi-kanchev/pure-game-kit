@@ -226,7 +226,7 @@ func (c *Camera) DrawShapes(color uint, points ...float32) {
 	var offset = 0
 	var renderColor = getColor(color)
 
-	c.Effects.updateUniforms(1, 1, nil, nil, false)
+	c.Effects.updateUniforms(1, 1, "", "", nil, false)
 
 	for _, count := range ptsCountsPerShape {
 		for offset < len(points) && number.IsNaN(points[offset]) {

@@ -37,8 +37,8 @@ type Tile struct {
 	FrameSpeed  byte // Ranged 0..31
 }
 
-func NewTileMap(tileSetId, tileLayerId string) *TileMap {
-	var tileMap = &TileMap{Quad: *NewQuad(0, 0), TileSetId: tileSetId, TileLayerId: tileLayerId}
+func NewTileMap(tileSetId, tileLayerId string) TileMap {
+	var tileMap = TileMap{Quad: *NewQuad(0, 0), TileSetId: tileSetId, TileLayerId: tileLayerId}
 	var atlas = internal.TileSets[tileSetId]
 	var data = internal.TileLayers[tileLayerId]
 	if atlas != nil && data != nil && data.Image != nil {
@@ -49,22 +49,22 @@ func NewTileMap(tileSetId, tileLayerId string) *TileMap {
 	return tileMap
 }
 
-func NewTile(id uint16) *Tile {
-	return &Tile{Id: id}
+func NewTile(id uint16) Tile {
+	return Tile{Id: id}
 }
-func NewTileOriented(id uint16, rotation byte, flip bool) *Tile {
-	return &Tile{Id: id, Rotation: rotation, Flip: flip}
+func NewTileOriented(id uint16, rotation byte, flip bool) Tile {
+	return Tile{Id: id, Rotation: rotation, Flip: flip}
 }
-func NewTileAnimated(id uint16, frameCount, frameOffset, frameSpeed byte) *Tile {
-	return &Tile{Id: id, FrameCount: frameCount, FrameSpeed: frameSpeed, FrameOffset: frameOffset}
+func NewTileAnimated(id uint16, frameCount, frameOffset, frameSpeed byte) Tile {
+	return Tile{Id: id, FrameCount: frameCount, FrameSpeed: frameSpeed, FrameOffset: frameOffset}
 }
 
 //=================================================================
 
-func (tm *TileMap) SetTile(column, row int, tile *Tile) {
+func (tm *TileMap) SetTile(column, row int, tile Tile) {
 	tm.SetTileArea(column, row, 1, 1, tile)
 }
-func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
+func (tm *TileMap) SetTileArea(column, row, width, height int, tile Tile) {
 	var data = internal.TileLayers[tm.TileLayerId]
 	var tileSet = internal.TileSets[tm.TileSetId]
 	if data == nil || tileSet == nil {
@@ -115,16 +115,16 @@ func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
 
 //=================================================================
 
-func (tm *TileMap) TileAtCell(column, row int) *Tile {
+func (tm *TileMap) TileAtCell(column, row int) Tile {
 	var data = internal.TileLayers[tm.TileLayerId]
 	if data == nil {
-		return nil
+		return Tile{}
 	}
 
 	var c = rl.GetImageColor(*data.Image, int32(column), int32(row))
 	var packed = uint32(c.R)<<24 | uint32(c.G)<<16 | uint32(c.B)<<8 | uint32(c.A)
 
-	return &Tile{
+	return Tile{
 		Id:          uint16(packed & 0xFFFF),
 		FrameSpeed:  byte((packed >> 16) & 0x1F),
 		FrameOffset: byte((packed >> 21) & 0x0F),
@@ -179,7 +179,7 @@ func (tm *TileMap) Points() []float32 {
 }
 func (tm *TileMap) PointsAtCell(column, row int) []float32 {
 	var tile = tm.TileAtCell(column, row)
-	if tile == nil {
+	if tile.Id == 0 {
 		return nil
 	}
 	var ptsPerTile = tm.PointsFromTile(tile.Id)

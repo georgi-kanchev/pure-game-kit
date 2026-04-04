@@ -22,13 +22,12 @@ type Camera struct {
 
 func NewCamera(zoom float32) *Camera {
 	tryRecreateWindow()
-	var cam = Camera{Zoom: zoom}
-
+	var cam = &Camera{Zoom: zoom}
 	if batch == nil {
 		batch = &batchData{}
 		batch.Init(16)
 	}
-	return &cam
+	return cam
 }
 
 // =================================================================

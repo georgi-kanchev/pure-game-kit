@@ -31,7 +31,7 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 		var firstEffect = lastEffects == nil && effects != nil
 		if firstEffect || differentEffect {
 			batch.Draw() // effects are different & break the batch
-			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
+			effects.updateUniforms(int(src.Width), int(src.Height), "", "", nil, false)
 		}
 		batch.QueueTex(internal.White, src, dst, ang, getColor(q.Tint))
 		lastEffects = effects
@@ -74,7 +74,7 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		var firstEffect = lastEffects == nil && effects != nil
 		if firstEffect || differentEffect {
 			batch.Draw() // effects are different & break the batch
-			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
+			effects.updateUniforms(int(src.Width), int(src.Height), "", "", nil, false)
 		}
 		batch.QueueTex(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
@@ -192,7 +192,7 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 			var firstEffect = lastEffects == nil && effects != nil
 			if firstEffect || differentEffect {
 				batch.Draw() // effects are different & break the batch
-				effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
+				effects.updateUniforms(int(src.Width), int(src.Height), "", "", nil, false)
 			}
 			batch.QueueTex(texture, src, dst, partAng, col)
 			lastEffects = effects
@@ -218,7 +218,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var font = t.font()
 		var gapX = t.gapSymbols() * t.ScaleX
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
-		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t, false)
+		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), "", "", t, false)
 
 		for _, s := range symbols {
 			batch.QueueSymbol(font, s, t.LineHeight*t.ScaleY, gapX)
@@ -227,10 +227,10 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 	batch.Draw()
 	c.end()
 }
-func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
+func (c *Camera) DrawTileMaps(tileMaps ...TileMap) {
 	c.begin()
 	for _, t := range tileMaps {
-		if t == nil || !c.IsAreaVisible(t.Bounds()) {
+		if !c.IsAreaVisible(t.Bounds()) {
 			continue
 		}
 
@@ -258,7 +258,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 		var effects = condition.If(t.Effects != nil, t.Effects, c.Effects)
-		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
+		effects.updateUniforms(int(texture.Width), int(texture.Height), t.TileLayerId, t.TileSetId, nil, false)
 		batch.QueueTex(texture, src, dst, t.Angle, getColor(t.Tint))
 		batch.Draw()
 	}

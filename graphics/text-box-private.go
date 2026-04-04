@@ -317,6 +317,10 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *text.Builder, curValues
 //=================================================================
 
 func parseCol(value string, defaultValue uint) uint {
+	if value == "" {
+		return defaultValue
+	}
+
 	var rgba = text.Split(value, " ")
 	if len(rgba) == 4 {
 		var r, g = text.ToNumber[byte](rgba[0]), text.ToNumber[byte](rgba[1])
@@ -326,6 +330,10 @@ func parseCol(value string, defaultValue uint) uint {
 	return defaultValue
 }
 func parseNum(value string, defaultValue float32) float32 {
+	if value == "" {
+		return defaultValue
+	}
+
 	var result = text.ToNumber[float32](value)
 	if number.IsNaN(result) {
 		return defaultValue
