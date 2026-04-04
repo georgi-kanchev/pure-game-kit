@@ -33,7 +33,8 @@ func (ps *ParticleSystem) EmitFromLine(amount int, ax, ay, bx, by float32) {
 func (ps *ParticleSystem) Update() {
 	for i := len(ps.particles) - 1; i >= 0; i-- { // iterate in reverse to not affect indices when removing
 		if !ps.update(ps.particles[i]) {
-			ps.particles = append(ps.particles[:i], ps.particles[i+1:]...)
+			ps.particles[i] = ps.particles[len(ps.particles)-1]
+			ps.particles = ps.particles[:len(ps.particles)-1]
 		}
 	}
 }

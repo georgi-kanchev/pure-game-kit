@@ -285,8 +285,8 @@ func updateInput() {
 	checkKeyRange(256, 349)
 
 	if !rl.IsWindowFocused() {
-		Keys = []int{}
-		Buttons = []int{}
+		Keys = Keys[:0]
+		Buttons = Buttons[:0]
 	}
 }
 func updateMusic() {
