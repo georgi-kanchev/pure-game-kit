@@ -174,7 +174,7 @@ func (b *batchData) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color)
 	var startX, startY = point.MoveAtAngle(x1, y1, perpAngle, thickness*0.5)
 	b.QueueQuad(startX, startY, length, thickness, ang, color)
 }
-func (b *batchData) QueueSymbol(font rl.Font, s *symbol, lineHeight, gapX float32) {
+func (b *batchData) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32) {
 	var queueQuad = func(dstX, dstY, dstW, dstH float32, col uint) {
 		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 		var x, y = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75

@@ -26,13 +26,13 @@ type symbol struct {
 	Underline, Strikethrough                        bool
 }
 
-func (t *TextBox) formatSymbols() ([]string, []*symbol) {
+func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var hash = random.Hash(t)
 	if t.hash == hash {
 		return t.cacheChars, t.cacheSymbols
 	}
 
-	var result = []*symbol{}
+	var result = []symbol{}
 	var resultLines = []string{}
 	var wrapped = condition.If(t.WordWrap, t.TextWrap(t.Text), t.Text)
 	var lines = text.SplitLines(wrapped)
@@ -100,8 +100,8 @@ func (t *TextBox) formatSymbols() ([]string, []*symbol) {
 			symb.Underline = getOrDefault(curValues, "_", false).(bool)
 			symb.Strikethrough = getOrDefault(curValues, "-", false).(bool)
 
-			if !t.cropSymbol(&symb) {
-				result = append(result, &symb)
+			if !t.cropSymbol(symb) {
+				result = append(result, symb)
 			}
 
 			lineIndex = number.Limit(lineIndex, 0, len(resultLines))
@@ -141,7 +141,7 @@ func (t *TextBox) createSymbol(f rl.Font, x, y float32, c rune) symbol {
 	var symbol = symbol{Texture: f.Texture, Rect: dst, TexRect: src, Bounds: bds}
 	return symbol
 }
-func (t *TextBox) cropSymbol(symb *symbol) (skip bool) {
+func (t *TextBox) cropSymbol(symb symbol) (skip bool) {
 	var rx, ry = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
 	var bx, by = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
 	var outsideHor = bx+symb.Bounds.Width/t.ScaleX+t.gapSymbols() < 0 || bx > t.Width

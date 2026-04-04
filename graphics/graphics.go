@@ -42,7 +42,7 @@ func getColor(value uint) color.RGBA {
 	var r, g, b, a = col.Channels(value)
 	return color.RGBA{R: r, G: g, B: b, A: a}
 }
-func packSymbolColor(s *symbol) rl.Color {
+func packSymbolColor(s symbol) rl.Color {
 	var packLayer = func(c rl.Color) uint8 {
 		var r = (c.R >> 6) & 0x03
 		var g = (c.G >> 6) & 0x03

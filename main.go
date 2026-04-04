@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net/http"
-	_ "net/http/pprof"
 	"pure-game-kit/data/assets"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
@@ -14,12 +12,6 @@ import (
 )
 
 func main() {
-	go func() {
-		http.ListenAndServe("localhost:6060", nil)
-	}()
-	assets.LoadDefaultFont()
-	window.FrameRateLimit = 0
-	example.MinimalRender()
 	// example.Randoms()
 	// example.StorageBinary()
 	example.StorageYAML()

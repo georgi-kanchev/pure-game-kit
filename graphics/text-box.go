@@ -20,7 +20,7 @@ type TextBox struct {
 
 	hash         uint64
 	cacheChars   []string
-	cacheSymbols []*symbol
+	cacheSymbols []symbol
 	cacheWrap    string
 }
 
