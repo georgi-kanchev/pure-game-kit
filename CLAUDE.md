@@ -8,52 +8,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build Commands
 
-```bash
-# Run (Linux)
-go run .
-
-# Build for Linux
-bash build-linux-to-linux.bash   # outputs ./app
-
-# Build for Windows (cross-compile from Linux, requires mingw-w64 and cmake)
-bash build-linux-to-windows.bash  # outputs ./app.exe
-
-# Check heap/stack allocation for a file
-go build -gcflags="-m" <package>/<file>.go
-```
-
-There are no tests (`*_test.go` files do not exist in this project) and no linter configuration.
+There are no tests and no linter configuration.
 
 ## Architecture
 
 ### Package Layers
 
 ```
-window/        – OS window creation and the main game loop; pumps DeltaTime into internal/
+window/        – OS window creation and the main game loop; message pump into internal/
 internal/      – Shared runtime state (time, asset cache, input state); used only by engine packages to avoid import cycles
-graphics/      – Drawing: Camera, Sprite, NinePatch, TextBox, TileMap, blend modes
+graphics/      – Drawing objects (using assets but still lightweight) and primitives through a Camera directly to a window
 gui/           – Hybrid data-driven + immediate-mode UI; layouts defined via chained builder calls that produce XML, parsed at runtime
 input/         – Frame-based polling (not event callbacks): mouse/, keyboard/
 geometry/      – Line-based primitives, Shape collision (ray casting), ShapeGrid, A* pathfinding, path following
 motion/        – Tween (chainable value animation), Animation[T] (generic frame sequences), ParticleSystem
-execution/     – StateMachine, Command/Condition combinators, Script (Lua via gopher-lua), Screens
-data/          – Asset loading (fonts, textures, tilesets, XML UI layouts); embedded defaults; file/folder/storage helpers
+execution/     – StateMachine, Command/Condition combinators, Script (Lua via gopher-lua), Screens state machine
+data/          – Asset loading (fonts, textures, tilesets, tilemaps, sound, music); embedded defaults; file/folder/storage helpers
 utility/       – Pure helper packages: angle, color, collection, direction, flag, is, naming, noise, number, point, random, text, time
 ```
 
 ### Key Design Decisions
 
-**No pointers for value types.** Recent commits moved most structs off the heap. Prefer value receivers unless mutation across frames is needed. Use `go build -gcflags="-m"` to verify stack vs. heap allocation.
+**Minimizing structs** Keeping API shallow and wide rather than thin and deep. No multi-purpose vectors etc. Prefer working with a few values rather than a small struct. Big structs are fine but nesting is best avoided.
 
-**`internal/` as the messenger.** Engine packages (window, graphics, gui, input, motion) share state through `internal/` rather than importing each other, preventing dependency cycles. Do not import `internal/` from user-facing packages.
+**`internal/` as the messenger** Engine packages (window, graphics, gui, input, motion) share state through `internal/` rather than importing each other, preventing dependency cycles. Do not import `internal/` from user-facing packages.
 
-**GUI is XML under the hood.** `gui.NewFromXMLs()` takes chained builder calls (`gui.Container(...)`, `gui.Button(...)`, `gui.Theme(...)`, etc.) that serialize to XML and are parsed at runtime. Dynamic values (camera dimensions, owner sizes) use string expressions from `gui/dynamic/` (e.g., `d.CameraCenterX+"-400"`). Field names are constants in `gui/field/`. GUI XML does not support the symbols `>` and `&` — use `internal.Placeholder` substitution instead.
-
-**Line as the sole geometry primitive.** `geometry.Line` (`Ax, Ay, Bx, By`) is the base for all shapes. `Shape` is a polygon built from corner points; collision uses ray casting. `ShapeGrid` provides spatial chunking for queries.
-
-**Generic animation.** `motion.Animation[T]` is a generic frame-sequence type. `motion.Tween` chains value animations with easing functions from `motion/easing/`.
-
-**Assets are embedded.** Default fonts, UI textures, cursors, and patterns are embedded in `data/assets/` and lazy-loaded on first use.
+**`var` instead of `:=`** Wherever possible.
 
 ### Entry Point Flow
 
