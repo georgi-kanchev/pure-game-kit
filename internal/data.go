@@ -234,7 +234,7 @@ func updateTimers() {
 func updateInput() {
 	AnyButtonJustPressed = false
 	AnyButtonJustReleased = false
-	ButtonsPrev = collection.Clone(Buttons)
+	ButtonsPrev = append(ButtonsPrev[:0], Buttons...)
 
 	for i := range 7 {
 		if rl.IsMouseButtonPressed(rl.MouseButton(i)) {
@@ -272,7 +272,7 @@ func updateInput() {
 
 	AnyKeyJustPressed = false
 	AnyKeyJustReleased = false
-	KeysPrev = collection.Clone(Keys)
+	KeysPrev = append(KeysPrev[:0], Keys...)
 	Input = ""
 
 	var char = rl.GetCharPressed()

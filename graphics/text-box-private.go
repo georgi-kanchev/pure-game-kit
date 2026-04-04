@@ -44,7 +44,8 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var curX, curY float32 = 0, 0
 	var font = t.font()
 	var gapX = t.gapSymbols()
-	var textHeight = (t.LineHeight+t.gapLines())*float32(len(lines)) - t.gapLines()
+	var gapY = t.gapLines()
+	var textHeight = (t.LineHeight+gapY)*float32(len(lines)) - gapY
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
 	var curValues = make(map[string]any)
 	var lineIndex = 0
@@ -102,7 +103,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			symb.Underline = getOrDefault(curValues, "_", false).(bool)
 			symb.Strikethrough = getOrDefault(curValues, "-", false).(bool)
 
-			if !t.cropSymbol(symb) {
+			if !t.cropSymbol(symb, gapX, gapY) {
 				result = append(result, symb)
 			}
 
@@ -137,11 +138,11 @@ func (t *TextBox) createSymbol(f rl.Font, x, y float32, c rune) symbol {
 	var bds = rl.Rectangle{X: x, Y: y, Height: t.LineHeight}
 	return symbol{Texture: f.Texture, Rect: dst, TexRect: src, Bounds: bds}
 }
-func (t *TextBox) cropSymbol(symb symbol) (skip bool) {
+func (t *TextBox) cropSymbol(symb symbol, gapX, gapY float32) (skip bool) {
 	var rx, ry = symb.Rect.X, symb.Rect.Y
 	var bx, by = symb.Bounds.X, symb.Bounds.Y
-	var outsideHor = bx+symb.Bounds.Width+t.gapSymbols() < 0 || bx > t.Width
-	var outsideVer = by+symb.Bounds.Height+t.gapLines() < 0 || by > t.Height
+	var outsideHor = bx+symb.Bounds.Width+gapX < 0 || bx > t.Width
+	var outsideVer = by+symb.Bounds.Height+gapY < 0 || by > t.Height
 	skip = outsideHor || outsideVer
 
 	var onEdgeLeft = !skip && rx < 0
@@ -150,9 +151,9 @@ func (t *TextBox) cropSymbol(symb symbol) (skip bool) {
 	var onEdgeBottom = !skip && ry+symb.Rect.Height > t.Height
 
 	var onEdgeLeftBounds = !skip && bx < 0
-	var onEdgeRightBounds = !skip && bx+symb.Bounds.Width+t.gapSymbols() > t.Width
+	var onEdgeRightBounds = !skip && bx+symb.Bounds.Width+gapX > t.Width
 	var onEdgeTopBounds = !skip && by < 0
-	var onEdgeBottomBounds = !skip && by+symb.Bounds.Height+t.gapLines() > t.Height
+	var onEdgeBottomBounds = !skip && by+symb.Bounds.Height+gapY > t.Height
 
 	if onEdgeLeft {
 		var ratio = -rx / symb.Rect.Width
@@ -189,7 +190,7 @@ func (t *TextBox) cropSymbol(symb symbol) (skip bool) {
 		symb.Bounds.X, symb.Bounds.Y = 0, by
 	}
 	if onEdgeRightBounds {
-		var overflow = bx + symb.Bounds.Width + t.gapSymbols() - t.Width
+		var overflow = bx + symb.Bounds.Width + gapX - t.Width
 		var ratio = overflow / symb.Bounds.Width
 		symb.Bounds.Width -= symb.Bounds.Width * ratio
 	}
@@ -201,7 +202,7 @@ func (t *TextBox) cropSymbol(symb symbol) (skip bool) {
 		symb.TopCrop += boundsCut
 	}
 	if onEdgeBottomBounds {
-		var overflow = by + symb.Bounds.Height + t.gapLines() - t.Height
+		var overflow = by + symb.Bounds.Height + gapY - t.Height
 		var ratio = overflow / symb.Bounds.Height
 		symb.Bounds.Height -= symb.Bounds.Height * ratio
 	}
