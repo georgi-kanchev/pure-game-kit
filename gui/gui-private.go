@@ -13,7 +13,7 @@ import (
 	"pure-game-kit/utility/text"
 )
 
-var sound *audio.Audio = audio.New("")
+var sound audio.Audio = audio.New("")
 var mouseX, mouseY, prevMouseX, prevMouseY float32
 var updates = map[string]func(widget *widget){
 	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,

@@ -29,15 +29,15 @@ type Audio struct {
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
 
-func New(assetId string) *Audio {
-	var audio = &Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRight: 0.5, prevLeftRight: number.NaN()}
+func New(assetId string) Audio {
+	var audio = Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRight: 0.5, prevLeftRight: number.NaN()}
 	condition.CallFor(number.ValueMaximum[float32](), audio.update)
 	return audio
 }
 
 //=================================================================
 
-func (a *Audio) Play() {
+func (a Audio) Play() {
 	a.tryReload()
 
 	var _, hasSound = internal.Sounds[a.AssetId]
@@ -58,7 +58,7 @@ func (a *Audio) Play() {
 
 //=================================================================
 
-func (a *Audio) IsPlaying() bool {
+func (a Audio) IsPlaying() bool {
 	a.tryReload()
 
 	var _, hasSound = internal.Sounds[a.AssetId]
@@ -73,11 +73,11 @@ func (a *Audio) IsPlaying() bool {
 	}
 	return false
 }
-func (a *Audio) IsJustFinished() bool {
+func (a Audio) IsJustFinished() bool {
 	return a.justFinished
 }
 
-func (a *Audio) Time() (current, duration float32) {
+func (a Audio) Time() (current, duration float32) {
 	return a.time, a.duration
 }
 
@@ -85,7 +85,7 @@ func (a *Audio) Time() (current, duration float32) {
 // private
 
 // detects all changes in the values so that the audio can reflect them instantly
-func (a *Audio) update(float32) {
+func (a Audio) update(float32) {
 	var _, hasSound = internal.Sounds[a.AssetId]
 	var music, hasMusic = internal.Music[a.AssetId]
 
@@ -163,7 +163,7 @@ func (a *Audio) update(float32) {
 	a.prevTime = a.time
 }
 
-func (a *Audio) volume() float32 {
+func (a Audio) volume() float32 {
 	var fadeIn = number.Limit(number.Map(a.time, 0, a.FadeIn, 0, 1), 0, 1)
 	var fadeOut = number.Limit(number.Map(a.time, a.duration-a.FadeOut, a.duration, 1, 0), 0, 1)
 	if a.FadeIn <= 0 {
@@ -182,7 +182,7 @@ func currentTime(stream rl.AudioStream) float32 {
 	return float32(processed)/float32(rate) + float32(cur)/float32(rate)
 }
 
-func (a *Audio) tryReload() {
+func (a Audio) tryReload() {
 	var sound, hasSound = internal.Sounds[a.AssetId]
 	var music, hasMusic = internal.Music[a.AssetId]
 	var prevSound, hasPrevSound = internal.Sounds[a.prevAssetId]
