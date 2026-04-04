@@ -46,8 +46,7 @@ func (t *TextBox) TextMeasure(text string) (width, height float32) {
 func (t *TextBox) TextWrap(text string) string {
 	var curHash = random.HashPrimitives(
 		t.Text, t.FontId, t.Tint, t.WordWrap,
-		t.X, t.Y, t.Width, t.Height, t.Angle,
-		t.ScaleX, t.ScaleY, t.PivotX, t.PivotY,
+		t.Width, t.Height,
 		t.AlignmentX, t.AlignmentY,
 		t.LineHeight, t.SymbolGap, t.LineGap,
 	)

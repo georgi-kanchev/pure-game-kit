@@ -221,6 +221,13 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t, false)
 
 		for _, s := range symbols {
+			s.Rect.X, s.Rect.Y = t.PointToGlobal(s.Rect.X, s.Rect.Y)
+			s.Rect.Width *= t.ScaleX
+			s.Rect.Height *= t.ScaleY
+			s.Bounds.X, s.Bounds.Y = t.PointToGlobal(s.Bounds.X, s.Bounds.Y)
+			s.Bounds.Width *= t.ScaleX
+			s.Bounds.Height *= t.ScaleY
+			s.Angle = t.Angle
 			batch.QueueSymbol(font, s, t.LineHeight*t.ScaleY, gapX)
 		}
 	}

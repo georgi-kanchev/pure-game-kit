@@ -29,8 +29,7 @@ type symbol struct {
 func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var hash = random.HashPrimitives(
 		t.Text, t.FontId, t.Tint, t.WordWrap,
-		t.X, t.Y, t.Width, t.Height, t.Angle,
-		t.ScaleX, t.ScaleY, t.PivotX, t.PivotY,
+		t.Width, t.Height,
 		t.AlignmentX, t.AlignmentY,
 		t.LineHeight, t.SymbolGap, t.LineGap,
 	)
@@ -81,20 +80,17 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			var assetId, has = curValues["assetId"]
 
 			if has {
-				var x, y = t.PointToGlobal(curX, curY)
 				charSize = t.LineHeight
-				var rect = rl.NewRectangle(x, y, charSize, charSize)
+				var rect = rl.NewRectangle(curX, curY, charSize, charSize)
 				var tex, src, rot, flip = internal.AssetData(assetId.(string))
 				internal.EditAssetRects(&src, &rect, t.Angle, rot, flip)
-				rect.Width *= t.ScaleX
-				rect.Height *= t.ScaleY
 				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
 				delete(curValues, "assetId")
 			} else {
 				charSize = rl.MeasureTextEx(font, char, t.LineHeight, 0).X
 				symb = t.createSymbol(font, curX, curY, c)
 			}
-			symb.Bounds.Width, symb.Angle, symb.Value = charSize*t.ScaleX, t.Angle, char
+			symb.Bounds.Width, symb.Angle, symb.Value = charSize, 0, char
 			symb.Color = getOrDefault(curValues, "color", t.Tint).(uint)
 			symb.BackColor = getOrDefault(curValues, "backColor", uint(0)).(uint)
 			symb.OutlineColor = getOrDefault(curValues, "outlineColor", palette.Black).(uint)
@@ -136,100 +132,77 @@ func (t *TextBox) createSymbol(f rl.Font, x, y float32, c rune) symbol {
 	var ry = y + (float32(glyph.OffsetY)-padding)*scaleFactor
 	var rw = (atlasRec.Width + 2.0*padding) * scaleFactor
 	var rh = (atlasRec.Height + 2.0*padding) * scaleFactor
-	var src, dst = rl.NewRectangle(tx, ty, tw, th), rl.NewRectangle(rx, ry, rw, rh)
-	var bds = rl.Rectangle{}
-	dst.X, dst.Y = t.PointToGlobal(dst.X, dst.Y)
-	bds.X, bds.Y = t.PointToGlobal(x, y)
-	dst.Width *= t.ScaleX
-	dst.Height *= t.ScaleY
-	bds.Height = t.LineHeight * t.ScaleY
-
-	var symbol = symbol{Texture: f.Texture, Rect: dst, TexRect: src, Bounds: bds}
-	return symbol
+	var src = rl.NewRectangle(tx, ty, tw, th)
+	var dst = rl.NewRectangle(rx, ry, rw, rh)
+	var bds = rl.Rectangle{X: x, Y: y, Height: t.LineHeight}
+	return symbol{Texture: f.Texture, Rect: dst, TexRect: src, Bounds: bds}
 }
 func (t *TextBox) cropSymbol(symb symbol) (skip bool) {
-	var rx, ry = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-	var bx, by = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-	var outsideHor = bx+symb.Bounds.Width/t.ScaleX+t.gapSymbols() < 0 || bx > t.Width
-	var outsideVer = by+symb.Bounds.Height/t.ScaleY+t.gapLines() < 0 || by > t.Height
+	var rx, ry = symb.Rect.X, symb.Rect.Y
+	var bx, by = symb.Bounds.X, symb.Bounds.Y
+	var outsideHor = bx+symb.Bounds.Width+t.gapSymbols() < 0 || bx > t.Width
+	var outsideVer = by+symb.Bounds.Height+t.gapLines() < 0 || by > t.Height
 	skip = outsideHor || outsideVer
 
 	var onEdgeLeft = !skip && rx < 0
-	var onEdgeRight = !skip && rx+symb.Rect.Width/t.ScaleX > t.Width
+	var onEdgeRight = !skip && rx+symb.Rect.Width > t.Width
 	var onEdgeTop = !skip && ry < 0
-	var onEdgeBottom = !skip && ry+symb.Rect.Height/t.ScaleY > t.Height
+	var onEdgeBottom = !skip && ry+symb.Rect.Height > t.Height
 
 	var onEdgeLeftBounds = !skip && bx < 0
-	var onEdgeRightBounds = !skip && bx+symb.Bounds.Width/t.ScaleX+t.gapSymbols() > t.Width
+	var onEdgeRightBounds = !skip && bx+symb.Bounds.Width+t.gapSymbols() > t.Width
 	var onEdgeTopBounds = !skip && by < 0
-	var onEdgeBottomBounds = !skip && by+symb.Bounds.Height/t.ScaleY+t.gapLines() > t.Height
+	var onEdgeBottomBounds = !skip && by+symb.Bounds.Height+t.gapLines() > t.Height
 
 	if onEdgeLeft {
-		var lx, ly = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var ratio = -lx / (symb.Rect.Width / t.ScaleX)
-		var rectCut = symb.Rect.Width * ratio
-		var texCut = symb.TexRect.Width * ratio
-		symb.Rect.Width -= rectCut
-		symb.Rect.X, symb.Rect.Y = t.PointToGlobal(0, ly)
-		symb.TexRect.X += texCut
-		symb.TexRect.Width -= texCut
+		var ratio = -rx / symb.Rect.Width
+		symb.Rect.Width -= symb.Rect.Width * ratio
+		symb.Rect.X, symb.Rect.Y = 0, ry
+		symb.TexRect.X += symb.TexRect.Width * ratio
+		symb.TexRect.Width -= symb.TexRect.Width * ratio
 	}
 	if onEdgeRight {
-		var lx, _ = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var rightEdge = lx + (symb.Rect.Width / t.ScaleX)
-		var overflow = rightEdge - t.Width
-		var ratio = overflow / (symb.Rect.Width / t.ScaleX)
+		var overflow = rx + symb.Rect.Width - t.Width
+		var ratio = overflow / symb.Rect.Width
 		symb.Rect.Width -= symb.Rect.Width * ratio
 		symb.TexRect.Width -= symb.TexRect.Width * ratio
 	}
 	if onEdgeTop {
-		var lx, ly = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var ratio = -ly / (symb.Rect.Height / t.ScaleY)
-		var rectCut = symb.Rect.Height * ratio
-		var texCut = symb.TexRect.Height * ratio
-		symb.Rect.Height -= rectCut
+		var ratio = -ry / symb.Rect.Height
+		symb.Rect.Height -= symb.Rect.Height * ratio
 		symb.Rect.Height = max(symb.Rect.Height, 0)
-		symb.Rect.X, symb.Rect.Y = t.PointToGlobal(lx, 0)
-		symb.TexRect.Y += texCut
-		symb.TexRect.Height -= texCut
+		symb.Rect.X, symb.Rect.Y = rx, 0
+		symb.TexRect.Y += symb.TexRect.Height * ratio
+		symb.TexRect.Height -= symb.TexRect.Height * ratio
 	}
 	if onEdgeBottom {
-		var _, ly = t.PointToLocal(symb.Rect.X, symb.Rect.Y)
-		var bottomEdge = ly + (symb.Rect.Height / t.ScaleY)
-		var overflow = bottomEdge - t.Height
-		var ratio = overflow / (symb.Rect.Height / t.ScaleY)
+		var overflow = ry + symb.Rect.Height - t.Height
+		var ratio = overflow / symb.Rect.Height
 		symb.Rect.Height -= symb.Rect.Height * ratio
 		symb.Rect.Height = max(symb.Rect.Height, 0)
 		symb.TexRect.Height -= symb.TexRect.Height * ratio
 	}
 
 	if onEdgeLeftBounds {
-		var lx, ly = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var ratio = -lx / (symb.Bounds.Width / t.ScaleX)
-		var boundsCut = symb.Bounds.Width * ratio
-		symb.Bounds.X, symb.Bounds.Y = t.PointToGlobal(0, ly)
-		symb.Bounds.Width -= boundsCut
+		var ratio = -bx / symb.Bounds.Width
+		symb.Bounds.Width -= symb.Bounds.Width * ratio
+		symb.Bounds.X, symb.Bounds.Y = 0, by
 	}
 	if onEdgeRightBounds {
-		var lx, _ = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var rightEdge = lx + (symb.Bounds.Width / t.ScaleX) + t.gapSymbols()
-		var overflow = rightEdge - t.Width
-		var ratio = overflow / (symb.Bounds.Width / t.ScaleX)
+		var overflow = bx + symb.Bounds.Width + t.gapSymbols() - t.Width
+		var ratio = overflow / symb.Bounds.Width
 		symb.Bounds.Width -= symb.Bounds.Width * ratio
 	}
 	if onEdgeTopBounds {
-		var lx, ly = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var ratio = -ly / (symb.Bounds.Height / t.ScaleY)
+		var ratio = -by / symb.Bounds.Height
 		var boundsCut = symb.Bounds.Height * ratio
-		symb.Bounds.X, symb.Bounds.Y = t.PointToGlobal(lx, 0)
 		symb.Bounds.Height -= boundsCut
+		symb.Bounds.X, symb.Bounds.Y = bx, 0
 		symb.TopCrop += boundsCut
 	}
 	if onEdgeBottomBounds {
-		var _, ly = t.PointToLocal(symb.Bounds.X, symb.Bounds.Y)
-		var bottomEdge = ly + (symb.Bounds.Height / t.ScaleY) + t.gapLines()
-		var overflow = bottomEdge - t.Height
-		var ratio = overflow / (symb.Bounds.Height / t.ScaleY)
+		var overflow = by + symb.Bounds.Height + t.gapLines() - t.Height
+		var ratio = overflow / symb.Bounds.Height
 		symb.Bounds.Height -= symb.Bounds.Height * ratio
 	}
 
