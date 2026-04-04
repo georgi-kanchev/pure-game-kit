@@ -57,7 +57,7 @@ const scrollSize, scrollOutline, handleSpeed, dragFriction, dragMomentum = 10.0,
 var rowWidths = map[*widget]float32{}
 
 func (c *container) update() {
-	var x, y, w, h = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
+	var x, y, w, h = ownerLx, ownerTy, ownerW, ownerH
 	var anchorX = parseNum(c.Fields[field.AnchorX], 0)
 	var anchorY = parseNum(c.Fields[field.AnchorY], 0)
 	var cGapX = parseNum(c.Fields[f.GapX], 0)
@@ -139,8 +139,8 @@ func (c *container) alignWidgets(x, y, w, h, cGapX, cGapY float32) {
 		}
 
 		var _, isBgr = widget.Fields[f.FillContainer]
-		var ww = parseNum(dyn(c, c.root.themedField(f.Width, c, widget), "0"), 0)
-		var wh = parseNum(dyn(c, c.root.themedField(f.Height, c, widget), "0"), 0)
+		var ww = dynNum(c, c.root.themedField(f.Width, c, widget), 0)
+		var wh = dynNum(c, c.root.themedField(f.Height, c, widget), 0)
 		var gapX = parseNum(c.root.themedField(f.GapX, c, widget), 0)
 		var gapY = parseNum(c.root.themedField(f.GapY, c, widget), 0)
 		var offX = parseNum(widget.Fields[f.OffsetX], 0)

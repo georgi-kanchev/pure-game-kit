@@ -46,7 +46,7 @@ func (w *widget) isDisabled(owner *container) bool {
 	var ownerDisabled = false
 
 	if owner != nil {
-		ownerDisabled = dyn(owner, owner.Fields[field.Disabled], "") != ""
+		ownerDisabled = dyn(owner.Fields[field.Disabled], "") != ""
 	}
 
 	return disabled || ownerDisabled

@@ -62,10 +62,10 @@ func queueTooltip(c *container) {
 		return
 	}
 
-	var camW, camH = c.root.cam.Size()
-	var width = parseNum(dyn(c, tooltip.Fields[field.Width], "500"), 500)
+	var tCamW, tCamH = c.root.cam.Size()
+	var width = dynNum(c, tooltip.Fields[field.Width], 500)
 	var margin = parseNum(c.root.themedField(field.TooltipMargin, c, tooltip), 50)
-	tooltip.Width, tooltip.Height = width-margin, camH
+	tooltip.Width, tooltip.Height = width-margin, tCamH
 
 	setupVisualsText(tooltip, true)
 
@@ -75,8 +75,8 @@ func queueTooltip(c *container) {
 	tooltip.textBox.Height = textH
 	tooltip.textBox.X = tooltipForWidget.X + tooltipForWidget.Width/2 - tooltip.textBox.Width/2
 	tooltip.textBox.Y = tooltipForWidget.Y - textH
-	tooltip.textBox.X = number.Limit(tooltip.textBox.X, -camW/2, camW/2-width)
-	tooltip.textBox.Y = number.Limit(tooltip.textBox.Y, -camH/2, camH/2-textH)
+	tooltip.textBox.X = number.Limit(tooltip.textBox.X, -tCamW/2, tCamW/2-width)
+	tooltip.textBox.Y = number.Limit(tooltip.textBox.Y, -tCamH/2, tCamH/2-textH)
 	tooltip.X, tooltip.Y = tooltip.textBox.X, tooltip.textBox.Y
 	tooltip.Width, tooltip.Height = width, textH
 

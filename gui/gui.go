@@ -8,7 +8,6 @@ import (
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
-	"pure-game-kit/utility/text"
 )
 
 // https://showcase.primefaces.org - basic default browser widgets showcase (scroll down to forms on the left)
@@ -40,17 +39,19 @@ func (g *GUI) UpdateAndDraw() {
 			g.root.cacheDynTargetProps(g.root.themedField(f.TargetId, c, nil))
 		}
 
-		var hidden = dyn(c, c.Fields[f.Hidden], "")
+		var hidden = dyn(c.Fields[f.Hidden], "")
 		if hidden != "" { // dyn uses target so needs to be after
 			continue
 		}
 
-		var ox = text.New(dyn(nil, c.Fields[f.X], "0"))
-		var oy = text.New(dyn(nil, c.Fields[f.Y], "0"))
-		var ow = text.New(dyn(nil, c.Fields[f.Width], "0"))
-		var oh = text.New(dyn(nil, c.Fields[f.Height], "0"))
-		ownerLx, ownerRx, ownerTy, ownerBy, ownerW, ownerH = ox, ox+"+"+ow, oy, oy+"+"+oh, ow, oh
-		ownerCx, ownerCy = ox+"+"+ow+"/2", oy+"+"+oh+"/2" // caching dynamic props
+		ownerLx = dynNum(nil, c.Fields[f.X], 0)
+		ownerTy = dynNum(nil, c.Fields[f.Y], 0)
+		ownerW = dynNum(nil, c.Fields[f.Width], 0)
+		ownerH = dynNum(nil, c.Fields[f.Height], 0)
+		ownerRx = ownerLx + ownerW
+		ownerBy = ownerTy + ownerH
+		ownerCx = ownerLx + ownerW/2
+		ownerCy = ownerTy + ownerH/2
 
 		c.update()
 	}
@@ -142,8 +143,7 @@ func (g *GUI) FieldNumber(anyId, field string) float32 {
 	if hasW {
 		owner = g.root.Containers[w.OwnerId]
 	}
-	var value = dyn(owner, g.Field(anyId, field), "NaN")
-	return parseNum(value, number.NaN())
+	return dynNum(owner, g.Field(anyId, field), number.NaN())
 }
 
 func (g *GUI) AreaText(widgetId string) (width, height float32) {

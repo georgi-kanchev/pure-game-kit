@@ -83,7 +83,7 @@ func setupVisualsText(w *widget, skipEmpty bool) {
 	if maskText { // used for inputbox mask
 		var cGapX = parseNum(owner.Fields[f.GapX], 0)
 		var cGapY = parseNum(owner.Fields[f.GapY], 0)
-		var ox, oy, ow, oh = parseNum(ownerLx, 0), parseNum(ownerTy, 0), parseNum(ownerW, 0), parseNum(ownerH, 0)
+		var ox, oy, ow, oh = ownerLx, ownerTy, ownerW, ownerH
 		var cx, cy = ox + cGapX, oy + cGapY
 		var cxw, cyh = ox + ow - cGapX, oy + oh - cGapY
 		var tx, ty = w.X + textMargin, w.Y + textMargin/2

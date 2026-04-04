@@ -8,7 +8,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func Calculate(mathExpression string) float32 {
+func Calculate(mathExpression string, vars ...func(string) float32) float32 {
 	mathExpression = Remove(mathExpression, " ")
 
 	var values = []float32{}
@@ -119,6 +119,21 @@ func Calculate(mathExpression string) float32 {
 				}
 				operators = append(operators, c)
 			}
+		} else if unicode.IsLetter(c) {
+			var start = i
+			for i < len(mathExpression) && (unicode.IsLetter(rune(mathExpression[i])) || unicode.IsDigit(rune(mathExpression[i]))) {
+				i++
+			}
+			var name = mathExpression[start:i]
+			i--
+			if len(vars) == 0 {
+				return number.NaN()
+			}
+			var v = vars[0](name)
+			if number.IsNaN(v) {
+				return number.NaN()
+			}
+			values = append(values, v)
 		}
 
 		if bracketCountClose > bracketCountOpen {
