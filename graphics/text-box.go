@@ -134,5 +134,6 @@ func (t *TextBox) TextSymbol(symbolIndex int) (x, y, width, height, angle float3
 	}
 
 	var s = symbols[symbolIndex]
-	return s.Bounds.X, s.Bounds.Y, s.Bounds.Width, t.LineHeight, s.Angle
+	var gx, gy = t.PointToGlobal(s.Bounds.X, s.Bounds.Y)
+	return gx, gy, s.Bounds.Width * t.ScaleX, t.LineHeight * t.ScaleY, t.Angle
 }

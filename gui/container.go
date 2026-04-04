@@ -244,14 +244,6 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 			var instantVelY = -dy / internal.DeltaTime
 			const weight = 0.2
 			c.dragVelY = (c.dragVelY * (1.0 - weight)) + (instantVelY * weight)
-		} else if c.dragVelY != 0 {
-			c.ScrollY += c.dragVelY * internal.DeltaTime
-			var decay = number.Exponential(-10.0 * internal.DeltaTime)
-			c.dragVelY *= decay
-
-			if number.Absolute(c.dragVelY) < 0.1 {
-				c.dragVelY = 0
-			}
 		}
 
 		if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {
@@ -282,6 +274,15 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 			}
 		} else { // the scroll may have changed by MMB dragging or scrolling
 			c.targetScrollY = c.ScrollY
+		}
+		c.ScrollY = number.Limit(c.ScrollY, 0, (maxY-minY)-c.Height)
+	}
+
+	if c != c.root.cMiddlePressed && c.dragVelY != 0 {
+		c.ScrollY += c.dragVelY * internal.DeltaTime
+		c.dragVelY *= number.Exponential(-10.0 * internal.DeltaTime)
+		if number.Absolute(c.dragVelY) < 0.1 {
+			c.dragVelY = 0
 		}
 		c.ScrollY = number.Limit(c.ScrollY, 0, (maxY-minY)-c.Height)
 	}
@@ -332,14 +333,6 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 			var instantVelX = -dx / internal.DeltaTime
 			const weight = 0.2
 			c.dragVelX = (c.dragVelX * (1.0 - weight)) + (instantVelX * weight)
-		} else if c.dragVelX != 0 {
-			c.ScrollX += c.dragVelX * internal.DeltaTime
-			var decay = number.Exponential(-10.0 * internal.DeltaTime)
-			c.dragVelX *= decay
-
-			if number.Absolute(c.dragVelX) < 0.1 {
-				c.dragVelX = 0
-			}
 		}
 
 		if focused && isHovered(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, cam) {
@@ -371,6 +364,15 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 			}
 		} else { // the scroll may have changed by MMB dragging or scrolling
 			c.targetScrollX = c.ScrollX
+		}
+		c.ScrollX = number.Limit(c.ScrollX, 0, (maxX-minX)-barW)
+	}
+
+	if c != c.root.cMiddlePressed && c.dragVelX != 0 {
+		c.ScrollX += c.dragVelX * internal.DeltaTime
+		c.dragVelX *= number.Exponential(-10.0 * internal.DeltaTime)
+		if number.Absolute(c.dragVelX) < 0.1 {
+			c.dragVelX = 0
 		}
 		c.ScrollX = number.Limit(c.ScrollX, 0, (maxX-minX)-barW)
 	}
