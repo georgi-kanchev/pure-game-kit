@@ -94,28 +94,23 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 		}
 
 		var w, h = n.Width, n.Height
-		var slices, hasSlices = internal.Boxes[n.BoxId]
-
-		if !hasSlices {
-			slices = [9]string{}
-		}
-
-		var _, uh = internal.AssetSize(slices[1])
-		var lw, _ = internal.AssetSize(slices[3])
-		var rw, _ = internal.AssetSize(slices[4])
-		var _, dh = internal.AssetSize(slices[6])
-		var u = condition.If(slices[1] == "", 0, float32(uh)) * n.EdgeScale
-		var l = condition.If(slices[3] == "", 0, float32(lw)) * n.EdgeScale
-		var r = condition.If(slices[4] == "", 0, float32(rw)) * n.EdgeScale
-		var d = condition.If(slices[6] == "", 0, float32(dh)) * n.EdgeScale
-		var errX, errY float32 = 2, 2
-		var col = getColor(n.Tint)
 		var assetIds, has = internal.Boxes[n.BoxId]
 
 		if !has { // fallback to quad if no 9-slice exists
 			c.DrawQuads(&n.Quad)
 			continue
 		}
+
+		var _, uh = internal.AssetSize(assetIds[1])
+		var lw, _ = internal.AssetSize(assetIds[3])
+		var rw, _ = internal.AssetSize(assetIds[4])
+		var _, dh = internal.AssetSize(assetIds[6])
+		var u = condition.If(assetIds[1] == "", 0, float32(uh)) * n.EdgeScale
+		var l = condition.If(assetIds[3] == "", 0, float32(lw)) * n.EdgeScale
+		var r = condition.If(assetIds[4] == "", 0, float32(rw)) * n.EdgeScale
+		var d = condition.If(assetIds[6] == "", 0, float32(dh)) * n.EdgeScale
+		var errX, errY float32 = 2, 2
+		var col = getColor(n.Tint)
 
 		if w < 0 {
 			r *= -1

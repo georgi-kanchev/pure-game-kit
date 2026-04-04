@@ -5,7 +5,7 @@ import (
 	"pure-game-kit/utility/angle"
 	"pure-game-kit/utility/number"
 	"pure-game-kit/utility/point"
-	"pure-game-kit/utility/text"
+	"unicode"
 	"unsafe"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -58,7 +58,6 @@ func (b *batchData) Init(quadCountCapacity int32) {
 }
 func (b *batchData) QueueTex(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
-	var sinA, cosA = internal.SinCos(ang)
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1 = src.X * invTexW, src.Y * invTexH
 	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
@@ -69,11 +68,19 @@ func (b *batchData) QueueTex(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 
 	if b.mask == nil { // FAST PATH: Direct vertex generation
 		vCount = 4
-		for i := range 4 {
-			var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
-			poly[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
+		if ang == 0 {
+			for i := range 4 {
+				poly[i] = batchVertex{X: dx[i] + dst.X, Y: dy[i] + dst.Y, U: uvs[i*2], V: uvs[i*2+1]}
+			}
+		} else {
+			var sinA, cosA = internal.SinCos(ang)
+			for i := range 4 {
+				var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
+				poly[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
+			}
 		}
 	} else { // CLIPPED PATH
+		var sinA, cosA = internal.SinCos(ang)
 		var initial [4]batchVertex
 		for i := range 4 {
 			var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
@@ -199,7 +206,7 @@ func (b *batchData) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32
 		}
 	}
 
-	if text.Trim(s.Value) != "" {
+	if len(s.Value) > 0 && !unicode.IsSpace(rune(s.Value[0])) {
 		b.QueueTex(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
 	}
 

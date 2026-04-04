@@ -157,10 +157,10 @@ func (r *root) restore(prAng, prZoom, prX, prY float32) {
 }
 
 func (r *root) drawStart() {
-	r.sprites = make([]*graphics.Sprite, 0, 64)
-	r.spritesAbove = make([]*graphics.Sprite, 0, 8)
-	r.boxes = make([]*graphics.NinePatch, 0, 64)
-	r.textBoxes = make([]*graphics.TextBox, 0, 64)
+	r.sprites = r.sprites[:0]
+	r.spritesAbove = r.spritesAbove[:0]
+	r.boxes = r.boxes[:0]
+	r.textBoxes = r.textBoxes[:0]
 }
 func (r *root) drawEnd() {
 	r.cam.DrawNinePatches(r.boxes...)
@@ -200,6 +200,9 @@ func cacheDynCamProps(camera *graphics.Camera) {
 func dynNum(c *container, value string, defaultValue float32) float32 {
 	if value == "" {
 		return defaultValue
+	}
+	if !text.Contains(value, "Camera") && !text.Contains(value, "Owner") && !text.Contains(value, "Target") {
+		return parseNum(value, defaultValue)
 	}
 	dynContainer = c
 	var calc = text.Calculate(value, func(name string) float32 {
