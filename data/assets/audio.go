@@ -36,7 +36,7 @@ func LoadSound(filePath string) string {
 		return ""
 	}
 
-	internal.Sounds[filePath] = &sound
+	internal.Sounds[filePath] = sound
 	return filePath
 }
 func LoadMusic(filePath string) string {
@@ -60,7 +60,7 @@ func LoadMusic(filePath string) string {
 	}
 
 	music.Looping = false
-	internal.Music[filePath] = &music
+	internal.Music[filePath] = music
 	return filePath
 }
 
@@ -69,7 +69,7 @@ func UnloadSound(soundId string) {
 
 	if has && !isDefault(soundId) {
 		delete(internal.Sounds, soundId)
-		rl.UnloadSound(*sound)
+		rl.UnloadSound(sound)
 	}
 }
 func UnloadMusic(musicId string) {
@@ -77,7 +77,7 @@ func UnloadMusic(musicId string) {
 
 	if has {
 		delete(internal.Music, musicId)
-		rl.UnloadMusicStream(*music)
+		rl.UnloadMusicStream(music)
 	}
 }
 

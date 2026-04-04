@@ -54,8 +54,8 @@ var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 var ShaderTileMapLoc int32
 
-var Sounds = make(map[string]*rl.Sound)
-var Music = make(map[string]*rl.Music)
+var Sounds = make(map[string]rl.Sound)
+var Music = make(map[string]rl.Music)
 
 var TileLayers = make(map[string]*TileLayer)
 var TileSets = make(map[string]*TileSet)
@@ -291,7 +291,7 @@ func updateInput() {
 }
 func updateMusic() {
 	for _, v := range Music {
-		rl.UpdateMusicStream(*v)
+		rl.UpdateMusicStream(v)
 	}
 }
 func updateScreens() {

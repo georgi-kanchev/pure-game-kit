@@ -331,7 +331,7 @@ func loadSound(id string, bytes []byte) string {
 	var decompressed = storage.DecompressGZIP(bytes)
 	var wave = rl.LoadWaveFromMemory(".ogg", decompressed, int32(len(decompressed)))
 	var sound = rl.LoadSoundFromWave(wave)
-	internal.Sounds[id] = &sound
+	internal.Sounds[id] = sound
 	rl.UnloadWave(wave)
 	return id
 }
