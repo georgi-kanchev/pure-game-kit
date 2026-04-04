@@ -55,6 +55,7 @@ func Container(id, x, y, width, height string, properties ...string) string {
 const scrollSize, scrollOutline, handleSpeed, dragFriction, dragMomentum = 10.0, 0.25, 12.0, 0.95, 30.0
 
 var rowWidths = map[*widget]float32{}
+var rowWidgets []*widget
 
 func (c *container) update() {
 	var x, y, w, h = ownerLx, ownerTy, ownerW, ownerH
@@ -128,7 +129,7 @@ func (c *container) alignWidgets(x, y, w, h, cGapX, cGapY float32) {
 	var maxHeight float32
 	var curX, curY = x + cGapX, y + cGapY
 	var rowWidth = cGapX * 2
-	var rowWidgets []*widget
+	rowWidgets = rowWidgets[:0]
 	var nonBgrIndex = 0 // new row shouldn't work for first widget, used to check first nonBgr widget
 
 	collection.MapClear(rowWidths)
@@ -155,7 +156,7 @@ func (c *container) alignWidgets(x, y, w, h, cGapX, cGapY float32) {
 				for _, w := range rowWidgets {
 					rowWidths[w] = rowWidth
 				}
-				rowWidgets = nil
+				rowWidgets = rowWidgets[:0]
 				rowWidth = cGapX * 2
 
 				curX = x + cGapX
