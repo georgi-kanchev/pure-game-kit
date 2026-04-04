@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/random"
 	txt "pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -44,7 +43,7 @@ func (t *TextBox) TextMeasure(text string) (width, height float32) {
 	return size.X, height // raylib doesn't seem to calculate height correctly
 }
 func (t *TextBox) TextWrap(text string) string {
-	var curHash = random.Hash(t)
+	var curHash = t.stateHash()
 	if t.hash == curHash {
 		return t.cacheWrap
 	}

@@ -1,13 +1,13 @@
 package graphics
 
 import (
+	"math"
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/random"
 	"pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -27,7 +27,7 @@ type symbol struct {
 }
 
 func (t *TextBox) formatSymbols() ([]string, []symbol) {
-	var hash = random.Hash(t)
+	var hash = t.stateHash()
 	if t.hash == hash {
 		return t.cacheChars, t.cacheSymbols
 	}
@@ -353,4 +353,38 @@ func getOrDefault(curValues map[string]any, name string, defaultValue any) any {
 		return val
 	}
 	return defaultValue
+}
+
+//=================================================================
+// glyph cache
+
+func (t *TextBox) stateHash() uint64 {
+	const prime = uint64(1099511628211)
+	h := uint64(14695981039346656037)
+	apply := func(v uint64) { h ^= v; h *= prime }
+	for _, c := range t.Text {
+		apply(uint64(c))
+	}
+	for _, c := range t.FontId {
+		apply(uint64(c))
+	}
+	apply(uint64(math.Float32bits(t.X)))
+	apply(uint64(math.Float32bits(t.Y)))
+	apply(uint64(math.Float32bits(t.Width)))
+	apply(uint64(math.Float32bits(t.Height)))
+	apply(uint64(math.Float32bits(t.Angle)))
+	apply(uint64(math.Float32bits(t.ScaleX)))
+	apply(uint64(math.Float32bits(t.ScaleY)))
+	apply(uint64(math.Float32bits(t.PivotX)))
+	apply(uint64(math.Float32bits(t.PivotY)))
+	apply(uint64(t.Tint))
+	apply(uint64(math.Float32bits(t.AlignmentX)))
+	apply(uint64(math.Float32bits(t.AlignmentY)))
+	apply(uint64(math.Float32bits(t.LineHeight)))
+	apply(uint64(math.Float32bits(t.SymbolGap)))
+	apply(uint64(math.Float32bits(t.LineGap)))
+	if t.WordWrap {
+		apply(1)
+	}
+	return h
 }
