@@ -26,7 +26,7 @@ func NewEffects() *Effects {
 
 var u = make([]float32, 32) // this is cached and passed to the shader packed to spare some cgo calls
 
-func (e *Effects) updateUniforms(texW, texH int, tileLayerId, tileSetId string, textBox *TextBox, force bool) {
+func (e *Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *TextBox, force bool) {
 	clear(u)
 	u[0], u[1] = float32(texW), float32(texH)
 	u[4], u[5], u[6], u[7] = 0.5, 0.5, 0.5, 0.5
@@ -49,9 +49,9 @@ func (e *Effects) updateUniforms(texW, texH int, tileLayerId, tileSetId string, 
 		dirty = true
 	}
 
-	if tileLayerId != "" && tileSetId != "" {
-		var data = internal.TileLayers[tileLayerId]
-		var atlas = internal.TileSets[tileSetId]
+	if tileMap != nil {
+		var data = internal.TileLayers[tileMap.TileLayerId]
+		var atlas = internal.TileSets[tileMap.TileSetId]
 		if data != nil && atlas != nil && data.Texture != nil {
 			u[21], u[22] = float32(data.Image.Width), float32(data.Image.Height)
 			u[23], u[24] = float32(atlas.TileWidth), float32(atlas.TileHeight)

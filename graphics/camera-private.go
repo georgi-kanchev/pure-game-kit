@@ -208,7 +208,7 @@ func (c *Camera) begin() {
 	}
 
 	rl.EnableDepthTest()
-	c.Effects.updateUniforms(1, 1, "", "", nil, true)
+	c.Effects.updateUniforms(1, 1, nil, nil, true)
 
 	if c.Blend != 0 {
 		rl.BeginBlendMode(rl.BlendMode(c.Blend))

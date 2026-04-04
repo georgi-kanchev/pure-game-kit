@@ -24,7 +24,7 @@ func Tiled() {
 
 	cam.X, cam.Y = 128, 128
 
-	var tileMaps = make([]graphics.TileMap, len(tileDataIds))
+	var tileMaps = make([]*graphics.TileMap, len(tileDataIds))
 	for i, t := range tileDataIds {
 		tileMaps[i] = graphics.NewTileMap(tileSetId, t)
 		tileMaps[i].PivotX, tileMaps[i].PivotY = 0, 0
