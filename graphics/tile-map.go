@@ -145,7 +145,11 @@ func (tm *TileMap) Points() []float32 {
 		return nil
 	}
 
-	var hash = random.Hash(tm)
+	var hash = random.HashPrimitives(
+		tm.TileSetId, tm.TileLayerId, tm.Tint,
+		tm.X, tm.Y, tm.Width, tm.Height, tm.Angle,
+		tm.ScaleX, tm.ScaleY, tm.PivotX, tm.PivotY,
+	)
 	var isStructDirty = tm.hash != hash
 	defer func() { tm.hash = hash }()
 

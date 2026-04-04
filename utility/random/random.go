@@ -9,7 +9,6 @@ import (
 	"math/rand/v2"
 	"pure-game-kit/utility/number"
 	"reflect"
-	"strconv"
 )
 
 func CombineSeeds[T number.Number](seeds ...T) T {
@@ -103,8 +102,23 @@ func PickFrom[T any](items []T, seeds ...float32) T {
 	return items[Range(0, len(items), seeds...)]
 }
 
-// For structs, only exported fields are accounted for
-func Hash(value any) uint64 {
+// Faster than
+//
+//	random.HashStruct(...).
+func HashPrimitives(values ...any) uint64 {
+	var h = uint64(fnvOffset64)
+	for _, v := range values {
+		h = hashAny(h, v)
+	}
+	return h
+}
+
+// Only exported fields are accounted for, use
+//
+//	random.HasPrimitives(...)
+//
+// on individual properties for faster result.
+func HashStruct(value any) uint64 {
 	var val = reflect.ValueOf(value)
 	if val.Kind() == reflect.Pointer {
 		if val.IsNil() {
@@ -117,41 +131,83 @@ func Hash(value any) uint64 {
 		return 0
 	}
 
-	var hash = uint64(fnvOffset64)
-	var buf [128]byte
-
+	var h = uint64(fnvOffset64)
 	for _, field := range val.Fields() {
-		var field = field
 		if !field.CanInterface() { // only exported fields
 			continue
 		}
-
-		var b = buf[:0]
-		switch field.Kind() {
-		case reflect.String:
-			b = append(b, field.String()...)
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			b = strconv.AppendInt(b, field.Int(), 10)
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			b = strconv.AppendUint(b, field.Uint(), 10)
-		case reflect.Bool:
-			b = strconv.AppendBool(b, field.Bool())
-		default:
-			b = fmt.Appendf(b, "%v", field.Interface())
-		}
-
-		for _, c := range b {
-			hash ^= uint64(c)
-			hash *= fnvPrime64
-		}
+		h = hashAny(h, field.Interface())
 	}
-	return hash
+	return h
 }
 
 // =================================================================
 // private
 
 const fnvOffset64, fnvPrime64 = 14695981039346656037, 1099511628211
+
+func hashAny(h uint64, v any) uint64 {
+	switch val := v.(type) {
+	case string:
+		for _, c := range val {
+			h ^= uint64(c)
+			h *= fnvPrime64
+		}
+	case bool:
+		if val {
+			h ^= 1
+		}
+		h *= fnvPrime64
+	case int:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case int8:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case int16:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case int32:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case int64:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case uint:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case uint8:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case uint16:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case uint32:
+		h ^= uint64(val)
+		h *= fnvPrime64
+	case uint64:
+		h ^= val
+		h *= fnvPrime64
+	case float32:
+		h ^= uint64(math.Float32bits(val))
+		h *= fnvPrime64
+	case float64:
+		h ^= math.Float64bits(val)
+		h *= fnvPrime64
+	default:
+		var h2 = HashStruct(val)
+		if h2 != 0 {
+			h ^= h2
+			h *= fnvPrime64
+		} else {
+			for _, b := range fmt.Appendf(nil, "%v", val) {
+				h ^= uint64(b)
+				h *= fnvPrime64
+			}
+		}
+	}
+	return h
+}
 
 func hashSeed(seed, value uint64) uint64 {
 	seed ^= value
@@ -206,20 +262,3 @@ func combineSeeds(seeds ...uint64) uint64 {
 	}
 	return seed
 }
-
-// func oldHash(value any) uint64 {
-// 	var hash = fnv.New64a()
-// 	var val = reflect.ValueOf(value)
-// 	if val.Kind() == reflect.Pointer {
-// 		if val.IsNil() {
-// 			return 0
-// 		}
-// 		val = val.Elem()
-// 	}
-// 	for _, field := range val.Fields() {
-// 		if field.CanInterface() { // only exported fields
-// 			hash.Write(fmt.Appendf(nil, "%v", field.Interface()))
-// 		}
-// 	}
-// 	return hash.Sum64()
-// }
