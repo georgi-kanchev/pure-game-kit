@@ -174,9 +174,14 @@ func (tm *TileMap) Points() []float32 {
 
 	var w, h = tm.Size()
 	var result = make([]float32, 0, 32)
+	var afterFirst = false
 	for cellIndex1D := range data.CellsWithPoints {
 		var row, column = number.Index1DToIndexes2D(cellIndex1D, w, h)
 		result = append(result, tm.PointsAtCell(column, row)...)
+		if !afterFirst {
+			result = append(result, number.NaN(), number.NaN())
+			afterFirst = true
+		}
 	}
 	tm.allPointsCache = result
 	tm.lastDirtyTime = data.LastDirtyTime

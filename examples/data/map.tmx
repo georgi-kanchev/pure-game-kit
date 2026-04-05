@@ -6,7 +6,7 @@
    H4sIAAAAAAAAA+3DAQkAAAwEoev0/butx1Bw1VRVVdXXD6EhNvgAEAAA
   </data>
  </layer>
- <objectgroup id="5" name="Objects">
+ <objectgroup color="#ff0000" id="5" name="Objects">
   <object id="1" x="112" y="56" width="52" height="56"/>
   <object id="2" x="176" y="148" width="68" height="48" rotation="66.1965"/>
   <object id="3" x="340.639" y="162.085" rotation="48.4084">

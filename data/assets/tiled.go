@@ -280,12 +280,9 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 }
 func loadLayerObjects(layer *layerObjects) []float32 {
 	var result []float32
-	for objectIndex, o := range layer.Objects {
+	for objIndex, o := range layer.Objects {
 		var data = "" // slow motherfucker but builder makes it complicated & slow loading doesn't really matter
 		var closedShape = false
-		if objectIndex != 0 {
-			result = append(result, number.NaN(), number.NaN())
-		}
 		if o.Polyline != nil {
 			data = o.Polyline.Points
 		}
@@ -358,6 +355,9 @@ func loadLayerObjects(layer *layerObjects) []float32 {
 		}
 		if closedShape {
 			corners = append(corners, corners[0], corners[1])
+		}
+		if objIndex > 0 {
+			result = append(result, number.NaN(), number.NaN())
 		}
 		result = append(result, corners...)
 	}
