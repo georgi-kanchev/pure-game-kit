@@ -201,7 +201,7 @@ func dynNum(c *container, value string, defaultValue float32) float32 {
 	if value == "" {
 		return defaultValue
 	}
-	if !text.Contains(value, "Camera") && !text.Contains(value, "Owner") && !text.Contains(value, "Target") {
+	if !text.ContainsOneOf(value, "Camera", "Owner", "Target", "+", "-", "*", "/") {
 		return parseNum(value, defaultValue)
 	}
 	dynContainer = c
@@ -283,7 +283,7 @@ func dyn(value string, defaultValue string) string {
 	if value == "" {
 		return defaultValue
 	}
-	if text.Contains(value, "Target") {
+	if text.ContainsAll(value, "Target") {
 		value = text.Replace(value, dynamic.TargetHidden, tarHid)
 		value = text.Replace(value, dynamic.TargetDisabled, tarDis)
 	}

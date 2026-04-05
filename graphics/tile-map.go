@@ -46,6 +46,7 @@ func NewTileMap(tileSetId, tileLayerId string) *TileMap {
 		tileMap.Height = float32(data.Image.Height * int32(atlas.TileHeight))
 	}
 
+	tileMap.PivotX, tileMap.PivotY = 0, 0
 	return tileMap
 }
 

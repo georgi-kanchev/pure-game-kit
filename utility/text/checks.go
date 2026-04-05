@@ -12,13 +12,21 @@ func Length(text string) int {
 func IndexOf(text, part string) int {
 	return strings.Index(text, part)
 }
-func Contains(text string, parts ...string) bool {
+func ContainsAll(text string, parts ...string) bool {
 	for _, part := range parts {
 		if !strings.Contains(text, part) {
 			return false
 		}
 	}
 	return true
+}
+func ContainsOneOf(text string, parts ...string) bool {
+	for _, part := range parts {
+		if strings.Contains(text, part) {
+			return true
+		}
+	}
+	return false
 }
 func CountOccurrences(text, part string) int {
 	return strings.Count(text, part)

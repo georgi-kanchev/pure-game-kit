@@ -21,10 +21,9 @@ type GUI struct {
 // =================================================================
 
 func (g *GUI) UpdateAndDraw() {
-	var cam = g.root.cam
 	var containers = g.root.ContainerIds
 	var prAng, prZoom, prX, prY = g.reset(true) // keep order of variables & reset
-	cacheDynCamProps(cam)
+	cacheDynCamProps(g.root.cam)
 	g.root.Volume = g.Volume
 
 	sliderSlidId = condition.If(sliderSlidId != "", "", sliderSlidId)

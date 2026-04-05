@@ -70,5 +70,5 @@ func tryInitAudio() {
 }
 
 func isDefault(id string) bool {
-	return !text.Contains(id, ".") // files have '.' in them (folder/name.extension) but default asset ids don't
+	return !text.ContainsAll(id, ".") // files have '.' in them (folder/name.extension) but default asset ids don't
 }

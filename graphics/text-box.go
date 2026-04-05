@@ -72,7 +72,7 @@ func (t *TextBox) TextWrap(text string) string {
 		var trimWord = txt.Remove(txt.Trim(word), ph)
 		var wordSize, _ = t.TextMeasure(trimWord)
 
-		if txt.Contains(trimWord, string(placeholderCharAsset)) {
+		if txt.ContainsAll(trimWord, string(placeholderCharAsset)) {
 			wordSize += t.LineHeight
 		}
 

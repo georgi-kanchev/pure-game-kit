@@ -23,11 +23,13 @@ func LoadTiledLayers(tmxFilePath string) (tileSetId string, tileLayerIds []strin
 
 	var tileset, tiled = loadTiled(tmxFilePath)
 	var dir = path.Folder(tmxFilePath)
-	var w, h = tileset.TileWidth, tileset.TileHeight
 	var result = make(map[int]string)
-	dir = path.New(dir, tileset.Source)
-	dir = path.New(path.Folder(dir), tileset.Image.Source)
-	tileSetId = LoadTileSet(dir, w, h)
+	if tileset != nil {
+		var w, h = tileset.TileWidth, tileset.TileHeight
+		dir = path.New(dir, tileset.Source)
+		dir = path.New(path.Folder(dir), tileset.Image.Source)
+		tileSetId = LoadTileSet(dir, w, h)
+	}
 	loadLayersRecursively(result, tmxFilePath, tileSetId, tiled, &tiled.layers)
 	for _, id := range tiled.LayerIdsInOrder {
 		tileLayerIds = append(tileLayerIds, result[id])
@@ -278,13 +280,18 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 }
 func loadLayerObjects(layer *layerObjects) []float32 {
 	var result []float32
-	for _, o := range layer.Objects {
+	for objectIndex, o := range layer.Objects {
 		var data = "" // slow motherfucker but builder makes it complicated & slow loading doesn't really matter
+		var closedShape = false
+		if objectIndex != 0 {
+			result = append(result, number.NaN(), number.NaN())
+		}
 		if o.Polyline != nil {
 			data = o.Polyline.Points
 		}
 		if o.Polygon != nil {
 			data = o.Polygon.Points
+			closedShape = true
 		}
 		if data == "" {
 			if o.Point != nil {
@@ -300,6 +307,7 @@ func loadLayerObjects(layer *layerObjects) []float32 {
 					var value = text.New(x, ",", y, " ")
 					data += value
 				}
+				closedShape = true
 			} else if o.Capsule != nil {
 				var segments = 16
 				var radius = o.Height / 2
@@ -331,8 +339,10 @@ func loadLayerObjects(layer *layerObjects) []float32 {
 						data += text.New(x, ",", y, " ")
 					}
 				}
+				closedShape = true
 			} else { // assume it's a rectangle
 				data = text.New(0, ",", 0, " ", o.Width, ",", 0, " ", o.Width, ",", o.Height, " ", 0, ",", o.Height)
+				closedShape = true
 			}
 		}
 
@@ -346,8 +356,9 @@ func loadLayerObjects(layer *layerObjects) []float32 {
 				corners = append(corners, x, y)
 			}
 		}
-		corners = append(corners, corners[0], corners[1])
-		corners = append(corners, number.NaN(), number.NaN())
+		if closedShape {
+			corners = append(corners, corners[0], corners[1])
+		}
 		result = append(result, corners...)
 	}
 	return result
