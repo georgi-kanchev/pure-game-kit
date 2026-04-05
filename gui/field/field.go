@@ -51,7 +51,7 @@ const (
 	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
 	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
 	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
-	ButtonHotkey         = "buttonHotkey"         // [widget] [theme] one button hotkey can be pressed at all times
+	ButtonHotkey         = "buttonHotkey"         // [widget] [theme] space-separated hotkeys, any of which can be pressed at all times
 	ButtonSoundPress     = "buttonSoundPress"     // [widget] [theme] default: "~press"
 	ButtonSoundRelease   = "buttonSoundRelease"   // [widget] [theme] default: "~release"
 

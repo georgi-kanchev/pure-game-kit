@@ -5,8 +5,6 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui/field"
-	k "pure-game-kit/input/keyboard"
-	"pure-game-kit/input/keyboard/key"
 	m "pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/internal"
@@ -45,9 +43,9 @@ func (r *root) IsButtonJustClicked(buttonId string) bool {
 	}
 
 	var owner = r.Containers[widget.OwnerId]
-	var hotkey = key.FromName(r.themedField(field.ButtonHotkey, owner, widget))
+	var hotkeyStr = r.themedField(field.ButtonHotkey, owner, widget)
 	var focus = widget.isFocused() && r.wPressedOn == widget
-	var input = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustReleased(b.Left))
+	var input = anyHotkeyJustPressed(hotkeyStr) || (focus && m.IsButtonJustReleased(b.Left))
 	return input
 }
 func (r *root) IsButtonClickedAndHeld(buttonId string) bool {
@@ -58,11 +56,11 @@ func (r *root) IsButtonClickedAndHeld(buttonId string) bool {
 
 	var focus = widget.isFocused()
 	var owner = r.Containers[widget.OwnerId]
-	var hotkey = key.FromName(r.themedField(field.ButtonHotkey, owner, widget))
-	var first = k.IsKeyJustPressed(hotkey) || (focus && m.IsButtonJustPressed(b.Left))
+	var hotkeyStr = r.themedField(field.ButtonHotkey, owner, widget)
+	var first = anyHotkeyJustPressed(hotkeyStr) || (focus && m.IsButtonJustPressed(b.Left))
 	var tick = internal.Runtime > r.wPressedAt+0.5
-	var inputHold = k.IsKeyPressed(hotkey) || (focus && r.wPressedOn == widget && m.IsButtonPressed(b.Left))
-	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId, "-", hotkey)) && tick
+	var inputHold = anyHotkeyPressed(hotkeyStr) || (focus && r.wPressedOn == widget && m.IsButtonPressed(b.Left))
+	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId)) && tick
 
 	return first || hold
 }

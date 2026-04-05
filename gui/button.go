@@ -8,7 +8,9 @@ import (
 	m "pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
-	"pure-game-kit/utility/time"
+	"pure-game-kit/internal"
+	"pure-game-kit/utility/text"
+	"strings"
 )
 
 func Button(id string, properties ...string) string {
@@ -26,6 +28,8 @@ func (g *GUI) IsButtonClickedAndHeld(buttonId string) bool {
 
 //=================================================================
 // private
+
+var hotkeyPressedAt = map[string]float32{}
 
 func button(w *widget) {
 	var owner = w.root.Containers[w.OwnerId]
@@ -45,14 +49,24 @@ func button(w *widget) {
 			w.ThemeId = themeHover
 		}
 		var press, justPress = m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left)
-		tryPress(press, justPress, btnSounds, themePress, w, owner)
+		tryPress(press, justPress, btnSounds, themePress, w, owner, false)
 	}
 
 	var hotkeyStr = w.root.themedField(field.ButtonHotkey, owner, w)
 	if typingIn == nil {
 		if hotkeyStr != "" { // no hotkeys while typing
-			var hotkey = key.FromName(hotkeyStr)
-			tryPress(k.IsKeyPressed(hotkey), k.IsKeyJustPressed(hotkey), btnSounds, themePress, w, owner)
+			var pressed = anyHotkeyPressed(hotkeyStr)
+			var justPressed = anyHotkeyJustPressed(hotkeyStr)
+			tryPress(pressed, justPressed, btnSounds, themePress, w, owner, true)
+			if justPressed {
+				clickedId = w.Id
+				hotkeyPressedAt[w.Id] = internal.Runtime
+			}
+			var tick = internal.Runtime > hotkeyPressedAt[w.Id]+0.5
+			var hold = pressed && condition.TrueEvery(0.1, text.New(";;hold-", w.Id, "-hk")) && tick
+			if hold {
+				clickedAndHeldId = w.Id
+			}
 		}
 		if btnSounds && w.root.IsButtonJustClicked(w.Id) {
 			sound.AssetId = defaultValue(w.root.themedField(field.ButtonSoundPress, owner, w), "~release")
@@ -80,8 +94,25 @@ func button(w *widget) {
 	w.ThemeId = prev
 }
 
-func tryPress(press, once, sounds bool, themePress string, widget *widget, owner *container) {
-	if press && widget.root.wPressedOn == widget && themePress != "" {
+func anyHotkeyPressed(hotkeyStr string) bool {
+	for name := range strings.FieldsSeq(hotkeyStr) {
+		if k.IsKeyPressed(key.FromName(name)) {
+			return true
+		}
+	}
+	return false
+}
+func anyHotkeyJustPressed(hotkeyStr string) bool {
+	for name := range strings.FieldsSeq(hotkeyStr) {
+		if k.IsKeyJustPressed(key.FromName(name)) {
+			return true
+		}
+	}
+	return false
+}
+
+func tryPress(press, once, sounds bool, themePress string, widget *widget, owner *container, hotkey bool) {
+	if press && (hotkey || widget.root.wPressedOn == widget) && themePress != "" {
 		widget.ThemeId = themePress
 	}
 	if once {
@@ -90,7 +121,9 @@ func tryPress(press, once, sounds bool, themePress string, widget *widget, owner
 			sound.Volume = widget.root.Volume
 			sound.Play()
 		}
-		widget.root.wPressedOn = widget
-		widget.root.wPressedAt = time.Running()
+		if !hotkey {
+			widget.root.wPressedOn = widget
+			widget.root.wPressedAt = internal.Runtime
+		}
 	}
 }
