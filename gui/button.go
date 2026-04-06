@@ -58,7 +58,7 @@ func button(w *widget) {
 			var justPressed = anyHotkeyJustPressed(hotkeyStr)
 			tryPress(pressed, justPressed, btnSounds, themePress, w, owner, true)
 			if justPressed {
-				clickedId = w.Id
+				hotkeyClickedId = w.Id
 				hotkeyPressedAt[w.Id] = internal.Runtime
 			}
 			var tick = internal.Runtime > hotkeyPressedAt[w.Id]+0.5
@@ -71,7 +71,7 @@ func button(w *widget) {
 				}
 			}
 			if hold {
-				clickedAndHeldId = w.Id
+				hotkeyClickedAndHeldId = w.Id
 			}
 		}
 		if btnSounds && w.root.IsButtonJustClicked(w.Id) {

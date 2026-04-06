@@ -74,6 +74,15 @@ func (g *GUI) UpdateAndDraw() {
 	clickedId = condition.If(clickedId != "", "", clickedId)
 	clickedAndHeldId = condition.If(clickedAndHeldId != "", "", clickedAndHeldId)
 
+	if hotkeyClickedId != "" {
+		clickedId = hotkeyClickedId
+		hotkeyClickedId = ""
+	}
+	if hotkeyClickedAndHeldId != "" {
+		clickedAndHeldId = hotkeyClickedAndHeldId
+		hotkeyClickedAndHeldId = ""
+	}
+
 	if g.root.wPressedOn != nil {
 		if g.root.IsButtonJustClicked(g.root.wPressedOn.Id) {
 			clickedId = g.root.wPressedOn.Id

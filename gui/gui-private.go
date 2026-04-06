@@ -42,6 +42,7 @@ var tooltipAt float32
 var tooltipVisible, tooltipWasVisible bool
 
 var clickedId, clickedAndHeldId, sliderSlidId = "", "", ""
+var hotkeyClickedId, hotkeyClickedAndHeldId = "", ""
 var dynContainer *container // avoids closure allocation in dynNum
 var dynLookup = func(name string) float32 {
 	switch name {
