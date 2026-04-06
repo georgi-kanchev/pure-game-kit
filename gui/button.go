@@ -9,7 +9,6 @@ import (
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/text"
 	"strings"
 )
 
@@ -30,6 +29,7 @@ func (g *GUI) IsButtonClickedAndHeld(buttonId string) bool {
 // private
 
 var hotkeyPressedAt = map[string]float32{}
+var hotkeyHoldEvery = map[string]float32{}
 
 func button(w *widget) {
 	var owner = w.root.Containers[w.OwnerId]
@@ -62,7 +62,14 @@ func button(w *widget) {
 				hotkeyPressedAt[w.Id] = internal.Runtime
 			}
 			var tick = internal.Runtime > hotkeyPressedAt[w.Id]+0.5
-			var hold = pressed && condition.TrueEvery(0.1, text.New(";;hold-", w.Id, "-hk")) && tick
+			var hold = false
+			if pressed && tick {
+				var start, has = hotkeyHoldEvery[w.Id]
+				if !has || internal.Runtime > start+0.1 {
+					hotkeyHoldEvery[w.Id] = internal.Runtime
+					hold = has
+				}
+			}
 			if hold {
 				clickedAndHeldId = w.Id
 			}

@@ -240,6 +240,37 @@ func MemoryUsage() string {
 
 	return b.String()
 }
+func ProfileAllocations(seconds float32) {
+	go func() {
+		var ts = time.Now().Format("2006-01-02_15-04-05")
+		var profileFile = fmt.Sprintf("allocs_%s.prof", ts)
+
+		log.Printf("Allocation profiling: capturing for %.2f seconds...\n", seconds)
+
+		var duration = time.Duration(float64(seconds) * float64(time.Second))
+		time.Sleep(duration)
+
+		runtime.GC() // flush pending frees so the snapshot is accurate
+
+		var f, err = os.Create(profileFile)
+		if err != nil {
+			log.Println("could not create allocs profile:", err)
+			return
+		}
+		defer f.Close()
+
+		if err := pprof.Lookup("allocs").WriteTo(f, 0); err != nil {
+			log.Println("could not write allocs profile:", err)
+			return
+		}
+
+		log.Println("Allocation profile saved at", profileFile)
+		log.Println("Opening browser at http://localhost:8081 ...")
+
+		exec.Command("go", "tool", "pprof", "-http=:8081", profileFile).Start()
+	}()
+}
+
 func ProfileCPU(seconds float32) {
 	go func() {
 		// timestamp for filenames

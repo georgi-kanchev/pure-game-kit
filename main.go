@@ -2,6 +2,7 @@ package main
 
 import (
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
@@ -126,6 +127,8 @@ func main() {
 		"default retro atlas asset": example.DefaultAssetRetro,
 		"default patterns asset":    example.DefaultAssetPatterns,
 	}
+
+	debug.ProfileAllocations(10)
 
 	for window.KeepOpen() {
 		window.Title = "pure-game-kit: hub"

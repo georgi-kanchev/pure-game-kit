@@ -156,7 +156,35 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 	}
 }
 func (b *batchData) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color) {
-	b.QueueTriangles([]float32{x1, y1, x2, y2, x3, y3}, color)
+	var initial = [3]batchVertex{{X: x1, Y: y1}, {X: x2, Y: y2}, {X: x3, Y: y3}}
+	var poly [12]batchVertex
+	var vCount int
+
+	if b.mask == nil {
+		vCount = 3
+		copy(poly[:3], initial[:])
+	} else {
+		var clipped [12]batchVertex
+		vCount = clipPolygonAABB(initial[:], clipped[:], b.mask)
+		if vCount < 3 {
+			return
+		}
+		copy(poly[:vCount], clipped[:vCount])
+	}
+
+	var white = internal.White
+	var vCount32 = int32(vCount)
+	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != white.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
+		b.Draw()
+	}
+	if b.vertsCur == 0 {
+		var mat = b.material
+		rl.SetMaterialTexture(&mat, rl.MapDiffuse, white)
+		b.material = mat
+		b.material.Shader = internal.Shader
+	}
+
+	b.writeToBuffers(poly[:vCount], color)
 }
 func (b *batchData) QueueTriangleFanFloats(points []float32, color rl.Color) {
 	var count = len(points) / 2
@@ -182,27 +210,22 @@ func (b *batchData) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color)
 	b.QueueQuad(startX, startY, length, thickness, ang, color)
 }
 func (b *batchData) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32) {
-	var queueQuad = func(dstX, dstY, dstW, dstH float32, col uint) {
-		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
-		var x, y = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
-		var prevCol = s.Color
-		s.Color = col
-		batch.QueueTex(font.Texture, rl.NewRectangle(x, y, 0.2, 0.2), dst, s.Angle, packSymbolColor(s))
-		s.Color = prevCol
-	}
 	var lineThickness = lineHeight / 15
+	var tx, ty = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
+	var fontSrc = rl.NewRectangle(tx, ty, 0.2, 0.2)
 
 	if s.BackColor > 0 {
-		queueQuad(s.Bounds.X, s.Bounds.Y, s.Bounds.Width+gapX, s.Bounds.Height, s.BackColor)
+		var prevCol = s.Color
+		s.Color = s.BackColor
+		batch.QueueTex(font.Texture, fontSrc, rl.NewRectangle(s.Bounds.X, s.Bounds.Y, s.Bounds.Width+gapX, s.Bounds.Height), s.Angle, packSymbolColor(s))
+		s.Color = prevCol
 	}
 
 	if s.Underline {
-		// Shift the offset up by the amount the top was cropped
 		var offset = (lineHeight - lineThickness) - s.TopCrop
-
 		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
 			var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
-			queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
+			batch.QueueTex(font.Texture, fontSrc, rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness), s.Angle, packSymbolColor(s))
 		}
 	}
 
@@ -211,12 +234,10 @@ func (b *batchData) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32
 	}
 
 	if s.Strikethrough {
-		// Shift the offset up by the amount the top was cropped
 		var offset = (lineHeight*0.55 - lineThickness/2) - s.TopCrop
-
 		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
 			var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
-			queueQuad(x, y, s.Bounds.Width+gapX, lineThickness, s.Color)
+			batch.QueueTex(font.Texture, fontSrc, rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness), s.Angle, packSymbolColor(s))
 		}
 	}
 }

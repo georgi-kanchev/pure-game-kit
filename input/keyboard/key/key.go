@@ -31,73 +31,74 @@ const (
 )
 
 func ToName(key int) string {
-	var value, has = keyNames[key]
-	if has {
-		return value.(string)
-	}
-	return ""
+	return keyToName[key]
 }
 func FromName(name string) int {
-	var value, has = keyNames[name]
-	if has {
-		return value.(int)
-	}
-	return 0
+	return nameToKey[name]
 }
 
 //=================================================================
 // private
 
-var keyNames = map[any]any{ // this monstrosity is the shortest & simplest way to map keys to their names
-	"Space": Space, Space: "Space", "Apostrophe": Apostrophe, Apostrophe: "Apostrophe",
-	"Comma": Comma, Comma: "Comma", "Minus": Minus, Minus: "Minus", "Dot": Dot, Dot: "Dot",
-	"Slash": Slash, Slash: "Slash",
+var nameToKey = map[string]int{
+	"Space": Space, "Apostrophe": Apostrophe, "Comma": Comma, "Minus": Minus, "Dot": Dot, "Slash": Slash,
 
-	"Number0": Number0, Number0: "Number0", "Number1": Number1, Number1: "Number1",
-	"Number2": Number2, Number2: "Number2", "Number3": Number3, Number3: "Number3",
-	"Number4": Number4, Number4: "Number4", "Number5": Number5, Number5: "Number5",
-	"Number6": Number6, Number6: "Number6", "Number7": Number7, Number7: "Number7",
-	"Number8": Number8, Number8: "Number8", "Number9": Number9, Number9: "Number9",
+	"Number0": Number0, "Number1": Number1, "Number2": Number2, "Number3": Number3, "Number4": Number4,
+	"Number5": Number5, "Number6": Number6, "Number7": Number7, "Number8": Number8, "Number9": Number9,
 
-	"Semicolon": Semicolon, Semicolon: "Semicolon", "Equal": Equal, Equal: "Equal",
+	"Semicolon": Semicolon, "Equal": Equal,
 
-	"A": A, A: "A", "B": B, B: "B", "C": C, C: "C", "D": D, D: "D", "E": E, E: "E", "F": F, F: "F", "G": G, G: "G",
-	"H": H, H: "H", "I": I, I: "I", "J": J, J: "J", "K": K, K: "K", "L": L, L: "L", "M": M, M: "M", "N": N, N: "N",
-	"O": O, O: "O", "P": P, P: "P", "Q": Q, Q: "Q", "R": R, R: "R", "S": S, S: "S", "T": T, T: "T", "U": U, U: "U",
-	"V": V, V: "V", "W": W, W: "W", "X": X, X: "X", "Y": Y, Y: "Y", "Z": Z, Z: "Z",
+	"A": A, "B": B, "C": C, "D": D, "E": E, "F": F, "G": G, "H": H, "I": I, "J": J, "K": K, "L": L, "M": M,
+	"N": N, "O": O, "P": P, "Q": Q, "R": R, "S": S, "T": T, "U": U, "V": V, "W": W, "X": X, "Y": Y, "Z": Z,
 
-	"LeftBracket": LeftBracket, LeftBracket: "LeftBracket", "BackSlash": BackSlash, BackSlash: "BackSlash",
-	"RightBracket": RightBracket, RightBracket: "RightBracket", "Grave": Grave, Grave: "Grave",
+	"LeftBracket": LeftBracket, "BackSlash": BackSlash, "RightBracket": RightBracket, "Grave": Grave,
 
-	"Escape": Escape, Escape: "Escape", "Enter": Enter, Enter: "Enter", "Tab": Tab, Tab: "Tab",
-	"Backspace": Backspace, Backspace: "Backspace", "Insert": Insert, Insert: "Insert",
-	"Delete": Delete, Delete: "Delete", "RightArrow": RightArrow, RightArrow: "RightArrow",
-	"LeftArrow": LeftArrow, LeftArrow: "LeftArrow", "DownArrow": DownArrow, DownArrow: "DownArrow",
-	"UpArrow": UpArrow, UpArrow: "UpArrow", "PageUp": PageUp, PageUp: "PageUp",
-	"PageDown": PageDown, PageDown: "PageDown", "Home": Home, Home: "Home", "End": End, End: "End",
-	"CapsLock": CapsLock, CapsLock: "CapsLock", "ScrollLock": ScrollLock, ScrollLock: "ScrollLock",
-	"NumLock": NumLock, NumLock: "NumLock", "PrintScreen": PrintScreen, PrintScreen: "PrintScreen",
-	"Pause": Pause, Pause: "Pause",
+	"Escape": Escape, "Enter": Enter, "Tab": Tab, "Backspace": Backspace, "Insert": Insert,
+	"Delete": Delete, "RightArrow": RightArrow, "LeftArrow": LeftArrow, "DownArrow": DownArrow,
+	"UpArrow": UpArrow, "PageUp": PageUp, "PageDown": PageDown, "Home": Home, "End": End,
+	"CapsLock": CapsLock, "ScrollLock": ScrollLock, "NumLock": NumLock, "PrintScreen": PrintScreen, "Pause": Pause,
 
-	"F1": F1, F1: "F1", "F2": F2, F2: "F2", "F3": F3, F3: "F3", "F4": F4, F4: "F4", "F5": F5, F5: "F5",
-	"F6": F6, F6: "F6", "F7": F7, F7: "F7", "F8": F8, F8: "F8", "F9": F9, F9: "F9", "F10": F10, F10: "F10",
-	"F11": F11, F11: "F11", "F12": F12, F12: "F12",
+	"F1": F1, "F2": F2, "F3": F3, "F4": F4, "F5": F5, "F6": F6,
+	"F7": F7, "F8": F8, "F9": F9, "F10": F10, "F11": F11, "F12": F12,
 
-	"Numpad0": Numpad0, Numpad0: "Numpad0", "Numpad1": Numpad1, Numpad1: "Numpad1",
-	"Numpad2": Numpad2, Numpad2: "Numpad2", "Numpad3": Numpad3, Numpad3: "Numpad3",
-	"Numpad4": Numpad4, Numpad4: "Numpad4", "Numpad5": Numpad5, Numpad5: "Numpad5",
-	"Numpad6": Numpad6, Numpad6: "Numpad6", "Numpad7": Numpad7, Numpad7: "Numpad7",
-	"Numpad8": Numpad8, Numpad8: "Numpad8", "Numpad9": Numpad9, Numpad9: "Numpad9",
+	"Numpad0": Numpad0, "Numpad1": Numpad1, "Numpad2": Numpad2, "Numpad3": Numpad3, "Numpad4": Numpad4,
+	"Numpad5": Numpad5, "Numpad6": Numpad6, "Numpad7": Numpad7, "Numpad8": Numpad8, "Numpad9": Numpad9,
 
-	"NumpadDot": NumpadDot, NumpadDot: "NumpadDot", "NumpadDivide": NumpadDivide, NumpadDivide: "NumpadDivide",
-	"NumpadMultiply": NumpadMultiply, NumpadMultiply: "NumpadMultiply",
-	"NumpadSubtract": NumpadSubtract, NumpadSubtract: "NumpadSubtract",
-	"NumpadAdd": NumpadAdd, NumpadAdd: "NumpadAdd", "NumpadEnter": NumpadEnter, NumpadEnter: "NumpadEnter",
-	"NumpadEqual": NumpadEqual, NumpadEqual: "NumpadEqual",
+	"NumpadDot": NumpadDot, "NumpadDivide": NumpadDivide, "NumpadMultiply": NumpadMultiply,
+	"NumpadSubtract": NumpadSubtract, "NumpadAdd": NumpadAdd, "NumpadEnter": NumpadEnter, "NumpadEqual": NumpadEqual,
 
-	"LeftShift": LeftShift, LeftShift: "LeftShift", "LeftControl": LeftControl, LeftControl: "LeftControl",
-	"LeftAlt": LeftAlt, LeftAlt: "LeftAlt", "LeftSuper": LeftSuper, LeftSuper: "LeftSuper",
-	"RightShift": RightShift, RightShift: "RightShift", "RightControl": RightControl, RightControl: "RightControl",
-	"RightAlt": RightAlt, RightAlt: "RightAlt", "RightSuper": RightSuper, RightSuper: "RightSuper",
-	"Menu": Menu, Menu: "Menu",
+	"LeftShift": LeftShift, "LeftControl": LeftControl, "LeftAlt": LeftAlt, "LeftSuper": LeftSuper,
+	"RightShift": RightShift, "RightControl": RightControl, "RightAlt": RightAlt, "RightSuper": RightSuper,
+	"Menu": Menu,
+}
+var keyToName = map[int]string{
+	Space: "Space", Apostrophe: "Apostrophe", Comma: "Comma", Minus: "Minus", Dot: "Dot", Slash: "Slash",
+
+	Number0: "Number0", Number1: "Number1", Number2: "Number2", Number3: "Number3", Number4: "Number4",
+	Number5: "Number5", Number6: "Number6", Number7: "Number7", Number8: "Number8", Number9: "Number9",
+
+	Semicolon: "Semicolon", Equal: "Equal",
+
+	A: "A", B: "B", C: "C", D: "D", E: "E", F: "F", G: "G", H: "H", I: "I", J: "J", K: "K", L: "L", M: "M",
+	N: "N", O: "O", P: "P", Q: "Q", R: "R", S: "S", T: "T", U: "U", V: "V", W: "W", X: "X", Y: "Y", Z: "Z",
+
+	LeftBracket: "LeftBracket", BackSlash: "BackSlash", RightBracket: "RightBracket", Grave: "Grave",
+
+	Escape: "Escape", Enter: "Enter", Tab: "Tab", Backspace: "Backspace", Insert: "Insert",
+	Delete: "Delete", RightArrow: "RightArrow", LeftArrow: "LeftArrow", DownArrow: "DownArrow",
+	UpArrow: "UpArrow", PageUp: "PageUp", PageDown: "PageDown", Home: "Home", End: "End",
+	CapsLock: "CapsLock", ScrollLock: "ScrollLock", NumLock: "NumLock", PrintScreen: "PrintScreen", Pause: "Pause",
+
+	F1: "F1", F2: "F2", F3: "F3", F4: "F4", F5: "F5", F6: "F6",
+	F7: "F7", F8: "F8", F9: "F9", F10: "F10", F11: "F11", F12: "F12",
+
+	Numpad0: "Numpad0", Numpad1: "Numpad1", Numpad2: "Numpad2", Numpad3: "Numpad3", Numpad4: "Numpad4",
+	Numpad5: "Numpad5", Numpad6: "Numpad6", Numpad7: "Numpad7", Numpad8: "Numpad8", Numpad9: "Numpad9",
+
+	NumpadDot: "NumpadDot", NumpadDivide: "NumpadDivide", NumpadMultiply: "NumpadMultiply",
+	NumpadSubtract: "NumpadSubtract", NumpadAdd: "NumpadAdd", NumpadEnter: "NumpadEnter", NumpadEqual: "NumpadEqual",
+
+	LeftShift: "LeftShift", LeftControl: "LeftControl", LeftAlt: "LeftAlt", LeftSuper: "LeftSuper",
+	RightShift: "RightShift", RightControl: "RightControl", RightAlt: "RightAlt", RightSuper: "RightSuper",
+	Menu: "Menu",
 }
