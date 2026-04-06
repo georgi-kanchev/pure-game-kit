@@ -20,17 +20,17 @@ func NewLine(ax, ay, bx, by float32) Line {
 
 //=================================================================
 
-func (l *Line) Angle() float32 {
+func (l Line) Angle() float32 {
 	return angle.BetweenPoints(l.Ax, l.Ay, l.Bx, l.By)
 }
-func (l *Line) Normal() float32 {
+func (l Line) Normal() float32 {
 	return number.Wrap(l.Angle()-90, 0, 360)
 }
-func (l *Line) Length() float32 {
+func (l Line) Length() float32 {
 	return point.DistanceToPoint(l.Ax, l.Ay, l.Bx, l.By)
 }
 
-func (l *Line) CrossPointWithLine(target Line) (x, y float32) {
+func (l Line) CrossPointWithLine(target Line) (x, y float32) {
 	var dx1 = l.Bx - l.Ax
 	var dy1 = l.By - l.Ay
 	var dx2 = target.Bx - target.Ax
@@ -53,7 +53,7 @@ func (l *Line) CrossPointWithLine(target Line) (x, y float32) {
 
 	return ix, iy
 }
-func (l *Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
+func (l Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
 	var ax, ay = l.Ax, l.Ay
 	var bx, by = l.Bx, l.By
 	var apx, apy = targetX - ax, targetY - ay
@@ -79,7 +79,7 @@ func (l *Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
 	return cx, cy
 }
 
-func (l *Line) IsCrossingLine(target Line) bool {
+func (l Line) IsCrossingLine(target Line) bool {
 	var ax1, ay1, bx1, by1 = l.Ax, l.Ay, l.Bx, l.By
 	var ax2, ay2, bx2, by2 = target.Ax, target.Ay, target.Bx, target.By
 	var d1 = (bx2-ax2)*(ay1-ay2) - (by2-ay2)*(ax1-ax2)
@@ -88,10 +88,10 @@ func (l *Line) IsCrossingLine(target Line) bool {
 	var d4 = (bx1-ax1)*(by2-ay1) - (by1-ay1)*(bx2-ax1)
 	return d1*d2 < 0 && d3*d4 < 0
 }
-func (l *Line) IsLeftOfPoint(x, y float32) bool {
+func (l Line) IsLeftOfPoint(x, y float32) bool {
 	return (l.Bx-l.Ax)*(y-l.Ay)-(l.By-l.Ay)*(x-l.Ax) < 0
 }
-func (l *Line) ContainsPoint(x, y, tolerance float32) bool {
+func (l Line) ContainsPoint(x, y, tolerance float32) bool {
 	var cx, cy = l.ClosestToPoint(x, y)
 	var dx, dy = cx - x, cy - y
 	return dx*dx+dy*dy <= tolerance*tolerance

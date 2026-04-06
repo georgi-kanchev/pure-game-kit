@@ -50,22 +50,22 @@ func NewTileMap(tileSetId, tileLayerId string) *TileMap {
 	return tileMap
 }
 
-func NewTile(id uint16) *Tile {
-	return &Tile{Id: id}
+func NewTile(id uint16) Tile {
+	return Tile{Id: id}
 }
-func NewTileOriented(id uint16, rotation byte, flip bool) *Tile {
-	return &Tile{Id: id, Rotation: rotation, Flip: flip}
+func NewTileOriented(id uint16, rotation byte, flip bool) Tile {
+	return Tile{Id: id, Rotation: rotation, Flip: flip}
 }
-func NewTileAnimated(id uint16, frameCount, frameOffset, frameSpeed byte) *Tile {
-	return &Tile{Id: id, FrameCount: frameCount, FrameSpeed: frameSpeed, FrameOffset: frameOffset}
+func NewTileAnimated(id uint16, frameCount, frameOffset, frameSpeed byte) Tile {
+	return Tile{Id: id, FrameCount: frameCount, FrameSpeed: frameSpeed, FrameOffset: frameOffset}
 }
 
 //=================================================================
 
-func (tm *TileMap) SetTile(column, row int, tile *Tile) {
+func (tm *TileMap) SetTile(column, row int, tile Tile) {
 	tm.SetTileArea(column, row, 1, 1, tile)
 }
-func (tm *TileMap) SetTileArea(column, row, width, height int, tile *Tile) {
+func (tm *TileMap) SetTileArea(column, row, width, height int, tile Tile) {
 	var data = internal.TileLayers[tm.TileLayerId]
 	var tileSet = internal.TileSets[tm.TileSetId]
 	if data == nil || tileSet == nil {

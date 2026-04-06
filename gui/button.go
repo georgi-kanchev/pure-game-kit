@@ -38,22 +38,21 @@ func button(w *widget) {
 	var focus = w.isFocused()
 
 	if focus {
-		m.SetCursor(cursor.Hand)
-
 		if w.isDisabled(owner) {
 			m.SetCursor(cursor.NotAllowed)
+		} else {
+			m.SetCursor(cursor.Hand)
+			var themeHover = w.root.themedField(field.ButtonThemeIdHover, owner, w)
+			if themeHover != "" {
+				w.ThemeId = themeHover
+			}
+			var press, justPress = m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left)
+			tryPress(press, justPress, btnSounds, themePress, w, owner, false)
 		}
-
-		var themeHover = w.root.themedField(field.ButtonThemeIdHover, owner, w)
-		if themeHover != "" {
-			w.ThemeId = themeHover
-		}
-		var press, justPress = m.IsButtonPressed(b.Left), m.IsButtonJustPressed(b.Left)
-		tryPress(press, justPress, btnSounds, themePress, w, owner, false)
 	}
 
 	var hotkeyStr = w.root.themedField(field.ButtonHotkey, owner, w)
-	if typingIn == nil {
+	if typingIn == nil && !w.isDisabled(owner) {
 		if hotkeyStr != "" { // no hotkeys while typing
 			var pressed = anyHotkeyPressed(hotkeyStr)
 			var justPressed = anyHotkeyJustPressed(hotkeyStr)

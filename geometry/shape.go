@@ -8,6 +8,7 @@ import (
 
 type Shape struct {
 	X, Y, Angle, ScaleX, ScaleY,
+
 	minX, minY, maxX, maxY,
 	gridX, gridY float32
 

@@ -27,6 +27,7 @@ var tarHid, tarDis string                                                       
 
 var buttonColor uint
 var btnSounds = true
+var colorCache = map[string]uint{}
 
 var typingIn *widget
 var indexCursor, indexSelect int
@@ -294,24 +295,29 @@ func parseColor(value string, disabled ...bool) uint {
 		return color.RGBA(0, 0, 0, 0)
 	}
 
-	var rgba = text.Split(value, " ")
-	var r, g, b, a byte
+	var c, ok = colorCache[value]
+	if !ok {
+		var rgba = text.Split(value, " ")
+		var r, g, b, a byte
 
-	if len(rgba) == 3 || len(rgba) == 4 {
-		r = text.ToNumber[byte](rgba[0])
-		g = text.ToNumber[byte](rgba[1])
-		b = text.ToNumber[byte](rgba[2])
-		a = 255
-	}
-	if len(rgba) == 4 {
-		a = text.ToNumber[byte](rgba[3])
+		if len(rgba) == 3 || len(rgba) == 4 {
+			r = text.ToNumber[byte](rgba[0])
+			g = text.ToNumber[byte](rgba[1])
+			b = text.ToNumber[byte](rgba[2])
+			a = 255
+		}
+		if len(rgba) == 4 {
+			a = text.ToNumber[byte](rgba[3])
+		}
+
+		c = color.RGBA(r, g, b, a)
+		colorCache[value] = c
 	}
 
 	if len(disabled) == 1 && disabled[0] {
-		a = 0
+		return ((c >> 1) & 0x7F7F7F00) | (c & 0xFF)
 	}
-
-	return color.RGBA(byte(r), byte(g), byte(b), byte(a))
+	return c
 }
 func parseNum(value string, defaultValue float32) float32 {
 	if value == "" {

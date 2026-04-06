@@ -132,7 +132,7 @@ func main() {
 		window.FrameRateLimit = 0
 
 		hud.UpdateAndDraw()
-		cam.DrawTextDebug(true, false, false, false)
+		cam.DrawTextDebug(true, true, false, true)
 
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k) {

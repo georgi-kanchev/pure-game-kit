@@ -67,7 +67,11 @@ func inputField(w *widget) {
 	setupVisualsTextured(w)
 
 	if w.isFocused() {
-		mouse.SetCursor(cursor.Input)
+		if w.isDisabled(owner) {
+			mouse.SetCursor(cursor.NotAllowed)
+		} else {
+			mouse.SetCursor(cursor.Input)
+		}
 	}
 
 	var anyInput = mouse.IsAnyButtonJustPressed() || mouse.Scroll() != 0
@@ -80,7 +84,7 @@ func inputField(w *widget) {
 		typingIn = nil
 		scrollX = 0
 	}
-	if mouse.IsButtonJustPressed(btn.Left) && focused {
+	if mouse.IsButtonJustPressed(btn.Left) && focused && !w.isDisabled(owner) {
 		if typingIn != w {
 			scrollX = 0
 		}
