@@ -4,11 +4,20 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/random"
 	txt "pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+type textBoxCache struct {
+	text                           string
+	fontId                         string
+	tint                           uint
+	wordWrap                       bool
+	width, height                  float32
+	alignmentX, alignmentY         float32
+	lineHeight, symbolGap, lineGap float32
+}
 
 type TextBox struct {
 	Quad
@@ -18,7 +27,7 @@ type TextBox struct {
 	LineHeight, SymbolGap, LineGap,
 	ShadowOffsetX, ShadowOffsetY float32
 
-	hash         uint64
+	cache        textBoxCache
 	cacheChars   []string
 	cacheSymbols []symbol
 	cacheWrap    string
@@ -44,13 +53,13 @@ func (t *TextBox) TextMeasure(text string) (width, height float32) {
 	return size.X, height // raylib doesn't seem to calculate height correctly
 }
 func (t *TextBox) TextWrap(text string) string {
-	var curHash = random.HashPrimitives(
+	var state = textBoxCache{
 		t.Text, t.FontId, t.Tint, t.WordWrap,
 		t.Width, t.Height,
 		t.AlignmentX, t.AlignmentY,
 		t.LineHeight, t.SymbolGap, t.LineGap,
-	)
-	if t.hash == curHash {
+	}
+	if t.cache == state {
 		return t.cacheWrap
 	}
 
@@ -119,7 +128,7 @@ func (t *TextBox) TextWrap(text string) string {
 	}
 	var result = buffer.ToText()
 	result = txt.Replace(result, " \n", "\n")
-	t.hash = curHash
+	t.cache = state
 	t.cacheWrap = result
 	return result
 }

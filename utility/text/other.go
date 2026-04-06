@@ -11,7 +11,7 @@ import (
 var calcValues = make([]float32, 0, 8)
 var calcOperators = make([]rune, 0, 8)
 
-func Calculate(mathExpression string, vars ...func(string) float32) float32 {
+func Calculate(mathExpression string, vars func(string) float32) float32 {
 	mathExpression = Remove(mathExpression, " ")
 	calcValues = calcValues[:0]
 	calcOperators = calcOperators[:0]
@@ -63,10 +63,10 @@ func Calculate(mathExpression string, vars ...func(string) float32) float32 {
 			}
 			var name = mathExpression[start:i]
 			i--
-			if len(vars) == 0 {
+			if vars == nil {
 				return number.NaN()
 			}
-			var v = vars[0](name)
+			var v = vars(name)
 			if number.IsNaN(v) {
 				return number.NaN()
 			}

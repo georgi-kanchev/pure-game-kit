@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/random"
 	"pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -27,13 +26,13 @@ type symbol struct {
 }
 
 func (t *TextBox) formatSymbols() ([]string, []symbol) {
-	var hash = random.HashPrimitives(
+	var state = textBoxCache{
 		t.Text, t.FontId, t.Tint, t.WordWrap,
 		t.Width, t.Height,
 		t.AlignmentX, t.AlignmentY,
 		t.LineHeight, t.SymbolGap, t.LineGap,
-	)
-	if t.hash == hash {
+	}
+	if t.cache == state {
 		return t.cacheChars, t.cacheSymbols
 	}
 
@@ -119,7 +118,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		lineIndex++
 	}
 
-	t.hash = hash
+	t.cache = state
 	t.cacheChars = resultLines
 	t.cacheSymbols = result
 	return resultLines, result

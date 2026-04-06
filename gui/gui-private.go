@@ -43,6 +43,75 @@ var tooltipVisible, tooltipWasVisible bool
 
 var clickedId, clickedAndHeldId, sliderSlidId = "", "", ""
 var dynContainer *container // avoids closure allocation in dynNum
+var dynLookup = func(name string) float32 {
+	switch name {
+	case dynamic.CameraCenterX:
+		return camCx
+	case dynamic.CameraCenterY:
+		return camCy
+	case dynamic.CameraLeftX:
+		return camLx
+	case dynamic.CameraRightX:
+		return camRx
+	case dynamic.CameraTopY:
+		return camTy
+	case dynamic.CameraBottomY:
+		return camBy
+	case dynamic.CameraWidth:
+		return camW
+	case dynamic.CameraHeight:
+		return camH
+	case dynamic.OwnerCenterX:
+		if dynContainer != nil {
+			return ownerCx
+		}
+	case dynamic.OwnerCenterY:
+		if dynContainer != nil {
+			return ownerCy
+		}
+	case dynamic.OwnerLeftX:
+		if dynContainer != nil {
+			return ownerLx
+		}
+	case dynamic.OwnerRightX:
+		if dynContainer != nil {
+			return ownerRx
+		}
+	case dynamic.OwnerTopY:
+		if dynContainer != nil {
+			return ownerTy
+		}
+	case dynamic.OwnerBottomY:
+		if dynContainer != nil {
+			return ownerBy
+		}
+	case dynamic.OwnerWidth:
+		if dynContainer != nil {
+			return ownerW
+		}
+	case dynamic.OwnerHeight:
+		if dynContainer != nil {
+			return ownerH
+		}
+	case dynamic.TargetCenterX:
+		return tarCx
+	case dynamic.TargetCenterY:
+		return tarCy
+	case dynamic.TargetLeftX:
+		return tarLx
+	case dynamic.TargetRightX:
+		return tarRx
+	case dynamic.TargetTopY:
+		return tarTy
+	case dynamic.TargetBottomY:
+		return tarBy
+	case dynamic.TargetWidth:
+		return tarW
+	case dynamic.TargetHeight:
+		return tarH
+	}
+	return number.NaN()
+}
 
 func (g *GUI) reset(inputState bool) (prAng, prZoom, prX, prY float32) {
 	var cam = g.root.cam
@@ -206,75 +275,7 @@ func dynNum(c *container, value string, defaultValue float32) float32 {
 		return parseNum(value, defaultValue)
 	}
 	dynContainer = c
-	var calc = text.Calculate(value, func(name string) float32 {
-		switch name {
-		case dynamic.CameraCenterX:
-			return camCx
-		case dynamic.CameraCenterY:
-			return camCy
-		case dynamic.CameraLeftX:
-			return camLx
-		case dynamic.CameraRightX:
-			return camRx
-		case dynamic.CameraTopY:
-			return camTy
-		case dynamic.CameraBottomY:
-			return camBy
-		case dynamic.CameraWidth:
-			return camW
-		case dynamic.CameraHeight:
-			return camH
-		case dynamic.OwnerCenterX:
-			if dynContainer != nil {
-				return ownerCx
-			}
-		case dynamic.OwnerCenterY:
-			if dynContainer != nil {
-				return ownerCy
-			}
-		case dynamic.OwnerLeftX:
-			if dynContainer != nil {
-				return ownerLx
-			}
-		case dynamic.OwnerRightX:
-			if dynContainer != nil {
-				return ownerRx
-			}
-		case dynamic.OwnerTopY:
-			if dynContainer != nil {
-				return ownerTy
-			}
-		case dynamic.OwnerBottomY:
-			if dynContainer != nil {
-				return ownerBy
-			}
-		case dynamic.OwnerWidth:
-			if dynContainer != nil {
-				return ownerW
-			}
-		case dynamic.OwnerHeight:
-			if dynContainer != nil {
-				return ownerH
-			}
-		case dynamic.TargetCenterX:
-			return tarCx
-		case dynamic.TargetCenterY:
-			return tarCy
-		case dynamic.TargetLeftX:
-			return tarLx
-		case dynamic.TargetRightX:
-			return tarRx
-		case dynamic.TargetTopY:
-			return tarTy
-		case dynamic.TargetBottomY:
-			return tarBy
-		case dynamic.TargetWidth:
-			return tarW
-		case dynamic.TargetHeight:
-			return tarH
-		}
-		return number.NaN()
-	})
+	var calc = text.Calculate(value, dynLookup)
 	if number.IsNaN(calc) {
 		return defaultValue
 	}
