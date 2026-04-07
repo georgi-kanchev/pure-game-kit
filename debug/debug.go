@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"pure-game-kit/utility/number"
 	"reflect"
 	"runtime"
 	"runtime/pprof"
@@ -21,6 +20,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unsafe"
 )
 
 var LoggingDisabled = false
@@ -203,42 +203,80 @@ func Dependencies() string {
 func MemoryUsage() string {
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	var b strings.Builder
+	memBuf = memBuf[:0]
 
-	fmt.Fprintf(&b, "Memory:\n")
-	fmt.Fprintf(&b, "UsedNow = %v (current heap in use)\n", byteSize(int(m.Alloc)))
-	fmt.Fprintf(&b, "UsedTotal = %v (total allocated since start)\n", byteSize(int(m.TotalAlloc)))
-	fmt.Fprintf(&b, "FromOS = %v (memory reserved from OS)\n", byteSize(int(m.Sys)))
+	memBuf = append(memBuf, "Memory:\n"...)
+	memBuf = append(memBuf, "UsedNow = "...)
+	memBuf = appendByteSize(memBuf, int(m.Alloc))
+	memBuf = append(memBuf, " (current heap in use)\n"...)
+	memBuf = append(memBuf, "UsedTotal = "...)
+	memBuf = appendByteSize(memBuf, int(m.TotalAlloc))
+	memBuf = append(memBuf, " (total allocated since start)\n"...)
+	memBuf = append(memBuf, "FromOS = "...)
+	memBuf = appendByteSize(memBuf, int(m.Sys))
+	memBuf = append(memBuf, " (memory reserved from OS)\n"...)
 
-	fmt.Fprintf(&b, "\nHeap:\n")
-	fmt.Fprintf(&b, "Used = %v \n", byteSize(int(m.HeapAlloc)))
-	fmt.Fprintf(&b, "Reserved = %v \n", byteSize(int(m.HeapSys)))
-	fmt.Fprintf(&b, "Idle = %v (not used but still reserved)\n", byteSize(int(m.HeapIdle)))
-	fmt.Fprintf(&b, "Active = %v (actively in use)\n", byteSize(int(m.HeapInuse)))
-	fmt.Fprintf(&b, "Released = %v (given back to OS)\n", byteSize(int(m.HeapReleased)))
+	memBuf = append(memBuf, "\nHeap:\n"...)
+	memBuf = append(memBuf, "Used = "...)
+	memBuf = appendByteSize(memBuf, int(m.HeapAlloc))
+	memBuf = append(memBuf, " \n"...)
+	memBuf = append(memBuf, "Reserved = "...)
+	memBuf = appendByteSize(memBuf, int(m.HeapSys))
+	memBuf = append(memBuf, " \n"...)
+	memBuf = append(memBuf, "Idle = "...)
+	memBuf = appendByteSize(memBuf, int(m.HeapIdle))
+	memBuf = append(memBuf, " (not used but still reserved)\n"...)
+	memBuf = append(memBuf, "Active = "...)
+	memBuf = appendByteSize(memBuf, int(m.HeapInuse))
+	memBuf = append(memBuf, " (actively in use)\n"...)
+	memBuf = append(memBuf, "Released = "...)
+	memBuf = appendByteSize(memBuf, int(m.HeapReleased))
+	memBuf = append(memBuf, " (given back to OS)\n"...)
 
-	fmt.Fprintf(&b, "\nStack:\n")
-	fmt.Fprintf(&b, "Used = %v\n", byteSize(int(m.StackInuse)))
-	fmt.Fprintf(&b, "Reserved = %v\n", byteSize(int(m.StackSys)))
-	fmt.Fprintf(&b, "Other = %v (misc runtime overhead)\n", byteSize(int(m.OtherSys)))
+	memBuf = append(memBuf, "\nStack:\n"...)
+	memBuf = append(memBuf, "Used = "...)
+	memBuf = appendByteSize(memBuf, int(m.StackInuse))
+	memBuf = append(memBuf, "\n"...)
+	memBuf = append(memBuf, "Reserved = "...)
+	memBuf = appendByteSize(memBuf, int(m.StackSys))
+	memBuf = append(memBuf, "\n"...)
+	memBuf = append(memBuf, "Other = "...)
+	memBuf = appendByteSize(memBuf, int(m.OtherSys))
+	memBuf = append(memBuf, " (misc runtime overhead)\n"...)
 
-	fmt.Fprintf(&b, "\nObjects:\n")
-	fmt.Fprintf(&b, "Allocs = %v (objects allocated)\n", number.SeparateThousands(m.Mallocs))
-	fmt.Fprintf(&b, "Frees = %v (objects freed)\n", number.SeparateThousands(m.Frees))
-	fmt.Fprintf(&b, "Live = %v (currently alive)\n", number.SeparateThousands(m.HeapObjects))
+	memBuf = append(memBuf, "\nObjects:\n"...)
+	memBuf = append(memBuf, "Allocs = "...)
+	memBuf = appendThousands(memBuf, m.Mallocs)
+	memBuf = append(memBuf, " (objects allocated)\n"...)
+	memBuf = append(memBuf, "Frees = "...)
+	memBuf = appendThousands(memBuf, m.Frees)
+	memBuf = append(memBuf, " (objects freed)\n"...)
+	memBuf = append(memBuf, "Live = "...)
+	memBuf = appendThousands(memBuf, m.HeapObjects)
+	memBuf = append(memBuf, " (currently alive)\n"...)
 
-	fmt.Fprintf(&b, "\nGarbage Collection:\n")
-	fmt.Fprintf(&b, "Total = %v (total collections)\n", number.SeparateThousands(m.NumGC))
-	fmt.Fprintf(&b, "Forced = %v (manual triggers)\n", m.NumForcedGC)
-	fmt.Fprintf(&b, "Next = %v (target heap size of the next GC)\n", byteSize(int(m.NextGC)))
-	fmt.Fprintf(&b, "PauseTotal = %.2f s (total time spent in GC)\n", float64(m.PauseTotalNs)/1e9)
+	memBuf = append(memBuf, "\nGarbage Collection:\n"...)
+	memBuf = append(memBuf, "Total = "...)
+	memBuf = appendThousands(memBuf, uint64(m.NumGC))
+	memBuf = append(memBuf, " (total collections)\n"...)
+	memBuf = append(memBuf, "Forced = "...)
+	memBuf = strconv.AppendUint(memBuf, uint64(m.NumForcedGC), 10)
+	memBuf = append(memBuf, " (manual triggers)\n"...)
+	memBuf = append(memBuf, "Next = "...)
+	memBuf = appendByteSize(memBuf, int(m.NextGC))
+	memBuf = append(memBuf, " (target heap size of the next GC)\n"...)
+	memBuf = append(memBuf, "PauseTotal = "...)
+	memBuf = strconv.AppendFloat(memBuf, float64(m.PauseTotalNs)/1e9, 'f', 2, 64)
+	memBuf = append(memBuf, " s (total time spent in GC)\n"...)
 	if m.LastGC == 0 {
-		fmt.Fprintf(&b, "SinceLast = never\n")
+		memBuf = append(memBuf, "SinceLast = never\n"...)
 	} else {
-		fmt.Fprintf(&b, "SinceLast = %.2f s\n", time.Since(time.Unix(0, int64(m.LastGC))).Seconds())
+		memBuf = append(memBuf, "SinceLast = "...)
+		memBuf = strconv.AppendFloat(memBuf, time.Since(time.Unix(0, int64(m.LastGC))).Seconds(), 'f', 2, 64)
+		memBuf = append(memBuf, " s\n"...)
 	}
 
-	return b.String()
+	return unsafe.String(unsafe.SliceData(memBuf), len(memBuf))
 }
 func ProfileAllocations(seconds float32) {
 	go func() {
@@ -320,6 +358,7 @@ func ProfileCPU(seconds float32) {
 // private
 
 var logFile = ""
+var memBuf []byte
 
 func callInfo(message string) string {
 	const maxDepth = 32
@@ -361,17 +400,33 @@ func appendFile(content string) {
 }
 
 // copied from utility/text
-func byteSize(byteSize int) string {
+func appendByteSize(buf []byte, n int) []byte {
 	const unit = 1024
-	if byteSize < unit {
-		return fmt.Sprintf("%d B", byteSize)
+	if n < unit {
+		buf = strconv.AppendInt(buf, int64(n), 10)
+		return append(buf, " B"...)
 	}
 	var div, exp = int(unit), 0
-	for n := byteSize / unit; n >= unit; n /= unit {
+	for v := n / unit; v >= unit; v /= unit {
 		div *= unit
 		exp++
 	}
-	return fmt.Sprintf("%.3f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
+	buf = strconv.AppendFloat(buf, float64(n)/float64(div), 'f', 3, 64)
+	buf = append(buf, ' ')
+	buf = append(buf, "KMGTPE"[exp])
+	return append(buf, 'B')
+}
+func appendThousands(buf []byte, n uint64) []byte {
+	var tmp [32]byte
+	var s = strconv.AppendUint(tmp[:0], n, 10)
+	var length = len(s)
+	for i, c := range s {
+		if i > 0 && (length-i)%3 == 0 {
+			buf = append(buf, ' ')
+		}
+		buf = append(buf, c)
+	}
+	return buf
 }
 
 // copied from utility/text.New()

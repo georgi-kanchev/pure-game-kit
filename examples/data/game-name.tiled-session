@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "map.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
         "."
     ],
@@ -12,6 +12,10 @@
         "": {
             "scaleInDock": 0.75,
             "scaleInEditor": 8
+        },
+        "/home/gojur/Desktop/atlas.tsx": {
+            "scaleInDock": 0.03125,
+            "scaleInEditor": 2
         },
         "/home/gojur/code/battle-brothers-clone/data/battlegrounds/test/map.tmx": {
             "scale": 0.33,
@@ -29,7 +33,7 @@
             "scale": 0.33,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 2163.636363636364,
+                "x": 2293.939393939394,
                 "y": 1228.787878787879
             }
         },
@@ -72,8 +76,8 @@
             "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 298,
-                "y": 180.25
+                "x": 290.5,
+                "y": 180.75
             }
         },
         "map.tmx#atlas": {
@@ -115,22 +119,22 @@
         }
     },
     "frame.defaultDuration": 300,
-    "last.imagePath": "/home/gojur/code/pure-game-kit/examples/data",
+    "last.imagePath": "/home/gojur/code/retro-shell-box",
+    "map.fixedSize": false,
     "map.height": 1,
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": "3",
-    "map.tileHeight": 16,
-    "map.tileWidth": 16,
+    "map.tileHeight": 12,
+    "map.tileWidth": 12,
     "map.width": 1,
     "openFiles": [
-        "/home/gojur/code/battle-brothers-clone/data/worlds/01/points.tmx",
-        "map.tmx"
     ],
     "project": "game-name.tiled-project",
     "property.type": "list",
     "recentFiles": [
-        "/home/gojur/code/battle-brothers-clone/data/worlds/01/points.tmx",
+        "/home/gojur/Desktop/atlas.tsx",
         "map.tmx",
+        "/home/gojur/code/battle-brothers-clone/data/worlds/01/points.tmx",
         "atlas.tsx",
         "/home/gojur/code/battle-brothers-clone/data/battlegrounds/tiles.tsx",
         "/home/gojur/code/battle-brothers-clone/data/battlegrounds/test/map.tmx",
@@ -139,13 +143,14 @@
         "images.tsx",
         "objects.tsx",
         "desert.tmx",
-        "terrain.tmx",
-        "sizes.tsx"
+        "terrain.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",
+    "tileset.margin": 1,
+    "tileset.spacing": 1,
     "tileset.tileSize": {
-        "height": 16,
-        "width": 16
+        "height": 12,
+        "width": 12
     }
 }
