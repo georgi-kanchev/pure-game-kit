@@ -213,7 +213,11 @@ func (tm *TileMap) PointsFromTile(tileId uint16) []float32 {
 	if tileSet == nil {
 		return nil
 	}
-	return collection.Copy(tileSet.PointsPerTile[tileId])
+	var pts, has = tileSet.PointsPerTile[tileId]
+	if !has {
+		return nil
+	}
+	return collection.Copy(pts)
 }
 
 func (tm *TileMap) Size() (columns, rows int) {
@@ -233,4 +237,9 @@ func (tm *TileMap) SizeTileSet() (columns, rows int) {
 	}
 	var tw, th = internal.AssetSize(tm.TileSetId)
 	return tw / tileSet.TileWidth, th / tileSet.TileHeight
+}
+
+func (tm *TileMap) TileCount() int {
+	var w, h = tm.SizeTileSet()
+	return w * h
 }
