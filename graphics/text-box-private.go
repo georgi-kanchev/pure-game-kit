@@ -7,7 +7,7 @@ import (
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/text"
+	txt "pure-game-kit/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -38,8 +38,11 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 
 	var result = []symbol{}
 	var resultLines = []string{}
-	var wrapped = condition.If(t.WordWrap, t.TextWrap(t.Text), t.Text)
-	var lines = text.SplitLines(wrapped)
+	var wrapped = t.Text
+	if t.WordWrap {
+		wrapped = t.TextWrap(t.Text)
+	}
+	var lines = txt.SplitLines(wrapped)
 	var curX, curY float32 = 0, 0
 	var font = t.font()
 	var gapX = t.gapSymbols()
@@ -49,7 +52,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var curValues = make(map[string]any)
 	var lineIndex = 0
 	var reading = false
-	var curTag = text.NewBuilder()
+	var curTag = txt.NewBuilder()
 
 	for l, line := range lines {
 		var emptyLine = line == ""
@@ -58,11 +61,11 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		}
 
 		var tagless = internal.RemoveTags(line)
-		var lineWidth, _ = t.TextMeasure(tagless)
+		var lineWidth, _ = t.measure(font, tagless)
 
-		var assetCount = text.CountOccurrences(tagless, string(placeholderCharAsset))
+		var assetCount = txt.CountOccurrences(tagless, string(placeholderCharAsset))
 		if assetCount > 0 { // account embedded assets in line width
-			var placeholderWidth, _ = t.TextMeasure(string(placeholderCharAsset))
+			var placeholderWidth, _ = t.measure(font, string(placeholderCharAsset))
 			lineWidth += (t.LineHeight - placeholderWidth) * float32(assetCount)
 		}
 
@@ -208,6 +211,11 @@ func (t *TextBox) cropSymbol(symb symbol, gapX, gapY float32) (skip bool) {
 
 	return skip
 }
+func (t *TextBox) measure(font rl.Font, text string) (width, height float32) {
+	var size = rl.MeasureTextEx(font, text, t.LineHeight, t.gapSymbols())
+	height = float32(txt.CountOccurrences(text, "\n")+1) * (t.LineHeight + t.gapLines())
+	return size.X, height // raylib doesn't seem to calculate height correctly
+}
 
 func (t *TextBox) font() rl.Font {
 	var font, hasFont = internal.Fonts[t.FontId]
@@ -231,7 +239,7 @@ func (t *TextBox) gapLines() float32 {
 	return t.LineGap * t.LineHeight / 5
 }
 
-func (t *TextBox) readTag(reading *bool, char rune, cur *text.Builder, curValues map[string]any) (nextChar bool) {
+func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues map[string]any) (nextChar bool) {
 	if !*reading && char == '{' {
 		*reading = true
 	}
@@ -251,18 +259,18 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *text.Builder, curValues
 		cur.Clear()
 	}
 
-	if !text.StartsWith(tag, "{") {
+	if !txt.StartsWith(tag, "{") {
 		return false
 	}
 
-	tag = text.Remove(tag, "{", "}")
+	tag = txt.Remove(tag, "{", "}")
 
 	if tag == "" {
 		collection.MapClear(curValues)
 		return false
 	}
 
-	var parts = text.Split(tag, "=")
+	var parts = txt.Split(tag, "=")
 	var name, value = parts[0], ""
 	if len(parts) > 1 {
 		value = parts[1]
@@ -300,10 +308,10 @@ func parseCol(value string, defaultValue uint) uint {
 		return defaultValue
 	}
 
-	var rgba = text.Split(value, " ")
+	var rgba = txt.Split(value, " ")
 	if len(rgba) == 4 {
-		var r, g = text.ToNumber[byte](rgba[0]), text.ToNumber[byte](rgba[1])
-		var b, a = text.ToNumber[byte](rgba[2]), text.ToNumber[byte](rgba[3])
+		var r, g = txt.ToNumber[byte](rgba[0]), txt.ToNumber[byte](rgba[1])
+		var b, a = txt.ToNumber[byte](rgba[2]), txt.ToNumber[byte](rgba[3])
 		return color.RGBA(r, g, b, a)
 	}
 	return defaultValue
@@ -313,7 +321,7 @@ func parseNum(value string, defaultValue float32) float32 {
 		return defaultValue
 	}
 
-	var result = text.ToNumber[float32](value)
+	var result = txt.ToNumber[float32](value)
 	if number.IsNaN(result) {
 		return defaultValue
 	}

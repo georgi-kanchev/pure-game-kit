@@ -22,6 +22,8 @@ type batchData struct {
 	vertsCur, indCur, quadsCapacity int32
 
 	vertices, texCoords, colors, indices []byte
+
+	polyBuf, clipBuf, clipTempBuf [12]batchVertex // reused working buffers; avoids per-call heap escapes
 }
 
 var batch *batchData
@@ -63,35 +65,34 @@ func (b *batchData) QueueTex(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
 	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
-	var poly [12]batchVertex
+	var verts []batchVertex
 	var vCount int
 
 	if b.mask == (Area{}) { // FAST PATH: Direct vertex generation
 		vCount = 4
 		if ang == 0 {
 			for i := range 4 {
-				poly[i] = batchVertex{X: dx[i] + dst.X, Y: dy[i] + dst.Y, U: uvs[i*2], V: uvs[i*2+1]}
+				b.polyBuf[i] = batchVertex{X: dx[i] + dst.X, Y: dy[i] + dst.Y, U: uvs[i*2], V: uvs[i*2+1]}
 			}
 		} else {
 			var sinA, cosA = internal.SinCos(ang)
 			for i := range 4 {
 				var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
-				poly[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
+				b.polyBuf[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
 			}
 		}
+		verts = b.polyBuf[:vCount]
 	} else { // CLIPPED PATH
 		var sinA, cosA = internal.SinCos(ang)
-		var initial [4]batchVertex
 		for i := range 4 {
 			var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
-			initial[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
+			b.polyBuf[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
 		}
-		var clipped [12]batchVertex
-		vCount = clipPolygonAABB(initial[:], clipped[:], b.mask)
+		vCount = clipPolygonAABB(b.polyBuf[:4], b.clipBuf[:], b.clipTempBuf[:], b.mask)
 		if vCount < 3 {
 			return
 		}
-		copy(poly[:], clipped[:vCount])
+		verts = b.clipBuf[:vCount]
 	}
 
 	var vCount32 = int32(vCount)
@@ -105,7 +106,7 @@ func (b *batchData) QueueTex(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 		b.material.Shader = internal.Shader
 	}
 
-	b.writeToBuffers(poly[:vCount], col)
+	b.writeToBuffers(verts, col)
 }
 
 func (b *batchData) QueueQuad(x, y, width, height, angle float32, color rl.Color) {
@@ -120,25 +121,22 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 
 	for i := range totalTriangles {
 		var pOffset = i * 6
-		var initial = [3]batchVertex{
-			{X: points[pOffset+0], Y: points[pOffset+1], U: 0, V: 0},
-			{X: points[pOffset+2], Y: points[pOffset+3], U: 0, V: 0},
-			{X: points[pOffset+4], Y: points[pOffset+5], U: 0, V: 0},
-		}
+		b.polyBuf[0] = batchVertex{X: points[pOffset+0], Y: points[pOffset+1]}
+		b.polyBuf[1] = batchVertex{X: points[pOffset+2], Y: points[pOffset+3]}
+		b.polyBuf[2] = batchVertex{X: points[pOffset+4], Y: points[pOffset+5]}
 
-		var poly [12]batchVertex
+		var verts []batchVertex
 		var vCount int
 
 		if b.mask == (Area{}) {
 			vCount = 3
-			copy(poly[:], initial[:])
+			verts = b.polyBuf[:3]
 		} else {
-			var clipped [12]batchVertex
-			vCount = clipPolygonAABB(initial[:], clipped[:], b.mask)
+			vCount = clipPolygonAABB(b.polyBuf[:3], b.clipBuf[:], b.clipTempBuf[:], b.mask)
 			if vCount < 3 {
 				continue
 			}
-			copy(poly[:], clipped[:vCount])
+			verts = b.clipBuf[:vCount]
 		}
 
 		var vCount32 = int32(vCount)
@@ -152,24 +150,26 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 			b.material.Shader = internal.Shader
 		}
 
-		b.writeToBuffers(poly[:vCount], col)
+		b.writeToBuffers(verts, col)
 	}
 }
 func (b *batchData) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color) {
-	var initial = [3]batchVertex{{X: x1, Y: y1}, {X: x2, Y: y2}, {X: x3, Y: y3}}
-	var poly [12]batchVertex
+	b.polyBuf[0] = batchVertex{X: x1, Y: y1}
+	b.polyBuf[1] = batchVertex{X: x2, Y: y2}
+	b.polyBuf[2] = batchVertex{X: x3, Y: y3}
+
+	var verts []batchVertex
 	var vCount int
 
 	if b.mask == (Area{}) {
 		vCount = 3
-		copy(poly[:3], initial[:])
+		verts = b.polyBuf[:3]
 	} else {
-		var clipped [12]batchVertex
-		vCount = clipPolygonAABB(initial[:], clipped[:], b.mask)
+		vCount = clipPolygonAABB(b.polyBuf[:3], b.clipBuf[:], b.clipTempBuf[:], b.mask)
 		if vCount < 3 {
 			return
 		}
-		copy(poly[:vCount], clipped[:vCount])
+		verts = b.clipBuf[:vCount]
 	}
 
 	var white = internal.White
@@ -184,7 +184,7 @@ func (b *batchData) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color
 		b.material.Shader = internal.Shader
 	}
 
-	b.writeToBuffers(poly[:vCount], color)
+	b.writeToBuffers(verts, color)
 }
 func (b *batchData) QueueTriangleFanFloats(points []float32, color rl.Color) {
 	var count = len(points) / 2
@@ -300,26 +300,25 @@ func (b *batchData) writeToBuffers(vertices []batchVertex, col rl.Color) {
 	b.indCur += trisCount * 3
 }
 
-func clipPolygonAABB(poly, outBuf []batchVertex, mask Area) int {
-	var temp [12]batchVertex // Intermediate buffer for ping-ponging edges
+func clipPolygonAABB(poly, outBuf, tempBuf []batchVertex, mask Area) int {
 	var minX, maxX = mask.X, mask.X + mask.Width
 	var minY, maxY = mask.Y, mask.Y + mask.Height
-	var count = clipPolyEdge(poly, temp[:], true, minX, true)
+	var count = clipPolyEdge(poly, tempBuf, true, minX, true)
 	if count == 0 {
 		return 0
 	}
 
-	count = clipPolyEdge(temp[:count], outBuf, true, maxX, false)
+	count = clipPolyEdge(tempBuf[:count], outBuf, true, maxX, false)
 	if count == 0 {
 		return 0
 	}
 
-	count = clipPolyEdge(outBuf[:count], temp[:], false, minY, true)
+	count = clipPolyEdge(outBuf[:count], tempBuf, false, minY, true)
 	if count == 0 {
 		return 0
 	}
 
-	count = clipPolyEdge(temp[:count], outBuf, false, maxY, false)
+	count = clipPolyEdge(tempBuf[:count], outBuf, false, maxY, false)
 	return count
 }
 func clipPolyEdge(in, out []batchVertex, isX bool, edgeVal float32, keepGreater bool) int {

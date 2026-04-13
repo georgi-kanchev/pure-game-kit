@@ -48,9 +48,7 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 
 // Does not wrap the text - use TextWrap(...) beforehand if intended.
 func (t *TextBox) TextMeasure(text string) (width, height float32) {
-	var size = rl.MeasureTextEx(t.font(), text, t.LineHeight, t.gapSymbols())
-	height = float32(txt.CountOccurrences(text, "\n")+1) * (t.LineHeight + t.gapLines())
-	return size.X, height // raylib doesn't seem to calculate height correctly
+	return t.measure(t.font(), text)
 }
 func (t *TextBox) TextWrap(text string) string {
 	var state = textBoxCache{

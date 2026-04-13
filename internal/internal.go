@@ -10,6 +10,8 @@ import (
 	"regexp"
 )
 
+var tagRegexp = regexp.MustCompile(`{.*?}`)
+
 const Placeholder = '╌'
 
 func ReplaceStrings(text string, open, close, placeholder rune) (replaced string, originals []string) {
@@ -45,5 +47,5 @@ func ReplaceStrings(text string, open, close, placeholder rune) (replaced string
 	return result.ToText(), originals
 }
 func RemoveTags(text string) string {
-	return regexp.MustCompile(`{.*?}`).ReplaceAllString(text, "")
+	return tagRegexp.ReplaceAllString(text, "")
 }
