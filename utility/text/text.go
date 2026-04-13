@@ -32,7 +32,7 @@ func New(elements ...any) string {
 				fmt.Fprintf(&builder, "%+v", e) // struct
 				continue
 			}
-			if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
+			if valueType.Kind() == reflect.Pointer && valueType.Elem().Kind() == reflect.Struct {
 				fmt.Fprintf(&builder, "%+v", value.Elem().Interface()) // pointer to struct
 				continue
 			}
