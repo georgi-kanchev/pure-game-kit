@@ -28,17 +28,14 @@ func New(elements ...any) string {
 		default:
 			var value = reflect.ValueOf(e)
 			var valueType = value.Type()
-
 			if valueType.Kind() == reflect.Struct {
-				builder.WriteString(fmt.Sprintf("%+v", e)) // struct
+				fmt.Fprintf(&builder, "%+v", e) // struct
 				continue
 			}
-
 			if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
-				builder.WriteString(fmt.Sprintf("%+v", value.Elem().Interface())) // pointer to struct
+				fmt.Fprintf(&builder, "%+v", value.Elem().Interface()) // pointer to struct
 				continue
 			}
-
 			builder.WriteString(fmt.Sprint(e)) // fallback
 		}
 	}
