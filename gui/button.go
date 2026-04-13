@@ -9,7 +9,6 @@ import (
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/input/mouse/cursor"
 	"pure-game-kit/internal"
-	"strings"
 )
 
 func Button(id string, properties ...string) string {
@@ -100,29 +99,41 @@ func button(w *widget) {
 	w.ThemeId = prev
 }
 
-func anyHotkeyPressed(hotkeyStr string) bool {
+func checkHotkeys(hotkeyStr string, check func(string) bool) bool {
 	if hotkeyStr == "" {
 		return false
 	}
 
-	for name := range strings.FieldsSeq(hotkeyStr) {
-		if k.IsKeyPressed(key.FromName(name)) {
-			return true
+	var start = -1
+	for i := 0; i < len(hotkeyStr); i++ {
+		var char = hotkeyStr[i]
+		var isSpace = char == ' ' || char == '\t' || char == '\n' || char == '\r'
+
+		if !isSpace && start == -1 {
+			start = i
+		} else if isSpace && start != -1 {
+			if check(hotkeyStr[start:i]) {
+				return true
+			}
+			start = -1
 		}
 	}
+
+	if start != -1 {
+		return check(hotkeyStr[start:])
+	}
+
 	return false
 }
+func anyHotkeyPressed(hotkeyStr string) bool {
+	return checkHotkeys(hotkeyStr, func(name string) bool {
+		return k.IsKeyPressed(key.FromName(name))
+	})
+}
 func anyHotkeyJustPressed(hotkeyStr string) bool {
-	if hotkeyStr == "" {
-		return false
-	}
-
-	for name := range strings.FieldsSeq(hotkeyStr) {
-		if k.IsKeyJustPressed(key.FromName(name)) {
-			return true
-		}
-	}
-	return false
+	return checkHotkeys(hotkeyStr, func(name string) bool {
+		return k.IsKeyJustPressed(key.FromName(name))
+	})
 }
 
 func tryPress(press, once, sounds bool, themePress string, widget *widget, owner *container, hotkey bool) {

@@ -3,11 +3,11 @@ package graphics
 import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/color"
 	"pure-game-kit/utility/color/palette"
 	"pure-game-kit/utility/number"
 	txt "pure-game-kit/utility/text"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -24,6 +24,12 @@ type symbol struct {
 	Weight, OutlineWeight, ShadowWeight, ShadowBlur byte
 	Underline, Strikethrough                        bool
 }
+type symbolState struct {
+	Color, BackColor, OutlineColor, ShadowColor     uint
+	Weight, OutlineWeight, ShadowWeight, ShadowBlur byte
+	Underline, Strikethrough, HasAsset              bool
+	AssetId                                         string
+}
 
 func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var state = textBoxCache{
@@ -36,95 +42,96 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		return t.cacheChars, t.cacheSymbols
 	}
 
-	var result = []symbol{}
-	var resultLines = []string{}
+	t.cacheSymbols = t.cacheSymbols[:0]
+	t.cacheChars = t.cacheChars[:0]
+
 	var wrapped = t.Text
 	if t.WordWrap {
 		wrapped = t.TextWrap(t.Text)
 	}
 	var lines = txt.SplitLines(wrapped)
-	var curX, curY float32 = 0, 0
 	var font = t.font()
 	var gapX = t.gapSymbols()
 	var gapY = t.gapLines()
 	var textHeight = (t.LineHeight+gapY)*float32(len(lines)) - gapY
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
-	var curValues = make(map[string]any)
-	var lineIndex = 0
+	var curState = symbolState{
+		Color: t.Tint, OutlineColor: palette.Black, ShadowColor: palette.Black, Weight: 1, OutlineWeight: 1, ShadowWeight: 1,
+		ShadowBlur: 1,
+	}
+
 	var reading = false
-	var curTag = txt.NewBuilder()
+	if t.cacheBuilder == nil {
+		t.cacheBuilder = txt.NewBuilder()
+	}
+	t.cacheBuilder.Clear()
+	var currentLineStr strings.Builder
 
 	for l, line := range lines {
 		var emptyLine = line == ""
 		if emptyLine {
-			line = " " // empty lines shouldn't be skipped
+			line = " "
 		}
 
 		var tagless = internal.RemoveTags(line)
 		var lineWidth, _ = t.measure(font, tagless, gapX)
-
 		var assetCount = txt.CountOccurrences(tagless, string(placeholderCharAsset))
-		if assetCount > 0 { // account embedded assets in line width
+		if assetCount > 0 {
 			var placeholderWidth, _ = t.measure(font, string(placeholderCharAsset), gapX)
 			lineWidth += (t.LineHeight - placeholderWidth) * float32(assetCount)
 		}
 
-		curX = (t.Width - lineWidth) * alignX
-		curY = float32(l)*(t.LineHeight+t.gapLines()) + (t.Height-textHeight)*alignY
+		var curX = (t.Width - lineWidth) * alignX
+		var curY = float32(l)*(t.LineHeight+gapY) + (t.Height-textHeight)*alignY
+		var lineStartIdx = len(t.cacheSymbols) // track where this line starts in the symbol slice to build the string later
 
 		for _, c := range line {
-			if t.readTag(&reading, c, curTag, curValues) {
+			if t.readTag(&reading, c, t.cacheBuilder, &curState) {
 				continue
 			}
 
 			var symb symbol
 			var charSize float32
-			var char = condition.If(emptyLine, "", string(c))
-			var assetId, has = curValues["assetId"]
 
-			if has {
+			// Allocation Warning: string(c) still allocates.
+			// Consider if your symbol.Value can be a rune.
+			var char = condition.If(emptyLine, "", string(c))
+
+			if curState.HasAsset {
 				charSize = t.LineHeight
 				var rect = rl.NewRectangle(curX, curY, charSize, charSize)
-				var tex, src, rot, flip = internal.AssetData(assetId.(string))
+				var tex, src, rot, flip = internal.AssetData(curState.AssetId)
 				internal.EditAssetRects(&src, &rect, t.Angle, rot, flip)
 				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
-				delete(curValues, "assetId")
+				curState.HasAsset = false
 			} else {
 				charSize, _ = t.measure(font, char, 0)
 				symb = t.createSymbol(font, curX, curY, c)
 			}
+
 			symb.Bounds.Width, symb.Angle, symb.Value = charSize, 0, char
-			symb.Color = getOrDefault(curValues, "color", t.Tint).(uint)
-			symb.BackColor = getOrDefault(curValues, "backColor", uint(0)).(uint)
-			symb.OutlineColor = getOrDefault(curValues, "outlineColor", palette.Black).(uint)
-			symb.ShadowColor = getOrDefault(curValues, "shadowColor", palette.Black).(uint)
-			symb.Weight = getOrDefault(curValues, "weight", byte(1)).(byte)
-			symb.OutlineWeight = getOrDefault(curValues, "outlineWeight", byte(1)).(byte)
-			symb.ShadowWeight = getOrDefault(curValues, "shadowWeight", byte(1)).(byte)
-			symb.ShadowBlur = getOrDefault(curValues, "shadowBlur", byte(1)).(byte)
-			symb.Underline = getOrDefault(curValues, "_", false).(bool)
-			symb.Strikethrough = getOrDefault(curValues, "-", false).(bool)
+			symb.Color, symb.BackColor = curState.Color, curState.BackColor
+			symb.OutlineColor, symb.ShadowColor = curState.OutlineColor, curState.ShadowColor
+			symb.Weight, symb.OutlineWeight = curState.Weight, curState.OutlineWeight
+			symb.ShadowWeight, symb.ShadowBlur = curState.ShadowWeight, curState.ShadowBlur
+			symb.Underline, symb.Strikethrough = curState.Underline, curState.Strikethrough
 
 			if !t.cropSymbol(symb, gapX, gapY) {
-				result = append(result, symb)
+				t.cacheSymbols = append(t.cacheSymbols, symb)
 			}
 
-			lineIndex = number.Limit(lineIndex, 0, len(resultLines))
-			if lineIndex == len(resultLines) {
-				resultLines = append(resultLines, "")
-			}
-
-			resultLines[lineIndex] += symb.Value
 			curX += condition.If(charSize > 0, charSize+gapX, 0)
 		}
 
-		lineIndex++
+		currentLineStr.Reset()
+		for i := lineStartIdx; i < len(t.cacheSymbols); i++ {
+			currentLineStr.WriteString(t.cacheSymbols[i].Value)
+		}
+		t.cacheChars = append(t.cacheChars, currentLineStr.String())
 	}
 
 	t.cache = state
-	t.cacheChars = resultLines
-	t.cacheSymbols = result
-	return resultLines, result
+	return t.cacheChars, t.cacheSymbols
 }
 func (t *TextBox) createSymbol(f rl.Font, x, y float32, c rune) symbol {
 	var scaleFactor, padding = float32(t.LineHeight) / float32(f.BaseSize), float32(f.CharsPadding)
@@ -282,66 +289,103 @@ func (t *TextBox) gapLines() float32 {
 	return t.LineGap * t.LineHeight / 5
 }
 
-func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, curValues map[string]any) (nextChar bool) {
+func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, s *symbolState) bool {
 	if !*reading && char == '{' {
 		*reading = true
 	}
 
 	if *reading {
 		cur.WriteSymbol(char)
-
 		if char == '}' {
 			*reading = false
+			// Tag is finished, fall through to process it
+		} else {
+			return true
 		}
-
-		return true
 	}
 
 	var tag = cur.ToText()
-	if tag != "" {
-		cur.Clear()
-	}
-
-	if !txt.StartsWith(tag, "{") {
+	if tag == "" || !txt.StartsWith(tag, "{") {
 		return false
 	}
 
+	cur.Clear()
 	tag = txt.Remove(tag, "{", "}")
 
+	// Empty tag {} resets all formatting to defaults
 	if tag == "" {
-		collection.MapClear(curValues)
+		s.reset(t.Tint)
 		return false
 	}
 
 	var parts = txt.Split(tag, "=")
-	var name, value = parts[0], ""
+	var name = parts[0]
+	var value string
 	if len(parts) > 1 {
 		value = parts[1]
 	}
 
 	switch name {
 	case "color":
-		curValues[name] = parseCol(value, t.Tint)
+		s.Color = parseCol(value, t.Tint)
 	case "backColor":
-		curValues[name] = parseCol(value, 0)
-	case "outlineColor", "shadowColor":
-		curValues[name] = parseCol(value, palette.Black)
-	case "_", "-": // underline, strikethrough
-		toggleBool(curValues, name)
+		s.BackColor = parseCol(value, 0)
+	case "outlineColor":
+		s.OutlineColor = parseCol(value, palette.Black)
+	case "shadowColor":
+		s.ShadowColor = parseCol(value, palette.Black)
+	case "_":
+		s.Underline = !s.Underline
+	case "-":
+		s.Strikethrough = !s.Strikethrough
 	case "shadowBlur":
-		curValues[name] = byte(parseNum(value, 0))
+		s.ShadowBlur = byte(parseNum(value, 0))
 	case "weight", "outlineWeight", "shadowWeight":
-		var val = 1
-		val = condition.If(value == "thin", 0, val)
-		val = condition.If(value == "regular", 1, val)
-		val = condition.If(value == "semiBold", 2, val)
-		val = condition.If(value == "bold", 3, val)
-		curValues[name] = byte(val)
+		var val byte = 1
+		switch value {
+		case "thin":
+			val = 0
+		case "regular":
+			val = 1
+		case "semiBold":
+			val = 2
+		case "bold":
+			val = 3
+		default:
+			val = byte(parseNum(value, 1))
+		}
+
+		if name == "weight" {
+			s.Weight = val
+		}
+		if name == "outlineWeight" {
+			s.OutlineWeight = val
+		}
+		if name == "shadowWeight" {
+			s.ShadowWeight = val
+		}
+	case "asset":
+		s.AssetId = value
+		s.HasAsset = true
 	default:
-		curValues[name] = value
+		// Handle unknown tags or custom string values if necessary
 	}
 
 	return false
+}
+func (s *symbolState) reset(defaultTint uint) {
+	s.Color = defaultTint
+	s.BackColor = 0
+	s.OutlineColor = palette.Black
+	s.ShadowColor = palette.Black
+	s.Weight = 1
+	s.OutlineWeight = 1
+	s.ShadowWeight = 1
+	s.ShadowBlur = 1
+	s.Underline = false
+	s.Strikethrough = false
+	s.AssetId = ""
+	s.HasAsset = false
 }
 
 //=================================================================

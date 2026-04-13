@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
+	"pure-game-kit/utility/text"
 	txt "pure-game-kit/utility/text"
 )
 
@@ -29,6 +30,7 @@ type TextBox struct {
 	cacheChars   []string
 	cacheSymbols []symbol
 	cacheWrap    string
+	cacheBuilder *text.Builder
 }
 
 func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
@@ -61,10 +63,15 @@ func (t *TextBox) TextWrap(text string) string {
 	var replaced, originals = internal.ReplaceStrings(text, '{', '}', internal.Placeholder)
 	var words = txt.Split(replaced, " ")
 	var curX, curY float32 = 0, 0
-	var buffer = txt.NewBuilder()
 	var tagIndex = 0
 	var ph = string(internal.Placeholder)
 	var gapY = t.gapLines()
+	var buffer = t.cacheBuilder
+	if buffer == nil {
+		buffer = txt.NewBuilder()
+		t.cacheBuilder = buffer
+	}
+	buffer.Clear()
 
 	for w := range words {
 		var word = words[w]

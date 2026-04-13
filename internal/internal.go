@@ -8,9 +8,11 @@ package internal
 import (
 	txt "pure-game-kit/utility/text"
 	"regexp"
+	"strings"
 )
 
 var tagRegexp = regexp.MustCompile(`{.*?}`)
+var tagBuffer strings.Builder
 
 const Placeholder = '╌'
 
@@ -47,5 +49,28 @@ func ReplaceStrings(text string, open, close, placeholder rune) (replaced string
 	return result.ToText(), originals
 }
 func RemoveTags(text string) string {
-	return tagRegexp.ReplaceAllString(text, "")
+	if !strings.ContainsRune(text, '<') {
+		return text // FAST PATH: If there are no brackets, return the original string - ZERO allocations for tagless text
+	}
+
+	tagBuffer.Reset()
+	tagBuffer.Grow(len(text)) // pre-size the buffer to the length of the text to avoid intermediate grows
+
+	var inTag = false
+	for i := 0; i < len(text); i++ {
+		var char = text[i]
+		if char == '<' {
+			inTag = true
+			continue
+		}
+		if char == '>' {
+			inTag = false
+			continue
+		}
+		if !inTag {
+			tagBuffer.WriteByte(char)
+		}
+	}
+
+	return tagBuffer.String()
 }
