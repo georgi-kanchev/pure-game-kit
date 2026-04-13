@@ -12,7 +12,7 @@ type Camera struct {
 
 	Area    Area // The draw area in window space. Zero value = entire window.
 	Mask    Area // In camera space. Everything drawn outside of it is cropped. Zero value = no masking.
-	Effects *Effects
+	Effects Effects
 	Blend   int
 
 	//=================================================================
@@ -22,7 +22,7 @@ type Camera struct {
 
 func NewCamera(zoom float32) *Camera {
 	tryRecreateWindow()
-	var cam = &Camera{Zoom: zoom}
+	var cam = &Camera{Zoom: zoom, Effects: NewEffects()}
 	if batch == nil {
 		batch = &batchData{}
 		batch.Init(16)

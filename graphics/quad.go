@@ -14,7 +14,7 @@ type Quad struct {
 	Tint           uint
 
 	Mask    Area
-	Effects *Effects
+	Effects Effects
 }
 
 func NewQuad(x, y float32) *Quad {
