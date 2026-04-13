@@ -61,11 +61,11 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		}
 
 		var tagless = internal.RemoveTags(line)
-		var lineWidth, _ = t.measure(font, tagless)
+		var lineWidth, _ = t.measure(font, tagless, gapX)
 
 		var assetCount = txt.CountOccurrences(tagless, string(placeholderCharAsset))
 		if assetCount > 0 { // account embedded assets in line width
-			var placeholderWidth, _ = t.measure(font, string(placeholderCharAsset))
+			var placeholderWidth, _ = t.measure(font, string(placeholderCharAsset), gapX)
 			lineWidth += (t.LineHeight - placeholderWidth) * float32(assetCount)
 		}
 
@@ -90,7 +90,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
 				delete(curValues, "assetId")
 			} else {
-				charSize = rl.MeasureTextEx(font, char, t.LineHeight, 0).X
+				charSize, _ = t.measure(font, char, 0)
 				symb = t.createSymbol(font, curX, curY, c)
 			}
 			symb.Bounds.Width, symb.Angle, symb.Value = charSize, 0, char
@@ -211,10 +211,53 @@ func (t *TextBox) cropSymbol(symb symbol, gapX, gapY float32) (skip bool) {
 
 	return skip
 }
-func (t *TextBox) measure(font rl.Font, text string) (width, height float32) {
-	var size = rl.MeasureTextEx(font, text, t.LineHeight, t.gapSymbols())
-	height = float32(txt.CountOccurrences(text, "\n")+1) * (t.LineHeight + t.gapLines())
-	return size.X, height // raylib doesn't seem to calculate height correctly
+func (t *TextBox) measure(font rl.Font, text string, spacing float32) (width, height float32) {
+	if font.Texture.ID == 0 || len(text) == 0 {
+		return 0, 0
+	}
+
+	var tempByteCounter int
+	var byteCounter int
+	var textWidth float32
+	var maxTextWidth float32
+	var scaleFactor = t.LineHeight / float32(font.BaseSize)
+	var lineGap = t.gapLines()
+	var textHeight = t.LineHeight // initial height is just one line
+
+	for _, letter := range text {
+		byteCounter++
+
+		if letter != '\n' {
+			var glyph = rl.GetGlyphInfo(font, int32(letter))
+			var rec = rl.GetGlyphAtlasRec(font, int32(letter))
+
+			if glyph.AdvanceX > 0 {
+				textWidth += float32(glyph.AdvanceX)
+			} else {
+				textWidth += float32(rec.Width) + float32(glyph.OffsetX)
+			}
+		} else {
+			if maxTextWidth < textWidth {
+				maxTextWidth = textWidth
+			}
+
+			byteCounter = 0
+			textWidth = 0
+			textHeight += (t.LineHeight + lineGap) // custom height logic: adds a full line + custom gap
+		}
+
+		if tempByteCounter < byteCounter {
+			tempByteCounter = byteCounter
+		}
+	}
+
+	if maxTextWidth < textWidth {
+		maxTextWidth = textWidth
+	}
+
+	// calculate final width matching raylib's scaling math
+	var finalWidth = maxTextWidth*scaleFactor + float32(tempByteCounter-1)*spacing
+	return finalWidth, textHeight
 }
 
 func (t *TextBox) font() rl.Font {

@@ -59,54 +59,56 @@ func (b *batchData) Init(quadCountCapacity int32) {
 	b.material.Shader = internal.Shader
 }
 func (b *batchData) QueueTex(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
-	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
+	if dst.Width < 0 {
+		dst.Width = -dst.Width
+	}
+	if dst.Height < 0 {
+		dst.Height = -dst.Height
+	}
+
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1 = src.X * invTexW, src.Y * invTexH
 	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
-	var dx, dy = [4]float32{0, 0, dst.Width, dst.Width}, [4]float32{0, dst.Height, dst.Height, 0}
+	var dx = [4]float32{0, 0, dst.Width, dst.Width}
+	var dy = [4]float32{0, dst.Height, dst.Height, 0}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
-	var verts []batchVertex
 	var vCount int
 
-	if b.mask == (Area{}) { // FAST PATH: Direct vertex generation
+	if b.mask == (Area{}) {
 		vCount = 4
 		if ang == 0 {
 			for i := range 4 {
-				b.polyBuf[i] = batchVertex{X: dx[i] + dst.X, Y: dy[i] + dst.Y, U: uvs[i*2], V: uvs[i*2+1]}
+				// Direct assignment to pre-allocated buffer on the struct
+				b.polyBuf[i].X = dx[i] + dst.X
+				b.polyBuf[i].Y = dy[i] + dst.Y
+				b.polyBuf[i].U = uvs[i*2]
+				b.polyBuf[i].V = uvs[i*2+1]
 			}
 		} else {
 			var sinA, cosA = internal.SinCos(ang)
 			for i := range 4 {
-				var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
-				b.polyBuf[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
+				b.polyBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
+				b.polyBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
+				b.polyBuf[i].U = uvs[i*2]
+				b.polyBuf[i].V = uvs[i*2+1]
 			}
 		}
-		verts = b.polyBuf[:vCount]
-	} else { // CLIPPED PATH
+		// Instead of verts = b.polyBuf[:vCount], pass the buffer directly
+		b.prepareAndWrite(b.polyBuf[:4], vCount, tex, col)
+	} else {
+		// CLIPPED PATH logic...
 		var sinA, cosA = internal.SinCos(ang)
-		for i := range 4 {
-			var x, y = (dx[i]*cosA - dy[i]*sinA) + dst.X, (dx[i]*sinA + dy[i]*cosA) + dst.Y
-			b.polyBuf[i] = batchVertex{X: x, Y: y, U: uvs[i*2], V: uvs[i*2+1]}
+		for i := 0; i < 4; i++ {
+			b.polyBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
+			b.polyBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
+			b.polyBuf[i].U = uvs[i*2]
+			b.polyBuf[i].V = uvs[i*2+1]
 		}
 		vCount = clipPolygonAABB(b.polyBuf[:4], b.clipBuf[:], b.clipTempBuf[:], b.mask)
-		if vCount < 3 {
-			return
+		if vCount >= 3 {
+			b.prepareAndWrite(b.clipBuf[:vCount], vCount, tex, col)
 		}
-		verts = b.clipBuf[:vCount]
 	}
-
-	var vCount32 = int32(vCount)
-	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
-		b.Draw()
-	}
-	if b.vertsCur == 0 {
-		var mat = b.material
-		rl.SetMaterialTexture(&mat, rl.MapDiffuse, tex)
-		b.material = mat
-		b.material.Shader = internal.Shader
-	}
-
-	b.writeToBuffers(verts, col)
 }
 
 func (b *batchData) QueueQuad(x, y, width, height, angle float32, color rl.Color) {
@@ -263,13 +265,29 @@ func (b *batchData) Draw() {
 	b.indCur = 0
 }
 
-//=================================================================
-// private
+// private =================================================================
 
 type batchVertex struct {
 	X, Y, U, V float32
 }
 
+func (b *batchData) prepareAndWrite(verts []batchVertex, vCount int, tex rl.Texture2D, col rl.Color) {
+	vCount32 := int32(vCount)
+
+	// Check if we need to flush
+	if b.vertsCur != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertsCur+vCount32 > b.mesh.VertexCount) {
+		b.Draw()
+	}
+
+	if b.vertsCur == 0 {
+		// Direct assignment to the texture map to avoid SetMaterialTexture's overhead
+		// Note: MapDiffuse index is 0
+		b.material.Maps.Texture = tex
+		b.material.Shader = internal.Shader
+	}
+
+	b.writeToBuffers(verts, col)
+}
 func (b *batchData) writeToBuffers(vertices []batchVertex, col rl.Color) {
 	var vCount = int32(len(vertices))
 	var vOffset = b.vertsCur * 12

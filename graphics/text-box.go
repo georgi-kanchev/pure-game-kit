@@ -5,8 +5,6 @@ import (
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
 	txt "pure-game-kit/utility/text"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type textBoxCache struct {
@@ -39,8 +37,7 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 		FontId: fontId, Quad: *quad, Text: txt.New(text...), LineHeight: 100, SymbolGap: 0.2, WordWrap: true,
 	}
 	var font = textBox.font()
-	var measure = rl.MeasureTextEx(font, textBox.Text, textBox.LineHeight, textBox.gapSymbols())
-	textBox.Width, textBox.Height = measure.X, measure.Y
+	textBox.Width, textBox.Height = textBox.measure(font, textBox.Text, textBox.gapSymbols())
 	return textBox
 }
 
@@ -48,7 +45,7 @@ func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
 
 // Does not wrap the text - use TextWrap(...) beforehand if intended.
 func (t *TextBox) TextMeasure(text string) (width, height float32) {
-	return t.measure(t.font(), text)
+	return t.measure(t.font(), text, t.gapSymbols())
 }
 func (t *TextBox) TextWrap(text string) string {
 	var state = textBoxCache{
