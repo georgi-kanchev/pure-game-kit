@@ -13,7 +13,7 @@ type Quad struct {
 	PivotX, PivotY float32
 	Tint           uint
 
-	Mask    *Area
+	Mask    Area
 	Effects *Effects
 }
 

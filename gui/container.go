@@ -30,7 +30,7 @@ type container struct {
 	dragVelX, dragVelY,
 	targetScrollX, targetScrollY float32
 
-	mask      *graphics.Area
+	mask      graphics.Area
 	root      *root
 	Fields    map[string]string
 	Widgets   []string
@@ -64,9 +64,6 @@ func (c *container) update() {
 	var cGapX = parseNum(c.Fields[f.GapX], 0)
 	var cGapY = parseNum(c.Fields[f.GapY], 0)
 
-	if c.mask == nil {
-		c.mask = graphics.NewArea(0, 0, 0, 0)
-	} // create only once cuz textBoxes have prop cache and will regenerate when assigning them this mask
 	c.mask.X, c.mask.Y = x+cGapX, y+cGapY
 	c.mask.Width, c.mask.Height = w-cGapX*2, h-cGapY*2
 	c.X, c.Y, c.Width, c.Height = x, y, w, h
@@ -228,12 +225,20 @@ func (c *container) tryShowScrolls(minX, minY, maxX, maxY float32) {
 func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 	var handleH = (c.Height / (maxY - minY)) * c.Height
 	var handleCol = color.Brighten(palette.Gray, 0.5)
+	var cam = c.root.cam
+	var focused = c.isFocused()
+	var _, my = cam.MousePosition()
+
+	if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {
+		c.root.wHovered = nil
+		c.root.wWasHovered = nil
+		c.root.wFocused = nil
+		mouse.SetCursor(cursor.Hand)
+		handleCol = palette.White
+	}
 
 	if mouse.IsAnyButtonPressed() || mouse.ScrollSmooth() != 0 {
-		var cam = c.root.cam
-		var focused = c.isFocused()
 		var scroll = mouse.ScrollSmooth()
-		var _, my = cam.MousePosition()
 
 		if scroll != 0 && focused && !shift && c.root.cScrolledOn == c {
 			c.ScrollY -= float32(scroll)
@@ -248,12 +253,6 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 		}
 
 		if focused && isHovered(c.X+c.Width-scrollSize, c.Y, scrollSize, c.Height, cam) {
-			c.root.wHovered = nil
-			c.root.wWasHovered = nil
-			c.root.wFocused = nil
-			mouse.SetCursor(cursor.Hand)
-			handleCol = palette.White
-
 			if mouse.IsButtonJustPressed(b.Left) {
 				c.root.cPressedOnScrollV = c
 
@@ -317,12 +316,20 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 	var barW = condition.If(vertical, c.Width-scrollSize, c.Width) // make space for vertical scroll
 	var handleW = barW / (maxX - minX) * barW
 	var handleCol = color.Brighten(palette.Gray, 0.5)
+	var cam = c.root.cam
+	var focused = c.isFocused()
+	var mx, _ = cam.MousePosition()
+
+	if focused && isHovered(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, cam) {
+		c.root.wHovered = nil
+		c.root.wWasHovered = nil
+		c.root.wFocused = nil
+		mouse.SetCursor(cursor.Hand)
+		handleCol = palette.White
+	}
 
 	if mouse.IsAnyButtonPressed() || mouse.ScrollSmooth() != 0 {
-		var cam = c.root.cam
-		var focused = c.isFocused()
 		var scroll = mouse.ScrollSmooth()
-		var mx, _ = cam.MousePosition()
 
 		if scroll != 0 && focused && shift && c.root.cScrolledOn == c {
 			c.ScrollX -= float32(scroll)
@@ -337,12 +344,6 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 		}
 
 		if focused && isHovered(c.X, c.Y+c.Height-scrollSize, barW, scrollSize, cam) {
-			c.root.wHovered = nil
-			c.root.wWasHovered = nil
-			c.root.wFocused = nil
-			mouse.SetCursor(cursor.Hand)
-			handleCol = palette.White
-
 			if mouse.IsButtonJustPressed(b.Left) {
 				c.root.cPressedOnScrollH = c
 

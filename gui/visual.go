@@ -91,7 +91,7 @@ func setupVisualsText(w *widget, skipEmpty bool) {
 		var mx, my = max(cx, tx), max(cy, ty)
 		var mxw, myh = min(cxw, txw), min(cyh, tyh)
 		var mw, mh = max(0, mxw-mx+1), max(0, myh-my)
-		w.textBox.Mask = graphics.NewArea(mx, my, mw, mh)
+		w.textBox.Mask = graphics.Area{X: mx, Y: my, Width: mw, Height: mh}
 	}
 }
 func queueVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {

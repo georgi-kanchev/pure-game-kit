@@ -10,8 +10,8 @@ import (
 type Camera struct {
 	X, Y, Zoom, Angle float32
 
-	Area    *Area // The draw area in window space. Defaults to entire window if nil.
-	Mask    *Area // In camera space. Everything drawn outside of it is cropped. No masking if nil.
+	Area    Area // The draw area in window space. Zero value = entire window.
+	Mask    Area // In camera space. Everything drawn outside of it is cropped. Zero value = no masking.
 	Effects *Effects
 	Blend   int
 

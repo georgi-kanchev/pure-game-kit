@@ -165,14 +165,14 @@ var debugStr string
 const placeholderCharAsset = '@'
 
 func (c *Camera) area() (x, y, w, h float32) {
-	if c.Area == nil {
+	if c.Area == (Area{}) {
 		var ww, wh = window.Size()
 		return 0, 0, float32(ww), float32(wh)
 	}
 	return c.Area.X, c.Area.Y, c.Area.Width, c.Area.Height
 }
 func (c *Camera) mask() (x, y, w, h float32) {
-	if c.Mask == nil {
+	if c.Mask == (Area{}) {
 		var ww, wh = window.Size()
 		return 0, 0, float32(ww), float32(wh)
 	}
@@ -202,7 +202,7 @@ func (c *Camera) begin() {
 	rl.BeginMode2D(rlCam)
 	batch.mask = c.Mask
 
-	if c.Area != nil {
+	if c.Area != (Area{}) {
 		var mx, my, mw, mh = c.area()
 		rl.BeginScissorMode(int32(mx), int32(my), int32(mw), int32(mh))
 	}
@@ -226,7 +226,7 @@ func (c *Camera) end() {
 	}
 
 	rl.DisableDepthTest()
-	if c.Area != nil {
+	if c.Area != (Area{}) {
 		rl.EndScissorMode()
 	}
 	rl.EndMode2D()

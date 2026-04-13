@@ -2,6 +2,7 @@ package gui
 
 import (
 	"pure-game-kit/execution/condition"
+	"pure-game-kit/graphics"
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
@@ -29,7 +30,7 @@ func (g *GUI) UpdateAndDraw() {
 	sliderSlidId = condition.If(sliderSlidId != "", "", sliderSlidId)
 
 	var prevMask = g.root.cam.Mask
-	g.root.cam.Mask = nil
+	g.root.cam.Mask = graphics.Area{}
 
 	for _, id := range containers {
 		var c = g.root.Containers[id]

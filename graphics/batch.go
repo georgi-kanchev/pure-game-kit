@@ -17,7 +17,7 @@ type batchData struct {
 
 	skipStartEnd, skipDraw bool
 
-	mask *Area
+	mask Area
 
 	vertsCur, indCur, quadsCapacity int32
 
@@ -66,7 +66,7 @@ func (b *batchData) QueueTex(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 	var poly [12]batchVertex
 	var vCount int
 
-	if b.mask == nil { // FAST PATH: Direct vertex generation
+	if b.mask == (Area{}) { // FAST PATH: Direct vertex generation
 		vCount = 4
 		if ang == 0 {
 			for i := range 4 {
@@ -129,7 +129,7 @@ func (b *batchData) QueueTriangles(points []float32, col rl.Color) {
 		var poly [12]batchVertex
 		var vCount int
 
-		if b.mask == nil {
+		if b.mask == (Area{}) {
 			vCount = 3
 			copy(poly[:], initial[:])
 		} else {
@@ -160,7 +160,7 @@ func (b *batchData) QueueTriangle(x1, y1, x2, y2, x3, y3 float32, color rl.Color
 	var poly [12]batchVertex
 	var vCount int
 
-	if b.mask == nil {
+	if b.mask == (Area{}) {
 		vCount = 3
 		copy(poly[:3], initial[:])
 	} else {
@@ -300,7 +300,7 @@ func (b *batchData) writeToBuffers(vertices []batchVertex, col rl.Color) {
 	b.indCur += trisCount * 3
 }
 
-func clipPolygonAABB(poly, outBuf []batchVertex, mask *Area) int {
+func clipPolygonAABB(poly, outBuf []batchVertex, mask Area) int {
 	var temp [12]batchVertex // Intermediate buffer for ping-ponging edges
 	var minX, maxX = mask.X, mask.X + mask.Width
 	var minY, maxY = mask.Y, mask.Y + mask.Height

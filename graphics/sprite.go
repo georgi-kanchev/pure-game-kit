@@ -6,7 +6,7 @@ type Sprite struct {
 	Quad
 
 	TextureId   string // "" = white
-	TextureArea *Area  // nil = entire asset
+	TextureArea Area // Zero value = entire asset.
 }
 
 func NewSprite(textureId string, x, y float32) *Sprite {
