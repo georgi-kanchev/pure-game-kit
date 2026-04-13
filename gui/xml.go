@@ -75,6 +75,7 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 			w.Class = wClass
 			w.Fields = make(map[string]string, len(w.XmlProps))
 			w.Id = wId
+			w.holdId = ";;hold-" + wId
 			w.root = gui.root
 
 			if has {

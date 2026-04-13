@@ -8,7 +8,6 @@ import (
 	m "pure-game-kit/input/mouse"
 	b "pure-game-kit/input/mouse/button"
 	"pure-game-kit/internal"
-	"pure-game-kit/utility/text"
 )
 
 type root struct {
@@ -60,7 +59,7 @@ func (r *root) IsButtonClickedAndHeld(buttonId string) bool {
 	var first = anyHotkeyJustPressed(hotkeyStr) || (focus && m.IsButtonJustPressed(b.Left))
 	var tick = internal.Runtime > r.wPressedAt+0.5
 	var inputHold = anyHotkeyPressed(hotkeyStr) || (focus && r.wPressedOn == widget && m.IsButtonPressed(b.Left))
-	var hold = inputHold && condition.TrueEvery(0.1, text.New(";;hold-", buttonId)) && tick
+	var hold = inputHold && condition.TrueEvery(0.1, widget.holdId) && tick
 
 	return first || hold
 }
