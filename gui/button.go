@@ -101,6 +101,10 @@ func button(w *widget) {
 }
 
 func anyHotkeyPressed(hotkeyStr string) bool {
+	if hotkeyStr == "" {
+		return false
+	}
+
 	for name := range strings.FieldsSeq(hotkeyStr) {
 		if k.IsKeyPressed(key.FromName(name)) {
 			return true
@@ -109,6 +113,10 @@ func anyHotkeyPressed(hotkeyStr string) bool {
 	return false
 }
 func anyHotkeyJustPressed(hotkeyStr string) bool {
+	if hotkeyStr == "" {
+		return false
+	}
+
 	for name := range strings.FieldsSeq(hotkeyStr) {
 		if k.IsKeyJustPressed(key.FromName(name)) {
 			return true

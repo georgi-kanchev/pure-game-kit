@@ -9,7 +9,8 @@ import (
 type widget struct {
 	XmlProps []xml.Attr `xml:",any,attr"`
 
-	Id, Class, OwnerId, ThemeId, holdId string
+	Id, Class, OwnerId, ThemeId, holdId, hoverId, unhoverId string
+	hasTooltip                                              bool
 	X, Y, Width, Height,
 	DragX, DragY, PrevValue float32
 	IsCulled bool

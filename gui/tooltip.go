@@ -18,9 +18,12 @@ func Tooltip(id string, properties ...string) string {
 // private
 
 func tryShowTooltip(w *widget, c *container) {
+	if !w.hasTooltip && w != tooltipForWidget {
+		return
+	}
 	var hov = w.isFocused()
 
-	if condition.JustTurnedTrue(hov, ";;hoverrr-"+w.Id) {
+	if condition.JustTurnedTrue(hov, w.hoverId) {
 		tooltipForWidget = w
 		tooltipAt = internal.Runtime
 		var tooltipId = w.root.themedField(field.TooltipId, c, w)
@@ -35,7 +38,7 @@ func tryShowTooltip(w *widget, c *container) {
 			}
 		}
 	}
-	if w == tooltipForWidget && condition.JustTurnedTrue(!hov, ";;unhoverrr-"+w.Id) {
+	if w == tooltipForWidget && condition.JustTurnedTrue(!hov, w.unhoverId) {
 		tooltipForWidget = nil
 		tooltip = nil
 	}

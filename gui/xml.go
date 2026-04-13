@@ -76,6 +76,8 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 			w.Fields = make(map[string]string, len(w.XmlProps))
 			w.Id = wId
 			w.holdId = ";;hold-" + wId
+			w.hoverId = ";;hoverrr-" + wId
+			w.unhoverId = ";;unhoverrr-" + wId
 			w.root = gui.root
 
 			if has {
@@ -101,6 +103,15 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 
 		gui.root.Containers[cId] = c
 		gui.root.ContainerIds = append(gui.root.ContainerIds, cId)
+	}
+
+	for _, c := range gui.root.XmlContainers {
+		for _, wId := range c.Widgets {
+			var w = gui.root.Widgets[wId]
+			if w != nil {
+				w.hasTooltip = gui.root.themedField(f.TooltipId, c, w) != ""
+			}
+		}
 	}
 
 	gui.Scale = gui.root.XmlScale

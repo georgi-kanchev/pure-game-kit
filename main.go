@@ -2,6 +2,7 @@ package main
 
 import (
 	"pure-game-kit/data/assets"
+	"pure-game-kit/debug"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/graphics"
 	"pure-game-kit/gui"
@@ -17,6 +18,8 @@ func main() {
 	example.StorageYAML()
 	example.StorageXML()
 	example.StorageJSON()
+
+	debug.ProfileAllocations(10)
 
 	var cam = graphics.NewCamera(1)
 	var _, _, ninePatches = assets.LoadDefaultAtlasUI()
