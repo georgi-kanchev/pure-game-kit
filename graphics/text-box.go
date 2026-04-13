@@ -4,8 +4,8 @@ import (
 	"pure-game-kit/execution/condition"
 	"pure-game-kit/internal"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/text"
 	txt "pure-game-kit/utility/text"
+	"strings"
 )
 
 type textBoxCache struct {
@@ -30,7 +30,7 @@ type TextBox struct {
 	cacheChars   []string
 	cacheSymbols []symbol
 	cacheWrap    string
-	cacheBuilder *text.Builder
+	cacheBuilder strings.Builder
 }
 
 func NewTextBox(fontId string, x, y float32, text ...any) *TextBox {
@@ -66,12 +66,10 @@ func (t *TextBox) TextWrap(text string) string {
 	var tagIndex = 0
 	var ph = string(internal.Placeholder)
 	var gapY = t.gapLines()
-	var buffer = t.cacheBuilder
-	if buffer == nil {
-		buffer = txt.NewBuilder()
-		t.cacheBuilder = buffer
-	}
-	buffer.Clear()
+
+	var buffer = &t.cacheBuilder
+	buffer.Reset()
+	buffer.Grow(len(text))
 
 	for w := range words {
 		var word = words[w]
@@ -95,7 +93,7 @@ func (t *TextBox) TextWrap(text string) string {
 			curX = 0
 			curY += t.LineHeight + gapY
 
-			buffer.WriteSymbol('\n')
+			buffer.WriteRune('\n')
 		}
 
 		for i, c := range word {
@@ -116,19 +114,22 @@ func (t *TextBox) TextWrap(text string) string {
 				curY += t.LineHeight + gapY
 
 				if char != "\n" {
-					buffer.WriteSymbol('\n')
+					buffer.WriteRune('\n')
 				}
 			}
 
 			if c == internal.Placeholder {
 				char = "{" + originals[tagIndex] + "}"
 				tagIndex++
+				buffer.WriteString(char)
+			} else {
+				buffer.WriteString(char)
 			}
-			buffer.WriteText(char)
+
 			curX += condition.If(charSize > 0, charSize+t.gapSymbols(), 0)
 		}
 	}
-	var result = buffer.ToText()
+	var result = buffer.String()
 	result = txt.Replace(result, " \n", "\n")
 	t.cache = state
 	t.cacheWrap = result

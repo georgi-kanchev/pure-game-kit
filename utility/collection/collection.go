@@ -6,9 +6,9 @@ import (
 	"cmp"
 	"fmt"
 	"pure-game-kit/utility/number"
-	"pure-game-kit/utility/text"
 	"slices"
 	"sort"
+	"strings"
 )
 
 func Clone[T any](collection []T) []T {
@@ -349,29 +349,29 @@ func Flatten[T any](collection2D [][]T) []T {
 }
 
 func ToText[T any](collection []T, divider string) string {
-	var builder = text.NewBuilder()
+	var builder strings.Builder
 	for i, elem := range collection {
 		if i > 0 {
-			builder.WriteText(divider)
+			builder.WriteString(divider)
 		}
-		builder.WriteText(fmt.Sprint(elem))
+		builder.WriteString(fmt.Sprint(elem))
 	}
-	return builder.ToText()
+	return builder.String()
 }
 func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) string {
-	var builder = text.NewBuilder()
+	var builder strings.Builder
 	for i, row := range collection2D {
 		for j, elem := range row {
-			builder.WriteText(fmt.Sprint(elem))
+			builder.WriteString(fmt.Sprint(elem))
 			if j < len(row)-1 {
-				builder.WriteText(dividerRow)
+				builder.WriteString(dividerRow)
 			}
 		}
 		if i < len(collection2D)-1 {
-			builder.WriteText(dividerColumn)
+			builder.WriteString(dividerColumn)
 		}
 	}
-	return builder.ToText()
+	return builder.String()
 }
 
 func SortNumbers[T number.Number](collection ...T) {

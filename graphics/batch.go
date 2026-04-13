@@ -231,7 +231,7 @@ func (b *batchData) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32
 		}
 	}
 
-	if len(s.Value) > 0 && !unicode.IsSpace(rune(s.Value[0])) {
+	if !unicode.IsSpace(s.Value) {
 		b.QueueTex(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
 	}
 

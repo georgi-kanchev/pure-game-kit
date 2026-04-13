@@ -6,7 +6,6 @@
 package internal
 
 import (
-	txt "pure-game-kit/utility/text"
 	"regexp"
 	"strings"
 )
@@ -17,8 +16,8 @@ var tagBuffer strings.Builder
 const Placeholder = '╌'
 
 func ReplaceStrings(text string, open, close, placeholder rune) (replaced string, originals []string) {
-	var result = txt.NewBuilder()
-	var current = txt.NewBuilder()
+	var result strings.Builder
+	var current strings.Builder
 	var inside = false
 
 	for i, char := range text {
@@ -29,24 +28,24 @@ func ReplaceStrings(text string, open, close, placeholder rune) (replaced string
 
 		if char == close && inside {
 			inside = false
-			originals = append(originals, current.ToText())
-			result.WriteSymbol(placeholder)
-			current.Clear()
+			originals = append(originals, current.String())
+			result.WriteRune(placeholder)
+			current.Reset()
 			continue
 		}
 
 		if inside {
-			current.WriteSymbol(char)
+			current.WriteRune(char)
 			if i == len(text)-1 {
-				result.WriteSymbol(open)
-				result.WriteText(current.ToText())
+				result.WriteRune(open)
+				result.WriteString(current.String())
 			}
 		} else {
-			result.WriteSymbol(char)
+			result.WriteRune(char)
 		}
 	}
 
-	return result.ToText(), originals
+	return result.String(), originals
 }
 func RemoveTags(text string) string {
 	if !strings.ContainsRune(text, '<') {

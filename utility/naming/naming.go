@@ -5,6 +5,7 @@ package naming
 
 import (
 	"regexp"
+	"strings"
 	"unicode"
 
 	"pure-game-kit/utility/collection"
@@ -20,16 +21,16 @@ func Apply(text string, naming int, divider string) string {
 	}
 
 	if naming == casing.Random {
-		var result = txt.NewBuilder()
+		var result strings.Builder
 		var randBool = random.Range(0.0, 1.0) < 0.5
 		for _, r := range text {
 			if randBool {
-				result.WriteSymbol(unicode.ToLower(r))
+				result.WriteRune(unicode.ToLower(r))
 			} else {
-				result.WriteSymbol(unicode.ToUpper(r))
+				result.WriteRune(unicode.ToUpper(r))
 			}
 		}
-		return result.ToText()
+		return result.String()
 	}
 
 	detectedNaming, detectedDivider := Detect(text)
@@ -76,31 +77,31 @@ func Apply(text string, naming int, divider string) string {
 		}
 
 		if flag.IsOn(naming, casing.Pingpong) {
-			var builder = txt.NewBuilder()
+			var builder strings.Builder
 			var isUpper = true
 			for _, c := range word {
 				if isUpper {
-					builder.WriteSymbol(unicode.ToUpper(c))
+					builder.WriteRune(unicode.ToUpper(c))
 				} else {
-					builder.WriteSymbol(unicode.ToLower(c))
+					builder.WriteRune(unicode.ToLower(c))
 				}
 				isUpper = !isUpper
 			}
-			word = builder.ToText()
+			word = builder.String()
 		}
 
 		if flag.IsOn(naming, casing.Pongping) {
-			var builder = txt.NewBuilder()
+			var builder strings.Builder
 			var isLower = true
 			for _, c := range word {
 				if isLower {
-					builder.WriteSymbol(unicode.ToLower(c))
+					builder.WriteRune(unicode.ToLower(c))
 				} else {
-					builder.WriteSymbol(unicode.ToUpper(c))
+					builder.WriteRune(unicode.ToUpper(c))
 				}
 				isLower = !isLower
 			}
-			word = builder.ToText()
+			word = builder.String()
 		}
 
 		words[i] = word
@@ -281,13 +282,13 @@ func capitalize(word string) string {
 	return string(unicode.ToUpper(runes[0])) + txt.ToLowerCase(string(runes[1:]))
 }
 func addDivCamelPascal(text, div string) string {
-	var result = txt.NewBuilder()
+	var result strings.Builder
 	var runes = []rune(text)
 	for i := range runes {
 		if i > 0 && unicode.IsUpper(runes[i]) && (i == len(runes)-1 || unicode.IsLower(runes[i+1])) {
-			result.WriteText(div)
+			result.WriteString(div)
 		}
-		result.WriteSymbol(runes[i])
+		result.WriteRune(runes[i])
 	}
-	return result.ToText()
+	return result.String()
 }

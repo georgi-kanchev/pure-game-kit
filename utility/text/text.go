@@ -6,40 +6,41 @@ package text
 import (
 	"fmt"
 	"reflect"
+	"strings"
 
 	"strconv"
 )
 
 func New(elements ...any) string {
-	var builder = NewBuilder()
+	var builder strings.Builder
 	for _, e := range elements {
 		switch v := e.(type) {
 		case string:
-			builder.WriteText(v)
+			builder.WriteString(v)
 		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-			builder.WriteText(fmt.Sprintf("%d", v))
+			builder.WriteString(fmt.Sprintf("%d", v))
 		case float32:
-			builder.WriteText(strconv.FormatFloat(float64(v), 'f', -1, 32))
+			builder.WriteString(strconv.FormatFloat(float64(v), 'f', -1, 32))
 		case float64:
-			builder.WriteText(strconv.FormatFloat(v, 'f', -1, 64))
+			builder.WriteString(strconv.FormatFloat(v, 'f', -1, 64))
 		case fmt.Stringer:
-			builder.WriteText(v.String())
+			builder.WriteString(v.String())
 		default:
 			var value = reflect.ValueOf(e)
 			var valueType = value.Type()
 
 			if valueType.Kind() == reflect.Struct {
-				builder.WriteText(fmt.Sprintf("%+v", e)) // struct
+				builder.WriteString(fmt.Sprintf("%+v", e)) // struct
 				continue
 			}
 
 			if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
-				builder.WriteText(fmt.Sprintf("%+v", value.Elem().Interface())) // pointer to struct
+				builder.WriteString(fmt.Sprintf("%+v", value.Elem().Interface())) // pointer to struct
 				continue
 			}
 
-			builder.WriteText(fmt.Sprint(e)) // fallback
+			builder.WriteString(fmt.Sprint(e)) // fallback
 		}
 	}
-	return builder.ToText()
+	return builder.String()
 }

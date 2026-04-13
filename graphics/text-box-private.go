@@ -14,7 +14,7 @@ import (
 
 type symbol struct {
 	Angle                 float32
-	Value                 string
+	Value                 rune
 	Bounds, Rect, TexRect rl.Rectangle
 	Texture               rl.Texture2D
 
@@ -61,10 +61,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	}
 
 	var reading = false
-	if t.cacheBuilder == nil {
-		t.cacheBuilder = txt.NewBuilder()
-	}
-	t.cacheBuilder.Clear()
+	t.cacheBuilder.Reset()
 	var currentLineStr strings.Builder
 
 	for l, line := range lines {
@@ -83,7 +80,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 
 		var curX = (t.Width - lineWidth) * alignX
 		var curY = float32(l)*(t.LineHeight+gapY) + (t.Height-textHeight)*alignY
-		var lineStartIdx = len(t.cacheSymbols) // track where this line starts in the symbol slice to build the string later
+		var lineStartIdx = len(t.cacheSymbols)
 
 		for _, c := range line {
 			if t.readTag(&reading, c, t.cacheBuilder, &curState) {
@@ -93,9 +90,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			var symb symbol
 			var charSize float32
 
-			// Allocation Warning: string(c) still allocates.
-			// Consider if your symbol.Value can be a rune.
-			var char = condition.If(emptyLine, "", string(c))
+			var char = condition.If(emptyLine, ' ', c)
 
 			if curState.HasAsset {
 				charSize = t.LineHeight
@@ -105,7 +100,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
 				curState.HasAsset = false
 			} else {
-				charSize, _ = t.measure(font, char, 0)
+				charSize = t.measureRune(font, char)
 				symb = t.createSymbol(font, curX, curY, c)
 			}
 
@@ -124,8 +119,13 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		}
 
 		currentLineStr.Reset()
+		var lineLen = len(t.cacheSymbols) - lineStartIdx
+		if lineLen > 0 {
+			currentLineStr.Grow(lineLen)
+		}
+
 		for i := lineStartIdx; i < len(t.cacheSymbols); i++ {
-			currentLineStr.WriteString(t.cacheSymbols[i].Value)
+			currentLineStr.WriteRune(t.cacheSymbols[i].Value)
 		}
 		t.cacheChars = append(t.cacheChars, currentLineStr.String())
 	}
@@ -218,39 +218,32 @@ func (t *TextBox) cropSymbol(symb symbol, gapX, gapY float32) (skip bool) {
 
 	return skip
 }
+func (t *TextBox) measureRune(font rl.Font, letter rune) float32 {
+	return t.glyphWidth(font, letter) * (t.LineHeight / float32(font.BaseSize))
+}
 func (t *TextBox) measure(font rl.Font, text string, spacing float32) (width, height float32) {
 	if font.Texture.ID == 0 || len(text) == 0 {
 		return 0, 0
 	}
 
-	var tempByteCounter int
-	var byteCounter int
-	var textWidth float32
-	var maxTextWidth float32
+	var tempByteCounter, byteCounter int
+	var textWidth, maxTextWidth float32
 	var scaleFactor = t.LineHeight / float32(font.BaseSize)
 	var lineGap = t.gapLines()
-	var textHeight = t.LineHeight // initial height is just one line
+	var textHeight = t.LineHeight
 
 	for _, letter := range text {
 		byteCounter++
 
 		if letter != '\n' {
-			var glyph = rl.GetGlyphInfo(font, int32(letter))
-			var rec = rl.GetGlyphAtlasRec(font, int32(letter))
-
-			if glyph.AdvanceX > 0 {
-				textWidth += float32(glyph.AdvanceX)
-			} else {
-				textWidth += float32(rec.Width) + float32(glyph.OffsetX)
-			}
+			textWidth += t.glyphWidth(font, letter)
 		} else {
 			if maxTextWidth < textWidth {
 				maxTextWidth = textWidth
 			}
-
 			byteCounter = 0
 			textWidth = 0
-			textHeight += (t.LineHeight + lineGap) // custom height logic: adds a full line + custom gap
+			textHeight += (t.LineHeight + lineGap)
 		}
 
 		if tempByteCounter < byteCounter {
@@ -262,7 +255,6 @@ func (t *TextBox) measure(font rl.Font, text string, spacing float32) (width, he
 		maxTextWidth = textWidth
 	}
 
-	// calculate final width matching raylib's scaling math
 	var finalWidth = maxTextWidth*scaleFactor + float32(tempByteCounter-1)*spacing
 	return finalWidth, textHeight
 }
@@ -288,14 +280,23 @@ func (t *TextBox) gapSymbols() float32 {
 func (t *TextBox) gapLines() float32 {
 	return t.LineGap * t.LineHeight / 5
 }
+func (t *TextBox) glyphWidth(font rl.Font, letter rune) float32 {
+	var index = rl.GetGlyphIndex(font, int32(letter))
+	var glyph = rl.GetGlyphInfo(font, index)
+	if glyph.AdvanceX > 0 {
+		return float32(glyph.AdvanceX)
+	}
+	var rec = rl.GetGlyphAtlasRec(font, index)
+	return float32(rec.Width) + float32(glyph.OffsetX)
+}
 
-func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, s *symbolState) bool {
+func (t *TextBox) readTag(reading *bool, char rune, cur strings.Builder, s *symbolState) bool {
 	if !*reading && char == '{' {
 		*reading = true
 	}
 
 	if *reading {
-		cur.WriteSymbol(char)
+		cur.WriteRune(char)
 		if char == '}' {
 			*reading = false
 			// Tag is finished, fall through to process it
@@ -304,12 +305,12 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *txt.Builder, s *symbolS
 		}
 	}
 
-	var tag = cur.ToText()
+	var tag = cur.String()
 	if tag == "" || !txt.StartsWith(tag, "{") {
 		return false
 	}
 
-	cur.Clear()
+	cur.Reset()
 	tag = txt.Remove(tag, "{", "}")
 
 	// Empty tag {} resets all formatting to defaults

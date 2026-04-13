@@ -8,6 +8,7 @@ import (
 	f "pure-game-kit/gui/field"
 	"pure-game-kit/utility/collection"
 	"pure-game-kit/utility/text"
+	"strings"
 )
 
 // Joins multiple XMLs into a single GUI - useful for splitting single large files into multiple.
@@ -33,7 +34,7 @@ import (
 //	GUI // root end
 func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 	var gui = &GUI{root: &root{cam: camera}}
-	var mergedXML = text.NewBuilder()
+	var mergedXML strings.Builder
 
 	for i, xmlData := range xmlsData {
 		xmlData = text.Trim(xmlData)
@@ -45,11 +46,11 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 		var startIndex = condition.If(i == 0, 0, 1)
 		var portion = lines[startIndex : len(lines)-1]
 		xmlData = collection.ToText(portion, "\n")
-		mergedXML.WriteText(xmlData + "\n")
+		mergedXML.WriteString(xmlData + "\n")
 	}
-	mergedXML.WriteText("</GUI>")
+	mergedXML.WriteString("</GUI>")
 
-	storage.FromXML(mergedXML.ToText(), &gui.root)
+	storage.FromXML(mergedXML.String(), &gui.root)
 	gui.root.Containers = map[string]*container{}
 	gui.root.Widgets = map[string]*widget{}
 	gui.root.Themes = map[string]*theme{}
@@ -136,12 +137,12 @@ func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
 //	)
 //	var menu = gui.NewFromXMLs(xml) // <-- result
 func NewElementsXML(elements ...string) string {
-	var result = text.NewBuilder()
-	result.WriteText("<GUI scale=\"1\" volume=\"1\">")
+	var result strings.Builder
+	result.WriteString("<GUI scale=\"1\" volume=\"1\">")
 
 	// container is missing on top, add root container
 	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
-		result.WriteText("\n\t<Container " + f.Id + "=\"root\" " +
+		result.WriteString("\n\t<Container " + f.Id + "=\"root\" " +
 			f.X + "=\"" + dynamic.CameraLeftX + "\" " +
 			f.Y + "=\"" + dynamic.CameraTopY + "\" " +
 			f.Width + "=\"" + dynamic.CameraWidth + "\" " +
@@ -151,19 +152,19 @@ func NewElementsXML(elements ...string) string {
 	for i, v := range elements {
 		if text.StartsWith(v, "<Container") {
 			if i > 0 {
-				result.WriteText("\n\t</Container>")
+				result.WriteString("\n\t</Container>")
 			}
 		} else {
 			v = "\t" + v
 		}
 
-		result.WriteText("\n\t" + v)
+		result.WriteString("\n\t" + v)
 
 		if i == len(elements)-1 {
-			result.WriteText("\n\t</Container>")
+			result.WriteString("\n\t</Container>")
 		}
 	}
 
-	result.WriteText("\n</GUI>")
-	return result.ToText()
+	result.WriteString("\n</GUI>")
+	return result.String()
 }
