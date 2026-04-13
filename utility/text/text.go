@@ -18,7 +18,7 @@ func New(elements ...any) string {
 		case string:
 			builder.WriteString(v)
 		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-			builder.WriteString(fmt.Sprintf("%d", v))
+			fmt.Fprintf(&builder, "%d", v)
 		case float32:
 			builder.WriteString(strconv.FormatFloat(float64(v), 'f', -1, 32))
 		case float64:
@@ -36,7 +36,7 @@ func New(elements ...any) string {
 				fmt.Fprintf(&builder, "%+v", value.Elem().Interface()) // pointer to struct
 				continue
 			}
-			builder.WriteString(fmt.Sprint(e)) // fallback
+			fmt.Fprint(&builder, e) // fallback
 		}
 	}
 	return builder.String()
