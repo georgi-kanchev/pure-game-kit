@@ -83,7 +83,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 		var lineStartIdx = len(t.cacheSymbols)
 
 		for _, c := range line {
-			if t.readTag(&reading, c, t.cacheBuilder, &curState) {
+			if t.readTag(&reading, c, &t.cacheBuilder, &curState) {
 				continue
 			}
 
@@ -281,16 +281,15 @@ func (t *TextBox) gapLines() float32 {
 	return t.LineGap * t.LineHeight / 5
 }
 func (t *TextBox) glyphWidth(font rl.Font, letter rune) float32 {
-	var index = rl.GetGlyphIndex(font, int32(letter))
-	var glyph = rl.GetGlyphInfo(font, index)
+	var glyph = rl.GetGlyphInfo(font, int32(letter))
 	if glyph.AdvanceX > 0 {
 		return float32(glyph.AdvanceX)
 	}
-	var rec = rl.GetGlyphAtlasRec(font, index)
+	var rec = rl.GetGlyphAtlasRec(font, int32(letter))
 	return float32(rec.Width) + float32(glyph.OffsetX)
 }
 
-func (t *TextBox) readTag(reading *bool, char rune, cur strings.Builder, s *symbolState) bool {
+func (t *TextBox) readTag(reading *bool, char rune, cur *strings.Builder, s *symbolState) bool {
 	if !*reading && char == '{' {
 		*reading = true
 	}
@@ -316,7 +315,7 @@ func (t *TextBox) readTag(reading *bool, char rune, cur strings.Builder, s *symb
 	// Empty tag {} resets all formatting to defaults
 	if tag == "" {
 		s.reset(t.Tint)
-		return false
+		return true
 	}
 
 	var parts = txt.Split(tag, "=")
@@ -372,7 +371,7 @@ func (t *TextBox) readTag(reading *bool, char rune, cur strings.Builder, s *symb
 		// Handle unknown tags or custom string values if necessary
 	}
 
-	return false
+	return true
 }
 func (s *symbolState) reset(defaultTint uint) {
 	s.Color = defaultTint
