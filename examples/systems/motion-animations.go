@@ -10,16 +10,15 @@ import (
 )
 
 func Animations() {
-	var animation = motion.NewAnimation(2, true,
-		"[h]", "[e]", "[l]", "[l]", "[o]", "[,]", "[space]",
-		"[w]", "[o]", "[r]", "[l]", "[d]", "[!]", "----")
+	var frames = [14]string{"[h]", "[e]", "[l]", "[l]", "[o]", "[,]", "[space]", "[w]", "[o]", "[r]", "[l]", "[d]", "[!]", "----"}
+	var animation = motion.NewAnimation(len(frames), 2, true)
 	var cam = graphics.NewCamera(3)
 	var sprite = graphics.NewSprite("", 0, 0)
 	assets.LoadDefaultAtlasInput()
 
 	for window.KeepOpen() {
 		animation.Update()
-		sprite.TextureId = *animation.Item()
+		sprite.TextureId = frames[animation.Index()]
 		cam.DrawSprites(sprite)
 
 		if keyboard.IsKeyJustPressed(key.A) {
