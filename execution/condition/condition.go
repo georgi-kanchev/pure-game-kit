@@ -10,17 +10,7 @@ func If[T any](condition bool, then, otherwise T) T {
 	}
 	return otherwise
 }
-func CallIf(condition bool, then func()) {
-	if condition {
-		then()
-	}
-}
-func CallIfElse(condition bool, then func(), otherwise func()) {
-	if condition {
-		then()
-	}
-	otherwise()
-}
+
 func CallAfter(seconds float32, function func()) {
 	var t = internal.Runtime + seconds
 	var _, has = internal.CallAfter[t]
@@ -42,17 +32,6 @@ func CallFor(seconds float32, function func(remaining float32)) {
 	internal.CallFor[t] = append(internal.CallFor[t], function)
 }
 
-func JustChanged[T comparable](pointer *T) bool {
-	var current = *pointer
-
-	var prev, has = trueChanges[pointer]
-	if !has || prev != current {
-		trueChanges[pointer] = current
-		return true
-	}
-
-	return false
-}
 func JustTurnedTrue(condition bool, key any) bool {
 	var prev = trueOnce[key]
 	trueOnce[key] = condition
@@ -72,6 +51,5 @@ func TrueEvery(seconds float32, key any) bool {
 //=================================================================
 // private
 
-var trueChanges = make(map[any]any)
 var trueOnce = make(map[any]bool)
 var trueEvery = make(map[any]float32)
