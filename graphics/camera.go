@@ -167,7 +167,7 @@ func (c *Camera) PointToCamera(otherCamera *Camera, myX, myY float32) (otherX, o
 	return otherCamera.PointFromCamera(c, myX, myY)
 }
 func (c *Camera) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
-	var _, _, sw, sh = c.area()
-	var scrX, scrY = sw * edgeX, sh * edgeY
+	var sx, sy, sw, sh = c.area()
+	var scrX, scrY = sx + sw*edgeX, sy + sh*edgeY
 	return c.PointFromScreen(scrX, scrY)
 }

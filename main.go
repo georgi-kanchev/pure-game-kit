@@ -56,6 +56,7 @@ func main() {
 		gui.Button("batches", f.Text, " Batches (graphics-batches.go)", f.NewRow, ""),
 		gui.Button("tile maps", f.Text, " Tile Maps (graphics-tile-maps.go)", f.NewRow, ""),
 		gui.Button("guis", f.Text, " Graphical User Interfaces (GUIs) (guis.go)", f.NewRow, ""),
+		gui.Button("multiple cameras", f.Text, " Multiple Cameras (graphics-cameras.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("input", f.ThemeId, "label", f.Text, "Input:", f.NewRow, ""),
 		gui.Button("mouse input", f.Text, " Mouse (input-mouse.go)", f.NewRow, ""),
@@ -99,6 +100,7 @@ func main() {
 		"guis":             example.GUIs,
 		"effects":          example.Effects,
 		"batches":          example.Batches,
+		"multiple cameras": example.MultipleCameras,
 		"tile maps":        example.TileMaps,
 		//=================================================================
 		"mouse input":    example.Mouse,

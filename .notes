@@ -1,6 +1,5 @@
 TODO:
 nine patch should have option stretch/tile per edge/center
-test multiple cameras
 gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
 
 LINKS:
