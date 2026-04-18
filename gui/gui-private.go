@@ -16,8 +16,7 @@ import (
 var sound audio.Audio = audio.New("")
 var mouseX, mouseY, prevMouseX, prevMouseY float32
 var updates = map[string]func(widget *widget){
-	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField,
-	"draggable": draggable,
+	"button": button, "slider": slider, "checkbox": checkbox, "menu": menu, "inputField": inputField, "draggable": draggable,
 }
 
 var camCx, camCy, camLx, camRx, camTy, camBy, camW, camH float32                 // dynamic prop cache
