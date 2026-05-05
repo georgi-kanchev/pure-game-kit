@@ -32,7 +32,7 @@ import (
 //			Widget // check box
 //		... // other containers
 //	GUI // root end
-func NewFromXMLs(camera *graphics.Camera, xmlsData ...string) *GUI {
+func NewFromXMLs(camera *graphics.View, xmlsData ...string) *GUI {
 	var gui = &GUI{root: &root{cam: camera}}
 	var mergedXML strings.Builder
 

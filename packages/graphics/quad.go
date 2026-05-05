@@ -24,10 +24,10 @@ func NewQuad(x, y float32) *Quad {
 
 //=================================================================
 
-func (q *Quad) CameraFit(camera *Camera) {
-	var sx, sy, sw, sh = camera.area()
-	var x, y = camera.PointFromScreen(sx+sw/2, sy+sh/2)
-	var cw, ch = camera.Size()
+func (q *Quad) ViewFit(view *View) {
+	var sx, sy, sw, sh = view.area()
+	var x, y = view.PointFromScreen(sx+sw/2, sy+sh/2)
+	var cw, ch = view.Size()
 	var scale = min(cw/q.Width, ch/q.Height)
 
 	q.X = x - (0.5-q.PivotX)*q.Width*scale
@@ -35,10 +35,10 @@ func (q *Quad) CameraFit(camera *Camera) {
 	q.ScaleX, q.ScaleY = scale, scale
 	q.Angle = 0
 }
-func (q *Quad) CameraFill(camera *Camera) {
-	var sx, sy, sw, sh = camera.area()
-	var x, y = camera.PointFromScreen(sx+sw/2, sy+sh/2)
-	var cw, ch = camera.Size()
+func (q *Quad) ViewFill(view *View) {
+	var sx, sy, sw, sh = view.area()
+	var x, y = view.PointFromScreen(sx+sw/2, sy+sh/2)
+	var cw, ch = view.Size()
 	var scale = max(cw/q.Width, ch/q.Height)
 
 	q.X = x - (0.5-q.PivotX)*q.Width*scale
@@ -46,10 +46,10 @@ func (q *Quad) CameraFill(camera *Camera) {
 	q.ScaleX, q.ScaleY = scale, scale
 	q.Angle = 0
 }
-func (q *Quad) CameraStretch(camera *Camera) {
-	var sx, sy, sw, sh = camera.area()
-	var x, y = camera.PointFromScreen(sx+sw/2, sy+sh/2)
-	var cw, ch = camera.Size()
+func (q *Quad) ViewStretch(view *View) {
+	var sx, sy, sw, sh = view.area()
+	var x, y = view.PointFromScreen(sx+sw/2, sy+sh/2)
+	var cw, ch = view.Size()
 	var scaleX, scaleY = cw / q.Width, ch / q.Height
 
 	q.X = x - (0.5-q.PivotX)*q.Width*scaleX

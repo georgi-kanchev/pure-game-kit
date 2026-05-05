@@ -8,16 +8,16 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func (c *Camera) DrawQuads(quads ...*Quad) {
-	c.begin()
+func (v *View) DrawQuads(quads ...*Quad) {
+	v.begin()
 
 	var lastEffects Effects
 	for _, q := range quads {
-		if q == nil || !c.IsAreaVisible(q.Bounds()) {
+		if q == nil || !v.IsAreaVisible(q.Bounds()) {
 			continue
 		}
 
-		batch.mask = c.Mask
+		batch.mask = v.Mask
 		if q.Mask != (Area{}) {
 			batch.mask = q.Mask
 		}
@@ -28,7 +28,7 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 		var dst = rl.NewRectangle(x, y, q.Width*q.ScaleX, q.Height*q.ScaleY)
 		var effects = q.Effects
 		if effects == (Effects{}) {
-			effects = c.Effects
+			effects = v.Effects
 		}
 		if lastEffects != effects {
 			batch.Draw() // effects are different & break the batch
@@ -38,14 +38,14 @@ func (c *Camera) DrawQuads(quads ...*Quad) {
 		lastEffects = effects
 	}
 	batch.Draw()
-	c.end()
+	v.end()
 }
-func (c *Camera) DrawSprites(sprites ...*Sprite) {
-	c.begin()
+func (v *View) DrawSprites(sprites ...*Sprite) {
+	v.begin()
 
 	var lastEffects Effects
 	for _, s := range sprites {
-		if s == nil || !c.IsAreaVisible(s.Bounds()) {
+		if s == nil || !v.IsAreaVisible(s.Bounds()) {
 			continue
 		}
 
@@ -65,14 +65,14 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
-		batch.mask = c.Mask
+		batch.mask = v.Mask
 		if s.Mask != (Area{}) {
 			batch.mask = s.Mask
 		}
 
 		var effects = s.Effects
 		if effects == (Effects{}) {
-			effects = c.Effects
+			effects = v.Effects
 		}
 		if lastEffects != effects {
 			batch.Draw() // effects are different & break the batch
@@ -82,16 +82,16 @@ func (c *Camera) DrawSprites(sprites ...*Sprite) {
 		lastEffects = effects
 	}
 	batch.Draw()
-	c.end()
+	v.end()
 }
-func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
-	c.begin()
-	defer c.end()
+func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
+	v.begin()
+	defer v.end()
 
 	batch.skipStartEnd = true
 	var lastEffects Effects
 	for _, n := range ninePatches {
-		if n == nil || !c.IsAreaVisible(n.Bounds()) {
+		if n == nil || !v.IsAreaVisible(n.Bounds()) {
 			continue
 		}
 
@@ -99,7 +99,7 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 		var assetIds, has = internal.Boxes[n.BoxId]
 
 		if !has { // fallback to quad if no 9-slice exists
-			c.DrawQuads(&n.Quad)
+			v.DrawQuads(&n.Quad)
 			continue
 		}
 
@@ -142,14 +142,14 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 			}
 		}
 
-		batch.mask = c.Mask
+		batch.mask = v.Mask
 		if n.Mask != (Area{}) {
 			batch.mask = n.Mask
 		}
 
 		var effects = n.Effects
 		if effects == (Effects{}) {
-			effects = c.Effects
+			effects = v.Effects
 		}
 
 		var parts = [9]struct {
@@ -194,14 +194,14 @@ func (c *Camera) DrawNinePatches(ninePatches ...*NinePatch) {
 	batch.Draw()
 	batch.skipStartEnd = false
 }
-func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
-	c.begin()
+func (v *View) DrawTextBoxes(textBoxes ...*TextBox) {
+	v.begin()
 	for _, t := range textBoxes {
-		if t == nil || !c.IsAreaVisible(t.Bounds()) {
+		if t == nil || !v.IsAreaVisible(t.Bounds()) {
 			continue
 		}
 
-		batch.mask = c.Mask
+		batch.mask = v.Mask
 		if t.Mask != (Area{}) {
 			batch.mask = t.Mask
 		}
@@ -211,7 +211,7 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		var gapX = t.gapSymbols() * t.ScaleX
 		var effects = t.Effects
 		if effects == (Effects{}) {
-			effects = c.Effects
+			effects = v.Effects
 		}
 		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t, false)
 
@@ -227,12 +227,12 @@ func (c *Camera) DrawTextBoxes(textBoxes ...*TextBox) {
 		}
 	}
 	batch.Draw()
-	c.end()
+	v.end()
 }
-func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
-	c.begin()
+func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
+	v.begin()
 	for _, t := range tileMaps {
-		if !c.IsAreaVisible(t.Bounds()) {
+		if !v.IsAreaVisible(t.Bounds()) {
 			continue
 		}
 
@@ -242,7 +242,7 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 			continue
 		}
 
-		batch.mask = c.Mask
+		batch.mask = v.Mask
 		if t.Mask != (Area{}) {
 			batch.mask = t.Mask
 		}
@@ -261,11 +261,11 @@ func (c *Camera) DrawTileMaps(tileMaps ...*TileMap) {
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 		var effects = t.Effects
 		if effects == (Effects{}) {
-			effects = c.Effects
+			effects = v.Effects
 		}
 		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
 		batch.QueueTex(texture, src, dst, t.Angle, getColor(t.Tint))
 		batch.Draw()
 	}
-	c.end()
+	v.end()
 }

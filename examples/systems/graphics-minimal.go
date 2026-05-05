@@ -7,9 +7,9 @@ import (
 )
 
 func MinimalRender() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	for window.KeepOpen() {
-		cam.DrawCircle(0, 0, 200, 32, palette.Red)
-		cam.DrawTextDebug(true, true, false, true)
+		view.DrawCircle(0, 0, 200, 32, palette.Red)
+		view.DrawTextDebug(true, true, false, true)
 	}
 }

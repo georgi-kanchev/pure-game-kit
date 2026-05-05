@@ -1,6 +1,9 @@
 TODO:
+gui rewrite
+textbox rewrite
+geometry rewrite
+graphics rewrite, shape render, text render
 nine patch should have option stretch/tile per edge/center
-gui xml doesn't allow some symbols such as '>' and '&', the strings can be swapped with placeholders, see internal.go
 
 LINKS:
 data layout

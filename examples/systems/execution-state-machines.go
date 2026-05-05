@@ -22,22 +22,22 @@ type player struct {
 }
 
 func StateMachines() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var player = player{behavior: flow.NewStateMachine()}
 	player.behavior.GoToState(player.ground)
 
 	for window.KeepOpen() {
-		var clx, cly = cam.PointFromEdge(0, 0.5)
-		var cw, ch = cam.Size()
-		cam.DrawQuad(clx, cly, cw, ch, 0, palette.DarkGray)
+		var clx, cly = view.PointFromEdge(0, 0.5)
+		var cw, ch = view.Size()
+		view.DrawQuad(clx, cly, cw, ch, 0, palette.DarkGray)
 
 		player.behavior.UpdateCurrentState()
 
 		var height = condition.If(player.state == "crouch", float32(size/2), size)
-		cam.DrawQuad(player.x-size/2, player.y-height, size, height, 0, palette.White)
+		view.DrawQuad(player.x-size/2, player.y-height, size, height, 0, palette.White)
 
-		var tlx, tly = cam.PointFromEdge(0, 0)
-		cam.DrawText(text.New("State: ", player.state), tlx, tly, 100)
+		var tlx, tly = view.PointFromEdge(0, 0)
+		view.DrawText(text.New("State: ", player.state), tlx, tly, 100)
 	}
 }
 

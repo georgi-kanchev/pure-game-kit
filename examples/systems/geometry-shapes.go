@@ -12,7 +12,7 @@ import (
 )
 
 func Shapes() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var shape = geometry.NewShapeCorners(
 		0, 0,
 		50, -20,
@@ -50,7 +50,7 @@ func Shapes() {
 	for window.KeepOpen() {
 		squircle.Angle += time.FrameDelta() * 60
 		shape.Angle += time.FrameDelta() * 60
-		var mx, my = cam.MousePosition()
+		var mx, my = view.MousePosition()
 		var colShape = condition.If(shape.IsOverlappingShapes(triangle), palette.Red, palette.Green)
 		var colRect = condition.If(rectangle.IsCrossingShapes(shape), palette.Brown, palette.Cyan)
 		var colCircle = condition.If(hexagon.IsContainingShapes(triangle), palette.Yellow, palette.Pink)
@@ -65,35 +65,35 @@ func Shapes() {
 		var ellPts = ellipse.CornerPoints()
 		var roundPts = squircle.CornerPoints()
 
-		cam.DrawShapes(color.Darken(colCircle, 0.5), hexagonPts...)
-		cam.DrawLinesPath(8, colCircle, hexagonPts...)
-		cam.DrawPoints(4, colCircle, hexagonPts...)
+		view.DrawShapes(color.Darken(colCircle, 0.5), hexagonPts...)
+		view.DrawLinesPath(8, colCircle, hexagonPts...)
+		view.DrawPoints(4, colCircle, hexagonPts...)
 
-		cam.DrawShapes(color.Darken(colRect, 0.5), rectPts...)
-		cam.DrawLinesPath(8, colRect, rectPts...)
-		cam.DrawPoints(4, colRect, rectPts...)
+		view.DrawShapes(color.Darken(colRect, 0.5), rectPts...)
+		view.DrawLinesPath(8, colRect, rectPts...)
+		view.DrawPoints(4, colRect, rectPts...)
 
-		cam.DrawShapes(palette.Gray, triPts...)
-		cam.DrawLinesPath(8, palette.White, triPts...)
-		cam.DrawPoints(4, palette.White, triPts...)
+		view.DrawShapes(palette.Gray, triPts...)
+		view.DrawLinesPath(8, palette.White, triPts...)
+		view.DrawPoints(4, palette.White, triPts...)
 
-		cam.DrawLinesPath(8, colShape, shPts...)
-		cam.DrawPoints(4, colShape, shPts...)
+		view.DrawLinesPath(8, colShape, shPts...)
+		view.DrawPoints(4, colShape, shPts...)
 
-		cam.DrawShapes(color.Darken(palette.Violet, 0.5), stars...)
-		cam.DrawLinesPath(8, palette.Violet, stars...)
-		cam.DrawPoints(4, palette.Violet, stars...)
+		view.DrawShapes(color.Darken(palette.Violet, 0.5), stars...)
+		view.DrawLinesPath(8, palette.Violet, stars...)
+		view.DrawPoints(4, palette.Violet, stars...)
 
-		cam.DrawShapes(palette.DarkGreen, ellPts...)
-		cam.DrawLinesPath(8, palette.Green, ellPts...)
-		cam.DrawPoints(4, palette.Green, ellPts...)
+		view.DrawShapes(palette.DarkGreen, ellPts...)
+		view.DrawLinesPath(8, palette.Green, ellPts...)
+		view.DrawPoints(4, palette.Green, ellPts...)
 
-		cam.DrawShapes(palette.Magenta, roundPts...)
-		cam.DrawLinesPath(8, palette.DarkMagenta, roundPts...)
-		cam.DrawPoints(4, palette.DarkMagenta, roundPts...)
+		view.DrawShapes(palette.Magenta, roundPts...)
+		view.DrawLinesPath(8, palette.DarkMagenta, roundPts...)
+		view.DrawPoints(4, palette.DarkMagenta, roundPts...)
 
-		cam.DrawPoints(16, palette.Green, crossPoints...)
+		view.DrawPoints(16, palette.Green, crossPoints...)
 
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

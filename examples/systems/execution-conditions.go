@@ -9,11 +9,11 @@ import (
 )
 
 func Conditions() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var quad = graphics.NewQuad(0, 0)
 
 	for window.KeepOpen() {
-		cam.DrawQuads(quad)
+		view.DrawQuads(quad)
 
 		if condition.TrueEvery(1.0, "") {
 			quad.Angle = number.Wrap(quad.Angle+45, 0, 360)

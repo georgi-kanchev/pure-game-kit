@@ -11,7 +11,7 @@ import (
 )
 
 func ShapesGrids() {
-	var cam = graphics.NewCamera(2)
+	var view = graphics.NewView(2)
 	var grid = geometry.NewShapeGrid(32, 32)
 	var shape = geometry.NewShapeCorners(
 		0, 0,
@@ -28,10 +28,10 @@ func ShapesGrids() {
 	}
 
 	for window.KeepOpen() {
-		cam.MouseDragAndZoomSmoothly()
-		cam.DrawGrid(1, 32, 32, palette.DarkGray)
+		view.MouseDragAndZoomSmoothly()
+		view.DrawGrid(1, 32, 32, palette.DarkGray)
 
-		var mx, my = cam.MousePosition()
+		var mx, my = view.MousePosition()
 		shape.X, shape.Y = mx, my
 		shape.Angle += time.FrameDelta() * 20
 
@@ -46,17 +46,17 @@ func ShapesGrids() {
 			var pts = append(v.CornerPoints(), number.NaN(), number.NaN())
 			potentailPts = append(potentailPts, pts...)
 		}
-		cam.DrawLinesPath(1, palette.Gray, allPts...)
-		cam.DrawLinesPath(2, palette.Green, potentailPts...)
+		view.DrawLinesPath(1, palette.Gray, allPts...)
+		view.DrawLinesPath(2, palette.Green, potentailPts...)
 
 		var surroundingShapes = grid.AroundShape(shape)
 		var crossPoints = shape.CrossPointsWithShapes(surroundingShapes...)
 		var col = condition.If(shape.IsCrossingShapes(surroundingShapes...), palette.Violet, palette.Cyan)
 
-		cam.DrawLinesPath(2, col, shape.CornerPoints()...)
+		view.DrawLinesPath(2, col, shape.CornerPoints()...)
 
-		cam.DrawPoints(3, palette.Magenta, crossPoints...)
+		view.DrawPoints(3, palette.Magenta, crossPoints...)
 
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

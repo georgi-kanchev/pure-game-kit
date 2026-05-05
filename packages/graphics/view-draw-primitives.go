@@ -12,31 +12,31 @@ import (
 	"pure-game-kit/packages/utility/time/unit"
 )
 
-func (c *Camera) DrawColor(color uint) {
-	var tlX, tlY = c.PointFromEdge(0, 0) // Top-Left
-	var trX, trY = c.PointFromEdge(1, 0) // Top-Right
-	var brX, brY = c.PointFromEdge(1, 1) // Bottom-Right
-	var blX, blY = c.PointFromEdge(0, 1) // Bottom-Left
+func (v *View) DrawColor(color uint) {
+	var tlX, tlY = v.PointFromEdge(0, 0) // Top-Left
+	var trX, trY = v.PointFromEdge(1, 0) // Top-Right
+	var brX, brY = v.PointFromEdge(1, 1) // Bottom-Right
+	var blX, blY = v.PointFromEdge(0, 1) // Bottom-Left
 	var renderColor = getColor(color)
 
-	c.begin()
+	v.begin()
 	batch.QueueTriangle(tlX, tlY, trX, trY, brX, brY, renderColor)
 	batch.QueueTriangle(tlX, tlY, brX, brY, blX, blY, renderColor)
 	batch.Draw()
-	c.end()
+	v.end()
 }
-func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
-	if spacingX*c.Zoom < 1 && spacingY*c.Zoom < 1 {
+func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
+	if spacingX*v.Zoom < 1 && spacingY*v.Zoom < 1 {
 		return // way too dense grid - give up
 	}
-	c.begin()
+	v.begin()
 
 	var renderColor = getColor(color)
-	var sx, sy, sw, sh = c.area()
-	var ulx, uly = c.PointFromScreen(sx, sy)
-	var urx, ury = c.PointFromScreen(sx+sw, sy)
-	var lrx, lry = c.PointFromScreen(sx+sw, sy+sh)
-	var llx, lly = c.PointFromScreen(sx, sy+sh)
+	var sx, sy, sw, sh = v.area()
+	var ulx, uly = v.PointFromScreen(sx, sy)
+	var urx, ury = v.PointFromScreen(sx+sw, sy)
+	var lrx, lry = v.PointFromScreen(sx+sw, sy+sh)
+	var llx, lly = v.PointFromScreen(sx, sy+sh)
 	var xs = []float32{ulx, urx, llx, lrx}
 	var ys = []float32{uly, ury, lly, lry}
 	var minX, maxX = xs[0], xs[0]
@@ -85,25 +85,25 @@ func (c *Camera) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	}
 
 	batch.Draw()
-	c.end()
+	v.end()
 }
 
 //=================================================================
 
-func (c *Camera) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
-	c.begin()
+func (v *View) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
+	v.begin()
 	batch.QueueLine(ax, ay, bx, by, thickness, getColor(color))
 	batch.Draw()
-	c.end()
+	v.end()
 }
 
 // multiple line paths can be separated by a NaN pair
-func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...float32) {
+func (v *View) DrawLinesPath(thickness float32, color uint, points ...float32) {
 	if thickness == 0 || color == 0 || len(points) == 0 {
 		return
 	}
 
-	c.begin()
+	v.begin()
 	var col = getColor(color)
 	for i := 2; i < len(points); i += 2 {
 		var x1, y1 = points[i-2], points[i-1]
@@ -114,17 +114,17 @@ func (c *Camera) DrawLinesPath(thickness float32, color uint, points ...float32)
 		}
 	}
 	batch.Draw()
-	c.end()
+	v.end()
 }
 
-func (c *Camera) DrawQuad(x, y, width, height, angle float32, color uint) {
-	c.begin()
+func (v *View) DrawQuad(x, y, width, height, angle float32, color uint) {
+	v.begin()
 	batch.QueueQuad(x, y, width, height, angle, getColor(color))
 	batch.Draw()
-	c.end()
+	v.end()
 }
-func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, color uint) {
-	c.begin()
+func (v *View) DrawQuadFrame(x, y, width, height, angle, thickness float32, color uint) {
+	v.begin()
 	var sinRot, cosRot = internal.SinCos(angle)
 	var transform = func(px, py float32) (float32, float32) {
 		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
@@ -160,11 +160,11 @@ func (c *Camera) DrawQuadFrame(x, y, width, height, angle, thickness float32, co
 	batch.QueueLine(x5, y5, x6, y6, absT, col)
 	batch.QueueLine(x7, y7, x8, y8, absT, col)
 	batch.Draw()
-	c.end()
+	v.end()
 }
 
-func (c *Camera) DrawPoints(radius float32, color uint, points ...float32) {
-	c.begin()
+func (v *View) DrawPoints(radius float32, color uint, points ...float32) {
+	v.begin()
 	batch.skipStartEnd = true
 	batch.skipDraw = true
 	for i := 0; i < len(points); i += 2 {
@@ -173,18 +173,18 @@ func (c *Camera) DrawPoints(radius float32, color uint, points ...float32) {
 		}
 
 		var x, y = points[i], points[i+1]
-		c.DrawCircle(x, y, radius, 16, color)
+		v.DrawCircle(x, y, radius, 16, color)
 	}
 	batch.skipDraw = false
 	batch.skipStartEnd = false
 	batch.Draw()
-	c.end()
+	v.end()
 }
-func (c *Camera) DrawCircle(x, y, radius float32, segments int, color uint) {
-	c.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, color)
+func (v *View) DrawCircle(x, y, radius float32, segments int, color uint) {
+	v.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, color)
 }
-func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int, color uint) {
-	c.begin()
+func (v *View) DrawArc(x, y, width, height, fill, angle float32, segments int, color uint) {
+	v.begin()
 	var fillAngle = number.Limit(fill, 0, 1) * 360
 	if fillAngle < 360 {
 		segments = max(int((fillAngle/360.0)*float32(segments)), 3)
@@ -213,20 +213,20 @@ func (c *Camera) DrawArc(x, y, width, height, fill, angle float32, segments int,
 	if !batch.skipDraw {
 		batch.Draw()
 	}
-	c.end()
+	v.end()
 }
 
 // works with convex + concave (non-self-intersacting) shapes
 //
 // multiple shapes can be separated by a NaN pair
-func (c *Camera) DrawShapes(color uint, points ...float32) {
-	c.begin()
+func (v *View) DrawShapes(color uint, points ...float32) {
+	v.begin()
 
 	var ptsCountsPerShape = separateShapes(points)
 	var offset = 0
 	var renderColor = getColor(color)
 
-	c.Effects.updateUniforms(1, 1, nil, nil, false)
+	v.Effects.updateUniforms(1, 1, nil, nil, false)
 
 	for _, count := range ptsCountsPerShape {
 		for offset < len(points) && number.IsNaN(points[offset]) {
@@ -288,12 +288,12 @@ func (c *Camera) DrawShapes(color uint, points ...float32) {
 	}
 
 	batch.Draw()
-	c.end()
+	v.end()
 }
 
 //=================================================================
 
-func (c *Camera) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32, color uint) {
+func (v *View) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32, color uint) {
 	var w, h = assets.Size(assetId)
 	drawTexture.TextureId, drawTexture.Tint = assetId, color
 	drawTexture.X, drawTexture.Y = x, y
@@ -301,12 +301,12 @@ func (c *Camera) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32
 	drawTexture.Width, drawTexture.Height = float32(w), float32(h)
 	drawTexture.Angle = angle
 	drawTexture.ScaleX, drawTexture.ScaleY = scaleX, scaleY
-	c.DrawSprites(drawTexture)
+	v.DrawSprites(drawTexture)
 }
-func (c *Camera) DrawText(text string, x, y, height float32) {
-	c.DrawTextAdvanced("", text, x, y, height, 0, 0, 0, palette.White)
+func (v *View) DrawText(text string, x, y, height float32) {
+	v.DrawTextAdvanced("", text, x, y, height, 0, 0, 0, palette.White)
 }
-func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, lineHeight, angle, symbolGap, lineGap float32, color uint) {
+func (v *View) DrawTextAdvanced(fontId, text string, x, y, lineHeight, angle, symbolGap, lineGap float32, color uint) {
 	drawText.FontId, drawText.Tint = fontId, color
 	drawText.X, drawText.Y = x, y
 	drawText.PivotX, drawText.PivotY = 0, 0
@@ -314,9 +314,9 @@ func (c *Camera) DrawTextAdvanced(fontId, text string, x, y, lineHeight, angle, 
 	drawText.SymbolGap, drawText.LineGap = symbolGap, lineGap
 	drawText.Width, drawText.Height = 99999, 99999
 	drawText.WordWrap, drawText.LineHeight = false, lineHeight
-	c.DrawTextBoxes(drawText)
+	v.DrawTextBoxes(drawText)
 }
-func (c *Camera) DrawTextDebug(fps, time, assets, memory bool) {
+func (v *View) DrawTextDebug(fps, time, assets, memory bool) {
 	if condition.TrueEvery(0.15, ";;;debug") {
 		debugStr = ""
 		if fps {
@@ -346,6 +346,6 @@ func (c *Camera) DrawTextDebug(fps, time, assets, memory bool) {
 		}
 	}
 
-	var tlx, tly = c.PointFromEdge(0, 0)
-	c.DrawText(debugStr, tlx+10/c.Zoom, tly, 40/c.Zoom)
+	var tlx, tly = v.PointFromEdge(0, 0)
+	v.DrawText(debugStr, tlx+10/v.Zoom, tly, 40/v.Zoom)
 }

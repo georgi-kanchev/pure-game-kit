@@ -28,7 +28,7 @@ type root struct {
 
 	cMiddlePressed, cPressedOnScrollH, cPressedOnScrollV *container // for container slider
 
-	cam          *graphics.Camera
+	cam          *graphics.View
 	sprites      []*graphics.Sprite
 	spritesAbove []*graphics.Sprite
 	boxes        []*graphics.NinePatch

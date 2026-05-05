@@ -12,7 +12,7 @@ import (
 )
 
 func PathFollowing() {
-	var cam = graphics.NewCamera(2)
+	var view = graphics.NewView(2)
 	var paths = []float32{}
 	var startX, startY float32 = 16, -48
 	var p1 = []float32{0, 0, 50, 0, 60, 25, 50, 50, 0, 50, 0, 0}
@@ -46,10 +46,10 @@ func PathFollowing() {
 	}
 
 	for window.KeepOpen() {
-		cam.MouseDragAndZoomSmoothly()
-		cam.DrawGrid(1, 32, 32, palette.DarkGray)
+		view.MouseDragAndZoomSmoothly()
+		view.DrawGrid(1, 32, 32, palette.DarkGray)
 
-		var mx, my = cam.MousePosition()
+		var mx, my = view.MousePosition()
 		var result = geometry.FollowPaths(startX, startY, mx, my, paths...)
 
 		if mouse.IsButtonJustPressed(button.Left) {
@@ -57,16 +57,16 @@ func PathFollowing() {
 			startX, startY = mx, my
 		}
 
-		// cam.DrawLinesPath(3, color.Red, paths...)
-		cam.DrawLinesPath(5, randomColors[0], p1...)
-		cam.DrawLinesPath(5, randomColors[1], p2...)
-		cam.DrawLinesPath(5, randomColors[2], p3...)
-		cam.DrawLinesPath(5, randomColors[3], p4...)
-		cam.DrawLinesPath(5, randomColors[4], p5...)
-		cam.DrawLinesPath(5, randomColors[5], p6...)
-		cam.DrawLinesPath(5, randomColors[6], p7...)
-		cam.DrawLinesPath(5, randomColors[7], p8...)
-		cam.DrawLinesPath(2, palette.Red, result...)
-		cam.DrawTextDebug(true, true, true, true)
+		// view.DrawLinesPath(3, color.Red, paths...)
+		view.DrawLinesPath(5, randomColors[0], p1...)
+		view.DrawLinesPath(5, randomColors[1], p2...)
+		view.DrawLinesPath(5, randomColors[2], p3...)
+		view.DrawLinesPath(5, randomColors[3], p4...)
+		view.DrawLinesPath(5, randomColors[4], p5...)
+		view.DrawLinesPath(5, randomColors[5], p6...)
+		view.DrawLinesPath(5, randomColors[6], p7...)
+		view.DrawLinesPath(5, randomColors[7], p8...)
+		view.DrawLinesPath(2, palette.Red, result...)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

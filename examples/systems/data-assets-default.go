@@ -32,7 +32,7 @@ func DefaultAssetUI() {
 // private
 
 func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load func() (string, []string)) {
-	var camera = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var assetId, tileIds = load()
 	var sprite = graphics.NewSprite(assetId, 0, 0)
 	var textBox = graphics.NewTextBox("", 5, 5, "")
@@ -43,8 +43,8 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 	var aw, ah = assets.Size(txt)
 
 	for window.KeepOpen() {
-		textBox.Width, textBox.Height = camera.Size()
-		sprite.CameraFit(camera)
+		textBox.Width, textBox.Height = view.Size()
+		sprite.ViewFit(view)
 		sprite.ScaleX *= scale
 		sprite.ScaleY *= scale
 
@@ -54,7 +54,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			aw, ah = int(tileSize), int(tileSize)
 		}
 
-		var cmx, cmy = camera.MousePosition()
+		var cmx, cmy = view.MousePosition()
 		var mx, my = sprite.PointToLocal(cmx, cmy)
 		var sx, sy = number.Snap(mx-fullSz/2, fullSz), number.Snap(my-fullSz/2, fullSz)
 		var mmx, mmy = sprite.PointToGlobal(sx, sy)
@@ -68,7 +68,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		// 	sprite.TextureId = id
 		// }
 
-		camera.DrawSprites(sprite)
+		view.DrawSprites(sprite)
 
 		if !sprite.ContainsPoint(cmx, cmy) {
 			continue
@@ -83,7 +83,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 			}
 		}
 
-		camera.DrawQuadFrame(mmx, mmy, float32(aw)*sprite.ScaleX, float32(ah)*sprite.ScaleY, 0, 8, palette.Cyan)
+		view.DrawQuadFrame(mmx, mmy, float32(aw)*sprite.ScaleX, float32(ah)*sprite.ScaleY, 0, 8, palette.Cyan)
 
 		var info = text.New(
 			"id: '", txt, "'",
@@ -97,7 +97,7 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		}
 
 		textBox.Text = info
-		textBox.X, textBox.Y = camera.PointFromScreen(0, 0)
-		camera.DrawTextBoxes(textBox)
+		textBox.X, textBox.Y = view.PointFromScreen(0, 0)
+		view.DrawTextBoxes(textBox)
 	}
 }

@@ -14,7 +14,7 @@ import (
 )
 
 func Particles() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var particles = motion.NewParticleSystem(func(p *motion.Particle) bool {
 		if p.Age == 0 {
 			p.VelocityX, p.VelocityY = random.Range[float32](-3, 3), random.Range[float32](0, 1)
@@ -36,7 +36,7 @@ func Particles() {
 
 		p.Age += time.FrameDelta()
 		p.Scale = (6 - p.Age) * 5
-		cam.DrawCircle(p.X, p.Y-5, p.Scale, 8, p.Color)
+		view.DrawCircle(p.X, p.Y-5, p.Scale, 8, p.Color)
 
 		if p.Age > 5 {
 			p.Color = color.FadeOut(palette.Cyan, number.Map(p.Age, 5, 6, 0, 1))
@@ -45,16 +45,16 @@ func Particles() {
 	})
 
 	for window.KeepOpen() {
-		var clx, cly = cam.PointFromEdge(0, 0.5)
-		var cw, ch = cam.Size()
-		cam.DrawQuad(clx, cly, cw, ch, 0, palette.DarkGray)
+		var clx, cly = view.PointFromEdge(0, 0.5)
+		var cw, ch = view.Size()
+		view.DrawQuad(clx, cly, cw, ch, 0, palette.DarkGray)
 
 		particles.Update()
 
 		if mouse.IsButtonJustPressed(button.Left) {
-			var mx, my = cam.MousePosition()
+			var mx, my = view.MousePosition()
 			particles.EmitFromLine(30, mx-100, my, mx+100, my)
 		}
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

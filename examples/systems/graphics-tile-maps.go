@@ -10,7 +10,7 @@ import (
 )
 
 func TileMaps() {
-	var cam = graphics.NewCamera(2)
+	var view = graphics.NewView(2)
 	var atlasId = assets.LoadTileSet("examples/data/atlas.png", 16, 16)
 	var tileDataId = assets.LoadTileData("tilemap", 320, 320)
 	var tilemap = graphics.NewTileMap(atlasId, tileDataId)
@@ -27,12 +27,12 @@ func TileMaps() {
 	}
 
 	for window.KeepOpen() {
-		cam.MouseDragAndZoomSmoothly()
-		cam.DrawTileMaps(tilemap)
-		cam.DrawTextDebug(true, true, true, true)
+		view.MouseDragAndZoomSmoothly()
+		view.DrawTileMaps(tilemap)
+		view.DrawTextDebug(true, true, true, true)
 
 		if mouse.IsButtonPressed(button.Left) {
-			var mx, my = cam.MousePosition()
+			var mx, my = view.MousePosition()
 			var x, y = tilemap.PointToLocal(mx, my)
 			tilemap.SetTile(int(x/16), int(y/16), graphics.NewTileAnimated(106, 15, byte(x/16), 20))
 		}

@@ -9,7 +9,7 @@ import (
 )
 
 func Keyboard() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var text = "Type..."
 
 	for window.KeepOpen() {
@@ -28,7 +28,7 @@ func Keyboard() {
 			fmt.Printf("%v\n", "hello, world")
 		}
 
-		var x, y = cam.PointFromScreen(0, 0)
-		cam.DrawText(text, x, y, 200)
+		var x, y = view.PointFromScreen(0, 0)
+		view.DrawText(text, x, y, 200)
 	}
 }

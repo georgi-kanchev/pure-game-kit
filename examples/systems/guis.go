@@ -13,10 +13,10 @@ import (
 )
 
 func GUIs() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var atlas, icons = assets.LoadDefaultAtlasIcons()
 	var _, ids, ninePatch = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewFromXMLs(cam, gui.NewElementsXML(
+	var hud = gui.NewFromXMLs(view, gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, "150", f.Height, "50", f.GapX, "10", f.GapY, "10",
 			f.TextAlignmentX, "0", f.TextAlignmentY, "0.5", f.TextColor, "0 0 0 255",
@@ -164,7 +164,7 @@ func GUIs() {
 	hud.Scale = 2.01
 
 	for window.KeepOpen() {
-		cam.DrawGrid(2, 100, 100, palette.DarkGray)
+		view.DrawGrid(2, 100, 100, palette.DarkGray)
 
 		var grab = hud.DragJustGrabbed()
 		if grab != "" {
@@ -180,6 +180,6 @@ func GUIs() {
 		}
 
 		hud.UpdateAndDraw()
-		cam.DrawTextDebug(true, false, false, false)
+		view.DrawTextDebug(true, false, false, false)
 	}
 }

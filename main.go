@@ -18,9 +18,9 @@ func main() {
 	example.StorageXML()
 	example.StorageJSON()
 
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var _, _, ninePatches = assets.LoadDefaultAtlasUI()
-	var hud = gui.NewFromXMLs(cam, gui.NewElementsXML(
+	var hud = gui.NewFromXMLs(view, gui.NewElementsXML(
 		gui.Container("themes", "", "", "", ""),
 		gui.Theme("label", f.Color, "0 0 0 0", f.Width, d.OwnerWidth+"-40", f.Height, "50", f.GapY, "20",
 			f.TextAlignmentX, "0", f.TextAlignmentY, "0.5", f.TextColor, "0 0 0 255",
@@ -56,7 +56,7 @@ func main() {
 		gui.Button("batches", f.Text, " Batches (graphics-batches.go)", f.NewRow, ""),
 		gui.Button("tile maps", f.Text, " Tile Maps (graphics-tile-maps.go)", f.NewRow, ""),
 		gui.Button("guis", f.Text, " Graphical User Interfaces (GUIs) (guis.go)", f.NewRow, ""),
-		gui.Button("multiple cameras", f.Text, " Multiple Cameras (graphics-cameras.go)", f.NewRow, ""),
+		gui.Button("multiple views", f.Text, " Multiple Views (graphics-views.go)", f.NewRow, ""),
 		//=================================================================
 		gui.Visual("input", f.ThemeId, "label", f.Text, "Input:", f.NewRow, ""),
 		gui.Button("mouse input", f.Text, " Mouse (input-mouse.go)", f.NewRow, ""),
@@ -98,7 +98,7 @@ func main() {
 		"guis":             example.GUIs,
 		"effects":          example.Effects,
 		"batches":          example.Batches,
-		"multiple cameras": example.MultipleCameras,
+		"multiple views":   example.MultipleViews,
 		"tile maps":        example.TileMaps,
 		//=================================================================
 		"mouse input":    example.Mouse,
@@ -130,7 +130,7 @@ func main() {
 		window.FrameRateLimit = 0
 
 		hud.UpdateAndDraw()
-		cam.DrawTextDebug(true, true, false, true)
+		view.DrawTextDebug(true, true, false, true)
 
 		for k, v := range buttons {
 			if hud.IsButtonJustClicked(k) {

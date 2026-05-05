@@ -7,7 +7,7 @@ import (
 )
 
 func Effects() {
-	var cam = graphics.NewCamera(4)
+	var view = graphics.NewView(4)
 	var tex = assets.LoadTexture("examples/data/logo.PNG")
 	var spr = graphics.NewSprite(tex, 0, 0)
 	assets.SetTextureSmoothness(tex, true)
@@ -25,9 +25,9 @@ func Effects() {
 	spr2.ScaleX, spr2.ScaleY = 0.2, 0.2
 
 	for window.KeepOpen() {
-		cam.MouseDragAndZoomSmoothly()
+		view.MouseDragAndZoomSmoothly()
 
-		cam.DrawSprites(spr2, spr)
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawSprites(spr2, spr)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

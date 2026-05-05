@@ -10,7 +10,7 @@ import (
 )
 
 func Pathfinding() {
-	var cam = graphics.NewCamera(2)
+	var view = graphics.NewView(2)
 	var grid = geometry.NewShapeGrid(32, 32)
 
 	for i := -8; i < 8; i++ {
@@ -28,19 +28,19 @@ func Pathfinding() {
 	var path = []float32{}
 
 	for window.KeepOpen() {
-		cam.MouseDragAndZoomSmoothly()
-		cam.DrawGrid(1, 32, 32, palette.DarkGray)
+		view.MouseDragAndZoomSmoothly()
+		view.DrawGrid(1, 32, 32, palette.DarkGray)
 
 		var allShapes = grid.All()
 		for _, v := range allShapes {
-			cam.DrawLinesPath(1, palette.Gray, v.CornerPoints()...)
+			view.DrawLinesPath(1, palette.Gray, v.CornerPoints()...)
 		}
 
-		var mx, my = cam.MousePosition()
+		var mx, my = view.MousePosition()
 		path = grid.FindPathDiagonally(16, 16, mx, my, false)
 		path = curve.SmoothPath(path...)
-		cam.DrawLinesPath(1, palette.Green, path...)
-		cam.DrawPoints(2, palette.White, path...)
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawLinesPath(1, palette.Green, path...)
+		view.DrawPoints(2, palette.White, path...)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

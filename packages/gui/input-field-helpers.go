@@ -32,7 +32,7 @@ func cursorX(margin float32, w *widget) float32 {
 	}
 	return w.X + margin
 }
-func closestIndexToMouse(cam *graphics.Camera) int {
+func closestIndexToMouse(cam *graphics.View) int {
 	var mx, _ = cam.MousePosition()
 	mx += scrollX
 

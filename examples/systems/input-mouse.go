@@ -10,12 +10,12 @@ import (
 )
 
 func Mouse() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var quad = graphics.NewQuad(0, 0)
 	quad.Width, quad.Height = 300, 300
 
 	for window.KeepOpen() {
-		var mx, my = cam.MousePosition()
+		var mx, my = view.MousePosition()
 		if quad.ContainsPoint(mx, my) && mouse.IsButtonPressed(b.Left) {
 			quad.Angle -= time.FrameDelta() * 60
 		}
@@ -34,6 +34,6 @@ func Mouse() {
 			mouse.SetCursor(cursor.Arrow)
 		}
 
-		cam.DrawQuads(quad)
+		view.DrawQuads(quad)
 	}
 }

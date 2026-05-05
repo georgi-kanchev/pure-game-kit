@@ -9,22 +9,22 @@ import (
 )
 
 func Lines() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var lineA = geometry.NewLine(0, 0, 400, 400)
 	var lineB = geometry.NewLine(-400, 400, 0, 0)
 
 	for window.KeepOpen() {
-		lineB.Bx, lineB.By = cam.MousePosition()
+		lineB.Bx, lineB.By = view.MousePosition()
 
 		var lineColor = condition.If(lineA.IsCrossingLine(lineB), palette.Red, palette.Green)
 		var ax, ay = lineA.CrossPointWithLine(lineB)
 		var bx, by = lineA.ClosestToPoint(lineB.Bx, lineB.By)
 		var pointColor = condition.If(lineB.IsLeftOfPoint(lineA.Bx, lineA.By), palette.Blue, palette.Yellow)
 
-		cam.DrawLine(lineA.Ax, lineA.Ay, lineA.Bx, lineA.By, 5, palette.White)
-		cam.DrawLine(lineB.Ax, lineB.Ay, lineB.Bx, lineB.By, 5, lineColor)
-		cam.DrawCircle(ax, ay, 15, 8, palette.Cyan)
-		cam.DrawCircle(bx, by, 10, 8, palette.Magenta)
-		cam.DrawCircle(lineA.Bx, lineA.By, 5, 8, pointColor)
+		view.DrawLine(lineA.Ax, lineA.Ay, lineA.Bx, lineA.By, 5, palette.White)
+		view.DrawLine(lineB.Ax, lineB.Ay, lineB.Bx, lineB.By, 5, lineColor)
+		view.DrawCircle(ax, ay, 15, 8, palette.Cyan)
+		view.DrawCircle(bx, by, 10, 8, palette.Magenta)
+		view.DrawCircle(lineA.Bx, lineA.By, 5, 8, pointColor)
 	}
 }

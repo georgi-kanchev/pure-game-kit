@@ -11,12 +11,12 @@ import (
 )
 
 func Batches() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var count = 20_000
 	var points = make([]float32, 0, count*4*2)
 
 	condition.CallAfter(0, func() {
-		var w, h = cam.Size()
+		var w, h = view.Size()
 
 		for range count {
 			var cx, cy = random.Range(-w/2, w/2), random.Range(-h/2, h/2)
@@ -36,7 +36,7 @@ func Batches() {
 	})
 
 	for window.KeepOpen() {
-		cam.DrawShapes(palette.Red, points...)
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawShapes(palette.Red, points...)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

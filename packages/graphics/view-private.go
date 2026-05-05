@@ -154,7 +154,7 @@ func isConvex(pts []float32, count int) bool {
 }
 
 //=================================================================
-// camera
+// view
 
 var rlCam = rl.Camera2D{}
 var drawText = NewTextBox("", 0, 0)
@@ -164,69 +164,69 @@ var debugStr string
 
 const placeholderCharAsset = '@'
 
-func (c *Camera) area() (x, y, w, h float32) {
-	if c.Area == (Area{}) {
+func (v *View) area() (x, y, w, h float32) {
+	if v.Area == (Area{}) {
 		var ww, wh = window.Size()
 		return 0, 0, float32(ww), float32(wh)
 	}
-	return c.Area.X, c.Area.Y, c.Area.Width, c.Area.Height
+	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
-func (c *Camera) mask() (x, y, w, h float32) {
-	if c.Mask == (Area{}) {
+func (v *View) mask() (x, y, w, h float32) {
+	if v.Mask == (Area{}) {
 		var ww, wh = window.Size()
 		return 0, 0, float32(ww), float32(wh)
 	}
-	return c.Mask.X, c.Mask.Y, c.Mask.Width, c.Mask.Height
+	return v.Mask.X, v.Mask.Y, v.Mask.Width, v.Mask.Height
 }
 
-// call before draw to update camera but use screen space instead of camera space
-func (c *Camera) update() {
+// call before draw to update view but use screen space instead of view space
+func (v *View) update() {
 	tryRecreateWindow()
 
-	var sx, sy, sw, sh = c.area()
-	rlCam.Target.X = float32(c.X)
-	rlCam.Target.Y = float32(c.Y)
-	rlCam.Rotation = float32(c.Angle)
-	rlCam.Zoom = float32(c.Zoom)
+	var sx, sy, sw, sh = v.area()
+	rlCam.Target.X = float32(v.X)
+	rlCam.Target.Y = float32(v.Y)
+	rlCam.Rotation = float32(v.Angle)
+	rlCam.Zoom = float32(v.Zoom)
 	rlCam.Offset.X = sx + sw/2
 	rlCam.Offset.Y = sy + sh/2
 }
 
-// call before draw to update camera and use camera space
-func (c *Camera) begin() {
-	c.update()
+// call before draw to update view and use view space
+func (v *View) begin() {
+	v.update()
 	if batch.skipStartEnd {
 		return
 	}
 
 	rl.BeginMode2D(rlCam)
-	batch.mask = c.Mask
+	batch.mask = v.Mask
 
-	if c.Area != (Area{}) {
-		var mx, my, mw, mh = c.area()
+	if v.Area != (Area{}) {
+		var mx, my, mw, mh = v.area()
 		rl.BeginScissorMode(int32(mx), int32(my), int32(mw), int32(mh))
 	}
 
 	rl.EnableDepthTest()
-	c.Effects.updateUniforms(1, 1, nil, nil, true)
+	v.Effects.updateUniforms(1, 1, nil, nil, true)
 
-	if c.Blend != 0 {
-		rl.BeginBlendMode(rl.BlendMode(c.Blend))
+	if v.Blend != 0 {
+		rl.BeginBlendMode(rl.BlendMode(v.Blend))
 	}
 }
 
 // call after draw to get back to using screen space
-func (c *Camera) end() {
+func (v *View) end() {
 	if batch.skipStartEnd {
 		return
 	}
 
-	if c.Blend != 0 {
+	if v.Blend != 0 {
 		rl.EndBlendMode()
 	}
 
 	rl.DisableDepthTest()
-	if c.Area != (Area{}) {
+	if v.Area != (Area{}) {
 		rl.EndScissorMode()
 	}
 	rl.EndMode2D()

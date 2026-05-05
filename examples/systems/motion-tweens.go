@@ -10,7 +10,7 @@ import (
 )
 
 func Tweens() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var angle = motion.NewTween(45).
 		GoTo(2, easing.BounceOut, 360).
 		GoTo(3, func(progress float32) float32 {
@@ -24,17 +24,17 @@ func Tweens() {
 		GoTo(2, easing.BackInOut, -200, 200)
 
 	for window.KeepOpen() {
-		cam.MouseDragAndZoomSmoothly()
+		view.MouseDragAndZoomSmoothly()
 
-		cam.DrawGrid(1, 100, 100, palette.Gray)
+		view.DrawGrid(1, 100, 100, palette.Gray)
 
 		var pos = position.CurrentValues()
-		cam.DrawQuad(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], palette.White)
+		view.DrawQuad(pos[0], pos[1], 100, 100, angle.CurrentValues()[0], palette.White)
 
 		if position.IsFinished() {
 			position.Restart()
 		}
 
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

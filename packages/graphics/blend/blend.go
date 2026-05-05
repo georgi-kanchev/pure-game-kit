@@ -1,4 +1,4 @@
-// Used by the graphics camera to define how to draw something above what's already drawn.
+// Used by the graphics view to define how to draw something above what's already drawn.
 // Useful for effects such as lighting or inverting colors etc.
 package blend
 

@@ -12,7 +12,7 @@ import (
 )
 
 func Collisions() {
-	var cam = graphics.NewCamera(1.5)
+	var view = graphics.NewView(1.5)
 	var shape = geometry.NewShapeSides(100, 4)
 	var shape2 = geometry.NewShapeSides(300, 3)
 	var shape3 = geometry.NewShapeSides(420, 5)
@@ -50,10 +50,10 @@ func Collisions() {
 		dirX, dirY = shape.Collide(dirX*step, dirY*step, shape2, shape3, shape4)
 		shape.X += dirX
 		shape.Y += dirY
-		cam.DrawLinesPath(8, palette.Red, shape2.CornerPoints()...)
-		cam.DrawLinesPath(8, palette.Red, shape3.CornerPoints()...)
-		cam.DrawLinesPath(8, palette.Red, shape4.CornerPoints()...)
-		cam.DrawLinesPath(8, palette.Green, shape.CornerPoints()...)
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawLinesPath(8, palette.Red, shape2.CornerPoints()...)
+		view.DrawLinesPath(8, palette.Red, shape3.CornerPoints()...)
+		view.DrawLinesPath(8, palette.Red, shape4.CornerPoints()...)
+		view.DrawLinesPath(8, palette.Green, shape.CornerPoints()...)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }

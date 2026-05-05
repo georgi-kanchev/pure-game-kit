@@ -259,7 +259,7 @@ func defaultValue(value, defaultValue string) string {
 	}
 	return value
 }
-func cacheDynCamProps(camera *graphics.Camera) {
+func cacheDynCamProps(camera *graphics.View) {
 	var tlx, tly = camera.PointFromEdge(0, 0)
 	var brx, bry = camera.PointFromEdge(1, 1)
 	var cx, cy = camera.PointFromEdge(0.5, 0.5)
@@ -330,7 +330,7 @@ func parseNum(value string, defaultValue float32) float32 {
 	}
 	return v
 }
-func isHovered(x, y, w, h float32, cam *graphics.Camera) bool {
+func isHovered(x, y, w, h float32, cam *graphics.View) bool {
 	var prevAng = cam.Angle
 	cam.Angle = 0
 	var mx, my = cam.MousePosition()

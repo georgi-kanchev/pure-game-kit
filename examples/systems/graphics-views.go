@@ -9,12 +9,12 @@ import (
 	"pure-game-kit/packages/window"
 )
 
-func MultipleCameras() {
-	var topLeft = graphics.NewCamera(1)
-	var topRight = graphics.NewCamera(3)
-	var botLeft = graphics.NewCamera(1.5)
-	var botRight = graphics.NewCamera(2)
-	var ui = graphics.NewCamera(1)
+func MultipleViews() {
+	var topLeft = graphics.NewView(1)
+	var topRight = graphics.NewView(3)
+	var botLeft = graphics.NewView(1.5)
+	var botRight = graphics.NewView(2)
+	var ui = graphics.NewView(1)
 
 	botLeft.Angle = 25
 
@@ -66,14 +66,14 @@ func MultipleCameras() {
 		var pulse = 60 + number.Sine(t*2)*20
 		center.Width, center.Height = pulse*2, pulse*2
 
-		// draw all cameras
-		for _, cam := range []*graphics.Camera{topLeft, topRight, botLeft, botRight} {
-			cam.DrawColor(palette.DarkGray)
-			cam.DrawGrid(1, 50, 50, palette.Gray)
-			cam.DrawQuads(quads...)
+		// draw all view
+		for _, view := range []*graphics.View{topLeft, topRight, botLeft, botRight} {
+			view.DrawColor(palette.DarkGray)
+			view.DrawGrid(1, 50, 50, palette.Gray)
+			view.DrawQuads(quads...)
 		}
 
-		// dividers and labels via full-screen ui camera (no Area = no scissor)
+		// dividers and labels via full-screen ui view (no Area = no scissor)
 		ui.DrawLine(-hw, 0, hw, 0, 2, palette.White)
 		ui.DrawLine(0, -hh, 0, hh, 2, palette.White)
 

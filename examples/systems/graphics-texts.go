@@ -10,7 +10,7 @@ import (
 )
 
 func Texts() {
-	var cam = graphics.NewCamera(1)
+	var view = graphics.NewView(1)
 	var _, tiles = assets.LoadDefaultAtlasIcons()
 	var textBox = graphics.NewTextBox("", 0, 0, "")
 	textBox.PivotX, textBox.PivotY = 0.5, 0.5
@@ -49,10 +49,10 @@ func Texts() {
 
 	for window.KeepOpen() {
 		textBox.Tint = palette.DarkGray
-		cam.DrawQuads(&textBox.Quad)
+		view.DrawQuads(&textBox.Quad)
 		textBox.Tint = palette.White
 
-		cam.DrawTextBoxes(textBox)
-		cam.DrawTextDebug(true, true, true, true)
+		view.DrawTextBoxes(textBox)
+		view.DrawTextDebug(true, true, true, true)
 	}
 }
