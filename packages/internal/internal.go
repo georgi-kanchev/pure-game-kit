@@ -12,12 +12,14 @@ import (
 
 var tagRegexp = regexp.MustCompile(`{.*?}`)
 var tagBuffer strings.Builder
+var result strings.Builder
+var current strings.Builder
 
 const Placeholder = '╌'
 
 func ReplaceStrings(text string, open, close, placeholder rune) (replaced string, originals []string) {
-	var result strings.Builder
-	var current strings.Builder
+	result.Reset()
+	current.Reset()
 	var inside = false
 
 	for i, char := range text {

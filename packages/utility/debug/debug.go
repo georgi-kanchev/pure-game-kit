@@ -104,8 +104,8 @@ func LinesOfCode() string {
 	}
 	sort.Strings(allPaths)
 
-	var out strings.Builder
-	fmt.Fprintf(&out, "%s\n", "Lines of code in:")
+	builder.Reset()
+	fmt.Fprintf(&builder, "%s\n", "Lines of code in:")
 
 	var printTree func(path, prefix string, isLast bool)
 	printTree = func(path, prefix string, isLast bool) {
@@ -123,9 +123,9 @@ func LinesOfCode() string {
 		}
 
 		if name == "." {
-			fmt.Fprintf(&out, "[%s] %s\n", displayCount, directory)
+			fmt.Fprintf(&builder, "[%s] %s\n", displayCount, directory)
 		} else {
-			fmt.Fprintf(&out, "%6s %s%s%s\n", displayCount, prefix, connector, name)
+			fmt.Fprintf(&builder, "%6s %s%s%s\n", displayCount, prefix, connector, name)
 		}
 
 		var children []string
@@ -158,10 +158,10 @@ func LinesOfCode() string {
 		printTree(t, "", i == len(topLevel)-1)
 	}
 
-	return out.String()
+	return builder.String()
 }
 func Dependencies() string {
-	var out strings.Builder
+	builder.Reset()
 	var cmd = exec.Command("go", "list", "-f", "{{.ImportPath}} -> {{.Imports}}", "./...")
 	var cmdOut bytes.Buffer
 	cmd.Stdout = &cmdOut
@@ -188,17 +188,17 @@ func Dependencies() string {
 
 	for _, pkg := range pkgs {
 		var imports = deps[pkg]
-		fmt.Fprintf(&out, "%s\n", pkg)
+		fmt.Fprintf(&builder, "%s\n", pkg)
 		sort.Strings(imports)
 		for _, imp := range imports {
 			imp = strings.ReplaceAll(imp, "[", "")
 			imp = strings.ReplaceAll(imp, "]", "")
-			fmt.Fprintf(&out, "\t%s\n", imp)
+			fmt.Fprintf(&builder, "\t%s\n", imp)
 		}
-		fmt.Fprintln(&out)
+		fmt.Fprintln(&builder)
 	}
 
-	return out.String()
+	return builder.String()
 }
 func MemoryUsage() string {
 	var m runtime.MemStats
@@ -358,28 +358,29 @@ func ProfileCPU(seconds float32) {
 
 var logFile = ""
 var memBuf []byte
+var builder strings.Builder
 
 func callInfo(message string) string {
 	const maxDepth = 32
 	var pcs = make([]uintptr, maxDepth)
 	var n = runtime.Callers(3, pcs)
 	var frames = runtime.CallersFrames(pcs[:n])
-	var sb strings.Builder
-	sb.WriteString(message)
+	builder.Reset()
+	builder.WriteString(message)
 
 	for {
 		var frame, more = frames.Next()
 		var fileName = filepath.Base(frame.File)
 		var funcName = strings.Split(frame.Function, ".")[1]
 
-		sb.WriteString(fmt.Sprintf("\n\tat [%s] %s() { %d }", fileName, funcName, frame.Line))
+		builder.WriteString(fmt.Sprintf("\n\tat [%s] %s() { %d }", fileName, funcName, frame.Line))
 
 		if !more || fileName == "main.go" && funcName == "main" {
 			break
 		}
 	}
 
-	return sb.String()
+	return builder.String()
 }
 func appendFile(content string) {
 	if logFile == "" {

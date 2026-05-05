@@ -2,7 +2,6 @@ package text
 
 import (
 	"pure-game-kit/packages/utility/number"
-	"strings"
 	"unicode"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -104,8 +103,8 @@ func repeatPad(padStr string, totalRunes int) string {
 	if padStr == "" {
 		return ""
 	}
-	var builder strings.Builder
 	var padRunes = []rune(padStr)
+	builder.Reset()
 	for builder.Len() < totalRunes {
 		for _, r := range padRunes {
 			builder.WriteRune(r)
@@ -117,8 +116,8 @@ func repeatPad(padStr string, totalRunes int) string {
 	return truncateToRunes(builder.String(), totalRunes)
 }
 func truncateToRunes(s string, maxRunes int) string {
-	var builder strings.Builder
 	var count = 0
+	builder.Reset()
 	for _, r := range s {
 		if count >= maxRunes {
 			break

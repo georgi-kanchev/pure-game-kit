@@ -21,16 +21,16 @@ func Apply(text string, naming int, divider string) string {
 	}
 
 	if naming == casing.Random {
-		var result strings.Builder
+		builder.Reset()
 		var randBool = random.Range(0.0, 1.0) < 0.5
 		for _, r := range text {
 			if randBool {
-				result.WriteRune(unicode.ToLower(r))
+				builder.WriteRune(unicode.ToLower(r))
 			} else {
-				result.WriteRune(unicode.ToUpper(r))
+				builder.WriteRune(unicode.ToUpper(r))
 			}
 		}
-		return result.String()
+		return builder.String()
 	}
 
 	detectedNaming, detectedDivider := Detect(text)
@@ -77,7 +77,7 @@ func Apply(text string, naming int, divider string) string {
 		}
 
 		if flag.IsOn(naming, casing.Pingpong) {
-			var builder strings.Builder
+			builder.Reset()
 			var isUpper = true
 			for _, c := range word {
 				if isUpper {
@@ -91,7 +91,7 @@ func Apply(text string, naming int, divider string) string {
 		}
 
 		if flag.IsOn(naming, casing.Pongping) {
-			var builder strings.Builder
+			builder.Reset()
 			var isLower = true
 			for _, c := range word {
 				if isLower {
@@ -212,6 +212,8 @@ func Detect(text string) (naming int, separator string) {
 // =================================================================
 // private
 
+var builder strings.Builder
+
 func isAllLower(s string) bool {
 	for _, r := range s {
 		if !unicode.IsLower(r) {
@@ -282,13 +284,13 @@ func capitalize(word string) string {
 	return string(unicode.ToUpper(runes[0])) + txt.ToLowerCase(string(runes[1:]))
 }
 func addDivCamelPascal(text, div string) string {
-	var result strings.Builder
+	builder.Reset()
 	var runes = []rune(text)
 	for i := range runes {
 		if i > 0 && unicode.IsUpper(runes[i]) && (i == len(runes)-1 || unicode.IsLower(runes[i+1])) {
-			result.WriteString(div)
+			builder.WriteString(div)
 		}
-		result.WriteRune(runes[i])
+		builder.WriteRune(runes[i])
 	}
-	return result.String()
+	return builder.String()
 }

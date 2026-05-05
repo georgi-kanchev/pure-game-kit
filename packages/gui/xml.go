@@ -34,7 +34,7 @@ import (
 //	GUI // root end
 func NewFromXMLs(camera *graphics.View, xmlsData ...string) *GUI {
 	var gui = &GUI{root: &root{cam: camera}}
-	var mergedXML strings.Builder
+	builder.Reset()
 
 	for i, xmlData := range xmlsData {
 		xmlData = text.Trim(xmlData)
@@ -46,11 +46,11 @@ func NewFromXMLs(camera *graphics.View, xmlsData ...string) *GUI {
 		var startIndex = condition.If(i == 0, 0, 1)
 		var portion = lines[startIndex : len(lines)-1]
 		xmlData = collection.ToText(portion, "\n")
-		mergedXML.WriteString(xmlData + "\n")
+		builder.WriteString(xmlData + "\n")
 	}
-	mergedXML.WriteString("</GUI>")
+	builder.WriteString("</GUI>")
 
-	storage.FromXML(mergedXML.String(), &gui.root)
+	storage.FromXML(builder.String(), &gui.root)
 	gui.root.Containers = map[string]*container{}
 	gui.root.Widgets = map[string]*widget{}
 	gui.root.Themes = map[string]*theme{}
@@ -137,12 +137,12 @@ func NewFromXMLs(camera *graphics.View, xmlsData ...string) *GUI {
 //	)
 //	var menu = gui.NewFromXMLs(xml) // <-- result
 func NewElementsXML(elements ...string) string {
-	var result strings.Builder
-	result.WriteString("<GUI scale=\"1\" volume=\"1\">")
+	builder.Reset()
+	builder.WriteString("<GUI scale=\"1\" volume=\"1\">")
 
 	// container is missing on top, add root container
 	if len(elements) > 0 && !text.StartsWith(elements[0], "<Container") {
-		result.WriteString("\n\t<Container " + f.Id + "=\"root\" " +
+		builder.WriteString("\n\t<Container " + f.Id + "=\"root\" " +
 			f.X + "=\"" + dynamic.CameraLeftX + "\" " +
 			f.Y + "=\"" + dynamic.CameraTopY + "\" " +
 			f.Width + "=\"" + dynamic.CameraWidth + "\" " +
@@ -152,19 +152,23 @@ func NewElementsXML(elements ...string) string {
 	for i, v := range elements {
 		if text.StartsWith(v, "<Container") {
 			if i > 0 {
-				result.WriteString("\n\t</Container>")
+				builder.WriteString("\n\t</Container>")
 			}
 		} else {
 			v = "\t" + v
 		}
 
-		result.WriteString("\n\t" + v)
+		builder.WriteString("\n\t" + v)
 
 		if i == len(elements)-1 {
-			result.WriteString("\n\t</Container>")
+			builder.WriteString("\n\t</Container>")
 		}
 	}
 
-	result.WriteString("\n</GUI>")
-	return result.String()
+	builder.WriteString("\n</GUI>")
+	return builder.String()
 }
+
+// private ========================================================
+
+var builder strings.Builder

@@ -44,40 +44,40 @@ func ToSentenceCase(text string) string {
 
 // Converts the text to PiNgPoNg CaSe (UPPERCASE starts first)
 func ToPingPongCase(text string) string {
-	var sb strings.Builder
+	builder.Reset()
 	upper := true
 	for _, r := range text {
 		if unicode.IsLetter(r) {
 			if upper {
-				sb.WriteRune(unicode.ToUpper(r))
+				builder.WriteRune(unicode.ToUpper(r))
 			} else {
-				sb.WriteRune(unicode.ToLower(r))
+				builder.WriteRune(unicode.ToLower(r))
 			}
 			upper = !upper
 		} else {
-			sb.WriteRune(r)
+			builder.WriteRune(r)
 		}
 	}
-	return sb.String()
+	return builder.String()
 }
 
 // Converts the text to pOnGpInG cAsE (lowercase starts first)
 func ToPongPingCase(text string) string {
-	var sb strings.Builder
+	builder.Reset()
 	upper := false
 	for _, r := range text {
 		if unicode.IsLetter(r) {
 			if upper {
-				sb.WriteRune(unicode.ToUpper(r))
+				builder.WriteRune(unicode.ToUpper(r))
 			} else {
-				sb.WriteRune(unicode.ToLower(r))
+				builder.WriteRune(unicode.ToLower(r))
 			}
 			upper = !upper
 		} else {
-			sb.WriteRune(r)
+			builder.WriteRune(r)
 		}
 	}
-	return sb.String()
+	return builder.String()
 }
 
 // Converts the text to kebab-case
@@ -92,23 +92,23 @@ func ToSnakeCase(text string) string {
 
 // Converts the text to Title Case
 func ToTitleCase(text string) string {
-	var sb strings.Builder
-	sb.Grow(len(text)) // pre-allocate memory for performance
+	builder.Reset()
+	builder.Grow(len(text)) // pre-allocate memory for performance
 	isAtWordStart := true
 
 	for _, r := range text {
 		if isSeparator(r) {
-			sb.WriteRune(r)
+			builder.WriteRune(r)
 			isAtWordStart = true
 		} else {
 			if isAtWordStart {
-				sb.WriteRune(unicode.ToUpper(r))
+				builder.WriteRune(unicode.ToUpper(r))
 				isAtWordStart = false
 			} else {
-				sb.WriteRune(unicode.ToLower(r))
+				builder.WriteRune(unicode.ToLower(r))
 			}
 		}
 	}
 
-	return sb.String()
+	return builder.String()
 }

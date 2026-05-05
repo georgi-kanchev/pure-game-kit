@@ -349,20 +349,20 @@ func Flatten[T any](collection2D [][]T) []T {
 }
 
 func ToText[T any](collection []T, divider string) string {
-	var builder strings.Builder
+	builder.Reset()
 	for i, elem := range collection {
 		if i > 0 {
 			builder.WriteString(divider)
 		}
-		builder.WriteString(fmt.Sprint(elem))
+		fmt.Fprint(&builder, elem)
 	}
 	return builder.String()
 }
 func ToText2D[T any](collection2D [][]T, dividerRow, dividerColumn string) string {
-	var builder strings.Builder
+	builder.Reset()
 	for i, row := range collection2D {
 		for j, elem := range row {
-			builder.WriteString(fmt.Sprint(elem))
+			fmt.Fprint(&builder, elem)
 			if j < len(row)-1 {
 				builder.WriteString(dividerRow)
 			}
@@ -407,3 +407,7 @@ func MapValues[K comparable, V any](Map map[K]V) []V {
 func MapClear[K comparable, V any](Map map[K]V) {
 	clear(Map)
 }
+
+// private ========================================================
+
+var builder strings.Builder

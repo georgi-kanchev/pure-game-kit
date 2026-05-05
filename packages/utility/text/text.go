@@ -11,8 +11,10 @@ import (
 	"strconv"
 )
 
+var builder strings.Builder
+
 func New(elements ...any) string {
-	var builder strings.Builder
+	builder.Reset()
 	for _, e := range elements {
 		switch v := e.(type) {
 		case string:

@@ -20,7 +20,7 @@ var Title = "game"
 var Color uint = 0
 var IsVSynced = false     // Requires window recreation to take effect.
 var IsAntialiased = false // Requires window recreation to take effect.
-var FrameRateLimit byte = 60
+var TargetFPS byte = 60
 
 //=================================================================
 
@@ -68,15 +68,10 @@ func ApplyState(state int) {
 		return
 	}
 
-	if state == st.Minimized {
-		rl.MinimizeWindow()
-		return
-	}
-
 	if state == st.Fullscreen {
 		rl.RestoreWindow()
 
-		if currentState == st.FullscreenBorderless || currentState == st.FloatingBorderless {
+		if currentState == st.FullscreenBorderless {
 			rl.ToggleBorderlessWindowed()
 		}
 
@@ -88,31 +83,29 @@ func ApplyState(state int) {
 		return
 	}
 
-	// restore to windowed
 	if currentState == st.Fullscreen {
 		rl.ToggleFullscreen()
 	}
-	if currentState == st.FullscreenBorderless || currentState == st.FloatingBorderless {
+
+	if currentState == st.FullscreenBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
 	rl.RestoreWindow()
 
-	// after resotre
-	if state == st.FullscreenBorderless || state == st.FloatingBorderless {
+	if state == st.FullscreenBorderless {
 		rl.ToggleBorderlessWindowed()
 	}
+
 	if state == st.FullscreenBorderless || state == st.Maximized {
 		rl.MaximizeWindow()
 	}
 
-	// center window, kinda
-	if state == st.Floating || state == st.FloatingBorderless {
+	if state == st.Floating {
 		var m = rl.GetCurrentMonitor()
 		var pos = rl.GetMonitorPosition(m)
 		var ww, wh = Size()
 		rl.SetWindowPosition(int(pos.X)+ww/4, int(pos.Y)+wh/4)
 	}
-
 }
 func MoveToMonitor(monitor int) {
 	tryCreate()
@@ -183,19 +176,12 @@ func CurrentState() int {
 	var fs = rl.IsWindowFullscreen()
 	var bor = rl.IsWindowState(rl.FlagBorderlessWindowedMode)
 	var max = rl.IsWindowMaximized()
-	var min = rl.IsWindowMinimized()
 
-	if min {
-		return st.Minimized
-	}
 	if fs && !bor && !max {
 		return st.Fullscreen
 	}
 	if !fs && bor && max {
 		return st.FullscreenBorderless
-	}
-	if !fs && bor && !max {
-		return st.FloatingBorderless
 	}
 	if !fs && !bor && max {
 		return st.Maximized
@@ -252,9 +238,9 @@ func tryUpdateProperties() {
 		rl.SetWindowTitle(Title)
 	}
 
-	if FrameRateLimit == 0 {
+	if TargetFPS == 0 {
 		rl.SetTargetFPS(99999999)
-	} else if FrameRateLimit != currTargetFPS {
-		rl.SetTargetFPS(int32(FrameRateLimit))
+	} else if TargetFPS != currTargetFPS {
+		rl.SetTargetFPS(int32(TargetFPS))
 	}
 }
