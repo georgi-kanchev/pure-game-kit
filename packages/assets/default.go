@@ -3,7 +3,6 @@ package assets
 import (
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/storage"
-	"pure-game-kit/packages/utility/text"
 
 	_ "embed"
 
@@ -85,93 +84,6 @@ func LoadDefaultAtlasUI() (atlasId string, tileIds []string, boxIds []string) {
 	}
 
 	return id, tiles, boxIds
-}
-func LoadDefaultAtlasRetro() (atlasId string, tileIds []string) {
-	var tex = loadTexture(defaultRetroAtlas, retro)
-	var id = SetTextureAtlas(tex, 8, 8, 1)
-	var ids = []string{
-		"empty", "shade1", "shade2", "shade3", "shade4", "shade5", "shade6", "shade7", "shade8", "shade9", "full",
-		"tile1", "tile2", "tile3", "tile4", "tile5", "tile6", "tile7", "tile8", "tile9",
-		"tile10", "tile11", "tile12", "tile13", "tile14", "tile15", "tile16", "tile17", "tile18", "tile19",
-		"tile20", "tile21", "tile22", "tile23", "tile24", "tile25", "tile26", "tile27", "tile28", "tile29",
-		"tile30", "tile31", "tile32", "tile33", "tile34", "tile35", "tile36", "tile37", "tile38", "tile39",
-		"tile40", "tile41", "tile42", "tile43", "tile44", "tile45", "tile46", "tile47", "tile48", "tile49",
-		"tile50", "tile51", "tile52", "tile53", "tile54", "tile55", "tile56", "tile57", "tile58", "tile59",
-		"tile60", "tile61", "tile62", "tile63", "tile64", "tile65", "tile66", "tile67",
-		"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V",
-		"W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r",
-		"s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "1/8", "1/7",
-		"1/6", "1/5", "1/4", "1/3", "3/8", "2/5", "1/2", "3/5", "5/8", "2/3", "3/4", "4/5", "5/6", "7/8",
-		"sub0", "sub1", "sub2", "sub3", "sub4", "sub5", "sub6", "sub7", "sub8", "sub9", "sub10", "sub11", "sub12",
-		"sup0", "sup1", "sup2", "sup3", "sup4", "sup5", "sup6", "sup7", "sup8", "sup9", "sup10", "sup11", "sup12",
-		"-", "+", "multiply", "over", "divide", "%", "=", "!=", "approximately", "sqrt", "func", "integral", "sum",
-		"epsilon", "euler", "gold-ratio", "pi", "silver-ratio", "infinity", "<<", ">>", "<=", ">=", "shape-line",
-		"", "", "<", ">", "(", ")", "[", "]", "{", "}", "perpendicular", "parallel", "angle", "angle-right", "~",
-		"degree", "celsius", "fahrenheit", "*", "^", "#", "number", "$", "euro", "pound", "yen", "cent", "currency",
-		"!", "?", ".", ",", "...", ":", ";", "\"", "'", "`", "-", "_", "|", "/", "\\", "@", "&",
-		"registered", "copyright-audio", "copyright", "trademark", "", "", "", "", "",
-		"pipe1-straight", "pipe1-corner", "pipe1-t-shaped", "pipe1-cross",
-		"pipe2-straight", "pipe2-corner", "pipe2-t-shaped", "pipe2-cross",
-		"pipe3-straight", "pipe3-corner", "pipe3-t-shaped", "pipe3-cross",
-		"pipe4-straight", "pipe4-corner", "pipe4-t-shaped", "pipe4-cross",
-		"pipe5-straight", "pipe5-corner", "pipe5-t-shaped", "pipe5-cross",
-		"pipe6-straight", "pipe6-corner", "pipe6-t-shaped", "pipe6-cross", "", "",
-		"bar1-edge", "bar1-straight", "bar2-edge", "bar2-straight", "bar3-edge", "bar3-straight",
-		"bar4-edge", "bar4-straight", "bar5-edge", "bar5-straight", "bar6-edge", "bar6-straight",
-		"bar7-edge", "bar7-straight", "bar8-edge", "bar8-straight", "bar9-edge", "bar9-straight",
-		"bar10-edge", "bar10-straight", "bar11-edge", "bar11-straight", "bar12-edge", "bar12-straight",
-		"bar13-edge", "bar-spike-straight",
-		"box1-corner", "box1-edge", "box2-corner", "box2-edge", "box3-corner", "box3-edge", "box4-corner",
-		"box4-edge", "box5-corner", "box5-edge", "box6-corner", "box6-edge", "box7-corner", "box7-edge",
-		"box8-corner", "box8-edge",
-		"box9-corner", "box9-edge", "box10-corner", "box10-edge", "box11-corner", "box11-edge",
-		"box12-corner", "box12-edge", "box13-corner", "box13-edge",
-		"home", "settings", "save-load", "info", "wait", "file", "folder", "trash", "lock", "key", "pin", "mark",
-		"globe", "talk", "letter", "bell", "calendar", "signal-low", "signal-high", "person", "people", "trophy",
-		"star1", "star2", "eye", "eye-closed", "bright", "sun", "moon1", "moon2", "stars", "grid", "shut-down",
-		"book", "cloud-rain", "cloud", "flag1", "flag2", "pick", "camera-movie", "camera-portable", "microphone",
-		"door", "pen", "banner1", "banner2", "filter", "zoom", "stack1", "stack2", "loading1", "loading2", "picture",
-		"zap", "mouse", "keyboard", "controller", "check", "x", "cancel", "icon+", "", "back", "loop",
-		"reduce", "increase", "list", "grid", "align1", "align2", "align3", "align4", "align5", "align6", "mirror",
-		"flip", "bucket", "palette", "previous", "backtrack", "reverse", "play", "forward", "skip", "pause", "record",
-		"stop", "mute", "low", "high", "quarter", "seight", "beamed-eight", "beamed-sixteenth", "flat", "natural",
-		"sharp", "arrow1", "arrow2", "arrow3", "arrow4-diagonal", "arrow5", "arrow6", "arrow7-diagonal",
-		"mountain", "water", "wind", "tree", "pine", "flower", "fish", "animal",
-		"time1", "time2", "time3", "time4", "time5", "time6", "time7", "time8",
-		"barrier1", "barrier2", "arrow8", "arrow9", "arrow10", "arrow11-diagonal", "arrow12-diagonal",
-		"arrow13-diagonal", "arrow14", "arrow15-diagonal", "dice1", "dice2", "dice3", "dice4", "dice5", "dice6",
-		"spade1", "heart1", "club1", "diamond1", "spade2", "heart2", "club2", "diamond2",
-		"pawn1", "rook1", "knight1", "bishop1", "queen1", "king1",
-		"pawn2", "rook2", "knight2", "bishop2", "queen2", "king2",
-		"face-smiling", "face-laughing", "face-sad", "face-scared", "face-angry", "face-no-emotion", "face-bored",
-		"face-happy", "face-in-love", "face-relieved", "face-unhappy", "face-ego", "face-annoyed", "face-surprised",
-		"face-sleepy", "face-kissing", "face-aww", "face-wholesome", "face-crying", "face-tantrum", "face-interested",
-		"face-evil", "face-winking", "face-confident", "face-suspicious", "face-mustache",
-		"square1", "square2", "square3", "square4", "square5", "square6",
-		"circle1", "circle2", "circle3", "circle4", "circle5", "circle6",
-		"triangle1", "triangle2", "triangle3", "triangle4",
-		"pointer", "wait", "input", "hand", "resize1", "resize2", "resize3", "resize4", "move", "crosshair",
-	}
-
-	for i := range ids {
-		if ids[i] != "" {
-			ids[i] = defaultRetroAtlas + ids[i]
-		}
-	}
-	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
-
-	return id, tiles
-}
-func LoadDefaultAtlasPatterns() (atlasId string, tileIds []string) {
-	var tex = loadTexture(defaultPatterns, patterns)
-	var id = SetTextureAtlas(tex, 64, 64, 1)
-	var ids = []string{}
-
-	for i := range 84 {
-		ids = append(ids, defaultPatterns+text.New(i))
-	}
-	var tiles = SetTextureAtlasTiles(id, 0, 0, ids...)
-	return id, tiles
 }
 func LoadDefaultAtlasInput() (atlasId string, tileIds []string) {
 	var tex = loadTexture(defaultInputLeft+defaultInputRight, input)
@@ -259,12 +171,6 @@ func LoadDefaultSoundsUI() []string {
 
 //go:embed default/cursors.png
 var cursors []byte
-
-//go:embed default/retro.png
-var retro []byte
-
-//go:embed default/patterns.png
-var patterns []byte
 
 //go:embed default/icons.png
 var icons []byte

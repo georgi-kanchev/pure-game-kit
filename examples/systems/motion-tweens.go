@@ -3,9 +3,9 @@ package example
 import (
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/motion"
-	"pure-game-kit/packages/motion/curve"
-	"pure-game-kit/packages/motion/easing"
 	"pure-game-kit/packages/utility/color/palette"
+	"pure-game-kit/packages/utility/curve"
+	"pure-game-kit/packages/utility/easing"
 	"pure-game-kit/packages/window"
 )
 

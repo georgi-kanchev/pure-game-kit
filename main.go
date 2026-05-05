@@ -85,8 +85,6 @@ func main() {
 		gui.Button("default cursors asset", f.Text, " Default Cursors (assets-default.go)", f.NewRow, ""),
 		gui.Button("default input asset", f.Text, " Default Input (assets-default.go)", f.NewRow, ""),
 		gui.Button("default ui asset", f.Text, " Default User Interface (UI) (assets-default.go)", f.NewRow, ""),
-		gui.Button("default retro atlas asset", f.Text, " Default Retro Atlas (assets-default.go)", f.NewRow, ""),
-		gui.Button("default patterns asset", f.Text, " Default Patterns (assets-default.go)", f.NewRow, ""),
 	))
 	assets.LoadDefaultFont()
 	assets.LoadDefaultSoundsUI()
@@ -119,14 +117,12 @@ func main() {
 		//=================================================================
 		"state machines": example.StateMachines,
 		//=================================================================
-		"tiled":                     example.Tiled,
-		"default font asset":        example.DefaultAssetFont,
-		"default icons asset":       example.DefaultAssetIcons,
-		"default cursors asset":     example.DefaultAssetCursors,
-		"default input asset":       example.DefaultAssetInput,
-		"default ui asset":          example.DefaultAssetUI,
-		"default retro atlas asset": example.DefaultAssetRetro,
-		"default patterns asset":    example.DefaultAssetPatterns,
+		"tiled":                 example.Tiled,
+		"default font asset":    example.DefaultAssetFont,
+		"default icons asset":   example.DefaultAssetIcons,
+		"default cursors asset": example.DefaultAssetCursors,
+		"default input asset":   example.DefaultAssetInput,
+		"default ui asset":      example.DefaultAssetUI,
 	}
 
 	for window.KeepOpen() {

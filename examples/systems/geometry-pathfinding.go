@@ -3,8 +3,8 @@ package example
 import (
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/motion/curve"
 	"pure-game-kit/packages/utility/color/palette"
+	"pure-game-kit/packages/utility/curve"
 	"pure-game-kit/packages/utility/random"
 	"pure-game-kit/packages/window"
 )

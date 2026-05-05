@@ -9,9 +9,6 @@ import (
 	"pure-game-kit/packages/window"
 )
 
-func DefaultAssetRetro() {
-	runDefaultAssetDisplay(0.9, 8, 1, 26, 21, assets.LoadDefaultAtlasRetro)
-}
 func DefaultAssetIcons() {
 	runDefaultAssetDisplay(0.7, 50, 0, 22, 13, assets.LoadDefaultAtlasIcons)
 }
@@ -20,9 +17,6 @@ func DefaultAssetCursors() {
 }
 func DefaultAssetInput() {
 	runDefaultAssetDisplay(0.85, 50, 0, 17, 6, assets.LoadDefaultAtlasInput)
-}
-func DefaultAssetPatterns() {
-	runDefaultAssetDisplay(0.7, 64, 1, 12, 7, assets.LoadDefaultAtlasPatterns)
 }
 func DefaultAssetFont() {
 	runDefaultAssetDisplay(0.7, 1024, 0, 0, 0, func() (string, []string) { return "", []string{} })
