@@ -25,13 +25,13 @@ func tryMoveCursor(text string, margin float32) {
 	var length = txt.Length(text)
 
 	if keyboard.IsKeyJustPressed(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow) {
-		var max = number.Biggest(indexCursor-1, 0)
+		var max = number.Maximum(indexCursor-1, 0)
 		cursorTime = 0
 		indexCursor = condition.If(ctrl, wordIndex(text, true, indexCursor), max)
 		trySelect()
 	}
 	if keyboard.IsKeyJustPressed(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow) {
-		var min = number.Smallest(length, indexCursor+1)
+		var min = number.Minimum(length, indexCursor+1)
 		cursorTime = 0
 		indexCursor = condition.If(ctrl, wordIndex(text, false, indexCursor), min)
 		trySelect()

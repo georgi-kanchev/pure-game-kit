@@ -60,7 +60,7 @@ func Limit[T Number](number, a, b T) T {
 	if a > b {
 		a, b = b, a
 	}
-	return Biggest(a, Smallest(number, b))
+	return Maximum(a, Minimum(number, b))
 }
 func Map[T Number](number, fromA, fromB, toA, toB T) T {
 	// Convert inputs to float64 for high-precision math
@@ -103,7 +103,7 @@ func Wrap[T Number](number, a, b T) T {
 	}
 }
 
-func Biggest[T Number](number, target T, other ...T) T {
+func Maximum[T Number](number, target T, other ...T) T {
 	var max = number
 	if target > max {
 		max = target
@@ -115,7 +115,7 @@ func Biggest[T Number](number, target T, other ...T) T {
 	}
 	return max
 }
-func Smallest[T Number](number, target T, other ...T) T {
+func Minimum[T Number](number, target T, other ...T) T {
 	var min = number
 	if target < min {
 		min = target
@@ -222,7 +222,7 @@ func Distribute[T Number](amount int, a, b T) []T {
 	return result
 }
 
-func ValueMinimum[T Number]() T {
+func ValueSmallest[T Number]() T {
 	var v T
 	switch any(v).(type) {
 	case int:
@@ -253,7 +253,7 @@ func ValueMinimum[T Number]() T {
 		return 0
 	}
 }
-func ValueMaximum[T Number]() T {
+func ValueBiggest[T Number]() T {
 	var v T
 	switch any(v).(type) {
 	case int:

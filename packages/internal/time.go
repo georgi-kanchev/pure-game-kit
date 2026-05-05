@@ -49,7 +49,7 @@ func updateTimeData() {
 		prevClock = Clock - DeltaTime
 	}
 
-	DeltaTime = number.Smallest(rl.GetFrameTime(), deltaMax)
+	DeltaTime = number.Minimum(rl.GetFrameTime(), deltaMax)
 	Runtime += DeltaTime
 	FrameCount++
 	FPS = 1.0 / DeltaTime

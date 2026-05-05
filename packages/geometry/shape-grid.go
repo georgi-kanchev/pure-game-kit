@@ -193,7 +193,7 @@ func (s *ShapeGrid) Range(startX, startY int, maxDistance float32, diagonals boo
 }
 func RangeDistance(x, y, targetX, targetY int) float32 {
 	var dx, dy = number.Absolute(targetX - x), number.Absolute(targetY - y)
-	var diag = number.Smallest(dx, dy)
-	var straight = number.Biggest(dx, dy) - diag
+	var diag = number.Minimum(dx, dy)
+	var straight = number.Maximum(dx, dy) - diag
 	return float32(diag)*1.5 + float32(straight)
 }

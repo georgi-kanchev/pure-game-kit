@@ -85,7 +85,7 @@ func HasChance(percent float32, seeds ...float32) bool {
 	if percent <= 0 {
 		return false
 	}
-	return Range(float32(0), 100, seeds...) <= number.Smallest(100, percent)
+	return Range(float32(0), 100, seeds...) <= number.Minimum(100, percent)
 }
 
 func Shuffle[T any](items []T, seeds ...float32) []T {

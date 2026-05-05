@@ -65,8 +65,8 @@ func (q *Quad) Bounds() (x, y, width, height float32) {
 	var x2, y2 = q.PointFromEdge(1, 0)
 	var x3, y3 = q.PointFromEdge(1, 1)
 	var x4, y4 = q.PointFromEdge(0, 1)
-	var minX, minY = number.Smallest(x1, x2, x3, x4), number.Smallest(y1, y2, y3, y4)
-	var maxX, maxY = number.Biggest(x1, x2, x3, x4), number.Biggest(y1, y2, y3, y4)
+	var minX, minY = number.Minimum(x1, x2, x3, x4), number.Minimum(y1, y2, y3, y4)
+	var maxX, maxY = number.Maximum(x1, x2, x3, x4), number.Maximum(y1, y2, y3, y4)
 	return minX, minY, maxX - minX, maxY - minY
 }
 func (q *Quad) PointToLocal(x, y float32) (localX, localY float32) {

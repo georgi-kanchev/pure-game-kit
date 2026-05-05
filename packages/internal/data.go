@@ -162,8 +162,8 @@ func AssetSize(assetId string) (width, height int) {
 				continue
 			}
 			var curW, curH = AssetSize(id)
-			w = number.Biggest(curW, h)
-			h = number.Biggest(curH, h)
+			w = number.Maximum(curW, h)
+			h = number.Maximum(curH, h)
 		}
 		return w, h
 	}
@@ -224,7 +224,7 @@ func updateTimers() {
 	}
 	for k, v := range CallFor {
 		for _, f := range v {
-			f(number.Biggest(k-Runtime, 0))
+			f(number.Maximum(k-Runtime, 0))
 		}
 		if Runtime > k {
 			delete(CallFor, k)
