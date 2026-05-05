@@ -2,10 +2,10 @@ package example
 
 import (
 	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/point"
+	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
@@ -54,7 +54,7 @@ func MultipleCameras() {
 		botLeft.Area = graphics.NewArea(0, hh, hw, hh)
 		botRight.Area = graphics.NewArea(hw, hh, hw, hh)
 
-		var t = float32(internal.Runtime)
+		var t = float32(time.Running())
 		botRight.X = number.Cosine(t*0.7) * 120
 		botRight.Y = number.Sine(t*0.5) * 80
 

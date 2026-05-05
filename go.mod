@@ -7,10 +7,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
-require github.com/yuin/gopher-lua v1.1.1 // direct
+require github.com/yuin/gopher-lua v1.1.2 // direct
 
 require (
-	github.com/ebitengine/purego v0.9.0 // indirect
-	golang.org/x/exp v0.0.0-20251017212417-90e834f514db // direct
-	golang.org/x/sys v0.37.0 // indirect
+	github.com/ebitengine/purego v0.10.0 // indirect
+	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // direct
+	golang.org/x/sys v0.43.0 // indirect
 )

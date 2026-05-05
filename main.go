@@ -1,8 +1,8 @@
 package main
 
 import (
+	example "pure-game-kit/examples/systems"
 	"pure-game-kit/packages/assets"
-	example "pure-game-kit/packages/examples/systems"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
 	d "pure-game-kit/packages/gui/dynamic"

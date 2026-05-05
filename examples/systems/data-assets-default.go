@@ -3,7 +3,6 @@ package example
 import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/text"
@@ -68,12 +67,12 @@ func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load fun
 		var imx, imy = int(mx / fullSz), int(my / fullSz)
 		var index = number.Limit(number.Indexes2DToIndex1D(imy, imx, int(w), int(h)), 0, len(tileIds)-1)
 
-		if sprite.TextureId == "" { // default font display hacky wacky
-			var tex = internal.Fonts[""].Texture
-			var id = ";;;default-font-texture"
-			internal.Textures[id] = tex
-			sprite.TextureId = id
-		}
+		// if sprite.TextureId == "" { // default font display hacky wacky
+		// 	var tex = internal.Fonts[""].Texture
+		// 	var id = ";;;default-font-texture"
+		// 	internal.Textures[id] = tex
+		// 	sprite.TextureId = id
+		// }
 
 		camera.DrawSprites(sprite)
 
