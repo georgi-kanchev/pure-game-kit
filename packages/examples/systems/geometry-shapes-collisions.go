@@ -1,0 +1,59 @@
+package example
+
+import (
+	"pure-game-kit/packages/geometry"
+	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
+	"pure-game-kit/packages/utility/color/palette"
+	"pure-game-kit/packages/utility/direction"
+	"pure-game-kit/packages/utility/time"
+	"pure-game-kit/packages/window"
+)
+
+func Collisions() {
+	var cam = graphics.NewCamera(1.5)
+	var shape = geometry.NewShapeSides(100, 4)
+	var shape2 = geometry.NewShapeSides(300, 3)
+	var shape3 = geometry.NewShapeSides(420, 5)
+	var shape4 = geometry.NewShapeCorners(
+		10, 10,
+		150, -50,
+		180, 100,
+		120, 180,
+		40, 160,
+	)
+
+	shape2.Angle, shape3.Angle = 40, 33
+	shape3.X, shape4.X = 700, -700
+	shape4.ScaleX, shape4.ScaleY = 2.5, 2.5
+
+	for window.KeepOpen() {
+		var dirX, dirY float32 = 0, 0
+		var step = time.FrameDelta() * 600
+
+		if keyboard.IsKeyPressed(key.A) {
+			dirX -= 1
+		}
+		if keyboard.IsKeyPressed(key.D) {
+			dirX += 1
+		}
+		if keyboard.IsKeyPressed(key.W) {
+			dirY -= 1
+		}
+		if keyboard.IsKeyPressed(key.S) {
+			dirY += 1
+		}
+		shape4.Angle += time.FrameDelta() * 100
+
+		dirX, dirY = direction.Normalize(dirX, dirY)
+		dirX, dirY = shape.Collide(dirX*step, dirY*step, shape2, shape3, shape4)
+		shape.X += dirX
+		shape.Y += dirY
+		cam.DrawLinesPath(8, palette.Red, shape2.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Red, shape3.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Red, shape4.CornerPoints()...)
+		cam.DrawLinesPath(8, palette.Green, shape.CornerPoints()...)
+		cam.DrawTextDebug(true, true, true, true)
+	}
+}
