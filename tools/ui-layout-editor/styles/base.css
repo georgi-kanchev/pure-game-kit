@@ -1,0 +1,29 @@
+:root {
+    --bg-dark: #0f0f0f;
+    --bg-panel: #1a1a1a;
+    --bg-header: #222222;
+    --border-color: #333333;
+    --accent-color: #ff9d5c;
+    --text-main: #d1d1d1;
+
+	user-select: none;           /* Standard syntax */
+    -webkit-user-select: none;   /* Safari/Chrome */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* IE/Edge */
+}
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-main);
+}
+
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}

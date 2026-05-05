@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="darkreader-lock">
+    <title>𖣯 ui-layout-editor</title>
+
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/button.css">
+    <link rel="stylesheet" href="styles/view.css">
+    <link rel="stylesheet" href="styles/topbar.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="styles/boxes.css">
+    <link rel="stylesheet" href="styles/items.css">
+    <link rel="stylesheet" href="styles/inspector.css">
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button id="save">💾 Save</button>
+                <button id="load">📥 Load</button>
+            </div>
+
+            <div class="top-bar-center">
+                <div class="ratio-control">
+                    <div class="ratio-presets">
+                        <button class="preset-btn" data-ratio="1.3333">4:3</button>
+                        <button class="preset-btn" data-ratio="1.6">16:10</button>
+                        <button class="preset-btn active" data-ratio="1.7778">16:9</button>
+                        <button class="preset-btn" data-ratio="2.3333">21:9</button>
+                        <button class="preset-btn" data-ratio="3.5556">32:9</button>
+                        <button id="flipBtn">↺</button>
+                    </div>
+                    <input type="range" id="ratioSlider" min="-1" max="1" step="0.001" value="0.25">
+                    <span id="ratioVal">1.78</span>
+                </div>
+            </div>
+
+            <div class="top-bar-right">
+                <button id="resetViewBtn">Reset View</button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <aside class="sidebar" id="sidebar">
+                <div class="boxes-panel">
+                    <div class="box-actions">
+                        <button id="addBtn">➕ Add Box</button>
+                        <button id="dupBtn" style="display:none">⧉ Duplicate Box</button>
+                    </div>
+                    <div class="box-list" id="palette"></div>
+                    <div class="inspector" id="inspector" style="display:none">
+                        <div class="name-group">
+                            <div id="colorSwatches" class="color-swatches"></div>
+                            <div class="inspector-name-row">
+                                <div class="name-input-wrap">
+                                    <input type="text" id="inspectorName" placeholder="Name" disabled>
+                                    <button id="labelPosBtn" title="Toggle label position">▲</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dim-rows box-dim-rows">
+                            <div class="dim-row dim-header">
+                                <span id="inspectorId" class="inspector-id"></span>
+                                <span class="dim-col-label">Value
+                                    <span class="formula-help-wrap">
+                                        <button id="formulaHelpBtn" class="formula-help-btn">?</button>
+                                        <div id="formulaHelp" class="formula-help-panel">
+                                            Values support math expressions and variables.<br><br>
+                                            Operators: <b>. + - * / ( )</b><br>
+                                            Example: <b>X = sux-mw/2</b> (centers on the X axis)
+                                            Variables:
+                                            <div class="formula-help-cols">
+                                                <table class="formula-help-table">
+                                                    <tr><td>m</td><td>My</td></tr>
+                                                    <tr><td>x</td><td>X</td></tr>
+                                                    <tr><td>lx</td><td>Left X</td></tr>
+                                                    <tr><td>ux</td><td>Up X</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>s</td><td>Screen</td></tr>
+                                                    <tr><td>y</td><td>Y</td></tr>
+                                                    <tr><td>ly</td><td>Left Y</td></tr>
+                                                    <tr><td>uy</td><td>Up Y</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>t</td><td>Target</td></tr>
+                                                    <tr><td>w</td><td>Width</td></tr>
+                                                    <tr><td>rx</td><td>Right X</td></tr>
+                                                    <tr><td>dx</td><td>Down X</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>v</td><td>Visible</td></tr>
+                                                    <tr><td>h</td><td>Height</td></tr>
+                                                    <tr><td>ry</td><td>Right Y</td></tr>
+                                                    <tr><td>dy</td><td>Down Y</td></tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </span>
+                                <span class="dim-col-label">Target</span>
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Visible</span>
+                                <button id="visibilityBtn">👁️</button>
+                                <select id="targetV" class="dim-target"></select>
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">X</span>
+                                <input id="inputX" class="dim-input" type="text">
+                                <select id="targetX" class="dim-target"></select>
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Y</span>
+                                <input id="inputY" class="dim-input" type="text">
+                                <select id="targetY" class="dim-target"></select>
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Width</span>
+                                <input id="inputW" class="dim-input" type="text">
+                                <select id="targetW" class="dim-target"></select>
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Height</span>
+                                <input id="inputH" class="dim-input" type="text">
+                                <select id="targetH" class="dim-target"></select>
+                            </div>
+                        </div>
+                        <div id="itemsSection" style="display:none">
+                            <div class="items-divider"></div>
+                            <div class="items-header">
+                                <span class="items-header-label">Shared Item Values
+                                    <span class="formula-help-wrap">
+                                        <button id="sharedHelpBtn" class="formula-help-btn">?</button>
+                                        <div id="sharedHelp" class="formula-help-panel">
+                                            Values shared across all items in this box.<br><br>
+                                            Operators: <b>. + - * / ( )</b><br>
+                                            Example: <br><b>
+                                            Gap = 5<br>
+                                            Margin = 5<br>
+                                            Width = (ow-osx-og*3)/3</b> (splits in 3 columns)<br>
+                                            Variables:
+                                            <div class="formula-help-cols">
+                                                <table class="formula-help-table">
+                                                    <tr><td>o</td><td>Owner</td></tr>
+                                                    <tr><td>m</td><td>My</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>w</td><td>Width</td></tr>
+                                                    <tr><td>h</td><td>Height</td></tr>
+                                                    <tr><td>v</td><td>Visible</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>x</td><td>X</td></tr>
+                                                    <tr><td>y</td><td>Y</td></tr>
+                                                    <tr><td>g</td><td>Gap</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>b</td><td>Break</td></tr>
+                                                    <tr><td>sx</td><td>Spacing X</td></tr>
+                                                    <tr><td>sy</td><td>Spacing Y</td></tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </span>
+                                <button id="addItemBtn">➕ Add Item</button>
+                            </div>
+                            <div class="item-config-rows">
+                                <div class="item-config-row">
+                                    <span class="item-config-label">Width</span>
+                                    <input id="itemWidth" class="dim-input" type="text">
+                                    <span class="item-config-label">Height</span>
+                                    <input id="itemHeight" class="dim-input" type="text">
+                                </div>
+                                <div class="item-config-row">
+                                    <span class="item-config-label">Spacing X</span>
+                                    <input id="itemSpacingX" class="dim-input" type="number" min="0" step="1">
+                                    <span class="item-config-label">Spacing Y</span>
+                                    <input id="itemSpacingY" class="dim-input" type="number" min="0" step="1">
+                                </div>
+                                <div class="item-config-row">
+                                    <span class="item-config-label">Align X</span>
+                                    <div id="itemAlignXGroup" class="align-btn-group">
+                                        <button data-val="0">◀</button>
+                                        <button data-val="0.5">┃</button>
+                                        <button data-val="1">▶</button>
+                                    </div>
+                                    <span class="item-config-label">Align Y</span>
+                                    <div id="itemAlignYGroup" class="align-btn-group">
+                                        <button data-val="0">▲</button>
+                                        <button data-val="0.5">━━</button>
+                                        <button data-val="1">▼</button>
+                                    </div>
+                                </div>
+                                <div class="item-config-row">
+                                    <span class="item-config-label">Gap</span>
+                                    <input id="itemGap" class="dim-input" type="number" min="0" step="1">
+                                </div>
+                                <div class="item-config-row">
+                                    <span class="item-config-label">Break</span>
+                                    <input id="itemBreak" class="dim-input" type="number" min="0" step="1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inspector" id="itemInspector" style="display:none">
+                        <div class="name-group">
+                            <div class="inspector-name-row">
+                                <div class="name-input-wrap">
+                                    <input type="text" id="itemInspName" placeholder="Name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dim-rows item-dim-rows">
+                            <div class="dim-row dim-header">
+                                <span id="itemInspId" class="inspector-id"></span>
+                                <span class="dim-col-label">Value
+                                    <span class="formula-help-wrap">
+                                        <button id="itemFormulaHelpBtn" class="formula-help-btn">?</button>
+                                        <div id="itemFormulaHelp" class="formula-help-panel">
+                                            Values support math expressions and variables.<br><br>
+                                            Operators: <b>. + - * / ( )</b><br>
+                                            Example: <br><b>
+                                            Gap = 5<br>
+                                            Margin = 5<br>
+                                            Width = (ow-osx-og*3)/3</b>  (splits in 3 columns)<br>
+                                            Variables:
+                                            <div class="formula-help-cols">
+                                                <table class="formula-help-table">
+                                                    <tr><td>o</td><td>Owner</td></tr>
+                                                    <tr><td>m</td><td>My</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>w</td><td>Width</td></tr>
+                                                    <tr><td>h</td><td>Height</td></tr>
+                                                    <tr><td>v</td><td>Visible</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>x</td><td>X</td></tr>
+                                                    <tr><td>y</td><td>Y</td></tr>
+                                                    <tr><td>g</td><td>Gap</td></tr>
+                                                </table>
+                                                <table class="formula-help-table">
+                                                    <tr><td>b</td><td>Break</td></tr>
+                                                    <tr><td>sx</td><td>Spacing X</td></tr>
+                                                    <tr><td>sy</td><td>Spacing Y</td></tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Visible</span>
+                                <button id="itemVisBtn">👁️</button>
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">X</span>
+                                <input id="itemInputX" class="dim-input" type="text">
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Y</span>
+                                <input id="itemInputY" class="dim-input" type="text">
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Width</span>
+                                <input id="itemInputW" class="dim-input" type="text">
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Height</span>
+                                <input id="itemInputH" class="dim-input" type="text">
+                            </div>
+                            <div class="dim-row">
+                                <span class="dim-label">Break</span>
+                                <div class="break-wrap">
+                                    <button id="itemBreakBtn" class="break-toggle">↵</button>
+                                    <input id="itemBreakInp" class="dim-input" type="text" placeholder="mb">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="resizer" id="dragbar"></div>
+
+            <main class="editor-view">
+                <canvas id="view"></canvas>
+            </main>
+        </div>
+    </div>
+
+    <script src="scripts/global.js"></script>
+	<script src="scripts/camera.js"></script>
+	<script src="scripts/formulas.js"></script>
+	<script src="scripts/draw.js"></script>
+	<script src="scripts/topbar.js"></script>
+	<script src="scripts/sidebar.js"></script>
+	<script src="scripts/io.js"></script>
+	<script src="scripts/boxes.js"></script>
+	<script src="scripts/inspector.js"></script>
+	<script src="scripts/items.js"></script>
+	<script src="scripts/item-inspector.js"></script>
+	<script src="scripts/interact.js"></script>
+
+</body>
+</html>

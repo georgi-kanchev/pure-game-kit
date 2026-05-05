@@ -1,0 +1,30 @@
+.main-layout {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+}
+
+.editor-view {
+    flex: 1; /* Takes up all remaining space */
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #050505;
+}
+
+canvas {
+    /* Prevents the browser from 'grabbing' the canvas as a file */
+    user-select: none;
+    -webkit-user-drag: none;
+    
+    /* Ensures the mouse acts as a pointer for the JS logic */
+    touch-action: none; 
+}
+
+#view {
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    background-color: #000;
+}

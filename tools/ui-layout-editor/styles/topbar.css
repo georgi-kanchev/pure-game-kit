@@ -1,0 +1,83 @@
+.top-bar {
+    background: #222;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* This pushes Left and Right to the edges */
+    padding: 0 15px;
+    
+    user-select: none;           /* Standard syntax */
+    -webkit-user-select: none;   /* Safari/Chrome */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* IE/Edge */
+    
+    cursor: default;
+}
+
+/* Ensure the center group stays truly centered regardless of side content width */
+.top-bar-left, .top-bar-right {
+    flex: 1; /* These take up equal space to "push" the center */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 40px
+}
+
+.top-bar-right {
+    justify-content: flex-end; /* Align tools to the far right */
+}
+
+.top-bar-center {
+    display: flex;
+    justify-content: center;
+}
+
+.ratio-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-main);
+}
+
+.ratio-presets {
+    display: flex;
+    gap: 3px;
+}
+
+.preset-btn {
+    padding: 2px 7px;
+    font-size: 11px;
+    height: 24px;
+}
+
+.preset-btn.active {
+    background-color: #3e3e3e;
+    border-color: #666;
+    color: #fff;
+}
+
+#flipBtn {
+    padding: 2px 7px;
+    font-size: 13px;
+    height: 24px;
+    margin-left: 4px;
+    border-left: 1px solid #444;
+    border-radius: 0 4px 4px 0;
+}
+
+#flipBtn.active {
+    background-color: #3e3e3e;
+    border-color: #666;
+    color: #fff;
+}
+
+.ratio-control input[type="range"] {
+    width: 420px;
+    cursor: pointer;
+}
+
+#ratioVal {
+    min-width: 30px;
+    text-align: right;
+    font-size: 12px;
+}

@@ -1,0 +1,39 @@
+STEAM USER LANGUAGE DISTRIBUTION (Active Users - Full Platform Support)
+======================================================================
+Rank | Language                | Usage Share
+--------------------------------------------
+1    | English                 | 39.09%
+2    | Simplified Chinese      | 22.75%
+3    | Russian                 | 9.21%
+4    | Spanish - Spain         | 4.81%
+5    | Portuguese - Brazil     | 4.42%
+6    | German                  | 2.96%
+7    | French                  | 2.46%
+8    | Japanese                | 2.24%
+9    | Polish                  | 1.82%
+10   | Korean                  | 1.69%
+11   | Turkish                 | 1.27%
+12   | Traditional Chinese     | 1.24%
+13   | Spanish - Latin America | 0.82%
+14   | Thai                    | 0.79%
+15   | Ukrainian               | 0.74%
+16   | Italian                 | 0.66%
+17   | Czech                   | 0.58%
+18   | Portuguese - Portugal   | 0.39%
+19   | Hungarian               | 0.38%
+20   | Swedish                 | 0.29%
+21   | Dutch                   | 0.27%
+22   | Danish                  | 0.24%
+23   | Vietnamese              | 0.18%
+24   | Finnish                 | 0.15%
+25   | Indonesian              | 0.14%
+26   | Norwegian               | 0.13%
+27   | Romanian                | 0.13%
+28   | Greek                   | 0.06%
+29   | Bulgarian               | 0.04%
+--------------------------------------------
+NOTE: Data reflects Steam Hardware & Software Survey averages for early 2026.
+Percentages for languages beyond Rank 30 are negligible (<0.01%) and
+are generally grouped under 'Other' or English users in Valve surveys.
+Simplified Chinese figures fluctuate significantly (up to 50%+) during
+regional holidays and major game launches (e.g., Lunar New Year).
