@@ -18,7 +18,7 @@
   <object id="6" x="308" y="92">
    <point/>
   </object>
-  <object id="7" x="160" y="232" width="36" height="76" rotation="35.0628">
+  <object id="7" x="160" y="232" width="36" height="86" rotation="35.0628">
    <capsule/>
   </object>
  </objectgroup>

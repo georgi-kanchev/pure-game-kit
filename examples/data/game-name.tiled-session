@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "map.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -76,8 +76,8 @@
             "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 290.5,
-                "y": 180.75
+                "x": 286,
+                "y": 187.75
             }
         },
         "map.tmx#atlas": {
@@ -128,12 +128,13 @@
     "map.tileWidth": 12,
     "map.width": 1,
     "openFiles": [
+        "map.tmx"
     ],
     "project": "game-name.tiled-project",
     "property.type": "list",
     "recentFiles": [
-        "/home/gojur/Desktop/atlas.tsx",
         "map.tmx",
+        "/home/gojur/Desktop/atlas.tsx",
         "/home/gojur/code/battle-brothers-clone/data/worlds/01/points.tmx",
         "atlas.tsx",
         "/home/gojur/code/battle-brothers-clone/data/battlegrounds/tiles.tsx",

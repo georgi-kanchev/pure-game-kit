@@ -167,35 +167,35 @@ vec4 compute_sdf_text(vec2 uv) {
     vec4 base = unpackRGB222(c.r);
     vec4 outlineColor = unpackRGB222(c.g);
     vec4 shadowColor = unpackRGB222(c.b);
-
+    
     uint thickIdx = (c.a >> 6) & 0x03u;
     uint outlIdx = (c.a >> 4) & 0x03u;
     uint shadIdx = (c.a >> 2) & 0x03u;
     uint smoothIdx = (c.a) & 0x03u;
-
+    
     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
-
+    
     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
     float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
-
+    
     float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
-
+    
     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
-
+    
     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
-
+    
     vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
     float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
-
+    
     return vec4(finalRGB, finalAlpha);
 }
 
@@ -221,10 +221,10 @@ void main() {
 
     if (color.a * fragColor.a < 0.004)
         discard;
-
+    
     color = compute_color_adjust(color);
     color = compute_silhouette(color);
-
+    
     finalColor = color * fragColor;
     gl_FragDepth = u[DEPTH_Z];
 }
