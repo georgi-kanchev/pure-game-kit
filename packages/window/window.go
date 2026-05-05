@@ -200,8 +200,7 @@ func IsJustResized() bool {
 	return rl.IsWindowResized()
 }
 
-// =================================================================
-// private
+// private ========================================================
 
 var w, h = 0, 0
 var terminate = false

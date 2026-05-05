@@ -63,7 +63,6 @@ func (p *player) jump(strengthMultiplier float32) {
 }
 
 //=================================================================
-// states
 
 func (p *player) ground() {
 	p.state = "ground"

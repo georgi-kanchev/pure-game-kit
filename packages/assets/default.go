@@ -166,8 +166,7 @@ func LoadDefaultSoundsUI() []string {
 	return soundIds
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 //go:embed default/cursors.png
 var cursors []byte

@@ -17,8 +17,7 @@ func (g *GUI) IsSliderJustSlid(id string) bool {
 	return sliderSlidId == id
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func slider(w *widget) {
 	var owner = w.root.Containers[w.OwnerId]

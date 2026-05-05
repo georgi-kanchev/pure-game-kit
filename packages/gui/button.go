@@ -24,8 +24,7 @@ func (g *GUI) IsButtonClickedAndHeld(buttonId string) bool {
 	return clickedAndHeldId == buttonId
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 var hotkeyPressedAt = map[string]float32{}
 var hotkeyHoldEvery = map[string]float32{}

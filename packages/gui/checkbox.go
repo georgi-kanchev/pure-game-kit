@@ -9,8 +9,7 @@ func Checkbox(id string, properties ...string) string {
 	return newWidget("checkbox", id, properties...)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func checkbox(widget *widget) {
 	var owner = widget.root.Containers[widget.OwnerId]

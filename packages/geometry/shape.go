@@ -273,6 +273,7 @@ func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVel
 }
 
 //=================================================================
+
 // all check methods are made with speed in mind, not so much readability
 // they should have the least iterations and allocations (once per API call for CornerPoints())
 // don't be a smartass by "simplifying" and reusing them internally in the future

@@ -37,8 +37,7 @@ func LoadTiledLayers(tmxFilePath string) (tileSetId string, tileLayerIds []strin
 	return tileSetId, tileLayerIds
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 type tiled struct {
 	Width   int      `xml:"width,attr"`

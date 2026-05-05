@@ -14,8 +14,7 @@ func Menu(id string, properties ...string) string {
 	return newWidget("menu", id, properties...)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func menu(w *widget) {
 	var owner = w.root.Containers[w.OwnerId]

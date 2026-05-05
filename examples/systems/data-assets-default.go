@@ -28,8 +28,7 @@ func DefaultAssetUI() {
 	})
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func runDefaultAssetDisplay(scale float32, tileSize, gap, w, h float32, load func() (string, []string)) {
 	var view = graphics.NewView(1)

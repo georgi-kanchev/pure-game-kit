@@ -7,8 +7,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-//=================================================================
-// primitives
+// primitives =================================================================
 
 func triangulate(points []float32) []float32 {
 	var n = len(points) / 2
@@ -153,8 +152,7 @@ func isConvex(pts []float32, count int) bool {
 	return true
 }
 
-//=================================================================
-// view
+// view =================================================================
 
 var rlCam = rl.Camera2D{}
 var drawText = NewTextBox("", 0, 0)

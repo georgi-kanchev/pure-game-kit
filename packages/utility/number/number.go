@@ -285,8 +285,7 @@ func ValueBiggest[T Number]() T {
 	}
 }
 
-//=================================================================
-// float only
+// float only =================================================================
 
 func Animate[T Float](value, target, rate T) T {
 	var result T
@@ -360,8 +359,7 @@ func NaN() float32 {
 	return float32(math.NaN())
 }
 
-//=================================================================
-// int only
+// int only =================================================================
 
 func Indexes2DToIndex1D[T Integer](x, y, width, height T) T {
 	var result = x*width + y

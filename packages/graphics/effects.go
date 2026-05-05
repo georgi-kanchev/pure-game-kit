@@ -21,8 +21,7 @@ func NewEffects() Effects {
 	return Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5}
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 var u = make([]float32, 32) // this is cached and passed to the shader packed to spare some cgo calls
 

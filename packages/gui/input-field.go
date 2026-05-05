@@ -32,8 +32,7 @@ func (g *GUI) InputFieldStopTyping() {
 	scrollX = 0
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 const cursorWidth float32 = 2
 

@@ -27,8 +27,7 @@ func FollowPaths(startX, startY, targetX, targetY float32, paths ...float32) []f
 	return result
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 type n struct { // node
 	X, Y      float32

@@ -14,8 +14,7 @@ func (s *ShapeGrid) FindPathDiagonally(startX, startY, targetX, targetY float32,
 	return s.findPath(startX, startY, targetX, targetY, minimizePoints, true)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 type priorityQueue []*node
 

@@ -48,8 +48,7 @@ func IsComboHeld(keys ...int) bool {
 	return combo(keys) && IsKeyHeld(keys[len(keys)-1])
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func combo(keys []int) bool {
 	if len(internal.Keys) != len(keys) {

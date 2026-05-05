@@ -10,8 +10,7 @@ func Visual(id string, fields ...string) string {
 	return newWidget("visual", id, fields...)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func setupVisualsTextured(w *widget) {
 	var owner = w.root.Containers[w.OwnerId]

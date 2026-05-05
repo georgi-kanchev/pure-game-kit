@@ -213,8 +213,7 @@ func ValueCubic(x, y, scale float32, seeds ...float32) float32 {
 	return result
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func floatToIntSeed(seed float32) int {
 	var intSeed int = 0

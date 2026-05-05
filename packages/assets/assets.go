@@ -44,8 +44,7 @@ func IsLoaded(assetId string) bool {
 	return internal.IsLoaded(assetId)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 const defaultFont = ""
 const defaultTexture = ""

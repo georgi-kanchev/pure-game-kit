@@ -156,8 +156,7 @@ func StraightenPath(path ...float32) []float32 {
 	return smoothed
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func catmullRom(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t float32) (float32, float32) {
 	var tx = 0.5 * ((2 * p1x) +

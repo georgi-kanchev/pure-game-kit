@@ -18,8 +18,7 @@ func FromName(name string) int {
 	return -1
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 var buttonNames = map[any]any{ // this monstrosity is the shortest & simplest way to map buttons to their names
 	"Left": Left, Left: "Left", "Right": Right, Right: "Right", "Middle": Middle, Middle: "Middle",

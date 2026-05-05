@@ -157,7 +157,6 @@ func ElasticInOut(progress float32) float32 {
 	return number.Power(2, -10*p2)*number.Sine((p2-0.1*5*pi))*0.5 + 1
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 const pi = 3.14159265358

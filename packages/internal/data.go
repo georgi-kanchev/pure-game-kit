@@ -208,8 +208,7 @@ func SinCos(degrees float32) (sin, cos float32) {
 	return sineTable[idx], sineTable[(idx+900)%3600]
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 var prevCursor int
 

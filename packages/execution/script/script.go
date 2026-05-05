@@ -102,8 +102,7 @@ func (s *Script) Close() {
 	s.state.Close()
 }
 
-// =================================================================
-// private
+// private ========================================================
 
 func valueToLuaType(L *lua.LState, val any) lua.LValue {
 	switch v := val.(type) {

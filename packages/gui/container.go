@@ -49,8 +49,7 @@ func Container(id, x, y, width, height string, properties ...string) string {
 	return rid + rx + ry + rw + rh + extraProps(properties...) + ">"
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 const scrollSize, scrollOutline, handleSpeed, dragFriction, dragMomentum = 10.0, 0.25, 12.0, 0.95, 30.0
 
@@ -78,6 +77,7 @@ func (c *container) update() {
 	c.alignWidgets(x, y, w, h, cGapX, cGapY)
 
 	//=================================================================
+
 	// this is done in two loops because the content size of the container needs to be known to anchor it
 
 	c.root.drawStart()

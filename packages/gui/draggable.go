@@ -34,8 +34,7 @@ func (g *GUI) DragCancel() {
 	}
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func draggable(w *widget) {
 	if w.root.wPressedOn == w {

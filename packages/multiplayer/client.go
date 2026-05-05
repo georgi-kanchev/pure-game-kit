@@ -105,8 +105,7 @@ func (c *Client) Leave() {
 	}
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func (c *Client) send(internally bool, toId, tag int, message string) {
 	if (!internally && tag < 0) || c.conn == nil {

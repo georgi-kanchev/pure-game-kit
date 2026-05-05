@@ -96,8 +96,7 @@ func OpenURL(url string) {
 	rl.OpenURL(url)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func repeatPad(padStr string, totalRunes int) string {
 	if padStr == "" {

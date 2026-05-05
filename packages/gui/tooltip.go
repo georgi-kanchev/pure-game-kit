@@ -14,8 +14,7 @@ func Tooltip(id string, properties ...string) string {
 	return newWidget("tooltip", id, properties...)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func tryShowTooltip(w *widget, c *container) {
 	if !w.hasTooltip && w != tooltipForWidget {

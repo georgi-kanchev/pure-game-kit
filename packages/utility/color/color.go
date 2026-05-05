@@ -89,8 +89,7 @@ func Opposite(color uint) uint {
 	return RGBA(255-r, 255-g, 255-b, a)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func colorFromRGBA(r, g, b, a byte) uint {
 	return uint(r)<<24 | uint(g)<<16 | uint(b)<<8 | uint(a)

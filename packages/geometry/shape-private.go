@@ -109,6 +109,7 @@ func (s *Shape) internalIsOverlappingShape(corners, targetCorners []float32, tar
 }
 
 //=================================================================
+
 // these methods are the fastest way to discard a slow check
 // they rely on having CornerPoints() called beforehand
 

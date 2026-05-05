@@ -37,8 +37,7 @@ func FromName(name string) int {
 	return nameToKey[name]
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 var nameToKey = map[string]int{
 	"Space": Space, "Apostrophe": Apostrophe, "Comma": Comma, "Minus": Minus, "Dot": Dot, "Slash": Slash,

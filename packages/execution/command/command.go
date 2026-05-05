@@ -53,8 +53,7 @@ func Execute(command string) (output string) {
 	return execution(parts)
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 const dividerParts = ","
 const dividerName = ':'

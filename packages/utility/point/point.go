@@ -74,8 +74,7 @@ func DirectionToPoint(x, y, targetX, targetY float32) (dirX, dirY float32) {
 	return dirX / length, dirY / length
 }
 
-//=================================================================
-// private
+// private ========================================================
 
 func dir(ang float32) (float32, float32) {
 	return direction.FromAngle(ang)
