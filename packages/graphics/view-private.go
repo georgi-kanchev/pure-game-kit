@@ -160,6 +160,8 @@ var drawTexture = NewSprite("", 0, 0)
 
 var debugStr string
 
+var skipStartAndEnd bool
+
 const placeholderCharAsset = '@'
 
 func (v *View) area() (x, y, w, h float32) {
@@ -193,12 +195,12 @@ func (v *View) update() {
 // call before draw to update view and use view space
 func (v *View) begin() {
 	v.update()
-	if batch.skipStartEnd {
+	if skipStartAndEnd {
 		return
 	}
 
 	rl.BeginMode2D(rlCam)
-	batch.mask = v.Mask
+	batcher.clipMask = v.Mask
 
 	if v.Area != (Area{}) {
 		var mx, my, mw, mh = v.area()
@@ -215,7 +217,7 @@ func (v *View) begin() {
 
 // call after draw to get back to using screen space
 func (v *View) end() {
-	if batch.skipStartEnd {
+	if skipStartAndEnd {
 		return
 	}
 

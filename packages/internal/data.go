@@ -41,7 +41,7 @@ var WindowReady = false
 
 //=================================================================
 
-var White rl.Texture2D
+var White1x1 rl.Texture2D
 var Textures = make(map[string]rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
@@ -327,7 +327,7 @@ func initData() {
 	MatrixDefault = rl.MatrixIdentity()
 
 	var img = rl.GenImageColor(1, 1, rl.White)
-	White = rl.LoadTextureFromImage(img)
+	White1x1 = rl.LoadTextureFromImage(img)
 	rl.UnloadImage(img)
 
 	for i := range 3600 {

@@ -17,9 +17,9 @@ func (v *View) DrawQuads(quads ...*Quad) {
 			continue
 		}
 
-		batch.mask = v.Mask
+		batcher.clipMask = v.Mask
 		if q.Mask != (Area{}) {
-			batch.mask = q.Mask
+			batcher.clipMask = q.Mask
 		}
 
 		var x, y = q.PointFromEdge(0, 0) // applying pivot
@@ -31,13 +31,13 @@ func (v *View) DrawQuads(quads ...*Quad) {
 			effects = v.Effects
 		}
 		if lastEffects != effects {
-			batch.Draw() // effects are different & break the batch
+			batcher.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
-		batch.QueueTex(internal.White, src, dst, ang, getColor(q.Tint))
+		batcher.QueueTexture(internal.White1x1, src, dst, ang, getColor(q.Tint))
 		lastEffects = effects
 	}
-	batch.Draw()
+	batcher.Draw()
 	v.end()
 }
 func (v *View) DrawSprites(sprites ...*Sprite) {
@@ -51,7 +51,7 @@ func (v *View) DrawSprites(sprites ...*Sprite) {
 
 		var texture, src, rotations, flip = internal.AssetData(s.TextureId)
 		if texture.Width == 0 {
-			texture = internal.White
+			texture = internal.White1x1
 		}
 
 		if s.TextureArea != (Area{}) {
@@ -65,9 +65,9 @@ func (v *View) DrawSprites(sprites ...*Sprite) {
 
 		ang += float32(rotations * 90)
 
-		batch.mask = v.Mask
+		batcher.clipMask = v.Mask
 		if s.Mask != (Area{}) {
-			batch.mask = s.Mask
+			batcher.clipMask = s.Mask
 		}
 
 		var effects = s.Effects
@@ -75,20 +75,20 @@ func (v *View) DrawSprites(sprites ...*Sprite) {
 			effects = v.Effects
 		}
 		if lastEffects != effects {
-			batch.Draw() // effects are different & break the batch
+			batcher.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
-		batch.QueueTex(texture, src, dst, ang, getColor(s.Tint))
+		batcher.QueueTexture(texture, src, dst, ang, getColor(s.Tint))
 		lastEffects = effects
 	}
-	batch.Draw()
+	batcher.Draw()
 	v.end()
 }
 func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
 	v.begin()
 	defer v.end()
 
-	batch.skipStartEnd = true
+	skipStartAndEnd = true
 	var lastEffects Effects
 	for _, n := range ninePatches {
 		if n == nil || !v.IsAreaVisible(n.Bounds()) {
@@ -142,9 +142,9 @@ func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
 			}
 		}
 
-		batch.mask = v.Mask
+		batcher.clipMask = v.Mask
 		if n.Mask != (Area{}) {
-			batch.mask = n.Mask
+			batcher.clipMask = n.Mask
 		}
 
 		var effects = n.Effects
@@ -172,7 +172,7 @@ func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
 		for _, p := range parts {
 			var texture, src, rotations, flip = internal.AssetData(p.id)
 			if texture.Width == 0 {
-				texture = internal.White
+				texture = internal.White1x1
 			}
 
 			var globalX, globalY = n.PointToGlobal(p.x, p.y)
@@ -183,16 +183,16 @@ func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
 			partAng += float32(rotations * 90)
 
 			if lastEffects != effects {
-				batch.Draw() // effects are different & break the batch
+				batcher.Draw() // effects are different & break the batch
 				effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 			}
-			batch.QueueTex(texture, src, dst, partAng, col)
+			batcher.QueueTexture(texture, src, dst, partAng, col)
 			lastEffects = effects
 		}
 	}
 
-	batch.Draw()
-	batch.skipStartEnd = false
+	batcher.Draw()
+	skipStartAndEnd = false
 }
 func (v *View) DrawTextBoxes(textBoxes ...*TextBox) {
 	v.begin()
@@ -201,9 +201,9 @@ func (v *View) DrawTextBoxes(textBoxes ...*TextBox) {
 			continue
 		}
 
-		batch.mask = v.Mask
+		batcher.clipMask = v.Mask
 		if t.Mask != (Area{}) {
-			batch.mask = t.Mask
+			batcher.clipMask = t.Mask
 		}
 
 		var _, symbols = t.formatSymbols()
@@ -223,10 +223,10 @@ func (v *View) DrawTextBoxes(textBoxes ...*TextBox) {
 			s.Bounds.Width *= t.ScaleX
 			s.Bounds.Height *= t.ScaleY
 			s.Angle = t.Angle
-			batch.QueueSymbol(font, s, t.LineHeight*t.ScaleY, gapX)
+			batcher.QueueSymbol(font, s, t.LineHeight*t.ScaleY, gapX)
 		}
 	}
-	batch.Draw()
+	batcher.Draw()
 	v.end()
 }
 func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
@@ -242,9 +242,9 @@ func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
 			continue
 		}
 
-		batch.mask = v.Mask
+		batcher.clipMask = v.Mask
 		if t.Mask != (Area{}) {
-			batch.mask = t.Mask
+			batcher.clipMask = t.Mask
 		}
 
 		if data.Texture == nil {
@@ -253,7 +253,7 @@ func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
 
 		var texture = internal.Textures[atlas.TextureId]
 		if texture.Width == 0 {
-			texture = internal.White
+			texture = internal.White1x1
 		}
 
 		var x, y = t.PointFromEdge(0, 0) // applying pivot
@@ -264,8 +264,8 @@ func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
 			effects = v.Effects
 		}
 		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
-		batch.QueueTex(texture, src, dst, t.Angle, getColor(t.Tint))
-		batch.Draw()
+		batcher.QueueTexture(texture, src, dst, t.Angle, getColor(t.Tint))
+		batcher.Draw()
 	}
 	v.end()
 }

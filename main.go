@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	example "pure-game-kit/examples/systems"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
@@ -9,7 +8,6 @@ import (
 	d "pure-game-kit/packages/gui/dynamic"
 	f "pure-game-kit/packages/gui/field"
 	"pure-game-kit/packages/input/mouse"
-	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/window"
 )
 
@@ -92,8 +90,6 @@ func main() {
 	assets.LoadDefaultSoundsUI()
 
 	hud.Scale = 2
-
-	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
 
 	var buttons = map[string]func(){
 		"minimal graphics": example.MinimalRender,
