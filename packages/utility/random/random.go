@@ -67,7 +67,7 @@ func CombineSeeds[T number.Number](seeds ...T) T {
 	case float64:
 		return T(float64(out))
 	}
-	panic("unsupported type")
+	return 0
 }
 
 func Range[T number.Number](a, b T, seeds ...float32) T {
@@ -79,7 +79,7 @@ func Range[T number.Number](a, b T, seeds ...float32) T {
 	case float32, float64:
 		return T(rangeFloat(float64(a), float64(b), seeds...))
 	}
-	panic("unsupported type")
+	return 0
 }
 func HasChance(percent float32, seeds ...float32) bool {
 	if percent <= 0 {
