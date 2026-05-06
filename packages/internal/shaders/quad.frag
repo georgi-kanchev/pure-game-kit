@@ -203,10 +203,6 @@ vec4 compute_sdf_text(vec2 uv) {
 }
 
 void main() {
-    finalColor.rgb = fragNormal;
-    finalColor.a = 1.0;
-    return;
-
     vec2 uv = fragTexCoord;
     if (u[CALCULATE_SDF_TEXT] > 0.5) {
         uv = compute_pixelated_uv(uv);

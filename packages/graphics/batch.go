@@ -222,7 +222,7 @@ func (b *batch) writeToBuffers(verts []vertex, vCount int32, tex rl.Texture2D, c
 	for i, v := range verts {
 		v_slice[i*3+0], v_slice[i*3+1], v_slice[i*3+2] = v.X, v.Y, 0
 		t_slice[i*2+0], t_slice[i*2+1] = v.U, v.V
-		n_slice[i*3+0], n_slice[i*3+1], n_slice[i*3+2] = 1, v.NY, v.NZ
+		n_slice[i*3+0], n_slice[i*3+1], n_slice[i*3+2] = v.NX, v.NY, v.NZ
 		c_slice[i*4+0], c_slice[i*4+1], c_slice[i*4+2], c_slice[i*4+3] = col.R, col.G, col.B, col.A
 		tan_slice[i*3+0], tan_slice[i*3+1], tan_slice[i*3+2] = v.TX, v.TY, v.TZ
 		t2_slice[i*2+0], t2_slice[i*2+1] = v.U2, v.V2
