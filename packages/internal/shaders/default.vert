@@ -18,5 +18,8 @@ out vec2 fragTexCoord2;
 void main() {
     fragTexCoord = vertTexCoord;
     fragColor = vertColor;
+    fragNormal = vertNormal;
+    fragTangent = vertTangent;
+    fragTexCoord2 = vertTexCoord2;
     gl_Position = mvp * vec4(vertPosition, 1.0);
 }
