@@ -16,10 +16,6 @@ var CallFor = make(map[float32][]func(remaining float32))
 var FrameStart time.Time
 
 func Update() {
-	if FrameCount == 0 {
-		initData()
-	}
-
 	updateTimeData()
 	updateTimers()
 	updateInput()

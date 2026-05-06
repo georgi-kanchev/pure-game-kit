@@ -2,6 +2,7 @@
 
 in vec2 fragTexCoord;
 in vec4 fragColor;
+in vec4 fragCustom;
 
 out vec4 finalColor;
 
@@ -224,7 +225,9 @@ void main() {
     
     color = compute_color_adjust(color);
     color = compute_silhouette(color);
-    
+
     finalColor = color * fragColor;
+    finalColor.r = fragCustom.r;
+
     gl_FragDepth = u[DEPTH_Z];
 }

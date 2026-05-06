@@ -54,7 +54,7 @@ func (e Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *TextB
 			rl.DrawRenderBatchActive()        // flush raylib's internal batch to mess texture slots
 			rl.ActiveTextureSlot(1)           // switch to slot 1
 			rl.EnableTexture(data.Texture.ID) // bind data texture there
-			rl.SetShaderValueTexture(internal.Shader, internal.ShaderTileMapLoc, *data.Texture)
+			rl.SetShaderValueTexture(internal.Shader, internal.ShaderTileDataLoc, *data.Texture)
 			dirty = true
 		}
 	}

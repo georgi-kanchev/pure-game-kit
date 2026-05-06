@@ -230,6 +230,8 @@ func tryCreate() {
 	tryUpdateProperties()
 	terminate = false
 	MoveToMonitor(0)
+
+	internal.InitData()
 }
 func tryUpdateProperties() {
 	if Title != currTitle {

@@ -52,7 +52,7 @@ var Fonts = make(map[string]rl.Font)
 var MatrixDefault rl.Matrix
 var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
-var ShaderTileMapLoc int32
+var ShaderCustomLoc, ShaderTileDataLoc int32
 
 var Sounds = make(map[string]rl.Sound)
 var Music = make(map[string]rl.Music)
@@ -208,9 +208,34 @@ func SinCos(degrees float32) (sin, cos float32) {
 	return sineTable[idx], sineTable[(idx+900)%3600]
 }
 
+func InitData() {
+	if isInit {
+		return
+	}
+	isInit = true
+
+	if Shader.ID == 0 {
+		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
+		ShaderTileDataLoc = rl.GetLocationUniform(Shader.ID, "tileData")
+		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
+		ShaderCustomLoc = rl.GetLocationUniform(Shader.ID, "vertCustom")
+	}
+	MatrixDefault = rl.MatrixIdentity()
+
+	var img = rl.GenImageColor(1, 1, rl.White)
+	White1x1 = rl.LoadTextureFromImage(img)
+	rl.UnloadImage(img)
+
+	for i := range 3600 {
+		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
+		sineTable[i] = float32(math.Sin(rad))
+	}
+}
+
 // private ========================================================
 
 var prevCursor int
+var isInit bool
 
 func updateTimers() {
 	for k, v := range CallAfter {
@@ -316,24 +341,6 @@ func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, millisec
 	seconds = int(float32(frameCount) / float32(stream.SampleRate))
 	milliseconds = int(math.Mod(float64(seconds), 1.0) * 1000)
 	return
-}
-
-func initData() {
-	if Shader.ID == 0 {
-		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
-		ShaderTileMapLoc = rl.GetLocationUniform(Shader.ID, "tileData")
-		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
-	}
-	MatrixDefault = rl.MatrixIdentity()
-
-	var img = rl.GenImageColor(1, 1, rl.White)
-	White1x1 = rl.LoadTextureFromImage(img)
-	rl.UnloadImage(img)
-
-	for i := range 3600 {
-		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
-		sineTable[i] = float32(math.Sin(rad))
-	}
 }
 
 func moveAtAngle(x, y, angle, step float32) (float32, float32) {

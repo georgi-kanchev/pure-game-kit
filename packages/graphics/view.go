@@ -25,7 +25,7 @@ func NewView(zoom float32) *View {
 	var view = &View{Zoom: zoom, Effects: NewEffects()}
 	if batcher == nil {
 		batcher = &batch{}
-		batcher.Init(16)
+		batcher.Init(128)
 	}
 	return view
 }
