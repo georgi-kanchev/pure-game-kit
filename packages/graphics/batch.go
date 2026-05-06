@@ -45,7 +45,7 @@ func (b *batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 				b.polygonBuf[i].V = uvs[i*2+1]
 			}
 		}
-		b.write(b.polygonBuf[:4], vCount, tex, col) // pass the buffer directly
+		b.writeToBuffers(b.polygonBuf[:4], vCount, tex, col) // pass the buffer directly
 	} else { // CLIPPED PATH logic...
 		var sinA, cosA = internal.SinCos(ang)
 		for i := range 4 {
@@ -56,7 +56,7 @@ func (b *batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 		}
 		vCount = clipPolygonAABB(b.polygonBuf[:4], b.clipResultBuf[:], b.clipTempBuf[:], b.clipMask)
 		if vCount >= 3 {
-			b.write(b.clipResultBuf[:vCount], vCount, tex, col)
+			b.writeToBuffers(b.clipResultBuf[:vCount], vCount, tex, col)
 		}
 	}
 }
@@ -119,20 +119,20 @@ func (b *batch) Init(quadCountCapacity int32) {
 		rl.UnloadMesh(b.mesh)
 	}
 
-	b.vertexCount = 0
+	b.vertCount = 0
 	b.indexCount = 0
 	b.maxQuads = quadCountCapacity
 
 	b.mesh = &rl.Mesh{VertexCount: 4 * quadCountCapacity, TriangleCount: 2 * quadCountCapacity}
 
-	b.vertexData = make([]byte, b.mesh.VertexCount*3*4)    // Vec3 (x,y,z) * float32
+	b.vertData = make([]byte, b.mesh.VertexCount*3*4)      // Vec3 (x,y,z) * float32
 	b.texCoordsData = make([]byte, b.mesh.VertexCount*2*4) // Vec2 (u,v) * float32
-	b.colorData = make([]byte, b.mesh.VertexCount*4)       // Color (r,g,b,a) * byte
+	b.colData = make([]byte, b.mesh.VertexCount*4)         // Color (r,g,b,a) * byte
 	b.indexData = make([]byte, b.mesh.TriangleCount*3*2)   // Triangle (i1,i2,i3) * uint16
 
-	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.vertexData[0]))
+	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.vertData[0]))
 	b.mesh.Texcoords = (*float32)(unsafe.Pointer(&b.texCoordsData[0]))
-	b.mesh.Colors = (*uint8)(unsafe.Pointer(&b.colorData[0]))
+	b.mesh.Colors = (*uint8)(unsafe.Pointer(&b.colData[0]))
 	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indexData[0]))
 
 	rl.UploadMesh(b.mesh, true)
@@ -140,65 +140,61 @@ func (b *batch) Init(quadCountCapacity int32) {
 	b.material.Shader = internal.Shader
 }
 func (b *batch) Draw() {
-	if b.vertexCount == 0 {
+	if b.vertCount == 0 {
 		return
 	}
 
-	rl.UpdateMeshBuffer(*b.mesh, 0, b.vertexData, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 0, b.vertData, 0)
 	rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoordsData, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 3, b.colorData, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 3, b.colData, 0)
 	rl.UpdateMeshBuffer(*b.mesh, 6, b.indexData, 0)
 
 	b.mesh.TriangleCount = b.indexCount / 3
 	rl.DrawMesh(*b.mesh, b.material, internal.MatrixDefault)
 
-	if b.vertexCount >= b.mesh.VertexCount {
+	if b.vertCount >= b.mesh.VertexCount {
 		b.Init(b.maxQuads * 2)
 	}
 
-	b.vertexCount = 0
+	b.vertCount = 0
 	b.indexCount = 0
 }
 
 // private =================================================================
 
+type vertex struct{ X, Y, U, V float32 }
 type batch struct {
 	mesh     *rl.Mesh
 	material rl.Material
 
 	clipMask Area
 
-	vertexCount, indexCount, maxQuads int32
+	vertCount, indexCount, maxQuads int32
 
-	vertexData    []byte // Vec3 (x,y,z) * float32
+	vertData      []byte // Vec3 (x,y,z) * float32
 	texCoordsData []byte // Vec2 (u,v) * float32
-	colorData     []byte // Color (r,g,b,a) * byte
+	colData       []byte // Color (r,g,b,a) * byte
 	indexData     []byte // Triangle (i1,i2,i3) * uint16
 
 	polygonBuf, clipResultBuf, clipTempBuf [12]vertex // reused working buffers; avoids per-call heap escapes
 }
-type vertex struct{ X, Y, U, V float32 }
 
 var batcher *batch
-var prevColor rl.Color
 
-func (b *batch) write(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
-	if b.vertexCount != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertexCount+vCount > b.mesh.VertexCount) {
+func (b *batch) writeToBuffers(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
+	if b.vertCount != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertCount+vCount > b.mesh.VertexCount) {
 		b.Draw()
 	}
 
-	if b.vertexCount == 0 {
+	if b.vertCount == 0 {
 		b.material.Maps.Texture = tex
 		b.material.Shader = internal.Shader
 	}
 
 	var vertCount = int32(len(verts))
-	var vertOffset = b.vertexCount * 12 // 3 floats (x,y,z) * 4 bytes
-	var vertSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertexData[vertOffset])), vertCount*3)
-	var texOffset = b.vertexCount * 8 // 2 floats (u,v) * 4 bytes
-	var texSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoordsData[texOffset])), vertCount*2)
-	var colOffset = b.vertexCount * 4 // 4 bytes (rgba)
-	var colSlice = b.colorData[colOffset : colOffset+(vertCount*4)]
+	var vertSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertData[b.vertCount*12])), vertCount*3)    // 3 floats (12 bytes)
+	var texSlice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoordsData[b.vertCount*8])), vertCount*2) // 2 floats (8 bytes)
+	var colSlice = b.colData[(b.vertCount * 4) : (b.vertCount*4)+(vertCount*4)]                           // 4 bytes (rgba)
 
 	for i, v := range verts {
 		vertSlice[i*3+0], vertSlice[i*3+1], vertSlice[i*3+2] = v.X, v.Y, 0
@@ -207,9 +203,8 @@ func (b *batch) write(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Col
 	}
 
 	var trisCount = vertCount - 2
-	var indOffset = b.indexCount * 2
-	var indSlice = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indexData[indOffset])), trisCount*3)
-	var base = uint16(b.vertexCount)
+	var indSlice = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indexData[b.indexCount*2])), trisCount*3)
+	var base = uint16(b.vertCount)
 
 	for i := range trisCount {
 		indSlice[i*3+0] = base
@@ -217,7 +212,7 @@ func (b *batch) write(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Col
 		indSlice[i*3+2] = base + uint16(i+2)
 	}
 
-	b.vertexCount += vertCount
+	b.vertCount += vertCount
 	b.indexCount += trisCount * 3
 }
 
