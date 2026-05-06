@@ -1,8 +1,10 @@
 #version 330
 
 in vec2 fragTexCoord;
+in vec3 fragNormal;
 in vec4 fragColor;
-in vec4 fragCustom;
+in vec3 fragTangent;
+in vec2 fragTexCoord2;
 
 out vec4 finalColor;
 
@@ -201,6 +203,10 @@ vec4 compute_sdf_text(vec2 uv) {
 }
 
 void main() {
+    finalColor.rgb = fragNormal;
+    finalColor.a = 1.0;
+    return;
+
     vec2 uv = fragTexCoord;
     if (u[CALCULATE_SDF_TEXT] > 0.5) {
         uv = compute_pixelated_uv(uv);
@@ -225,9 +231,7 @@ void main() {
     
     color = compute_color_adjust(color);
     color = compute_silhouette(color);
-
+    
     finalColor = color * fragColor;
-    finalColor.r = fragCustom.r;
-
     gl_FragDepth = u[DEPTH_Z];
 }

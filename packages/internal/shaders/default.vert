@@ -2,14 +2,18 @@
 
 layout(location = 0) in vec3 vertPosition;
 layout(location = 1) in vec2 vertTexCoord;
+layout(location = 2) in vec3 vertNormal;
 layout(location = 3) in vec4 vertColor;
-layout(location = 7) in vec4 vertCustom;
+layout(location = 4) in vec3 vertTangent;
+layout(location = 5) in vec2 vertTexCoord2;
 
 uniform mat4 mvp;
 
 out vec2 fragTexCoord;
 out vec4 fragColor;
-out vec4 fragCustom;
+out vec3 fragNormal;
+out vec3 fragTangent;
+out vec2 fragTexCoord2;
 
 void main() {
     fragTexCoord = vertTexCoord;

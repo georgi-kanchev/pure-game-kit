@@ -111,10 +111,13 @@ func (b *batch) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32) {
 }
 
 func (b *batch) Init(quadCountCapacity int32) {
-	if b.mesh != nil {
+	if b.mesh != nil { // nilling these is needed, causing problems on windows (on linux it's fine)
 		b.mesh.Vertices = nil
 		b.mesh.Texcoords = nil
+		b.mesh.Normals = nil
 		b.mesh.Colors = nil
+		b.mesh.Tangents = nil
+		b.mesh.Texcoords2 = nil
 		b.mesh.Indices = nil
 		rl.UnloadMesh(b.mesh)
 	}
@@ -125,19 +128,21 @@ func (b *batch) Init(quadCountCapacity int32) {
 
 	b.mesh = &rl.Mesh{VertexCount: 4 * quadCountCapacity, TriangleCount: 2 * quadCountCapacity}
 
-	b.vertData = make([]byte, b.mesh.VertexCount*3*4)      // Vec3 (x,y,z) * float32
-	b.texCoordsData = make([]byte, b.mesh.VertexCount*2*4) // Vec2 (u,v) * float32
-	b.colData = make([]byte, b.mesh.VertexCount*4)         // Color (r,g,b,a) * byte
-	b.indexData = make([]byte, b.mesh.TriangleCount*3*2)   // Triangle (i1,i2,i3) * uint16
-	b.customData = make([]byte, b.mesh.VertexCount*16)     // 4 floats * 4 bytes = 16 bytes per vertex
+	b.verts = make([]byte, b.mesh.VertexCount*3*4)     // vec3 (12 bytes)
+	b.texCoords = make([]byte, b.mesh.VertexCount*2*4) // vec2 (8 bytes)
+	b.normals = make([]byte, b.mesh.VertexCount*3*4)   // vec3 (12 bytes)
+	b.cols = make([]byte, b.mesh.VertexCount*4)        // rgba (4 bytes)
+	b.tangents = make([]byte, b.mesh.VertexCount*3*4)  // vec3 (12 bytes)
+	b.tex2s = make([]byte, b.mesh.VertexCount*2*4)     // vec2 (8 bytes)
+	b.indexes = make([]byte, b.mesh.TriangleCount*3*2) // uint16 (6 bytes per triangle)
 
-	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.vertData[0]))
-	b.mesh.Texcoords = (*float32)(unsafe.Pointer(&b.texCoordsData[0]))
-	b.mesh.Colors = (*uint8)(unsafe.Pointer(&b.colData[0]))
-	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indexData[0]))
-
-	var locations = unsafe.Slice(internal.Shader.Locs, rl.MaxShaderLocations)
-	locations[7] = 7 // buffer indexes: 0 verts, 1 texCoords, 3 colData, 6 indexData, 7 customData
+	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.verts[0]))
+	b.mesh.Texcoords = (*float32)(unsafe.Pointer(&b.texCoords[0]))
+	b.mesh.Normals = (*float32)(unsafe.Pointer(&b.normals[0]))
+	b.mesh.Colors = (*uint8)(unsafe.Pointer(&b.cols[0]))
+	b.mesh.Tangents = (*float32)(unsafe.Pointer(&b.tangents[0]))
+	b.mesh.Texcoords2 = (*float32)(unsafe.Pointer(&b.tex2s[0]))
+	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indexes[0]))
 
 	rl.UploadMesh(b.mesh, true)
 	b.material = rl.LoadMaterialDefault()
@@ -148,11 +153,13 @@ func (b *batch) Draw() {
 		return
 	}
 
-	rl.UpdateMeshBuffer(*b.mesh, 0, b.vertData, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoordsData, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 3, b.colData, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 6, b.indexData, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 7, b.customData, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 0, b.verts, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 2, b.normals, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 3, b.cols, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s, 0)
+	rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes, 0)
 
 	b.mesh.TriangleCount = b.indexCount / 3
 	rl.DrawMesh(*b.mesh, b.material, internal.MatrixDefault)
@@ -167,7 +174,12 @@ func (b *batch) Draw() {
 
 // private =================================================================
 
-type vertex struct{ X, Y, U, V, Custom1, Custom2, Custom3, Custom4 float32 }
+type vertex struct {
+	X, Y, U, V float32
+	NX, NY, NZ float32 // Normals
+	TX, TY, TZ float32 // Tangents
+	U2, V2     float32 // Texcoords2
+}
 type batch struct {
 	mesh     *rl.Mesh
 	material rl.Material
@@ -176,11 +188,13 @@ type batch struct {
 
 	vertCount, indexCount, maxQuads int32
 
-	vertData      []byte // vec3 (x,y,z) * float32
-	texCoordsData []byte // vec2 (u,v) * float32
-	colData       []byte // color (r,g,b,a) * byte
-	indexData     []byte // triangle (i1,i2,i3) * uint16
-	customData    []byte // vec4 (4 * float32) = 16 bytes per vertex
+	verts     []byte // 0: vec3
+	texCoords []byte // 1: vec2
+	normals   []byte // 2: vec3
+	cols      []byte // 3: rgba byte
+	tangents  []byte // 4: vec3
+	tex2s     []byte // 5: vec2
+	indexes   []byte // 6: uint16
 
 	polygonBuf, clipResultBuf, clipTempBuf [12]vertex // reused working buffers; avoids per-call heap escapes
 }
@@ -197,21 +211,25 @@ func (b *batch) writeToBuffers(verts []vertex, vCount int32, tex rl.Texture2D, c
 		b.material.Shader = internal.Shader
 	}
 
-	var vertCount = int32(len(verts))
-	var vertices = unsafe.Slice((*float32)(unsafe.Pointer(&b.vertData[b.vertCount*12])), vertCount*3)  // 3 floats (12 bytes)
-	var uvs = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoordsData[b.vertCount*8])), vertCount*2)   // 2 floats (8 bytes)
-	var colors = b.colData[(b.vertCount * 4) : (b.vertCount*4)+(vertCount*4)]                          // 4 bytes (rgba)
-	var customs = unsafe.Slice((*float32)(unsafe.Pointer(&b.customData[b.vertCount*16])), vertCount*4) // 4 floats (16 bytes)
+	var count = int32(len(verts))
+	var v_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.verts[b.vertCount*12])), count*3)
+	var t_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[b.vertCount*8])), count*2)
+	var n_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.normals[b.vertCount*12])), count*3)
+	var c_slice = b.cols[b.vertCount*4 : (b.vertCount*4)+(count*4)]
+	var tan_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.tangents[b.vertCount*12])), count*3)
+	var t2_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.tex2s[b.vertCount*8])), count*2)
 
 	for i, v := range verts {
-		vertices[i*3+0], vertices[i*3+1], vertices[i*3+2] = v.X, v.Y, 0
-		uvs[i*2+0], uvs[i*2+1] = v.U, v.V
-		colors[i*4+0], colors[i*4+1], colors[i*4+2], colors[i*4+3] = col.R, col.G, col.B, col.A
-		customs[i*4+0], customs[i*4+1], customs[i*4+2], customs[i*4+3] = 1, v.Custom2, v.Custom3, v.Custom4
+		v_slice[i*3+0], v_slice[i*3+1], v_slice[i*3+2] = v.X, v.Y, 0
+		t_slice[i*2+0], t_slice[i*2+1] = v.U, v.V
+		n_slice[i*3+0], n_slice[i*3+1], n_slice[i*3+2] = 1, v.NY, v.NZ
+		c_slice[i*4+0], c_slice[i*4+1], c_slice[i*4+2], c_slice[i*4+3] = col.R, col.G, col.B, col.A
+		tan_slice[i*3+0], tan_slice[i*3+1], tan_slice[i*3+2] = v.TX, v.TY, v.TZ
+		t2_slice[i*2+0], t2_slice[i*2+1] = v.U2, v.V2
 	}
 
-	var trisCount = vertCount - 2
-	var indSlice = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indexData[b.indexCount*2])), trisCount*3)
+	var trisCount = count - 2
+	var indSlice = unsafe.Slice((*uint16)(unsafe.Pointer(&b.indexes[b.indexCount*2])), trisCount*3)
 	var base = uint16(b.vertCount)
 
 	for i := range trisCount {
@@ -220,7 +238,7 @@ func (b *batch) writeToBuffers(verts []vertex, vCount int32, tex rl.Texture2D, c
 		indSlice[i*3+2] = base + uint16(i+2)
 	}
 
-	b.vertCount += vertCount
+	b.vertCount += count
 	b.indexCount += trisCount * 3
 }
 
