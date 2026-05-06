@@ -1,10 +1,39 @@
 #version 330
 
 in vec2 fragTexCoord;
-in vec3 fragNormal;
 in vec4 fragColor;
-in vec4 fragTangent;
+
 in vec2 fragTexCoord2;
+in vec3 fragNormal;
+in vec4 fragTangent;
+
+// texCoord2.x = TextureWidth + TextureHeight + Type | 12+12+8 = 32 bits
+// texCoord2.y = BorderColor + Roundness             | 24+8    = 32 bits
+
+// normal.x = Gamma + Saturation + Contrast + Brightness | 8+8+8+8 = 32 bits
+// normal.y = Grayscale + Inversion + BlurX + BlurY      | 8+8+8+8 = 32 bits
+// normal.z = DepthZ + BorderSize + PixelSize            | 12+12+8 = 32 bits
+
+// Shape:
+//  tangent = free
+
+// Sprite:
+//  tangent.x = OutlineColor + OutlineSize | 24+8 = 32 bits
+//  tangent.y = SilhouetteColor            | 32 bits
+//  tangent.z = free
+//  tangent.w = free
+
+// Tilemap:
+//  tangent.x = OutlineColor + OutlineSize        | 24+8 = 32 bits
+//  tangent.y = SilhouetteColor                   | 32 bits
+//  tangent.z = TileColumns + TileRows + TileSize | 12+12+8 = 32 bits
+//  tangent.w = free
+
+// Text:
+//  tangent.x = OutlineColor + TextShadowX                         | 24+8 = 32 bits
+//  tangent.y = ShadowColor + TextShadowY                          | 24+8 = 32 bits
+//  tangent.z = Weight + OutlineWeight + ShadowWeight + ShadowBlur | 8+8+8+8 = 32 bits
+//  tangent.w = free
 
 out vec4 finalColor;
 

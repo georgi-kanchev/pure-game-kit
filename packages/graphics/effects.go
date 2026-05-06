@@ -51,7 +51,7 @@ func (e Effects) updateUniforms(texW, texH int, tileMap *TileMap, textBox *TextB
 			u[21], u[22] = float32(data.Image.Width), float32(data.Image.Height)
 			u[23], u[24] = float32(atlas.TileWidth), float32(atlas.TileHeight)
 
-			rl.DrawRenderBatchActive()        // flush raylib's internal batch to mess texture slots
+			rl.DrawRenderBatchActive()        // flush raylib's internal batch to not mess texture slots
 			rl.ActiveTextureSlot(1)           // switch to slot 1
 			rl.EnableTexture(data.Texture.ID) // bind data texture there
 			rl.SetShaderValueTexture(internal.Shader, internal.ShaderTileDataLoc, *data.Texture)

@@ -1,14 +1,14 @@
 package graphics
 
 import (
+	geometry "pure-game-kit/packages/geometry2"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 )
 
 type Quad struct {
-	Area
-	Angle          float32
+	geometry.Shape
 	ScaleX, ScaleY float32
 	PivotX, PivotY float32
 	Tint           uint
@@ -18,7 +18,7 @@ type Quad struct {
 }
 
 func NewQuad(x, y float32) *Quad {
-	return &Quad{Area: Area{X: x, Y: y, Width: 100, Height: 100}, ScaleX: 1, ScaleY: 1,
+	return &Quad{Shape: geometry.Shape{X: x, Y: y, Width: 100, Height: 100}, ScaleX: 1, ScaleY: 1,
 		PivotX: 0.5, PivotY: 0.5, Tint: palette.White}
 }
 
