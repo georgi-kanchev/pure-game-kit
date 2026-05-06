@@ -132,7 +132,7 @@ func (b *batch) Init(quadCountCapacity int32) {
 	b.texCoords = make([]byte, b.mesh.VertexCount*2*4) // vec2 (8 bytes)
 	b.normals = make([]byte, b.mesh.VertexCount*3*4)   // vec3 (12 bytes)
 	b.cols = make([]byte, b.mesh.VertexCount*4)        // rgba (4 bytes)
-	b.tangents = make([]byte, b.mesh.VertexCount*3*4)  // vec3 (12 bytes)
+	b.tangents = make([]byte, b.mesh.VertexCount*4*4)  // vec4 (16 bytes)
 	b.tex2s = make([]byte, b.mesh.VertexCount*2*4)     // vec2 (8 bytes)
 	b.indexes = make([]byte, b.mesh.TriangleCount*3*2) // uint16 (6 bytes per triangle)
 
@@ -216,7 +216,7 @@ func (b *batch) writeToBuffers(verts []vertex, vCount int32, tex rl.Texture2D, c
 	var t_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[b.vertCount*8])), count*2)
 	var n_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.normals[b.vertCount*12])), count*3)
 	var c_slice = b.cols[b.vertCount*4 : (b.vertCount*4)+(count*4)]
-	var tan_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.tangents[b.vertCount*12])), count*3)
+	var tan_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.tangents[b.vertCount*16])), count*4)
 	var t2_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.tex2s[b.vertCount*8])), count*2)
 
 	for i, v := range verts {
@@ -224,7 +224,7 @@ func (b *batch) writeToBuffers(verts []vertex, vCount int32, tex rl.Texture2D, c
 		t_slice[i*2+0], t_slice[i*2+1] = v.U, v.V
 		n_slice[i*3+0], n_slice[i*3+1], n_slice[i*3+2] = v.NX, v.NY, v.NZ
 		c_slice[i*4+0], c_slice[i*4+1], c_slice[i*4+2], c_slice[i*4+3] = col.R, col.G, col.B, col.A
-		tan_slice[i*3+0], tan_slice[i*3+1], tan_slice[i*3+2] = v.TX, v.TY, v.TZ
+		tan_slice[i*4+0], tan_slice[i*4+1], tan_slice[i*4+2], tan_slice[i*4+3] = 1, 0, 0, 1
 		t2_slice[i*2+0], t2_slice[i*2+1] = v.U2, v.V2
 	}
 

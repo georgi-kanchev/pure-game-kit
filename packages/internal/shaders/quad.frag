@@ -3,7 +3,7 @@
 in vec2 fragTexCoord;
 in vec3 fragNormal;
 in vec4 fragColor;
-in vec3 fragTangent;
+in vec4 fragTangent;
 in vec2 fragTexCoord2;
 
 out vec4 finalColor;
