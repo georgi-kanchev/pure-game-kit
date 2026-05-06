@@ -188,13 +188,7 @@ type batch struct {
 
 	vertCount, indexCount, maxQuads int32
 
-	verts     []byte // 0: vec3
-	texCoords []byte // 1: vec2
-	normals   []byte // 2: vec3
-	cols      []byte // 3: rgba byte
-	tangents  []byte // 4: vec3
-	tex2s     []byte // 5: vec2
-	indexes   []byte // 6: uint16
+	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
 
 	polygonBuf, clipResultBuf, clipTempBuf [12]vertex // reused working buffers; avoids per-call heap escapes
 }

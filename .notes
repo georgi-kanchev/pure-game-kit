@@ -1,8 +1,8 @@
 TODO:
-gui rewrite
-textbox rewrite
-geometry rewrite
-graphics rewrite, shape render, text render
+gui rework
+textbox rework
+geometry rework
+graphics rework, shape render, text render
 nine patch should have option stretch/tile per edge/center
 
 LINKS:
