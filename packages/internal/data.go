@@ -52,7 +52,7 @@ var Fonts = make(map[string]rl.Font)
 var MatrixDefault rl.Matrix
 var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
-var ShaderCustomLoc, ShaderTileDataLoc int32
+var ShaderTileDataLoc int32
 
 var Sounds = make(map[string]rl.Sound)
 var Music = make(map[string]rl.Music)
@@ -218,7 +218,6 @@ func InitData() {
 		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
 		ShaderTileDataLoc = rl.GetLocationUniform(Shader.ID, "tileData")
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
-		ShaderCustomLoc = rl.GetLocationUniform(Shader.ID, "vertCustom")
 	}
 	MatrixDefault = rl.MatrixIdentity()
 
