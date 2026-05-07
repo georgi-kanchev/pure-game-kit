@@ -33,7 +33,7 @@ type symbolState struct {
 
 func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var state = textBoxCache{
-		t.Text, t.FontId, t.Tint, t.WordWrap,
+		t.Text, t.FontId, t.Color, t.WordWrap,
 		t.Width, t.Height,
 		t.AlignmentX, t.AlignmentY,
 		t.LineHeight, t.SymbolGap, t.LineGap,
@@ -56,7 +56,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 	var textHeight = (t.LineHeight+gapY)*float32(len(lines)) - gapY
 	var alignX, alignY = number.Limit(t.AlignmentX, 0, 1), number.Limit(t.AlignmentY, 0, 1)
 	var curState = symbolState{
-		Color: t.Tint, OutlineColor: palette.Black, ShadowColor: palette.Black, Weight: 1, OutlineWeight: 1, ShadowWeight: 1,
+		Color: t.Color, OutlineColor: palette.Black, ShadowColor: palette.Black, Weight: 1, OutlineWeight: 1, ShadowWeight: 1,
 		ShadowBlur: 1,
 	}
 
@@ -314,7 +314,7 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *strings.Builder, s *sym
 
 	// Empty tag {} resets all formatting to defaults
 	if tag == "" {
-		s.reset(t.Tint)
+		s.reset(t.Color)
 		return true
 	}
 
@@ -327,7 +327,7 @@ func (t *TextBox) readTag(reading *bool, char rune, cur *strings.Builder, s *sym
 
 	switch name {
 	case "color":
-		s.Color = parseCol(value, t.Tint)
+		s.Color = parseCol(value, t.Color)
 	case "backColor":
 		s.BackColor = parseCol(value, 0)
 	case "outlineColor":

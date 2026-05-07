@@ -34,7 +34,7 @@ func (v *View) DrawQuads(quads ...*Quad) {
 			batcher.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
-		batcher.QueueTexture(internal.White1x1, src, dst, ang, getColor(q.Tint))
+		batcher.QueueTexture(internal.White1x1, src, dst, ang, getColor(q.Color))
 		lastEffects = effects
 	}
 	batcher.Draw()
@@ -78,7 +78,7 @@ func (v *View) DrawSprites(sprites ...*Sprite) {
 			batcher.Draw() // effects are different & break the batch
 			effects.updateUniforms(int(src.Width), int(src.Height), nil, nil, false)
 		}
-		batcher.QueueTexture(texture, src, dst, ang, getColor(s.Tint))
+		batcher.QueueTexture(texture, src, dst, ang, getColor(s.Color))
 		lastEffects = effects
 	}
 	batcher.Draw()
@@ -112,7 +112,7 @@ func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
 		var r = condition.If(assetIds[4] == "", 0, float32(rw)) * n.EdgeScale
 		var d = condition.If(assetIds[6] == "", 0, float32(dh)) * n.EdgeScale
 		var errX, errY float32 = 2, 2
-		var col = getColor(n.Tint)
+		var col = getColor(n.Color)
 
 		if w < 0 {
 			r *= -1
@@ -264,7 +264,7 @@ func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
 			effects = v.Effects
 		}
 		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
-		batcher.QueueTexture(texture, src, dst, t.Angle, getColor(t.Tint))
+		batcher.QueueTexture(texture, src, dst, t.Angle, getColor(t.Color))
 		batcher.Draw()
 	}
 	v.end()

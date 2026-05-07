@@ -291,7 +291,7 @@ func (v *View) DrawShapes(color uint, points ...float32) {
 
 func (v *View) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32, color uint) {
 	var w, h = assets.Size(assetId)
-	drawTexture.TextureId, drawTexture.Tint = assetId, color
+	drawTexture.TextureId, drawTexture.Color = assetId, color
 	drawTexture.X, drawTexture.Y = x, y
 	drawTexture.PivotX, drawTexture.PivotY = 0, 0
 	drawTexture.Width, drawTexture.Height = float32(w), float32(h)
@@ -303,7 +303,7 @@ func (v *View) DrawText(text string, x, y, height float32) {
 	v.DrawTextAdvanced("", text, x, y, height, 0, 0, 0, palette.White)
 }
 func (v *View) DrawTextAdvanced(fontId, text string, x, y, lineHeight, angle, symbolGap, lineGap float32, color uint) {
-	drawText.FontId, drawText.Tint = fontId, color
+	drawText.FontId, drawText.Color = fontId, color
 	drawText.X, drawText.Y = x, y
 	drawText.PivotX, drawText.PivotY = 0, 0
 	drawText.Text, drawText.Angle = text, angle

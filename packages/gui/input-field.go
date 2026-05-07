@@ -124,7 +124,7 @@ func queue(margin float32, w *widget, isPlaceholder bool) {
 		}
 		w.highlight.X, w.highlight.Y = w.X-0.5, w.Y-0.5
 		w.highlight.Width, w.highlight.Height = w.Width+0.5, w.Height+0.5
-		w.highlight.Tint = palette.Azure
+		w.highlight.Color = palette.Azure
 		w.highlight.PivotX, w.highlight.PivotY = 0, 0
 		w.highlight.Mask = w.root.Containers[w.OwnerId].mask
 		w.root.boxes = append(w.root.boxes, w.highlight)
@@ -148,7 +148,7 @@ func queue(margin float32, w *widget, isPlaceholder bool) {
 
 		w.handle.X, w.handle.Y = ax, w.textBox.Y+margin/2
 		w.handle.Width, w.handle.Height = bx-ax, w.textBox.Height-margin
-		w.handle.Tint, w.handle.Mask = palette.Azure, w.textBox.Mask
+		w.handle.Color, w.handle.Mask = palette.Azure, w.textBox.Mask
 		w.handle.PivotX, w.handle.PivotY = 0, 0
 		w.root.sprites = append(w.root.sprites, w.handle)
 	})
@@ -164,12 +164,12 @@ func queue(margin float32, w *widget, isPlaceholder bool) {
 
 		w.cursor1.X, w.cursor1.Y = x-cw/2, y-cw/2
 		w.cursor1.Width, w.cursor1.Height = cw+cw, ch+cw
-		w.cursor1.Tint, w.cursor1.Mask = palette.Azure, w.textBox.Mask
+		w.cursor1.Color, w.cursor1.Mask = palette.Azure, w.textBox.Mask
 		w.cursor1.PivotX, w.cursor1.PivotY = 0, 0
 
 		w.cursor2.X, w.cursor2.Y = x, y
 		w.cursor2.Width, w.cursor2.Height = cw, ch
-		w.cursor2.Tint, w.cursor2.Mask = palette.Black, w.textBox.Mask
+		w.cursor2.Color, w.cursor2.Mask = palette.Black, w.textBox.Mask
 		w.cursor2.PivotX, w.cursor2.PivotY = 0, 0
 		w.root.spritesAbove = append(w.root.spritesAbove, w.cursor1, w.cursor2)
 	}

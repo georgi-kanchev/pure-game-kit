@@ -51,7 +51,7 @@ func (t *TextBox) TextMeasure(text string) (width, height float32) {
 }
 func (t *TextBox) TextWrap(text string) string {
 	var state = textBoxCache{
-		t.Text, t.FontId, t.Tint, t.WordWrap,
+		t.Text, t.FontId, t.Color, t.WordWrap,
 		t.Width, t.Height,
 		t.AlignmentX, t.AlignmentY,
 		t.LineHeight, t.SymbolGap, t.LineGap,

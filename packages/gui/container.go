@@ -301,15 +301,15 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 
 	c.verScrollBase.X, c.verScrollBase.Y = c.X+c.Width-scrollSize, c.Y
 	c.verScrollBase.Width, c.verScrollBase.Height = scrollSize, c.Height
-	c.verScrollBase.Tint = color.RGBA(0, 0, 0, 150)
+	c.verScrollBase.Color = color.RGBA(0, 0, 0, 150)
 
 	c.verScrollHandle1.X, c.verScrollHandle1.Y = c.X+c.Width-scrollSize, y
 	c.verScrollHandle1.Width, c.verScrollHandle1.Height = scrollSize, handleH
-	c.verScrollHandle1.Tint = palette.Black
+	c.verScrollHandle1.Color = palette.Black
 
 	c.verScrollHandle2.X, c.verScrollHandle2.Y = c.X+c.Width-scrollSize+off, y+off
 	c.verScrollHandle2.Width, c.verScrollHandle2.Height = scrollSize-off*2, handleH-off*2
-	c.verScrollHandle2.Tint = handleCol
+	c.verScrollHandle2.Color = handleCol
 	c.root.sprites = append(c.root.sprites, c.verScrollBase, c.verScrollHandle1, c.verScrollHandle2)
 }
 func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift bool) {
@@ -393,15 +393,15 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 
 	c.horScrollBase.X, c.horScrollBase.Y = c.X, c.Y+c.Height-scrollSize
 	c.horScrollBase.Width, c.horScrollBase.Height = barW, scrollSize
-	c.horScrollBase.Tint = color.RGBA(0, 0, 0, 150)
+	c.horScrollBase.Color = color.RGBA(0, 0, 0, 150)
 
 	c.horScrollHandle1.X, c.horScrollHandle1.Y = x, c.Y+c.Height-scrollSize
 	c.horScrollHandle1.Width, c.horScrollHandle1.Height = handleW, scrollSize
-	c.horScrollHandle1.Tint = palette.Black
+	c.horScrollHandle1.Color = palette.Black
 
 	c.horScrollHandle2.X, c.horScrollHandle2.Y = x+off, c.Y+c.Height-scrollSize+off
 	c.horScrollHandle2.Width, c.horScrollHandle2.Height = handleW-off*2, scrollSize-off*2
-	c.horScrollHandle2.Tint = handleCol
+	c.horScrollHandle2.Color = handleCol
 	c.root.sprites = append(c.root.sprites, c.horScrollBase, c.horScrollHandle1, c.horScrollHandle2)
 }
 

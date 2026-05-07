@@ -48,9 +48,9 @@ func Texts() {
 	textBox.Angle = 5
 
 	for window.KeepOpen() {
-		textBox.Tint = palette.DarkGray
+		textBox.Color = palette.DarkGray
 		view.DrawQuads(&textBox.Quad)
-		textBox.Tint = palette.White
+		textBox.Color = palette.White
 
 		view.DrawTextBoxes(textBox)
 		view.DrawTextDebug(true, true, true, true)

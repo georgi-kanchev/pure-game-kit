@@ -37,7 +37,7 @@ func setupVisualsTextured(w *widget) {
 	if has {
 		box.X, box.Y = w.X, w.Y
 		box.BoxId = assetId
-		box.Tint = col
+		box.Color = col
 		box.Width, box.Height = w.Width, w.Height
 		if owner != nil && !isBgr {
 			box.Mask = owner.mask
@@ -45,7 +45,7 @@ func setupVisualsTextured(w *widget) {
 	} else {
 		sprite.X, sprite.Y = w.X, w.Y
 		sprite.TextureId = assetId
-		sprite.Tint = col
+		sprite.Color = col
 		sprite.Width, sprite.Height = w.Width, w.Height
 		if owner != nil && !isBgr {
 			sprite.Mask = owner.mask
@@ -111,10 +111,10 @@ func queueVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 		w.left.PivotX, w.left.PivotY = 0, 0
 		w.right.PivotX, w.right.PivotY = 0, 0
 		w.bottom.PivotX, w.bottom.PivotY = 0, 0
-		w.top.Tint, w.top.Mask = frameCol, owner.mask
-		w.left.Tint, w.left.Mask = frameCol, owner.mask
-		w.right.Tint, w.right.Mask = frameCol, owner.mask
-		w.bottom.Tint, w.bottom.Mask = frameCol, owner.mask
+		w.top.Color, w.top.Mask = frameCol, owner.mask
+		w.left.Color, w.left.Mask = frameCol, owner.mask
+		w.right.Color, w.right.Mask = frameCol, owner.mask
+		w.bottom.Color, w.bottom.Mask = frameCol, owner.mask
 
 		if frameSz < 0 {
 			var t = -frameSz
@@ -152,6 +152,6 @@ func queueVisuals(w *widget, fadeText bool, betweenVisualAndText func()) {
 	var disabled = w.isDisabled(owner)
 	var colVal = defaultValue(w.root.themedField(f.TextColor, owner, w), "127 127 127")
 	var c = parseColor(colVal, disabled || fadeText)
-	w.textBox.Tint = c
+	w.textBox.Color = c
 	w.root.textBoxes = append(w.root.textBoxes, w.textBox)
 }

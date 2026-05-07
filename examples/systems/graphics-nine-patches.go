@@ -12,7 +12,7 @@ func NinePatches() {
 	var _, _, b = assets.LoadDefaultAtlasUI()
 	var ninePatch = graphics.NewNinePatch(b[0], 0, 0)
 	ninePatch.PivotX, ninePatch.PivotY = 0, 0
-	ninePatch.Tint = palette.Cyan
+	ninePatch.Color = palette.Cyan
 
 	var bar = graphics.NewNinePatch(b[11], 0, 0)
 	bar.PivotX, bar.PivotY = 0, 0

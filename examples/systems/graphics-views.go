@@ -24,11 +24,11 @@ func MultipleViews() {
 	for i := range 6 {
 		orbiters[i] = graphics.NewQuad(0, 0)
 		orbiters[i].Width, orbiters[i].Height = 60, 60
-		orbiters[i].Tint = orbiterCols[i]
+		orbiters[i].Color = orbiterCols[i]
 	}
 
 	var center = graphics.NewQuad(0, 0)
-	center.Tint = palette.White
+	center.Color = palette.White
 
 	var cornerCols = [4]uint{palette.Cyan, palette.Magenta, palette.Yellow, palette.Green}
 	var cornerPos = [4][2]float32{{-300, -200}, {260, -200}, {-300, 160}, {260, 160}}
@@ -36,7 +36,7 @@ func MultipleViews() {
 	for i := range 4 {
 		corners[i] = graphics.NewQuad(cornerPos[i][0], cornerPos[i][1])
 		corners[i].Width, corners[i].Height = 40, 40
-		corners[i].Tint = cornerCols[i]
+		corners[i].Color = cornerCols[i]
 	}
 
 	var quads = []*graphics.Quad{

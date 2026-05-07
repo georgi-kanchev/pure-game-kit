@@ -147,7 +147,7 @@ func (tm *TileMap) Points() []float32 {
 	}
 
 	var hash = random.HashPrimitives(
-		tm.TileSetId, tm.TileLayerId, tm.Tint,
+		tm.TileSetId, tm.TileLayerId, tm.Color,
 		tm.X, tm.Y, tm.Width, tm.Height, tm.Angle,
 		tm.ScaleX, tm.ScaleY, tm.PivotX, tm.PivotY,
 	)
