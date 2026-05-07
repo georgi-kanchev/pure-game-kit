@@ -12,7 +12,7 @@ type View struct {
 
 	Area    Area // The draw area in window space. Zero value = entire window.
 	Mask    Area // In view space. Everything drawn outside of it is cropped. Zero value = no masking.
-	Effects Effects
+	Effects *Effects
 	Blend   int
 
 	//=================================================================
@@ -25,7 +25,7 @@ func NewView(zoom float32) *View {
 	var view = &View{Zoom: zoom}
 	if batcher == nil {
 		batcher = &batch{}
-		batcher.Init(128)
+		batcher.Init(32)
 	}
 	return view
 }

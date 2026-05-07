@@ -11,7 +11,7 @@ import (
 func (v *View) DrawQuads(quads ...*Quad) {
 	v.begin()
 
-	var lastEffects Effects
+	var lastEffects *Effects
 	for _, q := range quads {
 		if q == nil || !v.IsAreaVisible(q.Bounds()) {
 			continue
@@ -27,7 +27,7 @@ func (v *View) DrawQuads(quads ...*Quad) {
 		var src = rl.NewRectangle(0, 0, 1, 1)
 		var dst = rl.NewRectangle(x, y, q.Width*q.ScaleX, q.Height*q.ScaleY)
 		var effects = q.Effects
-		if effects == (Effects{}) {
+		if effects == nil {
 			effects = v.Effects
 		}
 		if lastEffects != effects {
@@ -43,7 +43,7 @@ func (v *View) DrawQuads(quads ...*Quad) {
 func (v *View) DrawSprites(sprites ...*Sprite) {
 	v.begin()
 
-	var lastEffects Effects
+	var lastEffects *Effects
 	for _, s := range sprites {
 		if s == nil || !v.IsAreaVisible(s.Bounds()) {
 			continue
@@ -71,7 +71,7 @@ func (v *View) DrawSprites(sprites ...*Sprite) {
 		}
 
 		var effects = s.Effects
-		if effects == (Effects{}) {
+		if effects == nil {
 			effects = v.Effects
 		}
 		if lastEffects != effects {
@@ -89,7 +89,7 @@ func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
 	defer v.end()
 
 	skipStartAndEnd = true
-	var lastEffects Effects
+	var lastEffects *Effects
 	for _, n := range ninePatches {
 		if n == nil || !v.IsAreaVisible(n.Bounds()) {
 			continue
@@ -148,7 +148,7 @@ func (v *View) DrawNinePatches(ninePatches ...*NinePatch) {
 		}
 
 		var effects = n.Effects
-		if effects == (Effects{}) {
+		if effects == nil {
 			effects = v.Effects
 		}
 
@@ -210,7 +210,7 @@ func (v *View) DrawTextBoxes(textBoxes ...*TextBox) {
 		var font = t.font()
 		var gapX = t.gapSymbols() * t.ScaleX
 		var effects = t.Effects
-		if effects == (Effects{}) {
+		if effects == nil {
 			effects = v.Effects
 		}
 		effects.updateUniforms(int(font.Texture.Width), int(font.Texture.Height), nil, t, false)
@@ -260,7 +260,7 @@ func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
 		var src = rl.NewRectangle(0, 0, float32(texture.Width), float32(texture.Height))
 		var dst = rl.NewRectangle(x, y, t.Width*t.ScaleX, t.Height*t.ScaleY)
 		var effects = t.Effects
-		if effects == (Effects{}) {
+		if effects == nil {
 			effects = v.Effects
 		}
 		effects.updateUniforms(int(texture.Width), int(texture.Height), t, nil, false)
