@@ -22,7 +22,7 @@ type View struct {
 
 func NewView(zoom float32) *View {
 	tryRecreateWindow()
-	var view = &View{Zoom: zoom, Effects: NewEffects()}
+	var view = &View{Zoom: zoom}
 	if batcher == nil {
 		batcher = &batch{}
 		batcher.Init(128)

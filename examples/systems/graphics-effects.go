@@ -12,14 +12,12 @@ func Effects() {
 	var spr = graphics.NewSprite(tex, 0, 0)
 	assets.SetTextureSmoothness(tex, true)
 
-	spr.Effects = graphics.NewEffects()
 	spr.Effects.PixelSize = 3
 	spr.Effects.DepthZ = 0.1
 	spr.Effects.BlurX, spr.Effects.BlurY = 5, 5
 	spr.ScaleX, spr.ScaleY = 0.2, 0.2
 
 	var spr2 = graphics.NewSprite(tex, 50, 0)
-	spr2.Effects = graphics.NewEffects()
 	spr2.Effects.Saturation = 0.7
 	spr2.Effects.DepthZ = 0.2
 	spr2.ScaleX, spr2.ScaleY = 0.2, 0.2
