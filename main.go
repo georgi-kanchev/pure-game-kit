@@ -10,8 +10,9 @@ func main() {
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont2("tools/sdf-font-generator/results/Montserrat-Medium.png",
 		"tools/sdf-font-generator/results/Montserrat-Medium.xml")
-	var tb = graphics.NewTextbox(font, 0, 0)
-	tb.Text = "Hello, World!"
+	var obj = graphics.NewObject(0, 0)
+	obj.TextFont = font
+	obj.Text = "Hello, World!"
 
 	assets.LoadDefaultFont()
 
@@ -19,7 +20,7 @@ func main() {
 		window.Title = "pure-game-kit: hub"
 		window.TargetFPS = 0
 
-		view.DrawTextboxes(tb)
+		view.DrawObjects(&obj)
 		view.DrawTextDebug(true, true, false, true)
 	}
 }

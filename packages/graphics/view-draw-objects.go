@@ -252,17 +252,17 @@ func (v *View) DrawTileMaps(tileMaps ...*TileMap) {
 	}
 	v.end()
 }
-func (v *View) DrawTextboxes(textboxes ...*Textbox) {
+func (v *View) DrawObjects(objects ...*Object) {
 	v.begin()
-	for _, t := range textboxes {
+	for _, t := range objects {
 		if t == nil || !v.IsAreaVisible(t.Bounds()) {
 			continue
 		}
 
-		t.tryRegenerate()
-		for _, s := range t.chars {
-			v.DrawSprites(&s.Sprite)
-		}
+		t.tryRegenerateText()
+		// for _, s := range t.chars {
+
+		// }
 	}
 	batcher.Draw()
 	v.end()

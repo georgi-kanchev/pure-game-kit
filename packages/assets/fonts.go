@@ -2,7 +2,6 @@ package assets
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/storage"
@@ -11,10 +10,6 @@ import (
 )
 
 type FontId byte
-
-func LoadedFontIds() []string {
-	return collection.MapKeys(internal.Fonts)
-}
 
 func LoadFont(size int, filePath string) string {
 	tryCreateWindow()
@@ -37,20 +32,6 @@ func LoadFont(size int, filePath string) string {
 		return ""
 	}
 	return filePath
-}
-func UnloadFont(fontId string) {
-	var font, has = internal.Fonts[fontId]
-
-	if has && !isDefault(fontId) {
-		delete(internal.Fonts, fontId)
-		rl.UnloadFont(font)
-	}
-}
-
-func UnloadAllFonts() {
-	for id := range internal.Sounds {
-		UnloadFont(id)
-	}
 }
 
 func LoadFont2(pngPath string, xmlPath string) FontId {

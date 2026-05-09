@@ -2,18 +2,10 @@ package assets
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
-
-func LoadedTileSetIds() []string {
-	return collection.MapKeys(internal.TileSets)
-}
-func LoadedTileDataIds() []string {
-	return collection.MapKeys(internal.TileLayers)
-}
 
 func LoadTileSet(imagePath string, tileWidth, tileHeight int) string {
 	// var textureId = LoadImage(imagePath)
@@ -34,29 +26,4 @@ func LoadTileData(id string, columns, rows int) string {
 	data.Texture = &tex
 	internal.TileLayers[id] = data
 	return id
-}
-
-func UnloadTileSet(tileSetId string) {
-	var _, has = internal.TileSets[tileSetId]
-
-	if has {
-		delete(internal.TileSets, tileSetId)
-	}
-}
-func UnloadTileData(tileMapId string) {
-	var _, has = internal.TileLayers[tileMapId]
-
-	if has && !isDefault(tileMapId) {
-		delete(internal.TileLayers, tileMapId)
-	}
-}
-func UnloadAllTileSets() {
-	for id := range internal.TileSets {
-		UnloadTileSet(id)
-	}
-}
-func UnloadAllTileData() {
-	for id := range internal.TileLayers {
-		UnloadTileData(id)
-	}
 }
