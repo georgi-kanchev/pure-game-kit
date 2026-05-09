@@ -25,13 +25,8 @@ func AsClock12(seconds float32, divider string, units int, amPm bool) string {
 
 //=================================================================
 
-func FPS() float32        { return internal.FPS }
-func AverageFPS() float32 { return internal.AverageFPS }
-func FrameDelta() float32 { return internal.DeltaTime }
-func Frame() float32      { return internal.FrameTime }
-func FrameCount() uint64  { return internal.FrameCount }
-func Running() float32    { return internal.Runtime }
-func Clock() float32      { return internal.Clock }
+func Running() float32 { return internal.Runtime }
+func Clock() float32   { return internal.Clock }
 
 func ToMilliseconds(seconds float32) float32 { return seconds * 1000 }
 func ToMinutes(secodns float32) float32      { return secodns / 60 }

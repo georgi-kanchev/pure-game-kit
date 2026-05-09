@@ -1,15 +1,8 @@
-// The very heart of the engine, quite literally - it is the start of the update pump chain throughout the packages.
-// No graphical application can exist without it. It handles an Operating System (OS) window and anything that
-// comes with it (other than drawing). It also has access to some monitor information, useful for
-// positioning & sizing the window.
 package window
 
 import (
-	col "image/color"
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/text"
-	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 
@@ -17,10 +10,8 @@ import (
 )
 
 var Title = "game"
-var Color uint = 0
 var IsVSynced = false     // Requires window recreation to take effect.
 var IsAntialiased = false // Requires window recreation to take effect.
-var TargetFPS byte = 60
 
 //=================================================================
 
@@ -29,8 +20,6 @@ func Recreate() {
 	tryCreate()
 }
 func KeepOpen() bool {
-	internal.FrameTime = float32(time.Since(internal.FrameStart).Seconds())
-
 	if terminate {
 		rl.CloseWindow()
 		return false
@@ -44,15 +33,11 @@ func KeepOpen() bool {
 	rl.EndBlendMode()
 	rl.EndScissorMode()
 	rl.EndDrawing()
-	rl.BeginDrawing()
 
-	var r, g, b, a = color.Channels(Color)
-	rl.ClearBackground(col.RGBA{R: r, G: g, B: b, A: a})
+	rl.BeginDrawing()
+	rl.ClearBackground(rl.Black)
 
 	w, h = rl.GetScreenWidth(), rl.GetScreenHeight()
-
-	internal.Update()
-	internal.FrameStart = time.Now()
 
 	return !rl.WindowShouldClose()
 }
@@ -205,7 +190,6 @@ func IsJustResized() bool {
 var w, h = 0, 0
 var terminate = false
 var currTitle = ""
-var currTargetFPS byte = 0
 
 func tryCreate() {
 	if rl.IsWindowReady() {
@@ -237,11 +221,5 @@ func tryUpdateProperties() {
 	if Title != currTitle {
 		currTitle = Title
 		rl.SetWindowTitle(Title)
-	}
-
-	if TargetFPS == 0 {
-		rl.SetTargetFPS(99999999)
-	} else if TargetFPS != currTargetFPS {
-		rl.SetTargetFPS(int32(TargetFPS))
 	}
 }

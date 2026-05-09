@@ -1,13 +1,13 @@
 package graphics
 
 import (
-	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/text"
 	tm "pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/utility/time/unit"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -85,34 +85,42 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 //=================================================================
 
 func (v *View) DrawTextDebug(fps, time, assets, memory bool) {
-	if condition.TrueEvery(0.15, ";;;debug") {
-		debugStr = ""
+	timer += internal.FrameDelta
+
+	if timer > 0.15 {
+		timer = 0
+
+		builder.Reset()
 		if fps {
-			debugStr += text.New("FPS ", int(internal.FPS), " (", int(internal.AverageFPS), ")\n\n")
+			var tickBusy = int(min(100, (internal.TickBusy/(1/float32(internal.TargetTPS)))*100))
+			builder.WriteString(text.New("FPS ", int(internal.FPS), " / TPS ",
+				int(internal.TPS), " (busy ", tickBusy, "%)\n\n"))
 		}
 		if time {
-			debugStr += text.New(
-				"Time: \n",
-				"Running = ", tm.AsClock12(internal.Runtime, ":", unit.Hour|unit.Timer, false), "\n",
-				"Frame Busy = ", number.Round(internal.FrameTime*1000, 3), "ms ",
-				"(", number.Round((internal.FrameTime/internal.DeltaTime)*100), "%)\n",
-				"Frame Idle = ", number.Round((internal.DeltaTime-internal.FrameTime)*1000, 3), "ms ",
-				"(", number.Round(((internal.DeltaTime-internal.FrameTime)/internal.DeltaTime)*100), "%)\n",
-				"Frame Total = ", number.Round((internal.DeltaTime)*1000, 3), "ms ",
-				"\n\n")
+			builder.WriteString(text.New(
+				"Time: \nClock = ", tm.AsClock24(internal.Clock, ":", unit.Hour|unit.Minute|unit.Second),
+				"\nRunning = ", tm.AsClock12(internal.Runtime, ":", unit.Hour|unit.Timer, false),
+				"\n\n"))
 		}
 		if assets {
-			debugStr += text.New("Assets: \n",
+			builder.WriteString(text.New("Assets: \n",
 				"Textures = ", len(internal.Textures), "\n",
 				"Fonts = ", len(internal.Fonts), "\n",
 				"Sounds = ", len(internal.Sounds), "\n",
 				"Music = ", len(internal.Music), "\n",
-				"Tile Data = ", len(internal.TileLayers), "\n\n")
+				"Tile Data = ", len(internal.TileLayers), "\n\n"))
 		}
 		if memory {
-			debugStr += debug.MemoryUsage()
+			builder.WriteString(debug.MemoryUsage())
 		}
+		debugStr = builder.String()
 	}
 
-	rl.DrawText(debugStr, 0, 0, int32(40/v.Zoom), rl.White)
+	rl.DrawText(debugStr, 10, 10, int32(40/v.Zoom), rl.White)
 }
+
+// private ========================================================
+
+var builder strings.Builder
+var timer float32
+var debugStr string

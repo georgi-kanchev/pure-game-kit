@@ -1,19 +1,15 @@
 package internal
 
 import (
-	"pure-game-kit/packages/utility/number"
 	"time"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var Clock, DeltaTime, FPS, AverageFPS, FrameTime, Runtime float32
-var FrameCount uint64
+var Clock, TickDelta, FrameDelta, TPS, FPS, Runtime float32
+var TickBusy float32
+var TargetTPS uint16
 
 var CallAfter = make(map[float32][]func())
 var CallFor = make(map[float32][]func(remaining float32))
-
-var FrameStart time.Time
 
 func Update() {
 	updateTimeData()
@@ -27,7 +23,7 @@ func Update() {
 
 const deltaMax, alpha float32 = 0.1, 0.1
 
-var prevClock, smoothDelta float32
+var prev time.Time = time.Now()
 
 func updateTimeData() {
 	var now = time.Now()
@@ -36,25 +32,9 @@ func updateTimeData() {
 
 	Clock = secondsSinceMidnight
 
-	if prevClock == 0 {
-		prevClock = Clock
-	}
+	TickDelta = float32(time.Since(prev).Seconds())
+	TPS = 1.0 / TickDelta
+	Runtime += TickDelta
 
-	if prevClock > Clock { // we hit midnight
-		prevClock = Clock - DeltaTime
-	}
-
-	DeltaTime = number.Minimum(rl.GetFrameTime(), deltaMax)
-	Runtime += DeltaTime
-	FrameCount++
-	FPS = 1.0 / DeltaTime
-
-	if smoothDelta == 0 {
-		smoothDelta = DeltaTime
-	}
-
-	smoothDelta = (DeltaTime * alpha) + (smoothDelta * (1.0 - alpha))
-	AverageFPS = 1.0 / smoothDelta
-
-	prevClock = Clock
+	prev = now
 }

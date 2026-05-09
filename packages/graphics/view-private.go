@@ -12,8 +12,6 @@ var rlCam = rl.Camera2D{}
 var drawText = NewTextBox("", 0, 0)
 var drawTexture = NewSprite(0, 0, 0)
 
-var debugStr string
-
 var skipStartAndEnd bool
 
 const placeholderCharAsset = '@'

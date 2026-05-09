@@ -247,7 +247,7 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 		if c == c.root.cMiddlePressed {
 			var dy = my - c.prevMouseY
 			c.ScrollY -= dy
-			var instantVelY = -dy / internal.DeltaTime
+			var instantVelY = -dy / internal.TickDelta
 			const weight = 0.2
 			c.dragVelY = (c.dragVelY * (1.0 - weight)) + (instantVelY * weight)
 		}
@@ -268,7 +268,7 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 
 			// smooth handle dragging
 			var diff = c.targetScrollY - c.ScrollY
-			c.ScrollY += diff * handleSpeed * internal.DeltaTime
+			c.ScrollY += diff * handleSpeed * internal.TickDelta
 			if number.Absolute(diff) < 0.5 {
 				c.ScrollY = c.targetScrollY
 			}
@@ -279,8 +279,8 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 	}
 
 	if c != c.root.cMiddlePressed && c.dragVelY != 0 {
-		c.ScrollY += c.dragVelY * internal.DeltaTime
-		c.dragVelY *= number.Exponential(-10.0 * internal.DeltaTime)
+		c.ScrollY += c.dragVelY * internal.TickDelta
+		c.dragVelY *= number.Exponential(-10.0 * internal.TickDelta)
 		if number.Absolute(c.dragVelY) < 0.1 {
 			c.dragVelY = 0
 		}
@@ -338,7 +338,7 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 		if c == c.root.cMiddlePressed {
 			var dx = mx - c.prevMouseX
 			c.ScrollX -= dx
-			var instantVelX = -dx / internal.DeltaTime
+			var instantVelX = -dx / internal.TickDelta
 			const weight = 0.2
 			c.dragVelX = (c.dragVelX * (1.0 - weight)) + (instantVelX * weight)
 		}
@@ -360,7 +360,7 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 
 			// smooth handle dragging
 			var diff = c.targetScrollX - c.ScrollX
-			c.ScrollX += diff * handleSpeed * internal.DeltaTime
+			c.ScrollX += diff * handleSpeed * internal.TickDelta
 			if number.Absolute(diff) < 0.5 {
 				c.ScrollX = c.targetScrollX
 			}
@@ -371,8 +371,8 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 	}
 
 	if c != c.root.cMiddlePressed && c.dragVelX != 0 {
-		c.ScrollX += c.dragVelX * internal.DeltaTime
-		c.dragVelX *= number.Exponential(-10.0 * internal.DeltaTime)
+		c.ScrollX += c.dragVelX * internal.TickDelta
+		c.dragVelX *= number.Exponential(-10.0 * internal.TickDelta)
 		if number.Absolute(c.dragVelX) < 0.1 {
 			c.dragVelX = 0
 		}

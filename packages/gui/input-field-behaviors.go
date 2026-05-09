@@ -11,7 +11,6 @@ import (
 	"pure-game-kit/packages/utility/is"
 	"pure-game-kit/packages/utility/number"
 	txt "pure-game-kit/packages/utility/text"
-	"pure-game-kit/packages/utility/time"
 )
 
 var clickTime float32
@@ -169,9 +168,9 @@ func tryInput(text string, margin float32) string {
 	return text
 }
 func tryFocusNextField() {
-	if !keyboard.IsKeyJustPressed(key.Tab) || frame == int(time.FrameCount()) {
-		return
-	}
+	// if !keyboard.IsKeyJustPressed(key.Tab) || frame == int(time.FrameCount()) {
+	// 	return
+	// }
 
 	var self = typingIn
 	var owner = self.root.Containers[self.OwnerId]
@@ -197,7 +196,7 @@ func tryFocusNextField() {
 	var text = txt.Remove(self.root.themedField(field.Text, owner, typingIn), "\n")
 	indexCursor = len(text)
 	indexSelect = indexCursor
-	frame = int(time.FrameCount()) // only once per frame
+	// frame = int(time.FrameCount()) // only once per frame
 
 	var margin = parseNum(self.root.themedField(field.InputFieldMargin, owner, typingIn), 10)
 	setupText(margin, typingIn, true)

@@ -101,7 +101,7 @@ func inputField(w *widget) {
 		tryFocusNextField()
 
 		scrollX = condition.If(txt.Length(text) == 0, 0, scrollX)
-		cursorTime += internal.DeltaTime
+		cursorTime += internal.TickDelta
 	}
 
 	var isPlaceholder = false

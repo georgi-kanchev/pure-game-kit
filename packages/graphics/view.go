@@ -64,7 +64,7 @@ func (v *View) MouseDragAndZoomSmoothly() {
 	}
 
 	const dragFriction, dragStrength = 8.0, 8.0
-	var dt = internal.DeltaTime
+	var dt = internal.TickDelta
 	var decay = number.Exponential(-dragFriction * dt)
 	v.velocityX *= decay
 	v.velocityY *= decay
