@@ -156,7 +156,7 @@ func isConvex(pts []float32, count int) bool {
 
 var rlCam = rl.Camera2D{}
 var drawText = NewTextBox("", 0, 0)
-var drawTexture = NewSprite("", 0, 0)
+var drawTexture = NewSprite(0, 0, 0)
 
 var debugStr string
 
@@ -170,13 +170,6 @@ func (v *View) area() (x, y, w, h float32) {
 		return 0, 0, float32(ww), float32(wh)
 	}
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
-}
-func (v *View) mask() (x, y, w, h float32) {
-	if v.Mask == (Area{}) {
-		var ww, wh = window.Size()
-		return 0, 0, float32(ww), float32(wh)
-	}
-	return v.Mask.X, v.Mask.Y, v.Mask.Width, v.Mask.Height
 }
 
 // call before draw to update view but use screen space instead of view space
@@ -200,7 +193,6 @@ func (v *View) begin() {
 	}
 
 	rl.BeginMode2D(rlCam)
-	batcher.clipMask = v.Mask
 
 	if v.Area != (Area{}) {
 		var mx, my, mw, mh = v.area()

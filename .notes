@@ -1,8 +1,13 @@
 TODO:
-gui rework
+assets should be type uint ids, not strings
 textbox rework
+gui rework
 geometry rework
 graphics rework, shape render, text render
+remove delta time, make engine fixed tickrate
+event system, maybe game side? not sure
+translations
+
 nine patch should have option stretch/tile per edge/center
 
 LINKS:

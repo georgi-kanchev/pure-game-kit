@@ -67,21 +67,21 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 		if number.DivisionRemainder(x, spacingX*10) == 0 {
 			myThickness *= 3
 		}
-		batcher.QueueLine(x, top, x, bottom, myThickness, renderColor)
+		batcher.QueueLine(x, top, x, bottom, myThickness, renderColor, v.Mask)
 	}
 	for y := top; y <= bottom; y += spacingY {
 		var myThickness = thickness
 		if number.DivisionRemainder(y, spacingY*10) == 0 {
 			myThickness *= 3
 		}
-		batcher.QueueLine(left, y, right, y, myThickness, renderColor)
+		batcher.QueueLine(left, y, right, y, myThickness, renderColor, v.Mask)
 	}
 
 	if top <= 0 && bottom >= 0 {
-		batcher.QueueLine(left, 0, right, 0, thickness*6, renderColor)
+		batcher.QueueLine(left, 0, right, 0, thickness*6, renderColor, v.Mask)
 	}
 	if left <= 0 && right >= 0 {
-		batcher.QueueLine(0, top, 0, bottom, thickness*6, renderColor)
+		batcher.QueueLine(0, top, 0, bottom, thickness*6, renderColor, v.Mask)
 	}
 
 	batcher.Draw()
@@ -92,7 +92,7 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 
 func (v *View) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
 	v.begin()
-	batcher.QueueLine(ax, ay, bx, by, thickness, getColor(color))
+	batcher.QueueLine(ax, ay, bx, by, thickness, getColor(color), v.Mask)
 	batcher.Draw()
 	v.end()
 }
@@ -110,7 +110,7 @@ func (v *View) DrawLinesPath(thickness float32, color uint, points ...float32) {
 		var x2, y2 = points[i], points[i+1]
 
 		if !number.IsNaN(x1) && !number.IsNaN(x2) {
-			batcher.QueueLine(x1, y1, x2, y2, thickness, col)
+			batcher.QueueLine(x1, y1, x2, y2, thickness, col, v.Mask)
 		}
 	}
 	batcher.Draw()
@@ -119,7 +119,7 @@ func (v *View) DrawLinesPath(thickness float32, color uint, points ...float32) {
 
 func (v *View) DrawQuad(x, y, width, height, angle float32, color uint) {
 	v.begin()
-	batcher.QueueQuad(x, y, width, height, angle, getColor(color))
+	batcher.QueueQuad(x, y, width, height, angle, getColor(color), v.Mask)
 	batcher.Draw()
 	v.end()
 }
@@ -155,10 +155,10 @@ func (v *View) DrawQuadFrame(x, y, width, height, angle, thickness float32, colo
 	var x7, y7 = transform(-h, vy2)
 	var x8, y8 = transform(-h, vy1)
 	var col = getColor(color)
-	batcher.QueueLine(x1, y1, x2, y2, absT, col)
-	batcher.QueueLine(x3, y3, x4, y4, absT, col)
-	batcher.QueueLine(x5, y5, x6, y6, absT, col)
-	batcher.QueueLine(x7, y7, x8, y8, absT, col)
+	batcher.QueueLine(x1, y1, x2, y2, absT, col, v.Mask)
+	batcher.QueueLine(x3, y3, x4, y4, absT, col, v.Mask)
+	batcher.QueueLine(x5, y5, x6, y6, absT, col, v.Mask)
+	batcher.QueueLine(x7, y7, x8, y8, absT, col, v.Mask)
 	batcher.Draw()
 	v.end()
 }
@@ -291,7 +291,7 @@ func (v *View) DrawShapes(color uint, points ...float32) {
 
 func (v *View) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32, color uint) {
 	var w, h = assets.Size(assetId)
-	drawTexture.TextureId, drawTexture.Color = assetId, color
+	// drawTexture.ImageId, drawTexture.Color = assetId, color
 	drawTexture.X, drawTexture.Y = x, y
 	drawTexture.PivotX, drawTexture.PivotY = 0, 0
 	drawTexture.Width, drawTexture.Height = float32(w), float32(h)

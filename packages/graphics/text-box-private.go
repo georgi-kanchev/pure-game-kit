@@ -93,12 +93,12 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			var char = condition.If(emptyLine, ' ', c)
 
 			if curState.HasAsset {
-				charSize = t.LineHeight
-				var rect = rl.NewRectangle(curX, curY, charSize, charSize)
-				var tex, src, rot, flip = internal.AssetData(curState.AssetId)
-				internal.EditAssetRects(&src, &rect, t.Angle, rot, flip)
-				symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
-				curState.HasAsset = false
+				// charSize = t.LineHeight
+				// var rect = rl.NewRectangle(curX, curY, charSize, charSize)
+				// var tex, src, rot, flip = internal.AssetData(curState.AssetId)
+				// internal.EditAssetRects(&src, &rect, t.Angle, rot, flip)
+				// symb = symbol{Texture: tex, Rect: rect, Bounds: rect, TexRect: src}
+				// curState.HasAsset = false
 			} else {
 				charSize = t.measureRune(font, char)
 				symb = t.createSymbol(font, curX, curY, c)

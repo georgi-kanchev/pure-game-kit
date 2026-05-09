@@ -18,19 +18,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func UnloadAll() {
-	UnloadAllTextures()
-	UnloadAllSounds()
-	UnloadAllMusic()
-	UnloadAllTileData()
-	UnloadAllTileSets()
-}
-func ReloadAll() {
-	ReloadAllTextures()
-	ReloadAllSounds()
-	ReloadAllMusic()
-}
-
 //=================================================================
 
 // For Audio:
@@ -45,17 +32,6 @@ func IsLoaded(assetId string) bool {
 }
 
 // private ========================================================
-
-const defaultFont = ""
-const defaultTexture = ""
-const defaultCursors = "^"
-const defaultIcons = "@"
-const defaultInputLeft = "["
-const defaultInputRight = "]"
-const defaultPatterns = "&"
-const defaultRetroAtlas = "#"
-const defaultUI = "!"
-const defaultSoundsUI = "~"
 
 func tryCreateWindow() {
 	if !rl.IsWindowReady() {

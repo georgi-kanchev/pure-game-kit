@@ -18,11 +18,11 @@ func setupVisualsTextured(w *widget) {
 	var _, isBgr = w.Fields[f.FillContainer]
 
 	if w.sprite == nil {
-		w.sprite = graphics.NewSprite("", 0, 0)
-		w.top = graphics.NewSprite("", 0, 0)
-		w.left = graphics.NewSprite("", 0, 0)
-		w.right = graphics.NewSprite("", 0, 0)
-		w.bottom = graphics.NewSprite("", 0, 0)
+		// w.sprite = graphics.NewSprite("", 0, 0)
+		// w.top = graphics.NewSprite("", 0, 0)
+		// w.left = graphics.NewSprite("", 0, 0)
+		// w.right = graphics.NewSprite("", 0, 0)
+		// w.bottom = graphics.NewSprite("", 0, 0)
 		w.sprite.PivotX, w.sprite.PivotY = 0, 0
 	}
 	if w.box == nil {
@@ -44,7 +44,7 @@ func setupVisualsTextured(w *widget) {
 		}
 	} else {
 		sprite.X, sprite.Y = w.X, w.Y
-		sprite.TextureId = assetId
+		// sprite.ImageId = assetId
 		sprite.Color = col
 		sprite.Width, sprite.Height = w.Width, w.Height
 		if owner != nil && !isBgr {

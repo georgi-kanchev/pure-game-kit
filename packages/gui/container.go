@@ -291,11 +291,11 @@ func (c *container) handleVerticalSlider(maxY, minY float32, shift bool) {
 	var off = float32(scrollSize * scrollOutline)
 
 	if c.verScrollBase == nil || c.verScrollHandle1 == nil || c.verScrollHandle2 == nil {
-		c.verScrollBase = graphics.NewSprite("", 0, 0)
+		// c.verScrollBase = graphics.NewSprite("", 0, 0)
 		c.verScrollBase.PivotX, c.verScrollBase.PivotY = 0, 0
-		c.verScrollHandle1 = graphics.NewSprite("", 0, 0)
+		// c.verScrollHandle1 = graphics.NewSprite("", 0, 0)
 		c.verScrollHandle1.PivotX, c.verScrollHandle1.PivotY = 0, 0
-		c.verScrollHandle2 = graphics.NewSprite("", 0, 0)
+		// c.verScrollHandle2 = graphics.NewSprite("", 0, 0)
 		c.verScrollHandle2.PivotX, c.verScrollHandle2.PivotY = 0, 0
 	}
 
@@ -383,11 +383,11 @@ func (c *container) handleHorizontalSlider(maxX, minX float32, vertical, shift b
 	var off = float32(scrollSize * scrollOutline)
 
 	if c.horScrollBase == nil || c.horScrollHandle1 == nil || c.horScrollHandle2 == nil {
-		c.horScrollBase = graphics.NewSprite("", 0, 0)
+		// c.horScrollBase = graphics.NewSprite("", 0, 0)
 		c.horScrollBase.PivotX, c.horScrollBase.PivotY = 0, 0
-		c.horScrollHandle1 = graphics.NewSprite("", 0, 0)
+		// c.horScrollHandle1 = graphics.NewSprite("", 0, 0)
 		c.horScrollHandle1.PivotX, c.horScrollHandle1.PivotY = 0, 0
-		c.horScrollHandle2 = graphics.NewSprite("", 0, 0)
+		// c.horScrollHandle2 = graphics.NewSprite("", 0, 0)
 		c.horScrollHandle2.PivotX, c.horScrollHandle2.PivotY = 0, 0
 	}
 

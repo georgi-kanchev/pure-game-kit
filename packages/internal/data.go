@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/xml"
 	"math"
 	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/number"
@@ -10,6 +11,81 @@ import (
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+type FontData struct {
+	AtlasId int32    // see assets.ImageId
+	XMLName xml.Name `xml:"font"`
+
+	Info struct {
+		Face     string `xml:"face,attr"`
+		Size     int    `xml:"size,attr"`
+		Bold     int    `xml:"bold,attr"`
+		Italic   int    `xml:"italic,attr"`
+		Charset  string `xml:"charset,attr"`
+		Unicode  int    `xml:"unicode,attr"`
+		StretchH int    `xml:"stretchH,attr"`
+		Smooth   int    `xml:"smooth,attr"`
+		AA       int    `xml:"aa,attr"`
+		Padding  string `xml:"padding,attr"`
+		Spacing  string `xml:"spacing,attr"`
+		Outline  int    `xml:"outline,attr"`
+	} `xml:"info"`
+
+	Common struct {
+		LineHeight int `xml:"lineHeight,attr"`
+		Base       int `xml:"base,attr"`
+		ScaleW     int `xml:"scaleW,attr"`
+		ScaleH     int `xml:"scaleH,attr"`
+		Pages      int `xml:"pages,attr"`
+		Packed     int `xml:"packed,attr"`
+		AlphaChnl  int `xml:"alphaChnl,attr"`
+		RedChnl    int `xml:"redChnl,attr"`
+		GreenChnl  int `xml:"greenChnl,attr"`
+		BlueChnl   int `xml:"blueChnl,attr"`
+	} `xml:"common"`
+
+	Pages []struct {
+		ID   int    `xml:"id,attr"`
+		File string `xml:"file,attr"`
+	} `xml:"pages>page"`
+
+	DistanceField struct {
+		FieldType     string `xml:"fieldType,attr"`
+		DistanceRange int    `xml:"distanceRange,attr"`
+	} `xml:"distanceField"`
+
+	Chars struct {
+		Count int `xml:"count,attr"`
+		Chars []struct {
+			ID       int    `xml:"id,attr"`
+			Index    int    `xml:"index,attr"`
+			Char     string `xml:"char,attr"`
+			Width    int    `xml:"width,attr"`
+			Height   int    `xml:"height,attr"`
+			XOffset  int    `xml:"xoffset,attr"`
+			YOffset  int    `xml:"yoffset,attr"`
+			XAdvance int    `xml:"xadvance,attr"`
+			Chnl     int    `xml:"chnl,attr"`
+			X        int    `xml:"x,attr"`
+			Y        int    `xml:"y,attr"`
+			Page     int    `xml:"page,attr"`
+		} `xml:"char"`
+	} `xml:"chars"`
+
+	Kernings struct {
+		Count    int `xml:"count,attr"`
+		Kernings []struct {
+			First  int `xml:"first,attr"`
+			Second int `xml:"second,attr"`
+			Amount int `xml:"amount,attr"`
+		} `xml:"kerning"`
+	} `xml:"kernings"`
+}
+type ImageData struct {
+	Texture rl.Texture2D
+
+	CropX, CropY, CropWidth, CropHeight float32
+}
 
 type AtlasRect struct {
 	CellX, CellY,
@@ -32,7 +108,7 @@ type TileLayer struct {
 	ObjectPoints    []float32
 }
 type TileSet struct {
-	TextureId             string
+	ImageId               int32
 	TileWidth, TileHeight int
 	PointsPerTile         map[uint16][]float32
 }
@@ -48,6 +124,12 @@ var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
 
 var Fonts = make(map[string]rl.Font)
+
+var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
+var Fonts2 = make(map[byte]FontData)   // 0 = default
+var Font2NextId byte
+var NextImageId int16
+var NextImageCropId int16
 
 var MatrixDefault rl.Matrix
 var Shader rl.Shader
@@ -85,55 +167,6 @@ var fragQuad string
 var vertDefault string
 
 //=================================================================
-
-func AssetData(assetId string) (tex rl.Texture2D, src rl.Rectangle, rotations int, flip bool) {
-	var texture, hasTexture = Textures[assetId]
-	src = rl.NewRectangle(0, 0, 0, 0)
-	if !hasTexture {
-		var rect, hasArea = AtlasRects[assetId]
-		if hasArea {
-			var atlas, _ = Atlases[rect.AtlasId]
-			var tex, _ = Textures[atlas.TextureId]
-
-			texture = tex
-			src.X = rect.CellX * float32(atlas.CellWidth+atlas.Gap)
-			src.Y = rect.CellY * float32(atlas.CellHeight+atlas.Gap)
-			src.Width = float32(atlas.CellWidth * int(rect.CountX))
-			src.Height = float32(atlas.CellHeight * int(rect.CountY))
-			rotations, flip = rect.Rotations, rect.Flip
-		}
-	} else {
-		src.Width, src.Height = float32(texture.Width), float32(texture.Height)
-	}
-	tex = texture
-	return
-}
-func EditAssetRects(src, dst *rl.Rectangle, ang float32, rotations int, flip bool) {
-	if dst.Width < 0 {
-		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+180, -dst.Width)
-		src.X += src.Width
-		src.Width *= -1
-	}
-	if dst.Height < 0 {
-		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+270, -dst.Height)
-		src.Y += src.Height
-		src.Height *= -1
-	}
-
-	if flip {
-		src.Width *= -1
-	}
-	switch rotations % 4 {
-	case 1: // 90
-		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang, dst.Height)
-	case 2: // 180
-		src.Height *= -1
-		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang, dst.Width)
-		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+90, dst.Height)
-	case 3: // 270
-		dst.X, dst.Y = moveAtAngle(dst.X, dst.Y, ang+90, dst.Width)
-	}
-}
 
 func AssetSize(assetId string) (width, height int) {
 	var texture, hasTexture = Textures[assetId]

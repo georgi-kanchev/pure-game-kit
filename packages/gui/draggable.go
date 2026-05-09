@@ -61,11 +61,11 @@ func queueDraggable(widget *widget) {
 	var assetRatio = float32(w) / float32(h)
 	var spriteRatio = widget.Width / widget.Height
 	var drawW, drawH float32
-	var disabled = widget.isDisabled(owner)
-	var col = defaultValue(widget.root.themedField(field.DraggableAssetColor, owner, widget), "255 255 255")
+	// var disabled = widget.isDisabled(owner)
+	// var col = defaultValue(widget.root.themedField(field.DraggableAssetColor, owner, widget), "255 255 255")
 
 	if widget.handle == nil {
-		widget.handle = graphics.NewSprite("", 0, 0)
+		// widget.handle = graphics.NewSprite("", 0, 0)
 	}
 
 	if assetRatio > spriteRatio {
@@ -78,7 +78,7 @@ func queueDraggable(widget *widget) {
 
 	widget.handle.X, widget.handle.Y = widget.DragX, widget.DragY
 	widget.handle.Width, widget.handle.Height = drawW*scale, drawH*scale
-	widget.handle.TextureId, widget.handle.Color = assetId, parseColor(col, disabled)
+	// widget.handle.ImageId, widget.handle.Color = assetId, parseColor(col, disabled)
 	widget.handle.PivotX, widget.handle.PivotY = 0.5, 0.5
 	widget.handle.ScaleX, widget.handle.ScaleY = scale, scale
 	widget.handle.Mask = condition.If(widget.root.wPressedOn == widget, graphics.Area{}, owner.mask)

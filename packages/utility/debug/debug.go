@@ -23,40 +23,20 @@ import (
 	"unsafe"
 )
 
-var LoggingDisabled = false
-var PrintLogs = true
-var LogPrints = false
-
 func Log(message ...any) {
-	if LoggingDisabled {
-		return
-	}
-
 	var content = "\n" + elements(message...)
 	appendFile(content)
 
-	if PrintLogs {
-		fmt.Println(content)
-	}
+	fmt.Println(content)
 }
 func LogError(message ...any) {
-	if LoggingDisabled {
-		return
-	}
-
 	var content = "\nERROR!\n" + callInfo(elements(message...)) + "\n"
 	appendFile(content)
 
-	if PrintLogs {
-		fmt.Println(content)
-	}
+	fmt.Println(content)
 }
 func Print(message ...any) {
 	fmt.Println(elements(message...))
-
-	if !LoggingDisabled && LogPrints {
-		appendFile("\n" + elements(message...))
-	}
 }
 
 func LinesOfCode() string {

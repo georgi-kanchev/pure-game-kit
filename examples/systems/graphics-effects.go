@@ -8,9 +8,9 @@ import (
 
 func Effects() {
 	var view = graphics.NewView(4)
-	var tex = assets.LoadTexture("examples/data/logo.PNG")
-	var spr = graphics.NewSprite(tex, 0, 0)
-	assets.SetTextureSmoothness(tex, true)
+	var img = assets.LoadImage("examples/data/logo.PNG")
+	var spr = graphics.NewSprite(img, 0, 0)
+	img.SetSmoothness(true)
 
 	spr.Effects = graphics.NewEffects()
 	spr.Effects.PixelSize = 3
@@ -18,7 +18,7 @@ func Effects() {
 	spr.Effects.BlurX, spr.Effects.BlurY = 5, 5
 	spr.ScaleX, spr.ScaleY = 0.2, 0.2
 
-	var spr2 = graphics.NewSprite(tex, 50, 0)
+	var spr2 = graphics.NewSprite(img, 50, 0)
 	spr2.Effects = graphics.NewEffects()
 	spr2.Effects.Saturation = 0.7
 	spr2.Effects.DepthZ = 0.2

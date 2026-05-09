@@ -41,7 +41,7 @@ func slider(w *widget) {
 	var step = parseNum(w.root.themedField(field.SliderStep, owner, w), 0)
 
 	if w.handle == nil {
-		w.handle = graphics.NewSprite("", 0, 0)
+		// w.handle = graphics.NewSprite("", 0, 0)
 	}
 
 	if value != w.PrevValue && !sound.IsPlaying() {
@@ -62,9 +62,9 @@ func slider(w *widget) {
 
 		if len(w.steps) < totalSteps {
 			w.steps = make([]*graphics.Sprite, totalSteps)
-			for i := range w.steps {
-				w.steps[i] = graphics.NewSprite("", 0, 0)
-			}
+			// for i := range w.steps {
+			// w.steps[i] = graphics.NewSprite("", 0, 0)
+			// }
 		}
 
 		for i := 1; i <= totalSteps; i++ {
@@ -72,7 +72,7 @@ func slider(w *widget) {
 			var step = w.steps[i-1]
 			step.X, step.Y = stepX, w.Y
 			step.Width, step.Height = w.Height, w.Height
-			step.TextureId, step.Color = stepAssetId, buttonColor
+			// step.ImageId, step.Color = stepAssetId, buttonColor
 			step.Mask = owner.mask
 			step.PivotX, step.PivotY = 0, 0
 
@@ -95,7 +95,7 @@ func slider(w *widget) {
 
 	w.handle.X, w.handle.Y = x, handleY
 	w.handle.Width, w.handle.Height = handleWidth, handleHeight
-	w.handle.TextureId, w.handle.Color = handleAssetId, buttonColor
+	// w.handle.ImageId, w.handle.Color = handleAssetId, buttonColor
 	w.handle.PivotX, w.handle.PivotY = 0, 0
 	w.handle.Mask = owner.mask
 

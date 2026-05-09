@@ -15,12 +15,12 @@ func LoadedTileDataIds() []string {
 	return collection.MapKeys(internal.TileLayers)
 }
 
-func LoadTileSet(imageFilePath string, tileWidth, tileHeight int) string {
-	var textureId = LoadTexture(imageFilePath)
-	var atlas = &internal.TileSet{TextureId: textureId, TileWidth: tileWidth, TileHeight: tileHeight,
-		PointsPerTile: make(map[uint16][]float32)}
-	internal.TileSets[textureId] = atlas
-	return textureId
+func LoadTileSet(imagePath string, tileWidth, tileHeight int) string {
+	// var textureId = LoadImage(imagePath)
+	// var atlas = &internal.TileSet{ImageId: int32(textureId), TileWidth: tileWidth, TileHeight: tileHeight,
+	// 	PointsPerTile: make(map[uint16][]float32)}
+	// internal.TileSets[textureId] = atlas
+	return ""
 }
 func LoadTileData(id string, columns, rows int) string {
 	tryCreateWindow()
@@ -37,10 +37,9 @@ func LoadTileData(id string, columns, rows int) string {
 }
 
 func UnloadTileSet(tileSetId string) {
-	var atlas, has = internal.TileSets[tileSetId]
+	var _, has = internal.TileSets[tileSetId]
 
 	if has {
-		UnloadTexture(atlas.TextureId)
 		delete(internal.TileSets, tileSetId)
 	}
 }

@@ -1,7 +1,6 @@
 package example
 
 import (
-	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/graphics/tag"
 	"pure-game-kit/packages/utility/color/palette"
@@ -11,7 +10,6 @@ import (
 
 func Texts() {
 	var view = graphics.NewView(1)
-	var _, tiles = assets.LoadDefaultAtlasIcons()
 	var textBox = graphics.NewTextBox("", 0, 0, "")
 	textBox.PivotX, textBox.PivotY = 0.5, 0.5
 	textBox.AlignmentX, textBox.AlignmentY = 0, 1
@@ -29,7 +27,6 @@ func Texts() {
 		" aliqua. Ut ",
 		tag.Bold("enim ad minim"),
 		" veniam, quis ",
-		tag.Asset(tiles[162]),
 		" in voluptate ",
 		tag.Crossout("velit esse incididunt ut labore"),
 		" incididunt ut labore et ",

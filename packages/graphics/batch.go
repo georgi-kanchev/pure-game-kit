@@ -11,7 +11,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func (b *batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color) {
+func (b *batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -27,7 +27,7 @@ func (b *batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
 
-	if b.clipMask == (Area{}) {
+	if mask == (Area{}) {
 		vCount = 4
 		if ang == 0 {
 			for i := range 4 {
@@ -54,17 +54,17 @@ func (b *batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 			b.polygonBuf[i].U = uvs[i*2]
 			b.polygonBuf[i].V = uvs[i*2+1]
 		}
-		vCount = clipPolygonAABB(b.polygonBuf[:4], b.clipResultBuf[:], b.clipTempBuf[:], b.clipMask)
+		vCount = clipPolygonAABB(b.polygonBuf[:4], b.clipResultBuf[:], b.clipTempBuf[:], mask)
 		if vCount >= 3 {
 			b.writeToBuffers(b.clipResultBuf[:vCount], vCount, tex, col)
 		}
 	}
 }
 
-func (b *batch) QueueQuad(x, y, width, height, angle float32, color rl.Color) {
-	b.QueueTexture(internal.White1x1, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color)
+func (b *batch) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
+	b.QueueTexture(internal.White1x1, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
 }
-func (b *batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
+func (b *batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {
 		return
 	}
@@ -74,9 +74,9 @@ func (b *batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color) {
 	var length = number.SquareRoot(dx*dx + dy*dy)
 	var perpAngle = ang - 90
 	var startX, startY = point.MoveAtAngle(x1, y1, perpAngle, thickness*0.5)
-	b.QueueQuad(startX, startY, length, thickness, ang, color)
+	b.QueueQuad(startX, startY, length, thickness, ang, color, mask)
 }
-func (b *batch) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32) {
+func (b *batch) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32, mask Area) {
 	var lineThickness = lineHeight / 15
 	var tx, ty = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
 	var fontSrc = rl.NewRectangle(tx, ty, 0.2, 0.2)
@@ -85,7 +85,7 @@ func (b *batch) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32) {
 		var prevCol = s.Color
 		var rect = rl.NewRectangle(s.Bounds.X, s.Bounds.Y, s.Bounds.Width+gapX, s.Bounds.Height)
 		s.Color = s.BackColor
-		batcher.QueueTexture(font.Texture, fontSrc, rect, s.Angle, packSymbolColor(s))
+		batcher.QueueTexture(font.Texture, fontSrc, rect, s.Angle, packSymbolColor(s), mask)
 		s.Color = prevCol
 	}
 
@@ -93,19 +93,21 @@ func (b *batch) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32) {
 		var offset = (lineHeight - lineThickness) - s.TopCrop
 		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
 			var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
-			batcher.QueueTexture(font.Texture, fontSrc, rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness), s.Angle, packSymbolColor(s))
+			var rect = rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness)
+			batcher.QueueTexture(font.Texture, fontSrc, rect, s.Angle, packSymbolColor(s), mask)
 		}
 	}
 
 	if !unicode.IsSpace(s.Value) {
-		b.QueueTexture(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s))
+		b.QueueTexture(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s), mask)
 	}
 
 	if s.Strikethrough {
 		var offset = (lineHeight*0.55 - lineThickness/2) - s.TopCrop
 		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
 			var x, y = point.MoveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
-			batcher.QueueTexture(font.Texture, fontSrc, rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness), s.Angle, packSymbolColor(s))
+			var rect = rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness)
+			batcher.QueueTexture(font.Texture, fontSrc, rect, s.Angle, packSymbolColor(s), mask)
 		}
 	}
 }
@@ -183,8 +185,6 @@ type vertex struct {
 type batch struct {
 	mesh     *rl.Mesh
 	material rl.Material
-
-	clipMask Area
 
 	vertCount, indexCount, maxQuads int32
 

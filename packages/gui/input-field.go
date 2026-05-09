@@ -143,7 +143,7 @@ func queue(margin float32, w *widget, isPlaceholder bool) {
 		}
 
 		if w.handle == nil {
-			w.handle = graphics.NewSprite("", 0, 0)
+			// w.handle = graphics.NewSprite("", 0, 0)
 		}
 
 		w.handle.X, w.handle.Y = ax, w.textBox.Y+margin/2
@@ -158,8 +158,8 @@ func queue(margin float32, w *widget, isPlaceholder bool) {
 		var cw, ch = cursorWidth, w.textBox.Height - margin
 
 		if w.cursor1 == nil || w.cursor2 == nil {
-			w.cursor1 = graphics.NewSprite("", 0, 0)
-			w.cursor2 = graphics.NewSprite("", 0, 0)
+			// w.cursor1 = graphics.NewSprite("", 0, 0)
+			// w.cursor2 = graphics.NewSprite("", 0, 0)
 		}
 
 		w.cursor1.X, w.cursor1.Y = x-cw/2, y-cw/2

@@ -1,27 +1,19 @@
 package example
 
-import (
-	"pure-game-kit/packages/assets"
-	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/utility/color/palette"
-	"pure-game-kit/packages/window"
-)
-
 func NinePatches() {
-	var view = graphics.NewView(1)
-	var _, _, b = assets.LoadDefaultAtlasUI()
-	var ninePatch = graphics.NewNinePatch(b[0], 0, 0)
-	ninePatch.PivotX, ninePatch.PivotY = 0, 0
-	ninePatch.Color = palette.Cyan
+	// var view = graphics.NewView(1)
+	// var ninePatch = graphics.NewNinePatch(b[0], 0, 0)
+	// ninePatch.PivotX, ninePatch.PivotY = 0, 0
+	// ninePatch.Color = palette.Cyan
 
-	var bar = graphics.NewNinePatch(b[11], 0, 0)
-	bar.PivotX, bar.PivotY = 0, 0
+	// var bar = graphics.NewNinePatch(b[11], 0, 0)
+	// bar.PivotX, bar.PivotY = 0, 0
 
-	for window.KeepOpen() {
-		view.DrawNinePatches(ninePatch, bar)
+	// for window.KeepOpen() {
+	// 	view.DrawNinePatches(ninePatch, bar)
 
-		var mx, my = ninePatch.PointToLocal(view.MousePosition())
-		ninePatch.Width, ninePatch.Height = mx, my
-		bar.Width = mx
-	}
+	// 	var mx, my = ninePatch.PointToLocal(view.MousePosition())
+	// 	ninePatch.Width, ninePatch.Height = mx, my
+	// 	bar.Width = mx
+	// }
 }

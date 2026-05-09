@@ -5,9 +5,12 @@ import (
 	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/file"
+	"pure-game-kit/packages/utility/storage"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+type FontId byte
 
 func LoadedFontIds() []string {
 	return collection.MapKeys(internal.Fonts)
@@ -48,6 +51,22 @@ func UnloadAllFonts() {
 	for id := range internal.Sounds {
 		UnloadFont(id)
 	}
+}
+
+func LoadFont2(pngPath string, xmlPath string) FontId {
+	tryCreateWindow()
+
+	if !file.Exists(pngPath) {
+		debug.LogError("Failed to find PNG file: \"", pngPath, "\"")
+		return 0
+	}
+	var atlasId = LoadImage(pngPath)
+	internal.Font2NextId++
+	var id = internal.Font2NextId
+	var fontData = &internal.FontData{AtlasId: int32(atlasId)}
+	storage.FromXML(file.LoadText(xmlPath), fontData)
+	internal.Fonts2[id] = *fontData
+	return FontId(id)
 }
 
 // private ========================================================
