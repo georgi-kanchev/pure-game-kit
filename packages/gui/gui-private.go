@@ -233,10 +233,10 @@ func (r *root) drawStart() {
 	r.textBoxes = r.textBoxes[:0]
 }
 func (r *root) drawEnd() {
-	r.cam.DrawNinePatches(r.boxes...)
-	r.cam.DrawSprites(r.sprites...)
-	r.cam.DrawTextBoxes(r.textBoxes...)
-	r.cam.DrawSprites(r.spritesAbove...)
+	// r.cam.DrawNinePatches(r.boxes...)
+	// r.cam.DrawSprites(r.sprites...)
+	// r.cam.DrawTextBoxes(r.textBoxes...)
+	// r.cam.DrawSprites(r.spritesAbove...)
 }
 
 func extraProps(props ...string) string {

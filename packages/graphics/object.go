@@ -116,15 +116,15 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 
 // text ===========================================================
 
-func (o *Object) Measure(text string) (width, height float32) {
+func (o *Object) TextMeasure(text string) (width, height float32) {
 	o.tryRegenerateText()
 	return 0, 0
 }
-func (o *Object) LineCount() int {
+func (o *Object) TextLineCount() int {
 	o.tryRegenerateText()
 	return o.lineCount
 }
-func (o *Object) Symbol(index int) Object {
+func (o *Object) TextSymbol(index int) Object {
 	o.tryRegenerateText()
 	return Object{}
 }

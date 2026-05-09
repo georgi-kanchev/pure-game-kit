@@ -1,27 +1,21 @@
 package graphics
 
 import (
-	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/text"
 	tm "pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/utility/time/unit"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func (v *View) DrawColor(color uint) {
-	// var tlX, tlY = v.PointFromEdge(0, 0) // Top-Left
-	// var trX, trY = v.PointFromEdge(1, 0) // Top-Right
-	// var brX, brY = v.PointFromEdge(1, 1) // Bottom-Right
-	// var blX, blY = v.PointFromEdge(0, 1) // Bottom-Left
-	// var renderColor = getColor(color)
-
+	var x, y, w, h = v.Bounds()
 	v.begin()
-	// batcher.QueueTriangle(tlX, tlY, trX, trY, brX, brY, renderColor)
-	// batcher.QueueTriangle(tlX, tlY, brX, brY, blX, blY, renderColor)
+	batcher.QueueQuad(x, y, w, h, 0, getColor(color), v.Mask)
 	batcher.Draw()
 	v.end()
 }
@@ -90,228 +84,6 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 
 //=================================================================
 
-func (v *View) DrawLine(ax, ay, bx, by, thickness float32, color uint) {
-	v.begin()
-	batcher.QueueLine(ax, ay, bx, by, thickness, getColor(color), v.Mask)
-	batcher.Draw()
-	v.end()
-}
-
-// multiple line paths can be separated by a NaN pair
-func (v *View) DrawLinesPath(thickness float32, color uint, points ...float32) {
-	if thickness == 0 || color == 0 || len(points) == 0 {
-		return
-	}
-
-	v.begin()
-	var col = getColor(color)
-	for i := 2; i < len(points); i += 2 {
-		var x1, y1 = points[i-2], points[i-1]
-		var x2, y2 = points[i], points[i+1]
-
-		if !number.IsNaN(x1) && !number.IsNaN(x2) {
-			batcher.QueueLine(x1, y1, x2, y2, thickness, col, v.Mask)
-		}
-	}
-	batcher.Draw()
-	v.end()
-}
-
-func (v *View) DrawQuad(x, y, width, height, angle float32, color uint) {
-	v.begin()
-	batcher.QueueQuad(x, y, width, height, angle, getColor(color), v.Mask)
-	batcher.Draw()
-	v.end()
-}
-func (v *View) DrawQuadFrame(x, y, width, height, angle, thickness float32, color uint) {
-	v.begin()
-	var sinRot, cosRot = internal.SinCos(angle)
-	var transform = func(px, py float32) (float32, float32) {
-		return x + (px*cosRot - py*sinRot), y + (px*sinRot + py*cosRot)
-	}
-
-	var absT = thickness
-	if absT < 0 {
-		absT = -absT
-	}
-
-	var h = thickness / 2
-	var hx1, hx2, vy1, vy2 float32
-
-	if thickness > 0 {
-		hx1, hx2 = -absT, width+absT
-		vy1, vy2 = 0, height
-	} else {
-		hx1, hx2 = 0, width
-		vy1, vy2 = absT, height-absT
-	}
-
-	var x1, y1 = transform(hx1, -h)
-	var x2, y2 = transform(hx2, -h)
-	var x3, y3 = transform(hx2, height+h)
-	var x4, y4 = transform(hx1, height+h)
-	var x5, y5 = transform(width+h, vy1)
-	var x6, y6 = transform(width+h, vy2)
-	var x7, y7 = transform(-h, vy2)
-	var x8, y8 = transform(-h, vy1)
-	var col = getColor(color)
-	batcher.QueueLine(x1, y1, x2, y2, absT, col, v.Mask)
-	batcher.QueueLine(x3, y3, x4, y4, absT, col, v.Mask)
-	batcher.QueueLine(x5, y5, x6, y6, absT, col, v.Mask)
-	batcher.QueueLine(x7, y7, x8, y8, absT, col, v.Mask)
-	batcher.Draw()
-	v.end()
-}
-
-func (v *View) DrawPoints(radius float32, color uint, points ...float32) {
-	v.begin()
-	skipStartAndEnd = true
-	for i := 0; i < len(points); i += 2 {
-		if i+1 >= len(points) {
-			break
-		}
-
-		var x, y = points[i], points[i+1]
-		v.DrawCircle(x, y, radius, 16, color)
-	}
-	skipStartAndEnd = false
-	batcher.Draw()
-	v.end()
-}
-func (v *View) DrawCircle(x, y, radius float32, segments int, color uint) {
-	v.DrawArc(x, y, radius*2, radius*2, 1, 0, segments, color)
-}
-func (v *View) DrawArc(x, y, width, height, fill, angle float32, segments int, color uint) {
-	// v.begin()
-	// var fillAngle = number.Limit(fill, 0, 1) * 360
-	// if fillAngle < 360 {
-	// segments = max(int((fillAngle/360.0)*float32(segments)), 3)
-	// }
-	//
-	// var radiusH, radiusV = width / 2, height / 2
-	// var halfPie = fillAngle / 2.0
-	// var sinRot, cosRot = internal.SinCos(angle)
-	// var renderColor = getColor(color)
-	// var s0, c0 = internal.SinCos(halfPie)
-	// var lx0, ly0 = c0 * radiusH, s0 * radiusV
-	// var prevX = x + (lx0*cosRot - ly0*sinRot)
-	// var prevY = y + (lx0*sinRot + ly0*cosRot)
-	//
-	// for i := 1; i <= segments; i++ {
-	// var t = float32(i) / float32(segments)
-	// var ang = halfPie - (t * fillAngle)
-	// var si, co = internal.SinCos(ang)
-	// var lxi, lyi = co * radiusH, si * radiusV
-	// var currX = x + (lxi*cosRot - lyi*sinRot)
-	// var currY = y + (lxi*sinRot + lyi*cosRot)
-	//
-	// batcher.QueueTriangle(x, y, prevX, prevY, currX, currY, renderColor)
-	// prevX, prevY = currX, currY
-	// }
-	// batcher.Draw()
-	// v.end()
-}
-
-// works with convex + concave (non-self-intersacting) shapes
-//
-// multiple shapes can be separated by a NaN pair
-func (v *View) DrawShapes(color uint, points ...float32) {
-	// v.begin()
-	//
-	// var ptsCountsPerShape = separateShapes(points)
-	// var offset = 0
-	// var renderColor = getColor(color)
-	//
-	// v.Effects.updateUniforms(1, 1, nil, nil, false)
-	//
-	// for _, count := range ptsCountsPerShape {
-	// for offset < len(points) && number.IsNaN(points[offset]) {
-	// offset += 2
-	// }
-	//
-	// var shape = points[offset : offset+(count*2)]
-	// offset += count * 2
-	//
-	// if count > 2 && shape[0] == shape[len(shape)-2] && shape[1] == shape[len(shape)-1] {
-	// shape = shape[:len(shape)-2]
-	// count--
-	// }
-	//
-	// if count < 3 {
-	// continue
-	// }
-	//
-	// if isConvex(shape, count) { // fast path - triangle fan (convex only)
-	// var isReverse = area(shape) >= 0
-	// var x0, y0 = shape[0], shape[1]
-	//
-	// for i := 1; i < count-1; i++ {
-	// var x1, y1, x2, y2 float32
-	//
-	// if isReverse {
-	// var idx1 = (count - i) * 2
-	// var idx2 = (count - i - 1) * 2
-	// x1, y1 = shape[idx1], shape[idx1+1]
-	// x2, y2 = shape[idx2], shape[idx2+1]
-	// } else {
-	// var idx1 = i * 2
-	// var idx2 = (i + 1) * 2
-	// x1, y1 = shape[idx1], shape[idx1+1]
-	// x2, y2 = shape[idx2], shape[idx2+1]
-	// }
-	//
-	// batcher.QueueTriangle(x0, y0, x1, y1, x2, y2, renderColor)
-	// }
-	// continue
-	// }
-	//
-	// var triangles = triangulate(shape) // slow path - ear clipping/triangulation (concave only)
-	// if len(triangles) == 0 {
-	// continue
-	// }
-	//
-	// for i := 0; i < len(triangles); i += 6 {
-	// var x1, y1 = triangles[i+0], triangles[i+1]
-	// var x2, y2 = triangles[i+2], triangles[i+3]
-	// var x3, y3 = triangles[i+4], triangles[i+5]
-	//
-	// if !isClockwiseFlat(triangles[i : i+6]) {
-	// x1, y1, x3, y3 = x3, y3, x1, y1
-	// }
-	//
-	// batcher.QueueTriangle(x1, y1, x2, y2, x3, y3, renderColor)
-	// }
-	// }
-	//
-	// batcher.Draw()
-	// v.end()
-}
-
-//=================================================================
-
-func (v *View) DrawTexture(assetId string, x, y, scaleX, scaleY, angle float32, color uint) {
-	var w, h = assets.Size(assetId)
-	// drawTexture.ImageId, drawTexture.Color = assetId, color
-	drawTexture.X, drawTexture.Y = x, y
-	drawTexture.PivotX, drawTexture.PivotY = 0, 0
-	drawTexture.Width, drawTexture.Height = float32(w), float32(h)
-	drawTexture.Angle = angle
-	drawTexture.ScaleX, drawTexture.ScaleY = scaleX, scaleY
-	v.DrawSprites(drawTexture)
-}
-func (v *View) DrawText(text string, x, y, height float32) {
-	v.DrawTextAdvanced("", text, x, y, height, 0, 0, 0, palette.White)
-}
-func (v *View) DrawTextAdvanced(fontId, text string, x, y, lineHeight, angle, symbolGap, lineGap float32, color uint) {
-	drawText.FontId, drawText.Color = fontId, color
-	drawText.X, drawText.Y = x, y
-	drawText.PivotX, drawText.PivotY = 0, 0
-	drawText.Text, drawText.Angle = text, angle
-	drawText.SymbolGap, drawText.LineGap = symbolGap, lineGap
-	drawText.Width, drawText.Height = 99999, 99999
-	drawText.WordWrap, drawText.LineHeight = false, lineHeight
-	v.DrawTextBoxes(drawText)
-}
 func (v *View) DrawTextDebug(fps, time, assets, memory bool) {
 	if condition.TrueEvery(0.15, ";;;debug") {
 		debugStr = ""
@@ -342,6 +114,5 @@ func (v *View) DrawTextDebug(fps, time, assets, memory bool) {
 		}
 	}
 
-	var tlx, tly = v.PointFromEdge(0, 0)
-	v.DrawText(debugStr, tlx+10/v.Zoom, tly, 40/v.Zoom)
+	rl.DrawText(debugStr, 0, 0, int32(40/v.Zoom), rl.White)
 }
