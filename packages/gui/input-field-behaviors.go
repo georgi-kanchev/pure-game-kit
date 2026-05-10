@@ -23,13 +23,13 @@ func tryMoveCursor(text string, margin float32) {
 	var end = keyboard.IsKeyJustPressed(key.DownArrow) || keyboard.IsKeyJustPressed(key.End)
 	var length = txt.Length(text)
 
-	if keyboard.IsKeyJustPressed(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow) {
+	if keyboard.IsKeyJustPressed(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow, 0.5) {
 		var max = number.Maximum(indexCursor-1, 0)
 		cursorTime = 0
 		indexCursor = condition.If(ctrl, wordIndex(text, true, indexCursor), max)
 		trySelect()
 	}
-	if keyboard.IsKeyJustPressed(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow) {
+	if keyboard.IsKeyJustPressed(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow, 0.5) {
 		var min = number.Minimum(length, indexCursor+1)
 		cursorTime = 0
 		indexCursor = condition.If(ctrl, wordIndex(text, false, indexCursor), min)
@@ -117,7 +117,7 @@ func tryRemove(text string, margin float32) string {
 		}
 	}
 
-	if keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace) {
+	if keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace, 0.5) {
 		remove(condition.If(ctrl, indexCursor-wordIndex(text, true, indexCursor), 1), 0)
 
 		// scrolls left when empty space appears on the right (if possible)
@@ -129,7 +129,7 @@ func tryRemove(text string, margin float32) string {
 			setupText(margin, w, true)
 		}
 	}
-	if keyboard.IsKeyJustPressed(key.Delete) || keyboard.IsKeyHeld(key.Delete) {
+	if keyboard.IsKeyJustPressed(key.Delete) || keyboard.IsKeyHeld(key.Delete, 0.5) {
 		remove(0, condition.If(ctrl, wordIndex(text, false, indexCursor)-indexCursor, 1))
 	}
 	return text
