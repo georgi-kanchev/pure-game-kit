@@ -1,8 +1,3 @@
-// Input synchronization system:
-// Bridging the gap between the high-frequency renderer loop and the fixed-frequency ticker loop.
-// 1. UpdateInput (Renderer): "Capture" all events (presses, releases, movement) into accumulators.
-// 2. SyncInput (Ticker): "Harvest" accumulators into public variables at the start of every logic tick.
-// This ensures fast user interactions (like sub-tick clicks) are never missed by the game logic.
 package internal
 
 import (
@@ -16,24 +11,32 @@ var Input = ""
 var MouseX, MouseY, MouseDeltaX, MouseDeltaY, Scroll, SmoothScroll float32
 
 var Keys, KeysPrev [350]bool
+var KeyCount int
+
 var Buttons, ButtonsPrev [7]bool
 var AnyButton, AnyButtonPrev, AnyKey, AnyKeyPrev bool
 
 func AccumulateInput() {
 	for i := range 7 {
-		if rl.IsMouseButtonPressed(rl.MouseButton(i)) {
-			buttons[i] = true
+		if rl.IsMouseButtonDown(rl.MouseButton(i)) {
+			if !buttons[i] {
+				buttons[i] = true
+				activeButtons = append(activeButtons, i)
+			}
 			anyButton = true
 		}
 	}
 
 	for {
 		var key = int(rl.GetKeyPressed())
-		if key == 0 || key >= len(Keys) {
+		if key <= 0 {
 			break
 		}
-		keys[key] = true
-		anyKey = true
+		if key < len(keys) && !keys[key] {
+			keys[key] = true
+			activeKeys = append(activeKeys, key)
+			anyKey = true
+		}
 	}
 
 	for {
@@ -45,30 +48,41 @@ func AccumulateInput() {
 	}
 
 	scroll += rl.GetMouseWheelMoveV().Y
+	var pos = rl.GetMousePosition()
+	mouseX, mouseY = pos.X, pos.Y
+
+	if prevCursor != Cursor {
+		rl.SetMouseCursor(int32(Cursor))
+		prevCursor = Cursor
+	}
 }
+
 func SyncAccumulatedInput() {
 	Input, input = input, ""
 
-	AnyKey, AnyKeyPrev = anyKey, anyKeyPrev
-	KeysPrev = Keys // instant copy
+	AnyKeyPrev, AnyKey = AnyKey, anyKey
+	KeysPrev, Keys = Keys, keys
+	KeyCount = len(activeKeys) // Set the count for the keyboard package
 
-	keys = [350]bool{}
-	anyKeyPrev = anyKey
+	for _, k := range activeKeys {
+		keys[k] = false
+	}
+	activeKeys = activeKeys[:0]
 	anyKey = false
 
 	//=================================================================
 
 	prevMouseX, prevMouseY = MouseX, MouseY
-	var pos = rl.GetMousePosition()
-	MouseX, MouseY = pos.X, pos.Y
-	MouseDeltaX = MouseX - prevMouseX
-	MouseDeltaY = MouseY - prevMouseY
+	MouseX, MouseY = mouseX, mouseY
+	MouseDeltaX, MouseDeltaY = MouseX-prevMouseX, MouseY-prevMouseY
 
-	AnyButton, AnyButtonPrev = anyButton, anyButtonPrev
-	ButtonsPrev = Buttons // instant copy
+	AnyButtonPrev, AnyButton = AnyButton, anyButton
+	ButtonsPrev, Buttons = Buttons, buttons
 
-	buttons = [7]bool{}
-	anyButtonPrev = anyButton
+	for _, b := range activeButtons {
+		buttons[b] = false
+	}
+	activeButtons = activeButtons[:0]
 	anyButton = false
 
 	//=================================================================
@@ -86,29 +100,23 @@ func SyncAccumulatedInput() {
 		SmoothScroll = 0
 	}
 
-	//=================================================================
-
-	if prevCursor != Cursor {
-		rl.SetMouseCursor(int32(Cursor))
-		prevCursor = Cursor
-	}
-
-	//=================================================================
-
 	if !WindowFocused {
 		Keys, Buttons = [350]bool{}, [7]bool{}
 		KeysPrev, ButtonsPrev = [350]bool{}, [7]bool{}
-		AnyKey, AnyButton = false, false
+		AnyKey, AnyButton, KeyCount = false, false, 0
 	}
 }
 
 // private ========================================================
 
-var prevMouseX, prevMouseY float32
-var prevCursor int
-
 var input string
 var scroll float32
+var mouseX, mouseY float32
 var buttons [7]bool
 var keys [350]bool
-var anyKey, anyKeyPrev, anyButton, anyButtonPrev bool
+var anyKey, anyButton bool
+
+var activeKeys []int
+var activeButtons []int
+var prevMouseX, prevMouseY float32
+var prevCursor int

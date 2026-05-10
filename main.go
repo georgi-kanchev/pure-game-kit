@@ -20,6 +20,11 @@ func main() {
 
 	engine.Run(func() {
 		if keyboard.IsKeyJustReleased(key.A) {
+			var a = 0
+			a++
+		}
+
+		if keyboard.IsKeyJustReleased(key.A) {
 			engine.Stop()
 		}
 	})
