@@ -13,7 +13,6 @@ package assets
 import (
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/text"
-	"pure-game-kit/packages/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -33,11 +32,6 @@ func IsLoaded(assetId string) bool {
 
 // private ========================================================
 
-func tryCreateWindow() {
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
-}
 func tryInitAudio() {
 	if !rl.IsAudioDeviceReady() {
 		rl.InitAudioDevice()

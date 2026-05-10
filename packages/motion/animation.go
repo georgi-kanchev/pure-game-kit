@@ -5,7 +5,6 @@
 package motion
 
 import (
-	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
 )
@@ -31,7 +30,11 @@ func (a *Animation[T]) Update() {
 
 	var duration = a.Duration()
 	if a.Time >= duration {
-		a.Time = condition.If(a.IsLooping, 0, duration)
+		if a.IsLooping {
+			a.Time = 0
+		} else {
+			a.Time = duration
+		}
 	}
 }
 

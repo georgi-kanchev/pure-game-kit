@@ -113,8 +113,6 @@ type TileSet struct {
 	PointsPerTile         map[uint16][]float32
 }
 
-var WindowReady = false
-
 //=================================================================
 
 var White1x1 rl.Texture2D
@@ -149,6 +147,11 @@ var Screens []interface {
 	OnExit()
 }
 var CurrentScreen int
+
+//=================================================================
+
+var WindowWidth, WindowHeight int
+var WindowHovered, WindowFocused, WindowJustResized bool
 
 //=================================================================
 
@@ -241,7 +244,7 @@ func SinCos(degrees float32) (sin, cos float32) {
 	return sineTable[idx], sineTable[(idx+900)%3600]
 }
 
-func InitData() {
+func Init() {
 	if isInit {
 		return
 	}
@@ -263,29 +266,22 @@ func InitData() {
 		sineTable[i] = float32(math.Sin(rad))
 	}
 }
+func Update() {
+	updateWindowData()
+	updateTimeData()
+	updateInput()
+	updateMusic()
+	updateScreens()
+}
 
 // private ========================================================
 
 var prevCursor int
 var isInit bool
 
-func updateTimers() {
-	for k, v := range CallAfter {
-		if Runtime > k {
-			for _, f := range v {
-				f()
-				delete(CallAfter, k)
-			}
-		}
-	}
-	for k, v := range CallFor {
-		for _, f := range v {
-			f(number.Maximum(k-Runtime, 0))
-		}
-		if Runtime > k {
-			delete(CallFor, k)
-		}
-	}
+func updateWindowData() {
+	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()
+	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
 }
 func updateInput() {
 	AnyButtonJustPressed = false

@@ -12,8 +12,6 @@ import (
 type FontId byte
 
 func LoadFont(size int, filePath string) string {
-	tryCreateWindow()
-
 	var _, has = internal.Fonts[filePath]
 	if has {
 		return filePath
@@ -35,8 +33,6 @@ func LoadFont(size int, filePath string) string {
 }
 
 func LoadFont2(pngPath string, xmlPath string) FontId {
-	tryCreateWindow()
-
 	if !file.Exists(pngPath) {
 		debug.LogError("Failed to find PNG file: \"", pngPath, "\"")
 		return 0
@@ -65,8 +61,6 @@ const extra = "ºª«»¶±×÷=≠<>≤≥∞∑∏√∫∆∂∇≈≡∈∉�
 const all = punct + extra + currencies + digits + latin + latinPlus + cyrillic + greek + georgian + armenian
 
 func loadFont(id string, size int, bytes []byte) bool {
-	tryCreateWindow()
-
 	var characters = uniqueRunes(all)
 	var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
 	var recs = make([]*rl.Rectangle, len(glyphs))

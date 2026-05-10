@@ -11,8 +11,6 @@ import (
 type ImageId int32
 
 func LoadImage(imagePath string) ImageId {
-	tryCreateWindow()
-
 	if !file.Exists(imagePath) {
 		debug.LogError("Failed to find image file: \"", imagePath, "\"")
 		return 0

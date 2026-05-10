@@ -2,7 +2,6 @@
 package audio
 
 import (
-	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
 
@@ -22,16 +21,14 @@ type Audio struct {
 
 	time, duration float32
 
-	// this field does not contain the sound data
-	// it's in internal.Sounds which this instance just uses as a raylib alias
-	instance rl.Sound
+	instance rl.Sound // doesn't contain sound data, it's in internal.Sounds which this instance just uses as a raylib alias
 }
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
 
 func New(assetId string) Audio {
 	var audio = Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRight: 0.5, prevLeftRight: number.NaN()}
-	condition.CallFor(number.ValueBiggest[float32](), audio.update)
+	// condition.CallFor(number.ValueBiggest[float32](), audio.update)
 	return audio
 }
 

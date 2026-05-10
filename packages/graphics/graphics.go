@@ -12,9 +12,7 @@ package graphics
 
 import (
 	"image/color"
-	"pure-game-kit/packages/internal"
 	col "pure-game-kit/packages/utility/color"
-	"pure-game-kit/packages/window"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -26,16 +24,6 @@ func NewArea(x, y, width, height float32) Area {
 }
 
 // private ========================================================
-
-func tryRecreateWindow() {
-	if internal.WindowReady {
-		return
-	}
-
-	if !rl.IsWindowReady() {
-		window.Recreate()
-	}
-}
 
 func getColor(value uint) color.RGBA {
 	var r, g, b, a = col.Channels(value)

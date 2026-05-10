@@ -1,4 +1,5 @@
 TODO:
+audio, reduce complexity
 assets should be type uint ids, not strings
 textbox rework
 gui rework

@@ -9,7 +9,6 @@ import (
 )
 
 func LoadSound(filePath string) string {
-	tryCreateWindow()
 	tryInitAudio()
 
 	var _, has = internal.Sounds[filePath]
@@ -32,7 +31,6 @@ func LoadSound(filePath string) string {
 	return filePath
 }
 func LoadMusic(filePath string) string {
-	tryCreateWindow()
 	tryInitAudio()
 
 	var _, has = internal.Music[filePath]

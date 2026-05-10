@@ -12,7 +12,6 @@ import (
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/color/palette"
 	txt "pure-game-kit/packages/utility/text"
-	"pure-game-kit/packages/window"
 )
 
 func InputField(id string, properties ...string) string {
@@ -79,7 +78,7 @@ func inputField(w *widget) {
 	var text = txt.Remove(w.root.themedField(field.Text, owner, w), "\n")
 	text = internal.RemoveTags(text)
 
-	if meTyping && ((anyInput && !focused) || !window.IsHovered() || keyboard.IsKeyJustPressed(key.Escape)) {
+	if meTyping && ((anyInput && !focused) || !internal.WindowHovered || keyboard.IsKeyJustPressed(key.Escape)) {
 		typingIn = nil
 		scrollX = 0
 	}

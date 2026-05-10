@@ -8,17 +8,6 @@ var Clock, TickDelta, FrameDelta, TPS, FPS, Runtime float32
 var TickBusy float32
 var TargetTPS uint16
 
-var CallAfter = make(map[float32][]func())
-var CallFor = make(map[float32][]func(remaining float32))
-
-func Update() {
-	updateTimeData()
-	updateTimers()
-	updateInput()
-	updateMusic()
-	updateScreens()
-}
-
 // private ========================================================
 
 const deltaMax, alpha float32 = 0.1, 0.1

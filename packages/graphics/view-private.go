@@ -1,7 +1,7 @@
 package graphics
 
 import (
-	"pure-game-kit/packages/window"
+	"pure-game-kit/packages/internal"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -18,16 +18,13 @@ const placeholderCharAsset = '@'
 
 func (v *View) area() (x, y, w, h float32) {
 	if v.Area == (Area{}) {
-		var ww, wh = window.Size()
-		return 0, 0, float32(ww), float32(wh)
+		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
 	}
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
 
 // call before draw to update view but use screen space instead of view space
 func (v *View) update() {
-	tryRecreateWindow()
-
 	var sx, sy, sw, sh = v.area()
 	rlCam.Target.X = float32(v.X)
 	rlCam.Target.Y = float32(v.Y)

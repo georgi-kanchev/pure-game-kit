@@ -25,6 +25,10 @@ func SetCursor(cursor int) {
 
 //=================================================================
 
+func IsHoveringWindow() bool {
+	return internal.WindowHovered
+}
+
 func CursorDelta() (x, y float32) {
 	return internal.MouseDeltaX, internal.MouseDeltaY
 }

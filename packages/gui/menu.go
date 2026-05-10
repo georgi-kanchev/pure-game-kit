@@ -6,8 +6,8 @@ import (
 	"pure-game-kit/packages/input/keyboard"
 	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/input/mouse"
+	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/text"
-	"pure-game-kit/packages/window"
 )
 
 func Menu(id string, properties ...string) string {
@@ -47,7 +47,7 @@ func menu(w *widget) {
 		c.Y = w.Y - h
 	}
 
-	if anyButton || mouse.Scroll() != 0 || !window.IsHovered() || escape {
+	if anyButton || mouse.Scroll() != 0 || !internal.WindowHovered || escape {
 		if escape || (has && !c.isFocused()) {
 			c.Fields[field.Hidden] = "1"
 			visible = false

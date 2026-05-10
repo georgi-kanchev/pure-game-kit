@@ -19,8 +19,6 @@ import (
 )
 
 func LoadTiledLayers(tmxFilePath string) (tileSetId string, tileLayerIds []string) {
-	tryCreateWindow()
-
 	var tileset, tiled = loadTiled(tmxFilePath)
 	var dir = path.Folder(tmxFilePath)
 	var result = make(map[int]string)

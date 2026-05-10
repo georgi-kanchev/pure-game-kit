@@ -15,8 +15,6 @@ func LoadTileSet(imagePath string, tileWidth, tileHeight int) string {
 	return ""
 }
 func LoadTileData(id string, columns, rows int) string {
-	tryCreateWindow()
-
 	columns = number.Limit(columns, 1, 2048)
 	rows = number.Limit(rows, 1, 2048)
 
