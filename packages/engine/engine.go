@@ -1,3 +1,12 @@
+// The entry point of the game and the pump of the game loop.
+//
+// Make sure to structure it like this:
+//
+//	// loading a file with settings...
+//	engine.Initialize(...) // <- loaded settings
+//	// any engine/game initializations or other loaded settings...
+//	engine.Run(gameLoop)
+//	// game code inside the loop...
 package engine
 
 import (
@@ -29,13 +38,16 @@ func Initialize(title string, tps, maxFps uint16, vsync, antialias bool) {
 	internal.TargetTPS = max(tps, 1)
 	internal.Init()
 }
-
 func Run(gameLoop func()) {
 	var channel = make(chan internal.DrawData, 1)
 	go func() { // updater
 		var ticker = time.NewTicker(time.Second / time.Duration(internal.TargetTPS))
 
 		for range ticker.C {
+			if terminate {
+				return
+			}
+
 			internal.Update()
 
 			var start = time.Now()
@@ -57,11 +69,17 @@ func Run(gameLoop func()) {
 	var view = graphics.NewView(1)
 	var currDrawData = internal.DrawData{}
 	for !rl.WindowShouldClose() { // renderer
+		if terminate {
+			return
+		}
+
 		select { // pick up the latest draw data if the updater served one
 		case latest := <-channel:
 			currDrawData = latest
 		default:
 		}
+
+		internal.UpdateInput()
 
 		_ = currDrawData
 
@@ -80,4 +98,12 @@ func Run(gameLoop func()) {
 		rl.EndScissorMode()
 		rl.EndDrawing()
 	}
+	rl.CloseWindow()
 }
+func Stop() {
+	terminate = true
+}
+
+// private ========================================================
+
+var terminate bool

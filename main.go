@@ -2,6 +2,8 @@ package main
 
 import (
 	"pure-game-kit/packages/engine"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 )
 
 func main() {
@@ -17,6 +19,12 @@ func main() {
 	// assets.LoadDefaultFont()
 
 	engine.Run(func() {
-
+		if keyboard.IsKeyPressed(key.A) {
+			var a = 5
+			a++
+		}
+		if keyboard.IsKeyJustPressed(key.A) {
+			engine.Stop()
+		}
 	})
 }
