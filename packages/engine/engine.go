@@ -79,7 +79,7 @@ func Run(gameLoop func()) {
 		default:
 		}
 
-		internal.UpdateInput()
+		internal.UpdateInputFromRenderer()
 
 		_ = currDrawData
 

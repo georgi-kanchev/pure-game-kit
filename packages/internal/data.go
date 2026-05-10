@@ -262,13 +262,13 @@ func Init() {
 func Update() {
 	updateWindowData()
 	updateTimeData()
+	SyncInputFromTicker()
 	updateMusic()
 	updateScreens()
 }
 
 // private ========================================================
 
-var prevCursor int
 var isInit bool
 
 func updateWindowData() {
