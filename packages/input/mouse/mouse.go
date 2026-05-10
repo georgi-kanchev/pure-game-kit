@@ -5,7 +5,6 @@ package mouse
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/collection"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -40,26 +39,31 @@ func ScrollSmooth() float32 {
 	return internal.SmoothScroll
 }
 
-func ButtonsPressed() []int {
-	return internal.Buttons
-}
-
 func IsButtonPressed(button int) bool {
-	return collection.Contains(internal.Buttons, button)
+	if button < 0 || button >= len(internal.Buttons) {
+		return false
+	}
+	return internal.Buttons[button]
 }
 func IsButtonJustPressed(button int) bool {
-	return collection.Contains(internal.Buttons, button) && !collection.Contains(internal.ButtonsPrev, button)
+	if button < 0 || button >= len(internal.Buttons) {
+		return false
+	}
+	return internal.Buttons[button] && !internal.ButtonsPrev[button]
 }
 func IsButtonJustReleased(button int) bool {
-	return !collection.Contains(internal.Buttons, button) && collection.Contains(internal.ButtonsPrev, button)
+	if button < 0 || button >= len(internal.Buttons) {
+		return false
+	}
+	return !internal.Buttons[button] && internal.Buttons[button]
 }
 
 func IsAnyButtonPressed() bool {
-	return len(internal.Buttons) > 0
+	return internal.AnyButton
 }
 func IsAnyButtonJustPressed() bool {
-	return internal.AnyButtonJustPressed
+	return internal.AnyButton && !internal.AnyButtonPrev
 }
 func IsAnyButtonJustReleased() bool {
-	return internal.AnyButtonJustReleased
+	return !internal.AnyButton && internal.AnyButtonPrev
 }

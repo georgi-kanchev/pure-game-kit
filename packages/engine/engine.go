@@ -48,7 +48,11 @@ func Run(gameLoop func()) {
 				return
 			}
 
-			internal.Update()
+			internal.SyncAccumulatedInput()
+			internal.UpdateWindowData()
+			internal.UpdateTimeData()
+			internal.UpdateMusic()
+			internal.UpdateScreens()
 
 			var start = time.Now()
 			gameLoop()
@@ -79,7 +83,7 @@ func Run(gameLoop func()) {
 		default:
 		}
 
-		internal.UpdateInputFromRenderer()
+		internal.AccumulateInput()
 
 		_ = currDrawData
 

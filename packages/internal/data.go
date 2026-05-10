@@ -259,28 +259,21 @@ func Init() {
 		sineTable[i] = float32(math.Sin(rad))
 	}
 }
-func Update() {
-	updateWindowData()
-	updateTimeData()
-	SyncInputFromTicker()
-	updateMusic()
-	updateScreens()
-}
 
 // private ========================================================
 
 var isInit bool
 
-func updateWindowData() {
+func UpdateWindowData() {
 	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()
 	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
 }
-func updateMusic() {
+func UpdateMusic() {
 	for _, v := range Music {
 		rl.UpdateMusicStream(v)
 	}
 }
-func updateScreens() {
+func UpdateScreens() {
 	if CurrentScreen >= 0 && CurrentScreen < len(Screens) {
 		Screens[CurrentScreen].OnUpdate()
 	}

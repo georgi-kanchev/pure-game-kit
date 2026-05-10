@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"pure-game-kit/packages/engine"
 	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 )
 
 func main() {
@@ -19,6 +19,8 @@ func main() {
 	// assets.LoadDefaultFont()
 
 	engine.Run(func() {
-		fmt.Printf("keyboard.Input(): %v\n", keyboard.Input())
+		if keyboard.IsKeyJustReleased(key.A) {
+			engine.Stop()
+		}
 	})
 }

@@ -5,7 +5,6 @@ package keyboard
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/collection"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -13,32 +12,38 @@ import (
 func Input() string {
 	return internal.Input
 }
-func KeysPressed() []int {
-	return internal.Keys
-}
 
 func IsKeyPressed(key int) bool {
-	return collection.Contains(internal.Keys, key)
+	if key < 0 || key >= len(internal.Keys) {
+		return false
+	}
+	return internal.Keys[key]
 }
 func IsKeyHeld(key int) bool {
 	return rl.IsKeyPressedRepeat(int32(key))
 }
 
 func IsKeyJustPressed(key int) bool {
-	return collection.Contains(internal.Keys, key) && !collection.Contains(internal.KeysPrev, key)
+	if key < 0 || key >= len(internal.Keys) {
+		return false
+	}
+	return internal.Keys[key] && !internal.KeysPrev[key]
 }
 func IsKeyJustReleased(key int) bool {
-	return !collection.Contains(internal.Keys, key) && collection.Contains(internal.KeysPrev, key)
+	if key < 0 || key >= len(internal.Keys) {
+		return false
+	}
+	return !internal.Keys[key] && internal.KeysPrev[key]
 }
 
 func IsAnyKeyPressed() bool {
-	return len(internal.Keys) > 0
+	return internal.AnyKey
 }
 func IsAnyKeyJustPressed() bool {
-	return internal.AnyKeyJustPressed
+	return internal.AnyKey && !internal.AnyKeyPrev
 }
 func IsAnyKeyJustReleased() bool {
-	return internal.AnyKeyJustReleased
+	return !internal.AnyKey && internal.AnyKeyPrev
 }
 
 func IsComboJustPressed(keys ...int) bool {
@@ -51,14 +56,17 @@ func IsComboHeld(keys ...int) bool {
 // private ========================================================
 
 func combo(keys []int) bool {
-	if len(internal.Keys) != len(keys) {
-		return false
-	}
-
-	for i := range internal.Keys {
-		if internal.Keys[i] != keys[i] {
+	for _, k := range keys {
+		if k < 0 || k >= len(internal.Keys) || !internal.Keys[k] {
 			return false
 		}
 	}
-	return true
+
+	count := 0
+	for _, pressed := range internal.Keys {
+		if pressed {
+			count++
+		}
+	}
+	return count == len(keys)
 }

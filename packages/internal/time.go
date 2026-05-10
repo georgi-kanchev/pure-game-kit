@@ -14,7 +14,7 @@ const deltaMax, alpha float32 = 0.1, 0.1
 
 var prev time.Time = time.Now()
 
-func updateTimeData() {
+func UpdateTimeData() {
 	var now = time.Now()
 	var midnight = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	var secondsSinceMidnight = float32(now.Sub(midnight).Seconds())
