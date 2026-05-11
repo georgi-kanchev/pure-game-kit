@@ -56,7 +56,8 @@ var Font2NextId byte
 var NextImageId int16
 var NextImageCropId int16
 
-var MatrixDefault rl.Matrix
+var DefaultMaterial rl.Material
+var DefaultMatrix rl.Matrix
 var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 var ShaderTileDataLoc int32
@@ -176,7 +177,8 @@ func Init() {
 		ShaderTileDataLoc = rl.GetLocationUniform(Shader.ID, "tileData")
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 	}
-	MatrixDefault = rl.MatrixIdentity()
+	DefaultMatrix = rl.MatrixIdentity()
+	DefaultMaterial = rl.LoadMaterialDefault()
 
 	var img = rl.GenImageColor(1, 1, rl.White)
 	White1x1 = rl.LoadTextureFromImage(img)

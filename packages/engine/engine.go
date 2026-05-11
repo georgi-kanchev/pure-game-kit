@@ -9,7 +9,6 @@
 package engine
 
 import (
-	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/window"
 	"time"
@@ -38,71 +37,78 @@ func Initialize(title string, tps, maxFps uint16, vsync, antialias bool) {
 	internal.Init()
 }
 func Run(gameLoop func()) {
-	var ready = make(chan []internal.Batch, 1)
-	var pool = make(chan []internal.Batch, 3)
+	var ready = make(chan *internal.BatchManager, 1)
+	var pool = make(chan *internal.BatchManager, 3)
 
-	for range 3 {
-		pool <- make([]internal.Batch, 0, 16)
+	for range 3 { // pre-fill the pool with 3 managers (triple buffering)
+		pool <- &internal.BatchManager{}
 	}
 
 	go func() {
 		var ticker = time.NewTicker(time.Second / time.Duration(internal.TargetTPS))
-		var currentBatch = <-pool // grab the first buffer to start working
 
 		for range ticker.C {
 			if terminate {
 				return
 			}
 
-			currentBatch = currentBatch[:0]
-			internal.Batches = currentBatch // to avoid passing it into gameLoop()
+			internal.SyncAccumulatedInput()
+			internal.UpdateWindowData()
+			internal.UpdateTimeData()
+			internal.UpdateMusic()
+			internal.UpdateScreens()
 
+			var manager = <-pool        // grab a manager from the pool
+			manager.Reset()             // clear previous frame's data (resets slices to length 0, keeps capacity)
+			internal.Renderer = manager // set as the global active renderer so gameLoop can call Queue
 			gameLoop()
-
-			currentBatch = internal.Batches // update currentBatch to whatever gameLoop might have appended
+			manager.Finalize() // close out the final active batch inside the manager
 
 			select {
-			case ready <- currentBatch:
-				currentBatch = <-pool // sent to render, now we need a new empty slice from the pool
-			default: // renderer is busy and 'ready' is full
-				var stale = <-ready
-				pool <- stale // overwrite 'ready' by taking the old one out and putting it back in pool
-				ready <- currentBatch
-				currentBatch = <-pool
+			case ready <- manager: // successfully sent to the renderer (main thread)
+			default:
+				select { // renderer (main thread) is lagging - swap out the 'ready' frame for the newer one
+				case stale := <-ready:
+					pool <- stale
+					ready <- manager
+				default:
+					ready <- manager
+				}
 			}
 		}
 	}()
 
 	//=================================================================
 
-	var view = graphics.NewView(1)
-	var activeBatches []internal.Batch
-
+	var activeManager *internal.BatchManager
 	for !rl.WindowShouldClose() {
 		if terminate {
 			return
 		}
 
-		select { // check if there is a new frame ready to draw
+		select { // check for a new frame from the ticker
 		case latest := <-ready:
-			if activeBatches != nil {
-				pool <- activeBatches // return the old batch to the pool for reuse
+			if activeManager != nil {
+				pool <- activeManager // return used manager to pool
 			}
-			activeBatches = latest
-		default: // keep drawing the last activeBatches if nothing new
+			activeManager = latest
+		default: // no new frame? keep drawing activeManager
 		}
 
 		internal.AccumulateInput()
 
 		rl.BeginDrawing()
+		rl.EnableDepthTest()
+
 		rl.ClearBackground(rl.Black)
 
-		view.DrawTextDebug(true, false, false, false)
+		if activeManager != nil {
+			activeManager.Draw()
+		} // draw all batches stored in the manager for this frame
 
-		for _, batch := range activeBatches {
-			batch.Draw()
-		}
+		rl.DrawFPS(10, 10)
 
+		rl.DisableDepthTest()
 		rl.EndDrawing()
 	}
 	rl.CloseWindow()

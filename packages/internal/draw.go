@@ -10,19 +10,25 @@ import (
 
 type Area struct{ X, Y, Width, Height float32 }
 type Batch struct {
-	mesh     *rl.Mesh
-	material rl.Material
+	mesh         *rl.Mesh
+	meshUploaded bool
+	material     rl.Material
 
-	vertCount, indexCount, maxQuads int32
+	vertCount, indexCount int32
 
 	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
+}
+type BatchManager struct {
+	ActiveBatch  *Batch   // The batch currently being written to
+	ReadyBatches []*Batch // Batches ready to be sent to the GPU
+	BatchPool    []*Batch // Empty batches ready to be reused
 
 	polygonBuf, clipResultBuf, clipTempBuf [12]vertex // reused working buffers; avoids per-call heap escapes
 }
 
-var Batches []Batch
+var Renderer *BatchManager
 
-func (b *Batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
+func (b *BatchManager) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -56,7 +62,7 @@ func (b *Batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 				b.polygonBuf[i].V = uvs[i*2+1]
 			}
 		}
-		b.writeToBuffers(b.polygonBuf[:4], vCount, tex, col) // pass the buffer directly
+		b.queueVertices(b.polygonBuf[:4], vCount, tex, col) // pass the buffer directly
 	} else { // CLIPPED PATH logic...
 		var sinA, cosA = SinCos(ang)
 		for i := range 4 {
@@ -67,15 +73,14 @@ func (b *Batch) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float3
 		}
 		vCount = clipPolygonAABB(b.polygonBuf[:4], b.clipResultBuf[:], b.clipTempBuf[:], mask)
 		if vCount >= 3 {
-			b.writeToBuffers(b.clipResultBuf[:vCount], vCount, tex, col)
+			b.queueVertices(b.clipResultBuf[:vCount], vCount, tex, col)
 		}
 	}
 }
-
-func (b *Batch) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
+func (b *BatchManager) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	b.QueueTexture(White1x1, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
 }
-func (b *Batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
+func (b *BatchManager) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {
 		return
 	}
@@ -88,102 +93,40 @@ func (b *Batch) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mas
 	b.QueueQuad(startX, startY, length, thickness, ang, color, mask)
 }
 
-// func (b *batch) QueueSymbol(font rl.Font, s symbol, lineHeight, gapX float32, mask Area) {
-// 	var lineThickness = lineHeight / 15
-// 	var tx, ty = float32(font.Texture.Width) - 0.75, float32(font.Texture.Height) - 0.75
-// 	var fontSrc = rl.NewRectangle(tx, ty, 0.2, 0.2)
-//
-// 	if s.BackColor > 0 {
-// 		var prevCol = s.Color
-// 		var rect = rl.NewRectangle(s.Bounds.X, s.Bounds.Y, s.Bounds.Width+gapX, s.Bounds.Height)
-// 		s.Color = s.BackColor
-// 		batcher.QueueTexture(font.Texture, fontSrc, rect, s.Angle, packSymbolColor(s), mask)
-// 		s.Color = prevCol
-// 	}
-//
-// 	if s.Underline {
-// 		var offset = (lineHeight - lineThickness) - s.TopCrop
-// 		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
-// 			var x, y = moveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
-// 			var rect = rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness)
-// 			batcher.QueueTexture(font.Texture, fontSrc, rect, s.Angle, packSymbolColor(s), mask)
-// 		}
-// 	}
-//
-// 	if !unicode.IsSpace(s.Value) {
-// 		b.QueueTexture(s.Texture, s.TexRect, s.Rect, s.Angle, packSymbolColor(s), mask)
-// 	}
-//
-// 	if s.Strikethrough {
-// 		var offset = (lineHeight*0.55 - lineThickness/2) - s.TopCrop
-// 		if offset >= 0 && offset+lineThickness <= s.Bounds.Height {
-// 			var x, y = moveAtAngle(s.Bounds.X, s.Bounds.Y, s.Angle+90, offset)
-// 			var rect = rl.NewRectangle(x, y, s.Bounds.Width+gapX, lineThickness)
-// 			batcher.QueueTexture(font.Texture, fontSrc, rect, s.Angle, packSymbolColor(s), mask)
-// 		}
-// 	}
-// }
+func (m *BatchManager) Draw() {
+	for _, b := range m.ReadyBatches { // only upload the portion of the slices are actually used
+		if !b.meshUploaded {
+			rl.UploadMesh(b.mesh, true)
+			b.meshUploaded = true
+		}
 
-func (b *Batch) Init(quadCountCapacity int32) {
-	if b.mesh != nil { // nilling these is needed, causing problems on windows (on linux it's fine)
-		b.mesh.Vertices = nil
-		b.mesh.Texcoords = nil
-		b.mesh.Normals = nil
-		b.mesh.Colors = nil
-		b.mesh.Tangents = nil
-		b.mesh.Texcoords2 = nil
-		b.mesh.Indices = nil
-		rl.UnloadMesh(b.mesh)
+		rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
+		rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
+		rl.UpdateMeshBuffer(*b.mesh, 2, b.normals[:b.vertCount*12], 0)
+		rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
+		rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents[:b.vertCount*16], 0)
+		rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s[:b.vertCount*8], 0)
+		rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
+
+		b.mesh.TriangleCount = b.indexCount / 3 // triangle count = only whatever is valid
+		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
 	}
-
-	b.vertCount = 0
-	b.indexCount = 0
-	b.maxQuads = quadCountCapacity
-
-	b.mesh = &rl.Mesh{VertexCount: 4 * quadCountCapacity, TriangleCount: 2 * quadCountCapacity}
-
-	b.verts = make([]byte, b.mesh.VertexCount*3*4)     // vec3 (12 bytes)
-	b.texCoords = make([]byte, b.mesh.VertexCount*2*4) // vec2 (8 bytes)
-	b.normals = make([]byte, b.mesh.VertexCount*3*4)   // vec3 (12 bytes)
-	b.cols = make([]byte, b.mesh.VertexCount*4)        // rgba (4 bytes)
-	b.tangents = make([]byte, b.mesh.VertexCount*4*4)  // vec4 (16 bytes)
-	b.tex2s = make([]byte, b.mesh.VertexCount*2*4)     // vec2 (8 bytes)
-	b.indexes = make([]byte, b.mesh.TriangleCount*3*2) // uint16 (6 bytes per triangle)
-
-	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.verts[0]))
-	b.mesh.Texcoords = (*float32)(unsafe.Pointer(&b.texCoords[0]))
-	b.mesh.Normals = (*float32)(unsafe.Pointer(&b.normals[0]))
-	b.mesh.Colors = (*uint8)(unsafe.Pointer(&b.cols[0]))
-	b.mesh.Tangents = (*float32)(unsafe.Pointer(&b.tangents[0]))
-	b.mesh.Texcoords2 = (*float32)(unsafe.Pointer(&b.tex2s[0]))
-	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indexes[0]))
-
-	rl.UploadMesh(b.mesh, true)
-	b.material = rl.LoadMaterialDefault()
-	b.material.Shader = Shader
 }
-func (b *Batch) Draw() {
-	if b.vertCount == 0 {
-		return
+func (m *BatchManager) Reset() {
+	if m.ActiveBatch != nil { // move all ready/active batches back to the local pool for this manager
+		m.BatchPool = append(m.BatchPool, m.ActiveBatch)
+		m.ActiveBatch = nil
 	}
-
-	rl.UpdateMeshBuffer(*b.mesh, 0, b.verts, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 2, b.normals, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 3, b.cols, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s, 0)
-	rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes, 0)
-
-	b.mesh.TriangleCount = b.indexCount / 3
-	rl.DrawMesh(*b.mesh, b.material, MatrixDefault)
-
-	if b.vertCount >= b.mesh.VertexCount {
-		b.Init(b.maxQuads * 2)
+	for _, b := range m.ReadyBatches {
+		m.BatchPool = append(m.BatchPool, b)
 	}
-
-	b.vertCount = 0
-	b.indexCount = 0
+	m.ReadyBatches = m.ReadyBatches[:0]
+}
+func (m *BatchManager) Finalize() {
+	if m.ActiveBatch != nil && m.ActiveBatch.vertCount > 0 {
+		m.ReadyBatches = append(m.ReadyBatches, m.ActiveBatch)
+		m.ActiveBatch = nil // the gameLoop finished and left the last batch open, move it to ready
+	}
 }
 
 // private =================================================================
@@ -195,19 +138,69 @@ type vertex struct {
 	U2, V2     float32 // Texcoords2
 }
 
-var batcher *Batch
+func newBatch() *Batch {
+	const quadCapacity = 4096 // fixed size for all batches
 
-func (b *Batch) writeToBuffers(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
-	if b.vertCount != 0 && (b.material.Maps.Texture.ID != tex.ID || b.vertCount+vCount > b.mesh.VertexCount) {
-		b.Draw()
+	var b = &Batch{}
+	b.mesh = &rl.Mesh{VertexCount: 4 * quadCapacity, TriangleCount: 2 * quadCapacity}
+
+	b.verts = make([]byte, b.mesh.VertexCount*3*4)
+	b.texCoords = make([]byte, b.mesh.VertexCount*2*4)
+	b.normals = make([]byte, b.mesh.VertexCount*3*4)
+	b.cols = make([]byte, b.mesh.VertexCount*4)
+	b.tangents = make([]byte, b.mesh.VertexCount*4*4)
+	b.tex2s = make([]byte, b.mesh.VertexCount*2*4)
+	b.indexes = make([]byte, b.mesh.TriangleCount*3*2)
+
+	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.verts[0]))
+	b.mesh.Texcoords = (*float32)(unsafe.Pointer(&b.texCoords[0]))
+	b.mesh.Normals = (*float32)(unsafe.Pointer(&b.normals[0]))
+	b.mesh.Colors = (*uint8)(unsafe.Pointer(&b.cols[0]))
+	b.mesh.Tangents = (*float32)(unsafe.Pointer(&b.tangents[0]))
+	b.mesh.Texcoords2 = (*float32)(unsafe.Pointer(&b.tex2s[0]))
+	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indexes[0]))
+
+	b.material = DefaultMaterial
+	b.material.Shader = Shader
+	return b
+}
+func (m *BatchManager) queueVertices(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
+	// 1. Check if we need to break the current batch
+	if m.ActiveBatch != nil {
+		var texChanged = m.ActiveBatch.material.Maps.Texture.ID != tex.ID
+		var outOfSpace = m.ActiveBatch.vertCount+vCount > m.ActiveBatch.mesh.VertexCount
+
+		if texChanged || outOfSpace {
+			if m.ActiveBatch.vertCount > 0 {
+				// Push to pending list to draw later
+				m.ReadyBatches = append(m.ReadyBatches, m.ActiveBatch)
+			}
+			m.ActiveBatch = nil // Clear active to force a new one
+		}
 	}
 
-	if b.vertCount == 0 {
-		b.material.Maps.Texture = tex
-		b.material.Shader = Shader
+	// 2. Get a fresh batch if we don't have an active one
+	if m.ActiveBatch == nil {
+		if len(m.BatchPool) > 0 {
+			// Pop from the pool
+			m.ActiveBatch = m.BatchPool[len(m.BatchPool)-1]
+			m.BatchPool = m.BatchPool[:len(m.BatchPool)-1]
+		} else {
+			// Pool is empty, allocate a new one (will only happen as the game ramps up)
+			m.ActiveBatch = newBatch()
+		}
+
+		// Reset counters and set material
+		m.ActiveBatch.vertCount = 0
+		m.ActiveBatch.indexCount = 0
+		m.ActiveBatch.material.Maps.Texture = tex
+		m.ActiveBatch.material.Shader = Shader
 	}
 
+	// 3. Write data to the Active Batch (Same as your old logic)
+	var b = m.ActiveBatch
 	var count = int32(len(verts))
+
 	var v_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.verts[b.vertCount*12])), count*3)
 	var t_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[b.vertCount*8])), count*2)
 	var n_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.normals[b.vertCount*12])), count*3)

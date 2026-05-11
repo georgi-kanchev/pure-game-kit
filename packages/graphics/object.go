@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/assets"
 	geometry "pure-game-kit/packages/geometry2"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/color/palette"
 )
 
 type Object struct {
@@ -43,7 +44,10 @@ type Object struct {
 }
 
 func NewObject(x, y float32) Object {
-	return Object{Shape: geometry.NewRectangle(x, y, 100, 100, 0), TextLineHeight: 100, TextWordWrap: true}
+	return Object{
+		Shape: geometry.NewRectangle(x, y, 100, 100, 0), ScaleX: 1, ScaleY: 1, Color: palette.White,
+		TextLineHeight: 100, TextWordWrap: true,
+	}
 }
 
 //=================================================================
