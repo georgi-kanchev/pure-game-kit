@@ -21,12 +21,7 @@ type View struct {
 }
 
 func NewView(zoom float32) *View {
-	var view = &View{Zoom: zoom}
-	if batcher == nil {
-		batcher = &batch{}
-		batcher.Init(32)
-	}
-	return view
+	return &View{Zoom: zoom}
 }
 
 // =================================================================

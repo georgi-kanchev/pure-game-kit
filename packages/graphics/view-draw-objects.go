@@ -1,7 +1,6 @@
 package graphics
 
 func (v *View) DrawObjects(objects ...*Object) {
-	v.begin()
 	for _, t := range objects {
 		if t == nil || !v.IsAreaVisible(t.Bounds()) {
 			continue
@@ -12,6 +11,4 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 		// }
 	}
-	batcher.Draw()
-	v.end()
 }

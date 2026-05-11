@@ -37,12 +37,24 @@ func LoadFont2(pngPath string, xmlPath string) FontId {
 		debug.LogError("Failed to find PNG file: \"", pngPath, "\"")
 		return 0
 	}
-	var atlasId = LoadImage(pngPath)
 	internal.Font2NextId++
 	var id = internal.Font2NextId
-	var fontData = &internal.FontData{AtlasId: int32(atlasId)}
+	var fontData = &internal.FontData{}
 	storage.FromXML(file.LoadText(xmlPath), fontData)
-	internal.Fonts2[id] = *fontData
+	var font = internal.Font{
+		AtlasId:  int32(LoadImage(pngPath)),
+		Chars:    make(map[rune]internal.Char),
+		Kernings: make(map[rune]internal.Kerning),
+	}
+
+	for _, char := range fontData.Chars.Chars {
+		font.Chars[char.ID] = char
+	}
+	for _, kern := range fontData.Kernings.Kernings {
+		font.Kernings[kern.First] = kern
+	}
+
+	internal.Fonts2[id] = font
 	return FontId(id)
 }
 

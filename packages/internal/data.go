@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"encoding/xml"
 	"math"
 	"pure-game-kit/packages/utility/number"
 	"strings"
@@ -11,75 +10,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type FontData struct {
-	AtlasId int32    // see assets.ImageId
-	XMLName xml.Name `xml:"font"`
-
-	Info struct {
-		Face     string `xml:"face,attr"`
-		Size     int    `xml:"size,attr"`
-		Bold     int    `xml:"bold,attr"`
-		Italic   int    `xml:"italic,attr"`
-		Charset  string `xml:"charset,attr"`
-		Unicode  int    `xml:"unicode,attr"`
-		StretchH int    `xml:"stretchH,attr"`
-		Smooth   int    `xml:"smooth,attr"`
-		AA       int    `xml:"aa,attr"`
-		Padding  string `xml:"padding,attr"`
-		Spacing  string `xml:"spacing,attr"`
-		Outline  int    `xml:"outline,attr"`
-	} `xml:"info"`
-
-	Common struct {
-		LineHeight int `xml:"lineHeight,attr"`
-		Base       int `xml:"base,attr"`
-		ScaleW     int `xml:"scaleW,attr"`
-		ScaleH     int `xml:"scaleH,attr"`
-		Pages      int `xml:"pages,attr"`
-		Packed     int `xml:"packed,attr"`
-		AlphaChnl  int `xml:"alphaChnl,attr"`
-		RedChnl    int `xml:"redChnl,attr"`
-		GreenChnl  int `xml:"greenChnl,attr"`
-		BlueChnl   int `xml:"blueChnl,attr"`
-	} `xml:"common"`
-
-	Pages []struct {
-		ID   int    `xml:"id,attr"`
-		File string `xml:"file,attr"`
-	} `xml:"pages>page"`
-
-	DistanceField struct {
-		FieldType     string `xml:"fieldType,attr"`
-		DistanceRange int    `xml:"distanceRange,attr"`
-	} `xml:"distanceField"`
-
-	Chars struct {
-		Count int `xml:"count,attr"`
-		Chars []struct {
-			ID       int    `xml:"id,attr"`
-			Index    int    `xml:"index,attr"`
-			Char     string `xml:"char,attr"`
-			Width    int    `xml:"width,attr"`
-			Height   int    `xml:"height,attr"`
-			XOffset  int    `xml:"xoffset,attr"`
-			YOffset  int    `xml:"yoffset,attr"`
-			XAdvance int    `xml:"xadvance,attr"`
-			Chnl     int    `xml:"chnl,attr"`
-			X        int    `xml:"x,attr"`
-			Y        int    `xml:"y,attr"`
-			Page     int    `xml:"page,attr"`
-		} `xml:"char"`
-	} `xml:"chars"`
-
-	Kernings struct {
-		Count    int `xml:"count,attr"`
-		Kernings []struct {
-			First  int `xml:"first,attr"`
-			Second int `xml:"second,attr"`
-			Amount int `xml:"amount,attr"`
-		} `xml:"kerning"`
-	} `xml:"kernings"`
-}
 type ImageData struct {
 	Texture rl.Texture2D
 
@@ -120,10 +50,8 @@ var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
 
-var Fonts = make(map[string]rl.Font)
-
 var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
-var Fonts2 = make(map[byte]FontData)   // 0 = default
+var Fonts2 = make(map[byte]Font)       // 0 = default
 var Font2NextId byte
 var NextImageId int16
 var NextImageCropId int16
@@ -260,10 +188,6 @@ func Init() {
 	}
 }
 
-// private ========================================================
-
-var isInit bool
-
 func UpdateWindowData() {
 	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()
 	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
@@ -278,6 +202,10 @@ func UpdateScreens() {
 		Screens[CurrentScreen].OnUpdate()
 	}
 }
+
+// private ========================================================
+
+var isInit bool
 
 func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, milliseconds int) {
 	seconds = int(float32(frameCount) / float32(stream.SampleRate))

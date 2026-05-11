@@ -5,8 +5,7 @@
 //	// loading a file with settings...
 //	engine.Initialize(...) // <- loaded settings
 //	// any engine/game initializations or other loaded settings...
-//	engine.Run(gameLoop)
-//	// game code inside the loop...
+//	engine.Run(func { /* game loop code */ })
 package engine
 
 import (
@@ -39,31 +38,37 @@ func Initialize(title string, tps, maxFps uint16, vsync, antialias bool) {
 	internal.Init()
 }
 func Run(gameLoop func()) {
-	var channel = make(chan internal.DrawData, 1)
-	go func() { // updater
+	var ready = make(chan []internal.Batch, 1)
+	var pool = make(chan []internal.Batch, 3)
+
+	for range 3 {
+		pool <- make([]internal.Batch, 0, 16)
+	}
+
+	go func() {
 		var ticker = time.NewTicker(time.Second / time.Duration(internal.TargetTPS))
+		var currentBatch = <-pool // grab the first buffer to start working
 
 		for range ticker.C {
 			if terminate {
 				return
 			}
 
-			internal.SyncAccumulatedInput()
-			internal.UpdateWindowData()
-			internal.UpdateTimeData()
-			internal.UpdateMusic()
-			internal.UpdateScreens()
+			currentBatch = currentBatch[:0]
+			internal.Batches = currentBatch // to avoid passing it into gameLoop()
 
-			var start = time.Now()
 			gameLoop()
-			internal.TickBusy = float32(time.Since(start).Seconds())
 
-			var drawData = internal.DrawData{}
-			select { // pass the draw data to the renderer
-			case channel <- drawData:
-			default:
-				<-channel
-				channel <- drawData
+			currentBatch = internal.Batches // update currentBatch to whatever gameLoop might have appended
+
+			select {
+			case ready <- currentBatch:
+				currentBatch = <-pool // sent to render, now we need a new empty slice from the pool
+			default: // renderer is busy and 'ready' is full
+				var stale = <-ready
+				pool <- stale // overwrite 'ready' by taking the old one out and putting it back in pool
+				ready <- currentBatch
+				currentBatch = <-pool
 			}
 		}
 	}()
@@ -71,35 +76,33 @@ func Run(gameLoop func()) {
 	//=================================================================
 
 	var view = graphics.NewView(1)
-	var currDrawData = internal.DrawData{}
-	for !rl.WindowShouldClose() { // renderer
+	var activeBatches []internal.Batch
+
+	for !rl.WindowShouldClose() {
 		if terminate {
 			return
 		}
 
-		select { // pick up the latest draw data if the updater served one
-		case latest := <-channel:
-			currDrawData = latest
-		default:
+		select { // check if there is a new frame ready to draw
+		case latest := <-ready:
+			if activeBatches != nil {
+				pool <- activeBatches // return the old batch to the pool for reuse
+			}
+			activeBatches = latest
+		default: // keep drawing the last activeBatches if nothing new
 		}
 
 		internal.AccumulateInput()
-
-		_ = currDrawData
-
-		var dt = rl.GetFrameTime()
-		internal.FPS = 1.0 / dt
-		internal.FrameDelta = dt
 
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.Black)
 
 		view.DrawTextDebug(true, false, false, false)
 
-		rl.DisableDepthTest()
-		rl.EndShaderMode()
-		rl.EndBlendMode()
-		rl.EndScissorMode()
+		for _, batch := range activeBatches {
+			batch.Draw()
+		}
+
 		rl.EndDrawing()
 	}
 	rl.CloseWindow()
