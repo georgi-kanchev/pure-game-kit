@@ -81,6 +81,7 @@ func Run(gameLoop func()) {
 	//=================================================================
 
 	var activeManager *internal.BatchManager
+	var dirtyDraw = false
 	for !rl.WindowShouldClose() {
 		if terminate {
 			return
@@ -92,7 +93,9 @@ func Run(gameLoop func()) {
 				pool <- activeManager // return used manager to pool
 			}
 			activeManager = latest
+			dirtyDraw = true
 		default: // no new frame? keep drawing activeManager
+			dirtyDraw = false
 		}
 
 		internal.AccumulateInput()
@@ -103,7 +106,7 @@ func Run(gameLoop func()) {
 		rl.ClearBackground(rl.Black)
 
 		if activeManager != nil {
-			activeManager.Draw()
+			activeManager.Draw(dirtyDraw)
 		} // draw all batches stored in the manager for this frame
 
 		rl.DrawFPS(10, 10)

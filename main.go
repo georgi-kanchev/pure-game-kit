@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	engine.Initialize("pure-game-kit", 60, 0, false, false)
+	engine.Initialize("pure-game-kit", 60, 120, false, false)
 
 	var view = graphics.NewView(1)
 	// var path = "tools/sdf-font-generator/results/Roboto-Bold."
@@ -17,7 +17,7 @@ func main() {
 	// obj.Text = "Hello, World!"
 
 	var imgId = assets.LoadImage("examples/data/flail.PNG")
-	var objs = make([]*graphics.Object, 1024*300)
+	var objs = make([]*graphics.Object, 1024)
 
 	for i := range objs {
 		var obj = graphics.NewObject(float32(random.Range(0, 1920)), float32(random.Range(0, 1080)))

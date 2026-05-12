@@ -93,22 +93,24 @@ func (b *BatchManager) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Col
 	b.QueueQuad(startX, startY, length, thickness, ang, color, mask)
 }
 
-func (m *BatchManager) Draw() {
+func (m *BatchManager) Draw(dirty bool) {
 	for _, b := range m.ReadyBatches { // only upload the portion of the slices are actually used
 		if !b.meshUploaded {
 			rl.UploadMesh(b.mesh, true)
 			b.meshUploaded = true
 		}
 
-		rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 2, b.normals[:b.vertCount*12], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents[:b.vertCount*16], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s[:b.vertCount*8], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
+		if dirty {
+			rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 2, b.normals[:b.vertCount*12], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents[:b.vertCount*16], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s[:b.vertCount*8], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
+			b.mesh.TriangleCount = b.indexCount / 3 // triangle count = only whatever is valid
+		}
 
-		b.mesh.TriangleCount = b.indexCount / 3 // triangle count = only whatever is valid
 		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
 	}
 }
