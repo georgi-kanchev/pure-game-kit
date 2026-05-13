@@ -26,13 +26,13 @@ func checkbox(widget *widget) {
 
 	var group = widget.root.themedField(field.CheckboxGroup, owner, widget)
 	widget.Fields[field.Value] = condition.If(isOff, "1", "")
-	var soundId = condition.If(isOff, "~on", "~off")
-	sound.AssetId = defaultValue(widget.root.themedField(field.ButtonSoundPress, owner, widget), soundId)
+	// var soundId = condition.If(isOff, "~on", "~off")
+	// sound.AssetId = defaultValue(widget.root.themedField(field.ButtonSoundPress, owner, widget), soundId)
 	sound.Volume = widget.root.Volume
 	defer sound.Play()
 
 	if group != "" {
-		sound.AssetId = "~on"
+		// sound.AssetId = "~on"
 		for _, w := range widget.root.Widgets {
 			if w.Id == widget.Id {
 				continue

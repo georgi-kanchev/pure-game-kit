@@ -7,6 +7,7 @@ import (
 var Clock, TickDelta, FrameDelta, TPS, FPS, Runtime float32
 var TickBusy float32
 var TargetTPS uint16
+var Tick uint64
 
 // private ========================================================
 
@@ -20,10 +21,10 @@ func UpdateTimeData() {
 	var secondsSinceMidnight = float32(now.Sub(midnight).Seconds())
 
 	Clock = secondsSinceMidnight
-
 	TickDelta = float32(time.Since(prev).Seconds())
 	TPS = 1.0 / TickDelta
 	Runtime += TickDelta
+	Tick++
 
 	prev = now
 }

@@ -27,6 +27,7 @@ func AsClock12(seconds float32, divider string, units int, amPm bool) string {
 
 func Running() float32 { return internal.Runtime }
 func Clock() float32   { return internal.Clock }
+func Tick() uint64     { return internal.Tick }
 
 func ToMilliseconds(seconds float32) float32 { return seconds * 1000 }
 func ToMinutes(secodns float32) float32      { return secodns / 60 }

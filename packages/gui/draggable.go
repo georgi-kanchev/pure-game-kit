@@ -26,9 +26,9 @@ func (g *GUI) DragCancel() {
 	if g.root.wPressedOn != nil && g.root.wPressedOn.Class == "draggable" {
 		g.root.wPressedOn = nil
 
-		var owner = g.root.Containers[g.root.wPressedOn.OwnerId]
-		var val = g.root.themedField(field.DraggableCancelSoundId, owner, g.root.wPressedOn)
-		sound.AssetId = defaultValue(val, "~error")
+		// var owner = g.root.Containers[g.root.wPressedOn.OwnerId]
+		// var val = g.root.themedField(field.DraggableCancelSoundId, owner, g.root.wPressedOn)
+		// sound.AssetId = defaultValue(val, "~error")
 		sound.Volume = g.root.Volume
 		sound.Play()
 	}
@@ -97,8 +97,8 @@ func (r *root) onDrop() (string, string) {
 		sound.Volume = r.Volume
 		defer sound.Play()
 		if r.wFocused != nil && r.wFocused.Class == "draggable" {
-			var val = r.themedField(field.ButtonSoundRelease, owner, r.wPressedOn)
-			sound.AssetId = defaultValue(val, "~release")
+			// var val = r.themedField(field.ButtonSoundRelease, owner, r.wPressedOn)
+			// sound.AssetId = defaultValue(val, "~release")
 			var id = ""
 			if r.wFocused != nil {
 				id = r.wFocused.Id
@@ -106,7 +106,7 @@ func (r *root) onDrop() (string, string) {
 			return r.wPressedOn.Id, id
 		}
 
-		sound.AssetId = defaultValue(r.themedField(field.DraggableCancelSoundId, owner, r.wPressedOn), "~error")
+		// sound.AssetId = defaultValue(r.themedField(field.DraggableCancelSoundId, owner, r.wPressedOn), "~error")
 		return r.wPressedOn.Id, ""
 	}
 	return "", ""

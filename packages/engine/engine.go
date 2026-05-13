@@ -55,7 +55,7 @@ func Run(gameLoop func()) {
 			internal.SyncAccumulatedInput()
 			internal.UpdateWindowData()
 			internal.UpdateTimeData()
-			internal.UpdateMusic()
+			internal.UpdateAudio()
 			internal.UpdateScreens()
 
 			var manager = <-pool        // grab a manager from the pool

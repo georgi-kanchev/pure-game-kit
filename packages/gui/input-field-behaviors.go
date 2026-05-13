@@ -101,8 +101,8 @@ func tryRemove(text string, margin float32) string {
 		indexSelect = indexCursor
 		calculateXs(w)
 
-		var owner = w.root.Containers[w.OwnerId]
-		sound.AssetId = defaultValue(w.root.themedField(field.InputFieldSoundErase, owner, w), "~erase")
+		// var owner = w.root.Containers[w.OwnerId]
+		// sound.AssetId = defaultValue(w.root.themedField(field.InputFieldSoundErase, owner, w), "~erase")
 		sound.Volume = w.root.Volume
 		sound.Play()
 	}
@@ -155,8 +155,8 @@ func tryInput(text string, margin float32) string {
 		text = txt.Insert(text, input, indexCursor)
 	}
 
-	var owner = w.root.Containers[w.OwnerId]
-	sound.AssetId = defaultValue(w.root.themedField(field.InputFieldSoundType, owner, w), "~write")
+	// var owner = w.root.Containers[w.OwnerId]
+	// sound.AssetId = defaultValue(w.root.themedField(field.InputFieldSoundType, owner, w), "~write")
 	sound.Volume = w.root.Volume
 	sound.Play()
 

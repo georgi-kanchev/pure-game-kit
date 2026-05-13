@@ -49,13 +49,13 @@ func queueTooltip(c *container) {
 
 	defer func() { tooltipWasVisible = tooltipVisible }()
 
-	var owner = c.root.Containers[tooltipForWidget.OwnerId]
+	// var owner = c.root.Containers[tooltipForWidget.OwnerId]
 	var hidden = tooltip == nil || tooltipForWidget == nil || internal.Runtime < tooltipAt+0.5 ||
 		tooltip.Fields[field.Text] == "" || !tooltipForWidget.isFocused()
 	tooltipVisible = !hidden
 
 	if !tooltipWasVisible && tooltipVisible {
-		sound.AssetId = defaultValue(c.root.themedField(field.TooltipSound, owner, tooltipForWidget), "~popup")
+		// sound.AssetId = defaultValue(c.root.themedField(field.TooltipSound, owner, tooltipForWidget), "~popup")
 		sound.Volume = c.root.Volume
 		sound.Play()
 	}

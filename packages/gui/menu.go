@@ -55,7 +55,7 @@ func menu(w *widget) {
 	}
 
 	if c.WasHidden && visible {
-		sound.AssetId = defaultValue(w.root.themedField(field.MenuSound, owner, w), "~popup")
+		// sound.AssetId = defaultValue(w.root.themedField(field.MenuSound, owner, w), "~popup")
 		sound.Volume = w.root.Volume
 		sound.Play()
 	}

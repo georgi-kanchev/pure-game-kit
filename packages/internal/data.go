@@ -62,9 +62,6 @@ var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 var ShaderTileDataLoc int32
 
-var Sounds = make(map[string]rl.Sound)
-var Music = make(map[string]rl.Music)
-
 var TileLayers = make(map[string]*TileLayer)
 var TileSets = make(map[string]*TileSet)
 
@@ -136,15 +133,6 @@ func AssetSize(assetId string) (width, height int) {
 		return int(tileData.Image.Width), int(tileData.Image.Height)
 	}
 
-	var sound, hasSound = Sounds[assetId]
-	if hasSound {
-		return audioDuration(sound.FrameCount, &sound.Stream)
-	}
-	var music, hasMusic = Music[assetId]
-	if hasMusic {
-		return audioDuration(music.FrameCount, &music.Stream)
-	}
-
 	return
 }
 
@@ -194,11 +182,6 @@ func UpdateWindowData() {
 	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()
 	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
 }
-func UpdateMusic() {
-	for _, v := range Music {
-		rl.UpdateMusicStream(v)
-	}
-}
 func UpdateScreens() {
 	if CurrentScreen >= 0 && CurrentScreen < len(Screens) {
 		Screens[CurrentScreen].OnUpdate()
@@ -208,12 +191,6 @@ func UpdateScreens() {
 // private ========================================================
 
 var isInit bool
-
-func audioDuration(frameCount uint32, stream *rl.AudioStream) (seconds, milliseconds int) {
-	seconds = int(float32(frameCount) / float32(stream.SampleRate))
-	milliseconds = int(math.Mod(float64(seconds), 1.0) * 1000)
-	return
-}
 
 func moveAtAngle(x, y, angle, step float32) (float32, float32) {
 	var sin, cos = SinCos(angle)

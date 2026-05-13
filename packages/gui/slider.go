@@ -45,7 +45,7 @@ func slider(w *widget) {
 	}
 
 	if value != w.PrevValue && !sound.IsPlaying() {
-		sound.AssetId = defaultValue(w.root.themedField(field.SliderSound, owner, w), "~slider")
+		// sound.AssetId = defaultValue(w.root.themedField(field.SliderSound, owner, w), "~slider")
 		sound.Volume = w.root.Volume
 		sound.Play()
 	}

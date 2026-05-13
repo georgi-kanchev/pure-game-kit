@@ -73,7 +73,7 @@ func button(w *widget) {
 			}
 		}
 		if btnSounds && w.root.IsButtonJustClicked(w.Id) {
-			sound.AssetId = defaultValue(w.root.themedField(field.ButtonSoundPress, owner, w), "~release")
+			// sound.AssetId = defaultValue(w.root.themedField(field.ButtonSoundPress, owner, w), "~release")
 			sound.Volume = w.root.Volume
 			sound.Play()
 		}
@@ -141,7 +141,7 @@ func tryPress(press, once, sounds bool, themePress string, widget *widget, owner
 	}
 	if once {
 		if sounds {
-			sound.AssetId = defaultValue(widget.root.themedField(field.ButtonSoundPress, owner, widget), "~press")
+			// sound.AssetId = defaultValue(widget.root.themedField(field.ButtonSoundPress, owner, widget), "~press")
 			sound.Volume = widget.root.Volume
 			sound.Play()
 		}
