@@ -1,7 +1,7 @@
-// A combined controller for the Sound & Music assets. It exists independently of the assets.
 package audio
 
 import (
+	"math" // Added for math.Round
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
@@ -11,47 +11,94 @@ import (
 )
 
 type Audio struct {
-	AssetId assets.AudioId
-	Volume, Pitch, LeftRightBalance,
-	FadeIn, FadeOut float32
-	IsLooping, IsPaused bool
+	AssetId                         assets.AudioId
+	Volume, Pitch, LeftRightBalance float32
 
-	//=================================================================
-
-	prevAssetId              string
-	prevPitch, prevLeftRight float32
-	prevPause, justFinished  bool
-
-	lastPlayTime, duration float32
-	finishFlag             bool
+	playTick, pauseTick uint64
+	isPaused            bool
 }
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
 
-func New(assetId assets.AudioId) *Audio {
-	var result = &Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRightBalance: 0.5}
-	internal.AudioUpdates = append(internal.AudioUpdates, func() {
-		result.update()
-	})
-	return result
+func New(assetId assets.AudioId) Audio {
+	return Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRightBalance: 0.5, playTick: 9999999999999, isPaused: false}
 }
 
 //=================================================================
 
 func (a *Audio) Play() {
+	a.isPaused = false
+
 	var _, hasSound = internal.Sounds[int16(a.AssetId)]
 	var music, hasMusic = internal.Music[int16(a.AssetId)]
-	var volume = a.volume()
 
-	a.lastPlayTime = internal.Runtime
-	a.IsPaused = false
+	a.playTick = internal.Tick
 	if hasSound {
 		var sound = internal.GetSound(int16(a.AssetId), true)
+		a.ApplyProperties()
 		rl.PlaySound(sound)
-		sound.Stream.Buffer.Volume = volume
 	} else if hasMusic {
+		a.ApplyProperties()
 		rl.PlayMusicStream(music)
-		music.Stream.Buffer.Volume = volume
+	}
+}
+
+func (a *Audio) Pause() {
+	if a.isPaused {
+		return
+	}
+
+	a.isPaused = true
+	a.pauseTick = internal.Tick
+
+	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
+	var music, hasMusic = internal.Music[int16(a.AssetId)]
+	if hasSound {
+		for _, s := range sounds {
+			rl.PauseSound(s)
+		}
+	} else if hasMusic {
+		rl.PauseMusicStream(music)
+	}
+}
+func (a *Audio) Resume() {
+	if !a.isPaused {
+		return
+	}
+
+	a.isPaused = false
+	a.playTick += internal.Tick - a.pauseTick // shift by ticks spent paused
+
+	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
+	var music, hasMusic = internal.Music[int16(a.AssetId)]
+
+	a.ApplyProperties()
+	if hasSound {
+		for _, s := range sounds {
+			rl.ResumeSound(s)
+		}
+	} else if hasMusic {
+		rl.ResumeMusicStream(music)
+	}
+}
+
+func (a *Audio) ApplyProperties() {
+	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
+	var music, hasMusic = internal.Music[int16(a.AssetId)]
+	var volume = a.Volume * Volume
+
+	if hasSound {
+		for _, sound := range sounds {
+			if sound.Stream.Buffer != nil {
+				sound.Stream.Buffer.Volume = volume * VolumeSound
+				rl.SetSoundPitch(sound, a.Pitch)
+				rl.SetSoundPan(sound, 1-a.LeftRightBalance)
+			}
+		}
+	} else if hasMusic {
+		music.Stream.Buffer.Volume = volume * VolumeMusic
+		rl.SetMusicPitch(music, a.Pitch)
+		rl.SetMusicPan(music, 1-a.LeftRightBalance)
 	}
 }
 
@@ -68,82 +115,39 @@ func (a *Audio) IsPlaying() bool {
 	return slices.ContainsFunc(sounds, rl.IsSoundPlaying)
 }
 func (a *Audio) IsJustFinished() bool {
-	return a.justFinished
+	if a.isPaused {
+		return false
+	}
+
+	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
+	var music, hasMusic = internal.Music[int16(a.AssetId)]
+	var durationInTicks uint64
+	var tps = float32(internal.TargetTPS)
+
+	if hasSound {
+		for _, s := range sounds {
+			durationInTicks = uint64(math.Round(float64(float32(s.FrameCount) / float32(s.Stream.SampleRate) * tps)))
+		}
+		var finishTick = a.playTick + uint64(math.Round(float64(float32(durationInTicks)/a.Pitch)))
+		return internal.Tick == finishTick
+
+	} else if hasMusic {
+		durationInTicks = uint64(math.Round(float64(rl.GetMusicTimeLength(music) * tps)))
+		var finishTick = a.playTick + uint64(math.Round(float64(float32(durationInTicks)/a.Pitch)))
+		return internal.Tick == finishTick
+	}
+
+	return false
 }
 
 // private ========================================================
 
-// detects all changes in the values so that the audio can reflect them instantly
-func (a *Audio) update() {
-	var _, hasSound = internal.Sounds[int16(a.AssetId)]
-	var music, hasMusic = internal.Music[int16(a.AssetId)]
-	var volume = a.volume()
-
-	if hasSound {
-		var sound = internal.GetSound(int16(a.AssetId), false)
-		sound.Stream.Buffer.Volume = volume
-
-		if a.Pitch != a.prevPitch {
-			rl.SetSoundPitch(sound, a.Pitch)
-		}
-		if a.LeftRightBalance != a.prevLeftRight {
-			rl.SetSoundPan(sound, 1-a.LeftRightBalance)
-		}
-		if a.IsPaused != a.prevPause {
-			if a.IsPaused {
-				rl.PauseSound(sound)
-			} else {
-				rl.ResumeSound(sound)
-			}
-		}
-		if a.duration == 0 {
-			a.duration = float32(sound.FrameCount) / float32(sound.Stream.SampleRate)
-		}
-	} else if hasMusic {
-		music.Stream.Buffer.Volume = volume
-
-		if a.Pitch != a.prevPitch {
-			rl.SetMusicPitch(music, a.Pitch)
-		}
-		if a.LeftRightBalance != a.prevLeftRight {
-			rl.SetMusicPan(music, 1-a.LeftRightBalance)
-		}
-		if a.IsPaused != a.prevPause {
-			if a.IsPaused {
-				rl.PauseMusicStream(music)
-			} else {
-				rl.ResumeMusicStream(music)
-			}
-		}
-		if a.duration == 0 {
-			a.duration = rl.GetMusicTimeLength(music)
-		}
+func currentTime(stream rl.AudioStream) float32 {
+	if stream.Buffer == nil {
+		return number.NaN()
 	}
-
-	a.justFinished = false
-	if internal.Runtime-a.lastPlayTime > a.duration {
-		if a.IsLooping {
-			a.Play()
-		} else {
-			a.justFinished = true
-		}
-	}
-
-	a.prevLeftRight = a.LeftRightBalance
-	a.prevPitch = a.Pitch
-	a.prevPause = a.IsPaused
-}
-
-func (a *Audio) volume() float32 {
-	var progress = number.Limit(number.Map(internal.Runtime, a.lastPlayTime, a.lastPlayTime+a.duration, 0, 1), 0, 1)
-	var fadeIn = number.Limit(number.Map(progress, 0, a.FadeIn, 0, 1), 0, 1)
-	var fadeOut = number.Limit(number.Map(progress, a.duration-a.FadeOut, a.duration, 1, 0), 0, 1)
-	if a.FadeIn <= 0 {
-		fadeIn = 1
-	}
-	if a.FadeOut <= 0 {
-		fadeOut = 1
-	}
-
-	return a.Volume * VolumeSound * Volume * fadeIn * fadeOut
+	var processed = stream.Buffer.FramesProcessed
+	var cur = stream.Buffer.FrameCursorPos
+	var rate = stream.SampleRate
+	return float32(processed)/float32(rate) + float32(cur)/float32(rate)
 }

@@ -4,7 +4,6 @@ import rl "github.com/gen2brain/raylib-go/raylib"
 
 var Sounds = make(map[int16][]rl.Sound) // [0]soundData; [1].FrameCount = playIndex; [2...]soundAliases
 var Music = make(map[int16]rl.Music)
-var AudioUpdates []func()
 
 func GetSound(id int16, prepareNext bool) rl.Sound {
 	var sounds = Sounds[id]
@@ -22,8 +21,5 @@ func GetSound(id int16, prepareNext bool) rl.Sound {
 func UpdateAudio() {
 	for _, m := range Music {
 		rl.UpdateMusicStream(m)
-	}
-	for _, u := range AudioUpdates {
-		u()
 	}
 }

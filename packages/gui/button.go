@@ -139,6 +139,7 @@ func tryPress(press, once, sounds bool, themePress string, widget *widget, owner
 	if press && (hotkey || widget.root.wPressedOn == widget) && themePress != "" {
 		widget.ThemeId = themePress
 	}
+	_ = owner
 	if once {
 		if sounds {
 			// sound.AssetId = defaultValue(widget.root.themedField(field.ButtonSoundPress, owner, widget), "~press")
