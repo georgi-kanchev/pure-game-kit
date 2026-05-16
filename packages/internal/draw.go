@@ -37,7 +37,7 @@ var NextImageId int16
 var NextImageCropId int16
 
 var ActiveBatch *Batch    // the batch currently being written to
-var ReadyBatches []*Batch // batches ready to be sent to the GPU
+var ReadyBatches []*Batch // batches ready to be drawn
 var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================

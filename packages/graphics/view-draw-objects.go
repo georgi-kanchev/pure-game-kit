@@ -7,6 +7,7 @@ import (
 )
 
 func (v *View) DrawObjects(objects ...*Object) {
+
 	for _, o := range objects {
 		if o == nil || !v.IsAreaVisible(o.Bounds()) {
 			continue

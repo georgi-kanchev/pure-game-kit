@@ -2,6 +2,7 @@ package window
 
 import (
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -10,6 +11,62 @@ import (
 type Mode byte
 
 const ModeFloating, ModeMaximized, ModeFullscreen, ModeFullscreenBorderless Mode = 0, 1, 2, 3
+
+func Create(title string, vsync, antialias bool) {
+	var flags uint32 = rl.FlagWindowResizable
+	if vsync {
+		flags |= rl.FlagVsyncHint
+	}
+	if antialias {
+		flags |= rl.FlagMsaa4xHint
+	}
+
+	rl.SetConfigFlags(flags)
+	rl.SetTraceLogLevel(rl.LogNone)
+	rl.InitWindow(1600, 900, title)
+	rl.SetExitKey(rl.KeyNull)
+	rl.MaximizeWindow()
+	isInit = true
+
+	internal.Init()
+}
+func KeepOpen() bool {
+	if !isInit {
+		debug.Print("[window.KeepOpen]: Window not yet created. Call `window.Create()`.")
+		return false
+	}
+	if terminate {
+		return false
+	}
+
+	internal.CloseBatch()
+
+	rl.BeginDrawing()
+	rl.EnableDepthTest()
+	rl.ClearBackground(rl.Black)
+	internal.Draw()
+	rl.DrawFPS(10, 10)
+	rl.DisableDepthTest()
+	rl.EndDrawing()
+
+	//=================================================================
+
+	internal.UpdateWindowData()
+	internal.UpdateAudio()
+	internal.UpdateTimeData()
+
+	internal.FrameDelta = rl.GetFrameTime()
+	internal.UpdateInput()
+
+	internal.ResetBatches()
+	return true
+}
+func Close() {
+	rl.CloseWindow()
+	terminate = true
+}
+
+//=================================================================
 
 func ApplyMode(mode Mode) {
 	var curr = CurrentMode()
@@ -72,6 +129,10 @@ func SetIcon(imagePath string) {
 	var img = rl.LoadImage(imagePath)
 	rl.SetWindowIcon(*img)
 }
+func SetTargetFPS(fps byte) {
+	targetFPS = fps
+	rl.SetTargetFPS(int32(fps))
+}
 
 //=================================================================
 
@@ -106,6 +167,9 @@ func CurrentMode() Mode {
 
 	return ModeFloating
 }
+func TargetFPS() byte {
+	return targetFPS
+}
 
 func IsFocused() bool {
 	return internal.WindowFocused
@@ -113,3 +177,8 @@ func IsFocused() bool {
 func IsJustResized() bool {
 	return internal.WindowJustResized
 }
+
+// private ========================================================
+
+var targetFPS byte
+var terminate, isInit bool

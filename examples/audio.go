@@ -4,18 +4,16 @@ import (
 	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/audio"
-	"pure-game-kit/packages/engine"
 	"pure-game-kit/packages/input/keyboard"
 	"pure-game-kit/packages/input/keyboard/key"
+	"pure-game-kit/packages/window"
 )
 
 func Audio() {
-	engine.Initialize("pure-game-kit", 120, false, false)
-
 	var sound = assets.LoadSound("examples/data/wood.mp3", 3)
 	var audio = audio.New(sound)
 
-	engine.Run(func() {
+	for window.KeepOpen() {
 		if keyboard.IsKeyJustPressed(key.A) {
 			audio.Play()
 			fmt.Printf("play\n")
@@ -40,5 +38,5 @@ func Audio() {
 				fmt.Printf("resumed\n")
 			}
 		}
-	})
+	}
 }
