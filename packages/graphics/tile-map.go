@@ -221,7 +221,7 @@ func (tm *TileMap) PointsFromTile(tileId uint16) []float32 {
 }
 
 func (tm *TileMap) Size() (columns, rows int) {
-	return internal.AssetSize(tm.TileLayerId)
+	return 1, 1
 }
 func (tm *TileMap) SizeTile() (width, height float32) {
 	var tileSet = internal.TileSets[tm.TileSetId]
@@ -235,7 +235,7 @@ func (tm *TileMap) SizeTileSet() (columns, rows int) {
 	if tileSet == nil {
 		return 0, 0
 	}
-	var tw, th = internal.AssetSize(tm.TileSetId)
+	var tw, th = 1, 1
 	return tw / tileSet.TileWidth, th / tileSet.TileHeight
 }
 

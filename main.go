@@ -1,16 +1,40 @@
 package main
 
 import (
+	"fmt"
+	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/engine"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
+	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 )
 
 func main() {
-	engine.Initialize("pure-game-kit", 60, 120, false, false)
+	engine.Initialize("pure-game-kit", 60, 0, false, false)
 
+	var view = graphics.NewView(1)
+	var obj = graphics.NewObject(0, 0)
+
+	var flail assets.ImageId
+	var loadFlail = engine.NewWork(func() {
+		flail = assets.LoadImage("examples/data/flail.PNG")
+	})
 	engine.Run(func() {
-		rl.LoadTexture("examples/data/flail.PNG")
+		if keyboard.IsKeyJustPressed(key.A) {
+			loadFlail.Start()
+			fmt.Printf("work started\n")
+		}
+
+		if loadFlail.IsWorking() {
+			fmt.Printf("working...\n")
+		}
+
+		if loadFlail.IsJustFinished() {
+			fmt.Printf("work done!\n")
+			obj.ImageId = flail
+		}
+
+		view.DrawObjects(&obj)
 	})
 	// example.Audio()
 }

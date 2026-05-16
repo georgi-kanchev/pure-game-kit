@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui/field"
 	"pure-game-kit/packages/utility/color"
@@ -21,15 +20,15 @@ func (g *GUI) IsSliderJustSlid(id string) bool {
 
 func slider(w *widget) {
 	var owner = w.root.Containers[w.OwnerId]
-	var assetId = w.root.themedField(field.AssetId, owner, w)
+	// var assetId = w.root.themedField(field.AssetId, owner, w)
 	btnSounds = false
 	button(w)
 	btnSounds = true
 
-	var _, h = assets.Size(assetId)
+	var _, h = 1, 1
 	var ratio = w.Height / float32(h)
 	var handleAssetId = w.root.themedField(field.SliderHandleAssetId, owner, w)
-	var hw, hh = assets.Size(handleAssetId)
+	var hw, hh = 1, 1
 	var handleWidth, handleHeight = float32(hw), float32(hh)
 	handleWidth *= ratio
 	handleHeight *= ratio

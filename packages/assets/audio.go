@@ -11,7 +11,9 @@ import (
 type AudioId int16
 
 func LoadSound(filePath string, maxOverlapCount byte) AudioId {
-	tryInitAudio()
+	if !rl.IsAudioDeviceReady() {
+		rl.InitAudioDevice()
+	}
 
 	if !file.Exists(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")
@@ -37,7 +39,9 @@ func LoadSound(filePath string, maxOverlapCount byte) AudioId {
 	return AudioId(id)
 }
 func LoadMusic(filePath string) AudioId {
-	tryInitAudio()
+	if !rl.IsAudioDeviceReady() {
+		rl.InitAudioDevice()
+	}
 
 	if !file.Exists(filePath) {
 		debug.LogError("Failed to find audio file: \"", filePath, "\"")

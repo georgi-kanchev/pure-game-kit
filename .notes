@@ -21,5 +21,8 @@ functionality layout
 https://youtu.be/JxI3Eu5DPwE
 
 COMMANDS:
-what stays on the stack or gets promoted to the heap for any file
-go build -gcflags="-m" audio/audio.go
+heap promotions
+go build -gcflags="-m" main.go
+
+race conditions
+go run -race main.go

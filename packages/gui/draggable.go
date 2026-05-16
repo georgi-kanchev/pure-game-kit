@@ -1,7 +1,6 @@
 package gui
 
 import (
-	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui/field"
@@ -57,7 +56,7 @@ func queueDraggable(widget *widget) {
 		return
 	}
 
-	var w, h = assets.Size(assetId)
+	var w, h = 1, 1
 	var assetRatio = float32(w) / float32(h)
 	var spriteRatio = widget.Width / widget.Height
 	var drawW, drawH float32

@@ -44,17 +44,10 @@ type TileSet struct {
 
 //=================================================================
 
-var White1x1 rl.Texture2D
 var Textures = make(map[string]rl.Texture2D)
 var AtlasRects = make(map[string]AtlasRect)
 var Atlases = make(map[string]Atlas)
 var Boxes = make(map[string][9]string)
-
-var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
-var Fonts2 = make(map[byte]Font)       // 0 = default
-var Font2NextId byte
-var NextImageId int16
-var NextImageCropId int16
 
 var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
@@ -65,12 +58,6 @@ var ShaderTileDataLoc int32
 var TileLayers = make(map[string]*TileLayer)
 var TileSets = make(map[string]*TileSet)
 
-var Screens []interface {
-	OnLoad()
-	OnEnter()
-	OnUpdate()
-	OnExit()
-}
 var CurrentScreen int
 
 //=================================================================
@@ -89,57 +76,6 @@ var fragQuad string
 var vertDefault string
 
 //=================================================================
-
-func AssetSize(assetId string) (width, height int) {
-	var texture, hasTexture = Textures[assetId]
-	width, height = 0, 0
-
-	var tileSet, hasTileSet = TileSets[assetId]
-	if hasTileSet && hasTexture {
-		return int(texture.Width) / tileSet.TileWidth, int(texture.Height) / tileSet.TileHeight
-	}
-
-	if hasTexture {
-		return int(texture.Width), int(texture.Height)
-	}
-
-	var rect, hasArea = AtlasRects[assetId]
-	if hasArea {
-		var atlas = Atlases[rect.AtlasId]
-		return atlas.CellWidth * int(rect.CountX), atlas.CellHeight * int(rect.CountY)
-	}
-
-	var box, hasBox = Boxes[assetId]
-	if hasBox {
-		var w, h = 0, 0
-		for _, id := range box {
-			if id == "" {
-				continue
-			}
-			var curW, curH = AssetSize(id)
-			w = number.Maximum(curW, h)
-			h = number.Maximum(curH, h)
-		}
-		return w, h
-	}
-
-	var font, hasFont = Fonts[assetId]
-	if hasFont {
-		return int(font.Texture.Width), int(font.Texture.Height)
-	}
-
-	var tileData, hasTileData = TileLayers[assetId]
-	if hasTileData {
-		return int(tileData.Image.Width), int(tileData.Image.Height)
-	}
-
-	return
-}
-
-func IsLoaded(assetId string) bool {
-	var w, h = AssetSize(assetId)
-	return w != -1 && h != -1
-}
 
 func Path(path string) string {
 	return strings.ReplaceAll(path, "\\", "/")
@@ -169,7 +105,7 @@ func Init() {
 	DefaultMaterial = rl.LoadMaterialDefault()
 
 	var img = rl.GenImageColor(1, 1, rl.White)
-	White1x1 = rl.LoadTextureFromImage(img)
+	Images[0] = ImageData{Texture: rl.LoadTextureFromImage(img), CropX: 0.25, CropY: 0.25, CropWidth: 0.5, CropHeight: 0.5}
 	rl.UnloadImage(img)
 
 	for i := range 3600 {
@@ -181,11 +117,6 @@ func Init() {
 func UpdateWindowData() {
 	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()
 	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
-}
-func UpdateScreens() {
-	if CurrentScreen >= 0 && CurrentScreen < len(Screens) {
-		Screens[CurrentScreen].OnUpdate()
-	}
 }
 
 // private ========================================================

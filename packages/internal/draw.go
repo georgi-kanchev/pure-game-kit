@@ -18,17 +18,14 @@ type Batch struct {
 
 	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
 }
-type BatchManager struct {
-	ActiveBatch  *Batch   // The batch currently being written to
-	ReadyBatches []*Batch // Batches ready to be sent to the GPU
-	BatchPool    []*Batch // Empty batches ready to be reused
 
-	polygonBuf, clipResultBuf, clipTempBuf [12]vertex // reused working buffers; avoids per-call heap escapes
-}
+var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
+var Fonts2 = make(map[byte]Font)       // 0 = default
+var Font2NextId byte
+var NextImageId int16
+var NextImageCropId int16
 
-var Renderer *BatchManager
-
-func (b *BatchManager) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
+func (b *Bus) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -77,10 +74,10 @@ func (b *BatchManager) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang
 		}
 	}
 }
-func (b *BatchManager) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
-	b.QueueTexture(White1x1, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
+func (b *Bus) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
+	b.QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
 }
-func (b *BatchManager) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
+func (b *Bus) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {
 		return
 	}
@@ -93,8 +90,8 @@ func (b *BatchManager) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Col
 	b.QueueQuad(startX, startY, length, thickness, ang, color, mask)
 }
 
-func (m *BatchManager) Draw(dirty bool) {
-	for _, b := range m.ReadyBatches { // only upload the portion of the slices are actually used
+func (b *Bus) Draw(dirty bool) {
+	for _, b := range b.ReadyBatches { // only upload the portion of the slices are actually used
 		if !b.meshUploaded {
 			rl.UploadMesh(b.mesh, true)
 			b.meshUploaded = true
@@ -112,22 +109,6 @@ func (m *BatchManager) Draw(dirty bool) {
 		}
 
 		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
-	}
-}
-func (m *BatchManager) Reset() {
-	if m.ActiveBatch != nil { // move all ready/active batches back to the local pool for this manager
-		m.BatchPool = append(m.BatchPool, m.ActiveBatch)
-		m.ActiveBatch = nil
-	}
-	for _, b := range m.ReadyBatches {
-		m.BatchPool = append(m.BatchPool, b)
-	}
-	m.ReadyBatches = m.ReadyBatches[:0]
-}
-func (m *BatchManager) Finalize() {
-	if m.ActiveBatch != nil && m.ActiveBatch.vertCount > 0 {
-		m.ReadyBatches = append(m.ReadyBatches, m.ActiveBatch)
-		m.ActiveBatch = nil // the gameLoop finished and left the last batch open, move it to ready
 	}
 }
 
@@ -166,7 +147,7 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func (m *BatchManager) queueVertices(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
+func (m *Bus) queueVertices(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
 	// 1. Check if we need to break the current batch
 	if m.ActiveBatch != nil {
 		var texChanged = m.ActiveBatch.material.Maps.Texture.ID != tex.ID

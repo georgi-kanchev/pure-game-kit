@@ -1,11 +1,4 @@
 // The entry point of the game and the pump of the game loop.
-//
-// Make sure to structure it like this:
-//
-//	// loading a file with settings...
-//	engine.Initialize(...) // <- loaded settings
-//	// any engine/game initializations or other loaded settings...
-//	engine.Run(func { /* game loop code */ })
 package engine
 
 import (
@@ -37,11 +30,11 @@ func Initialize(title string, tps, maxFps uint16, vsync, antialias bool) {
 	internal.Init()
 }
 func Run(gameLoop func()) {
-	var ready = make(chan *internal.BatchManager, 1)
-	var pool = make(chan *internal.BatchManager, 3)
+	var ready = make(chan *internal.Bus, 1)
+	var pool = make(chan *internal.Bus, 3)
 
-	for range 3 { // pre-fill the pool with 3 managers (triple buffering)
-		pool <- &internal.BatchManager{}
+	for range 3 { // pre-fill the pool with 3 buses (triple buffering)
+		pool <- &internal.Bus{}
 	}
 
 	go func() {
@@ -56,23 +49,22 @@ func Run(gameLoop func()) {
 			internal.UpdateWindowData()
 			internal.UpdateTimeData()
 			internal.UpdateAudio()
-			internal.UpdateScreens()
 
-			var manager = <-pool        // grab a manager from the pool
-			manager.Reset()             // clear previous frame's data (resets slices to length 0, keeps capacity)
-			internal.Renderer = manager // set as the global active renderer so gameLoop can call Queue
+			var bus = <-pool         // grab a bus from the pool
+			bus.Reset()              // clear previous frame's data (resets slices to length 0, keeps capacity)
+			internal.ActiveBus = bus // set as the global active bus so gameLoop can call Queue
 			gameLoop()
-			manager.Finalize() // close out the final active batch inside the manager
+			bus.Finalize() // close out the final active batch inside the bus
 
 			select {
-			case ready <- manager: // successfully sent to the renderer (main thread)
+			case ready <- bus: // successfully sent to the renderer (main thread)
 			default:
 				select { // renderer (main thread) is lagging - swap out the 'ready' frame for the newer one
 				case stale := <-ready:
 					pool <- stale
-					ready <- manager
+					ready <- bus
 				default:
-					ready <- manager
+					ready <- bus
 				}
 			}
 		}
@@ -80,7 +72,7 @@ func Run(gameLoop func()) {
 
 	//=================================================================
 
-	var activeManager *internal.BatchManager
+	var activeBus *internal.Bus
 	var dirtyDraw = false
 	for !rl.WindowShouldClose() {
 		if terminate {
@@ -89,12 +81,12 @@ func Run(gameLoop func()) {
 
 		select { // check for a new frame from the ticker
 		case latest := <-ready:
-			if activeManager != nil {
-				pool <- activeManager // return used manager to pool
+			if activeBus != nil {
+				pool <- activeBus // return used bus to pool
 			}
-			activeManager = latest
+			activeBus = latest
 			dirtyDraw = true
-		default: // no new frame? keep drawing activeManager
+		default: // no new frame? keep drawing active bus
 			dirtyDraw = false
 		}
 
@@ -105,9 +97,18 @@ func Run(gameLoop func()) {
 
 		rl.ClearBackground(rl.Black)
 
-		if activeManager != nil {
-			activeManager.Draw(dirtyDraw)
-		} // draw all batches stored in the manager for this frame
+		if activeBus != nil {
+			if len(activeBus.PendingWork) > 0 {
+				for _, workID := range activeBus.PendingWork {
+					var work, exists = internal.Work[workID]
+					if exists {
+						work()
+					}
+				}
+			}
+
+			activeBus.Draw(dirtyDraw)
+		} // draw all batches stored in the bus for this frame
 
 		rl.DrawFPS(10, 10)
 
