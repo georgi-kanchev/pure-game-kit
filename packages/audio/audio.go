@@ -21,7 +21,7 @@ type Audio struct {
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
 
 func New(assetId assets.AudioId) Audio {
-	return Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRightBalance: 0.5, playTick: 9999999999999, isPaused: false}
+	return Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRightBalance: 0.5}
 }
 
 //=================================================================
