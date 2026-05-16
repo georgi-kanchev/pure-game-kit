@@ -10,6 +10,7 @@ import (
 )
 
 func Audio() {
+	window.Create("examples - audio", false, false)
 	var sound = assets.LoadSound("examples/data/wood.mp3", 3)
 	var audio = audio.New(sound)
 

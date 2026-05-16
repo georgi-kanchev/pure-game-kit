@@ -56,7 +56,7 @@ func KeepOpen() bool {
 	internal.UpdateTimeData()
 
 	internal.FrameDelta = rl.GetFrameTime()
-	internal.UpdateInput()
+	internal.CacheInput()
 
 	internal.ResetBatches()
 	return true

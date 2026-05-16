@@ -20,5 +20,4 @@ func main() {
 
 		view.DrawObjects(&obj)
 	}
-	// example.Audio()
 }

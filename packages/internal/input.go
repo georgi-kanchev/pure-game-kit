@@ -19,14 +19,23 @@ var KeyCount int
 var Btns, BtnsPrev [5]bool
 var AnyBtn, AnyBtnPrev bool
 
-func UpdateInput() {
+func CacheInput() {
 	Input = ""
 	Scroll = 0
-	updateKeyboard()
-	updateMouse()
+	cacheKeyboard()
+	cacheMouse()
 }
 
-func updateMouse() {
+// private ========================================================
+
+var btns [5]bool
+var keys [350]bool
+
+var activeKeys []int32
+var activeBtns []int
+var prevCursor int
+
+func cacheMouse() {
 	AnyBtnPrev, BtnsPrev = AnyBtn, Btns
 
 	for i := range 5 {
@@ -87,8 +96,7 @@ func updateMouse() {
 		activeBtns = activeBtns[:0]
 	}
 }
-
-func updateKeyboard() {
+func cacheKeyboard() {
 	AnyKeyPrev, KeysPrev = AnyKey, Keys
 
 	for {
@@ -138,12 +146,3 @@ func updateKeyboard() {
 		activeKeys = activeKeys[:0]
 	}
 }
-
-// private ========================================================
-
-var btns [5]bool
-var keys [350]bool
-
-var activeKeys []int32
-var activeBtns []int
-var prevCursor int
