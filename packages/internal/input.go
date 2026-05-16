@@ -14,17 +14,21 @@ var MouseX, MouseY, MouseDeltaX, MouseDeltaY, Scroll, SmoothScroll float32
 var Keys, KeysPrev [350]bool
 var KeyDurs [350]float32
 var AnyKey, AnyKeyPrev bool
-var KeyCount int // for the combo
+var KeyCount int
 
 var Btns, BtnsPrev [5]bool
 var AnyBtn, AnyBtnPrev bool
 
 func UpdateInput() {
+	Input = ""
+	Scroll = 0
 	updateKeyboard()
 	updateMouse()
 }
 
 func updateMouse() {
+	AnyBtnPrev, BtnsPrev = AnyBtn, Btns
+
 	for i := range 5 {
 		var btn = rl.MouseButton(i)
 		if rl.IsMouseButtonPressed(btn) {
@@ -38,9 +42,10 @@ func updateMouse() {
 		}
 	}
 
-	scroll += rl.GetMouseWheelMoveV().Y
+	Scroll += rl.GetMouseWheelMoveV().Y
 	var pos = rl.GetMousePosition()
-	mouseX, mouseY = pos.X, pos.Y
+	MouseDeltaX, MouseDeltaY = pos.X-MouseX, pos.Y-MouseY
+	MouseX, MouseY = pos.X, pos.Y
 
 	if prevCursor != Cursor {
 		if Cursor == -1 {
@@ -52,26 +57,18 @@ func updateMouse() {
 		}
 	}
 
+	// cleanup released buttons
 	for i := len(activeBtns) - 1; i >= 0; i-- {
 		if !btns[activeBtns[i]] {
 			activeBtns = slices.Delete(activeBtns, i, i+1)
 		}
 	}
 
-	//=================================================================
-
-	prevMouseX, prevMouseY = MouseX, MouseY
-	MouseX, MouseY = mouseX, mouseY
-	MouseDeltaX, MouseDeltaY = MouseX-prevMouseX, MouseY-prevMouseY
-
-	AnyBtnPrev, BtnsPrev = AnyBtn, Btns
 	AnyBtn = len(activeBtns) > 0
 	Btns = [5]bool{}
 	for _, btn := range activeBtns {
 		Btns[btn] = true
 	}
-
-	Scroll, scroll = scroll, 0
 
 	const scrollAccel, scrollDecay = 600.0, 8.0
 	SmoothScroll += Scroll * scrollAccel * TickDelta
@@ -84,14 +81,16 @@ func updateMouse() {
 	}
 
 	if !WindowFocused {
-		Btns = [5]bool{}
-		BtnsPrev = [5]bool{}
-		AnyBtn = false
+		Btns, BtnsPrev = [5]bool{}, [5]bool{}
+		AnyBtn, AnyBtnPrev = false, false
 		btns = [5]bool{}
 		activeBtns = activeBtns[:0]
 	}
 }
+
 func updateKeyboard() {
+	AnyKeyPrev, KeysPrev = AnyKey, Keys
+
 	for {
 		var key = rl.GetKeyPressed()
 		if key <= 0 || key >= 350 {
@@ -102,7 +101,7 @@ func updateKeyboard() {
 	}
 	for i := len(activeKeys) - 1; i >= 0; i-- {
 		var key = activeKeys[i]
-		accumKeyDurs[key] += FrameDelta
+		KeyDurs[key] += FrameDelta
 		if rl.IsKeyReleased(key) {
 			keys[key] = false
 		}
@@ -113,33 +112,28 @@ func updateKeyboard() {
 		if char == 0 {
 			break
 		}
-		input += string(char)
+		Input += string(char)
 	}
+
+	// cleanup released keys
 	for i := len(activeKeys) - 1; i >= 0; i-- {
 		var key = activeKeys[i]
 		if !keys[key] {
-			accumKeyDurs[key] = 0
+			KeyDurs[key] = 0
 			activeKeys = slices.Delete(activeKeys, i, i+1)
 		}
 	}
 
-	//=================================================================
-
-	Input, input = input, ""
-
-	AnyKeyPrev, KeysPrev = AnyKey, Keys
 	KeyCount = len(activeKeys)
 	AnyKey = KeyCount > 0
 	Keys = [350]bool{}
-	KeyDurs = accumKeyDurs
 	for _, key := range activeKeys {
 		Keys[key] = true
 	}
 
 	if !WindowFocused {
-		Keys = [350]bool{}
-		KeysPrev = [350]bool{}
-		AnyKey, KeyCount = false, 0
+		Keys, KeysPrev = [350]bool{}, [350]bool{}
+		AnyKey, AnyKeyPrev, KeyCount = false, false, 0
 		keys = [350]bool{}
 		activeKeys = activeKeys[:0]
 	}
@@ -147,14 +141,9 @@ func updateKeyboard() {
 
 // private ========================================================
 
-var input string
-var scroll float32
-var mouseX, mouseY float32
 var btns [5]bool
 var keys [350]bool
 
 var activeKeys []int32
 var activeBtns []int
-var accumKeyDurs [350]float32
-var prevMouseX, prevMouseY float32
 var prevCursor int

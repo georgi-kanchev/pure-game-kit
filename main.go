@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	// window.Create("Test", false, false)
+	window.Create("Test", false, false)
 	var view = graphics.NewView(1)
 	var obj = graphics.NewObject(0, 0)
 
