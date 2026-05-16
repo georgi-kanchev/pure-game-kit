@@ -2,7 +2,6 @@ package graphics
 
 import (
 	"pure-game-kit/packages/execution/condition"
-	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
 	txt "pure-game-kit/packages/utility/text"
 	"strings"
@@ -60,11 +59,11 @@ func (t *TextBox) TextWrap(text string) string {
 		return t.cacheWrap
 	}
 
-	var replaced, originals = internal.ReplaceStrings(text, '{', '}', internal.Placeholder)
+	var replaced = text
 	var words = txt.Split(replaced, " ")
 	var curX, curY float32 = 0, 0
 	var tagIndex = 0
-	var ph = string(internal.Placeholder)
+	var ph = ""
 	var gapY = t.gapLines()
 
 	var buffer = &t.cacheBuilder
@@ -99,7 +98,7 @@ func (t *TextBox) TextWrap(text string) string {
 		for i, c := range word {
 			var char = string(c)
 			var charSize, _ = t.TextMeasure(char)
-			charSize = condition.If(c == internal.Placeholder, 0, charSize)
+			charSize = condition.If(c == ' ', 0, charSize)
 			charSize = condition.If(c == placeholderCharAsset, t.LineHeight, charSize)
 			var charEndOfBoxX = charSize > 0 && curX+charSize > t.Width+1
 			var charFirst = i == 0 && wordFirst
@@ -118,8 +117,8 @@ func (t *TextBox) TextWrap(text string) string {
 				}
 			}
 
-			if c == internal.Placeholder {
-				char = "{" + originals[tagIndex] + "}"
+			if c == ' ' {
+				//char = "{" + originals[tagIndex] + "}"
 				tagIndex++
 				buffer.WriteString(char)
 			} else {

@@ -10,7 +10,7 @@ import (
 )
 
 func Audio() {
-	engine.Initialize("pure-game-kit", 60, 120, false, false)
+	engine.Initialize("pure-game-kit", 120, false, false)
 
 	var sound = assets.LoadSound("examples/data/wood.mp3", 3)
 	var audio = audio.New(sound)

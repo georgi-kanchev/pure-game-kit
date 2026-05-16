@@ -1,77 +1,111 @@
-// Used by the engine packages only:
-//   - As a third party messenger when communicating with each other, avoiding dependencies loops.
-//   - To re-use private engine (non-API) code.
-//   - To store runtime resources such as assets, callbacks, input cache, time cache and so on.
-//   - To pump updates every frame coming from the window package onto other packages that require them.
 package internal
 
 import (
-	"regexp"
+	"math"
+	"pure-game-kit/packages/utility/number"
 	"strings"
+
+	_ "embed"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var tagRegexp = regexp.MustCompile(`{.*?}`)
-var tagBuffer strings.Builder
-var result strings.Builder
-var current strings.Builder
+type ImageData struct {
+	Texture rl.Texture2D
 
-const Placeholder = '╌'
-
-func ReplaceStrings(text string, open, close, placeholder rune) (replaced string, originals []string) {
-	result.Reset()
-	current.Reset()
-	var inside = false
-
-	for i, char := range text {
-		if char == open && !inside {
-			inside = true
-			continue
-		}
-
-		if char == close && inside {
-			inside = false
-			originals = append(originals, current.String())
-			result.WriteRune(placeholder)
-			current.Reset()
-			continue
-		}
-
-		if inside {
-			current.WriteRune(char)
-			if i == len(text)-1 {
-				result.WriteRune(open)
-				result.WriteString(current.String())
-			}
-		} else {
-			result.WriteRune(char)
-		}
-	}
-
-	return result.String(), originals
+	CropX, CropY, CropWidth, CropHeight float32
 }
-func RemoveTags(text string) string {
-	if !strings.ContainsRune(text, '<') {
-		return text // FAST PATH: If there are no brackets, return the original string - ZERO allocations for tagless text
+
+type AtlasRect struct {
+	CellX, CellY,
+	CountX, CountY float32
+	AtlasId   string
+	Rotations int
+	Flip      bool
+}
+type Atlas struct {
+	TextureId string
+	CellWidth, CellHeight,
+	Gap int
+}
+type TileLayer struct {
+	Image   *rl.Image
+	Texture *rl.Texture2D
+
+	LastDirtyTime   float32
+	CellsWithPoints map[int]struct{}
+	ObjectPoints    []float32
+}
+type TileSet struct {
+	ImageId               int32
+	TileWidth, TileHeight int
+	PointsPerTile         map[uint16][]float32
+}
+
+//=================================================================
+
+var Textures = make(map[string]rl.Texture2D)
+var AtlasRects = make(map[string]AtlasRect)
+var Atlases = make(map[string]Atlas)
+var Boxes = make(map[string][9]string)
+
+var TileLayers = make(map[string]*TileLayer)
+var TileSets = make(map[string]*TileSet)
+
+//=================================================================
+
+var WindowWidth, WindowHeight int
+var WindowHovered, WindowFocused, WindowJustResized bool
+
+//=================================================================
+
+var sineTable [3600]float32
+
+//=================================================================
+
+func Init() {
+	if Shader.ID == 0 {
+		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
+		ShaderTileDataLoc = rl.GetLocationUniform(Shader.ID, "tileData")
+		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
+	}
+	DefaultMatrix = rl.MatrixIdentity()
+	DefaultMaterial = rl.LoadMaterialDefault()
+
+	var img = rl.GenImageColor(1, 1, rl.White)
+	Images[0] = ImageData{Texture: rl.LoadTextureFromImage(img), CropX: 0.25, CropY: 0.25, CropWidth: 0.5, CropHeight: 0.5}
+	rl.UnloadImage(img)
+
+	for i := range 3600 {
+		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
+		sineTable[i] = float32(math.Sin(rad))
+	}
+}
+func UpdateWindowData() {
+	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()
+	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
+}
+
+func Path(path string) string {
+	return strings.ReplaceAll(path, "\\", "/")
+}
+func SinCos(degrees float32) (sin, cos float32) {
+	var idx = int(degrees * 10)                      // convert to index (0.1 degree precision)
+	idx = ((idx % 3600) + 3600) % 3600               // and wrap 0-3599
+	return sineTable[idx], sineTable[(idx+900)%3600] // sine is lookup, cosine is sine shifted by 90 degrees (900 indices)
+}
+
+// private ========================================================
+
+func moveAtAngle(x, y, angle, step float32) (float32, float32) {
+	var sin, cos = SinCos(angle)
+	var dirX, dirY = cos, sin
+	if dirX == 0 && dirY == 0 {
+		return x, y
 	}
 
-	tagBuffer.Reset()
-	tagBuffer.Grow(len(text)) // pre-size the buffer to the length of the text to avoid intermediate grows
-
-	var inTag = false
-	for i := 0; i < len(text); i++ {
-		var char = text[i]
-		if char == '<' {
-			inTag = true
-			continue
-		}
-		if char == '>' {
-			inTag = false
-			continue
-		}
-		if !inTag {
-			tagBuffer.WriteByte(char)
-		}
-	}
-
-	return tagBuffer.String()
+	var length = number.SquareRoot(dirX*dirX + dirY*dirY)
+	x += (dirX / length) * step
+	y += (dirY / length) * step
+	return x, y
 }

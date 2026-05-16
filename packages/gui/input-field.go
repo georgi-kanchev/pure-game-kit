@@ -76,7 +76,7 @@ func inputField(w *widget) {
 	var focused = w.isFocused()
 	var meTyping = typingIn == w // each input field should disable its own typing
 	var text = txt.Remove(w.root.themedField(field.Text, owner, w), "\n")
-	text = internal.RemoveTags(text)
+	// text = internal.RemoveTags(text)
 
 	if meTyping && ((anyInput && !focused) || !internal.WindowHovered || keyboard.IsKeyJustPressed(key.Escape)) {
 		typingIn = nil

@@ -19,7 +19,12 @@ var KeyCount int // for the combo
 var Btns, BtnsPrev [5]bool
 var AnyBtn, AnyBtnPrev bool
 
-func (b *Bus) AccumulateInput() {
+// AccumulateAndSyncInput collects raw input from raylib and publishes it to the
+// public vars. Called once per frame before game logic. Single-threaded — no
+// snapshot or cross-goroutine synchronization needed.
+func AccumulateAndSyncInput() {
+	// ---- accumulate raw events (was DoInput) ----
+
 	for i := range 5 {
 		var btn = rl.MouseButton(i)
 		if rl.IsMouseButtonPressed(btn) {
@@ -28,9 +33,8 @@ func (b *Bus) AccumulateInput() {
 		}
 	}
 	for i := len(activeBtns) - 1; i >= 0; i-- {
-		var btn = activeBtns[i]
-		if rl.IsMouseButtonReleased(rl.MouseButton(btn)) {
-			btns[btn] = false
+		if rl.IsMouseButtonReleased(rl.MouseButton(activeBtns[i])) {
+			btns[activeBtns[i]] = false
 		}
 	}
 
@@ -38,22 +42,15 @@ func (b *Bus) AccumulateInput() {
 	var pos = rl.GetMousePosition()
 	mouseX, mouseY = pos.X, pos.Y
 
-	// cursor comes from the ticker via the bus (no race)
-	var cursor int
-	if b != nil {
-		cursor = b.Cursor
-	}
-	if prevCursor != cursor {
-		if cursor == -1 {
+	if prevCursor != Cursor {
+		if Cursor == -1 {
 			rl.HideCursor()
 		} else {
 			rl.ShowCursor()
-			rl.SetMouseCursor(int32(cursor))
-			prevCursor = cursor
+			rl.SetMouseCursor(int32(Cursor))
+			prevCursor = Cursor
 		}
 	}
-
-	//=================================================================
 
 	for {
 		var key = rl.GetKeyPressed()
@@ -85,8 +82,7 @@ func (b *Bus) AccumulateInput() {
 		activeBtns, activeKeys = activeBtns[:0], activeKeys[:0]
 	}
 
-	// cleanup released keys/buttons (was in SyncAccumulatedInput — now on the
-	// main thread so the active slices are never touched by the ticker)
+	// cleanup released keys/buttons
 	for i := len(activeBtns) - 1; i >= 0; i-- {
 		if !btns[activeBtns[i]] {
 			activeBtns = slices.Delete(activeBtns, i, i+1)
@@ -100,41 +96,24 @@ func (b *Bus) AccumulateInput() {
 		}
 	}
 
-	accumWindowFocused = windowFocused
-}
-
-func (b *Bus) CopyInputToBus() {
-	var snap = &b.InputSnap
-	snap.MouseX, snap.MouseY = mouseX, mouseY
-	snap.Scroll, scroll = scroll, 0
-	snap.Input, input = input, ""
-	snap.ActiveBtns = append(snap.ActiveBtns[:0], activeBtns...)
-	snap.ActiveKeys = append(snap.ActiveKeys[:0], activeKeys...)
-	snap.KeyDurs = accumKeyDurs
-	snap.WindowFocused = accumWindowFocused
-}
-
-func (b *Bus) SyncAccumulatedInput() {
-	var snap = &b.InputSnap
+	// ---- publish to public vars (was UnpackForTickInput) ----
 
 	prevMouseX, prevMouseY = MouseX, MouseY
-	MouseX, MouseY = snap.MouseX, snap.MouseY
+	MouseX, MouseY = mouseX, mouseY
 	MouseDeltaX, MouseDeltaY = MouseX-prevMouseX, MouseY-prevMouseY
 
 	AnyBtnPrev, BtnsPrev = AnyBtn, Btns
-	AnyBtn = len(snap.ActiveBtns) > 0
-
+	AnyBtn = len(activeBtns) > 0
 	Btns = [5]bool{}
-	for _, btn := range snap.ActiveBtns {
+	for _, btn := range activeBtns {
 		Btns[btn] = true
 	}
 
-	Scroll = snap.Scroll
+	Scroll, scroll = scroll, 0
 
 	const scrollAccel, scrollDecay = 600.0, 8.0
 	SmoothScroll += Scroll * scrollAccel * TickDelta
 	SmoothScroll *= number.Exponential(-scrollDecay * TickDelta)
-
 	if SmoothScroll != 0 && number.IsWithin(SmoothScroll, 0, 0.0001) {
 		SmoothScroll = 0
 	}
@@ -142,23 +121,18 @@ func (b *Bus) SyncAccumulatedInput() {
 		SmoothScroll = 0
 	}
 
-	//=================================================================
-
-	Input = snap.Input
+	Input, input = input, ""
 
 	AnyKeyPrev, KeysPrev = AnyKey, Keys
-	KeyCount = len(snap.ActiveKeys)
+	KeyCount = len(activeKeys)
 	AnyKey = KeyCount > 0
-
 	Keys = [350]bool{}
-	KeyDurs = snap.KeyDurs
-	for _, key := range snap.ActiveKeys {
+	KeyDurs = accumKeyDurs
+	for _, key := range activeKeys {
 		Keys[key] = true
 	}
 
-	//=================================================================
-
-	if !snap.WindowFocused {
+	if !windowFocused {
 		Btns, Keys = [5]bool{}, [350]bool{}
 		BtnsPrev, KeysPrev = [5]bool{}, [350]bool{}
 		AnyBtn, AnyKey, KeyCount = false, false, 0
@@ -178,4 +152,3 @@ var activeBtns []int
 var accumKeyDurs [350]float32
 var prevMouseX, prevMouseY float32
 var prevCursor int
-var accumWindowFocused bool

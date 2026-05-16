@@ -70,7 +70,7 @@ func (t *TextBox) formatSymbols() ([]string, []symbol) {
 			line = " "
 		}
 
-		var tagless = internal.RemoveTags(line)
+		var tagless = line
 		var lineWidth, _ = t.measure(font, tagless, gapX)
 		var assetCount = txt.CountOccurrences(tagless, string(placeholderCharAsset))
 		if assetCount > 0 {

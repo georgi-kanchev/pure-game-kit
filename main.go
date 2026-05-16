@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/engine"
 	"pure-game-kit/packages/graphics"
@@ -10,26 +9,14 @@ import (
 )
 
 func main() {
-	engine.Initialize("pure-game-kit", 60, 0, false, false)
+	engine.Initialize("pure-game-kit", 0, false, false)
 
 	var view = graphics.NewView(1)
 	var obj = graphics.NewObject(0, 0)
 
-	var loadFlail = engine.NewWork(func() {
-		obj.ImageId = assets.LoadImage("examples/data/flail.PNG")
-	})
 	engine.Run(func() {
 		if keyboard.IsKeyJustPressed(key.A) {
-			loadFlail.Start()
-			fmt.Printf("work started\n")
-		}
-
-		if loadFlail.IsWorking() {
-			fmt.Printf("working...\n")
-		}
-
-		if loadFlail.IsJustFinished() {
-			fmt.Printf("work done!\n")
+			obj.ImageId = assets.LoadImage("examples/data/flail.PNG")
 		}
 
 		view.DrawObjects(&obj)

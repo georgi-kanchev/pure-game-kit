@@ -83,3 +83,6 @@ type FontData struct {
 }
 
 var Fonts = make(map[string]rl.Font)
+
+var Fonts2 = make(map[byte]Font) // 0 = default
+var Font2NextId byte

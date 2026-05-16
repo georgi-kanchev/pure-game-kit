@@ -24,7 +24,7 @@ func LoadImage(imagePath string) ImageId {
 	internal.NextImageId++
 	var id = internal.NextImageId
 	var w, h = float32(texture.Width), float32(texture.Height)
-	internal.AddPendingImage(int32(id), internal.ImageData{Texture: texture, CropWidth: w, CropHeight: h})
+	internal.Images[int32(id)] = internal.ImageData{Texture: texture, CropWidth: w, CropHeight: h}
 	return ImageId(id)
 }
 func (i ImageId) UnloadImage() {

@@ -91,7 +91,7 @@ func (v *View) DrawTextDebug(fps, time, assets, memory bool) {
 
 		builder.Reset()
 		if fps {
-			var tickBusy = int(min(100, (internal.TickBusy/(1/float32(internal.TargetTPS)))*100))
+			var tickBusy = int(min(100, (internal.TickBusy/(1/float32(internal.TPS)))*100))
 			builder.WriteString(text.New("FPS ", int(internal.FPS), " / TPS ",
 				int(internal.TPS), " (busy ", tickBusy, "%)\n\n"))
 		}

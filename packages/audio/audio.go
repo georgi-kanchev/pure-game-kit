@@ -122,7 +122,7 @@ func (a *Audio) IsJustFinished() bool {
 	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
 	var music, hasMusic = internal.Music[int16(a.AssetId)]
 	var durationInTicks uint64
-	var tps = float32(internal.TargetTPS)
+	var tps = float32(internal.TPS)
 
 	if hasSound {
 		for _, s := range sounds {

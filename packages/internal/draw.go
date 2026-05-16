@@ -1,6 +1,7 @@
 package internal
 
 import (
+	_ "embed"
 	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/number"
 	"unsafe"
@@ -19,13 +20,15 @@ type Batch struct {
 	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
 }
 
-var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
-var Fonts2 = make(map[byte]Font)       // 0 = default
-var Font2NextId byte
-var NextImageId int16
-var NextImageCropId int16
+var DefaultMaterial rl.Material
+var DefaultMatrix rl.Matrix
+var Shader rl.Shader
+var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
+var ShaderTileDataLoc int32
 
-func (b *Bus) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
+//=================================================================
+
+func (b *BatchManager) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -74,10 +77,10 @@ func (b *Bus) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32,
 		}
 	}
 }
-func (b *Bus) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
+func (b *BatchManager) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	b.QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
 }
-func (b *Bus) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
+func (b *BatchManager) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {
 		return
 	}
@@ -90,27 +93,9 @@ func (b *Bus) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask 
 	b.QueueQuad(startX, startY, length, thickness, ang, color, mask)
 }
 
-func (b *Bus) Draw(dirty bool) {
-	for _, b := range b.ReadyBatches { // only upload the portion of the slices are actually used
-		if !b.meshUploaded {
-			rl.UploadMesh(b.mesh, true)
-			b.meshUploaded = true
-		}
+//=================================================================
 
-		if dirty {
-			rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 2, b.normals[:b.vertCount*12], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents[:b.vertCount*16], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s[:b.vertCount*8], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
-			b.mesh.TriangleCount = b.indexCount / 3 // triangle count = only whatever is valid
-		}
 
-		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
-	}
-}
 
 // private =================================================================
 
@@ -120,6 +105,12 @@ type vertex struct {
 	TX, TY, TZ float32 // Tangents
 	U2, V2     float32 // Texcoords2
 }
+
+//go:embed shaders/quad.frag
+var fragQuad string
+
+//go:embed shaders/default.vert
+var vertDefault string
 
 func newBatch() *Batch {
 	const quadCapacity = 4096 // fixed size for all batches
@@ -147,40 +138,34 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func (m *Bus) queueVertices(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
-	// 1. Check if we need to break the current batch
+func (m *BatchManager) queueVertices(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
 	if m.ActiveBatch != nil {
 		var texChanged = m.ActiveBatch.material.Maps.Texture.ID != tex.ID
 		var outOfSpace = m.ActiveBatch.vertCount+vCount > m.ActiveBatch.mesh.VertexCount
 
-		if texChanged || outOfSpace {
+		if texChanged || outOfSpace { // do we need to break the batch?
 			if m.ActiveBatch.vertCount > 0 {
-				// Push to pending list to draw later
-				m.ReadyBatches = append(m.ReadyBatches, m.ActiveBatch)
+				m.ReadyBatches = append(m.ReadyBatches, m.ActiveBatch) // push to draw later
 			}
-			m.ActiveBatch = nil // Clear active to force a new one
+			m.ActiveBatch = nil // clear active to force a new one
 		}
 	}
 
-	// 2. Get a fresh batch if we don't have an active one
 	if m.ActiveBatch == nil {
-		if len(m.BatchPool) > 0 {
-			// Pop from the pool
+		if len(m.BatchPool) > 0 { // grab a fresh batch if we don't have an active one
 			m.ActiveBatch = m.BatchPool[len(m.BatchPool)-1]
 			m.BatchPool = m.BatchPool[:len(m.BatchPool)-1]
 		} else {
-			// Pool is empty, allocate a new one (will only happen as the game ramps up)
-			m.ActiveBatch = newBatch()
+			m.ActiveBatch = newBatch() // pool is empty, allocate a new one (will only happen as the game ramps up)
 		}
 
-		// Reset counters and set material
-		m.ActiveBatch.vertCount = 0
+		m.ActiveBatch.vertCount = 0 // reset counters and set material
 		m.ActiveBatch.indexCount = 0
 		m.ActiveBatch.material.Maps.Texture = tex
 		m.ActiveBatch.material.Shader = Shader
 	}
 
-	// 3. Write data to the Active Batch (Same as your old logic)
+	// write data to the active batch
 	var b = m.ActiveBatch
 	var count = int32(len(verts))
 
@@ -221,17 +206,14 @@ func clipPolygonAABB(poly, outBuf, tempBuf []vertex, mask Area) int32 {
 	if count == 0 {
 		return 0
 	}
-
 	count = clipPolyEdge(tempBuf[:count], outBuf, true, maxX, false)
 	if count == 0 {
 		return 0
 	}
-
 	count = clipPolyEdge(outBuf[:count], tempBuf, false, minY, true)
 	if count == 0 {
 		return 0
 	}
-
 	count = clipPolyEdge(tempBuf[:count], outBuf, false, maxY, false)
 	return count
 }
