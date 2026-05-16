@@ -19,6 +19,12 @@ type Batch struct {
 
 	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
 }
+type Vertex struct {
+	X, Y, U, V float32
+	NX, NY, NZ float32 // Normals
+	TX, TY, TZ float32 // Tangents
+	U2, V2     float32 // Texcoords2
+}
 
 var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
@@ -26,9 +32,17 @@ var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 var ShaderTileDataLoc int32
 
+var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
+var NextImageId int16
+var NextImageCropId int16
+
+var ActiveBatch *Batch    // the batch currently being written to
+var ReadyBatches []*Batch // batches ready to be sent to the GPU
+var BatchPool []*Batch    // empty batches ready to be reused
+
 //=================================================================
 
-func (b *BatchManager) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
+func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -48,39 +62,39 @@ func (b *BatchManager) QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang
 		vCount = 4
 		if ang == 0 {
 			for i := range 4 {
-				b.polygonBuf[i].X = dx[i] + dst.X
-				b.polygonBuf[i].Y = dy[i] + dst.Y
-				b.polygonBuf[i].U = uvs[i*2]
-				b.polygonBuf[i].V = uvs[i*2+1]
+				polygonBuf[i].X = dx[i] + dst.X
+				polygonBuf[i].Y = dy[i] + dst.Y
+				polygonBuf[i].U = uvs[i*2]
+				polygonBuf[i].V = uvs[i*2+1]
 			}
 		} else {
 			var sinA, cosA = SinCos(ang)
 			for i := range 4 {
-				b.polygonBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
-				b.polygonBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
-				b.polygonBuf[i].U = uvs[i*2]
-				b.polygonBuf[i].V = uvs[i*2+1]
+				polygonBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
+				polygonBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
+				polygonBuf[i].U = uvs[i*2]
+				polygonBuf[i].V = uvs[i*2+1]
 			}
 		}
-		b.queueVertices(b.polygonBuf[:4], vCount, tex, col) // pass the buffer directly
+		queueVertices(polygonBuf[:4], vCount, tex, col) // pass the buffer directly
 	} else { // CLIPPED PATH logic...
 		var sinA, cosA = SinCos(ang)
 		for i := range 4 {
-			b.polygonBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
-			b.polygonBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
-			b.polygonBuf[i].U = uvs[i*2]
-			b.polygonBuf[i].V = uvs[i*2+1]
+			polygonBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
+			polygonBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
+			polygonBuf[i].U = uvs[i*2]
+			polygonBuf[i].V = uvs[i*2+1]
 		}
-		vCount = clipPolygonAABB(b.polygonBuf[:4], b.clipResultBuf[:], b.clipTempBuf[:], mask)
+		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
 		if vCount >= 3 {
-			b.queueVertices(b.clipResultBuf[:vCount], vCount, tex, col)
+			queueVertices(clipResultBuf[:vCount], vCount, tex, col)
 		}
 	}
 }
-func (b *BatchManager) QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
-	b.QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
+func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
+	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
 }
-func (b *BatchManager) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
+func QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {
 		return
 	}
@@ -90,21 +104,48 @@ func (b *BatchManager) QueueLine(x1, y1, x2, y2, thickness float32, color rl.Col
 	var length = number.SquareRoot(dx*dx + dy*dy)
 	var perpAngle = ang - 90
 	var startX, startY = moveAtAngle(x1, y1, perpAngle, thickness*0.5)
-	b.QueueQuad(startX, startY, length, thickness, ang, color, mask)
+	QueueQuad(startX, startY, length, thickness, ang, color, mask)
 }
 
 //=================================================================
 
-
+func ResetBatches() {
+	if ActiveBatch != nil {
+		BatchPool = append(BatchPool, ActiveBatch)
+		ActiveBatch = nil
+	}
+	for _, rb := range ReadyBatches {
+		BatchPool = append(BatchPool, rb)
+	}
+	ReadyBatches = ReadyBatches[:0]
+}
+func CloseBatch() {
+	if ActiveBatch != nil && ActiveBatch.vertCount > 0 {
+		ReadyBatches = append(ReadyBatches, ActiveBatch)
+		ActiveBatch = nil
+	}
+}
+func Draw() {
+	for _, batch := range ReadyBatches {
+		if !batch.meshUploaded {
+			rl.UploadMesh(batch.mesh, true)
+			batch.meshUploaded = true
+		}
+		rl.UpdateMeshBuffer(*batch.mesh, 0, batch.verts[:batch.vertCount*12], 0)
+		rl.UpdateMeshBuffer(*batch.mesh, 1, batch.texCoords[:batch.vertCount*8], 0)
+		rl.UpdateMeshBuffer(*batch.mesh, 2, batch.normals[:batch.vertCount*12], 0)
+		rl.UpdateMeshBuffer(*batch.mesh, 3, batch.cols[:batch.vertCount*4], 0)
+		rl.UpdateMeshBuffer(*batch.mesh, 4, batch.tangents[:batch.vertCount*16], 0)
+		rl.UpdateMeshBuffer(*batch.mesh, 5, batch.tex2s[:batch.vertCount*8], 0)
+		rl.UpdateMeshBuffer(*batch.mesh, 6, batch.indexes[:batch.indexCount*2], 0)
+		batch.mesh.TriangleCount = batch.indexCount / 3
+		rl.DrawMesh(*batch.mesh, batch.material, DefaultMatrix)
+	}
+}
 
 // private =================================================================
 
-type vertex struct {
-	X, Y, U, V float32
-	NX, NY, NZ float32 // Normals
-	TX, TY, TZ float32 // Tangents
-	U2, V2     float32 // Texcoords2
-}
+var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
 
 //go:embed shaders/quad.frag
 var fragQuad string
@@ -138,35 +179,35 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func (m *BatchManager) queueVertices(verts []vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
-	if m.ActiveBatch != nil {
-		var texChanged = m.ActiveBatch.material.Maps.Texture.ID != tex.ID
-		var outOfSpace = m.ActiveBatch.vertCount+vCount > m.ActiveBatch.mesh.VertexCount
+func queueVertices(verts []Vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
+	if ActiveBatch != nil {
+		var texChanged = ActiveBatch.material.Maps.Texture.ID != tex.ID
+		var outOfSpace = ActiveBatch.vertCount+vCount > ActiveBatch.mesh.VertexCount
 
 		if texChanged || outOfSpace { // do we need to break the batch?
-			if m.ActiveBatch.vertCount > 0 {
-				m.ReadyBatches = append(m.ReadyBatches, m.ActiveBatch) // push to draw later
+			if ActiveBatch.vertCount > 0 {
+				ReadyBatches = append(ReadyBatches, ActiveBatch) // push to draw later
 			}
-			m.ActiveBatch = nil // clear active to force a new one
+			ActiveBatch = nil // clear active to force a new one
 		}
 	}
 
-	if m.ActiveBatch == nil {
-		if len(m.BatchPool) > 0 { // grab a fresh batch if we don't have an active one
-			m.ActiveBatch = m.BatchPool[len(m.BatchPool)-1]
-			m.BatchPool = m.BatchPool[:len(m.BatchPool)-1]
+	if ActiveBatch == nil {
+		if len(BatchPool) > 0 { // grab a fresh batch if we don't have an active one
+			ActiveBatch = BatchPool[len(BatchPool)-1]
+			BatchPool = BatchPool[:len(BatchPool)-1]
 		} else {
-			m.ActiveBatch = newBatch() // pool is empty, allocate a new one (will only happen as the game ramps up)
+			ActiveBatch = newBatch() // pool is empty, allocate a new one (will only happen as the game ramps up)
 		}
 
-		m.ActiveBatch.vertCount = 0 // reset counters and set material
-		m.ActiveBatch.indexCount = 0
-		m.ActiveBatch.material.Maps.Texture = tex
-		m.ActiveBatch.material.Shader = Shader
+		ActiveBatch.vertCount = 0 // reset counters and set material
+		ActiveBatch.indexCount = 0
+		ActiveBatch.material.Maps.Texture = tex
+		ActiveBatch.material.Shader = Shader
 	}
 
 	// write data to the active batch
-	var b = m.ActiveBatch
+	var b = ActiveBatch
 	var count = int32(len(verts))
 
 	var v_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.verts[b.vertCount*12])), count*3)
@@ -199,7 +240,7 @@ func (m *BatchManager) queueVertices(verts []vertex, vCount int32, tex rl.Textur
 	b.indexCount += trisCount * 3
 }
 
-func clipPolygonAABB(poly, outBuf, tempBuf []vertex, mask Area) int32 {
+func clipPolygonAABB(poly, outBuf, tempBuf []Vertex, mask Area) int32 {
 	var minX, maxX = mask.X, mask.X + mask.Width
 	var minY, maxY = mask.Y, mask.Y + mask.Height
 	var count = clipPolyEdge(poly, tempBuf, true, minX, true)
@@ -217,7 +258,7 @@ func clipPolygonAABB(poly, outBuf, tempBuf []vertex, mask Area) int32 {
 	count = clipPolyEdge(tempBuf[:count], outBuf, false, maxY, false)
 	return count
 }
-func clipPolyEdge(in, out []vertex, isX bool, edgeVal float32, keepGreater bool) int32 {
+func clipPolyEdge(in, out []Vertex, isX bool, edgeVal float32, keepGreater bool) int32 {
 	var outCount int32 = 0
 	if len(in) == 0 {
 		return 0
@@ -249,7 +290,7 @@ func clipPolyEdge(in, out []vertex, isX bool, edgeVal float32, keepGreater bool)
 				t = (edgeVal - prev.Y) / (curr.Y - prev.Y)
 			}
 
-			out[outCount] = vertex{
+			out[outCount] = Vertex{
 				X: prev.X + t*(curr.X-prev.X),
 				Y: prev.Y + t*(curr.Y-prev.Y),
 				U: prev.U + t*(curr.U-prev.U),

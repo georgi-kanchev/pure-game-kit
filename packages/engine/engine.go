@@ -29,29 +29,22 @@ func Initialize(title string, maxFps uint16, vsync, antialias bool) {
 }
 
 func Run(gameLoop func()) {
-	var bm = &internal.BatchManager{}
-
 	for !rl.WindowShouldClose() {
-		// ---- per-frame setup ----
 		internal.UpdateWindowData()
 		internal.UpdateAudio()
 
-		// ---- input ----
 		internal.FrameDelta = rl.GetFrameTime()
 		internal.AccumulateAndSyncInput()
 
-		// ---- game logic ----
-		bm.ResetBatches()
-		internal.ActiveBatchManager = bm
+		internal.ResetBatches()
 		internal.UpdateTimeData()
 		gameLoop()
-		bm.CloseBatch()
+		internal.CloseBatch()
 
-		// ---- render ----
 		rl.BeginDrawing()
 		rl.EnableDepthTest()
 		rl.ClearBackground(rl.Black)
-		bm.Draw()
+		internal.Draw()
 		rl.DrawFPS(10, 10)
 		rl.DisableDepthTest()
 		rl.EndDrawing()
