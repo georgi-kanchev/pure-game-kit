@@ -65,7 +65,7 @@ func (b *Bus) AccumulateInput() {
 	}
 	for i := len(activeKeys) - 1; i >= 0; i-- {
 		var key = activeKeys[i]
-		KeyDurs[key] += FrameDelta
+		accumKeyDurs[key] += FrameDelta
 		if rl.IsKeyReleased(key) {
 			keys[key] = false
 		}
@@ -95,7 +95,7 @@ func (b *Bus) AccumulateInput() {
 	for i := len(activeKeys) - 1; i >= 0; i-- {
 		var key = activeKeys[i]
 		if !keys[key] {
-			KeyDurs[key] = 0
+			accumKeyDurs[key] = 0
 			activeKeys = slices.Delete(activeKeys, i, i+1)
 		}
 	}
@@ -110,7 +110,7 @@ func (b *Bus) CopyInputToBus() {
 	snap.Input, input = input, ""
 	snap.ActiveBtns = append(snap.ActiveBtns[:0], activeBtns...)
 	snap.ActiveKeys = append(snap.ActiveKeys[:0], activeKeys...)
-	snap.KeyDurs = KeyDurs
+	snap.KeyDurs = accumKeyDurs
 	snap.WindowFocused = accumWindowFocused
 }
 
@@ -175,6 +175,7 @@ var keys [350]bool
 
 var activeKeys []int32
 var activeBtns []int
+var accumKeyDurs [350]float32
 var prevMouseX, prevMouseY float32
 var prevCursor int
 var accumWindowFocused bool

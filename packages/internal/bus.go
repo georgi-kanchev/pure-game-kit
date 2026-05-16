@@ -15,7 +15,8 @@ type Bus struct {
 	ReadyBatches []*Batch // Batches ready to be sent to the GPU
 	BatchPool    []*Batch // Empty batches ready to be reused
 
-	PendingWork []byte // Mainly for loading but can do other work on the main thread too
+	PendingWork   []byte              // Mainly for loading but can do other work on the Main thread too
+	PendingImages map[int32]ImageData // Images loaded on the main thread, applied by the ticker
 
 	InputSnap InputSnapshot // Input state captured on the main thread, consumed by the ticker
 	Cursor    int           // Cursor state set by the ticker, consumed by the main thread
@@ -30,6 +31,28 @@ var WorkQueue []byte
 var Working = make(map[byte]bool)          // true if currently queued/running
 var WorkJustFinished = make(map[byte]bool) // true for exactly one tick after finishing
 
+// pendingImageLoads buffers images loaded on the main thread (via work).
+// They are flushed onto the bus by FlushPendingImages and applied to the
+// real Images map by the ticker in Reset(), avoiding map races.
+var pendingImageLoads = make(map[int32]ImageData)
+
+func AddPendingImage(id int32, img ImageData) {
+	pendingImageLoads[id] = img
+}
+
+func (b *Bus) FlushPendingImages() {
+	if len(pendingImageLoads) == 0 {
+		return
+	}
+	if b.PendingImages == nil {
+		b.PendingImages = make(map[int32]ImageData, len(pendingImageLoads))
+	}
+	for id, img := range pendingImageLoads {
+		b.PendingImages[id] = img
+	}
+	clear(pendingImageLoads)
+}
+
 func (b *Bus) Reset() {
 	if b.ActiveBatch != nil { // move all ready/active batches back to the local pool for this manager
 		b.BatchPool = append(b.BatchPool, b.ActiveBatch)
@@ -39,6 +62,12 @@ func (b *Bus) Reset() {
 		b.BatchPool = append(b.BatchPool, rb)
 	}
 	b.ReadyBatches = b.ReadyBatches[:0]
+
+	// apply images loaded on the main thread to the real map (ticker-owned)
+	for id, img := range b.PendingImages {
+		Images[id] = img
+	}
+	clear(b.PendingImages)
 
 	//=================================================================
 

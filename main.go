@@ -16,7 +16,7 @@ func main() {
 	var obj = graphics.NewObject(0, 0)
 
 	var loadFlail = engine.NewWork(func() {
-		assets.LoadImage("examples/data/flail.PNG")
+		obj.ImageId = assets.LoadImage("examples/data/flail.PNG")
 	})
 	engine.Run(func() {
 		if keyboard.IsKeyJustPressed(key.A) {

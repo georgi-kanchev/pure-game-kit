@@ -84,8 +84,9 @@ func Run(gameLoop func()) {
 		select { // check for a new frame from the ticker
 		case latest := <-ready:
 			if activeBus != nil {
-				activeBus.CopyInputToBus() // snapshot accumulated input onto the bus before returning it
-				pool <- activeBus          // return used bus to pool (carries input snapshot to ticker)
+				activeBus.CopyInputToBus()     // snapshot accumulated input onto the bus before returning it
+				activeBus.FlushPendingImages() // transfer loaded images onto the bus for the ticker to apply
+				pool <- activeBus             // return used bus to pool (carries input snapshot + pending images to ticker)
 			}
 			activeBus = latest
 			dirtyDraw = true
