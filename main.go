@@ -15,9 +15,8 @@ func main() {
 	var view = graphics.NewView(1)
 	var obj = graphics.NewObject(0, 0)
 
-	var flail assets.ImageId
 	var loadFlail = engine.NewWork(func() {
-		flail = assets.LoadImage("examples/data/flail.PNG")
+		assets.LoadImage("examples/data/flail.PNG")
 	})
 	engine.Run(func() {
 		if keyboard.IsKeyJustPressed(key.A) {
@@ -31,7 +30,6 @@ func main() {
 
 		if loadFlail.IsJustFinished() {
 			fmt.Printf("work done!\n")
-			obj.ImageId = flail
 		}
 
 		view.DrawObjects(&obj)

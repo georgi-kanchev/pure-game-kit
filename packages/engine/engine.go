@@ -45,14 +45,14 @@ func Run(gameLoop func()) {
 				return
 			}
 
-			internal.SyncAccumulatedInput()
 			internal.UpdateWindowData()
 			internal.UpdateTimeData()
 			internal.UpdateAudio()
 
-			var bus = <-pool         // grab a bus from the pool
-			bus.Reset()              // clear previous frame's data (resets slices to length 0, keeps capacity)
-			internal.ActiveBus = bus // set as the global active bus so gameLoop can call Queue
+			var bus = <-pool           // grab a bus from the pool (carries input snapshot from main thread)
+			bus.Reset()                // clear previous frame's data (resets slices to length 0, keeps capacity)
+			bus.SyncAccumulatedInput() // apply the input snapshot that the main thread captured onto the bus
+			internal.ActiveBus = bus   // set as the global active bus so gameLoop can call Queue
 			gameLoop()
 			bus.Finalize() // close out the final active batch inside the bus
 
@@ -79,18 +79,19 @@ func Run(gameLoop func()) {
 			return
 		}
 
+		activeBus.AccumulateInput()
+
 		select { // check for a new frame from the ticker
 		case latest := <-ready:
 			if activeBus != nil {
-				pool <- activeBus // return used bus to pool
+				activeBus.CopyInputToBus() // snapshot accumulated input onto the bus before returning it
+				pool <- activeBus          // return used bus to pool (carries input snapshot to ticker)
 			}
 			activeBus = latest
 			dirtyDraw = true
 		default: // no new frame? keep drawing active bus
 			dirtyDraw = false
 		}
-
-		internal.AccumulateInput()
 
 		rl.BeginDrawing()
 		rl.EnableDepthTest()

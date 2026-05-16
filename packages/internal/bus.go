@@ -1,11 +1,24 @@
 package internal
 
+type InputSnapshot struct {
+	MouseX, MouseY float32
+	Scroll         float32
+	Input          string
+	ActiveBtns     []int
+	ActiveKeys     []int32
+	KeyDurs        [350]float32
+	WindowFocused  bool
+}
+
 type Bus struct {
 	ActiveBatch  *Batch   // The batch currently being written to
 	ReadyBatches []*Batch // Batches ready to be sent to the GPU
 	BatchPool    []*Batch // Empty batches ready to be reused
 
-	PendingWork []byte // Mainly for loading but can do other work on the Main thread too
+	PendingWork []byte // Mainly for loading but can do other work on the main thread too
+
+	InputSnap InputSnapshot // Input state captured on the main thread, consumed by the ticker
+	Cursor    int           // Cursor state set by the ticker, consumed by the main thread
 
 	polygonBuf, clipResultBuf, clipTempBuf [12]vertex // reused working buffers; avoids per-call heap escapes
 }
@@ -39,6 +52,8 @@ func (b *Bus) Reset() {
 	}
 }
 func (b *Bus) Finalize() {
+	b.Cursor = Cursor // capture cursor state set by the ticker for the main thread
+
 	if b.ActiveBatch != nil && b.ActiveBatch.vertCount > 0 {
 		b.ReadyBatches = append(b.ReadyBatches, b.ActiveBatch)
 		b.ActiveBatch = nil // the gameLoop finished and left the last batch open, move it to ready
