@@ -8,7 +8,7 @@ in vec3 fragNormal;
 in vec4 fragTangent;
 
 // texCoord2.x = TextureWidth(12) + TextureHeight(12)
-// texCoord2.y = BorderColor(24)
+// texCoord2.y = BorderColor(6,6,6,6)
 
 // normal.x = Gamma(6) + Saturation(6) + Contrast(6) + Brightness(6)
 // normal.y = Grayscale(6) + Inversion(6) + BlurX(6) + BlurY(6)
@@ -19,34 +19,25 @@ in vec4 fragTangent;
 //  tangent.y = PixelSize(32)
 
 // Sprite:
-//  tangent.x = OutlineColor(24)
-//  tangent.y = SilhouetteColor(24)
+//  tangent.x = OutlineColor(6,6,6,6)
+//  tangent.y = SilhouetteColor(6,6,6,6)
 //  tangent.z = OutlineSize(32)
 //  tangent.w = Roundness(16) + PixelSize(8)
 
 // Tilemap:
-//  tangent.x = OutlineColor(24)
-//  tangent.y = SilhouetteColor(24)
+//  tangent.x = OutlineColor(6,6,6,6)
+//  tangent.y = SilhouetteColor(6,6,6,6)
 //  tangent.z = TileColumns(10) + TileRows(10) + PixelSize(4)
 //  tangent.w = OutlineSize(8) + TileSize(8) + Roundness(8)
 
 // Text:
-//  tangent.x = OutlineColor(24)
-//  tangent.y = ShadowColor(24)
+//  tangent.x = OutlineColor(6,6,6,6)
+//  tangent.y = ShadowColor(6,6,6,6)
 //  tangent.z = Weight(6) + OutlineWeight(6) + ShadowWeight(6) + ShadowBlur(6)
 //  tangent.w = TextShadowX(6) + TextShadowY(6) + Roundness(8) + PixelSize(4)
 
 out vec4 finalColor;
 
-#define OUTLINE_SIZE 12
-#define OUTLINE_R 13
-#define OUTLINE_G 14
-#define OUTLINE_B 15
-#define OUTLINE_A 16
-#define SILHOUETTE_R 17
-#define SILHOUETTE_G 18
-#define SILHOUETTE_B 19
-#define SILHOUETTE_A 20
 #define TILE_COLUMNS 21
 #define TILE_ROWS 22
 #define TILE_W 23
@@ -57,13 +48,6 @@ uniform sampler2D texture0;
 uniform sampler2D tileData;
 uniform float u[32];
 
-vec3 unpack_color24(float packedFloat) {
-    uint bits = floatBitsToUint(packedFloat);
-    float r = float((bits >> 16u) & 0xFFu) / 255.0;
-    float g = float((bits >> 8u)  & 0xFFu) / 255.0;
-    float b = float(bits & 0xFFu) / 255.0;
-    return vec3(r, g, b);
-}
 vec4 unpack_6_6_6_6(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
     float x = float((bits >> 18u) & 0x3Fu) / 63.0;
@@ -132,28 +116,26 @@ vec4 compute_blur(vec2 uv, vec2 texSize, vec2 blur) {
     sum += texture(texture0, uv + vec2(offset.x, offset.y));
     return sum * 0.25;
 }
-vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize) {
-    float outline = u[OUTLINE_SIZE];
-    if (color.a > 0 || outline == 0.0)
+vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize, float outlineSize, vec4 outlineColor) {
+    if (color.a > 0 || outlineSize == 0.0)
         return color;
     
     vec2 texel = 1.0 / texSize;
 
-    if (texture(texture0, uv + vec2(texel.x * outline, 0.0)).a > 0.0 ||
-            texture(texture0, uv + vec2(-texel.x * outline, 0.0)).a > 0.0 ||
-            texture(texture0, uv + vec2(0.0, texel.y * outline)).a > 0.0 ||
-            texture(texture0, uv + vec2(0.0, -texel.y * outline)).a > 0.0 ||
-            texture(texture0, uv + vec2(texel.x * outline, texel.y * outline)).a > 0.0 ||
-            texture(texture0, uv + vec2(-texel.x * outline, texel.y * outline)).a > 0.0 ||
-            texture(texture0, uv + vec2(-texel.x * outline, -texel.y * outline)).a > 0.0 ||
-            texture(texture0, uv + vec2(texel.x * outline, -texel.y * outline)).a > 0.0)
-        return vec4(u[OUTLINE_R], u[OUTLINE_G], u[OUTLINE_B], u[OUTLINE_A]);
+    if (texture(texture0, uv + vec2(texel.x * outlineSize, 0.0)).a > 0.0 ||
+            texture(texture0, uv + vec2(-texel.x * outlineSize, 0.0)).a > 0.0 ||
+            texture(texture0, uv + vec2(0.0, texel.y * outlineSize)).a > 0.0 ||
+            texture(texture0, uv + vec2(0.0, -texel.y * outlineSize)).a > 0.0 ||
+            texture(texture0, uv + vec2(texel.x * outlineSize, texel.y * outlineSize)).a > 0.0 ||
+            texture(texture0, uv + vec2(-texel.x * outlineSize, texel.y * outlineSize)).a > 0.0 ||
+            texture(texture0, uv + vec2(-texel.x * outlineSize, -texel.y * outlineSize)).a > 0.0 ||
+            texture(texture0, uv + vec2(texel.x * outlineSize, -texel.y * outlineSize)).a > 0.0)
+        return outlineColor;
 
     return color;
 }
-vec4 compute_silhouette(vec4 color) {
-    vec4 silColor = vec4(u[SILHOUETTE_R], u[SILHOUETTE_G], u[SILHOUETTE_B], u[SILHOUETTE_A]);
-    color.rgb = mix(color.rgb, silColor.rgb, silColor.a);
+vec4 compute_silhouette(vec4 color, vec4 silhouetteColor) {
+    color.rgb = mix(color.rgb, silhouetteColor.rgb, silhouetteColor.a);
     return color;
 }
 vec4 compute_color_adjust(vec4 color, vec4 colorAdjust, vec2 colorAdjust2) {
@@ -258,7 +240,7 @@ vec2 compute_tile(vec2 uv, vec2 texSize) {
 
 void main() {
     vec2 texSize = unpack_12_12(fragTexCoord2.x);  // TextureWidth(12) + TextureHeight(12)
-    vec3 borderColor = unpack_color24(fragTexCoord2.y); // BorderColor(24)
+    vec4 borderColor = unpack_6_6_6_6(fragTexCoord2.y); // BorderColor RGBA(6,6,6,6)
     vec4 colorAdjust1 = unpack_6_6_6_6(fragNormal.x); // Gamma(6)+Saturation(6)+Contrast(6)+Brightness(6)
     vec4 colorAdjust2 = unpack_6_6_6_6(fragNormal.y); // Grayscale(6)+Inversion(6)+BlurX(6)+BlurY(6)
     vec2 blur = colorAdjust2.zw * 16.0;
@@ -267,32 +249,35 @@ void main() {
     unpack_11_11_2(fragNormal.z, depthZ, borderSize, objectType); // DepthZ(11)+BorderSize(11)+Type(2)
     float roundness = 0.0;
     float pixelSize = 0.0;
+    float outlineSize = 0.0;
+    vec4  outlineColor = vec4(0.0);
+    vec4  silhouetteColor = vec4(0.0);
     
     if (objectType == 0) { // Shape
         roundness = fragTangent.x; // full float
         pixelSize = fragTangent.y; // full float
     }
     else if (objectType == 1) { // Sprite
-        vec3 outlineColor   = unpack_color24(fragTangent.x);  // OutlineColor(24)
-        vec3 silhouetteColor = unpack_color24(fragTangent.y); // SilhouetteColor(24)
-        float outlineSize   = fragTangent.z;                  // full float
-        unpack_16_8(fragTangent.w, roundness, pixelSize);     // Roundness(16)+PixelSize(8)
+        outlineColor   = unpack_6_6_6_6(fragTangent.x);  // OutlineColor RGBA(6,6,6,6)
+        silhouetteColor = unpack_6_6_6_6(fragTangent.y); // SilhouetteColor RGBA(6,6,6,6)
+        outlineSize    = fragTangent.z;                  // full float
+        unpack_16_8(fragTangent.w, roundness, pixelSize); // Roundness(16)+PixelSize(8)
     }
     else if (objectType == 2) { // Text
-        vec3 outlineColor = unpack_color24(fragTangent.x); // OutlineColor(24)
-        vec3 shadowColor  = unpack_color24(fragTangent.y); // ShadowColor(24)
+        outlineColor = unpack_6_6_6_6(fragTangent.x); // OutlineColor RGBA(6,6,6,6)
+        vec4 shadowColor  = unpack_6_6_6_6(fragTangent.y); // ShadowColor RGBA(6,6,6,6)
         vec4 textWeights  = unpack_6_6_6_6(fragTangent.z); // Weight+OutlineWeight+ShadowWeight+ShadowBlur
         float shadowX, shadowY;
         unpack_6_6_8_4(fragTangent.w, shadowX, shadowY, roundness, pixelSize); // ShadowX+ShadowY+Roundness+PixelSize
     }
     else if (objectType == 3) { // Tilemap
-        vec3 outlineColor   = unpack_color24(fragTangent.x);  // OutlineColor(24)
-        vec3 silhouetteColor = unpack_color24(fragTangent.y); // SilhouetteColor(24)
-        vec3 tileInfo = unpack_10_10_4(fragTangent.z);        // TileColumns(10)+TileRows(10)+PixelSize(4)
+        outlineColor   = unpack_6_6_6_6(fragTangent.x);  // OutlineColor RGBA(6,6,6,6)
+        silhouetteColor = unpack_6_6_6_6(fragTangent.y); // SilhouetteColor RGBA(6,6,6,6)
+        vec3 tileInfo = unpack_10_10_4(fragTangent.z);   // TileColumns(10)+TileRows(10)+PixelSize(4)
         float tileColumns = tileInfo.x;
         float tileRows    = tileInfo.y;
         pixelSize         = tileInfo.z;
-        float outlineSize, tileSize;
+        float tileSize;
         unpack_8_8_8(fragTangent.w, outlineSize, tileSize, roundness); // OutlineSize(8)+TileSize(8)+Roundness(8)
     }
 
@@ -303,9 +288,9 @@ void main() {
     //     uv = compute_pixelated_uv(uv, texSize, pixelSize);
     //     
     //     vec4 color = texture(texture0, uv);
-    //     color = compute_outline(color, uv, texSize);
+    //     color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
     //     color = compute_color_adjust(color, colorAdjust1, colorAdjust2.xy);
-    //     color = compute_silhouette(color);
+    //     color = compute_silhouette(color, silhouetteColor);
     //     finalColor = color;
     //     gl_FragDepth = depthZ;
     //     return;
@@ -315,13 +300,13 @@ void main() {
     uv = compute_pixelated_uv(uv, texSize, pixelSize);
 
     vec4 color = compute_blur(uv, texSize, blur);
-    color = compute_outline(color, uv, texSize);
+    color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
 
     if (color.a * fragColor.a < 0.004)
         discard;
 
     color = compute_color_adjust(color, colorAdjust1, colorAdjust2.xy);
-    color = compute_silhouette(color);
+    color = compute_silhouette(color, silhouetteColor);
 
     finalColor = color * fragColor;
     gl_FragDepth = depthZ;
