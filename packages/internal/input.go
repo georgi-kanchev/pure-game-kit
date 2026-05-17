@@ -31,8 +31,8 @@ func CacheInput() {
 var btns [5]bool
 var keys [350]bool
 
-var activeKeys []int32
-var activeBtns []int
+var activeKeys []int32 = make([]int32, 0, 8)
+var activeBtns []int = make([]int, 0, 8)
 var prevCursor int
 
 func cacheMouse() {

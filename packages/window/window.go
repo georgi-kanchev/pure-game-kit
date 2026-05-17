@@ -26,6 +26,7 @@ func Create(title string, vsync, antialias bool) {
 	rl.InitWindow(1600, 900, title)
 	rl.SetExitKey(rl.KeyNull)
 	rl.MaximizeWindow()
+	MoveToMonitor(0)
 	isInit = true
 
 	internal.Init()
@@ -43,9 +44,8 @@ func KeepOpen() bool {
 
 	rl.BeginDrawing()
 	rl.EnableDepthTest()
-	rl.ClearBackground(rl.Black)
+	rl.ClearScreenBuffers()
 	internal.Draw()
-	rl.DrawFPS(10, 10)
 	rl.DisableDepthTest()
 	rl.EndDrawing()
 
