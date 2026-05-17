@@ -3,8 +3,6 @@ package main
 import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/utility/number"
-	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
@@ -20,7 +18,6 @@ func main() {
 	obj.Width, obj.Height = 500, 500
 
 	for window.KeepOpen() {
-		obj.Effects.Brightness = (number.Sine(time.Running()) + 1) / 2
 		view.DrawObjects(&obj)
 	}
 }

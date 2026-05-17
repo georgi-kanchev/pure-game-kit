@@ -124,10 +124,6 @@ void unpack_6_6_8_4(float packedFloat, out float shadowX, out float shadowY, out
 
 // --- effect functions ---
 
-float map(float value, float min1, float max1, float min2, float max2) {
-    return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
-}
-
 vec2 compute_pixelated_uv(vec2 uv, vec2 texSize, float pixelSize) {
     vec2 numBlocks = texSize / max(pixelSize, 0.001);
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
@@ -174,11 +170,12 @@ vec4 compute_color_adjust(vec4 color, vec4 colorAdjust, vec2 colorAdjust2) {
     float sat = colorAdjust.y;
     float con = colorAdjust.z;
     float bri = colorAdjust.w;
-    float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    float gamma = gam < 0.5 ? map(gam, 0.0, 0.5, 6.0, 1.0) : map(gam, 0.5, 1.0, 1.0, 0.0);
-    float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 10.0);
-    float contrast = con < 0.5 ? map(con, 0.0, 0.5, 0.0, 1.0) : map(con, 0.5, 1.0, 1.0, 3.0);
-    float brightness = bri < 0.5 ? map(bri, 0.0, 0.5, 0.0, 1.0) : map(bri, 0.5, 1.0, 1.0, 4.0);
+    
+    float gamma = exp2((0.5 - gam) * 5.0);
+    float saturation = 10.0 * pow(sat, log2(10.0));
+    float contrast = 3.0  * pow(con, log2(3.0));
+    float brightness = 4.0  * bri * bri;
+
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
     float lum_pre_sat = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     color.rgb = mix(vec3(lum_pre_sat), color.rgb, saturation);
