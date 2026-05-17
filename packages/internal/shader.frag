@@ -7,33 +7,34 @@ in vec2 fragTexCoord2;
 in vec3 fragNormal;
 in vec4 fragTangent;
 
-// texCoord2.x = TextureWidth + TextureHeight + Type | 12+12+8 = 32 bits
-// texCoord2.y = BorderColor + Roundness             | 24+8    = 32 bits
+// texCoord2.x = TextureWidth(12) + TextureHeight(12)
+// texCoord2.y = BorderColor(24)
 
-// normal.x = Gamma + Saturation + Contrast + Brightness | 8+8+8+8 = 32 bits
-// normal.y = Grayscale + Inversion + BlurX + BlurY      | 8+8+8+8 = 32 bits
-// normal.z = DepthZ + BorderSize + PixelSize            | 12+12+8 = 32 bits
+// normal.x = Gamma(6) + Saturation(6) + Contrast(6) + Brightness(6)
+// normal.y = Grayscale(6) + Inversion(6) + BlurX(6) + BlurY(6)
+// normal.z = DepthZ(11) + BorderSize(11) + Type(2)
 
 // Shape:
-//  tangent = free
+//  tangent.x = Roundness(32)
+//  tangent.y = PixelSize(32)
 
 // Sprite:
-//  tangent.x = OutlineColor + OutlineSize | 24+8 = 32 bits
-//  tangent.y = SilhouetteColor            | 32 bits
-//  tangent.z = free
-//  tangent.w = free
+//  tangent.x = OutlineColor(24)
+//  tangent.y = SilhouetteColor(24)
+//  tangent.z = OutlineSize(32)
+//  tangent.w = Roundness(16) + PixelSize(8)
 
 // Tilemap:
-//  tangent.x = OutlineColor + OutlineSize        | 24+8 = 32 bits
-//  tangent.y = SilhouetteColor                   | 32 bits
-//  tangent.z = TileColumns + TileRows + TileSize | 12+12+8 = 32 bits
-//  tangent.w = free
+//  tangent.x = OutlineColor(24)
+//  tangent.y = SilhouetteColor(24)
+//  tangent.z = TileColumns(10) + TileRows(10) + PixelSize(4)
+//  tangent.w = OutlineSize(8) + TileSize(8) + Roundness(8)
 
 // Text:
-//  tangent.x = OutlineColor + TextShadowX                         | 24+8 = 32 bits
-//  tangent.y = ShadowColor + TextShadowY                          | 24+8 = 32 bits
-//  tangent.z = Weight + OutlineWeight + ShadowWeight + ShadowBlur | 8+8+8+8 = 32 bits
-//  tangent.w = free
+//  tangent.x = OutlineColor(24)
+//  tangent.y = ShadowColor(24)
+//  tangent.z = Weight(6) + OutlineWeight(6) + ShadowWeight(6) + ShadowBlur(6)
+//  tangent.w = TextShadowX(6) + TextShadowY(6) + Roundness(8) + PixelSize(4)
 
 out vec4 finalColor;
 
@@ -57,34 +58,34 @@ uniform sampler2D tileData;
 uniform float u[32];
 
 void unpack_24_8(float packedFloat, out vec3 rgb, out float extra8) {
-    uint bitString = floatBitsToUint(packedFloat);
-    float r = float((bitString >> 24u) & 0xFFu) / 255.0; // 8 bits
-    float g = float((bitString >> 16u) & 0xFFu) / 255.0; // 8 bits
-    float b = float((bitString >> 8u) & 0xFFu) / 255.0;  // 8 bits
+    uint packedBits = floatBitsToUint(packedFloat);
+    float r = float((packedBits >> 24u) & 0xFFu) / 255.0; // 8 bits
+    float g = float((packedBits >> 16u) & 0xFFu) / 255.0; // 8 bits
+    float b = float((packedBits >> 8u) & 0xFFu) / 255.0;  // 8 bits
     rgb = vec3(r, g, b);
-    extra8 = float(bitString & 0xFFu) / 255.0; // normalized 0.0 to 1.0
+    extra8 = float(packedBits & 0xFFu) / 255.0; // normalized 0.0 to 1.0
 }
 vec4 unpack_8_8_8_8(float packedFloat) {
-    uint bitString = floatBitsToUint(packedFloat);
-    float x = float((bitString >> 24u) & 0xFFu) / 255.0;
-    float y = float((bitString >> 16u) & 0xFFu) / 255.0;
-    float z = float((bitString >> 8u) & 0xFFu) / 255.0;
-    float w = float(bitString & 0xFFu) / 255.0;
+    uint packedBits = floatBitsToUint(packedFloat);
+    float x = float((packedBits >> 24u) & 0xFFu) / 255.0;
+    float y = float((packedBits >> 16u) & 0xFFu) / 255.0;
+    float z = float((packedBits >> 8u)  & 0xFFu) / 255.0;
+    float w = float(packedBits & 0xFFu) / 255.0;
     return vec4(x, y, z, w); // normalized 0.0 to 1.0
 }
 vec3 unpack_12_12_8(float packedFloat) {
-    uint bitString = floatBitsToUint(packedFloat);
-    float val1 = float((bitString >> 20u) & 0xFFFu);
-    float val2 = float((bitString >> 8u) & 0xFFFu);
-    float val3 = float(bitString & 0xFFu);
+    uint packedBits = floatBitsToUint(packedFloat);
+    float val1 = float((packedBits >> 20u) & 0xFFFu);
+    float val2 = float((packedBits >> 8u) & 0xFFFu);
+    float val3 = float(packedBits & 0xFFu);
     return vec3(val1, val2, val3); // absolute values, not normalized
 }
 vec4 unpack_RGBA32(float packedFloat) {
-    uint bitString = floatBitsToUint(packedFloat);
-    float r = float((bitString >> 24u) & 0xFFu) / 255.0;
-    float g = float((bitString >> 16u) & 0xFFu) / 255.0;
-    float b = float((bitString >> 8u) & 0xFFu) / 255.0;
-    float a = float(bitString & 0xFFu) / 255.0;
+    uint packedBits = floatBitsToUint(packedFloat);
+    float r = float((packedBits >> 24u) & 0xFFu) / 255.0;
+    float g = float((packedBits >> 16u) & 0xFFu) / 255.0;
+    float b = float((packedBits >> 8u) & 0xFFu) / 255.0;
+    float a = float(packedBits & 0xFFu) / 255.0;
     return vec4(r, g, b, a);
 }
 
@@ -140,12 +141,12 @@ vec4 compute_color_adjust(vec4 color, vec4 colorAdjust, vec2 colorAdjust2) {
     float bri = colorAdjust.w;
     float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     float gamma = gam < 0.5 ? map(gam, 0.0, 0.5, 6.0, 1.0) : map(gam, 0.5, 1.0, 1.0, 0.0);
-    // float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 3.0);
+    float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 3.0);
     float contrast = con < 0.5 ? map(con, 0.0, 0.5, 0.0, 1.0) : map(con, 0.5, 1.0, 1.0, 3.0);
     float brightness = bri < 0.5 ? map(bri, 0.0, 0.5, 0.0, 1.0) : map(bri, 0.5, 1.0, 1.0, 4.0);
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
     float lum_pre_sat = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    color.rgb = mix(vec3(lum_pre_sat), color.rgb, sat);
+    color.rgb = mix(vec3(lum_pre_sat), color.rgb, saturation);
     color.rgb = mix(vec3(0.5), color.rgb, contrast);
     float lum_post_con = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     color.rgb = mix(color.rgb, vec3(lum_post_con), colorAdjust2.x);

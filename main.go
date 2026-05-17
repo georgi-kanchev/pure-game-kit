@@ -20,7 +20,7 @@ func main() {
 	obj.Width, obj.Height = 500, 500
 
 	for window.KeepOpen() {
-		obj.Effects.Gamma = (number.Sine(time.Running()) + 1) / 2
+		obj.Effects.Saturation = (number.Sine(time.Running()) + 1) / 2
 		view.DrawObjects(&obj)
 	}
 }

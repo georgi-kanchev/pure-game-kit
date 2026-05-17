@@ -20,16 +20,16 @@ func PackV2(borderColor uint, roundness uint8) float32 {
 }
 
 func PackNormalX(gamma, saturation, contrast, brightness float32) float32 {
-	var g = uint32(unitToByte(gamma)) << 24      // 8 bits
-	var s = uint32(unitToByte(saturation)) << 16 // 8 bits
-	var c = uint32(unitToByte(contrast)) << 8    // 8 bits
-	var b = uint32(unitToByte(brightness))       // 8 bits
-	return math.Float32frombits(g | s | c | b)   // = 32 bits
+	var g = uint32(gamma*63.0) << 18      // 6 bits
+	var s = uint32(saturation*63.0) << 12 // 6 bits
+	var c = uint32(contrast*63.0) << 6    // 6 bits
+	var b = uint32(brightness * 63.0)     // 6 bits
+	return float32(g | s | c | b)         // = 24 bits
 }
 func PackNormalY(grayscale, inversion float32, blurX, blurY uint8) float32 {
-	var g = uint32(unitToByte(grayscale)) << 24 // 8 bits
-	var i = uint32(unitToByte(inversion)) << 16 // 8 bits
-	var x = uint32(blurX) << 8                  // 8 bits
+	var g = uint32(unitToByte(grayscale)) << 18 // 8 bits
+	var i = uint32(unitToByte(inversion)) << 12 // 8 bits
+	var x = uint32(blurX) << 6                  // 8 bits
 	var y = uint32(blurY)                       // 8 bits
 	return math.Float32frombits(g | i | x | y)  // = 32 bits
 }
