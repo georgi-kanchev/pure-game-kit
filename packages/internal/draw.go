@@ -72,8 +72,8 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		eff = defaultEffects
 	}
 
-	for i := 0; i < len(polygonBuf); i++ {
-		polygonBuf[i].NX = PackNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
+	for i := range len(polygonBuf) {
+		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 	}
 
 	if mask == (Area{}) {

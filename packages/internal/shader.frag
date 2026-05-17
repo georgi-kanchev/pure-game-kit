@@ -57,8 +57,6 @@ uniform sampler2D texture0;
 uniform sampler2D tileData;
 uniform float u[32];
 
-// --- unpack helpers (all read from bits 23-0 of a safe normal float32) ---
-
 vec3 unpack_color24(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
     float r = float((bits >> 16u) & 0xFFu) / 255.0;
@@ -66,7 +64,6 @@ vec3 unpack_color24(float packedFloat) {
     float b = float(bits & 0xFFu) / 255.0;
     return vec3(r, g, b);
 }
-
 vec4 unpack_6_6_6_6(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
     float x = float((bits >> 18u) & 0x3Fu) / 63.0;
@@ -75,34 +72,29 @@ vec4 unpack_6_6_6_6(float packedFloat) {
     float w = float(bits & 0x3Fu) / 63.0;
     return vec4(x, y, z, w);
 }
-
 vec2 unpack_12_12(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
     float w = float((bits >> 12u) & 0xFFFu);
     float h = float(bits & 0xFFFu);
     return vec2(w, h);
 }
-
 void unpack_11_11_2(float packedFloat, out float depthZ, out float borderSize, out int objType) {
     uint bits = floatBitsToUint(packedFloat);
     depthZ     = float((bits >> 13u) & 0x7FFu) / 2047.0; // 11 bits normalized
     borderSize = float((bits >> 2u)  & 0x7FFu);          // 11 bits absolute
-    objType    = int(bits & 0x3u);                        //  2 bits
+    objType    = int(bits & 0x3u);                       //  2 bits
 }
-
 void unpack_16_8(float packedFloat, out float roundness, out float pixelSize) {
     uint bits = floatBitsToUint(packedFloat);
     roundness = float((bits >> 8u) & 0xFFFFu) / 65535.0; // 16 bits normalized
-    pixelSize = float(bits & 0xFFu);                      //  8 bits absolute
+    pixelSize = float(bits & 0xFFu);                     //  8 bits absolute
 }
-
 void unpack_8_8_8(float packedFloat, out float outlineSize, out float tileSize, out float roundness) {
     uint bits = floatBitsToUint(packedFloat);
-    outlineSize = float((bits >> 16u) & 0xFFu);         // 8 bits absolute
-    tileSize    = float((bits >> 8u)  & 0xFFu);         // 8 bits absolute
-    roundness   = float(bits & 0xFFu) / 255.0;          // 8 bits normalized
+    outlineSize = float((bits >> 16u) & 0xFFu); // 8 bits absolute
+    tileSize    = float((bits >> 8u)  & 0xFFu); // 8 bits absolute
+    roundness   = float(bits & 0xFFu) / 255.0;  // 8 bits normalized
 }
-
 vec3 unpack_10_10_4(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
     float cols = float((bits >> 14u) & 0x3FFu); // 10 bits absolute
@@ -110,7 +102,6 @@ vec3 unpack_10_10_4(float packedFloat) {
     float ps   = float(bits & 0xFu);            //  4 bits absolute
     return vec3(cols, rows, ps);
 }
-
 void unpack_6_6_8_4(float packedFloat, out float shadowX, out float shadowY, out float roundness, out float pixelSize) {
     uint bits = floatBitsToUint(packedFloat);
     // shadowX/Y: 6-bit two's complement stored raw
@@ -119,10 +110,10 @@ void unpack_6_6_8_4(float packedFloat, out float shadowX, out float shadowY, out
     shadowX = float(rawX >= 32 ? rawX - 64 : rawX) / 32.0; // maps to ~[-1, 1]
     shadowY = float(rawY >= 32 ? rawY - 64 : rawY) / 32.0;
     roundness = float((bits >> 4u) & 0xFFu) / 255.0; // 8 bits normalized
-    pixelSize = float(bits & 0xFu);                   // 4 bits absolute
+    pixelSize = float(bits & 0xFu);                  // 4 bits absolute
 }
 
-// --- effect functions ---
+// ========================================================================
 
 vec2 compute_pixelated_uv(vec2 uv, vec2 texSize, float pixelSize) {
     vec2 numBlocks = texSize / max(pixelSize, 0.001);
@@ -266,46 +257,36 @@ vec2 compute_tile(vec2 uv, vec2 texSize) {
 // }
 
 void main() {
-    // --- unpack vertex attributes (24-bit safe float32 in bits 23-0) ---
-
     vec2 texSize = unpack_12_12(fragTexCoord2.x);  // TextureWidth(12) + TextureHeight(12)
-
     vec3 borderColor = unpack_color24(fragTexCoord2.y); // BorderColor(24)
-
     vec4 colorAdjust1 = unpack_6_6_6_6(fragNormal.x); // Gamma(6)+Saturation(6)+Contrast(6)+Brightness(6)
     vec4 colorAdjust2 = unpack_6_6_6_6(fragNormal.y); // Grayscale(6)+Inversion(6)+BlurX(6)+BlurY(6)
     vec2 blur = colorAdjust2.zw * 16.0;
-
     float depthZ, borderSize;
     int objectType;
     unpack_11_11_2(fragNormal.z, depthZ, borderSize, objectType); // DepthZ(11)+BorderSize(11)+Type(2)
-
-    // --- per-type tangent unpacking ---
-
     float roundness = 0.0;
     float pixelSize = 0.0;
-    // outlineColor, silhouetteColor, shadowColor, outlineSize, tileCols, tileRows, tileSize
-    // are unpacked below per type; compute functions still use u[] uniforms for now.
-
+    
     if (objectType == 0) { // Shape
         roundness = fragTangent.x; // full float
         pixelSize = fragTangent.y; // full float
     }
     else if (objectType == 1) { // Sprite
-        vec3 outlineColor   = unpack_color24(fragTangent.x); // OutlineColor(24)
+        vec3 outlineColor   = unpack_color24(fragTangent.x);  // OutlineColor(24)
         vec3 silhouetteColor = unpack_color24(fragTangent.y); // SilhouetteColor(24)
         float outlineSize   = fragTangent.z;                  // full float
         unpack_16_8(fragTangent.w, roundness, pixelSize);     // Roundness(16)+PixelSize(8)
     }
     else if (objectType == 2) { // Text
-        vec3 outlineColor = unpack_color24(fragTangent.x);             // OutlineColor(24)
-        vec3 shadowColor  = unpack_color24(fragTangent.y);             // ShadowColor(24)
-        vec4 textWeights  = unpack_6_6_6_6(fragTangent.z);             // Weight+OutlineWeight+ShadowWeight+ShadowBlur
+        vec3 outlineColor = unpack_color24(fragTangent.x); // OutlineColor(24)
+        vec3 shadowColor  = unpack_color24(fragTangent.y); // ShadowColor(24)
+        vec4 textWeights  = unpack_6_6_6_6(fragTangent.z); // Weight+OutlineWeight+ShadowWeight+ShadowBlur
         float shadowX, shadowY;
         unpack_6_6_8_4(fragTangent.w, shadowX, shadowY, roundness, pixelSize); // ShadowX+ShadowY+Roundness+PixelSize
     }
     else if (objectType == 3) { // Tilemap
-        vec3 outlineColor   = unpack_color24(fragTangent.x); // OutlineColor(24)
+        vec3 outlineColor   = unpack_color24(fragTangent.x);  // OutlineColor(24)
         vec3 silhouetteColor = unpack_color24(fragTangent.y); // SilhouetteColor(24)
         vec3 tileInfo = unpack_10_10_4(fragTangent.z);        // TileColumns(10)+TileRows(10)+PixelSize(4)
         float tileColumns = tileInfo.x;
