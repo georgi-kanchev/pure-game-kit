@@ -9,9 +9,7 @@ import (
 
 type Object struct {
 	geometry.Shape
-	ScaleX, ScaleY float32
-	PivotX, PivotY float32
-	Color          uint
+	Color uint
 
 	Mask    Area
 	Effects *Effects
@@ -45,7 +43,7 @@ type Object struct {
 
 func NewObject(x, y float32) Object {
 	return Object{
-		Shape: geometry.NewRectangle(x, y, 100, 100, 0), ScaleX: 1, ScaleY: 1, Color: palette.White,
+		Shape: geometry.NewRectangle(x, y, 100, 100, 0), Color: palette.White,
 		TextLineHeight: 100, TextWordWrap: true,
 	}
 }
@@ -58,9 +56,8 @@ func (o *Object) ViewFit(view *View) {
 	var cw, ch = view.Size()
 	var scale = min(cw/o.Width, ch/o.Height)
 
-	o.X = x - (0.5-o.PivotX)*o.Width*scale
-	o.Y = y - (0.5-o.PivotY)*o.Height*scale
-	o.ScaleX, o.ScaleY = scale, scale
+	o.X = x - (0.5)*o.Width*scale
+	o.Y = y - (0.5)*o.Height*scale
 	o.Angle = 0
 }
 func (o *Object) ViewFill(view *View) {
@@ -69,9 +66,8 @@ func (o *Object) ViewFill(view *View) {
 	var cw, ch = view.Size()
 	var scale = max(cw/o.Width, ch/o.Height)
 
-	o.X = x - (0.5-o.PivotX)*o.Width*scale
-	o.Y = y - (0.5-o.PivotY)*o.Height*scale
-	o.ScaleX, o.ScaleY = scale, scale
+	o.X = x - (0.5)*o.Width*scale
+	o.Y = y - (0.5)*o.Height*scale
 	o.Angle = 0
 }
 func (o *Object) ViewStretch(view *View) {
@@ -80,30 +76,25 @@ func (o *Object) ViewStretch(view *View) {
 	var cw, ch = view.Size()
 	var scaleX, scaleY = cw / o.Width, ch / o.Height
 
-	o.X = x - (0.5-o.PivotX)*o.Width*scaleX
-	o.Y = y - (0.5-o.PivotY)*o.Height*scaleY
-	o.ScaleX, o.ScaleY = scaleX, scaleY
+	o.X = x - (0.5)*o.Width*scaleX
+	o.Y = y - (0.5)*o.Height*scaleY
 	o.Angle = 0
 }
 
 //=================================================================
 
 func (o *Object) PointToLocal(x, y float32) (localX, localY float32) {
-	if o.ScaleX == 0 || o.ScaleY == 0 {
-		return 0, 0
-	}
-
 	var dx, dy = x - o.X, y - o.Y
 	var sinL, cosL = internal.SinCos(-o.Angle)
-	var rotX = (dx*cosL - dy*sinL) / o.ScaleX
-	var rotY = (dx*sinL + dy*cosL) / o.ScaleY
-	localX = rotX + o.PivotX*o.Width
-	localY = rotY + o.PivotY*o.Height
+	var rotX = (dx*cosL - dy*sinL)
+	var rotY = (dx*sinL + dy*cosL)
+	localX = rotX + 0.5*o.Width
+	localY = rotY + 0.5*o.Height
 	return localX, localY
 }
 func (o *Object) PointToGlobal(localX, localY float32) (x, y float32) {
-	var locX = (localX - (o.PivotX * o.Width)) * o.ScaleX
-	var locY = (localY - (o.PivotY * o.Height)) * o.ScaleY
+	var locX = (localX - (0.5 * o.Width))
+	var locY = (localY - (0.5 * o.Height))
 	var sinL, cosL = internal.SinCos(o.Angle)
 	x = (locX*cosL - locY*sinL) + o.X
 	y = (locX*sinL + locY*cosL) + o.Y

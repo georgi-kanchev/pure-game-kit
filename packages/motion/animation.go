@@ -25,7 +25,7 @@ func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animatio
 
 func (a *Animation[T]) Update() {
 	if !a.IsPaused {
-		a.Time += internal.TickDelta
+		a.Time += internal.FrameDelta
 	}
 
 	var duration = a.Duration()

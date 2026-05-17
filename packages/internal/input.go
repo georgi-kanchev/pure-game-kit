@@ -80,8 +80,8 @@ func cacheMouse() {
 	}
 
 	const scrollAccel, scrollDecay = 600.0, 8.0
-	SmoothScroll += Scroll * scrollAccel * TickDelta
-	SmoothScroll *= number.Exponential(-scrollDecay * TickDelta)
+	SmoothScroll += Scroll * scrollAccel * FrameDelta
+	SmoothScroll *= number.Exponential(-scrollDecay * FrameDelta)
 	if SmoothScroll != 0 && number.IsWithin(SmoothScroll, 0, 0.0001) {
 		SmoothScroll = 0
 	}

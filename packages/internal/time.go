@@ -2,11 +2,12 @@ package internal
 
 import (
 	"time"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var Clock, TickDelta, FrameDelta, TPS, FPS, Runtime float32
-var TickBusy float32
-var Tick uint64
+var Clock, FrameDelta, FPS, Runtime float32
+var Frame uint64
 
 // private ========================================================
 
@@ -20,10 +21,10 @@ func UpdateTimeData() {
 	var secondsSinceMidnight = float32(now.Sub(midnight).Seconds())
 
 	Clock = secondsSinceMidnight
-	TickDelta = float32(time.Since(prev).Seconds())
-	TPS = 1.0 / TickDelta
-	Runtime += TickDelta
-	Tick++
+	FrameDelta = rl.GetFrameTime()
+	FPS = 1 / FrameDelta
+	Runtime += FrameDelta
+	Frame++
 
 	prev = now
 }

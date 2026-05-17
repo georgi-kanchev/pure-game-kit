@@ -58,7 +58,7 @@ func (v *View) MouseDragAndZoomSmoothly() {
 	}
 
 	const dragFriction, dragStrength = 8.0, 8.0
-	var dt = internal.TickDelta
+	var dt = internal.FrameDelta
 	var decay = number.Exponential(-dragFriction * dt)
 	v.velocityX *= decay
 	v.velocityY *= decay
@@ -91,7 +91,6 @@ func (v *View) MouseDragAndZoomSmoothly() {
 //=================================================================
 
 func (v *View) IsAreaVisible(x, y, width, height float32) bool {
-	v.update()
 	var sx1, sy1 = v.PointToScreen(x, y)
 	var sx2, sy2 = v.PointToScreen(x+width, y+height)
 	var sMinX, sMaxX = min(sx1, sx2), max(sx1, sx2)
@@ -108,7 +107,6 @@ func (v *View) MousePosition() (x, y float32) {
 	return v.PointFromScreen(internal.MouseX, internal.MouseY)
 }
 func (v *View) Size() (width, height float32) {
-	v.update()
 	var _, _, sw, sh = v.area()
 	return sw / v.Zoom, sh / v.Zoom
 }
@@ -123,35 +121,14 @@ func (v *View) Bounds() (x, y, width, height float32) {
 }
 
 func (v *View) PointFromScreen(screenX, screenY float32) (x, y float32) {
-	v.update()
-
-	var sx, sy = float32(screenX), float32(screenY)
-	sx -= float32(rlCam.Offset.X)
-	sy -= float32(rlCam.Offset.Y)
-
-	var sin, cos = internal.SinCos(-rlCam.Rotation)
-	var rotX, rotY = sx*cos - sy*sin, sx*sin + sy*cos
-
-	rotX /= float32(rlCam.Zoom)
-	rotY /= float32(rlCam.Zoom)
-	rotX += float32(rlCam.Target.X)
-	rotY += float32(rlCam.Target.Y)
-	return rotX, rotY
+	var sx = screenX - float32(internal.WindowWidth/2)
+	var sy = screenY - float32(internal.WindowHeight/2)
+	return sx, sy
 }
 func (v *View) PointToScreen(x, y float32) (screenX, screenY float32) {
-	v.update()
-
-	x -= float32(rlCam.Target.X)
-	y -= float32(rlCam.Target.Y)
-	x *= float32(rlCam.Zoom)
-	y *= float32(rlCam.Zoom)
-
-	var sin, cos = internal.SinCos(rlCam.Rotation)
-	var rotX, rotY = x*cos - y*sin, x*sin + y*cos
-
-	rotX += float32(rlCam.Offset.X)
-	rotY += float32(rlCam.Offset.Y)
-	return rotX, rotY
+	var vx = x + float32(internal.WindowWidth/2)
+	var vy = y + float32(internal.WindowHeight/2)
+	return vx, vy
 }
 func (v *View) PointFromView(otherView *View, otherX, otherY float32) (myX, myY float32) {
 	var screenX, screenY = otherView.PointToScreen(otherX, otherY)
@@ -164,4 +141,13 @@ func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	var sx, sy, sw, sh = v.area()
 	var scrX, scrY = sx + sw*edgeX, sy + sh*edgeY
 	return v.PointFromScreen(scrX, scrY)
+}
+
+// private ========================================================
+
+func (v *View) area() (x, y, w, h float32) {
+	if v.Area == (Area{}) {
+		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
+	}
+	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }

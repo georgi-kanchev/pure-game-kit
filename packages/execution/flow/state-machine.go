@@ -23,7 +23,7 @@ func (s *StateMachine) GoToState(state func()) {
 func (s *StateMachine) UpdateCurrentState() {
 	if s.currentState != nil {
 		s.currentState()
-		s.timer += internal.TickDelta
+		s.timer += internal.FrameDelta
 		s.counter++
 	}
 }

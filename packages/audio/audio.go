@@ -1,7 +1,6 @@
 package audio
 
 import (
-	"math" // Added for math.Round
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
@@ -14,8 +13,10 @@ type Audio struct {
 	AssetId                         assets.AudioId
 	Volume, Pitch, LeftRightBalance float32
 
-	playTick, pauseTick uint64
-	isPaused            bool
+	playTime, pauseTime   float32
+	finishTime            float32
+	finishedReported      bool
+	isPaused              bool
 }
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
@@ -28,11 +29,12 @@ func New(assetId assets.AudioId) Audio {
 
 func (a *Audio) Play() {
 	a.isPaused = false
+	a.finishedReported = false
 
 	var _, hasSound = internal.Sounds[int16(a.AssetId)]
 	var music, hasMusic = internal.Music[int16(a.AssetId)]
 
-	a.playTick = internal.Tick
+	a.playTime = internal.Runtime
 	if hasSound {
 		var sound = internal.GetSound(int16(a.AssetId), true)
 		a.ApplyProperties()
@@ -49,7 +51,7 @@ func (a *Audio) Pause() {
 	}
 
 	a.isPaused = true
-	a.pauseTick = internal.Tick
+	a.pauseTime = internal.Runtime
 
 	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
 	var music, hasMusic = internal.Music[int16(a.AssetId)]
@@ -67,7 +69,7 @@ func (a *Audio) Resume() {
 	}
 
 	a.isPaused = false
-	a.playTick += internal.Tick - a.pauseTick // shift by ticks spent paused
+	a.playTime += internal.Runtime - a.pauseTime // shift by time spent paused
 
 	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
 	var music, hasMusic = internal.Music[int16(a.AssetId)]
@@ -121,20 +123,22 @@ func (a *Audio) IsJustFinished() bool {
 
 	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
 	var music, hasMusic = internal.Music[int16(a.AssetId)]
-	var durationInTicks uint64
-	var tps = float32(internal.TPS)
 
-	if hasSound {
-		for _, s := range sounds {
-			durationInTicks = uint64(math.Round(float64(float32(s.FrameCount) / float32(s.Stream.SampleRate) * tps)))
+	if !a.finishedReported {
+		var duration float32
+		if hasSound {
+			for _, s := range sounds {
+				duration = float32(s.FrameCount) / float32(s.Stream.SampleRate)
+			}
+		} else if hasMusic {
+			duration = rl.GetMusicTimeLength(music)
 		}
-		var finishTick = a.playTick + uint64(math.Round(float64(float32(durationInTicks)/a.Pitch)))
-		return internal.Tick == finishTick
 
-	} else if hasMusic {
-		durationInTicks = uint64(math.Round(float64(rl.GetMusicTimeLength(music) * tps)))
-		var finishTick = a.playTick + uint64(math.Round(float64(float32(durationInTicks)/a.Pitch)))
-		return internal.Tick == finishTick
+		a.finishTime = a.playTime + duration/a.Pitch
+		if internal.Runtime >= a.finishTime {
+			a.finishedReported = true
+			return true
+		}
 	}
 
 	return false

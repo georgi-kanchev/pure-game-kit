@@ -1,17 +1,18 @@
 package main
 
 import (
+	example "pure-game-kit/examples"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/input/keyboard"
 	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/window"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
+	example.Audio()
+
 	window.Create("Test", false, false)
 	var view = graphics.NewView(1)
 	var obj = graphics.NewObject(0, 0)
@@ -25,7 +26,7 @@ func main() {
 			print(debug.MemoryUsage())
 		}
 
-		obj.X, obj.Y = rl.GetMousePosition().X, rl.GetMousePosition().Y
+		obj.X, obj.Y = view.MousePosition()
 
 		view.DrawObjects(&obj)
 

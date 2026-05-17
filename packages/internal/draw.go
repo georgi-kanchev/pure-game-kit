@@ -53,8 +53,9 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1 = src.X * invTexW, src.Y * invTexH
 	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
-	var dx = [4]float32{0, 0, dst.Width, dst.Width}
-	var dy = [4]float32{0, dst.Height, dst.Height, 0}
+	var ww, wh = float32(WindowWidth) / 2, float32(WindowHeight) / 2
+	var dx = [4]float32{ww, ww, dst.Width + ww, dst.Width + ww}
+	var dy = [4]float32{wh, dst.Height + wh, dst.Height + wh, wh}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
 
