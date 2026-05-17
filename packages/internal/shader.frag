@@ -37,18 +37,6 @@ in vec4 fragTangent;
 
 out vec4 finalColor;
 
-#define TEXTURE_W 0
-#define TEXTURE_H 1
-#define BLUR_X 2
-#define BLUR_Y 3
-#define GAMMA 4
-#define SATURATION 5
-#define CONTRAST 6
-#define BRIGHTNESS 7
-#define GRAYSCALE 8
-#define INVERSION 9
-#define PIXEL_SIZE 10
-#define DEPTH_Z 11
 #define OUTLINE_SIZE 12
 #define OUTLINE_R 13
 #define OUTLINE_G 14
@@ -63,10 +51,6 @@ out vec4 finalColor;
 #define TILE_W 23
 #define TILE_H 24
 #define TIME 25
-#define CALCULATE_COLOR_ADJUST 26
-#define CALCULATE_SDF_TEXT 27
-#define TEXT_SHADOW_X 28
-#define TEXT_SHADOW_Y 29
 
 uniform sampler2D texture0;
 uniform sampler2D tileData;
@@ -108,19 +92,15 @@ float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
-vec2 compute_pixelated_uv(vec2 uv) {
-    float pixelSize = u[PIXEL_SIZE];
-    vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
+vec2 compute_pixelated_uv(vec2 uv, vec2 texSize, float pixelSize) {
     vec2 numBlocks = texSize / max(pixelSize, 0.001); // avoid division by zero
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
     return pixelSize <= 1.0 ? uv : pixelated;
 }
-vec4 compute_blur(vec2 uv) {
-    vec2 blur = vec2(u[BLUR_X], u[BLUR_Y]);
+vec4 compute_blur(vec2 uv, vec2 texSize, vec2 blur) {
     if (blur.x == 0.0 && blur.y == 0.0)
         return texture(texture0, uv);
-
-    vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
+    
     vec2 res = 1.0 / texSize;
     vec2 offset = (blur + 0.5) * res;
     vec4 sum = texture(texture0, uv + vec2(-offset.x, -offset.y));
@@ -129,12 +109,11 @@ vec4 compute_blur(vec2 uv) {
     sum += texture(texture0, uv + vec2(offset.x, offset.y));
     return sum * 0.25;
 }
-vec4 compute_outline(vec4 color, vec2 uv) {
+vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize) {
     float outline = u[OUTLINE_SIZE];
     if (color.a > 0 || outline == 0.0)
         return color;
-
-    vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
+    
     vec2 texel = 1.0 / texSize;
 
     if (texture(texture0, uv + vec2(texel.x * outline, 0.0)).a > 0.0 ||
@@ -154,31 +133,28 @@ vec4 compute_silhouette(vec4 color) {
     color.rgb = mix(color.rgb, silColor.rgb, silColor.a);
     return color;
 }
-vec4 compute_color_adjust(vec4 color) {
-    if (u[CALCULATE_COLOR_ADJUST] < 0.5)
-        return color;
-
-    float gam = u[GAMMA];
-    float sat = u[SATURATION];
-    float con = u[CONTRAST];
-    float bri = u[BRIGHTNESS];
+vec4 compute_color_adjust(vec4 color, vec4 colorAdjust, vec2 colorAdjust2) {
+    float gam = colorAdjust.x;
+    float sat = colorAdjust.y;
+    float con = colorAdjust.z;
+    float bri = colorAdjust.w;
     float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     float gamma = gam < 0.5 ? map(gam, 0.0, 0.5, 6.0, 1.0) : map(gam, 0.5, 1.0, 1.0, 0.0);
-    float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 10.0);
+    // float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 3.0);
     float contrast = con < 0.5 ? map(con, 0.0, 0.5, 0.0, 1.0) : map(con, 0.5, 1.0, 1.0, 3.0);
     float brightness = bri < 0.5 ? map(bri, 0.0, 0.5, 0.0, 1.0) : map(bri, 0.5, 1.0, 1.0, 4.0);
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
     float lum_pre_sat = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    color.rgb = mix(vec3(lum_pre_sat), color.rgb, saturation);
+    color.rgb = mix(vec3(lum_pre_sat), color.rgb, sat);
     color.rgb = mix(vec3(0.5), color.rgb, contrast);
     float lum_post_con = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    color.rgb = mix(color.rgb, vec3(lum_post_con), u[GRAYSCALE]);
-    color.rgb = mix(color.rgb, 1.0 - color.rgb, u[INVERSION]);
+    color.rgb = mix(color.rgb, vec3(lum_post_con), colorAdjust2.x);
+    color.rgb = mix(color.rgb, 1.0 - color.rgb, colorAdjust2.y);
     color.rgb *= brightness;
     return color;
 }
 
-vec2 compute_tile(vec2 uv) {
+vec2 compute_tile(vec2 uv, vec2 texSize) {
     ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
     if (mapSize.x == 0)
         return uv; // this is a regular sprite, not a tilemap
@@ -204,7 +180,7 @@ vec2 compute_tile(vec2 uv) {
     uint currentFrame = uint(mod(floor(u[TIME] * multiplier) + float(animOffset), float(frameRange)));
     uint atlasIndex = atlasBase + currentFrame;
 
-    float atlasCols = floor(u[TEXTURE_W] / u[TILE_W]);
+    float atlasCols = floor(texSize.x / u[TILE_W]);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
     localUV -= 0.5;
@@ -216,7 +192,7 @@ vec2 compute_tile(vec2 uv) {
 
     localUV = mix(localUV, vec2(0.5), 1.0 / vec2(u[TILE_W], u[TILE_H])); // prevents texture bleeding artifacts
 
-    vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_W], u[TEXTURE_H] / u[TILE_H]);
+    vec2 atlasSizeInTiles = vec2(texSize.x / u[TILE_W], texSize.y / u[TILE_H]);
     return (coord + localUV) / atlasSizeInTiles;
 }
 // vec4 compute_sdf_text(vec2 uv) {
@@ -257,19 +233,19 @@ vec2 compute_tile(vec2 uv) {
 // }
 
 void main() {
-    vec3 texInfo = unpack_12_12_8(fragTexCoord2.x); // TextureWidth (12) + TextureHeight (12) + Type (8)
-    float texWidth  = texInfo.x;
-    float texHeight = texInfo.y;
-    int objectType   = int(texInfo.z); // 0=Shape, 1=Sprite, 2=Text, 3=Tilemap
+    vec3 texInfo = unpack_12_12_8(fragTexCoord2.x); // TextureWidth(12) + TextureHeight(12) + Type(8)
+    vec2 texSize = texInfo.xy;
+    int objectType = int(texInfo.z); // 0=Shape, 1=Sprite, 2=Text, 3=Tilemap
     
     vec3 borderColor;
     float roundness;
-    unpack_24_8(fragTexCoord2.y, borderColor, roundness); // BorderColor (24) + Roundness (8)
+    unpack_24_8(fragTexCoord2.y, borderColor, roundness); // BorderColor(24) + Roundness(8)
 
-    vec4 colorAdjust1 = unpack_8_8_8_8(fragNormal.x); // Gamma (8) + Saturation (8) + Contrast (8) + Brightness (8)
-    vec4 colorAdjust2 = unpack_8_8_8_8(fragNormal.y); // Grayscale (8) + Inversion (8) + BlurX (8) + BlurY (8)
-    
-    vec3 depthAndSizes = unpack_12_12_8(fragNormal.z); // DepthZ (12) + BorderSize (12) + PixelSize (8)
+    vec4 colorAdjust1 = unpack_8_8_8_8(fragNormal.x); // Gamma(8) + Saturation(8) + Contrast(8) + Brightness(8)
+    vec4 colorAdjust2 = unpack_8_8_8_8(fragNormal.y); // Grayscale(8) + Inversion(8) + BlurX(8) + BlurY(8)
+    vec2 blur = colorAdjust2.zw * 16;
+
+    vec3 depthAndSizes = unpack_12_12_8(fragNormal.z); // DepthZ(12) + BorderSize(12) + PixelSize(8)
     float depthZ     = depthAndSizes.x / 4095.0; // normalized 0.0 to 1.0
     float borderSize = depthAndSizes.y;
     float pixelSize  = depthAndSizes.z;
@@ -293,7 +269,7 @@ void main() {
         float signedShadowX = rawShadowX * 2.0 - 1.0; // map from [0.0, 1.0] to [-1.0, 1.0]
         float signedShadowY = rawShadowY * 2.0 - 1.0; // map from [0.0, 1.0] to [-1.0, 1.0]
         
-        vec4 textWeights = unpack_8_8_8_8(fragTangent.z); // Weight (8) + OutlineWeight (8) + ShadowWeight (8) + ShadowBlur (8)
+        vec4 textWeights = unpack_8_8_8_8(fragTangent.z); // Weight(8) + OutlineWeight(8) + ShadowWeight(8) + ShadowBlur(8)
     }
     else if (objectType == 3) { // Tilemap
         vec3 outlineColor;
@@ -302,7 +278,7 @@ void main() {
         
         vec4 silhouetteColor = unpack_RGBA32(fragTangent.y);
         
-        vec3 tileInfo = unpack_12_12_8(fragTangent.z); // TileColumns (12) + TileRows (12) + TileSize (8)
+        vec3 tileInfo = unpack_12_12_8(fragTangent.z); // TileColumns(12) + TileRows(12) + TileSize(8)
         float tileColumns = tileInfo.x;
         float tileRows    = tileInfo.y;
         float tileSize    = tileInfo.z;
@@ -311,30 +287,30 @@ void main() {
     //========================================================================
 
     vec2 uv = fragTexCoord;
-    if (u[CALCULATE_SDF_TEXT] > 0.5) {
-        uv = compute_pixelated_uv(uv);
+    // if (u[CALCULATE_SDF_TEXT] > 0.5) {
+    //     uv = compute_pixelated_uv(uv, texSize, colorAdjust2.z);
+        
+    //     vec4 color = texture(texture0, uv);
+    //     color = compute_outline(color, uv, texSize);
+    //     color = compute_color_adjust(color, colorAdjust1, colorAdjust2.xy);
+    //     color = compute_silhouette(color);
+    //     finalColor = color;
+    //     gl_FragDepth = colorAdjust2.w;
+    //     return;
+    // }
+    
+    uv = compute_tile(uv, texSize);
+    uv = compute_pixelated_uv(uv, texSize, colorAdjust2.z);
 
-        vec4 color = texture(texture0, uv);
-        color = compute_outline(color, uv);
-        color = compute_color_adjust(color);
-        color = compute_silhouette(color);
-        finalColor = color;
-        gl_FragDepth = u[DEPTH_Z];
-        return;
-    }
-
-    uv = compute_tile(uv);
-    uv = compute_pixelated_uv(uv);
-
-    vec4 color = compute_blur(uv);
-    color = compute_outline(color, uv);
+    vec4 color = compute_blur(uv, texSize, blur);
+    color = compute_outline(color, uv, texSize);
 
     if (color.a * fragColor.a < 0.004)
         discard;
     
-    color = compute_color_adjust(color);
+    color = compute_color_adjust(color, colorAdjust1, colorAdjust2.xy);
     color = compute_silhouette(color);
     
     finalColor = color * fragColor;
-    gl_FragDepth = u[DEPTH_Z];
+    gl_FragDepth = colorAdjust2.w;
 }

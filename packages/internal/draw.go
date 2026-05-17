@@ -20,10 +20,20 @@ type Batch struct {
 	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
 }
 type Vertex struct {
-	X, Y, U, V float32
-	NX, NY, NZ float32 // Normals
-	TX, TY, TZ float32 // Tangents
-	U2, V2     float32 // Texcoords2
+	X, Y, U, V     float32
+	NX, NY, NZ     float32 // Normals
+	TX, TY, TZ, TW float32 // Tangents
+	U2, V2         float32 // Texcoords2
+}
+type Effects struct {
+	Gamma, Saturation, Contrast, Brightness, Grayscale, Inversion float32 // Ranged -1..1
+
+	OutlineSize, BorderSize float32
+	PixelSize, BlurX, BlurY byte
+
+	OutlineColor, BorderColor, SilhouetteColor uint
+
+	DepthZ float32 // Requires semi-transparent pixels to be drawn last. Fully opaque pixels work in any sorting.
 }
 
 var DefaultMaterial rl.Material
@@ -42,7 +52,7 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area) {
+func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area, eff *Effects) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -58,6 +68,13 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 	var dy = [4]float32{wh, dst.Height + wh, dst.Height + wh, wh}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
+	if eff == nil {
+		eff = defaultEffects
+	}
+
+	for i := 0; i < len(polygonBuf); i++ {
+		polygonBuf[i].NX = PackNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
+	}
 
 	if mask == (Area{}) {
 		vCount = 4
@@ -93,7 +110,8 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 	}
 }
 func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
-	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rl.NewRectangle(x, y, width, height), angle, color, mask)
+	var rect = rl.NewRectangle(x, y, width, height)
+	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, color, mask, nil)
 }
 func QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {
@@ -147,12 +165,13 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
+var defaultEffects = &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5}
 
 //go:embed shader.frag
-var fragQuad string
+var shaderFrag string
 
 //go:embed shader.vert
-var vertDefault string
+var shaderVert string
 
 func newBatch() *Batch {
 	const quadCapacity = 4096 // fixed size for all batches
@@ -223,7 +242,7 @@ func queueVertices(verts []Vertex, vCount int32, tex rl.Texture2D, col rl.Color)
 		t_slice[i*2+0], t_slice[i*2+1] = v.U, v.V
 		n_slice[i*3+0], n_slice[i*3+1], n_slice[i*3+2] = v.NX, v.NY, v.NZ
 		c_slice[i*4+0], c_slice[i*4+1], c_slice[i*4+2], c_slice[i*4+3] = col.R, col.G, col.B, col.A
-		tan_slice[i*4+0], tan_slice[i*4+1], tan_slice[i*4+2], tan_slice[i*4+3] = 1, 0, 0, 1
+		tan_slice[i*4+0], tan_slice[i*4+1], tan_slice[i*4+2], tan_slice[i*4+3] = v.TX, v.TY, v.TZ, v.TW
 		t2_slice[i*2+0], t2_slice[i*2+1] = v.U2, v.V2
 	}
 

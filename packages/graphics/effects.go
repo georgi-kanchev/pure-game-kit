@@ -1,18 +1,11 @@
 package graphics
 
-type Effects struct {
-	Gamma, Saturation, Contrast, Brightness, Grayscale, Inversion float32 // Ranged -1..1
+import "pure-game-kit/packages/internal"
 
-	OutlineSize, BorderSize float32
-	PixelSize, BlurX, BlurY byte
-
-	OutlineColor, BorderColor, SilhouetteColor uint
-
-	DepthZ float32 // Requires semi-transparent pixels to be drawn last. Fully opaque pixels work in any sorting.
-}
+type Effects internal.Effects
 
 func NewEffects() *Effects {
-	return &Effects{}
+	return &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5}
 }
 
 // private ========================================================

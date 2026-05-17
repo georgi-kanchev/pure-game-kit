@@ -65,7 +65,7 @@ var sineTable [3600]float32
 
 func Init() {
 	if Shader.ID == 0 {
-		Shader = rl.LoadShaderFromMemory(string(vertDefault), string(fragQuad))
+		Shader = rl.LoadShaderFromMemory(string(shaderVert), string(shaderFrag))
 		ShaderTileDataLoc = rl.GetLocationUniform(Shader.ID, "tileData")
 		ShaderLoc = rl.GetLocationUniform(Shader.ID, "u")
 	}
