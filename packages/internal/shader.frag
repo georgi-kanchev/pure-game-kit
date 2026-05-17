@@ -72,21 +72,46 @@ uniform sampler2D texture0;
 uniform sampler2D tileData;
 uniform float u[32];
 
+void unpack_24_8(float packedFloat, out vec3 rgb, out float extra8) {
+    uint bitString = floatBitsToUint(packedFloat);
+    float r = float((bitString >> 24u) & 0xFFu) / 255.0; // 8 bits
+    float g = float((bitString >> 16u) & 0xFFu) / 255.0; // 8 bits
+    float b = float((bitString >> 8u) & 0xFFu) / 255.0;  // 8 bits
+    rgb = vec3(r, g, b);
+    extra8 = float(bitString & 0xFFu) / 255.0; // normalized 0.0 to 1.0
+}
+vec4 unpack_8_8_8_8(float packedFloat) {
+    uint bitString = floatBitsToUint(packedFloat);
+    float x = float((bitString >> 24u) & 0xFFu) / 255.0;
+    float y = float((bitString >> 16u) & 0xFFu) / 255.0;
+    float z = float((bitString >> 8u) & 0xFFu) / 255.0;
+    float w = float(bitString & 0xFFu) / 255.0;
+    return vec4(x, y, z, w); // normalized 0.0 to 1.0
+}
+vec3 unpack_12_12_8(float packedFloat) {
+    uint bitString = floatBitsToUint(packedFloat);
+    float val1 = float((bitString >> 20u) & 0xFFFu);
+    float val2 = float((bitString >> 8u) & 0xFFFu);
+    float val3 = float(bitString & 0xFFu);
+    return vec3(val1, val2, val3); // absolute values, not normalized
+}
+vec4 unpack_RGBA32(float packedFloat) {
+    uint bitString = floatBitsToUint(packedFloat);
+    float r = float((bitString >> 24u) & 0xFFu) / 255.0;
+    float g = float((bitString >> 16u) & 0xFFu) / 255.0;
+    float b = float((bitString >> 8u) & 0xFFu) / 255.0;
+    float a = float(bitString & 0xFFu) / 255.0;
+    return vec4(r, g, b, a);
+}
+
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
-}
-vec4 unpackRGB222(uint val) {
-    float r = float((val >> 6u) & 0x03u) / 3.0;
-    float g = float((val >> 4u) & 0x03u) / 3.0;
-    float b = float((val >> 2u) & 0x03u) / 3.0;
-    float a = float(val & 0x03u) / 3.0;
-    return vec4(r, g, b, a);
 }
 
 vec2 compute_pixelated_uv(vec2 uv) {
     float pixelSize = u[PIXEL_SIZE];
     vec2 texSize = vec2(u[TEXTURE_W], u[TEXTURE_H]);
-    vec2 numBlocks = texSize / max(pixelSize, 0.001); // Avoid div by zero
+    vec2 numBlocks = texSize / max(pixelSize, 0.001); // avoid division by zero
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
     return pixelSize <= 1.0 ? uv : pixelated;
 }
@@ -194,49 +219,102 @@ vec2 compute_tile(vec2 uv) {
     vec2 atlasSizeInTiles = vec2(u[TEXTURE_W] / u[TILE_W], u[TEXTURE_H] / u[TILE_H]);
     return (coord + localUV) / atlasSizeInTiles;
 }
-vec4 compute_sdf_text(vec2 uv) {
-    uvec4 c = uvec4(fragColor * 255.0 + 0.5);
-    vec4 base = unpackRGB222(c.r);
-    vec4 outlineColor = unpackRGB222(c.g);
-    vec4 shadowColor = unpackRGB222(c.b);
+// vec4 compute_sdf_text(vec2 uv) {
+//     uvec4 c = uvec4(fragColor * 255.0 + 0.5);
+//     vec4 base = unpackRGB222(c.r);
+//     vec4 outlineColor = unpackRGB222(c.g);
+//     vec4 shadowColor = unpackRGB222(c.b);
     
-    uint thickIdx = (c.a >> 6) & 0x03u;
-    uint outlIdx = (c.a >> 4) & 0x03u;
-    uint shadIdx = (c.a >> 2) & 0x03u;
-    uint smoothIdx = (c.a) & 0x03u;
+//     uint thickIdx = (c.a >> 6) & 0x03u;
+//     uint outlIdx = (c.a >> 4) & 0x03u;
+//     uint shadIdx = (c.a >> 2) & 0x03u;
+//     uint smoothIdx = (c.a) & 0x03u;
     
-    float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
-    float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
+//     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
+//     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
     
-    vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
-    float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
-    float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
-    float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
+//     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
+//     float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
+//     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
+//     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
     
-    float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
-    float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
-    float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
+//     float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
+//     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
+//     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
     
-    float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
-    float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
-    float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
+//     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
+//     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
+//     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
     
-    vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
-    mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
-    float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
+//     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
+//     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
+//     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
     
-    vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
-    float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
+//     vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
+//     float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
     
-    return vec4(finalRGB, finalAlpha);
-}
+//     return vec4(finalRGB, finalAlpha);
+// }
 
 void main() {
+    vec3 texInfo = unpack_12_12_8(fragTexCoord2.x); // TextureWidth (12) + TextureHeight (12) + Type (8)
+    float texWidth  = texInfo.x;
+    float texHeight = texInfo.y;
+    int objectType   = int(texInfo.z); // 0=Shape, 1=Sprite, 2=Text, 3=Tilemap
+    
+    vec3 borderColor;
+    float roundness;
+    unpack_24_8(fragTexCoord2.y, borderColor, roundness); // BorderColor (24) + Roundness (8)
+
+    vec4 colorAdjust1 = unpack_8_8_8_8(fragNormal.x); // Gamma (8) + Saturation (8) + Contrast (8) + Brightness (8)
+    vec4 colorAdjust2 = unpack_8_8_8_8(fragNormal.y); // Grayscale (8) + Inversion (8) + BlurX (8) + BlurY (8)
+    
+    vec3 depthAndSizes = unpack_12_12_8(fragNormal.z); // DepthZ (12) + BorderSize (12) + PixelSize (8)
+    float depthZ     = depthAndSizes.x / 4095.0; // normalized 0.0 to 1.0
+    float borderSize = depthAndSizes.y;
+    float pixelSize  = depthAndSizes.z;
+    
+    if (objectType == 1) { // Sprite
+        vec3 outlineColor;
+        float outlineSize;
+        unpack_24_8(fragTangent.x, outlineColor, outlineSize);
+        
+        vec4 silhouetteColor = unpack_RGBA32(fragTangent.y);
+    }
+    else if (objectType == 2) { // Text
+        vec3 outlineColor;
+        float rawShadowX;
+        unpack_24_8(fragTangent.x, outlineColor, rawShadowX);
+
+        vec3 shadowColor;
+        float rawShadowY;
+        unpack_24_8(fragTangent.y, shadowColor, rawShadowY);
+
+        float signedShadowX = rawShadowX * 2.0 - 1.0; // map from [0.0, 1.0] to [-1.0, 1.0]
+        float signedShadowY = rawShadowY * 2.0 - 1.0; // map from [0.0, 1.0] to [-1.0, 1.0]
+        
+        vec4 textWeights = unpack_8_8_8_8(fragTangent.z); // Weight (8) + OutlineWeight (8) + ShadowWeight (8) + ShadowBlur (8)
+    }
+    else if (objectType == 3) { // Tilemap
+        vec3 outlineColor;
+        float outlineSize;
+        unpack_24_8(fragTangent.x, outlineColor, outlineSize);
+        
+        vec4 silhouetteColor = unpack_RGBA32(fragTangent.y);
+        
+        vec3 tileInfo = unpack_12_12_8(fragTangent.z); // TileColumns (12) + TileRows (12) + TileSize (8)
+        float tileColumns = tileInfo.x;
+        float tileRows    = tileInfo.y;
+        float tileSize    = tileInfo.z;
+    }
+    
+    //========================================================================
+
     vec2 uv = fragTexCoord;
     if (u[CALCULATE_SDF_TEXT] > 0.5) {
         uv = compute_pixelated_uv(uv);
 
-        vec4 color = compute_sdf_text(uv);
+        vec4 color = texture(texture0, uv);
         color = compute_outline(color, uv);
         color = compute_color_adjust(color);
         color = compute_silhouette(color);
