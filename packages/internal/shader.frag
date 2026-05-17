@@ -57,44 +57,79 @@ uniform sampler2D texture0;
 uniform sampler2D tileData;
 uniform float u[32];
 
-void unpack_24_8(float packedFloat, out vec3 rgb, out float extra8) {
-    uint packedBits = floatBitsToUint(packedFloat);
-    float r = float((packedBits >> 24u) & 0xFFu) / 255.0; // 8 bits
-    float g = float((packedBits >> 16u) & 0xFFu) / 255.0; // 8 bits
-    float b = float((packedBits >> 8u) & 0xFFu) / 255.0;  // 8 bits
-    rgb = vec3(r, g, b);
-    extra8 = float(packedBits & 0xFFu) / 255.0; // normalized 0.0 to 1.0
+// --- unpack helpers (all read from bits 23-0 of a safe normal float32) ---
+
+vec3 unpack_color24(float packedFloat) {
+    uint bits = floatBitsToUint(packedFloat);
+    float r = float((bits >> 16u) & 0xFFu) / 255.0;
+    float g = float((bits >> 8u)  & 0xFFu) / 255.0;
+    float b = float(bits & 0xFFu) / 255.0;
+    return vec3(r, g, b);
 }
-vec4 unpack_8_8_8_8(float packedFloat) {
-    uint packedBits = floatBitsToUint(packedFloat);
-    float x = float((packedBits >> 24u) & 0xFFu) / 255.0;
-    float y = float((packedBits >> 16u) & 0xFFu) / 255.0;
-    float z = float((packedBits >> 8u)  & 0xFFu) / 255.0;
-    float w = float(packedBits & 0xFFu) / 255.0;
-    return vec4(x, y, z, w); // normalized 0.0 to 1.0
+
+vec4 unpack_6_6_6_6(float packedFloat) {
+    uint bits = floatBitsToUint(packedFloat);
+    float x = float((bits >> 18u) & 0x3Fu) / 63.0;
+    float y = float((bits >> 12u) & 0x3Fu) / 63.0;
+    float z = float((bits >> 6u)  & 0x3Fu) / 63.0;
+    float w = float(bits & 0x3Fu) / 63.0;
+    return vec4(x, y, z, w);
 }
-vec3 unpack_12_12_8(float packedFloat) {
-    uint packedBits = floatBitsToUint(packedFloat);
-    float val1 = float((packedBits >> 20u) & 0xFFFu);
-    float val2 = float((packedBits >> 8u) & 0xFFFu);
-    float val3 = float(packedBits & 0xFFu);
-    return vec3(val1, val2, val3); // absolute values, not normalized
+
+vec2 unpack_12_12(float packedFloat) {
+    uint bits = floatBitsToUint(packedFloat);
+    float w = float((bits >> 12u) & 0xFFFu);
+    float h = float(bits & 0xFFFu);
+    return vec2(w, h);
 }
-vec4 unpack_RGBA32(float packedFloat) {
-    uint packedBits = floatBitsToUint(packedFloat);
-    float r = float((packedBits >> 24u) & 0xFFu) / 255.0;
-    float g = float((packedBits >> 16u) & 0xFFu) / 255.0;
-    float b = float((packedBits >> 8u) & 0xFFu) / 255.0;
-    float a = float(packedBits & 0xFFu) / 255.0;
-    return vec4(r, g, b, a);
+
+void unpack_11_11_2(float packedFloat, out float depthZ, out float borderSize, out int objType) {
+    uint bits = floatBitsToUint(packedFloat);
+    depthZ     = float((bits >> 13u) & 0x7FFu) / 2047.0; // 11 bits normalized
+    borderSize = float((bits >> 2u)  & 0x7FFu);          // 11 bits absolute
+    objType    = int(bits & 0x3u);                        //  2 bits
 }
+
+void unpack_16_8(float packedFloat, out float roundness, out float pixelSize) {
+    uint bits = floatBitsToUint(packedFloat);
+    roundness = float((bits >> 8u) & 0xFFFFu) / 65535.0; // 16 bits normalized
+    pixelSize = float(bits & 0xFFu);                      //  8 bits absolute
+}
+
+void unpack_8_8_8(float packedFloat, out float outlineSize, out float tileSize, out float roundness) {
+    uint bits = floatBitsToUint(packedFloat);
+    outlineSize = float((bits >> 16u) & 0xFFu);         // 8 bits absolute
+    tileSize    = float((bits >> 8u)  & 0xFFu);         // 8 bits absolute
+    roundness   = float(bits & 0xFFu) / 255.0;          // 8 bits normalized
+}
+
+vec3 unpack_10_10_4(float packedFloat) {
+    uint bits = floatBitsToUint(packedFloat);
+    float cols = float((bits >> 14u) & 0x3FFu); // 10 bits absolute
+    float rows = float((bits >> 4u)  & 0x3FFu); // 10 bits absolute
+    float ps   = float(bits & 0xFu);            //  4 bits absolute
+    return vec3(cols, rows, ps);
+}
+
+void unpack_6_6_8_4(float packedFloat, out float shadowX, out float shadowY, out float roundness, out float pixelSize) {
+    uint bits = floatBitsToUint(packedFloat);
+    // shadowX/Y: 6-bit two's complement stored raw
+    int rawX = int((bits >> 18u) & 0x3Fu);
+    int rawY = int((bits >> 12u) & 0x3Fu);
+    shadowX = float(rawX >= 32 ? rawX - 64 : rawX) / 32.0; // maps to ~[-1, 1]
+    shadowY = float(rawY >= 32 ? rawY - 64 : rawY) / 32.0;
+    roundness = float((bits >> 4u) & 0xFFu) / 255.0; // 8 bits normalized
+    pixelSize = float(bits & 0xFu);                   // 4 bits absolute
+}
+
+// --- effect functions ---
 
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
 vec2 compute_pixelated_uv(vec2 uv, vec2 texSize, float pixelSize) {
-    vec2 numBlocks = texSize / max(pixelSize, 0.001); // avoid division by zero
+    vec2 numBlocks = texSize / max(pixelSize, 0.001);
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
     return pixelSize <= 1.0 ? uv : pixelated;
 }
@@ -141,7 +176,7 @@ vec4 compute_color_adjust(vec4 color, vec4 colorAdjust, vec2 colorAdjust2) {
     float bri = colorAdjust.w;
     float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     float gamma = gam < 0.5 ? map(gam, 0.0, 0.5, 6.0, 1.0) : map(gam, 0.5, 1.0, 1.0, 0.0);
-    float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 3.0);
+    float saturation = sat < 0.5 ? map(sat, 0.0, 0.5, 0.0, 1.0) : map(sat, 0.5, 1.0, 1.0, 10.0);
     float contrast = con < 0.5 ? map(con, 0.0, 0.5, 0.0, 1.0) : map(con, 0.5, 1.0, 1.0, 3.0);
     float brightness = bri < 0.5 ? map(bri, 0.0, 0.5, 0.0, 1.0) : map(bri, 0.5, 1.0, 1.0, 4.0);
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
@@ -201,117 +236,115 @@ vec2 compute_tile(vec2 uv, vec2 texSize) {
 //     vec4 base = unpackRGB222(c.r);
 //     vec4 outlineColor = unpackRGB222(c.g);
 //     vec4 shadowColor = unpackRGB222(c.b);
-    
+//     
 //     uint thickIdx = (c.a >> 6) & 0x03u;
 //     uint outlIdx = (c.a >> 4) & 0x03u;
 //     uint shadIdx = (c.a >> 2) & 0x03u;
 //     uint smoothIdx = (c.a) & 0x03u;
-    
+//     
 //     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
 //     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
-    
+//     
 //     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
 //     float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
 //     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
 //     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
-    
+//     
 //     float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
 //     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
 //     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
-    
+//     
 //     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
 //     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
 //     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
-    
+//     
 //     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
 //     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
 //     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
-    
+//     
 //     vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
 //     float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
-    
+//     
 //     return vec4(finalRGB, finalAlpha);
 // }
 
 void main() {
-    vec3 texInfo = unpack_12_12_8(fragTexCoord2.x); // TextureWidth(12) + TextureHeight(12) + Type(8)
-    vec2 texSize = texInfo.xy;
-    int objectType = int(texInfo.z); // 0=Shape, 1=Sprite, 2=Text, 3=Tilemap
-    
-    vec3 borderColor;
-    float roundness;
-    unpack_24_8(fragTexCoord2.y, borderColor, roundness); // BorderColor(24) + Roundness(8)
+    // --- unpack vertex attributes (24-bit safe float32 in bits 23-0) ---
 
-    vec4 colorAdjust1 = unpack_8_8_8_8(fragNormal.x); // Gamma(8) + Saturation(8) + Contrast(8) + Brightness(8)
-    vec4 colorAdjust2 = unpack_8_8_8_8(fragNormal.y); // Grayscale(8) + Inversion(8) + BlurX(8) + BlurY(8)
-    vec2 blur = colorAdjust2.zw * 16;
+    vec2 texSize = unpack_12_12(fragTexCoord2.x);  // TextureWidth(12) + TextureHeight(12)
 
-    vec3 depthAndSizes = unpack_12_12_8(fragNormal.z); // DepthZ(12) + BorderSize(12) + PixelSize(8)
-    float depthZ     = depthAndSizes.x / 4095.0; // normalized 0.0 to 1.0
-    float borderSize = depthAndSizes.y;
-    float pixelSize  = depthAndSizes.z;
-    
-    if (objectType == 1) { // Sprite
-        vec3 outlineColor;
-        float outlineSize;
-        unpack_24_8(fragTangent.x, outlineColor, outlineSize);
-        
-        vec4 silhouetteColor = unpack_RGBA32(fragTangent.y);
+    vec3 borderColor = unpack_color24(fragTexCoord2.y); // BorderColor(24)
+
+    vec4 colorAdjust1 = unpack_6_6_6_6(fragNormal.x); // Gamma(6)+Saturation(6)+Contrast(6)+Brightness(6)
+    vec4 colorAdjust2 = unpack_6_6_6_6(fragNormal.y); // Grayscale(6)+Inversion(6)+BlurX(6)+BlurY(6)
+    vec2 blur = colorAdjust2.zw * 16.0;
+
+    float depthZ, borderSize;
+    int objectType;
+    unpack_11_11_2(fragNormal.z, depthZ, borderSize, objectType); // DepthZ(11)+BorderSize(11)+Type(2)
+
+    // --- per-type tangent unpacking ---
+
+    float roundness = 0.0;
+    float pixelSize = 0.0;
+    // outlineColor, silhouetteColor, shadowColor, outlineSize, tileCols, tileRows, tileSize
+    // are unpacked below per type; compute functions still use u[] uniforms for now.
+
+    if (objectType == 0) { // Shape
+        roundness = fragTangent.x; // full float
+        pixelSize = fragTangent.y; // full float
+    }
+    else if (objectType == 1) { // Sprite
+        vec3 outlineColor   = unpack_color24(fragTangent.x); // OutlineColor(24)
+        vec3 silhouetteColor = unpack_color24(fragTangent.y); // SilhouetteColor(24)
+        float outlineSize   = fragTangent.z;                  // full float
+        unpack_16_8(fragTangent.w, roundness, pixelSize);     // Roundness(16)+PixelSize(8)
     }
     else if (objectType == 2) { // Text
-        vec3 outlineColor;
-        float rawShadowX;
-        unpack_24_8(fragTangent.x, outlineColor, rawShadowX);
-
-        vec3 shadowColor;
-        float rawShadowY;
-        unpack_24_8(fragTangent.y, shadowColor, rawShadowY);
-
-        float signedShadowX = rawShadowX * 2.0 - 1.0; // map from [0.0, 1.0] to [-1.0, 1.0]
-        float signedShadowY = rawShadowY * 2.0 - 1.0; // map from [0.0, 1.0] to [-1.0, 1.0]
-        
-        vec4 textWeights = unpack_8_8_8_8(fragTangent.z); // Weight(8) + OutlineWeight(8) + ShadowWeight(8) + ShadowBlur(8)
+        vec3 outlineColor = unpack_color24(fragTangent.x);             // OutlineColor(24)
+        vec3 shadowColor  = unpack_color24(fragTangent.y);             // ShadowColor(24)
+        vec4 textWeights  = unpack_6_6_6_6(fragTangent.z);             // Weight+OutlineWeight+ShadowWeight+ShadowBlur
+        float shadowX, shadowY;
+        unpack_6_6_8_4(fragTangent.w, shadowX, shadowY, roundness, pixelSize); // ShadowX+ShadowY+Roundness+PixelSize
     }
     else if (objectType == 3) { // Tilemap
-        vec3 outlineColor;
-        float outlineSize;
-        unpack_24_8(fragTangent.x, outlineColor, outlineSize);
-        
-        vec4 silhouetteColor = unpack_RGBA32(fragTangent.y);
-        
-        vec3 tileInfo = unpack_12_12_8(fragTangent.z); // TileColumns(12) + TileRows(12) + TileSize(8)
+        vec3 outlineColor   = unpack_color24(fragTangent.x); // OutlineColor(24)
+        vec3 silhouetteColor = unpack_color24(fragTangent.y); // SilhouetteColor(24)
+        vec3 tileInfo = unpack_10_10_4(fragTangent.z);        // TileColumns(10)+TileRows(10)+PixelSize(4)
         float tileColumns = tileInfo.x;
         float tileRows    = tileInfo.y;
-        float tileSize    = tileInfo.z;
+        pixelSize         = tileInfo.z;
+        float outlineSize, tileSize;
+        unpack_8_8_8(fragTangent.w, outlineSize, tileSize, roundness); // OutlineSize(8)+TileSize(8)+Roundness(8)
     }
-    
-    //========================================================================
+
+    // ========================================================================
 
     vec2 uv = fragTexCoord;
     // if (u[CALCULATE_SDF_TEXT] > 0.5) {
-    //     uv = compute_pixelated_uv(uv, texSize, colorAdjust2.z);
-        
+    //     uv = compute_pixelated_uv(uv, texSize, pixelSize);
+    //     
     //     vec4 color = texture(texture0, uv);
     //     color = compute_outline(color, uv, texSize);
     //     color = compute_color_adjust(color, colorAdjust1, colorAdjust2.xy);
     //     color = compute_silhouette(color);
     //     finalColor = color;
-    //     gl_FragDepth = colorAdjust2.w;
+    //     gl_FragDepth = depthZ;
     //     return;
     // }
-    
+
     uv = compute_tile(uv, texSize);
-    uv = compute_pixelated_uv(uv, texSize, colorAdjust2.z);
+    uv = compute_pixelated_uv(uv, texSize, pixelSize);
 
     vec4 color = compute_blur(uv, texSize, blur);
     color = compute_outline(color, uv, texSize);
 
     if (color.a * fragColor.a < 0.004)
         discard;
-    
+
     color = compute_color_adjust(color, colorAdjust1, colorAdjust2.xy);
     color = compute_silhouette(color);
-    
+
     finalColor = color * fragColor;
-    gl_FragDepth = colorAdjust2.w;
+    gl_FragDepth = depthZ;
 }
