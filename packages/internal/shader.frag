@@ -38,15 +38,11 @@ in vec4 fragTangent;
 
 out vec4 finalColor;
 
-#define TILE_COLUMNS 21
-#define TILE_ROWS 22
-#define TILE_W 23
-#define TILE_H 24
-#define TIME 25
+#define TIME 0
 
 uniform sampler2D texture0;
 uniform sampler2D tileData;
-uniform float u[32];
+uniform float u[1];
 
 vec4 unpack_6_6_6_6(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
@@ -160,11 +156,11 @@ vec4 compute_color_adjust(vec4 color, vec4 colorAdjust, vec2 colorAdjust2) {
     return color;
 }
 
-vec2 compute_tile(vec2 uv, vec2 texSize) {
-    ivec2 mapSize = ivec2(int(u[TILE_COLUMNS]), int(u[TILE_ROWS]));
-    if (mapSize.x == 0)
+vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, float tileW, float tileH) {
+    if (tileColumns == 0.0)
         return uv; // this is a regular sprite, not a tilemap
 
+    ivec2 mapSize = ivec2(int(tileColumns), int(tileRows));
     ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
@@ -186,7 +182,7 @@ vec2 compute_tile(vec2 uv, vec2 texSize) {
     uint currentFrame = uint(mod(floor(u[TIME] * multiplier) + float(animOffset), float(frameRange)));
     uint atlasIndex = atlasBase + currentFrame;
 
-    float atlasCols = floor(texSize.x / u[TILE_W]);
+    float atlasCols = floor(texSize.x / tileW);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
     localUV -= 0.5;
@@ -196,9 +192,9 @@ vec2 compute_tile(vec2 uv, vec2 texSize) {
     localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV; // 270 degrees
     localUV += 0.5;
 
-    localUV = mix(localUV, vec2(0.5), 1.0 / vec2(u[TILE_W], u[TILE_H])); // prevents texture bleeding artifacts
+    localUV = mix(localUV, vec2(0.5), 1.0 / vec2(tileW, tileH)); // prevents texture bleeding artifacts
 
-    vec2 atlasSizeInTiles = vec2(texSize.x / u[TILE_W], texSize.y / u[TILE_H]);
+    vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
     return (coord + localUV) / atlasSizeInTiles;
 }
 // vec4 compute_sdf_text(vec2 uv) {
@@ -252,6 +248,9 @@ void main() {
     float outlineSize = 0.0;
     vec4  outlineColor = vec4(0.0);
     vec4  silhouetteColor = vec4(0.0);
+    float tileColumns = 0.0;
+    float tileRows    = 0.0;
+    float tileSize    = 0.0;
     
     if (objectType == 0) { // Shape
         roundness = fragTangent.x; // full float
@@ -274,10 +273,9 @@ void main() {
         outlineColor   = unpack_6_6_6_6(fragTangent.x);  // OutlineColor RGBA(6,6,6,6)
         silhouetteColor = unpack_6_6_6_6(fragTangent.y); // SilhouetteColor RGBA(6,6,6,6)
         vec3 tileInfo = unpack_10_10_4(fragTangent.z);   // TileColumns(10)+TileRows(10)+PixelSize(4)
-        float tileColumns = tileInfo.x;
-        float tileRows    = tileInfo.y;
-        pixelSize         = tileInfo.z;
-        float tileSize;
+        tileColumns = tileInfo.x;
+        tileRows    = tileInfo.y;
+        pixelSize   = tileInfo.z;
         unpack_8_8_8(fragTangent.w, outlineSize, tileSize, roundness); // OutlineSize(8)+TileSize(8)+Roundness(8)
     }
 
@@ -296,7 +294,7 @@ void main() {
     //     return;
     // }
 
-    uv = compute_tile(uv, texSize);
+    uv = compute_tile(uv, texSize, tileColumns, tileRows, tileSize, tileSize);
     uv = compute_pixelated_uv(uv, texSize, pixelSize);
 
     vec4 color = compute_blur(uv, texSize, blur);
