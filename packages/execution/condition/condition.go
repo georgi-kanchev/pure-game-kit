@@ -4,13 +4,6 @@ package condition
 
 import "pure-game-kit/packages/internal"
 
-func If[T any](condition bool, then, otherwise T) T {
-	if condition {
-		return then
-	}
-	return otherwise
-}
-
 func JustTurnedTrue(condition bool, key any) bool {
 	var prev = trueOnce[key]
 	trueOnce[key] = condition

@@ -148,10 +148,10 @@ func Draw() {
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
 
-//go:embed shaders/quad.frag
+//go:embed shader.frag
 var fragQuad string
 
-//go:embed shaders/default.vert
+//go:embed shader.vert
 var vertDefault string
 
 func newBatch() *Batch {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/xml"
-	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/file"
@@ -243,7 +242,11 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 				}
 				var avgDuration = float32(totalDuration) / float32(len(tile.Animation.Frames))
 				var targetFPS = 1000.0 / avgDuration
-				var s = condition.If(targetFPS <= 1.0, targetFPS*10.0, ((targetFPS-1.0)/0.45)+10.0)
+				var s = targetFPS * 10.0
+				if targetFPS > 1.0 {
+					s = ((targetFPS - 1.0) / 0.45) + 10.0
+				}
+
 				frameSpeed = uint32(number.Limit(int(s), 0, 31))
 				frameCount = uint32(number.Limit(len(tile.Animation.Frames)-1, 0, 15))
 				animOffset = uint32((j ^ i) % 16)

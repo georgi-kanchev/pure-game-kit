@@ -5,7 +5,6 @@ package text
 
 import (
 	"fmt"
-	"pure-game-kit/packages/execution/condition"
 	"reflect"
 	"strings"
 
@@ -27,7 +26,11 @@ func New(elements ...any) string {
 		case float64:
 			builder.WriteString(strconv.FormatFloat(v, 'f', -1, 64))
 		case bool:
-			builder.WriteString(condition.If(bool(v), "true", "false"))
+			if v {
+				builder.WriteString("true")
+			} else {
+				builder.WriteString("false")
+			}
 		case fmt.Stringer:
 			builder.WriteString(v.String())
 		default:
