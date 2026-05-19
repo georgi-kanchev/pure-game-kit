@@ -25,6 +25,16 @@ uniform float u[1];
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
+float calc_shape_sdf(vec2 pLocal, vec2 halfExtents, float r, float roundness) {
+    vec2 q = abs(pLocal) - halfExtents + r;
+    float dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+    
+    // Handle inverted roundness
+    if (roundness < 0.0) {
+        dShape = max(r - length(max(q, 0.0)), max(abs(pLocal).x - halfExtents.x, abs(pLocal).y - halfExtents.y));
+    }
+    return dShape;
+}
 
 vec2 compute_pixelated_uv(vec2 uv, vec2 texSize, float pixelSize) {
     pixelSize /= 1.5;
@@ -127,32 +137,44 @@ vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, floa
     return (coord + localUV) / atlasSizeInTiles;
 }
 vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float borderSize, vec4 borderColor) {
+    if (abs(roundness) < 0.001 && abs(borderSize) < 0.001) { return color; }
+    
     vec2 halfSize = texSize * 0.5;
     vec2 pLocal = (uv - 0.5) * texSize;
-
+    
     float maxRadius = min(halfSize.x, halfSize.y);
     float radius = abs(roundness) * maxRadius;
-
-    vec2 q = abs(pLocal) - halfSize + radius;
-    float dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
-
-    if (roundness < 0.0) {
-        dShape = max(radius - length(max(q, 0.0)), max(abs(pLocal).x - halfSize.x, abs(pLocal).y - halfSize.y));
-    }
-
+    
+    // Base shape SDF
+    float dShape = calc_shape_sdf(pLocal, halfSize, radius, roundness);
+    
+    // Calculate anti-aliasing factor
     float af = fwidth(dShape) * 1.5;
     float absBorder = abs(borderSize);
 
     if (absBorder > 0.0) {
         float sShape = 1.0 - smoothstep(-af, af, dShape);
         float sRing;
-        if (borderSize > 0.0) { // outer ring
-            float sOuter = 1.0 - smoothstep(-af, af, dShape - borderSize + af);
+        
+        if (borderSize > 0.0) { 
+            // OUTER RING: Generate a larger shape that scales its corner radius to match the same roundness ratio
+            vec2 outerSize = halfSize + absBorder;
+            float outerRadius = abs(roundness) * min(outerSize.x, outerSize.y);
+            float dOuter = calc_shape_sdf(pLocal, outerSize, outerRadius, roundness);
+            
+            float sOuter = 1.0 - smoothstep(-af, af, dOuter);
             sRing = max(sOuter - sShape, 0.0);
-        } else { // inner ring
-            float sInner = 1.0 - smoothstep(-af, af, dShape + absBorder);
+            
+        } else { 
+            // INNER RING: Generate a smaller shape
+            vec2 innerSize = max(halfSize - absBorder, vec2(0.0));
+            float innerRadius = abs(roundness) * min(innerSize.x, innerSize.y);
+            float dInner = calc_shape_sdf(pLocal, innerSize, innerRadius, roundness);
+            
+            float sInner = 1.0 - smoothstep(-af, af, dInner);
             sRing = max(sShape - sInner, 0.0);
         }
+        
         vec4 fill = color * sShape;
         vec4 ring = borderColor * sRing;
         return ring + fill * (1.0 - ring.a);
