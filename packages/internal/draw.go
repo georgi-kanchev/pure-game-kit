@@ -26,10 +26,12 @@ type Vertex struct {
 	U2, V2         float32 // Texcoords2
 }
 type Effects struct {
-	Gamma, Saturation, Contrast, Brightness, Grayscale, Inversion float32 // Ranged -1..1
+	Gamma, Saturation, Contrast, Brightness float32 // Ranged 0..1
 
 	OutlineSize, BorderSize float32
-	PixelSize, BlurX, BlurY byte
+
+	PixelSize    byte // Ranged 0..15
+	BlurX, BlurY byte // Ranged 0..31
 
 	OutlineColor, BorderColor, SilhouetteColor uint
 
@@ -73,7 +75,22 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 	}
 
 	for i := range len(polygonBuf) {
+		polygonBuf[i].U2 = packU2(uint16(tex.Width), uint16(tex.Height))
+		polygonBuf[i].V2 = packV2(eff.BorderColor)
 		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
+		polygonBuf[i].NY = packNormalY(0, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
+		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, uint16(eff.BorderSize), 1)
+
+		if true { // sprite
+			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
+			polygonBuf[i].TY = packTangentYSprite(eff.SilhouetteColor)
+			polygonBuf[i].TZ = eff.OutlineSize
+		} else if false { // text
+			polygonBuf[i].TX = packTangentXText(eff.OutlineColor)
+		} else if false {
+			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
+			polygonBuf[i].TY = packTangentYSprite(eff.SilhouetteColor)
+		}
 	}
 
 	if mask == (Area{}) {

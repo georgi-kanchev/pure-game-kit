@@ -3,6 +3,7 @@ package main
 import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
@@ -15,13 +16,14 @@ func main() {
 
 	obj.Roundness = 1
 
-	obj.ImageId = assets.LoadImage("examples/data/desert-0.png")
+	obj.ImageId = assets.LoadImage("examples/data/flail.PNG")
 	obj.Effects = graphics.NewEffects()
 	var w, h = obj.ImageId.Size()
 	obj.Width, obj.Height = float32(w)*4, float32(h)*4
 
 	for window.KeepOpen() {
-		obj.Effects.Gamma = (number.Sine(time.Running()) + 1) / 2
+		var _ = (number.Sine(time.Running()) + 1) / 2
+		obj.Effects.SilhouetteColor = palette.Green //byte(number.Map(loop, 0, 1, 0, 15))
 		view.DrawObjects(&obj)
 	}
 }

@@ -14,10 +14,10 @@ out vec4 fragColor;
 
 out vec4 fragData0; // texSize.xy + depthZ + objectType
 out vec4 fragData1; // colorAdjust1 (gamma, saturation, contrast, brightness)
-out vec4 fragData2; // colorAdjust2 (grayscale, inversion, blurX, blurY)
+out vec4 fragData2; // rgbAdjust2 (roundness, pixelSize, blurX, blurY)
 out vec4 fragData3; // outlineColor RGBA
 out vec4 fragData4; // silhouetteColor RGBA
-out vec4 fragData5; // outlineSize + roundness + pixelSize
+out vec4 fragData5; // outlineSize
 out vec4 fragData6; // tileColumns + tileRows + tileSize
 
 vec4 unpack_6_6_6_6(float packedFloat) {
@@ -40,32 +40,33 @@ void unpack_11_11_2(float packedFloat, out float depthZ, out float borderSize, o
     borderSize = float((bits >> 2u)  & 0x7FFu);
     objType    = int(bits & 0x3u);
 }
-void unpack_16_8(float packedFloat, out float roundness, out float pixelSize) {
+void unpack_16_8(float packedFloat, out float outlineSize, out float tileSize) {
     uint bits = floatBitsToUint(packedFloat);
-    roundness = float((bits >> 8u) & 0xFFFFu) / 65535.0;
-    pixelSize = float(bits & 0xFFu);
+    outlineSize = float((bits >> 8u) & 0xFFFFu);
+    tileSize    = float(bits & 0xFFu);
 }
-void unpack_8_8_8(float packedFloat, out float outlineSize, out float tileSize, out float roundness) {
+void unpack_8_8_8(float packedFloat, out float shadowX, out float shadowY, out float shadowBlur) {
     uint bits = floatBitsToUint(packedFloat);
-    outlineSize = float((bits >> 16u) & 0xFFu);
-    tileSize    = float((bits >> 8u)  & 0xFFu);
-    roundness   = float(bits & 0xFFu) / 255.0;
+    int rawX = int((bits >> 16u) & 0xFFu);
+    int rawY = int((bits >> 8u) & 0xFFu);
+    shadowX = float(rawX >= 128 ? rawX - 256 : rawX) / 128.0;
+    shadowY = float(rawY >= 128 ? rawY - 256 : rawY) / 128.0;
+    shadowBlur = float(bits & 0xFFu);
 }
-vec3 unpack_10_10_4(float packedFloat) {
+vec4 unpack_10_4_5_5(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
-    float cols = float((bits >> 14u) & 0x3FFu);
-    float rows = float((bits >> 4u)  & 0x3FFu);
-    float ps   = float(bits & 0xFu);
-    return vec3(cols, rows, ps);
+    float roundness = float((bits >> 14u) & 0x3FFu) / 1023.0;
+    float pixelSize = float((bits >> 10u) & 0xFu);
+    float blurX     = float((bits >> 5u)  & 0x1Fu) / 31.0;
+    float blurY     = float(bits & 0x1Fu) / 31.0;
+    return vec4(roundness, pixelSize, blurX, blurY);
 }
-void unpack_6_6_8_4(float packedFloat, out float shadowX, out float shadowY, out float roundness, out float pixelSize) {
+vec3 unpack_8_8_8_raw(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
-    int rawX = int((bits >> 18u) & 0x3Fu);
-    int rawY = int((bits >> 12u) & 0x3Fu);
-    shadowX = float(rawX >= 32 ? rawX - 64 : rawX) / 32.0;
-    shadowY = float(rawY >= 32 ? rawY - 64 : rawY) / 32.0;
-    roundness = float((bits >> 4u) & 0xFFu) / 255.0;
-    pixelSize = float(bits & 0xFu);
+    float x = float((bits >> 16u) & 0xFFu);
+    float y = float((bits >> 8u)  & 0xFFu);
+    float z = float(bits & 0xFFu);
+    return vec3(x, y, z);
 }
 
 void main() {
@@ -74,52 +75,52 @@ void main() {
     
     vec2 texSize = unpack_12_12(vertTexCoord2.x);
     vec4 colorAdjust1 = unpack_6_6_6_6(vertNormal.x);
-    vec4 colorAdjust2 = unpack_6_6_6_6(vertNormal.y);
+    vec4 rgbAdjust2    = unpack_10_4_5_5(vertNormal.y);
+    float roundness  = rgbAdjust2.x;
+    float pixelSize  = rgbAdjust2.y;
+    float blurX      = rgbAdjust2.z;
+    float blurY      = rgbAdjust2.w;
     float depthZ, borderSize;
     int   objectType;
     unpack_11_11_2(vertNormal.z, depthZ, borderSize, objectType);
-    float roundness  = 0.0;
-    float pixelSize  = 0.0;
     float outlineSize = 0.0;
     vec4  outlineColor   = vec4(0.0);
     vec4  silhouetteColor = vec4(0.0);
     float tileColumns = 0.0;
     float tileRows    = 0.0;
     float tileSize    = 0.0;
-
+    
     if (objectType == 0) { // Shape
-        roundness = vertTangent.x;
-        pixelSize = vertTangent.y;
+        // tangent is free
     }
     else if (objectType == 1) { // Sprite
         outlineColor    = unpack_6_6_6_6(vertTangent.x);
         silhouetteColor = unpack_6_6_6_6(vertTangent.y);
         outlineSize     = vertTangent.z;
-        unpack_16_8(vertTangent.w, roundness, pixelSize);
+        // tangent.w is free
     }
     else if (objectType == 2) { // Text
         outlineColor = unpack_6_6_6_6(vertTangent.x);
         vec4 shadowColor = unpack_6_6_6_6(vertTangent.y);
-        vec4 textWeights = unpack_6_6_6_6(vertTangent.z);
-        float shadowX, shadowY;
-        unpack_6_6_8_4(vertTangent.w, shadowX, shadowY, roundness, pixelSize);
+        vec3 textWeights = unpack_8_8_8_raw(vertTangent.z);
+        float shadowX, shadowY, shadowBlur;
+        unpack_8_8_8(vertTangent.w, shadowX, shadowY, shadowBlur);
     }
     else if (objectType == 3) { // Tilemap
         outlineColor    = unpack_6_6_6_6(vertTangent.x);
         silhouetteColor = unpack_6_6_6_6(vertTangent.y);
-        vec3 tileInfo   = unpack_10_10_4(vertTangent.z);
+        vec2 tileInfo   = unpack_12_12(vertTangent.z);
         tileColumns = tileInfo.x;
         tileRows    = tileInfo.y;
-        pixelSize   = tileInfo.z;
-        unpack_8_8_8(vertTangent.w, outlineSize, tileSize, roundness);
+        unpack_16_8(vertTangent.w, outlineSize, tileSize);
     }
     
     fragData0 = vec4(texSize, depthZ, float(objectType));
     fragData1 = colorAdjust1;
-    fragData2 = colorAdjust2;
+    fragData2 = vec4(roundness, pixelSize, blurX, blurY);
     fragData3 = outlineColor;
     fragData4 = silhouetteColor;
-    fragData5 = vec4(outlineSize, roundness, pixelSize, 0.0);
+    fragData5 = vec4(outlineSize, 0.0, 0.0, 0.0);
     fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
 
     gl_Position = mvp * vec4(vertPosition, 1.0);

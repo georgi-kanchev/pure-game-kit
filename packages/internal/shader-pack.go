@@ -21,17 +21,17 @@ import (
 //  tangent.z = OutlineSize(32)
 //  tangent.w = free
 
-// Tilemap:
-//  tangent.x = OutlineColor(6,6,6,6)
-//  tangent.y = SilhouetteColor(6,6,6,6)
-//  tangent.z = TileColumns(12) + TileRows(12)
-//  tangent.w = OutlineSize(16) + TileSize(8)
-
 // Text:
 //  tangent.x = OutlineColor(6,6,6,6)
 //  tangent.y = ShadowColor(6,6,6,6)
 //  tangent.z = Weight(8) + OutlineWeight(8) + ShadowWeight(8)
 //  tangent.w = TextShadowX(8) + TextShadowY(8) + ShadowBlur(8)
+
+// Tilemap:
+//  tangent.x = OutlineColor(6,6,6,6)
+//  tangent.y = SilhouetteColor(6,6,6,6)
+//  tangent.z = TileColumns(12) + TileRows(12)
+//  tangent.w = OutlineSize(16) + TileSize(8)
 
 const typeShape, typeSprite, typeText, typeTilemap byte = 0, 1, 2, 3
 
@@ -59,12 +59,12 @@ func packNormalX(gamma, saturation, contrast, brightness float32) float32 {
 	var b = uint32(unitTo6Bit(brightness))       // bits 5-0
 	return pack24(g | s | c | b)
 }
-func packNormalY(grayscale, inversion float32, blurX, blurY uint8) float32 {
-	var g = uint32(unitTo6Bit(grayscale)) << 18 // bits 23-18
-	var i = uint32(unitTo6Bit(inversion)) << 12 // bits 17-12
-	var x = uint32(blurX&0x3F) << 6             // bits 11-6
-	var y = uint32(blurY & 0x3F)                // bits 5-0
-	return pack24(g | i | x | y)
+func packNormalY(roundness float32, pixelSize, blurX, blurY uint8) float32 {
+	var r = uint32(unitTo10Bit(roundness)) << 14 // bits 23-14
+	var p = uint32(pixelSize&0xF) << 10          // bits 13-10
+	var x = uint32(blurX&0x1F) << 5              // bits 9-5
+	var y = uint32(blurY & 0x1F)                 // bits 4-0
+	return pack24(r | p | x | y)
 }
 func packNormalZ(depthZ float32, borderSize uint16, objType uint8) float32 {
 	depthZ = number.Limit(depthZ, 0, 1)
@@ -82,10 +82,8 @@ func packTangentXSprite(outlineColor uint) float32 {
 func packTangentYSprite(silhouetteColor uint) float32 {
 	return pack24(uint32(silhouetteColor) & 0xFFFFFF)
 }
-func packTangentWSprite(roundness float32, pixelSize uint8) float32 {
-	var r = uint32(unitTo16Bit(roundness)) << 8 // bits 23-8
-	var p = uint32(pixelSize)                   // bits 7-0
-	return pack24(r | p)
+func packTangentWSprite() float32 {
+	return 0 // tangent.w is free for sprites
 }
 
 //=================================================================
@@ -96,17 +94,15 @@ func packTangentXTilemap(outlineColor uint) float32 {
 func packTangentYTilemap(silhouetteColor uint) float32 {
 	return pack24(uint32(silhouetteColor) & 0xFFFFFF)
 }
-func packTangentZTilemap(tileCols, tileRows uint16, pixelSize uint8) float32 {
-	var c = uint32(tileCols&0x3FF) << 14 // bits 23-14
-	var r = uint32(tileRows&0x3FF) << 4  // bits 13-4
-	var p = uint32(pixelSize & 0xF)      // bits 3-0
-	return pack24(c | r | p)
+func packTangentZTilemap(tileCols, tileRows uint16) float32 {
+	var c = uint32(tileCols&0xFFF) << 12 // bits 23-12
+	var r = uint32(tileRows & 0xFFF)     // bits 11-0
+	return pack24(c | r)
 }
-func packTangentWTilemap(outlineSize, tileSize, roundness uint8) float32 {
-	var o = uint32(outlineSize) << 16 // bits 23-16
-	var t = uint32(tileSize) << 8     // bits 15-8
-	var r = uint32(roundness)         // bits 7-0
-	return pack24(o | t | r)
+func packTangentWTilemap(outlineSize uint16, tileSize uint8) float32 {
+	var o = uint32(outlineSize&0xFFFF) << 8 // bits 23-8
+	var t = uint32(tileSize)                // bits 7-0
+	return pack24(o | t)
 }
 
 //=================================================================
@@ -117,22 +113,20 @@ func packTangentXText(outlineColor uint) float32 {
 func packTangentYText(shadowColor uint) float32 {
 	return pack24(uint32(shadowColor) & 0xFFFFFF)
 }
-func packTangentZText(weight, outlineWeight, shadowWeight, shadowBlur uint8) float32 {
-	var w = uint32(weight&0x3F) << 18        // bits 23-18
-	var o = uint32(outlineWeight&0x3F) << 12 // bits 17-12
-	var s = uint32(shadowWeight&0x3F) << 6   // bits 11-6
-	var b = uint32(shadowBlur & 0x3F)        // bits 5-0
-	return pack24(w | o | s | b)
+func packTangentZText(weight, outlineWeight, shadowWeight uint8) float32 {
+	var w = uint32(weight) << 16       // bits 23-16
+	var o = uint32(outlineWeight) << 8 // bits 15-8
+	var s = uint32(shadowWeight)       // bits 7-0
+	return pack24(w | o | s)
 }
-func packTangentWText(textShadowX, textShadowY int8, roundness, pixelSize uint8) float32 {
-	var x = uint32(uint8(textShadowX)&0x3F) << 18 // bits 23-18
-	var y = uint32(uint8(textShadowY)&0x3F) << 12 // bits 17-12
-	var r = uint32(roundness) << 4                // bits 11-4
-	var p = uint32(pixelSize & 0xF)               // bits 3-0
-	return pack24(x | y | r | p)
+func packTangentWText(textShadowX, textShadowY int8, shadowBlur uint8) float32 {
+	var x = uint32(uint8(textShadowX)) << 16 // bits 23-16
+	var y = uint32(uint8(textShadowY)) << 8  // bits 15-8
+	var b = uint32(shadowBlur)               // bits 7-0
+	return pack24(x | y | b)
 }
 
 // =================================================================
 
 func unitTo6Bit(value float32) uint8   { return uint8(number.Limit(value, 0, 1) * 63.0) }
-func unitTo16Bit(value float32) uint16 { return uint16(number.Limit(value, 0, 1) * 65535.0) }
+func unitTo10Bit(value float32) uint16 { return uint16(number.Limit(value, 0, 1) * 1023.0) }
