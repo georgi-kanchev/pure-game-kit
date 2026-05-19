@@ -17,8 +17,9 @@ out vec4 fragData1; // colorAdjust1 (gamma, saturation, contrast, brightness)
 out vec4 fragData2; // rgbAdjust2 (roundness, pixelSize, blurX, blurY)
 out vec4 fragData3; // outlineColor RGBA
 out vec4 fragData4; // silhouetteColor RGBA
-out vec4 fragData5; // outlineSize
+out vec4 fragData5; // outlineSize + borderSize
 out vec4 fragData6; // tileColumns + tileRows + tileSize
+out vec4 fragData7; // borderColor RGBA
 
 vec4 unpack_6_6_6_6(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
@@ -74,6 +75,7 @@ void main() {
     fragColor = vertColor;
     
     vec2 texSize = unpack_12_12(vertTexCoord2.x);
+    vec4 borderColor  = unpack_6_6_6_6(vertTexCoord2.y);
     vec4 colorAdjust1 = unpack_6_6_6_6(vertNormal.x);
     vec4 rgbAdjust2    = unpack_10_4_5_5(vertNormal.y);
     float roundness  = rgbAdjust2.x;
@@ -120,8 +122,9 @@ void main() {
     fragData2 = vec4(roundness, pixelSize, blurX, blurY);
     fragData3 = outlineColor;
     fragData4 = silhouetteColor;
-    fragData5 = vec4(outlineSize, 0.0, 0.0, 0.0);
+    fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
     fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
+    fragData7 = borderColor;
 
     gl_Position = mvp * vec4(vertPosition, 1.0);
 }

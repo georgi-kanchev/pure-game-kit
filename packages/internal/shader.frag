@@ -8,8 +8,9 @@ in vec4 fragData1; // colorAdjust1 (gamma, saturation, contrast, brightness)
 in vec4 fragData2; // rgbAdjust2 (roundness, pixelSize, blurX, blurY)
 in vec4 fragData3; // outlineColor RGBA
 in vec4 fragData4; // silhouetteColor RGBA
-in vec4 fragData5; // outlineSize
+in vec4 fragData5; // outlineSize + borderSize
 in vec4 fragData6; // tileColumns + tileRows + tileSize
+in vec4 fragData7; // borderColor RGBA
 
 out vec4 finalColor;
 
@@ -125,6 +126,45 @@ vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, floa
     vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
     return (coord + localUV) / atlasSizeInTiles;
 }
+vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float borderSize, vec4 borderColor) {
+    vec2 halfSize = texSize * 0.5;
+    vec2 pLocal = (uv - 0.5) * texSize;
+    
+    float maxRadius = min(halfSize.x, halfSize.y);
+    float radius = abs(roundness) * maxRadius;
+    
+    vec2 q = abs(pLocal) - halfSize + radius;
+    float dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
+    
+    if (roundness < 0.0) {
+        dShape = max(radius - length(max(q, 0.0)), max(abs(pLocal).x - halfSize.x, abs(pLocal).y - halfSize.y));
+    }
+    
+    float dEdge = dShape;
+    if (borderSize > 0.0) {
+        dEdge = dShape - borderSize;
+    } else if (borderSize < 0.0) {
+        dEdge = dShape + abs(borderSize);
+    }
+    
+    float af = fwidth(dShape) * 1.5;
+
+    float sShape = 1.0 - smoothstep(-af, af, dShape);
+    float sEdge  = 1.0 - smoothstep(-af, af, dEdge);
+
+    if (borderSize > 0.0) {
+        vec4 base = borderColor * sEdge;
+        vec4 top  = color * sShape;
+        return top + base * (1.0 - top.a);
+    } else if (borderSize < 0.0) {
+        vec4 base = color * sShape;
+        float innerEdge = smoothstep(-af, af, dEdge);
+        vec4 top = borderColor * innerEdge * sShape;
+        return top + base * (1.0 - top.a);
+    }
+    
+    return color * sShape;
+}
 
 void main() {
     vec2 texSize    = fragData0.xy;
@@ -141,76 +181,38 @@ void main() {
     vec4 silhouetteColor = fragData4;
 
     float outlineSize = fragData5.x;
+    float borderSize  = fragData5.y;
+    vec4  borderColor = fragData7;
 
     float tileColumns = fragData6.x;
     float tileRows    = fragData6.y;
     float tileSize    = fragData6.z;
-
+    
     // ========================================================================
 
     vec2 uv = fragTexCoord;
-
+    
     uv = compute_tile(uv, texSize, tileColumns, tileRows, tileSize, tileSize);
-    uv = compute_pixelated_uv(uv, texSize, pixelSize);
 
-    vec4 color = compute_blur(uv, texSize, blur);
-    color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
+    vec4 color;
+    if (objectType == 0) { // Shape: white fill, skip pixelate/blur
+        color = vec4(1.0);
+    } else { // Sprite / Text / Tilemap
+        uv = compute_pixelated_uv(uv, texSize, pixelSize);
+        color = compute_blur(uv, texSize, blur);
+    }
+
+    color = compute_sdf_shape(uv, texSize, color, roundness, borderSize, borderColor);
 
     if (color.a * fragColor.a < 0.004)
         discard;
 
-    color = compute_color_adjust(color, colorAdjust1);
-    color = compute_silhouette(color, silhouetteColor);
+    if (objectType != 0) {
+        color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
+        color = compute_color_adjust(color, colorAdjust1);
+        color = compute_silhouette(color, silhouetteColor);
+    }
     
     finalColor = color * fragColor;
     gl_FragDepth = depthZ;
 }
-
-// func shape(texCoord vec2, color vec4, custom vec4) vec4 {
-//     var width, height = color.r, color.g
-//     var fillColor = unpack(color.b)
-//     var roundness, outlineSize = custom.x, custom.z
-//     var outlineColor = unpack(custom.y)
-    
-//     var origin, size = imageSrc0Origin(), imageSrc0Size()
-//     var uv = (texCoord - origin) / size
-//     var halfSize = vec2(width, height) * 0.5
-//     var pLocal = (uv - 0.5) * vec2(width, height)
-    
-//     var maxRadius = min(halfSize.x, halfSize.y)
-//     var radius = abs(roundness) * maxRadius
-    
-//     var q = abs(pLocal) - halfSize + radius
-//     var dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius
-    
-//     if roundness < 0.0 {
-//         dShape = max(radius-length(max(q, 0.0)), max(abs(pLocal).x-halfSize.x, abs(pLocal).y-halfSize.y))
-//     }
-    
-//     var dEdge = dShape
-//     if outlineSize > 0.0 {
-//         dEdge = dShape - outlineSize 
-//     } else if outlineSize < 0.0 {
-//         dEdge = dShape + abs(outlineSize) 
-//     }
-    
-//     var af = 1.0 * Smoothing 
-    
-//     var sShape = 1.0 - smoothstep(-af, af, dShape)
-//     var sEdge = 1.0 - smoothstep(-af, af, dEdge)
-
-//     var finalFillColor = imageSrc0At(texCoord) * fillColor
-    
-//     if outlineSize > 0.0 {
-//         var baseMask = outlineColor * sEdge
-//         var topMask = finalFillColor * sShape
-//         return topMask + baseMask * (1.0 - topMask.a)
-//     } else if outlineSize < 0.0 {
-//         var baseMask = finalFillColor * sShape
-//         var innerEdgeMask = smoothstep(-af, af, dEdge) 
-//         var topMask = outlineColor * innerEdgeMask * sShape
-//         return topMask + baseMask * (1.0 - topMask.a)
-//     }
-    
-//     return finalFillColor * sShape
-// }
