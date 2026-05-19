@@ -101,7 +101,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		polygonBuf[i].U2 = packU2(uint16(tex.Width), uint16(tex.Height))
 		polygonBuf[i].V2 = packV2(eff.BorderColor)
 		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
-		polygonBuf[i].NY = packNormalY(1, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
+		polygonBuf[i].NY = packNormalY(0, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
 		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, int16(eff.BorderSize), 1)
 
 		if true { // sprite
@@ -128,19 +128,27 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 			}
 		} else {
 			var sinA, cosA = SinCos(ang)
+			var cx = ww + dst.Width/2
+			var cy = wh + dst.Height/2
 			for i := range 4 {
-				polygonBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
-				polygonBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
+				var rx = dx[i] - cx
+				var ry = dy[i] - cy
+				polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
+				polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
 				polygonBuf[i].U = uvs[i*2]
 				polygonBuf[i].V = uvs[i*2+1]
 			}
 		}
-		queueVertices(polygonBuf[:4], vCount, tex, col) // pass the buffer directly
+		queueVertices(polygonBuf[:4], vCount, tex, col)
 	} else { // CLIPPED PATH logic...
 		var sinA, cosA = SinCos(ang)
+		var cx = ww + dst.Width/2
+		var cy = wh + dst.Height/2
 		for i := range 4 {
-			polygonBuf[i].X = (dx[i]*cosA - dy[i]*sinA) + dst.X
-			polygonBuf[i].Y = (dx[i]*sinA + dy[i]*cosA) + dst.Y
+			var rx = dx[i] - cx
+			var ry = dy[i] - cy
+			polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
+			polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
 			polygonBuf[i].U = uvs[i*2]
 			polygonBuf[i].V = uvs[i*2+1]
 		}

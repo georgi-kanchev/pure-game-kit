@@ -189,10 +189,7 @@ void main() {
     
     // ========================================================================
 
-    vec2 uv = fragTexCoord;
-    
-    uv = compute_tile(uv, texSize, tileColumns, tileRows, tileSize, tileSize);
-
+    vec2 uv = compute_tile(fragTexCoord, texSize, tileColumns, tileRows, tileSize, tileSize);
     vec4 color;
     if (objectType == 0) { // Shape: white fill, skip pixelate/blur
         color = vec4(1.0);
