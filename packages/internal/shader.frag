@@ -144,21 +144,18 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
     float absBorder = abs(borderSize);
 
     if (absBorder > 0.0) {
-        float dEdge = dShape - borderSize;
-        if (borderSize > 0.0) { dEdge += af; } // fade border to 0 at quad edge
         float sShape = 1.0 - smoothstep(-af, af, dShape);
-        float sEdge  = 1.0 - smoothstep(-af, af, dEdge);
-
-        if (borderSize > 0.0) { // outer border
-            vec4 base = borderColor * sEdge;
-            vec4 top  = color * sShape;
-            return top + base * (1.0 - top.a);
-        } else { // inner border
-            vec4 base = color * sShape;
-            float innerEdge = smoothstep(-af, af, dEdge);
-            vec4 top = borderColor * innerEdge * sShape;
-            return top + base * (1.0 - top.a);
+        float sRing;
+        if (borderSize > 0.0) { // outer ring
+            float sOuter = 1.0 - smoothstep(-af, af, dShape - borderSize + af);
+            sRing = max(sOuter - sShape, 0.0);
+        } else { // inner ring
+            float sInner = 1.0 - smoothstep(-af, af, dShape + absBorder);
+            sRing = max(sShape - sInner, 0.0);
         }
+        vec4 fill = color * sShape;
+        vec4 ring = borderColor * sRing;
+        return ring + fill * (1.0 - ring.a);
     }
 
     float sShape = 1.0 - smoothstep(-af, af, dShape);
@@ -196,6 +193,7 @@ void main() {
     } else { // Sprite / Text / Tilemap
         uv = compute_pixelated_uv(uv, texSize, pixelSize);
         color = compute_blur(uv, texSize, blur);
+        color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
     }
 
     color = compute_sdf_shape(uv, texSize, color, roundness, borderSize, borderColor);
@@ -204,7 +202,6 @@ void main() {
         discard;
 
     if (objectType != 0) {
-        color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
         color = compute_color_adjust(color, colorAdjust1);
         color = compute_silhouette(color, silhouetteColor);
     }
