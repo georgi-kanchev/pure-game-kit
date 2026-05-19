@@ -25,8 +25,8 @@ func main() {
 	obj.Effects.BorderColor = palette.Green
 
 	for window.KeepOpen() {
-		var _ = (number.Sine(time.Running()) + 1) / 2
-		obj.Effects.BorderSize = 1
+		var loop = (number.Sine(time.Running()) + 1) / 2
+		obj.Effects.BorderSize = number.Map(loop, 0, 1, 0, 40)
 		view.DrawObjects(&obj)
 	}
 }
