@@ -23,7 +23,7 @@ func main() {
 
 	for window.KeepOpen() {
 		var _ = (number.Sine(time.Running()) + 1) / 2
-		obj.Effects.SilhouetteColor = palette.Green //byte(number.Map(loop, 0, 1, 0, 15))
+		obj.Effects.SilhouetteColor = palette.Red //byte(number.Map(loop, 0, 1, 0, 15))
 		view.DrawObjects(&obj)
 	}
 }

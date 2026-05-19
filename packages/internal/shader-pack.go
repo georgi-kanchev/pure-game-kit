@@ -47,7 +47,15 @@ func packU2(texWidth, texHeight uint16) float32 {
 	return pack24(w | h)
 }
 func packV2(borderColor uint) float32 {
-	return pack24(uint32(borderColor) & 0xFFFFFF)
+	return packColor24(borderColor)
+}
+
+func packColor24(c uint) float32 {
+	r := uint32(uint8(c>>24)>>2) << 18
+	g := uint32(uint8(c>>16)>>2) << 12
+	b := uint32(uint8(c>>8)>>2) << 6
+	a := uint32(uint8(c) >> 2)
+	return pack24(r | g | b | a)
 }
 
 //=================================================================
@@ -77,10 +85,10 @@ func packNormalZ(depthZ float32, borderSize uint16, objType uint8) float32 {
 //=================================================================
 
 func packTangentXSprite(outlineColor uint) float32 {
-	return pack24(uint32(outlineColor) & 0xFFFFFF)
+	return packColor24(outlineColor)
 }
 func packTangentYSprite(silhouetteColor uint) float32 {
-	return pack24(uint32(silhouetteColor) & 0xFFFFFF)
+	return packColor24(silhouetteColor)
 }
 func packTangentWSprite() float32 {
 	return 0 // tangent.w is free for sprites
@@ -89,10 +97,10 @@ func packTangentWSprite() float32 {
 //=================================================================
 
 func packTangentXTilemap(outlineColor uint) float32 {
-	return pack24(uint32(outlineColor) & 0xFFFFFF)
+	return packColor24(outlineColor)
 }
 func packTangentYTilemap(silhouetteColor uint) float32 {
-	return pack24(uint32(silhouetteColor) & 0xFFFFFF)
+	return packColor24(silhouetteColor)
 }
 func packTangentZTilemap(tileCols, tileRows uint16) float32 {
 	var c = uint32(tileCols&0xFFF) << 12 // bits 23-12
@@ -108,10 +116,10 @@ func packTangentWTilemap(outlineSize uint16, tileSize uint8) float32 {
 //=================================================================
 
 func packTangentXText(outlineColor uint) float32 {
-	return pack24(uint32(outlineColor) & 0xFFFFFF)
+	return packColor24(outlineColor)
 }
 func packTangentYText(shadowColor uint) float32 {
-	return pack24(uint32(shadowColor) & 0xFFFFFF)
+	return packColor24(shadowColor)
 }
 func packTangentZText(weight, outlineWeight, shadowWeight uint8) float32 {
 	var w = uint32(weight) << 16       // bits 23-16
