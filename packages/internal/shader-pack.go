@@ -5,12 +5,37 @@ import (
 	"pure-game-kit/packages/utility/number"
 )
 
-const TypeShape, TypeSprite, TypeText, TypeTilemap byte = 0, 1, 2, 3
+// texCoord2.x = TextureWidth(12) + TextureHeight(12)
+// texCoord2.y = BorderColor(6,6,6,6)
 
-// floatSafe sets bits 31-24 = 0x3F so the float32 exponent is always
-// in [0x7E, 0x7F] — a valid normal number, never denormal (0x00) or NaN (0xFF).
-// Without this, 24-bit data in bits 23-0 can create denormals when bit 23 = 0.
-const floatSafe = 0x3F000000
+// normal.x = Gamma(6) + Saturation(6) + Contrast(6) + Brightness(6)
+// normal.y = Roundness(10) + PixelSize(4) + BlurX(5) + BlurY(5)
+// normal.z = DepthZ(11) + BorderSize(11) + Type(2)
+
+// Shape:
+//  tangent = free
+
+// Sprite:
+//  tangent.x = OutlineColor(6,6,6,6)
+//  tangent.y = SilhouetteColor(6,6,6,6)
+//  tangent.z = OutlineSize(32)
+//  tangent.w = free
+
+// Tilemap:
+//  tangent.x = OutlineColor(6,6,6,6)
+//  tangent.y = SilhouetteColor(6,6,6,6)
+//  tangent.z = TileColumns(12) + TileRows(12)
+//  tangent.w = OutlineSize(16) + TileSize(8)
+
+// Text:
+//  tangent.x = OutlineColor(6,6,6,6)
+//  tangent.y = ShadowColor(6,6,6,6)
+//  tangent.z = Weight(8) + OutlineWeight(8) + ShadowWeight(8)
+//  tangent.w = TextShadowX(8) + TextShadowY(8) + ShadowBlur(8)
+
+const typeShape, typeSprite, typeText, typeTilemap byte = 0, 1, 2, 3
+
+const floatSafe = 0x3F000000 // required to preserve 24 bits correctly from the 32 bits
 
 func pack24(bits uint32) float32 {
 	return math.Float32frombits(floatSafe | bits)
