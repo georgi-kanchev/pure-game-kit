@@ -74,12 +74,35 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		eff = defaultEffects
 	}
 
+	if eff.BorderSize > 0 {
+		var padX = eff.BorderSize * (dst.Width / src.Width)
+		var padY = eff.BorderSize * (dst.Height / src.Height)
+		dx[0] -= padX
+		dx[1] -= padX
+		dx[2] += padX
+		dx[3] += padX
+		dy[0] -= padY
+		dy[3] -= padY
+		dy[1] += padY
+		dy[2] += padY
+		var padU = eff.BorderSize * invTexW
+		var padV = eff.BorderSize * invTexH
+		uvs[0] -= padU
+		uvs[2] -= padU
+		uvs[4] += padU
+		uvs[6] += padU
+		uvs[1] -= padV
+		uvs[7] -= padV
+		uvs[3] += padV
+		uvs[5] += padV
+	}
+
 	for i := range len(polygonBuf) {
 		polygonBuf[i].U2 = packU2(uint16(tex.Width), uint16(tex.Height))
 		polygonBuf[i].V2 = packV2(eff.BorderColor)
 		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 		polygonBuf[i].NY = packNormalY(1, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
-		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, uint16(eff.BorderSize), 1)
+		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, int16(eff.BorderSize), 1)
 
 		if true { // sprite
 			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)

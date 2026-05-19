@@ -38,7 +38,8 @@ vec2 unpack_12_12(float packedFloat) {
 void unpack_11_11_2(float packedFloat, out float depthZ, out float borderSize, out int objType) {
     uint bits = floatBitsToUint(packedFloat);
     depthZ     = float((bits >> 13u) & 0x7FFu) / 2047.0;
-    borderSize = float((bits >> 2u)  & 0x7FFu);
+    int rawB   = int((bits >> 2u) & 0x7FFu);
+    borderSize = float(rawB >= 1024 ? rawB - 2048 : rawB);
     objType    = int(bits & 0x3u);
 }
 void unpack_16_8(float packedFloat, out float outlineSize, out float tileSize) {

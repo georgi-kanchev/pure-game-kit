@@ -21,12 +21,12 @@ func main() {
 	var w, h = obj.ImageId.Size()
 	obj.Width, obj.Height = float32(w)*4, float32(h)*4
 
-	obj.Effects.BorderSize = -2
 	obj.Effects.BorderColor = palette.Red
+	obj.Angle = 5
 
 	for window.KeepOpen() {
-		var _ = (number.Sine(time.Running()) + 1) / 2
-		//byte(number.Map(loop, 0, 1, 0, 15))
+		var loop = (number.Sine(time.Running()) + 1) / 2
+		obj.Effects.BorderSize = number.Map(loop, 0, 1, 0, 40)
 		view.DrawObjects(&obj)
 	}
 }

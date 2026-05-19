@@ -129,40 +129,39 @@ vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, floa
 vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float borderSize, vec4 borderColor) {
     vec2 halfSize = texSize * 0.5;
     vec2 pLocal = (uv - 0.5) * texSize;
-    
+
     float maxRadius = min(halfSize.x, halfSize.y);
     float radius = abs(roundness) * maxRadius;
-    
+
     vec2 q = abs(pLocal) - halfSize + radius;
     float dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
-    
+
     if (roundness < 0.0) {
         dShape = max(radius - length(max(q, 0.0)), max(abs(pLocal).x - halfSize.x, abs(pLocal).y - halfSize.y));
     }
-    
-    float dEdge = dShape;
-    if (borderSize > 0.0) {
-        dEdge = dShape - borderSize;
-    } else if (borderSize < 0.0) {
-        dEdge = dShape + abs(borderSize);
-    }
-    
+
     float af = fwidth(dShape) * 1.5;
+    float absBorder = abs(borderSize);
+
+    if (absBorder > 0.0) {
+        float dEdge = dShape - borderSize;
+        if (borderSize > 0.0) { dEdge += af; } // fade border to 0 at quad edge
+        float sShape = 1.0 - smoothstep(-af, af, dShape);
+        float sEdge  = 1.0 - smoothstep(-af, af, dEdge);
+
+        if (borderSize > 0.0) { // outer border
+            vec4 base = borderColor * sEdge;
+            vec4 top  = color * sShape;
+            return top + base * (1.0 - top.a);
+        } else { // inner border
+            vec4 base = color * sShape;
+            float innerEdge = smoothstep(-af, af, dEdge);
+            vec4 top = borderColor * innerEdge * sShape;
+            return top + base * (1.0 - top.a);
+        }
+    }
 
     float sShape = 1.0 - smoothstep(-af, af, dShape);
-    float sEdge  = 1.0 - smoothstep(-af, af, dEdge);
-
-    if (borderSize > 0.0) {
-        vec4 base = borderColor * sEdge;
-        vec4 top  = color * sShape;
-        return top + base * (1.0 - top.a);
-    } else if (borderSize < 0.0) {
-        vec4 base = color * sShape;
-        float innerEdge = smoothstep(-af, af, dEdge);
-        vec4 top = borderColor * innerEdge * sShape;
-        return top + base * (1.0 - top.a);
-    }
-    
     return color * sShape;
 }
 
