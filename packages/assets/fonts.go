@@ -1,104 +1,34 @@
 package assets
 
 import (
+	_ "embed"
+
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/storage"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type FontId byte
-
-func LoadFont(size int, filePath string) string {
-	var _, has = internal.Fonts[filePath]
-	if has {
-		return filePath
-	}
-
-	if !file.Exists(filePath) {
-		debug.LogError("Failed to find font file: \"", filePath, "\"")
-		return ""
-	}
-
-	var bytes = file.LoadBytes(filePath)
-	var success = loadFont(filePath, size, bytes)
-
-	if !success {
-		debug.LogError("Failed to load font file: \"", filePath, "\"")
-		return ""
-	}
-	return filePath
-}
 
 func LoadFont2(pngPath string, xmlPath string) FontId {
 	if !file.Exists(pngPath) {
 		debug.LogError("Failed to find PNG file: \"", pngPath, "\"")
 		return 0
 	}
-	internal.Font2NextId++
-	var id = internal.Font2NextId
-	var fontData = &internal.FontData{}
+
+	var fontData = &internal.FontXML{}
 	storage.FromXML(file.LoadText(xmlPath), fontData)
-	var font = internal.Font{
-		AtlasId:  int32(LoadImage(pngPath)),
-		Chars:    make(map[rune]internal.Char),
-		Kernings: make(map[rune]internal.Kerning),
-	}
-
-	for _, char := range fontData.Chars.Chars {
-		font.Chars[char.ID] = char
-	}
-	for _, kern := range fontData.Kernings.Kernings {
-		font.Kernings[kern.First] = kern
-	}
-
-	internal.Fonts2[id] = font
-	return FontId(id)
+	var atlas = int32(LoadImage(pngPath))
+	var font = internal.LoadFont(fontData, atlas, false)
+	return FontId(font)
 }
 
-// private ========================================================
-
-const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const latinPlus = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßŒŠŽŁŃŚŹŻĆČĐŐŰàáâãäåæçèéêëìíîïñòóôõöøùúûüýþßœšžłńśźżćčđőűáéíóúüñãõçâêôÁÉÍÓÚÜÑÃÕÇÂÊÔßẞøØåÅþÞðÐœŒ"
-const digits = "0123456789⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞"
-const punct = " \t\n.,;:!?¡¿\"'()[]{}<>-/\\@#$€£%^&*_+=|~`…•™§©®°" + "–—‑′″‰ˆ˜“”‘’"
-const greek = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ" + "αβγδεζηθικλμνξοπρστυφχψω" + "ς"
-const cyrillic = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ" + "абвгдеёжзийклмнопрстуфхцчшщъыьэюя" + "ҐЄІЇґєії"
-const georgian = "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
-const armenian = "ԱԲԳԴԵԶԷԸԹԺԻԼԽԾԿՀՁՂՃՄՅՆՇՈՉՊՋՌՍՎՏՐՑՒՓՔՕՖ" + "աբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ"
-const currencies = "$€£₴₽₲₵₡₢₣₤₥₦₧₨₩₪₫₭₮₯₰₱₲₳₴₸₺₼₽¢"
-const extra = "ºª«»¶±×÷=≠<>≤≥∞∑∏√∫∆∂∇≈≡∈∉∪∩∧∨¬⇒⇔∀∃⊂⊆∅←↑→↓↔↕♠♥♦♣☺☹░▒▓│┤╡╢╖╕╣║╗╝┐└┴┬├─┼ˉ˙·"
-const all = punct + extra + currencies + digits + latin + latinPlus + cyrillic + greek + georgian + armenian
-
-func loadFont(id string, size int, bytes []byte) bool {
-	var characters = uniqueRunes(all)
-	var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
-	var recs = make([]*rl.Rectangle, len(glyphs))
-	var atlas = rl.GenImageFontAtlas(glyphs, recs, int32(size), 0, 1)
-	var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(glyphs)), Chars: &glyphs[0], Recs: recs[0]}
-
-	font.Texture = rl.LoadTextureFromImage(&atlas)
-	rl.UnloadImage(&atlas)
-	rl.SetTextureFilter(font.Texture, rl.FilterBilinear)
-
-	if font.BaseSize != 0 {
-		internal.Fonts[id] = font
+func (f FontId) UnloadFont() {
+	var font, has = internal.Fonts[byte(f)]
+	if !has {
+		return
 	}
-
-	return font.BaseSize != 0
-}
-
-func uniqueRunes(str string) []rune {
-	var seen = make(map[rune]bool)
-	var unique []rune
-
-	for _, r := range str {
-		if !seen[r] {
-			seen[r] = true
-			unique = append(unique, r)
-		}
-	}
-	return unique
+	ImageId(font.AtlasId).UnloadImage()
+	delete(internal.Fonts, byte(f))
 }

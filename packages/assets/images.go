@@ -27,6 +27,7 @@ func LoadImage(imagePath string) ImageId {
 	internal.Images[int32(id)] = internal.ImageData{Texture: texture, CropWidth: w, CropHeight: h}
 	return ImageId(id)
 }
+
 func (i ImageId) UnloadImage() {
 	if i == 0 {
 		return
@@ -35,7 +36,6 @@ func (i ImageId) UnloadImage() {
 	rl.UnloadTexture(img.Texture)
 	delete(internal.Images, int32(i))
 }
-
 func (i ImageId) SetSmoothness(smooth bool) {
 	if i == 0 {
 		return
@@ -49,7 +49,6 @@ func (i ImageId) SetSmoothness(smooth bool) {
 		rl.SetTextureFilter(img.Texture, rl.FilterPoint)
 	}
 }
-
 func (i ImageId) Size() (width, height int) {
 	var img, has = internal.Images[int32(i)]
 	if i == 0 || !has {

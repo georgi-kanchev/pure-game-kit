@@ -5,6 +5,8 @@ import (
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type View struct {
@@ -141,6 +143,30 @@ func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	var sx, sy, sw, sh = v.area()
 	var scrX, scrY = sx + sw*edgeX, sy + sh*edgeY
 	return v.PointFromScreen(scrX, scrY)
+}
+
+//=================================================================
+
+func (v *View) DrawObjects(objects ...*Object) {
+	for _, o := range objects {
+		if o == nil || !v.IsAreaVisible(o.Bounds()) {
+			continue
+		}
+
+		var tex = internal.Images[int32(o.ImageId)]
+		var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+		var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
+		var eff *internal.Effects
+		if o.Effects != nil {
+			eff = (*internal.Effects)(o.Effects)
+		}
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff)
+
+		o.tryRegenerateText()
+		// for _, s := range t.chars {
+
+		// }
+	}
 }
 
 // private ========================================================

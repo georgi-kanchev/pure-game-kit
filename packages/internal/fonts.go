@@ -1,6 +1,7 @@
 package internal
 
 import (
+	_ "embed"
 	"encoding/xml"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -30,7 +31,7 @@ type Kerning struct {
 	Second rune `xml:"second,attr"`
 	Amount int  `xml:"amount,attr"`
 }
-type FontData struct {
+type FontXML struct {
 	XMLName xml.Name `xml:"font"`
 
 	Info struct {
@@ -82,7 +83,59 @@ type FontData struct {
 	} `xml:"kernings"`
 }
 
-var Fonts = make(map[string]rl.Font)
+var Fonts = make(map[byte]Font) // 0 = default
+var FontNextId byte
 
-var Fonts2 = make(map[byte]Font) // 0 = default
-var Font2NextId byte
+func LoadFont(fontData *FontXML, imageId int32, isDefault bool) byte {
+	if !isDefault {
+		FontNextId++
+	}
+	var id = FontNextId
+	var font = Font{AtlasId: imageId, Chars: make(map[rune]Char), Kernings: make(map[rune]Kerning)}
+
+	for _, char := range fontData.Chars.Chars {
+		font.Chars[char.ID] = char
+	}
+	for _, kern := range fontData.Kernings.Kernings {
+		font.Kernings[kern.First] = kern
+	}
+
+	Fonts[id] = font
+	return id
+}
+
+// private ========================================================
+
+//go:embed font.ttf.gz
+var defaultFont []byte
+
+const punct = " \t\n.,;:!?¡¿\"'()[]{}<>-/\\@#$€£%^&*_+=|~`"
+const extra = "…•™§©®°–—‑′″‰ˆ˜“”‘’ºª«»¶±×÷≠≤≥∞∑∏√∫∆∂∇≈≡∈∉∪∩∧∨¬⇒⇔∀∃⊂⊆∅←↑→↓↔↕♠♥♦♣☺☹░▒▓│┤╡╢╖╕╣║╗╝┐└┴┬├─┼ˉ˙·"
+const currencies = "₴₽₲₵₡₢₣₤₥₦₧₨₩₪₫₭₮₯₰₱₳₸₺₼¢"
+const digits = "0123456789⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞"
+const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const latinPlus = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßŒŠŽŁŃŚŹŻĆČĐŐŰàáâãäåæçèéêëìíîïñòóôõöøùúûüýþœšžłńśźżćčđőűẞðÐ"
+const cyrillic = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюяҐЄІЇґєії"
+const greek = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψως"
+const georgian = "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
+const armenian = "ԱԲԳԴԵԶԷԸԹԺԻԼԽԾԿՀՁՂՃՄՅՆՇՈՉՊՋՌՍՎՏՐՑՒՓՔՕՖաբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ"
+
+const all = punct + extra + currencies + digits + latin + latinPlus + cyrillic + greek + georgian + armenian
+
+func loadFont(id string, size int, bytes []byte) bool {
+	var characters = []rune(all)
+	var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
+	var recs = make([]*rl.Rectangle, len(glyphs))
+	var atlas = rl.GenImageFontAtlas(glyphs, recs, int32(size), 0, 1)
+	var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(glyphs)), Chars: &glyphs[0], Recs: recs[0]}
+
+	font.Texture = rl.LoadTextureFromImage(&atlas)
+	rl.UnloadImage(&atlas)
+	rl.SetTextureFilter(font.Texture, rl.FilterBilinear)
+
+	// if font.BaseSize != 0 {
+	// 	internal.Fonts[id] = font
+	// }
+
+	return font.BaseSize != 0
+}

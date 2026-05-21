@@ -80,6 +80,7 @@ func Init() {
 		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
 		sineTable[i] = float32(math.Sin(rad))
 	}
+
 }
 func UpdateWindowData() {
 	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()

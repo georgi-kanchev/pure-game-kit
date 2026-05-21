@@ -7,11 +7,13 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+type TileLayerId uint16
+
 func LoadTileSet(imagePath string, tileWidth, tileHeight int) string {
-	// var textureId = LoadImage(imagePath)
-	// var atlas = &internal.TileSet{ImageId: int32(textureId), TileWidth: tileWidth, TileHeight: tileHeight,
+	// var imageId = LoadImage(imagePath)
+	// var atlas = &internal.TileSet{ImageId: int32(imageId), TileWidth: tileWidth, TileHeight: tileHeight,
 	// 	PointsPerTile: make(map[uint16][]float32)}
-	// internal.TileSets[textureId] = atlas
+	// internal.TileSets[imageId] = atlas
 	return ""
 }
 func LoadTileData(id string, columns, rows int) string {

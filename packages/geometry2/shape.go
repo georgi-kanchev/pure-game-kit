@@ -9,35 +9,24 @@ import (
 
 type Shape struct{ X, Y, Width, Height, Angle, Roundness float32 }
 
-// NewPoint creates a Shape with zero dimensions.
 func NewPoint(x, y float32) Shape {
 	return Shape{X: x, Y: y}
 }
-
-// NewCircle creates a square shape with maximum roundness.
 func NewCircle(x, y, radius float32) Shape {
 	return Shape{X: x, Y: y, Width: radius * 2, Height: radius * 2, Roundness: 1.0}
 }
-
-// NewRectangle creates a standard rectangle with no rounded corners.
 func NewRectangle(x, y, width, height, angle float32) Shape {
 	return Shape{X: x, Y: y, Width: width, Height: height, Angle: angle}
 }
-
-// NewRoundedRectangle creates a rectangle with a specific rounding factor (0 to 1).
 func NewRoundedRectangle(x, y, width, height, angle, roundness float32) Shape {
 	return Shape{X: x, Y: y, Width: width, Height: height, Angle: angle, Roundness: roundness}
 }
-
-// NewCapsule creates a capsule where (x1, y1) and (x2, y2) are the center points of the circular end-caps.
 func NewCapsule(x1, y1, x2, y2, radius float32) Shape {
 	var dist = point.DistanceToPoint(x1, y1, x2, y2)
 	var ang = angle.BetweenPoints(x1, y1, x2, y2)
 	var midX, midY = point.MoveAtAngle(x1, y1, ang, dist*0.5)
 	return Shape{X: midX, Y: midY, Width: dist + (radius * 2), Height: radius * 2, Angle: ang, Roundness: 1.0}
 }
-
-// NewLine creates a line segment of a specific thickness.
 func NewLine(x1, y1, x2, y2, thickness float32) Shape {
 	var dist = point.DistanceToPoint(x1, y1, x2, y2)
 	var ang = angle.BetweenPoints(x1, y1, x2, y2)

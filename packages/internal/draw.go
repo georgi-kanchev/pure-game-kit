@@ -35,7 +35,10 @@ type Effects struct {
 
 	OutlineColor, BorderColor, SilhouetteColor uint
 
-	DepthZ float32 // Requires semi-transparent pixels to be drawn last. Fully opaque pixels work in any sorting.
+	// Ranged 0..1.
+	//
+	// Requires semi-transparent pixels to be drawn last to avoid artifacts. Fully opaque/transparent pixels work in any sorting.
+	DepthZ float32
 }
 
 var DefaultMaterial rl.Material

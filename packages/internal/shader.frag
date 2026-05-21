@@ -220,6 +220,65 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
 //     return vec4(finalRGB, finalAlpha);
 // }
 
+
+
+
+
+// vec4 compute_sdf_text(vec2 uv) {
+//     uvec4 c = uvec4(fragColor * 255.0 + 0.5);
+//     vec4 base = unpackRGB222(c.r);
+//     vec4 outlineColor = unpackRGB222(c.g);
+//     vec4 shadowColor = unpackRGB222(c.b);
+    
+//     uint thickIdx = (c.a >> 6) & 0x03u;
+//     uint outlIdx = (c.a >> 4) & 0x03u;
+//     uint shadIdx = (c.a >> 2) & 0x03u;
+//     uint smoothIdx = (c.a) & 0x03u;
+    
+//     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
+//     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
+    
+//     // --- SHADOW CALCULATION WITH CORNER DETECTOR ---
+//     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
+//     float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
+    
+//     float sDx = dFdx(shadowDistance);
+//     float sDy = dFdy(shadowDistance);
+//     // Detects non-sloped edges for the shadow. Keeps division safe from zero.
+//     float shadowEdgeSharpness = 1.0 / max(0.001, abs(sDx) + abs(sDy)); 
+    
+//     // Fall back to your original smooths scaling, but multiply by the directional sharpness modifier
+//     float shadowSmooth = smooths[smoothIdx] * length(vec2(sDx, sDy)) * (1.0 / shadowEdgeSharpness);
+//     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
+    
+//     // --- BASE & OUTLINE CALCULATION WITH CORNER DETECTOR ---
+//     float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
+    
+//     float dNx = dFdx(distance);
+//     float dNy = dFdy(distance);
+//     // Detects non-sloped horizontal/vertical edges for the main text and outline
+//     float baseEdgeSharpness = 1.0 / max(0.001, abs(dNx) + abs(dNy));
+    
+//     // We scale your baseSmooth down aggressively when approaching non-sloped axis lines
+//     float baseSmooth = 0.5 * length(vec2(dNx, dNy)) * (1.0 / baseEdgeSharpness);
+    
+//     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
+    
+//     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
+//     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
+//     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
+    
+//     // --- FINAL COLOR MIXING (Unchanged logic) ---
+//     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
+//     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
+//     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
+    
+//     vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
+//     float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
+    
+//     return vec4(finalRGB, finalAlpha);
+// }
+
 void main() {
     vec2 texSize    = fragData0.xy;
     float depthZ    = fragData0.z;
