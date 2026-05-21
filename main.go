@@ -11,6 +11,9 @@ func main() {
 	var view = graphics.NewView(1)
 	var obj = graphics.NewImage(0, 0, assets.LoadImage("examples/data/flail.PNG"))
 
+	var font = assets.LoadFont("font.png", "font.json")
+	obj.TextFontId = font
+
 	obj.Width *= 4
 	obj.Height *= 4
 	for window.KeepOpen() {

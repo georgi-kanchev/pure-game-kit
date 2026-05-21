@@ -11,14 +11,14 @@ import (
 
 type FontId byte
 
-func LoadFont2(pngPath string, xmlPath string) FontId {
+func LoadFont(pngPath string, jsonPath string) FontId {
 	if !file.Exists(pngPath) {
 		debug.LogError("Failed to find PNG file: \"", pngPath, "\"")
 		return 0
 	}
 
-	var fontData = &internal.FontXML{}
-	storage.FromXML(file.LoadText(xmlPath), fontData)
+	var fontData = &internal.FontJSON{}
+	storage.FromJSON(file.LoadText(jsonPath), fontData)
 	var atlas = int32(LoadImage(pngPath))
 	var font = internal.LoadFont(fontData, atlas, false)
 	return FontId(font)

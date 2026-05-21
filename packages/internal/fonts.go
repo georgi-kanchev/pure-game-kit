@@ -2,140 +2,69 @@ package internal
 
 import (
 	_ "embed"
-	"encoding/xml"
-
-	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type Font struct {
 	AtlasId  int32 // see assets.ImageId
-	Chars    map[rune]Char
+	Chars    map[rune]Glyph
 	Kernings map[rune]Kerning
 }
-type Char struct {
-	ID       rune   `xml:"id,attr"`
-	Index    int    `xml:"index,attr"`
-	Char     string `xml:"char,attr"`
-	Width    int    `xml:"width,attr"`
-	Height   int    `xml:"height,attr"`
-	XOffset  int    `xml:"xoffset,attr"`
-	YOffset  int    `xml:"yoffset,attr"`
-	XAdvance int    `xml:"xadvance,attr"`
-	Chnl     int    `xml:"chnl,attr"`
-	X        int    `xml:"x,attr"`
-	Y        int    `xml:"y,attr"`
-	Page     int    `xml:"page,attr"`
+type FontJSON struct {
+	Atlas struct {
+		Type                string  `json:"type"` // "psdf", "msdf" etc
+		DistanceRange       float64 `json:"distanceRange"`
+		DistanceRangeMiddle float64 `json:"distanceRangeMiddle"`
+		Size                float64 `json:"size"`
+		Width               int     `json:"width"`
+		Height              int     `json:"height"`
+		YOrigin             string  `json:"yOrigin"` // "bottom", "top" etc
+	} `json:"atlas"`
+	Metrics struct {
+		EmSize             float64 `json:"emSize"`
+		LineHeight         float64 `json:"lineHeight"`
+		Ascender           float64 `json:"ascender"`
+		Descender          float64 `json:"descender"`
+		UnderlineY         float64 `json:"underlineY"`
+		UnderlineThickness float64 `json:"underlineThickness"`
+	} `json:"metrics"`
+	Glyphs   []Glyph   `json:"glyphs"`
+	Kernings []Kerning `json:"kerning"`
+}
+type Bounds struct {
+	Left   float64 `json:"left"`
+	Bottom float64 `json:"bottom"`
+	Right  float64 `json:"right"`
+	Top    float64 `json:"top"`
+}
+type Glyph struct {
+	Unicode     rune    `json:"unicode"`
+	Advance     float64 `json:"advance"`
+	PlaneBounds Bounds  `json:"planeBounds"`
+	AtlasBounds Bounds  `json:"atlasBounds"`
 }
 type Kerning struct {
-	First  rune `xml:"first,attr"`
-	Second rune `xml:"second,attr"`
-	Amount int  `xml:"amount,attr"`
-}
-type FontXML struct {
-	XMLName xml.Name `xml:"font"`
-
-	Info struct {
-		Face     string `xml:"face,attr"`
-		Size     int    `xml:"size,attr"`
-		Bold     int    `xml:"bold,attr"`
-		Italic   int    `xml:"italic,attr"`
-		Charset  string `xml:"charset,attr"`
-		Unicode  int    `xml:"unicode,attr"`
-		StretchH int    `xml:"stretchH,attr"`
-		Smooth   int    `xml:"smooth,attr"`
-		AA       int    `xml:"aa,attr"`
-		Padding  string `xml:"padding,attr"`
-		Spacing  string `xml:"spacing,attr"`
-		Outline  int    `xml:"outline,attr"`
-	} `xml:"info"`
-
-	Common struct {
-		LineHeight int `xml:"lineHeight,attr"`
-		Base       int `xml:"base,attr"`
-		ScaleW     int `xml:"scaleW,attr"`
-		ScaleH     int `xml:"scaleH,attr"`
-		Pages      int `xml:"pages,attr"`
-		Packed     int `xml:"packed,attr"`
-		AlphaChnl  int `xml:"alphaChnl,attr"`
-		RedChnl    int `xml:"redChnl,attr"`
-		GreenChnl  int `xml:"greenChnl,attr"`
-		BlueChnl   int `xml:"blueChnl,attr"`
-	} `xml:"common"`
-
-	Pages []struct {
-		ID   int    `xml:"id,attr"`
-		File string `xml:"file,attr"`
-	} `xml:"pages>page"`
-
-	DistanceField struct {
-		FieldType     string `xml:"fieldType,attr"`
-		DistanceRange int    `xml:"distanceRange,attr"`
-	} `xml:"distanceField"`
-
-	Chars struct {
-		Count int    `xml:"count,attr"`
-		Chars []Char `xml:"char"`
-	} `xml:"chars"`
-
-	Kernings struct {
-		Count    int       `xml:"count,attr"`
-		Kernings []Kerning `xml:"kerning"`
-	} `xml:"kernings"`
+	Unicode1 rune    `json:"unicode1"`
+	Unicode2 rune    `json:"unicode2"`
+	Advance  float64 `json:"advance"`
 }
 
 var Fonts = make(map[byte]Font) // 0 = default
 var FontNextId byte
 
-func LoadFont(fontData *FontXML, imageId int32, isDefault bool) byte {
+func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) byte {
 	if !isDefault {
 		FontNextId++
 	}
 	var id = FontNextId
-	var font = Font{AtlasId: imageId, Chars: make(map[rune]Char), Kernings: make(map[rune]Kerning)}
+	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph), Kernings: make(map[rune]Kerning)}
 
-	for _, char := range fontData.Chars.Chars {
-		font.Chars[char.ID] = char
+	for _, glyph := range fontData.Glyphs {
+		font.Chars[glyph.Unicode] = glyph
 	}
-	for _, kern := range fontData.Kernings.Kernings {
-		font.Kernings[kern.First] = kern
+	for _, kern := range fontData.Kernings {
+		font.Kernings[kern.Unicode1] = kern
 	}
 
 	Fonts[id] = font
 	return id
-}
-
-// private ========================================================
-
-//go:embed font.ttf.gz
-var defaultFont []byte
-
-const punct = " \t\n.,;:!?¡¿\"'()[]{}<>-/\\@#$€£%^&*_+=|~`"
-const extra = "…•™§©®°–—‑′″‰ˆ˜“”‘’ºª«»¶±×÷≠≤≥∞∑∏√∫∆∂∇≈≡∈∉∪∩∧∨¬⇒⇔∀∃⊂⊆∅←↑→↓↔↕♠♥♦♣☺☹░▒▓│┤╡╢╖╕╣║╗╝┐└┴┬├─┼ˉ˙·"
-const currencies = "₴₽₲₵₡₢₣₤₥₦₧₨₩₪₫₭₮₯₰₱₳₸₺₼¢"
-const digits = "0123456789⁰¹²³⁴⁵⁶⁷⁸⁹₀₁₂₃₄₅₆₇₈₉¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞"
-const latin = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const latinPlus = "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßŒŠŽŁŃŚŹŻĆČĐŐŰàáâãäåæçèéêëìíîïñòóôõöøùúûüýþœšžłńśźżćčđőűẞðÐ"
-const cyrillic = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюяҐЄІЇґєії"
-const greek = "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψως"
-const georgian = "აბგდევზთიკლმნოპჟრსტუფქღყშჩცძწჭხჯჰ"
-const armenian = "ԱԲԳԴԵԶԷԸԹԺԻԼԽԾԿՀՁՂՃՄՅՆՇՈՉՊՋՌՍՎՏՐՑՒՓՔՕՖաբգդեզէըթժիլխծկհձղճմյնշոչպջռսվտրցւփքօֆ"
-
-const all = punct + extra + currencies + digits + latin + latinPlus + cyrillic + greek + georgian + armenian
-
-func loadFont(id string, size int, bytes []byte) bool {
-	var characters = []rune(all)
-	var glyphs = rl.LoadFontData(bytes, int32(size), characters, int32(len(characters)), rl.FontSdf)
-	var recs = make([]*rl.Rectangle, len(glyphs))
-	var atlas = rl.GenImageFontAtlas(glyphs, recs, int32(size), 0, 1)
-	var font = rl.Font{BaseSize: int32(size), CharsCount: int32(len(glyphs)), Chars: &glyphs[0], Recs: recs[0]}
-
-	font.Texture = rl.LoadTextureFromImage(&atlas)
-	rl.UnloadImage(&atlas)
-	rl.SetTextureFilter(font.Texture, rl.FilterBilinear)
-
-	// if font.BaseSize != 0 {
-	// 	internal.Fonts[id] = font
-	// }
-
-	return font.BaseSize != 0
 }

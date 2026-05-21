@@ -25,7 +25,7 @@ uniform float u[1];
 float map(float value, float min1, float max1, float min2, float max2) {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
-float calc_shape_sdf(vec2 pLocal, vec2 halfExtents, float r, float roundness) {
+float shape_sdf(vec2 pLocal, vec2 halfExtents, float r, float roundness) {
     vec2 q = abs(pLocal) - halfExtents + r;
     float dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
     
@@ -34,6 +34,9 @@ float calc_shape_sdf(vec2 pLocal, vec2 halfExtents, float r, float roundness) {
         dShape = max(r - length(max(q, 0.0)), max(abs(pLocal).x - halfExtents.x, abs(pLocal).y - halfExtents.y));
     }
     return dShape;
+}
+float median(vec3 rgb) {
+    return max(min(rgb.r, rgb.g), min(max(rgb.r, rgb.g), rgb.b));
 }
 
 vec2 compute_pixelated_uv(vec2 uv, vec2 texSize, float pixelSize) {
@@ -146,7 +149,7 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
     float radius = abs(roundness) * maxRadius;
     
     // Base shape SDF
-    float dShape = calc_shape_sdf(pLocal, halfSize, radius, roundness);
+    float dShape = shape_sdf(pLocal, halfSize, radius, roundness);
     
     // Calculate anti-aliasing factor
     float af = fwidth(dShape) * 1.5;
@@ -160,7 +163,7 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
             // OUTER RING: Generate a larger shape that scales its corner radius to match the same roundness ratio
             vec2 outerSize = halfSize + absBorder;
             float outerRadius = abs(roundness) * min(outerSize.x, outerSize.y);
-            float dOuter = calc_shape_sdf(pLocal, outerSize, outerRadius, roundness);
+            float dOuter = shape_sdf(pLocal, outerSize, outerRadius, roundness);
             
             float sOuter = 1.0 - smoothstep(-af, af, dOuter);
             sRing = max(sOuter - sShape, 0.0);
@@ -169,7 +172,7 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
             // INNER RING: Generate a smaller shape
             vec2 innerSize = max(halfSize - absBorder, vec2(0.0));
             float innerRadius = abs(roundness) * min(innerSize.x, innerSize.y);
-            float dInner = calc_shape_sdf(pLocal, innerSize, innerRadius, roundness);
+            float dInner = shape_sdf(pLocal, innerSize, innerRadius, roundness);
             
             float sInner = 1.0 - smoothstep(-af, af, dInner);
             sRing = max(sShape - sInner, 0.0);
@@ -183,7 +186,9 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
     float sShape = 1.0 - smoothstep(-af, af, dShape);
     return color * sShape;
 }
-// vec4 compute_sdf_text(vec2 uv) {
+
+// vec4 compute_msdf_text(vec2 uv) {
+//     // 1. Unpack styling data from vertex attributes (Preserved from your original)
 //     uvec4 c = uvec4(fragColor * 255.0 + 0.5);
 //     vec4 base = unpackRGB222(c.r);
 //     vec4 outlineColor = unpackRGB222(c.g);
@@ -197,78 +202,29 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
 //     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
 //     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
     
+//     // 2. MSDF Shadow Processing
 //     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
-//     float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
+//     // CHANGED: Sample RGB and extract median instead of using .a
+//     float shadowSample = median(texture(texture0, uv - shadowOffset).rgb);
+//     float shadowDistance = shadowSample - (1.0 - thick[shadIdx]);
+    
 //     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
 //     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
     
-//     float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
+//     // 3. MSDF Base Text Processing
+//     // CHANGED: Sample RGB and extract median instead of using .a
+//     float baseSample = median(texture(texture0, uv).rgb);
+//     float distance = baseSample - (1.0 - thick[thickIdx]);
+    
 //     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
 //     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
     
+//     // 4. Outline Processing (Preserved)
 //     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
 //     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
 //     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
     
-//     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
-//     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
-//     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
-    
-//     vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
-//     float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
-    
-//     return vec4(finalRGB, finalAlpha);
-// }
-
-
-
-
-
-// vec4 compute_sdf_text(vec2 uv) {
-//     uvec4 c = uvec4(fragColor * 255.0 + 0.5);
-//     vec4 base = unpackRGB222(c.r);
-//     vec4 outlineColor = unpackRGB222(c.g);
-//     vec4 shadowColor = unpackRGB222(c.b);
-    
-//     uint thickIdx = (c.a >> 6) & 0x03u;
-//     uint outlIdx = (c.a >> 4) & 0x03u;
-//     uint shadIdx = (c.a >> 2) & 0x03u;
-//     uint smoothIdx = (c.a) & 0x03u;
-    
-//     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
-//     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
-    
-//     // --- SHADOW CALCULATION WITH CORNER DETECTOR ---
-//     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
-//     float shadowDistance = texture(texture0, uv - shadowOffset).a - (1.0 - thick[shadIdx]);
-    
-//     float sDx = dFdx(shadowDistance);
-//     float sDy = dFdy(shadowDistance);
-//     // Detects non-sloped edges for the shadow. Keeps division safe from zero.
-//     float shadowEdgeSharpness = 1.0 / max(0.001, abs(sDx) + abs(sDy)); 
-    
-//     // Fall back to your original smooths scaling, but multiply by the directional sharpness modifier
-//     float shadowSmooth = smooths[smoothIdx] * length(vec2(sDx, sDy)) * (1.0 / shadowEdgeSharpness);
-//     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
-    
-//     // --- BASE & OUTLINE CALCULATION WITH CORNER DETECTOR ---
-//     float distance = texture(texture0, uv).a - (1.0 - thick[thickIdx]);
-    
-//     float dNx = dFdx(distance);
-//     float dNy = dFdy(distance);
-//     // Detects non-sloped horizontal/vertical edges for the main text and outline
-//     float baseEdgeSharpness = 1.0 / max(0.001, abs(dNx) + abs(dNy));
-    
-//     // We scale your baseSmooth down aggressively when approaching non-sloped axis lines
-//     float baseSmooth = 0.5 * length(vec2(dNx, dNy)) * (1.0 / baseEdgeSharpness);
-    
-//     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
-    
-//     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
-//     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
-//     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
-    
-//     // --- FINAL COLOR MIXING (Unchanged logic) ---
+//     // 5. Color Blending and Composition (Preserved)
 //     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
 //     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
 //     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
