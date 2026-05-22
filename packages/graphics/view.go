@@ -1,7 +1,6 @@
 package graphics
 
 import (
-	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
@@ -166,55 +165,42 @@ func (v *View) DrawObjects(objects ...*Object) {
 			eff = (*internal.Effects)(o.Effects)
 		}
 		var kind byte
-		var textData = internal.TextDraw{ShadowColor: o.TextShadowColor, Weight: o.TextWeight,
-			ShadowBlur: byte(o.TextShadowBlur), ShadowX: int8(o.TextShadowOffsetX), ShadowY: int8(o.TextShadowOffsetY)}
 		if o.charValue != 0 {
 			kind = 2 // text
 		} else if o.ImageId != 0 {
 			kind = 1 // sprite
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, kind, textData)
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, kind, internal.TextDraw{})
 
 		if o.Text != "" {
 			var fontData = internal.Fonts[byte(o.TextFontId)]
-			chars = chars[:0]
+			var tex = internal.Images[fontData.AtlasId].Texture
 			var x, y = o.X, o.Y
+			var scale = o.TextLineHeight
+			var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
+			var sb, sc = o.TextShadowBlur, o.TextShadowColor
+			var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
 			for _, r := range o.Text {
-				var char = fontData.Chars[r]
+				var glyph = fontData.Chars[r]
 				if r == ' ' {
-					x += o.TextLineHeight / 2
+					x += o.TextLineHeight / 3
 					continue
 				}
 
-				var dst = char.PlaneBounds
-				var symbol = NewImage(0, 0, 0)
-				var src = char.AtlasBounds
-				var srcW, srcH = float32(src.Right - src.Left), float32(src.Bottom - src.Top)
-				symbol.Width = float32(dst.Right-dst.Left) * o.TextLineHeight
-				symbol.Height = float32(dst.Top-dst.Bottom) * o.TextLineHeight
-				symbol.X = x + (float32(dst.Left) * o.TextLineHeight) + symbol.Width/2
-				symbol.Y = y + float32(dst.Top)*o.TextLineHeight + symbol.Height/2
-				symbol.ImageCropArea = Area{X: float32(src.Left), Y: float32(src.Top), Width: srcW, Height: srcH}
-				symbol.ImageId = assets.ImageId(fontData.AtlasId)
-				symbol.charValue = r
-				symbol.Color = o.TextColor
-				symbol.TextColor = o.TextColor
-				symbol.TextShadowColor = o.TextShadowColor
-				symbol.TextWeight = o.TextWeight
-				x += float32(char.Advance) * o.TextLineHeight
-
-				chars = append(chars, symbol)
-			}
-			for _, c := range chars {
-				v.DrawObjects(&c)
+				var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
+				var srcW, srcH = float32(atlas.Right - atlas.Left), float32(atlas.Bottom - atlas.Top)
+				var dstX, dstY = x + (float32(plane.Left) * scale), y + float32(plane.Top)*scale
+				var dstW, dstH = float32(plane.Right-plane.Left) * scale, float32(plane.Top-plane.Bottom) * scale
+				var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
+				var src = rl.NewRectangle(float32(atlas.Left), float32(atlas.Top), srcW, srcH)
+				internal.QueueTexture(tex, src, dst, 0, getColor(o.TextColor), internal.Area(o.Mask), nil, 2, textData)
+				x += float32(glyph.Advance) * scale
 			}
 		}
 	}
 }
 
 // private ========================================================
-
-var chars []Object
 
 func (v *View) area() (x, y, w, h float32) {
 	if v.Area == (Area{}) {

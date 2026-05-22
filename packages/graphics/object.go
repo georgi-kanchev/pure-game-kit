@@ -29,9 +29,8 @@ type Object struct {
 
 	TextWordWrap, TextUnderline, TextCrossout bool
 
-	TextWeight byte
-	TextShadowSize, TextShadowBlur,
-	TextShadowOffsetX, TextShadowOffsetY float32
+	TextWeight, TextShadowSize, TextShadowBlur byte
+	TextShadowOffsetX, TextShadowOffsetY       int8
 
 	TextColor, TextBackColor, TextShadowColor uint
 
