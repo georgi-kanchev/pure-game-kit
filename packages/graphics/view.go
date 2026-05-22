@@ -166,42 +166,43 @@ func (v *View) DrawObjects(objects ...*Object) {
 			eff = (*internal.Effects)(o.Effects)
 		}
 		var kind byte
+		var textData = internal.TextDraw{ShadowColor: o.TextShadowColor, Weight: o.TextWeight,
+			ShadowBlur: byte(o.TextShadowBlur), ShadowX: int8(o.TextShadowOffsetX), ShadowY: int8(o.TextShadowOffsetY)}
 		if o.charValue != 0 {
 			kind = 2 // text
-			var td = internal.TextDraw{ShadowColor: o.TextShadowColor, Weight: o.TextWeight,
-				ShadowBlur: byte(o.TextShadowBlur), ShadowX: int8(o.TextShadowOffsetX), ShadowY: int8(o.TextShadowOffsetY)}
-			internal.QueueText(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, td)
-			continue
 		} else if o.ImageId != 0 {
 			kind = 1 // sprite
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, kind)
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, kind, textData)
 
 		if o.Text != "" {
 			var fontData = internal.Fonts[byte(o.TextFontId)]
 			chars = chars[:0]
 			var x, y = o.X, o.Y
 			for _, r := range o.Text {
-				var symbol = NewImage(0, 0, 0)
 				var char = fontData.Chars[r]
+				if r == ' ' {
+					x += o.TextLineHeight / 2
+					continue
+				}
+
 				var dst = char.PlaneBounds
+				var symbol = NewImage(0, 0, 0)
 				var src = char.AtlasBounds
-				var w, h = float32(src.Right - src.Left), float32(src.Bottom - src.Top)
+				var srcW, srcH = float32(src.Right - src.Left), float32(src.Bottom - src.Top)
+				symbol.Width = float32(dst.Right-dst.Left) * o.TextLineHeight
+				symbol.Height = float32(dst.Top-dst.Bottom) * o.TextLineHeight
+				symbol.X = x + (float32(dst.Left) * o.TextLineHeight) + symbol.Width/2
+				symbol.Y = y + float32(dst.Top)*o.TextLineHeight + symbol.Height/2
+				symbol.ImageCropArea = Area{X: float32(src.Left), Y: float32(src.Top), Width: srcW, Height: srcH}
 				symbol.ImageId = assets.ImageId(fontData.AtlasId)
-				symbol.ImageCropArea = Area{X: float32(src.Left), Y: float32(src.Top), Width: w, Height: h}
-				symbol.X = x + (float32(dst.Left) * o.TextLineHeight)
-				symbol.Y = y + (float32(dst.Top) * o.TextLineHeight)
-				symbol.Width = (float32(char.PlaneBounds.Right) - float32(char.PlaneBounds.Left)) * o.TextLineHeight
-				symbol.Height = (float32(char.PlaneBounds.Bottom) - float32(char.PlaneBounds.Top)) * o.TextLineHeight
 				symbol.charValue = r
 				symbol.Color = o.TextColor
 				symbol.TextColor = o.TextColor
 				symbol.TextShadowColor = o.TextShadowColor
 				symbol.TextWeight = o.TextWeight
-				symbol.TextShadowBlur = o.TextShadowBlur
-				symbol.TextShadowOffsetX = o.TextShadowOffsetX
-				symbol.TextShadowOffsetY = o.TextShadowOffsetY
-				x += float32(char.Advance)*o.TextLineHeight + 10
+				x += float32(char.Advance) * o.TextLineHeight
+
 				chars = append(chars, symbol)
 			}
 			for _, c := range chars {
