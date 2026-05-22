@@ -19,9 +19,9 @@ if [ ! -f "$INPUT_PATH" ]; then
     exit 1
 fi
 
-# 3. Ask for Font Size with a default of 16
-read -p "Enter font glyph size [Default: 16]: " INPUT_SIZE
-SIZE=${INPUT_SIZE:-16}
+# 3. Ask for Font Size with a default of 24
+read -p "Enter font glyph size [Default: 24]: " INPUT_SIZE
+SIZE=${INPUT_SIZE:-24}
 
 # 4. Ask for Smoothness/Pixel Range with a default of 4
 read -p "Enter pixel range / smoothness [Default: 4]: " INPUT_RANGE

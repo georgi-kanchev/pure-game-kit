@@ -13,7 +13,8 @@ import (
 func main() {
 	window.Create("game", false, false)
 	var view = graphics.NewView(1)
-	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
+	// var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
+	var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
 	var obj = graphics.NewTextbox(0, 0, 100, 100, font, "WAY AVATAR WAVE")
 
 	obj.Width *= 4
