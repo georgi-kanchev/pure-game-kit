@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# https://github.com/Chlumsky/msdf-atlas-gen
+# Repository 			https://github.com/Chlumsky/msdf-atlas-gen
+# Known kerning issue 	https://github.com/Chlumsky/msdf-atlas-gen/issues/4#issuecomment-792912921
 
 # 1. Ask the user for the font file path
 echo "=== MSDF Atlas Gen (Wine Wrapper) ==="

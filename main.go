@@ -9,10 +9,8 @@ import (
 func main() {
 	window.Create("game", false, false)
 	var view = graphics.NewView(1)
-	var obj = graphics.NewImage(0, 0, assets.LoadImage("examples/data/flail.PNG"))
-
-	var font = assets.LoadFont("font.png", "font.json")
-	obj.TextFontId = font
+	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
+	var obj = graphics.NewTextbox(0, 0, 100, 100, font, "Hello, World!")
 
 	obj.Width *= 4
 	obj.Height *= 4

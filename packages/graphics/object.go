@@ -32,7 +32,7 @@ type Object struct {
 	TextWeight, TextShadowSize, TextShadowBlur,
 	TextShadowOffsetX, TextShadowOffsetY float32
 
-	TextBackColor, TextShadowColor uint
+	TextColor, TextBackColor, TextShadowColor uint
 
 	// tilemap ========================================================
 
@@ -72,7 +72,7 @@ func NewImage(x, y float32, imageId assets.ImageId) Object {
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
 	return Object{
-		Shape: rect, TextFontId: fontId, Text: txt.New(text), Color: palette.White, TextLineHeight: 100, TextWordWrap: true}
+		Shape: rect, TextFontId: fontId, Text: txt.New(text...), TextColor: palette.White, TextLineHeight: 100, TextWordWrap: true}
 }
 func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
 	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId, Color: palette.White}
@@ -186,10 +186,23 @@ func (o *Object) tryRegenerateText() {
 
 	o.chars = o.chars[:]
 	var fontData = internal.Fonts[byte(o.TextFontId)]
-	for i, r := range o.Text {
-		var symbol = Object{TextFontId: assets.FontId(fontData.AtlasId), charValue: r}
-		symbol.X = float32(30 * i)
+	var x, y float32
+	for _, r := range o.Text {
+		var symbol = NewImage(0, 0, 0)
+		var char = fontData.Chars[r]
+		var dst = char.PlaneBounds
+		var src = char.AtlasBounds
+		var w, h = float32(src.Right - src.Left), float32(src.Bottom - src.Top)
+		symbol.ImageId = assets.ImageId(fontData.AtlasId)
+		symbol.ImageCropArea = Area{X: float32(src.Left), Y: float32(src.Top), Width: w, Height: h}
+		symbol.X = x + (float32(dst.Left) * o.TextLineHeight)
+		symbol.Y = y + (float32(dst.Top) * o.TextLineHeight)
+		symbol.Width = (float32(char.PlaneBounds.Right) - float32(char.PlaneBounds.Left)) * o.TextLineHeight
+		symbol.Height = (float32(char.PlaneBounds.Bottom) - float32(char.PlaneBounds.Top)) * o.TextLineHeight
+		symbol.charValue = r
+		symbol.Color = o.TextColor
 		o.chars = append(o.chars, symbol)
+		x += float32(char.Advance)*o.TextLineHeight + 10
 	}
 }
 

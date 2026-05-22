@@ -5,9 +5,8 @@ import (
 )
 
 type Font struct {
-	AtlasId  int32 // see assets.ImageId
-	Chars    map[rune]Glyph
-	Kernings map[rune]Kerning
+	AtlasId int32 // see assets.ImageId
+	Chars   map[rune]Glyph
 }
 type FontJSON struct {
 	Atlas struct {
@@ -27,8 +26,12 @@ type FontJSON struct {
 		UnderlineY         float64 `json:"underlineY"`
 		UnderlineThickness float64 `json:"underlineThickness"`
 	} `json:"metrics"`
-	Glyphs   []Glyph   `json:"glyphs"`
-	Kernings []Kerning `json:"kerning"`
+	Kernings []struct {
+		Unicode1 rune    `json:"unicode1"`
+		Unicode2 rune    `json:"unicode2"`
+		Advance  float64 `json:"advance"`
+	} `json:"kerning"`
+	Glyphs []Glyph `json:"glyphs"`
 }
 type Bounds struct {
 	Left   float64 `json:"left"`
@@ -41,11 +44,7 @@ type Glyph struct {
 	Advance     float64 `json:"advance"`
 	PlaneBounds Bounds  `json:"planeBounds"`
 	AtlasBounds Bounds  `json:"atlasBounds"`
-}
-type Kerning struct {
-	Unicode1 rune    `json:"unicode1"`
-	Unicode2 rune    `json:"unicode2"`
-	Advance  float64 `json:"advance"`
+	Kernings    map[rune]float64
 }
 
 var Fonts = make(map[byte]Font) // 0 = default
@@ -56,13 +55,14 @@ func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) byte {
 		FontNextId++
 	}
 	var id = FontNextId
-	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph), Kernings: make(map[rune]Kerning)}
+	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph)}
 
 	for _, glyph := range fontData.Glyphs {
+		glyph.Kernings = make(map[rune]float64)
 		font.Chars[glyph.Unicode] = glyph
 	}
 	for _, kern := range fontData.Kernings {
-		font.Kernings[kern.Unicode1] = kern
+		font.Chars[kern.Unicode1].Kernings[kern.Unicode2] = kern.Advance
 	}
 
 	Fonts[id] = font

@@ -154,7 +154,11 @@ func (v *View) DrawObjects(objects ...*Object) {
 		}
 
 		var tex = internal.Images[int32(o.ImageId)]
-		var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+		var crop = o.ImageCropArea
+		if crop == (Area{}) {
+			crop = NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+		}
+		var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
 		var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
 		var eff *internal.Effects
 		if o.Effects != nil {
@@ -162,10 +166,12 @@ func (v *View) DrawObjects(objects ...*Object) {
 		}
 		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff)
 
-		o.tryRegenerateText()
-		// for _, s := range t.chars {
-
-		// }
+		if o.Text != "" {
+			o.tryRegenerateText()
+			for _, c := range o.chars {
+				v.DrawObjects(&c)
+			}
+		}
 	}
 }
 
