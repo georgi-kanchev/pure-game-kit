@@ -160,43 +160,46 @@ func (v *View) DrawObjects(objects ...*Object) {
 		}
 		var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
 		var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
+		var mask = internal.Area(o.Mask)
 		var eff *internal.Effects
 		if o.Effects != nil {
 			eff = (*internal.Effects)(o.Effects)
 		}
 		var kind byte
-		if o.charValue != 0 {
-			kind = 2 // text
-		} else if o.ImageId != 0 {
+		if o.ImageId != 0 {
 			kind = 1 // sprite
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, kind, internal.TextDraw{})
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), mask, eff, kind, internal.TextDraw{})
 
-		if o.Text != "" {
-			var fontData = internal.Fonts[byte(o.TextFontId)]
-			var tex = internal.Images[fontData.AtlasId].Texture
-			var x, y = o.X, o.Y
-			var scale = o.TextLineHeight
-			var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
-			var sb, sc = o.TextShadowBlur, o.TextShadowColor
-			var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
-			for _, r := range o.Text {
-				var glyph = fontData.Chars[r]
-				if r == ' ' {
-					x += o.TextLineHeight / 3
-					continue
-				}
-
-				var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
-				var srcW, srcH = float32(atlas.Right - atlas.Left), float32(atlas.Bottom - atlas.Top)
-				var dstX, dstY = x + (float32(plane.Left) * scale), y + float32(plane.Top)*scale
-				var dstW, dstH = float32(plane.Right-plane.Left) * scale, float32(plane.Top-plane.Bottom) * scale
-				var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
-				var src = rl.NewRectangle(float32(atlas.Left), float32(atlas.Top), srcW, srcH)
-				internal.QueueTexture(tex, src, dst, 0, getColor(o.TextColor), internal.Area(o.Mask), nil, 2, textData)
-				x += float32(glyph.Advance) * scale
-			}
+		if o.Text == "" {
+			continue
 		}
+
+		var fontData = internal.Fonts[byte(o.TextFontId)]
+		var atlasTex = internal.Images[fontData.AtlasId].Texture
+		var x, y = o.X, o.Y
+		var scale = o.TextLineHeight
+		var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
+		var sb, sc = o.TextShadowBlur, o.TextShadowColor
+		var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
+		var col = getColor(o.TextColor)
+		for _, r := range o.Text {
+			var glyph = fontData.Chars[r]
+			if r == ' ' {
+				x += o.TextLineHeight / 3
+				continue
+			}
+
+			var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
+			var srcW, srcH = float32(atlas.Right - atlas.Left), float32(atlas.Bottom - atlas.Top)
+			var dstX, dstY = x + (float32(plane.Left) * scale), y + float32(plane.Top)*scale
+			var dstW, dstH = float32(plane.Right-plane.Left) * scale, float32(plane.Top-plane.Bottom) * scale
+			var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
+			var src = rl.NewRectangle(float32(atlas.Left), float32(atlas.Top), srcW, srcH)
+			internal.QueueTexture(atlasTex, src, dst, 0, col, mask, nil, 2, textData)
+			x += float32(glyph.Advance) * scale
+		}
+
 	}
 }
 

@@ -3,7 +3,10 @@ package main
 import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/utility/color/palette"
+	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/window"
 )
 
@@ -20,6 +23,10 @@ func main() {
 	obj.Color = palette.Gray
 
 	for window.KeepOpen() {
+		if keyboard.IsKeyJustPressed(key.F5) {
+			print(debug.MemoryUsage())
+		}
+
 		view.DrawObjects(&obj)
 	}
 }

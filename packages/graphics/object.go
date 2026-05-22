@@ -37,10 +37,6 @@ type Object struct {
 	// tilemap ========================================================
 
 	TileLayerId assets.TileLayerId
-
-	// private ========================================================
-
-	charValue rune
 }
 
 func NewShapePoint(x, y float32, color uint) Object {
