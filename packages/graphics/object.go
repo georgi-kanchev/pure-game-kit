@@ -186,7 +186,7 @@ func (o *Object) tryRegenerateText() {
 
 	o.chars = o.chars[:]
 	var fontData = internal.Fonts[byte(o.TextFontId)]
-	var x, y float32
+	var x, y = o.X, o.Y
 	for _, r := range o.Text {
 		var symbol = NewImage(0, 0, 0)
 		var char = fontData.Chars[r]
@@ -210,9 +210,4 @@ func (o *Object) tryRegenerateText() {
 		o.chars = append(o.chars, symbol)
 		x += float32(char.Advance)*o.TextLineHeight + 10
 	}
-}
-
-func (o *Object) setDefaults() {
-	o.TextLineHeight = 100
-	o.TextWordWrap = true
 }
