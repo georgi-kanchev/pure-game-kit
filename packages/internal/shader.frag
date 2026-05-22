@@ -190,25 +190,35 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
 vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor, vec4 shadowColor,
                        float weight, float outlineWeight, float shadowWeight,
                        float shadowX, float shadowY, float shadowBlur) {
-    // MSDF: sample median of RGB channels for distance
-    float baseSample = median(texture(texture0, uv).rgb);
+    // Screen-space pixel range: converts texture units to on-screen pixel distances.
+    // Must match the pxRange used when generating the MSDF atlas (default: 4).
+    float pxRange = 4.0;
+    vec2 unitRange = vec2(pxRange) / vec2(textureSize(texture0, 0));
+    vec2 screenTexSize = vec2(1.0) / fwidth(uv);
+    float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
+
+    // Sample MSDF distances (median of RGB = approximate signed distance in [0,1], edge at 0.5)
+    float baseSample   = median(texture(texture0, uv).rgb);
     float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY)).rgb);
 
-    // Distance from edge: positive = inside, negative = outside
-    float baseDist   = baseSample - (1.0 - weight);
-    float shadowDist = shadowSample - (1.0 - shadowWeight);
+    // Convert to on-screen pixel distances (0 = glyph edge, positive = inside)
+    float basePxDist   = screenPxRange * (baseSample - 0.5);
+    float shadowPxDist = screenPxRange * (shadowSample - 0.5);
 
-    // Adaptive smoothing via screen-space derivatives
-    float baseSmooth   = 0.5  * length(vec2(dFdx(baseDist), dFdy(baseDist)));
-    float shadowSmooth = max(shadowBlur * length(vec2(dFdx(shadowDist), dFdy(shadowDist))), baseSmooth);
+    // Weight controls thickness: 0.5=standard, >0.5=thicker, <0.5=thinner
+    float thickness = (weight - 0.5) * pxRange;
 
-    // Alpha from smoothstep
-    float sdfAlpha     = baseColor.a   * smoothstep(-baseSmooth, baseSmooth, baseDist);
-    float shadowAlpha  = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDist);
+    // 1-pixel anti-aliased edge via smoothstep
+    float sdfAlpha = baseColor.a * smoothstep(-0.5, 0.5, basePxDist + thickness);
 
-    // Outline extends outward from base
-    float outlineDist  = baseDist + outlineWeight;
-    float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, outlineDist);
+    // Outline extends outward (more negative distance = further from glyph)
+    float outlinePxDist = basePxDist - outlineWeight * pxRange * 0.5;
+    float outlineAlpha = outlineColor.a * smoothstep(-0.5, 0.5, outlinePxDist);
+
+    // Shadow at offset position (with blur)
+    float shadowThickness = (shadowWeight - 0.5) * pxRange;
+    float shadowSmooth = 0.5 + shadowBlur * pxRange * 0.25;
+    float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowPxDist + shadowThickness);
 
     // Composite back-to-front: shadow -> outline -> base
     vec3 rgb   = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);

@@ -165,14 +165,25 @@ func (v *View) DrawObjects(objects ...*Object) {
 			eff = (*internal.Effects)(o.Effects)
 		}
 		var kind byte
-		var color = o.Color
 		if o.charValue != 0 {
 			kind = 2 // text
-			color = o.TextColor
+			w := byte(o.TextWeight * 255)
+			if w == 0 {
+				w = 128
+			}
+			td := internal.TextDraw{
+				ShadowColor:   o.TextShadowColor,
+				Weight:        w,
+				ShadowBlur:    byte(o.TextShadowBlur),
+				ShadowX:       int8(o.TextShadowOffsetX),
+				ShadowY:       int8(o.TextShadowOffsetY),
+			}
+			internal.QueueText(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, td)
+			continue
 		} else if o.ImageId != 0 {
 			kind = 1 // sprite
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(color), internal.Area(o.Mask), eff, kind)
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff, kind)
 
 		if o.Text != "" {
 			o.tryRegenerateText()

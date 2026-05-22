@@ -41,6 +41,14 @@ type Effects struct {
 	DepthZ float32
 }
 
+// TextDraw holds per-glyph MSDF parameters — kept separate from Effects.
+type TextDraw struct {
+	ShadowColor                          uint
+	Weight, OutlineWeight, ShadowWeight  byte
+	ShadowX, ShadowY                     int8
+	ShadowBlur                           byte
+}
+
 var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
 var Shader rl.Shader
@@ -107,43 +115,89 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		polygonBuf[i].NY = packNormalY(0.05, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
 		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 
-		if true { // sprite
-			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
-			polygonBuf[i].TY = packTangentYSprite(eff.SilhouetteColor)
-			polygonBuf[i].TZ = eff.OutlineSize
-		}
-		// else if false { // text
-		// 	polygonBuf[i].TX = packTangentXText(eff.OutlineColor)
-		// } else if false {
-		// 	polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
-		// 	polygonBuf[i].TY = packTangentYSprite(eff.SilhouetteColor)
-		// }
+		polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
+		polygonBuf[i].TY = packTangentYSprite(eff.SilhouetteColor)
+		polygonBuf[i].TZ = eff.OutlineSize
 	}
 
-	if mask == (Area{}) {
-		vCount = 4
-		if ang == 0 {
-			for i := range 4 {
-				polygonBuf[i].X = dx[i] + dst.X
-				polygonBuf[i].Y = dy[i] + dst.Y
-				polygonBuf[i].U = uvs[i*2]
-				polygonBuf[i].V = uvs[i*2+1]
-			}
-		} else {
-			var sinA, cosA = SinCos(ang)
-			var cx = ww + dst.Width/2
-			var cy = wh + dst.Height/2
-			for i := range 4 {
-				var rx = dx[i] - cx
-				var ry = dy[i] - cy
-				polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
-				polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
-				polygonBuf[i].U = uvs[i*2]
-				polygonBuf[i].V = uvs[i*2+1]
-			}
+	queueDrawFinalize(tex, col, mask, ang, ww, wh, dx, dy, uvs, vCount, dst)
+}
+
+// QueueText draws an MSDF glyph with per-character text parameters.
+func QueueText(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area, eff *Effects, text TextDraw) {
+	if dst.Width < 0 {
+		dst.Width = -dst.Width
+	}
+	if dst.Height < 0 {
+		dst.Height = -dst.Height
+	}
+
+	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
+	var u1, v1 = src.X * invTexW, src.Y * invTexH
+	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
+	var ww, wh = float32(WindowWidth) / 2, float32(WindowHeight) / 2
+	var dx = [4]float32{ww, ww, dst.Width + ww, dst.Width + ww}
+	var dy = [4]float32{wh, dst.Height + wh, dst.Height + wh, wh}
+	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
+	var vCount int32
+	if eff == nil {
+		eff = defaultEffects
+	}
+
+	if eff.BorderSize > 0 {
+		var padX = eff.BorderSize * (dst.Width / src.Width)
+		var padY = eff.BorderSize * (dst.Height / src.Height)
+		dx[0] -= padX
+		dx[1] -= padX
+		dx[2] += padX
+		dx[3] += padX
+		dy[0] -= padY
+		dy[3] -= padY
+		dy[1] += padY
+		dy[2] += padY
+		var padU = eff.BorderSize * invTexW
+		var padV = eff.BorderSize * invTexH
+		uvs[0] -= padU
+		uvs[2] -= padU
+		uvs[4] += padU
+		uvs[6] += padU
+		uvs[1] -= padV
+		uvs[7] -= padV
+		uvs[3] += padV
+		uvs[5] += padV
+	}
+
+	w := text.Weight
+	if w == 0 {
+		w = 128
+	}
+	for i := range len(polygonBuf) {
+		polygonBuf[i].U2 = packU2(uint16(tex.Width), uint16(tex.Height))
+		polygonBuf[i].V2 = packV2(eff.BorderColor)
+		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
+		polygonBuf[i].NY = packNormalY(0.05, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
+		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, typeText)
+
+		polygonBuf[i].TX = packTangentXText(eff.OutlineColor)
+		polygonBuf[i].TY = packTangentYText(text.ShadowColor)
+		polygonBuf[i].TZ = packTangentZText(w, text.OutlineWeight, text.ShadowWeight)
+		polygonBuf[i].TW = packTangentWText(text.ShadowX, text.ShadowY, text.ShadowBlur)
+	}
+
+	queueDrawFinalize(tex, col, mask, ang, ww, wh, dx, dy, uvs, vCount, dst)
+}
+
+func queueDrawFinalize(tex rl.Texture2D, col rl.Color, mask Area, ang, ww, wh float32, dx, dy [4]float32, uvs [8]float32, vCount int32, dst rl.Rectangle) {
+if mask == (Area{}) {
+	vCount = 4
+	if ang == 0 {
+		for i := range 4 {
+			polygonBuf[i].X = dx[i] + dst.X
+			polygonBuf[i].Y = dy[i] + dst.Y
+			polygonBuf[i].U = uvs[i*2]
+			polygonBuf[i].V = uvs[i*2+1]
 		}
-		queueVertices(polygonBuf[:4], vCount, tex, col)
-	} else { // CLIPPED PATH logic...
+	} else {
 		var sinA, cosA = SinCos(ang)
 		var cx = ww + dst.Width/2
 		var cy = wh + dst.Height/2
@@ -155,11 +209,25 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 			polygonBuf[i].U = uvs[i*2]
 			polygonBuf[i].V = uvs[i*2+1]
 		}
-		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
-		if vCount >= 3 {
-			queueVertices(clipResultBuf[:vCount], vCount, tex, col)
-		}
 	}
+	queueVertices(polygonBuf[:4], vCount, tex, col)
+} else { // CLIPPED PATH logic...
+	var sinA, cosA = SinCos(ang)
+	var cx = ww + dst.Width/2
+	var cy = wh + dst.Height/2
+	for i := range 4 {
+		var rx = dx[i] - cx
+		var ry = dy[i] - cy
+		polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
+		polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
+		polygonBuf[i].U = uvs[i*2]
+		polygonBuf[i].V = uvs[i*2+1]
+	}
+	vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
+	if vCount >= 3 {
+		queueVertices(clipResultBuf[:vCount], vCount, tex, col)
+	}
+}
 }
 func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	var rect = rl.NewRectangle(x, y, width, height)

@@ -201,6 +201,12 @@ func (o *Object) tryRegenerateText() {
 		symbol.Height = (float32(char.PlaneBounds.Bottom) - float32(char.PlaneBounds.Top)) * o.TextLineHeight
 		symbol.charValue = r
 		symbol.Color = o.TextColor
+		symbol.TextColor = o.TextColor
+		symbol.TextShadowColor = o.TextShadowColor
+		symbol.TextWeight = o.TextWeight
+		symbol.TextShadowBlur = o.TextShadowBlur
+		symbol.TextShadowOffsetX = o.TextShadowOffsetX
+		symbol.TextShadowOffsetY = o.TextShadowOffsetY
 		o.chars = append(o.chars, symbol)
 		x += float32(char.Advance)*o.TextLineHeight + 10
 	}

@@ -20,6 +20,7 @@ func LoadFont(pngPath string, jsonPath string) FontId {
 	var fontData = &internal.FontJSON{}
 	storage.FromJSON(file.LoadText(jsonPath), fontData)
 	var atlas = int32(LoadImage(pngPath))
+	ImageId(atlas).SetSmoothness(true) // bilinear filtering required for MSDF
 	var font = internal.LoadFont(fontData, atlas, false)
 	return FontId(font)
 }
