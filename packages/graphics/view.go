@@ -183,10 +183,15 @@ func (v *View) DrawObjects(objects ...*Object) {
 		var sb, sc = o.TextShadowBlur, o.TextShadowColor
 		var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
 		var col = getColor(o.TextColor)
+		var prevGlyph internal.Glyph
 		for _, r := range o.Text {
 			var glyph = fontData.Chars[r]
+			var kerning, _ = prevGlyph.Kernings[r]
+			x += float32(kerning) * scale
+
 			if r == ' ' {
 				x += o.TextLineHeight / 3
+				prevGlyph = glyph
 				continue
 			}
 
@@ -196,8 +201,9 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var dstW, dstH = float32(plane.Right-plane.Left) * scale, float32(plane.Top-plane.Bottom) * scale
 			var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 			var src = rl.NewRectangle(float32(atlas.Left), float32(atlas.Top), srcW, srcH)
-			internal.QueueTexture(atlasTex, src, dst, 0, col, mask, nil, 2, textData)
+			internal.QueueTexture(atlasTex, src, dst, 0, col, mask, eff, 2, textData)
 			x += float32(glyph.Advance) * scale
+			prevGlyph = glyph
 		}
 
 	}

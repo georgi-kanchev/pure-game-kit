@@ -14,13 +14,16 @@ func main() {
 	window.Create("game", false, false)
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
-	var obj = graphics.NewTextbox(0, 0, 100, 100, font, "Lemon the Cat")
+	var obj = graphics.NewTextbox(0, 0, 100, 100, font, "WAY AVATAR WAVE")
 
 	obj.Width *= 4
 	obj.Height *= 4
-	obj.X -= 500
+	obj.X -= 800
 	obj.TextLineHeight = 200
-	obj.Color = palette.Gray
+
+	obj.Effects = graphics.NewEffects()
+	obj.Effects.OutlineSize = 128
+	obj.Effects.OutlineColor = palette.Red
 
 	for window.KeepOpen() {
 		if keyboard.IsKeyJustPressed(key.F5) {
