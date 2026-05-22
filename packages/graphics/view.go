@@ -164,7 +164,15 @@ func (v *View) DrawObjects(objects ...*Object) {
 		if o.Effects != nil {
 			eff = (*internal.Effects)(o.Effects)
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), internal.Area(o.Mask), eff)
+		var kind byte
+		var color = o.Color
+		if o.charValue != 0 {
+			kind = 2 // text
+			color = o.TextColor
+		} else if o.ImageId != 0 {
+			kind = 1 // sprite
+		}
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(color), internal.Area(o.Mask), eff, kind)
 
 		if o.Text != "" {
 			o.tryRegenerateText()

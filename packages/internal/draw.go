@@ -57,7 +57,7 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area, eff *Effects) {
+func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area, eff *Effects, kind byte) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -105,7 +105,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		polygonBuf[i].V2 = packV2(eff.BorderColor)
 		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 		polygonBuf[i].NY = packNormalY(0.05, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
-		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, 1)
+		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 
 		if true { // sprite
 			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
@@ -163,7 +163,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 }
 func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	var rect = rl.NewRectangle(x, y, width, height)
-	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, color, mask, nil)
+	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, color, mask, nil, 0)
 }
 func QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {

@@ -7,9 +7,9 @@ in vec4 fragData0; // texSize.xy + depthZ + objectType
 in vec4 fragData1; // colorAdjust1 (gamma, saturation, contrast, brightness)
 in vec4 fragData2; // rgbAdjust2 (roundness, pixelSize, blurX, blurY)
 in vec4 fragData3; // outlineColor RGBA
-in vec4 fragData4; // silhouetteColor RGBA
-in vec4 fragData5; // outlineSize + borderSize
-in vec4 fragData6; // tileColumns + tileRows + tileSize
+in vec4 fragData4; // silhouetteColor RGBA (text: shadowColor RGBA)
+in vec4 fragData5; // outlineSize + borderSize   (text: weight, outlineWeight, shadowWeight)
+in vec4 fragData6; // tileColumns + tileRows + tileSize (text: shadowX, shadowY, shadowBlur)
 in vec4 fragData7; // borderColor RGBA
 
 out vec4 finalColor;
@@ -187,53 +187,36 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
     return color * sShape;
 }
 
-// vec4 compute_msdf_text(vec2 uv) {
-//     // 1. Unpack styling data from vertex attributes (Preserved from your original)
-//     uvec4 c = uvec4(fragColor * 255.0 + 0.5);
-//     vec4 base = unpackRGB222(c.r);
-//     vec4 outlineColor = unpackRGB222(c.g);
-//     vec4 shadowColor = unpackRGB222(c.b);
-    
-//     uint thickIdx = (c.a >> 6) & 0x03u;
-//     uint outlIdx = (c.a >> 4) & 0x03u;
-//     uint shadIdx = (c.a >> 2) & 0x03u;
-//     uint smoothIdx = (c.a) & 0x03u;
-    
-//     float thick[4] = float[](0.35, 0.50, 0.65, 0.80);
-//     float smooths[4] = float[](0.50, 4.00, 8.00, 12.0);
-    
-//     // 2. MSDF Shadow Processing
-//     vec2 shadowOffset = vec2(u[TEXT_SHADOW_X], u[TEXT_SHADOW_Y]);
-//     // CHANGED: Sample RGB and extract median instead of using .a
-//     float shadowSample = median(texture(texture0, uv - shadowOffset).rgb);
-//     float shadowDistance = shadowSample - (1.0 - thick[shadIdx]);
-    
-//     float shadowSmooth = smooths[smoothIdx] * length(vec2(dFdx(shadowDistance), dFdy(shadowDistance)));
-//     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDistance);
-    
-//     // 3. MSDF Base Text Processing
-//     // CHANGED: Sample RGB and extract median instead of using .a
-//     float baseSample = median(texture(texture0, uv).rgb);
-//     float distance = baseSample - (1.0 - thick[thickIdx]);
-    
-//     float baseSmooth = 0.5 * length(vec2(dFdx(distance), dFdy(distance)));
-//     float sdfAlpha = base.a * smoothstep(-baseSmooth, baseSmooth, distance);
-    
-//     // 4. Outline Processing (Preserved)
-//     float compressedOutlIdx = map(float(outlIdx), 0.0, 3.0, 0.7, 2.9);
-//     float outlineThick = (1.0 - thick[thickIdx]) * (compressedOutlIdx / 3.0);
-//     float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, distance + outlineThick);
-    
-//     // 5. Color Blending and Composition (Preserved)
-//     vec3 mixedRGB = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
-//     mixedRGB = mix(mixedRGB, base.rgb, sdfAlpha);
-//     float mixedAlpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
-    
-//     vec3 finalRGB = distance > sdfAlpha ? base.rgb : mixedRGB;
-//     float finalAlpha = distance > sdfAlpha ? base.a : mixedAlpha;
-    
-//     return vec4(finalRGB, finalAlpha);
-// }
+vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor, vec4 shadowColor,
+                       float weight, float outlineWeight, float shadowWeight,
+                       float shadowX, float shadowY, float shadowBlur) {
+    // MSDF: sample median of RGB channels for distance
+    float baseSample = median(texture(texture0, uv).rgb);
+    float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY)).rgb);
+
+    // Distance from edge: positive = inside, negative = outside
+    float baseDist   = baseSample - (1.0 - weight);
+    float shadowDist = shadowSample - (1.0 - shadowWeight);
+
+    // Adaptive smoothing via screen-space derivatives
+    float baseSmooth   = 0.5  * length(vec2(dFdx(baseDist), dFdy(baseDist)));
+    float shadowSmooth = max(shadowBlur * length(vec2(dFdx(shadowDist), dFdy(shadowDist))), baseSmooth);
+
+    // Alpha from smoothstep
+    float sdfAlpha     = baseColor.a   * smoothstep(-baseSmooth, baseSmooth, baseDist);
+    float shadowAlpha  = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowDist);
+
+    // Outline extends outward from base
+    float outlineDist  = baseDist + outlineWeight;
+    float outlineAlpha = outlineColor.a * smoothstep(-baseSmooth, baseSmooth, outlineDist);
+
+    // Composite back-to-front: shadow -> outline -> base
+    vec3 rgb   = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
+    rgb        = mix(rgb, baseColor.rgb, sdfAlpha);
+    float alpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
+
+    return vec4(rgb, alpha);
+}
 
 void main() {
     vec2 texSize    = fragData0.xy;
@@ -261,24 +244,46 @@ void main() {
 
     vec2 uv = compute_tile(fragTexCoord, texSize, tileColumns, tileRows, tileSize, tileSize);
     vec4 color;
-    if (objectType == 0) { // Shape: white fill, skip pixelate/blur
-        color = vec4(1.0);
-    } else { // Sprite / Text / Tilemap
-        uv = compute_pixelated_uv(uv, texSize, pixelSize);
-        color = compute_blur(uv, texSize, blur);
-        color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
-    }
 
-    color = compute_sdf_shape(uv, texSize, color, roundness, borderSize, borderColor);
+    if (objectType == 2) { // Text: MSDF path
+        vec4 shadowColor   = fragData4;
+        float weight       = fragData5.x;
+        float outlineWeight = fragData5.y;
+        float shadowWeight = fragData5.z;
+        float shadowX      = fragData6.x;
+        float shadowY      = fragData6.y;
+        float shadowBlur   = fragData6.z;
 
-    if (color.a * fragColor.a < 0.004)
-        discard;
+        color = compute_msdf_text(uv, fragColor, outlineColor, shadowColor,
+                                  weight, outlineWeight, shadowWeight,
+                                  shadowX, shadowY, shadowBlur);
 
-    if (objectType != 0) {
+        if (color.a < 0.004)
+            discard;
+
         color = compute_color_adjust(color, colorAdjust1);
-        color = compute_silhouette(color, silhouetteColor);
+        finalColor = color;
+    } else {
+        if (objectType == 0) { // Shape: white fill, skip pixelate/blur
+            color = vec4(1.0);
+        } else { // Sprite / Tilemap
+            uv = compute_pixelated_uv(uv, texSize, pixelSize);
+            color = compute_blur(uv, texSize, blur);
+            color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
+        }
+
+        color = compute_sdf_shape(uv, texSize, color, roundness, borderSize, borderColor);
+
+        if (color.a * fragColor.a < 0.004)
+            discard;
+
+        if (objectType != 0) {
+            color = compute_color_adjust(color, colorAdjust1);
+            color = compute_silhouette(color, silhouetteColor);
+        }
+
+        finalColor = color * fragColor;
     }
-    
-    finalColor = color * fragColor;
+
     gl_FragDepth = depthZ;
 }

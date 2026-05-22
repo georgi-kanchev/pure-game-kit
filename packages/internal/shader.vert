@@ -92,6 +92,9 @@ void main() {
     float tileColumns = 0.0;
     float tileRows    = 0.0;
     float tileSize    = 0.0;
+    vec4  shadowColor_text = vec4(0.0);
+    vec3  textWeights      = vec3(0.0);
+    float shadowX = 0.0, shadowY = 0.0, shadowBlur = 0.0;
     
     if (objectType == 0) { // Shape
         // tangent is free
@@ -103,10 +106,9 @@ void main() {
         // tangent.w is free
     }
     else if (objectType == 2) { // Text
-        outlineColor = unpack_6_6_6_6(vertTangent.x);
-        vec4 shadowColor = unpack_6_6_6_6(vertTangent.y);
-        vec3 textWeights = unpack_8_8_8_raw(vertTangent.z);
-        float shadowX, shadowY, shadowBlur;
+        outlineColor     = unpack_6_6_6_6(vertTangent.x);
+        shadowColor_text = unpack_6_6_6_6(vertTangent.y);
+        textWeights      = unpack_8_8_8_raw(vertTangent.z);
         unpack_8_8_8(vertTangent.w, shadowX, shadowY, shadowBlur);
     }
     else if (objectType == 3) { // Tilemap
@@ -122,10 +124,17 @@ void main() {
     fragData1 = colorAdjust1;
     fragData2 = vec4(roundness, pixelSize, blurX, blurY);
     fragData3 = outlineColor;
-    fragData4 = silhouetteColor;
-    fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
-    fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
     fragData7 = borderColor;
+
+    if (objectType == 2) { // Text: repurpose channels for MSDF data
+        fragData4 = shadowColor_text;
+        fragData5 = vec4(textWeights / 255.0, 0.0);                // weight, outlineWeight, shadowWeight
+        fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);       // shadow offset + blur
+    } else {
+        fragData4 = silhouetteColor;
+        fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
+        fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
+    }
 
     gl_Position = mvp * vec4(vertPosition, 1.0);
 }
