@@ -16,6 +16,7 @@ func main() {
 	obj.Height *= 4
 	obj.X -= 500
 	obj.TextLineHeight = 200
+
 	for window.KeepOpen() {
 		view.DrawObjects(&obj)
 	}

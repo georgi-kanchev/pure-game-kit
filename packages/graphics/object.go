@@ -29,7 +29,8 @@ type Object struct {
 
 	TextWordWrap, TextUnderline, TextCrossout bool
 
-	TextWeight, TextShadowSize, TextShadowBlur,
+	TextWeight byte
+	TextShadowSize, TextShadowBlur,
 	TextShadowOffsetX, TextShadowOffsetY float32
 
 	TextColor, TextBackColor, TextShadowColor uint
@@ -40,9 +41,6 @@ type Object struct {
 
 	// private ========================================================
 
-	cache     textCache // tracks when to regenerate chars
-	chars     []Object
-	lineCount int
 	charValue rune
 }
 
@@ -71,8 +69,9 @@ func NewImage(x, y float32, imageId assets.ImageId) Object {
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
-	return Object{
-		Shape: rect, TextFontId: fontId, Text: txt.New(text...), TextColor: palette.White, TextLineHeight: 100, TextWordWrap: true}
+	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), TextColor: palette.White,
+		TextLineHeight: 100, TextWordWrap: true, TextWeight: 128,
+	}
 }
 func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
 	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId, Color: palette.White}
@@ -154,60 +153,11 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 // text ===========================================================
 
 func (o *Object) TextMeasure(text string) (width, height float32) {
-	o.tryRegenerateText()
 	return 0, 0
 }
 func (o *Object) TextLineCount() int {
-	o.tryRegenerateText()
-	return o.lineCount
+	return 0
 }
 func (o *Object) TextSymbol(index int) Object {
-	o.tryRegenerateText()
 	return Object{}
-}
-
-// private ========================================================
-
-type textCache struct {
-	text string
-	font assets.FontId
-	width, height, alignX, alignY,
-	lineHeight, symbolGap, lineGap float32
-	wordWrap bool
-}
-
-func (o *Object) tryRegenerateText() {
-	var w, h, ax, ay = o.Width, o.Height, o.TextAlignX, o.TextAlignY
-	var state = textCache{o.Text, o.TextFontId, w, h, ax, ay, o.TextLineHeight, o.TextSymbolGap, o.TextLineGap, o.TextWordWrap}
-	if state == o.cache {
-		return
-	}
-	o.cache = state
-
-	o.chars = o.chars[:]
-	var fontData = internal.Fonts[byte(o.TextFontId)]
-	var x, y = o.X, o.Y
-	for _, r := range o.Text {
-		var symbol = NewImage(0, 0, 0)
-		var char = fontData.Chars[r]
-		var dst = char.PlaneBounds
-		var src = char.AtlasBounds
-		var w, h = float32(src.Right - src.Left), float32(src.Bottom - src.Top)
-		symbol.ImageId = assets.ImageId(fontData.AtlasId)
-		symbol.ImageCropArea = Area{X: float32(src.Left), Y: float32(src.Top), Width: w, Height: h}
-		symbol.X = x + (float32(dst.Left) * o.TextLineHeight)
-		symbol.Y = y + (float32(dst.Top) * o.TextLineHeight)
-		symbol.Width = (float32(char.PlaneBounds.Right) - float32(char.PlaneBounds.Left)) * o.TextLineHeight
-		symbol.Height = (float32(char.PlaneBounds.Bottom) - float32(char.PlaneBounds.Top)) * o.TextLineHeight
-		symbol.charValue = r
-		symbol.Color = o.TextColor
-		symbol.TextColor = o.TextColor
-		symbol.TextShadowColor = o.TextShadowColor
-		symbol.TextWeight = o.TextWeight
-		symbol.TextShadowBlur = o.TextShadowBlur
-		symbol.TextShadowOffsetX = o.TextShadowOffsetX
-		symbol.TextShadowOffsetY = o.TextShadowOffsetY
-		o.chars = append(o.chars, symbol)
-		x += float32(char.Advance)*o.TextLineHeight + 10
-	}
 }

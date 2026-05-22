@@ -40,13 +40,11 @@ type Effects struct {
 	// Requires semi-transparent pixels to be drawn last to avoid artifacts. Fully opaque/transparent pixels work in any sorting.
 	DepthZ float32
 }
-
-// TextDraw holds per-glyph MSDF parameters — kept separate from Effects.
 type TextDraw struct {
-	ShadowColor                          uint
-	Weight, OutlineWeight, ShadowWeight  byte
-	ShadowX, ShadowY                     int8
-	ShadowBlur                           byte
+	ShadowColor uint
+	Weight, OutlineWeight,
+	ShadowWeight, ShadowBlur byte
+	ShadowX, ShadowY int8
 }
 
 var DefaultMaterial rl.Material
@@ -167,10 +165,6 @@ func QueueText(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Colo
 		uvs[5] += padV
 	}
 
-	w := text.Weight
-	if w == 0 {
-		w = 128
-	}
 	for i := range len(polygonBuf) {
 		polygonBuf[i].U2 = packU2(uint16(tex.Width), uint16(tex.Height))
 		polygonBuf[i].V2 = packV2(eff.BorderColor)
@@ -180,7 +174,7 @@ func QueueText(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Colo
 
 		polygonBuf[i].TX = packTangentXText(eff.OutlineColor)
 		polygonBuf[i].TY = packTangentYText(text.ShadowColor)
-		polygonBuf[i].TZ = packTangentZText(w, text.OutlineWeight, text.ShadowWeight)
+		polygonBuf[i].TZ = packTangentZText(text.Weight, text.OutlineWeight, text.ShadowWeight)
 		polygonBuf[i].TW = packTangentWText(text.ShadowX, text.ShadowY, text.ShadowBlur)
 	}
 
@@ -188,16 +182,30 @@ func QueueText(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Colo
 }
 
 func queueDrawFinalize(tex rl.Texture2D, col rl.Color, mask Area, ang, ww, wh float32, dx, dy [4]float32, uvs [8]float32, vCount int32, dst rl.Rectangle) {
-if mask == (Area{}) {
-	vCount = 4
-	if ang == 0 {
-		for i := range 4 {
-			polygonBuf[i].X = dx[i] + dst.X
-			polygonBuf[i].Y = dy[i] + dst.Y
-			polygonBuf[i].U = uvs[i*2]
-			polygonBuf[i].V = uvs[i*2+1]
+	if mask == (Area{}) {
+		vCount = 4
+		if ang == 0 {
+			for i := range 4 {
+				polygonBuf[i].X = dx[i] + dst.X
+				polygonBuf[i].Y = dy[i] + dst.Y
+				polygonBuf[i].U = uvs[i*2]
+				polygonBuf[i].V = uvs[i*2+1]
+			}
+		} else {
+			var sinA, cosA = SinCos(ang)
+			var cx = ww + dst.Width/2
+			var cy = wh + dst.Height/2
+			for i := range 4 {
+				var rx = dx[i] - cx
+				var ry = dy[i] - cy
+				polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
+				polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
+				polygonBuf[i].U = uvs[i*2]
+				polygonBuf[i].V = uvs[i*2+1]
+			}
 		}
-	} else {
+		queueVertices(polygonBuf[:4], vCount, tex, col)
+	} else { // CLIPPED PATH logic...
 		var sinA, cosA = SinCos(ang)
 		var cx = ww + dst.Width/2
 		var cy = wh + dst.Height/2
@@ -209,25 +217,11 @@ if mask == (Area{}) {
 			polygonBuf[i].U = uvs[i*2]
 			polygonBuf[i].V = uvs[i*2+1]
 		}
+		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
+		if vCount >= 3 {
+			queueVertices(clipResultBuf[:vCount], vCount, tex, col)
+		}
 	}
-	queueVertices(polygonBuf[:4], vCount, tex, col)
-} else { // CLIPPED PATH logic...
-	var sinA, cosA = SinCos(ang)
-	var cx = ww + dst.Width/2
-	var cy = wh + dst.Height/2
-	for i := range 4 {
-		var rx = dx[i] - cx
-		var ry = dy[i] - cy
-		polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
-		polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
-		polygonBuf[i].U = uvs[i*2]
-		polygonBuf[i].V = uvs[i*2+1]
-	}
-	vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
-	if vCount >= 3 {
-		queueVertices(clipResultBuf[:vCount], vCount, tex, col)
-	}
-}
 }
 func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	var rect = rl.NewRectangle(x, y, width, height)
