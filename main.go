@@ -13,8 +13,8 @@ import (
 func main() {
 	window.Create("game", false, false)
 	var view = graphics.NewView(1)
-	// var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
-	var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
+	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
+	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
 	var obj = graphics.NewTextbox(0, 0, 100, 100, font, "WAY AVATAR WAVE")
 
 	obj.Width *= 4
@@ -23,13 +23,21 @@ func main() {
 	obj.TextLineHeight = 200
 
 	obj.Effects = graphics.NewEffects()
-	obj.Effects.OutlineSize = 128
+	obj.Effects.OutlineSize = 255
 	obj.Effects.OutlineColor = palette.Red
+
+	obj.TextWeight = 180
+
+	obj.Color = palette.DarkGray
+
+	obj.Mask = graphics.NewArea(obj.X-obj.Width/2, obj.Y-obj.Height/2, obj.Width, obj.Height)
 
 	for window.KeepOpen() {
 		if keyboard.IsKeyJustPressed(key.F5) {
 			print(debug.MemoryUsage())
 		}
+
+		// obj.TextWeight = byte(number.Map(number.Sine(time.Running()), -1, 1, 0, 255))
 
 		view.DrawObjects(&obj)
 	}

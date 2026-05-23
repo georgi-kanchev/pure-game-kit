@@ -198,7 +198,7 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
 
     // Screen-space pixel range: converts texture units to on-screen pixel distances.
     // Must match the pxRange used when generating the MSDF atlas (default: 4).
-    float pxRange = 4.0;
+    float pxRange = 8.0;
     vec2 unitRange = vec2(pxRange) / vec2(textureSize(texture0, 0));
     vec2 screenTexSize = vec2(1.0) / fwidth(uv);
     float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
@@ -210,10 +210,9 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     // Convert to on-screen pixel distances (0 = glyph edge, positive = inside)
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
-
-    // Weight controls thickness: 0.5=standard, >0.5=thicker, <0.5=thinner
-    float thickness = (weight - 0.5) * pxRange;
-
+    
+    float thickness = map(weight, 0.0, 1.0, -pxRange * 1.5, pxRange * 1.5);
+    
     // 1-pixel anti-aliased edge via smoothstep
     float sdfAlpha = baseColor.a * smoothstep(-0.5, 0.5, basePxDist + thickness);
 
