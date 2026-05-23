@@ -182,7 +182,9 @@ func (v *View) DrawObjects(objects ...*Object) {
 		var fontData = internal.Fonts[byte(o.TextFontId)]
 		var atlasTex = internal.Images[fontData.AtlasId].Texture
 		var scale = o.TextLineHeight
-		var x, y = o.X - o.Width/2, o.Y - o.Height/2 + scale
+
+		var x = o.X - o.Width/2
+		var y = o.Y - o.Height/2 - fontData.Ascender*scale
 		var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
 		var sb, sc = o.TextShadowBlur, o.TextShadowColor
 		var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
@@ -203,10 +205,10 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
 			var srcW, srcH = atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
 			var srcX, srcY = atlas.Left, atlas.Top
-			var dstX, dstY = x + plane.Left, y + plane.Top
+			var dstX, dstY = x + plane.Left*scale, y + plane.Top*scale
 			var dstW, dstH = (plane.Right - plane.Left) * scale, (plane.Top - plane.Bottom) * scale
 
-			var physTop, physBot = dstY + dstH, dstY // dstH is negative, this is the top edge
+			var physTop, physBot = dstY, dstY - dstH
 			var tbLeft, tbTop = o.X - o.Width/2, o.Y - o.Height/2
 			var tbRight, tbBot = o.X + o.Width/2, o.Y + o.Height/2
 			var clipLeft, clipRight = max(dstX, tbLeft), min(dstX+dstW, tbRight)
@@ -220,8 +222,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var origH = physBot - physTop
 			srcX += (clipLeft - dstX) / dstW * srcW
 			srcY += (clipTop - physTop) / origH * srcH
-			srcW *= clippedW / dstW
-			srcH *= clippedH / origH
+			srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
 			dstX, dstY = clipLeft, clipTop
 			dstW, dstH = clippedW, -clippedH // restore negative convention
 

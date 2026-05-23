@@ -262,10 +262,9 @@ void main() {
 
     if (objectType == 2) { // Text: MSDF path
         color = compute_msdf_text(uv, fragColor, outlineColor);
-        
         if (color.a < 0.004)
             discard;
-            // color = vec4(1.0, 0.0, 0.0, 1.0);
+
         color = compute_color_adjust(color, colorAdjust1);
         finalColor = color;
     } else {
