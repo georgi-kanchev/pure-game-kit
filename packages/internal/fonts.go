@@ -9,7 +9,7 @@ type Font struct {
 	Chars   map[rune]Glyph
 
 	// Font-wide metrics from msdf-atlas-gen (Y-down: ascender < 0, descender > 0).
-	Ascender, Descender, LineHeight, EmSize float32
+	Ascender, Descender, LineHeight, EmSize, Size float32
 }
 type FontJSON struct {
 	Atlas struct {
@@ -60,7 +60,7 @@ func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) byte {
 	var id = FontNextId
 	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph),
 		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender,
-		LineHeight: fontData.Metrics.LineHeight, EmSize: fontData.Metrics.EmSize,
+		LineHeight: fontData.Metrics.LineHeight, EmSize: fontData.Metrics.EmSize, Size: fontData.Atlas.Size,
 	}
 
 	for _, glyph := range fontData.Glyphs {

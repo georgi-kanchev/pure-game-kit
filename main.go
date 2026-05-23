@@ -26,7 +26,6 @@ func main() {
 
 	// obj.Mask = graphics.NewArea(obj.X-obj.Width/2, obj.Y-obj.Height/2, obj.Width, obj.Height)
 	obj.Roundness = 0.5
-	obj.TextLineHeight = 100
 	obj.TextOutlineSize = 0
 	obj.TextOutlineColor = palette.Black
 	obj.TextWeight = 128
@@ -41,7 +40,7 @@ func main() {
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()
-		obj.TextLineHeight = number.Map(number.Sine(time.Running()/2), -1, 1, 0, 255)
+		obj.TextScale = number.Map(number.Sine(time.Running()/2), -1, 1, 0, 1)
 		// obj.Mask.X, obj.Mask.Y = view.MousePosition()
 		// obj.Mask.X -= obj.Mask.Width / 2
 		// obj.Mask.Y -= obj.Mask.Height / 2
