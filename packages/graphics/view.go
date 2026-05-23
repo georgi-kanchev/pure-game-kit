@@ -200,6 +200,9 @@ func (v *View) DrawObjects(objects ...*Object) {
 				x += scale / 3
 				prevGlyph = glyph
 				continue
+			} else if r == '\n' {
+				x = o.X - o.Width/2
+				y += scale
 			}
 
 			var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds

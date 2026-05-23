@@ -26,7 +26,6 @@ func Create(title string, vsync, antialias bool) {
 	rl.InitWindow(1600, 900, title)
 	rl.SetExitKey(rl.KeyNull)
 	rl.MaximizeWindow()
-	SetTargetFPS(60)
 	MoveToMonitor(0)
 	isInit = true
 
