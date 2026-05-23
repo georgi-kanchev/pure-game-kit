@@ -40,7 +40,7 @@ func main() {
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()
-		obj.TextScale = number.Map(number.Sine(time.Running()/2), -1, 1, 0, 1)
+		obj.TextLineHeight = number.Map(number.Sine(time.Running()/2), -1, 1, 0, 255)
 		// obj.Mask.X, obj.Mask.Y = view.MousePosition()
 		// obj.Mask.X -= obj.Mask.Width / 2
 		// obj.Mask.Y -= obj.Mask.Height / 2

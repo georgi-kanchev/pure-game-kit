@@ -25,7 +25,9 @@ type Object struct {
 	Text       string
 	TextFontId assets.FontId
 
-	TextAlignX, TextAlignY, TextScale, TextSymbolGap, TextLineGap float32
+	TextAlignX, TextAlignY float32 // Ranged 0..1
+
+	TextLineHeight, TextSymbolGap, TextLineGap float32
 
 	TextWordWrap, TextUnderline, TextCrossout bool
 
@@ -65,7 +67,7 @@ func NewImage(x, y float32, imageId assets.ImageId) Object {
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
 	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), TextColor: palette.White,
-		TextScale: 1, TextWordWrap: true, TextWeight: 128,
+		TextLineHeight: 128, TextWordWrap: true, TextWeight: 128,
 	}
 }
 func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
