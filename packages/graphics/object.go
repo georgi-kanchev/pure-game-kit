@@ -29,10 +29,10 @@ type Object struct {
 
 	TextWordWrap, TextUnderline, TextCrossout bool
 
-	TextWeight, TextShadowSize, TextShadowBlur byte
-	TextShadowOffsetX, TextShadowOffsetY       int8
+	TextWeight, TextOutlineSize, TextShadowSize, TextShadowBlur byte
+	TextShadowOffsetX, TextShadowOffsetY                        int8
 
-	TextColor, TextBackColor, TextShadowColor uint
+	TextBackColor, TextColor, TextOutlineColor, TextShadowColor uint
 
 	// tilemap ========================================================
 

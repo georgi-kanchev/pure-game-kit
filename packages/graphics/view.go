@@ -181,36 +181,41 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 		var fontData = internal.Fonts[byte(o.TextFontId)]
 		var atlasTex = internal.Images[fontData.AtlasId].Texture
-		var scale = o.TextLineHeight
 
 		var x = o.X - o.Width/2
-		var y = o.Y - o.Height/2 - fontData.Ascender*scale
+		var y = o.Y - o.Height/2 - fontData.Ascender*o.TextLineHeight
 		var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
-		var sb, sc = o.TextShadowBlur, o.TextShadowColor
-		var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
+		var sc = o.TextShadowColor
+		var scale = o.TextLineHeight / 255
+		var outlineSize = byte(number.Limit(float32(o.TextOutlineSize)*scale, 0, 255))
+		var shadowSize = byte(number.Limit(float32(o.TextShadowSize)*scale, 0, 255))
+		var shadowBlur = byte(number.Limit(float32(o.TextShadowBlur)*scale, 0, 255))
+		var textData = internal.TextDraw{OutlineColor: o.TextOutlineColor, ShadowSize: shadowSize,
+			ShadowColor: sc, Weight: o.TextWeight, OutlineSize: outlineSize, ShadowBlur: shadowBlur, ShadowX: sx, ShadowY: sy}
 		var col = getColor(o.TextColor)
 		var prevGlyph internal.Glyph
+		var gapX = o.TextSymbolGap * scale
 		var sinA, cosA = internal.SinCos(o.Angle)
 		for _, r := range o.Text {
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
-			x += kerning * scale
+			x += kerning * o.TextLineHeight
 
 			if r == ' ' {
-				x += scale / 3
+				x += o.TextLineHeight/3 + gapX
 				prevGlyph = glyph
 				continue
 			} else if r == '\n' {
 				x = o.X - o.Width/2
-				y += scale
+				y += o.TextLineHeight * fontData.LineHeight
 				continue
 			}
 
 			var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
 			var srcW, srcH = atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
 			var srcX, srcY = atlas.Left, atlas.Top
-			var dstX, dstY = x + plane.Left*scale, y + plane.Top*scale
-			var dstW, dstH = (plane.Right - plane.Left) * scale, (plane.Top - plane.Bottom) * scale
+			var dstX, dstY = x + plane.Left*o.TextLineHeight, y + plane.Top*o.TextLineHeight
+			var dstW, dstH = (plane.Right - plane.Left) * o.TextLineHeight, (plane.Top - plane.Bottom) * o.TextLineHeight
 
 			var physTop, physBot = dstY, dstY - dstH
 			var tbLeft, tbTop = o.X - o.Width/2, o.Y - o.Height/2
@@ -218,7 +223,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var clipLeft, clipRight = max(dstX, tbLeft), min(dstX+dstW, tbRight)
 			var clipTop, clipBot = max(physTop, tbTop), min(physBot, tbBot)
 			if clipLeft >= clipRight || clipTop >= clipBot {
-				x += glyph.Advance * scale
+				x += glyph.Advance * o.TextLineHeight
 				prevGlyph = glyph
 				continue
 			}
@@ -237,7 +242,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 			var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
 			internal.QueueTexture(atlasTex, src, dst, o.Angle, col, mask, eff, 2, textData)
-			x += glyph.Advance * scale
+			x += glyph.Advance*o.TextLineHeight + gapX
 			prevGlyph = glyph
 		}
 	}

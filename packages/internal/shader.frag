@@ -195,41 +195,36 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float shadowX = fragData6.x;
     float shadowY = fragData6.y;
     float shadowBlur = fragData6.z;
-
-    // Screen-space pixel range: converts texture units to on-screen pixel distances.
-    // Must match the pxRange used when generating the MSDF atlas (default: 4).
+    
     float pxRange = 8.0;
     vec2 unitRange = vec2(pxRange) / vec2(textureSize(texture0, 0));
     vec2 screenTexSize = vec2(1.0) / fwidth(uv);
     float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
-
-    // Sample MSDF distances (median of RGB = approximate signed distance in [0,1], edge at 0.5)
+    
     float baseSample = median(texture(texture0, uv).rgb);
     float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY)).rgb);
-
-    // Convert to on-screen pixel distances (0 = glyph edge, positive = inside)
+    
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
     
-    float thickness = map(weight, 0.0, 1.0, -pxRange * 1.5, pxRange * 1.5);
+    float thickness = map(weight, 0.0, 1.0, -pxRange, pxRange);
+    float textPxDist = basePxDist + thickness;
+    float sdfAlpha = baseColor.a * smoothstep(-0.5, 0.5, textPxDist);
     
-    // 1-pixel anti-aliased edge via smoothstep
-    float sdfAlpha = baseColor.a * smoothstep(-0.5, 0.5, basePxDist + thickness);
-
-    // Outline extends outward (more negative distance = further from glyph)
-    float outlinePxDist = basePxDist - outlineWeight * pxRange * 0.5;
+    outlineWeight *= 3;
+    float outlinePxDist = textPxDist + (outlineWeight * pxRange);
     float outlineAlpha = outlineColor.a * smoothstep(-0.5, 0.5, outlinePxDist);
-
-    // Shadow at offset position (with blur)
-    float shadowThickness = (shadowWeight - 0.5) * pxRange;
-    float shadowSmooth = 0.5 + shadowBlur * pxRange * 0.25;
+    outlineAlpha = max(0.0, outlineAlpha - sdfAlpha); 
+    
+    shadowWeight *= 3;
+    float shadowThickness = (shadowWeight - 0.5) * pxRange + thickness + (outlineWeight * pxRange);
+    float shadowSmooth = 0.5 + shadowBlur/20 * pxRange * 0.25;
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowPxDist + shadowThickness);
-
-    // Composite back-to-front: shadow -> outline -> base
+    
     vec3 rgb = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
     rgb = mix(rgb, baseColor.rgb, sdfAlpha);
+    
     float alpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
-
     return vec4(rgb, alpha);
 }
 

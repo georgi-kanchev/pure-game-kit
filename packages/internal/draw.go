@@ -41,9 +41,9 @@ type Effects struct {
 	DepthZ float32
 }
 type TextDraw struct {
-	ShadowColor uint
-	Weight, OutlineWeight,
-	ShadowWeight, ShadowBlur byte
+	ShadowColor, OutlineColor uint
+	Weight, OutlineSize,
+	ShadowSize, ShadowBlur byte
 	ShadowX, ShadowY int8
 }
 
@@ -114,9 +114,10 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 
 		if kind == 2 {
-			polygonBuf[i].TX = packTangentXText(eff.OutlineColor)
+			var outlineSize = td.OutlineSize
+			polygonBuf[i].TX = packTangentXText(td.OutlineColor)
 			polygonBuf[i].TY = packTangentYText(td.ShadowColor)
-			polygonBuf[i].TZ = packTangentZText(td.Weight, td.OutlineWeight, td.ShadowWeight)
+			polygonBuf[i].TZ = packTangentZText(td.Weight, outlineSize, td.ShadowSize)
 			polygonBuf[i].TW = packTangentWText(td.ShadowX, td.ShadowY, td.ShadowBlur)
 		} else {
 			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
