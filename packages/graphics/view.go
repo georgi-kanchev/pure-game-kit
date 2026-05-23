@@ -237,13 +237,13 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 			// Center of the clipped glyph in unrotated view space.
 			var origCX = clipLeft + clippedW/2
-			var origCY = (clipTop + clipBot) / 2
+			var origCY = clipTop + clippedH/2
+			origCY += scale / 2 // <- THIS LINE FIXES THE Y ALIGNMENT
 
-			if o.Angle != 0 {
-				var dx, dy = origCX - o.X, origCY - o.Y
-				dstX = o.X + dx*cosA - dy*sinA - dstW/2
-				dstY = o.Y + dx*sinA + dy*cosA + dstH/2
-			}
+			var dx, dy = origCX - o.X, origCY - o.Y
+			dstX = o.X + dx*cosA - dy*sinA - dstW/2
+			dstY = o.Y + dx*sinA + dy*cosA + dstH/2
+
 			var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 			var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
 			internal.QueueTexture(atlasTex, src, dst, o.Angle, col, mask, eff, 2, textData)
