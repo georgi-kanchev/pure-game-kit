@@ -254,6 +254,11 @@ func newBatch() *Batch {
 	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indexes[0]))
 
 	b.material = DefaultMaterial
+	b.material.Maps = &rl.MaterialMap{
+		Texture: DefaultMaterial.Maps.Texture,
+		Color:   DefaultMaterial.Maps.Color,
+		Value:   DefaultMaterial.Maps.Value,
+	}
 	b.material.Shader = Shader
 	return b
 }
@@ -368,12 +373,11 @@ func clipPolyEdge(in, out []Vertex, isX bool, edgeVal float32, keepGreater bool)
 				t = (edgeVal - prev.Y) / (curr.Y - prev.Y)
 			}
 
-			out[outCount] = Vertex{
-				X: prev.X + t*(curr.X-prev.X),
-				Y: prev.Y + t*(curr.Y-prev.Y),
-				U: prev.U + t*(curr.U-prev.U),
-				V: prev.V + t*(curr.V-prev.V),
-			}
+			out[outCount] = prev
+			out[outCount].X = prev.X + t*(curr.X-prev.X)
+			out[outCount].Y = prev.Y + t*(curr.Y-prev.Y)
+			out[outCount].U = prev.U + t*(curr.U-prev.U)
+			out[outCount].V = prev.V + t*(curr.V-prev.V)
 			outCount++
 		}
 

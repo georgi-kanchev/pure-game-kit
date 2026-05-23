@@ -161,6 +161,10 @@ func (v *View) DrawObjects(objects ...*Object) {
 		var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
 		var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
 		var mask = internal.Area(o.Mask)
+		if o.Mask != (Area{}) {
+			mask.X += float32(internal.WindowWidth) / 2
+			mask.Y += float32(internal.WindowHeight) / 2
+		}
 		var eff *internal.Effects
 		if o.Effects != nil {
 			eff = (*internal.Effects)(o.Effects)

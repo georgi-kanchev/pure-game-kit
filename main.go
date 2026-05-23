@@ -30,7 +30,10 @@ func main() {
 
 	obj.Color = palette.DarkGray
 
-	obj.Mask = graphics.NewArea(obj.X-obj.Width/2, obj.Y-obj.Height/2, obj.Width, obj.Height)
+	// obj.Mask = graphics.NewArea(obj.X-obj.Width/2, obj.Y-obj.Height/2, obj.Width, obj.Height)
+	obj.Angle = 45
+
+	var obj2 = graphics.NewImage(0, 0, assets.LoadImage("examples/data/flail.PNG"))
 
 	for window.KeepOpen() {
 		if keyboard.IsKeyJustPressed(key.F5) {
@@ -39,6 +42,6 @@ func main() {
 
 		// obj.TextWeight = byte(number.Map(number.Sine(time.Running()), -1, 1, 0, 255))
 
-		view.DrawObjects(&obj)
+		view.DrawObjects(&obj, &obj2)
 	}
 }
