@@ -182,8 +182,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 		var fontData = internal.Fonts[byte(o.TextFontId)]
 		var atlasTex = internal.Images[fontData.AtlasId].Texture
 		var scale = o.TextLineHeight
-		var x = o.X - o.Width/2
-		var y = o.Y - o.Height/2 + scale
+		var x, y = o.X - o.Width/2, o.Y - o.Height/2 + scale
 		var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
 		var sb, sc = o.TextShadowBlur, o.TextShadowColor
 		var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
@@ -193,7 +192,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 		for _, r := range o.Text {
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
-			x += float32(kerning) * scale
+			x += kerning * scale
 
 			if r == ' ' {
 				x += scale / 3
@@ -202,10 +201,10 @@ func (v *View) DrawObjects(objects ...*Object) {
 			}
 
 			var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
-			var srcW, srcH = float32(atlas.Right - atlas.Left), float32(atlas.Bottom - atlas.Top)
-			var srcX, srcY = float32(atlas.Left), float32(atlas.Top)
-			var dstX, dstY = x + (float32(plane.Left) * scale), y + float32(plane.Top)*scale
-			var dstW, dstH = float32(plane.Right-plane.Left) * scale, float32(plane.Top-plane.Bottom) * scale
+			var srcW, srcH = atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
+			var srcX, srcY = atlas.Left, atlas.Top
+			var dstX, dstY = x + plane.Left, y + plane.Top
+			var dstW, dstH = (plane.Right - plane.Left) * scale, (plane.Top - plane.Bottom) * scale
 
 			// Clip against textbox in unrotated view space.
 			var physTop = dstY + dstH // dstH is negative, this is the top edge
@@ -219,7 +218,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var clipTop = max(physTop, tbTop)
 			var clipBot = min(physBot, tbBot)
 			if clipLeft >= clipRight || clipTop >= clipBot {
-				x += float32(glyph.Advance) * scale
+				x += glyph.Advance * scale
 				prevGlyph = glyph
 				continue
 			}
@@ -235,19 +234,14 @@ func (v *View) DrawObjects(objects ...*Object) {
 			dstW = clippedW
 			dstH = -clippedH // restore negative convention
 
-			// Center of the clipped glyph in unrotated view space.
-			var origCX = clipLeft + clippedW/2
-			var origCY = clipTop + clippedH/2
-			origCY += scale / 2 // <- THIS LINE FIXES THE Y ALIGNMENT
-
-			var dx, dy = origCX - o.X, origCY - o.Y
+			var dx, dy = (clipLeft + clippedW/2) - o.X, ((clipTop + clipBot) / 2) - o.Y
 			dstX = o.X + dx*cosA - dy*sinA - dstW/2
 			dstY = o.Y + dx*sinA + dy*cosA + dstH/2
 
 			var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 			var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
 			internal.QueueTexture(atlasTex, src, dst, o.Angle, col, mask, eff, 2, textData)
-			x += float32(glyph.Advance) * scale
+			x += glyph.Advance * scale
 			prevGlyph = glyph
 		}
 	}

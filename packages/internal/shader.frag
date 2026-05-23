@@ -264,8 +264,8 @@ void main() {
         color = compute_msdf_text(uv, fragColor, outlineColor);
         
         if (color.a < 0.004)
-            discard;
-
+            // discard;
+            color = vec4(1.0, 0.0, 0.0, 1.0);
         color = compute_color_adjust(color, colorAdjust1);
         finalColor = color;
     } else {

@@ -15,7 +15,7 @@ func main() {
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var obj = graphics.NewTextbox(0, 0, 200, 200, font, "To aWAY AVATAR WAVE")
+	var obj = graphics.NewTextbox(0, 0, 200, 200, font, "_^- tyg aWAY AVATAR WAVE")
 
 	obj.Width *= 4
 	obj.Height *= 4
@@ -28,7 +28,8 @@ func main() {
 	obj.Color = palette.DarkGray
 
 	// obj.Mask = graphics.NewArea(obj.X-obj.Width/2, obj.Y-obj.Height/2, obj.Width, obj.Height)
-	obj.Angle = 1
+	// obj.Angle = 1
+	obj.Roundness = 0.5
 
 	var obj2 = graphics.NewImage(0, 0, assets.LoadImage("examples/data/flail.PNG"))
 
@@ -38,7 +39,7 @@ func main() {
 		}
 		// obj.TextWeight = byte(number.Map(number.Sine(time.Running()), -1, 1, 0, 255))
 		// obj.Mask.X, obj.Mask.Y = view.MousePosition()
-		obj.Angle++
+		// obj.Angle++
 
 		view.DrawObjects(&obj, &obj2)
 	}

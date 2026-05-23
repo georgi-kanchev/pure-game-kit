@@ -110,7 +110,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		polygonBuf[i].U2 = packU2(uint16(tex.Width), uint16(tex.Height))
 		polygonBuf[i].V2 = packV2(eff.BorderColor)
 		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
-		polygonBuf[i].NY = packNormalY(0.05, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
+		polygonBuf[i].NY = packNormalY(0.5, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
 		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 
 		if kind == 2 {
