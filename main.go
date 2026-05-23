@@ -19,7 +19,6 @@ func main() {
 
 	obj.Width *= 4
 	obj.Height *= 4
-	obj.X -= 800
 	obj.TextLineHeight = 100
 
 	obj.Effects = graphics.NewEffects()
@@ -37,8 +36,6 @@ func main() {
 		if keyboard.IsKeyJustPressed(key.F5) {
 			print(debug.MemoryUsage())
 		}
-		obj.Angle++
-
 		// obj.TextWeight = byte(number.Map(number.Sine(time.Running()), -1, 1, 0, 255))
 		obj.Mask.X, obj.Mask.Y = view.MousePosition()
 
