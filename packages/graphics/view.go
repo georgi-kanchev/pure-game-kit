@@ -181,13 +181,15 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 		var fontData = internal.Fonts[byte(o.TextFontId)]
 		var atlasTex = internal.Images[fontData.AtlasId].Texture
-		var x, y = o.X, o.Y
+		var x = o.X - o.Width/2
+		var y = o.Y - o.Height/2 + o.TextLineHeight
 		var scale = o.TextLineHeight
 		var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
 		var sb, sc = o.TextShadowBlur, o.TextShadowColor
 		var textData = internal.TextDraw{ShadowColor: sc, Weight: o.TextWeight, ShadowBlur: sb, ShadowX: sx, ShadowY: sy}
 		var col = getColor(o.TextColor)
 		var prevGlyph internal.Glyph
+		var sinA, cosA = internal.SinCos(o.Angle)
 		for _, r := range o.Text {
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
@@ -203,9 +205,16 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var srcW, srcH = float32(atlas.Right - atlas.Left), float32(atlas.Bottom - atlas.Top)
 			var dstX, dstY = x + (float32(plane.Left) * scale), y + float32(plane.Top)*scale
 			var dstW, dstH = float32(plane.Right-plane.Left) * scale, float32(plane.Top-plane.Bottom) * scale
+			if o.Angle != 0 {
+				var cx = dstX + dstW/2
+				var cy = dstY - dstH/2
+				var dx, dy = cx - o.X, cy - o.Y
+				dstX = o.X + dx*cosA - dy*sinA - dstW/2
+				dstY = o.Y + dx*sinA + dy*cosA + dstH/2
+			}
 			var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 			var src = rl.NewRectangle(float32(atlas.Left), float32(atlas.Top), srcW, srcH)
-			internal.QueueTexture(atlasTex, src, dst, 0, col, mask, eff, 2, textData)
+			internal.QueueTexture(atlasTex, src, dst, o.Angle, col, mask, eff, 2, textData)
 			x += float32(glyph.Advance) * scale
 			prevGlyph = glyph
 		}

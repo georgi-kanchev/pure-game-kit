@@ -153,6 +153,8 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		var sinA, cosA = SinCos(ang)
 		var cx = ww + dst.Width/2
 		var cy = wh + dst.Height/2
+		var objCX = mask.X + mask.Width/2
+		var objCY = mask.Y + mask.Height/2
 		for i := range 4 {
 			var rx = dx[i] - cx
 			var ry = dy[i] - cy
@@ -161,7 +163,23 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 			polygonBuf[i].U = uvs[i*2]
 			polygonBuf[i].V = uvs[i*2+1]
 		}
+		if ang != 0 {
+			for i := range 4 {
+				var rx = polygonBuf[i].X - objCX
+				var ry = polygonBuf[i].Y - objCY
+				polygonBuf[i].X = rx*cosA + ry*sinA + objCX
+				polygonBuf[i].Y = -rx*sinA + ry*cosA + objCY
+			}
+		}
 		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
+		if ang != 0 && vCount >= 3 {
+			for i := int32(0); i < vCount; i++ {
+				var rx = clipResultBuf[i].X - objCX
+				var ry = clipResultBuf[i].Y - objCY
+				clipResultBuf[i].X = rx*cosA - ry*sinA + objCX
+				clipResultBuf[i].Y = rx*sinA + ry*cosA + objCY
+			}
+		}
 		if vCount >= 3 {
 			queueVertices(clipResultBuf[:vCount], vCount, tex, col)
 		}
