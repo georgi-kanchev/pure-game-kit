@@ -206,33 +206,24 @@ func (v *View) DrawObjects(objects ...*Object) {
 			var dstX, dstY = x + plane.Left, y + plane.Top
 			var dstW, dstH = (plane.Right - plane.Left) * scale, (plane.Top - plane.Bottom) * scale
 
-			// Clip against textbox in unrotated view space.
-			var physTop = dstY + dstH // dstH is negative, this is the top edge
-			var physBot = dstY
-			var tbLeft = o.X - o.Width/2
-			var tbTop = o.Y - o.Height/2
-			var tbRight = o.X + o.Width/2
-			var tbBot = o.Y + o.Height/2
-			var clipLeft = max(dstX, tbLeft)
-			var clipRight = min(dstX+dstW, tbRight)
-			var clipTop = max(physTop, tbTop)
-			var clipBot = min(physBot, tbBot)
+			var physTop, physBot = dstY + dstH, dstY // dstH is negative, this is the top edge
+			var tbLeft, tbTop = o.X - o.Width/2, o.Y - o.Height/2
+			var tbRight, tbBot = o.X + o.Width/2, o.Y + o.Height/2
+			var clipLeft, clipRight = max(dstX, tbLeft), min(dstX+dstW, tbRight)
+			var clipTop, clipBot = max(physTop, tbTop), min(physBot, tbBot)
 			if clipLeft >= clipRight || clipTop >= clipBot {
 				x += glyph.Advance * scale
 				prevGlyph = glyph
 				continue
 			}
-			var clippedW = clipRight - clipLeft
-			var clippedH = clipBot - clipTop // positive pixel height
-			var origH = physBot - physTop    // = -dstH
+			var clippedW, clippedH = clipRight - clipLeft, clipBot - clipTop
+			var origH = physBot - physTop
 			srcX += (clipLeft - dstX) / dstW * srcW
 			srcY += (clipTop - physTop) / origH * srcH
 			srcW *= clippedW / dstW
 			srcH *= clippedH / origH
-			dstX = clipLeft
-			dstY = clipTop
-			dstW = clippedW
-			dstH = -clippedH // restore negative convention
+			dstX, dstY = clipLeft, clipTop
+			dstW, dstH = clippedW, -clippedH // restore negative convention
 
 			var dx, dy = (clipLeft + clippedW/2) - o.X, ((clipTop + clipBot) / 2) - o.Y
 			dstX = o.X + dx*cosA - dy*sinA - dstW/2

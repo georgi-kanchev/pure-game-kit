@@ -15,7 +15,7 @@ func main() {
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var obj = graphics.NewTextbox(0, 0, 200, 200, font, "_^- tyg aWAY AVATAR WAVE")
+	var obj = graphics.NewTextbox(0, 0, 200, 200, font, "thank you")
 
 	obj.Width *= 4
 	obj.Height *= 4
