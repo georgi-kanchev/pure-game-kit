@@ -202,7 +202,7 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
     
     float baseSample = median(texture(texture0, uv).rgb);
-    float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY)).rgb);
+    float shadowSample = median(texture(texture0, uv + vec2(shadowX/64, shadowY/64)).rgb);
     
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);

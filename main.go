@@ -32,10 +32,10 @@ func main() {
 
 	// window.SetTargetFPS(60)
 
-	obj.TextShadowBlur = 128
-	// obj.TextShadowOffsetX = 1
-	// obj.TextShadowOffsetY = 10
-	obj.TextShadowSize = 255
+	obj.TextShadowBlur = 50
+	obj.TextShadowOffsetX = 0
+	obj.TextShadowOffsetY = -127
+	obj.TextShadowSize = 100
 	obj.TextShadowColor = palette.Black
 
 	for window.KeepOpen() {

@@ -184,9 +184,9 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 		var x = o.X - o.Width/2
 		var y = o.Y - o.Height/2 - fontData.Ascender*o.TextLineHeight
-		var sx, sy = o.TextShadowOffsetX, o.TextShadowOffsetY
 		var sc = o.TextShadowColor
 		var scale = o.TextLineHeight / 255
+		var sx, sy = int8(float32(o.TextShadowOffsetX) * scale), int8(float32(o.TextShadowOffsetY) * scale)
 		var outlineSize = byte(number.Limit(float32(o.TextOutlineSize)*scale, 0, 255))
 		var shadowSize = byte(number.Limit(float32(o.TextShadowSize)*scale, 0, 255))
 		var shadowBlur = byte(number.Limit(float32(o.TextShadowBlur)*scale, 0, 255))

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Repository 			https://github.com/Chlumsky/msdf-atlas-gen
-# Known kerning issue 	https://github.com/Chlumsky/msdf-atlas-gen/issues/4#issuecomment-792912921
+# Repository            https://github.com/Chlumsky/msdf-atlas-gen
+# Known kerning issue   https://github.com/Chlumsky/msdf-atlas-gen/issues/4#issuecomment-792912921
 
 # 1. Ask the user for the font file path
 echo "=== MSDF Atlas Gen (Wine Wrapper) ==="
@@ -23,9 +23,9 @@ fi
 read -p "Enter font glyph size [Default: 24]: " INPUT_SIZE
 SIZE=${INPUT_SIZE:-24}
 
-# 4. Ask for Smoothness/Pixel Range with a default of 4
-read -p "Enter pixel range / smoothness [Default: 4]: " INPUT_RANGE
-RANGE=${INPUT_RANGE:-4}
+# 4. Ask for Outer Pixel Padding with a default of 0
+read -p "Enter outer pixel padding [Default: 0]: " INPUT_PADDING
+PADDING=${INPUT_PADDING:-0}
 
 # 5. Ask for Charset Directory
 read -p "Enter path to charset directory: " CHARSET_DIR
@@ -71,7 +71,8 @@ FONT_NAME=$(basename "$INPUT_PATH" | sed 's/\.[^.]*$//')
 echo ""
 echo "Processing font: $FONT_NAME"
 echo "Glyph Size: $SIZE px"
-echo "Pixel Range: $RANGE px"
+echo "Pixel Range: 8 px (Hardcoded)"
+echo "Outer Pixel Padding: $PADDING px"
 echo "Unique characters found:"
 echo "$CHARS_STRING"
 echo "Running msdf-atlas-gen via Wine..."
@@ -85,7 +86,8 @@ WINEDEBUG=-all LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 wine ./msdf-atlas-gen.exe \
   -format png \
   -imageout "${FONT_NAME}.png" \
   -json "${FONT_NAME}.json" \
-  -pxrange "$RANGE" \
+  -pxrange "8" \
+  -outerpxpadding "$PADDING" \
   -size "$SIZE" \
   -chars "$HEX_STRING" \
   -yorigin "top"
