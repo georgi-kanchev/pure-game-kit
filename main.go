@@ -21,7 +21,6 @@ func main() {
 
 	obj.Effects.TextLineHeight = 100
 	obj.Effects.TextShadowBlur = 64
-	obj.Effects.TextShadowSize = 128
 	obj.Effects.TextShadowOffsetX = 127
 	obj.Effects.TextShadowOffsetY = 127
 	obj.Effects.OutlineSize = 64

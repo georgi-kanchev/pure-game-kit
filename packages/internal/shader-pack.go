@@ -124,10 +124,10 @@ func packTangentXText(outlineColor uint) float32 {
 func packTangentYText(shadowColor uint) float32 {
 	return packColor24(shadowColor)
 }
-func packTangentZText(weight, outlineWeight, shadowWeight uint8) float32 {
-	var w = uint32(weight) << 16       // bits 23-16
-	var o = uint32(outlineWeight) << 8 // bits 15-8
-	var s = uint32(shadowWeight)       // bits 7-0
+func packTangentZText(weight int8, outlineWeight uint8, shadowWeight int8) float32 {
+	var w = uint32(uint8(weight)) << 16       // bits 23-16 (signed → unsigned via two's complement)
+	var o = uint32(outlineWeight) << 8        // bits 15-8
+	var s = uint32(uint8(shadowWeight))       // bits 7-0  (signed → unsigned via two's complement)
 	return pack24(w | o | s)
 }
 func packTangentWText(textShadowX, textShadowY int8, shadowBlur uint8) float32 {

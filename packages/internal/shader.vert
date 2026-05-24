@@ -63,11 +63,13 @@ vec4 unpack_10_4_5_5(float packedFloat) {
     float blurY     = float(bits & 0x1Fu) / 31.0;
     return vec4(roundness, pixelSize, blurX, blurY);
 }
-vec3 unpack_8_8_8_raw(float packedFloat) {
+vec3 unpack_8_8_8_text_weights(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
-    float x = float((bits >> 16u) & 0xFFu);
-    float y = float((bits >> 8u)  & 0xFFu);
-    float z = float(bits & 0xFFu);
+    int rawX = int((bits >> 16u) & 0xFFu);
+    int rawZ = int(bits & 0xFFu);
+    float x = float(rawX >= 128 ? rawX - 256 : rawX); // signed: weight
+    float y = float((bits >> 8u) & 0xFFu);             // unsigned: outlineWeight
+    float z = float(rawZ >= 128 ? rawZ - 256 : rawZ); // signed: shadowWeight
     return vec3(x, y, z);
 }
 
@@ -108,7 +110,7 @@ void main() {
     else if (objectType == 2) { // Text
         outlineColor     = unpack_6_6_6_6(vertTangent.x);
         shadowColor_text = unpack_6_6_6_6(vertTangent.y);
-        textWeights      = unpack_8_8_8_raw(vertTangent.z);
+        textWeights      = unpack_8_8_8_text_weights(vertTangent.z);
         unpack_8_8_8(vertTangent.w, shadowX, shadowY, shadowBlur);
     }
     else if (objectType == 3) { // Tilemap
@@ -128,7 +130,7 @@ void main() {
 
     if (objectType == 2) { // Text: repurpose channels for MSDF data
         fragData4 = shadowColor_text;
-        fragData5 = vec4(textWeights / 255.0, 0.0);
+        fragData5 = vec4(textWeights.x / 127.0, textWeights.y / 255.0, textWeights.z / 127.0, 0.0);
         fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);
     } else {
         fragData4 = silhouetteColor;

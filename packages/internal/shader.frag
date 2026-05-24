@@ -207,7 +207,7 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
     
-    float thickness = map(weight, 0.0, 1.0, -screenPxRange*0.25, screenPxRange*0.25);
+    float thickness = weight * screenPxRange * 0.25;
     float textPxDist = basePxDist + thickness;
     float sdfAlpha = baseColor.a * smoothstep(-0.5, 0.5, textPxDist);
     
@@ -215,7 +215,7 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float outlineAlpha = outlineColor.a * smoothstep(-0.5, 0.5, outlinePxDist);
     outlineAlpha = max(0.0, outlineAlpha - sdfAlpha);
     
-    float shadowThickness = map(shadowWeight, 0.0, 1.0, -screenPxRange*0.25, screenPxRange*0.25);
+    float shadowThickness = shadowWeight * screenPxRange * 0.25;
     float shadowSmooth = 0.5 + shadowBlur/128 * screenPxRange * 0.25;
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowPxDist + shadowThickness);
     

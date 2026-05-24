@@ -43,12 +43,12 @@ type Effects struct {
 
 	//=================================================================
 
-	TextAlignX, TextAlignY                     float32 // Ranged 0..1
-	TextLineHeight, TextSymbolGap, TextLineGap float32
-	TextWordWrap, TextUnderline, TextCrossout  bool
-	TextWeight, TextShadowSize, TextShadowBlur uint8
-	TextShadowOffsetX, TextShadowOffsetY       int8
-	TextBackColor, TextColor, TextShadowColor  uint
+	TextAlignX, TextAlignY                                             float32 // Ranged 0..1
+	TextLineHeight, TextSymbolGap, TextLineGap                         float32
+	TextWordWrap, TextUnderline, TextCrossout                          bool
+	TextWeight, TextShadowWeight, TextShadowOffsetX, TextShadowOffsetY int8
+	TextShadowBlur                                                     uint8
+	TextBackColor, TextColor, TextShadowColor                          uint
 }
 
 var DefaultMaterial rl.Material
@@ -119,12 +119,13 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 
 		if kind == 2 {
 			var oc, sc uint
-			var os, w, ss, sb uint8
+			var os, sb uint8
+			var w, ss int8
 			var sx, sy int8
 			if eff != nil {
 				os = uint8(number.Limit(eff.OutlineSize, 0, 255))
 				oc, sc = eff.OutlineColor, eff.TextShadowColor
-				w, ss, sb = eff.TextWeight, eff.TextShadowSize, eff.TextShadowBlur
+				w, ss, sb = eff.TextWeight, eff.TextShadowWeight, eff.TextShadowBlur
 				sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
 			}
 			polygonBuf[i].TX = packTangentXText(oc)
@@ -236,8 +237,7 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5,
-	TextColor: palette.White, TextWeight: 128}
+var defaultEffects = &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5, TextColor: palette.White}
 
 //go:embed shader.frag
 var shaderFrag string

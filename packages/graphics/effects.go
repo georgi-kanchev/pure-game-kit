@@ -9,5 +9,5 @@ type Effects internal.Effects
 
 func NewEffects() *Effects {
 	return &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5,
-		TextWeight: 128, TextColor: palette.White, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
+		TextColor: palette.White, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
 }
