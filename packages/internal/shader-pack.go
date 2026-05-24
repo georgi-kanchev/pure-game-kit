@@ -91,8 +91,10 @@ func packTangentXSprite(outlineColor uint) float32 {
 func packTangentYSprite(silhouetteColor uint) float32 {
 	return packColor24(silhouetteColor)
 }
-func packTangentWSprite() float32 {
-	return 0 // tangent.w is free for sprites
+func packTangentWSprite(objWidth, objHeight uint16) float32 {
+	var w = uint32(objWidth & 0xFFF) << 12
+	var h = uint32(objHeight & 0xFFF)
+	return pack24(w | h)
 }
 
 //=================================================================
