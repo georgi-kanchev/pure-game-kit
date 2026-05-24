@@ -31,10 +31,12 @@ type Effects struct {
 
 	OutlineSize, BorderSize float32
 
-	PixelSize    uint8 // Ranged 0..15
-	BlurX, BlurY uint8 // Ranged 0..31
+	BorderColor     uint
+	OutlineColor    uint // Not used by Shapes.
+	SilhouetteColor uint // Not used by Shapes & Texts.
 
-	OutlineColor, BorderColor, SilhouetteColor uint
+	PixelSize    uint8 // Ranged 0..15; Not used by Shapes & Texts.
+	BlurX, BlurY uint8 // Ranged 0..31; Not used by Shapes & Texts.
 
 	// Ranged 0..1.
 	//
@@ -117,7 +119,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		polygonBuf[i].NY = packNormalY(0.5, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
 		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 
-		if kind == 2 {
+		if kind == KindText {
 			var oc, sc uint
 			var os, sb uint8
 			var w, ss int8
@@ -237,7 +239,7 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{TextColor: palette.White}
+var defaultEffects = &Effects{TextColor: palette.White, TextLineHeight: 40, TextWordWrap: true}
 
 //go:embed shader.frag
 var shaderFrag string

@@ -14,6 +14,11 @@ in vec4 fragData7;
 
 out vec4 finalColor;
 
+#define KIND_SHAPE 0
+#define KIND_SPRITE 1
+#define KIND_TEXT 2
+#define KIND_TILEMAP 3
+
 #define TIME 0
 
 uniform sampler2D texture0;
@@ -186,7 +191,6 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
     float sShape = 1.0 - smoothstep(-af, af, dShape);
     return color * sShape;
 }
-
 vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     vec4 shadowColor = fragData4;
     float weight = fragData5.x;
@@ -229,7 +233,7 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
 void main() {
     vec2 texSize = fragData0.xy;
     float depthZ = fragData0.z;
-    int objectType = int(fragData0.w);
+    int objKind = int(fragData0.w);
 
     vec4 colorAdjust1 = fragData1;
     vec4 rgbAdjust2 = fragData2;
@@ -252,7 +256,7 @@ void main() {
 
     vec4 color;
 
-    if (objectType == 2) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
+    if (objKind == KIND_TEXT) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
         color = compute_msdf_text(fragTexCoord, fragColor, outlineColor);
         if (color.a < 0.004)
             discard;
@@ -261,7 +265,7 @@ void main() {
         finalColor = color;
     } else {
         vec2 uv = compute_tile(fragTexCoord, texSize, tileColumns, tileRows, tileSize, tileSize);
-        if (objectType == 0) { // Shape: white fill, skip pixelate/blur
+        if (objKind == KIND_SHAPE) { // Shape: white fill, skip pixelate/blur
             color = vec4(1.0);
         } else { // Sprite / Tilemap
             uv = compute_pixelated_uv(uv, texSize, pixelSize);
@@ -274,7 +278,7 @@ void main() {
         if (color.a * fragColor.a < 0.004)
             discard;
 
-        if (objectType != 0) {
+        if (objKind != KIND_SHAPE) {
             color = compute_color_adjust(color, colorAdjust1);
             color = compute_silhouette(color, silhouetteColor);
         }

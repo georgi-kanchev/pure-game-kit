@@ -15,15 +15,17 @@ func main() {
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
 	var obj = graphics.NewTextbox(0, 0, 1500, 1500, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
 
-	obj.Effects = graphics.NewEffects()
 	obj.Color = palette.DarkGray
 
+	obj.Effects = graphics.NewEffects()
 	obj.Effects.TextLineHeight = 100
 	obj.Effects.TextShadowBlur = 64
 	obj.Effects.TextShadowOffsetX = 80
 	obj.Effects.TextShadowOffsetY = 50
 	obj.Effects.OutlineSize = 64
 	obj.Effects.OutlineColor = palette.Red
+
+	obj.Roundness = 0.5
 
 	window.SetTargetFPS(60)
 

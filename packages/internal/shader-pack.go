@@ -33,7 +33,7 @@ import (
 //  tangent.z = TileColumns(12) + TileRows(12)
 //  tangent.w = OutlineSize(16) + TileSize(8)
 
-const typeShape, typeSprite, typeText, typeTilemap uint8 = 0, 1, 2, 3
+const KindShape, KindSprite, KindText, KindTilemap uint8 = 0, 1, 2, 3
 
 const floatSafe = 0x3F000000 // required to preserve 24 bits correctly from the 32 bits
 
@@ -65,7 +65,7 @@ func packNormalX(gamma, saturation, contrast, brightness int8) float32 {
 	var g = uint32((uint16(int16(gamma)+128)*63)/255) << 18      // bits 23-18
 	var s = uint32((uint16(int16(saturation)+128)*63)/255) << 12 // bits 17-12
 	var c = uint32((uint16(int16(contrast)+128)*63)/255) << 6    // bits 11-6
-	var b = uint32((uint16(int16(brightness)+128)*63)/255)       // bits 5-0
+	var b = uint32((uint16(int16(brightness)+128) * 63) / 255)   // bits 5-0
 	return pack24(g | s | c | b)
 }
 func packNormalY(roundness float32, pixelSize, blurX, blurY uint8) float32 {
@@ -123,9 +123,9 @@ func packTangentYText(shadowColor uint) float32 {
 	return packColor24(shadowColor)
 }
 func packTangentZText(weight int8, outlineWeight uint8, shadowWeight int8) float32 {
-	var w = uint32(uint8(weight)) << 16       // bits 23-16 (signed → unsigned via two's complement)
-	var o = uint32(outlineWeight) << 8        // bits 15-8
-	var s = uint32(uint8(shadowWeight))       // bits 7-0  (signed → unsigned via two's complement)
+	var w = uint32(uint8(weight)) << 16 // bits 23-16 (signed → unsigned via two's complement)
+	var o = uint32(outlineWeight) << 8  // bits 15-8
+	var s = uint32(uint8(shadowWeight)) // bits 7-0  (signed → unsigned via two's complement)
 	return pack24(w | o | s)
 }
 func packTangentWText(textShadowX, textShadowY int8, shadowBlur uint8) float32 {

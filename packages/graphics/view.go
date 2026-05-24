@@ -166,18 +166,15 @@ func (v *View) DrawObjects(objects ...*Object) {
 			mask.X += float32(internal.WindowWidth) / 2
 			mask.Y += float32(internal.WindowHeight) / 2
 		}
-		var eff *internal.Effects
-		if o.Effects != nil {
-			eff = (*internal.Effects)(o.Effects)
-		}
+		var eff = (*internal.Effects)(o.Effects)
 		var kind uint8
 		if o.ImageId != 0 {
-			kind = 1 // sprite
+			kind = internal.KindSprite // sprite
 		}
 		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), mask, eff, kind)
 
 		if o.Text != "" {
-			v.QueueText(o, mask, eff)
+			v.queueText(o, mask, eff)
 		}
 	}
 }
@@ -191,7 +188,7 @@ func (v *View) area() (x, y, w, h float32) {
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
 
-func (v *View) QueueText(o *Object, mask internal.Area, eff *internal.Effects) {
+func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 	var lineHeight float32 = 40
 	var scale = lineHeight / 255
 	var c = palette.White
