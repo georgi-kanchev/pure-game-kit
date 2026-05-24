@@ -50,10 +50,10 @@ type Glyph struct {
 	Kernings    map[rune]float32
 }
 
-var Fonts = make(map[byte]Font) // 0 = default
-var FontNextId byte
+var Fonts = make(map[uint8]Font) // 0 = default
+var FontNextId uint8
 
-func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) byte {
+func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) uint8 {
 	if !isDefault {
 		FontNextId++
 	}

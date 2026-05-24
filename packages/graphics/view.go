@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -169,81 +170,14 @@ func (v *View) DrawObjects(objects ...*Object) {
 		if o.Effects != nil {
 			eff = (*internal.Effects)(o.Effects)
 		}
-		var kind byte
+		var kind uint8
 		if o.ImageId != 0 {
 			kind = 1 // sprite
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), mask, eff, kind, internal.TextDraw{})
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), mask, eff, kind)
 
-		if o.Text == "" {
-			continue
-		}
-
-		var fontData = internal.Fonts[byte(o.TextFontId)]
-		var atlasTex = internal.Images[fontData.AtlasId].Texture
-
-		var x = o.X - o.Width/2
-		var y = o.Y - o.Height/2 - fontData.Ascender*o.TextLineHeight
-		var sc = o.TextShadowColor
-		var scale = o.TextLineHeight / 255
-		var sx, sy = int8(o.TextShadowOffsetX), int8(o.TextShadowOffsetY)
-		var outlineSize = byte(number.Limit(float32(o.TextOutlineSize), 0, 255))
-		var shadowSize = byte(number.Limit(float32(o.TextShadowSize), 0, 255))
-		var shadowBlur = byte(number.Limit(float32(o.TextShadowBlur), 0, 255))
-		var textData = internal.TextDraw{OutlineColor: o.TextOutlineColor, ShadowSize: shadowSize,
-			ShadowColor: sc, Weight: o.TextWeight, OutlineSize: outlineSize, ShadowBlur: shadowBlur, ShadowX: sx, ShadowY: sy}
-		var col = getColor(o.TextColor)
-		var prevGlyph internal.Glyph
-		var gapX = o.TextSymbolGap * scale
-		var sinA, cosA = internal.SinCos(o.Angle)
-		for _, r := range o.Text {
-			var glyph = fontData.Chars[r]
-			var kerning, _ = prevGlyph.Kernings[r]
-			x += kerning * o.TextLineHeight
-
-			if r == ' ' {
-				x += o.TextLineHeight/3 + gapX
-				prevGlyph = glyph
-				continue
-			} else if r == '\n' {
-				x = o.X - o.Width/2
-				y += o.TextLineHeight * fontData.LineHeight
-				continue
-			}
-
-			var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
-			var srcW, srcH = atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
-			var srcX, srcY = atlas.Left, atlas.Top
-			var dstX, dstY = x + plane.Left*o.TextLineHeight, y + plane.Top*o.TextLineHeight
-			var dstW, dstH = (plane.Right - plane.Left) * o.TextLineHeight, (plane.Top - plane.Bottom) * o.TextLineHeight
-
-			var physTop, physBot = dstY, dstY - dstH
-			var tbLeft, tbTop = o.X - o.Width/2, o.Y - o.Height/2
-			var tbRight, tbBot = o.X + o.Width/2, o.Y + o.Height/2
-			var clipLeft, clipRight = max(dstX, tbLeft), min(dstX+dstW, tbRight)
-			var clipTop, clipBot = max(physTop, tbTop), min(physBot, tbBot)
-			if clipLeft >= clipRight || clipTop >= clipBot {
-				x += glyph.Advance * o.TextLineHeight
-				prevGlyph = glyph
-				continue
-			}
-			var clippedW, clippedH = clipRight - clipLeft, clipBot - clipTop
-			var origH = physBot - physTop
-			srcX += (clipLeft - dstX) / dstW * srcW
-			srcY += (clipTop - physTop) / origH * srcH
-			srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
-			dstX, dstY = clipLeft, clipTop
-			dstW, dstH = clippedW, -clippedH // restore negative convention
-
-			var dx, dy = (clipLeft + clippedW/2) - o.X, ((clipTop + clipBot) / 2) - o.Y
-			dstX = o.X + dx*cosA - dy*sinA - dstW/2
-			dstY = o.Y + dx*sinA + dy*cosA + dstH/2
-
-			var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
-			var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
-			internal.QueueTexture(atlasTex, src, dst, o.Angle, col, mask, eff, 2, textData)
-			x += glyph.Advance*o.TextLineHeight + gapX
-			prevGlyph = glyph
+		if o.Text != "" {
+			v.QueueText(o, mask, eff)
 		}
 	}
 }
@@ -255,4 +189,72 @@ func (v *View) area() (x, y, w, h float32) {
 		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
 	}
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
+}
+
+func (v *View) QueueText(o *Object, mask internal.Area, eff *internal.Effects) {
+	var lineHeight float32 = 40
+	var scale = lineHeight / 255
+	var c = palette.White
+	var gapX, gapY float32
+	if eff != nil {
+		c = eff.TextColor
+		gapX, gapY = eff.TextSymbolGap*scale, eff.TextLineGap*scale
+	}
+
+	var fontData = internal.Fonts[uint8(o.TextFontId)]
+	var atlasTex = internal.Images[fontData.AtlasId].Texture
+	var x = o.X - o.Width/2
+	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight
+	var col = getColor(c)
+	var prevGlyph internal.Glyph
+	var sinA, cosA = internal.SinCos(o.Angle)
+	for _, r := range o.Text {
+		var glyph = fontData.Chars[r]
+		var kerning, _ = prevGlyph.Kernings[r]
+		x += kerning * lineHeight
+
+		if r == ' ' {
+			x += lineHeight/3 + gapX
+			prevGlyph = glyph
+			continue
+		} else if r == '\n' {
+			x = o.X - o.Width/2
+			y += lineHeight*fontData.LineHeight + gapY
+			continue
+		}
+
+		var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
+		var srcW, srcH = atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
+		var srcX, srcY = atlas.Left, atlas.Top
+		var dstX, dstY = x + plane.Left*lineHeight, y + plane.Top*lineHeight
+		var dstW, dstH = (plane.Right - plane.Left) * lineHeight, (plane.Top - plane.Bottom) * lineHeight
+
+		var physTop, physBot = dstY, dstY - dstH
+		var tbLeft, tbTop = o.X - o.Width/2, o.Y - o.Height/2
+		var tbRight, tbBot = o.X + o.Width/2, o.Y + o.Height/2
+		var clipLeft, clipRight = max(dstX, tbLeft), min(dstX+dstW, tbRight)
+		var clipTop, clipBot = max(physTop, tbTop), min(physBot, tbBot)
+		if clipLeft >= clipRight || clipTop >= clipBot {
+			x += glyph.Advance * lineHeight
+			prevGlyph = glyph
+			continue
+		}
+		var clippedW, clippedH = clipRight - clipLeft, clipBot - clipTop
+		var origH = physBot - physTop
+		srcX += (clipLeft - dstX) / dstW * srcW
+		srcY += (clipTop - physTop) / origH * srcH
+		srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
+		dstX, dstY = clipLeft, clipTop
+		dstW, dstH = clippedW, -clippedH // restore negative convention
+
+		var dx, dy = (clipLeft + clippedW/2) - o.X, ((clipTop + clipBot) / 2) - o.Y
+		dstX = o.X + dx*cosA - dy*sinA - dstW/2
+		dstY = o.Y + dx*sinA + dy*cosA + dstH/2
+
+		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
+		var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
+		internal.QueueTexture(atlasTex, src, dst, o.Angle, col, mask, eff, 2)
+		x += glyph.Advance*lineHeight + gapX
+		prevGlyph = glyph
+	}
 }

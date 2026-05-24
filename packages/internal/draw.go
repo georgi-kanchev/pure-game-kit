@@ -3,6 +3,7 @@ package internal
 import (
 	_ "embed"
 	"pure-game-kit/packages/utility/angle"
+	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"unsafe"
 
@@ -30,8 +31,8 @@ type Effects struct {
 
 	OutlineSize, BorderSize float32
 
-	PixelSize    byte // Ranged 0..15
-	BlurX, BlurY byte // Ranged 0..31
+	PixelSize    uint8 // Ranged 0..15
+	BlurX, BlurY uint8 // Ranged 0..31
 
 	OutlineColor, BorderColor, SilhouetteColor uint
 
@@ -39,12 +40,15 @@ type Effects struct {
 	//
 	// Requires semi-transparent pixels to be drawn last to avoid artifacts. Fully opaque/transparent pixels work in any sorting.
 	DepthZ float32
-}
-type TextDraw struct {
-	ShadowColor, OutlineColor uint
-	Weight, OutlineSize,
-	ShadowSize, ShadowBlur byte
-	ShadowX, ShadowY int8
+
+	//=================================================================
+
+	TextAlignX, TextAlignY                     float32 // Ranged 0..1
+	TextLineHeight, TextSymbolGap, TextLineGap float32
+	TextWordWrap, TextUnderline, TextCrossout  bool
+	TextWeight, TextShadowSize, TextShadowBlur uint8
+	TextShadowOffsetX, TextShadowOffsetY       int8
+	TextBackColor, TextColor, TextShadowColor  uint
 }
 
 var DefaultMaterial rl.Material
@@ -63,7 +67,7 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area, eff *Effects, kind byte, td TextDraw) {
+func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area, eff *Effects, kind uint8) {
 	if dst.Width < 0 {
 		dst.Width = -dst.Width
 	}
@@ -86,6 +90,8 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 	if eff.BorderSize > 0 {
 		var padX = eff.BorderSize * (dst.Width / src.Width)
 		var padY = eff.BorderSize * (dst.Height / src.Height)
+		var padU = eff.BorderSize * invTexW
+		var padV = eff.BorderSize * invTexH
 		dx[0] -= padX
 		dx[1] -= padX
 		dx[2] += padX
@@ -94,8 +100,6 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		dy[3] -= padY
 		dy[1] += padY
 		dy[2] += padY
-		var padU = eff.BorderSize * invTexW
-		var padV = eff.BorderSize * invTexH
 		uvs[0] -= padU
 		uvs[2] -= padU
 		uvs[4] += padU
@@ -114,11 +118,19 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 
 		if kind == 2 {
-			var outlineSize = td.OutlineSize
-			polygonBuf[i].TX = packTangentXText(td.OutlineColor)
-			polygonBuf[i].TY = packTangentYText(td.ShadowColor)
-			polygonBuf[i].TZ = packTangentZText(td.Weight, outlineSize, td.ShadowSize)
-			polygonBuf[i].TW = packTangentWText(td.ShadowX, td.ShadowY, td.ShadowBlur)
+			var oc, sc uint
+			var os, w, ss, sb uint8
+			var sx, sy int8
+			if eff != nil {
+				os = uint8(number.Limit(eff.OutlineSize, 0, 255))
+				oc, sc = eff.OutlineColor, eff.TextShadowColor
+				w, ss, sb = eff.TextWeight, eff.TextShadowSize, eff.TextShadowBlur
+				sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
+			}
+			polygonBuf[i].TX = packTangentXText(oc)
+			polygonBuf[i].TY = packTangentYText(sc)
+			polygonBuf[i].TZ = packTangentZText(w, os, ss)
+			polygonBuf[i].TW = packTangentWText(sx, sy, sb)
 		} else {
 			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
 			polygonBuf[i].TY = packTangentYSprite(eff.SilhouetteColor)
@@ -170,7 +182,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 }
 func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	var rect = rl.NewRectangle(x, y, width, height)
-	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, color, mask, nil, 0, TextDraw{})
+	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, color, mask, nil, 0)
 }
 func QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {
@@ -224,7 +236,8 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5}
+var defaultEffects = &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5,
+	TextColor: palette.White, TextWeight: 128}
 
 //go:embed shader.frag
 var shaderFrag string

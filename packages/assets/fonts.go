@@ -9,7 +9,7 @@ import (
 	"pure-game-kit/packages/utility/storage"
 )
 
-type FontId byte
+type FontId uint8
 
 func LoadFont(pngPath string, jsonPath string) FontId {
 	if !file.Exists(pngPath) {
@@ -26,10 +26,10 @@ func LoadFont(pngPath string, jsonPath string) FontId {
 }
 
 func (f FontId) UnloadFont() {
-	var font, has = internal.Fonts[byte(f)]
+	var font, has = internal.Fonts[uint8(f)]
 	if !has {
 		return
 	}
 	ImageId(font.AtlasId).UnloadImage()
-	delete(internal.Fonts, byte(f))
+	delete(internal.Fonts, uint8(f))
 }

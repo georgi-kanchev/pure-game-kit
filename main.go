@@ -13,28 +13,12 @@ func main() {
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var obj = graphics.NewTextbox(0, 0, 400, 400, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
+	var obj = graphics.NewTextbox(0, 0, 1000, 1000, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
 
-	obj.Width *= 4
-	obj.Height *= 4
-
-	obj.Effects = graphics.NewEffects()
-
+	// obj.Effects = graphics.NewEffects()
 	obj.Color = palette.DarkGray
 
-	// obj.Mask = graphics.NewArea(obj.X-obj.Width/2, obj.Y-obj.Height/2, obj.Width, obj.Height)
-	obj.Roundness = 0.5
-	obj.TextOutlineSize = 170
-	obj.TextOutlineColor = palette.Black
-	obj.TextWeight = 255
-
 	window.SetTargetFPS(60)
-
-	obj.TextShadowBlur = 128
-	obj.TextShadowOffsetX = 0
-	obj.TextShadowOffsetY = 0
-	obj.TextShadowSize = 0
-	obj.TextShadowColor = palette.Black
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()

@@ -33,7 +33,7 @@ import (
 //  tangent.z = TileColumns(12) + TileRows(12)
 //  tangent.w = OutlineSize(16) + TileSize(8)
 
-const typeShape, typeSprite, typeText, typeTilemap byte = 0, 1, 2, 3
+const typeShape, typeSprite, typeText, typeTilemap uint8 = 0, 1, 2, 3
 
 const floatSafe = 0x3F000000 // required to preserve 24 bits correctly from the 32 bits
 
@@ -61,6 +61,9 @@ func packColor24(c uint) float32 {
 //=================================================================
 
 func packNormalX(gamma, saturation, contrast, brightness float32) float32 {
+	gamma, saturation = number.Limit(gamma, 0, 1), number.Limit(saturation, 0, 1)
+	contrast, brightness = number.Limit(contrast, 0, 1), number.Limit(brightness, 0, 1)
+
 	var g = uint32(unitTo6Bit(gamma)) << 18      // bits 23-18
 	var s = uint32(unitTo6Bit(saturation)) << 12 // bits 17-12
 	var c = uint32(unitTo6Bit(contrast)) << 6    // bits 11-6
@@ -76,9 +79,9 @@ func packNormalY(roundness float32, pixelSize, blurX, blurY uint8) float32 {
 }
 func packNormalZ(depthZ float32, borderSize float32, objType uint8) float32 {
 	depthZ = number.Limit(depthZ, 0, 1)
-	var d = uint32(uint16(depthZ*2047.0)) << 13             // bits 23-13 (11 bits)
-	var b = uint32(uint16(int16(borderSize*4)) & 0x7FF) << 2 // bits 12-2  (11 bits, signed, step 0.25)
-	var t = uint32(objType & 0x3)                            // bits 1-0   (2 bits)
+	var d = uint32(uint16(depthZ*2047.0)) << 13            // bits 23-13 (11 bits)
+	var b = uint32(uint16(int16(borderSize*4))&0x7FF) << 2 // bits 12-2  (11 bits, signed, step 0.25)
+	var t = uint32(objType & 0x3)                          // bits 1-0   (2 bits)
 	return pack24(d | b | t)
 }
 

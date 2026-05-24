@@ -10,7 +10,7 @@ import (
 
 type AudioId int16
 
-func LoadSound(filePath string, maxOverlapCount byte) AudioId {
+func LoadSound(filePath string, maxOverlapCount uint8) AudioId {
 	if !rl.IsAudioDeviceReady() {
 		rl.InitAudioDevice()
 	}

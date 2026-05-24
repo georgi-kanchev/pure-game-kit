@@ -8,7 +8,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type Mode byte
+type Mode uint8
 
 const ModeFloating, ModeMaximized, ModeFullscreen, ModeFullscreenBorderless Mode = 0, 1, 2, 3
 
@@ -130,7 +130,7 @@ func SetIcon(imagePath string) {
 	var img = rl.LoadImage(imagePath)
 	rl.SetWindowIcon(*img)
 }
-func SetTargetFPS(fps byte) {
+func SetTargetFPS(fps uint8) {
 	targetFPS = fps
 	rl.SetTargetFPS(int32(fps))
 }
@@ -168,7 +168,7 @@ func CurrentMode() Mode {
 
 	return ModeFloating
 }
-func TargetFPS() byte {
+func TargetFPS() uint8 {
 	return targetFPS
 }
 
@@ -181,5 +181,5 @@ func IsJustResized() bool {
 
 // private ========================================================
 
-var targetFPS byte
+var targetFPS uint8
 var terminate, isInit bool
