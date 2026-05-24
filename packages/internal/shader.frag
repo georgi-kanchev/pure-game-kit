@@ -202,7 +202,7 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
     
     float baseSample = median(texture(texture0, uv).rgb);
-    float shadowSample = median(texture(texture0, uv + vec2(shadowX/64, shadowY/64)).rgb);
+    float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY) / vec2(textureSize(texture0, 0))).rgb);
     
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
@@ -250,17 +250,17 @@ void main() {
     
     // ========================================================================
 
-    vec2 uv = compute_tile(fragTexCoord, texSize, tileColumns, tileRows, tileSize, tileSize);
     vec4 color;
 
-    if (objectType == 2) { // Text: MSDF path
-        color = compute_msdf_text(uv, fragColor, outlineColor);
+    if (objectType == 2) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
+        color = compute_msdf_text(fragTexCoord, fragColor, outlineColor);
         if (color.a < 0.004)
             discard;
 
         color = compute_color_adjust(color, colorAdjust1);
         finalColor = color;
     } else {
+        vec2 uv = compute_tile(fragTexCoord, texSize, tileColumns, tileRows, tileSize, tileSize);
         if (objectType == 0) { // Shape: white fill, skip pixelate/blur
             color = vec4(1.0);
         } else { // Sprite / Tilemap

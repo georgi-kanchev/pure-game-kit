@@ -197,6 +197,8 @@ func (v *View) QueueText(o *Object, mask internal.Area, eff *internal.Effects) {
 	var c = palette.White
 	var gapX, gapY float32
 	if eff != nil {
+		lineHeight = eff.TextLineHeight
+		scale = lineHeight / 255
 		c = eff.TextColor
 		gapX, gapY = eff.TextSymbolGap*scale, eff.TextLineGap*scale
 	}

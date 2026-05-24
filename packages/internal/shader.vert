@@ -51,8 +51,8 @@ void unpack_8_8_8(float packedFloat, out float shadowX, out float shadowY, out f
     uint bits = floatBitsToUint(packedFloat);
     int rawX = int((bits >> 16u) & 0xFFu);
     int rawY = int((bits >> 8u) & 0xFFu);
-    shadowX = float(rawX >= 128 ? rawX - 256 : rawX) / 128.0;
-    shadowY = float(rawY >= 128 ? rawY - 256 : rawY) / 128.0;
+    shadowX = -float(rawX >= 128 ? rawX - 256 : rawX) / 32.0;
+    shadowY = -float(rawY >= 128 ? rawY - 256 : rawY) / 32.0;
     shadowBlur = float(bits & 0xFFu);
 }
 vec4 unpack_10_4_5_5(float packedFloat) {
