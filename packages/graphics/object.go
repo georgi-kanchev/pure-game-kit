@@ -49,9 +49,9 @@ func NewShapeLine(x1, y1, x2, y2, thickness float32, color uint) Object {
 	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness), Color: color}
 }
 
-func NewImage(x, y float32, imageId assets.ImageId) Object {
+func NewImage(x, y, scale float32, imageId assets.ImageId) Object {
 	var w, h = imageId.Size()
-	return Object{Shape: geometry.NewRectangle(x, y, float32(w), float32(h), 0), ImageId: imageId, Color: palette.White}
+	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId, Color: palette.White}
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)

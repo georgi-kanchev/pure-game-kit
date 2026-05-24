@@ -27,13 +27,15 @@ func main() {
 
 	window.SetTargetFPS(60)
 
-	var obj2 = graphics.NewShapeCircle(0, 0, 500, palette.Red)
+	var obj2 = graphics.NewImage(0, 0, 4, assets.LoadImage("examples/data/desert-0.png"))
+	// obj2.Effects = graphics.NewEffects()
 	obj2.Roundness = 0.5
+	obj2.ImageId = 0
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()
 
 		// obj.Effects.TextShadowOffsetX = int8(number.Map(number.Sine(time.Running()/2), -1, 1, -128, 127))
-		view.DrawObjects(&obj, &obj2)
+		view.DrawObjects(&obj2)
 	}
 }

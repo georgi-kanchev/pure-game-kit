@@ -283,7 +283,6 @@ func queueVertices(verts []Vertex, vCount int32, tex rl.Texture2D, col rl.Color)
 	// write data to the active batch
 	var b = ActiveBatch
 	var count = int32(len(verts))
-
 	var v_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.verts[b.vertCount*12])), count*3)
 	var t_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[b.vertCount*8])), count*2)
 	var n_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.normals[b.vertCount*12])), count*3)
@@ -315,8 +314,7 @@ func queueVertices(verts []Vertex, vCount int32, tex rl.Texture2D, col rl.Color)
 }
 
 func clipPolygonAABB(poly, outBuf, tempBuf []Vertex, mask Area) int32 {
-	var minX, maxX = mask.X, mask.X + mask.Width
-	var minY, maxY = mask.Y, mask.Y + mask.Height
+	var minX, maxX, minY, maxY = mask.X, mask.X + mask.Width, mask.Y, mask.Y + mask.Height
 	var count = clipPolyEdge(poly, tempBuf, true, minX, true)
 	if count == 0 {
 		return 0
@@ -365,10 +363,8 @@ func clipPolyEdge(in, out []Vertex, isX bool, edgeVal float32, keepGreater bool)
 			}
 
 			out[outCount] = prev
-			out[outCount].X = prev.X + t*(curr.X-prev.X)
-			out[outCount].Y = prev.Y + t*(curr.Y-prev.Y)
-			out[outCount].U = prev.U + t*(curr.U-prev.U)
-			out[outCount].V = prev.V + t*(curr.V-prev.V)
+			out[outCount].X, out[outCount].Y = prev.X+t*(curr.X-prev.X), prev.Y+t*(curr.Y-prev.Y)
+			out[outCount].U, out[outCount].V = prev.U+t*(curr.U-prev.U), prev.V+t*(curr.V-prev.V)
 			outCount++
 		}
 
