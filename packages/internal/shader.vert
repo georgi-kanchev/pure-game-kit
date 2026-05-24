@@ -12,14 +12,14 @@ uniform mat4 mvp;
 out vec2 fragTexCoord;
 out vec4 fragColor;
 
-out vec4 fragData0; // texSize.xy + depthZ + objectType
-out vec4 fragData1; // colorAdjust1 (gamma, saturation, contrast, brightness)
-out vec4 fragData2; // rgbAdjust2 (roundness, pixelSize, blurX, blurY)
-out vec4 fragData3; // outlineColor RGBA
-out vec4 fragData4; // silhouetteColor RGBA
-out vec4 fragData5; // outlineSize + borderSize
-out vec4 fragData6; // tileColumns + tileRows + tileSize
-out vec4 fragData7; // borderColor RGBA
+out vec4 fragData0;
+out vec4 fragData1;
+out vec4 fragData2;
+out vec4 fragData3;
+out vec4 fragData4;
+out vec4 fragData5;
+out vec4 fragData6;
+out vec4 fragData7;
 
 vec4 unpack_6_6_6_6(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
@@ -76,24 +76,24 @@ void main() {
     fragColor = vertColor;
     
     vec2 texSize = unpack_12_12(vertTexCoord2.x);
-    vec4 borderColor  = unpack_6_6_6_6(vertTexCoord2.y);
+    vec4 borderColor = unpack_6_6_6_6(vertTexCoord2.y);
     vec4 colorAdjust1 = unpack_6_6_6_6(vertNormal.x);
-    vec4 rgbAdjust2    = unpack_10_4_5_5(vertNormal.y);
-    float roundness  = rgbAdjust2.x;
-    float pixelSize  = rgbAdjust2.y;
-    float blurX      = rgbAdjust2.z;
-    float blurY      = rgbAdjust2.w;
+    vec4 rgbAdjust2 = unpack_10_4_5_5(vertNormal.y);
+    float roundness = rgbAdjust2.x;
+    float pixelSize = rgbAdjust2.y;
+    float blurX = rgbAdjust2.z;
+    float blurY = rgbAdjust2.w;
     float depthZ, borderSize;
-    int   objectType;
+    int objectType;
     unpack_11_11_2(vertNormal.z, depthZ, borderSize, objectType);
     float outlineSize = 0.0;
-    vec4  outlineColor   = vec4(0.0);
-    vec4  silhouetteColor = vec4(0.0);
+    vec4 outlineColor   = vec4(0.0);
+    vec4 silhouetteColor = vec4(0.0);
     float tileColumns = 0.0;
     float tileRows    = 0.0;
     float tileSize    = 0.0;
-    vec4  shadowColor_text = vec4(0.0);
-    vec3  textWeights      = vec3(0.0);
+    vec4 shadowColor_text = vec4(0.0);
+    vec3 textWeights      = vec3(0.0);
     float shadowX = 0.0, shadowY = 0.0, shadowBlur = 0.0;
     
     if (objectType == 0) { // Shape
@@ -128,8 +128,8 @@ void main() {
 
     if (objectType == 2) { // Text: repurpose channels for MSDF data
         fragData4 = shadowColor_text;
-        fragData5 = vec4(textWeights / 255.0, 0.0);                // weight, outlineWeight, shadowWeight
-        fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);       // shadow offset + blur
+        fragData5 = vec4(textWeights / 255.0, 0.0);
+        fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);
     } else {
         fragData4 = silhouetteColor;
         fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);

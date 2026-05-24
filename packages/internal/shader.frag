@@ -3,14 +3,14 @@
 in vec2 fragTexCoord;
 in vec4 fragColor;
 
-in vec4 fragData0; // texSize.xy + depthZ + objectType
-in vec4 fragData1; // colorAdjust1 (gamma, saturation, contrast, brightness)
-in vec4 fragData2; // rgbAdjust2 (roundness, pixelSize, blurX, blurY)
-in vec4 fragData3; // outlineColor RGBA
-in vec4 fragData4; // silhouetteColor RGBA (text: shadowColor RGBA)
-in vec4 fragData5; // outlineSize + borderSize   (text: weight, outlineWeight, shadowWeight)
-in vec4 fragData6; // tileColumns + tileRows + tileSize (text: shadowX, shadowY, shadowBlur)
-in vec4 fragData7; // borderColor RGBA
+in vec4 fragData0;
+in vec4 fragData1;
+in vec4 fragData2;
+in vec4 fragData3;
+in vec4 fragData4;
+in vec4 fragData5;
+in vec4 fragData6;
+in vec4 fragData7;
 
 out vec4 finalColor;
 
@@ -207,18 +207,16 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
     
-    float thickness = map(weight, 0.0, 1.0, -pxRange, pxRange);
+    float thickness = map(weight, 0.0, 1.0, -screenPxRange*0.25, screenPxRange*0.25);
     float textPxDist = basePxDist + thickness;
     float sdfAlpha = baseColor.a * smoothstep(-0.5, 0.5, textPxDist);
     
-    outlineWeight *= 3;
-    float outlinePxDist = textPxDist + (outlineWeight * pxRange);
+    float outlinePxDist = textPxDist + map(outlineWeight, 0.0, 1.0, 0, screenPxRange*0.4);
     float outlineAlpha = outlineColor.a * smoothstep(-0.5, 0.5, outlinePxDist);
-    outlineAlpha = max(0.0, outlineAlpha - sdfAlpha); 
+    outlineAlpha = max(0.0, outlineAlpha - sdfAlpha);
     
-    shadowWeight *= 3;
-    float shadowThickness = (shadowWeight - 0.5) * pxRange + thickness + (outlineWeight * pxRange);
-    float shadowSmooth = 0.5 + shadowBlur/20 * pxRange * 0.25;
+    float shadowThickness = map(shadowWeight, 0.0, 1.0, -screenPxRange*0.25, screenPxRange*0.25);
+    float shadowSmooth = 0.5 + shadowBlur/128 * screenPxRange * 0.25;
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowPxDist + shadowThickness);
     
     vec3 rgb = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);

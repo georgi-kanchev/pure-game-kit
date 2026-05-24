@@ -186,10 +186,10 @@ func (v *View) DrawObjects(objects ...*Object) {
 		var y = o.Y - o.Height/2 - fontData.Ascender*o.TextLineHeight
 		var sc = o.TextShadowColor
 		var scale = o.TextLineHeight / 255
-		var sx, sy = int8(float32(o.TextShadowOffsetX) * scale), int8(float32(o.TextShadowOffsetY) * scale)
-		var outlineSize = byte(number.Limit(float32(o.TextOutlineSize)*scale, 0, 255))
-		var shadowSize = byte(number.Limit(float32(o.TextShadowSize)*scale, 0, 255))
-		var shadowBlur = byte(number.Limit(float32(o.TextShadowBlur)*scale, 0, 255))
+		var sx, sy = int8(o.TextShadowOffsetX), int8(o.TextShadowOffsetY)
+		var outlineSize = byte(number.Limit(float32(o.TextOutlineSize), 0, 255))
+		var shadowSize = byte(number.Limit(float32(o.TextShadowSize), 0, 255))
+		var shadowBlur = byte(number.Limit(float32(o.TextShadowBlur), 0, 255))
 		var textData = internal.TextDraw{OutlineColor: o.TextOutlineColor, ShadowSize: shadowSize,
 			ShadowColor: sc, Weight: o.TextWeight, OutlineSize: outlineSize, ShadowBlur: shadowBlur, ShadowX: sx, ShadowY: sy}
 		var col = getColor(o.TextColor)

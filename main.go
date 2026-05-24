@@ -5,8 +5,6 @@ import (
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/debug"
-	"pure-game-kit/packages/utility/number"
-	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
@@ -26,21 +24,21 @@ func main() {
 
 	// obj.Mask = graphics.NewArea(obj.X-obj.Width/2, obj.Y-obj.Height/2, obj.Width, obj.Height)
 	obj.Roundness = 0.5
-	obj.TextOutlineSize = 0
+	obj.TextOutlineSize = 170
 	obj.TextOutlineColor = palette.Black
-	obj.TextWeight = 128
+	obj.TextWeight = 255
 
-	// window.SetTargetFPS(60)
+	window.SetTargetFPS(60)
 
-	obj.TextShadowBlur = 50
+	obj.TextShadowBlur = 128
 	obj.TextShadowOffsetX = 0
-	obj.TextShadowOffsetY = -127
-	obj.TextShadowSize = 100
+	obj.TextShadowOffsetY = 0
+	obj.TextShadowSize = 0
 	obj.TextShadowColor = palette.Black
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()
-		obj.TextLineHeight = number.Map(number.Sine(time.Running()/2), -1, 1, 0, 255)
+		// obj.TextShadowOffsetX = int8(number.Map(number.Sine(time.Running()/2), -1, 1, 0, 127))
 		// obj.Mask.X, obj.Mask.Y = view.MousePosition()
 		// obj.Mask.X -= obj.Mask.Width / 2
 		// obj.Mask.Y -= obj.Mask.Height / 2
