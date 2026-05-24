@@ -35,12 +35,6 @@ import (
 
 const KindShape, KindSprite, KindText, KindTilemap uint8 = 0, 1, 2, 3
 
-const floatSafe = 0x3F000000 // required to preserve 24 bits correctly from the 32 bits
-
-func pack24(bits uint32) float32 {
-	return math.Float32frombits(floatSafe | bits)
-}
-
 func packU2(texWidth, texHeight uint16) float32 {
 	var w = uint32(texWidth&0xFFF) << 12 // bits 23-12
 	var h = uint32(texHeight & 0xFFF)    // bits 11-0
@@ -48,14 +42,6 @@ func packU2(texWidth, texHeight uint16) float32 {
 }
 func packV2(borderColor uint) float32 {
 	return packColor24(borderColor)
-}
-
-func packColor24(c uint) float32 {
-	r := uint32(uint8(c>>24)>>2) << 18
-	g := uint32(uint8(c>>16)>>2) << 12
-	b := uint32(uint8(c>>8)>>2) << 6
-	a := uint32(uint8(c) >> 2)
-	return pack24(r | g | b | a)
 }
 
 //=================================================================
@@ -77,9 +63,9 @@ func packNormalY(roundness float32, pixelSize, blurX, blurY uint8) float32 {
 }
 func packNormalZ(depthZ float32, borderSize float32, objType uint8) float32 {
 	depthZ = number.Limit(depthZ, 0, 1)
-	var d = uint32(uint16(depthZ*2047.0)) << 13            // bits 23-13 (11 bits)
+	var d = uint32(uint16(depthZ*2047.0)) << 13             // bits 23-13 (11 bits)
 	var b = uint32(uint16(int16(borderSize*16))&0x7FF) << 2 // bits 12-2  (11 bits, signed, step 1/16)
-	var t = uint32(objType & 0x3)                          // bits 1-0   (2 bits)
+	var t = uint32(objType & 0x3)                           // bits 1-0   (2 bits)
 	return pack24(d | b | t)
 }
 
@@ -137,4 +123,17 @@ func packTangentWText(textShadowX, textShadowY int8, shadowBlur uint8) float32 {
 
 // =================================================================
 
-func unitTo10Bit(value float32) uint16 { return uint16(number.Limit(value, 0, 1) * 1023.0) }
+func unitTo10Bit(value float32) uint16 {
+	return uint16(number.Limit(value, 0, 1) * 1023.0)
+}
+func pack24(bits uint32) float32 {
+	const floatSafe = 0x3F000000 // required to preserve 24 bits correctly from the 32 bits
+	return math.Float32frombits(floatSafe | bits)
+}
+func packColor24(c uint) float32 {
+	var r = uint32(uint8(c>>24)>>2) << 18
+	var g = uint32(uint8(c>>16)>>2) << 12
+	var b = uint32(uint8(c>>8)>>2) << 6
+	var a = uint32(uint8(c) >> 2)
+	return pack24(r | g | b | a)
+}

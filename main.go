@@ -13,34 +13,37 @@ func main() {
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var obj = graphics.NewTextbox(0, 0, 2000, 1500, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
+	var textbox = graphics.NewTextbox(0, 0, 2000, 1500, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
 
-	obj.Color = palette.DarkGray
+	textbox.Color = palette.DarkGray
 
-	obj.Effects = graphics.NewEffects()
-	obj.Effects.TextLineHeight = 100
-	obj.Effects.TextShadowBlur = 64
-	obj.Effects.TextShadowOffsetX = 80
-	obj.Effects.TextShadowOffsetY = 50
-	obj.Effects.OutlineSize = 64
-	obj.Effects.OutlineColor = palette.Red
-	obj.Roundness = 0.5
-	obj.Effects.BorderSize = 20
-	obj.Effects.BorderColor = palette.Red
+	textbox.Effects = graphics.NewEffects()
+	textbox.Effects.TextLineHeight = 100
+	textbox.Effects.TextShadowBlur = 64
+	textbox.Effects.TextShadowOffsetX = 80
+	textbox.Effects.TextShadowOffsetY = 50
+	textbox.Effects.OutlineSize = 64
+	textbox.Effects.OutlineColor = palette.Red
+	textbox.Roundness = 0.5
+	textbox.Effects.BorderSize = 20
+	textbox.Effects.BorderColor = palette.Red
 
 	window.SetTargetFPS(60)
 
 	var img = assets.LoadImage("examples/data/desert-0.png")
-	var obj2 = graphics.NewImage(0, 0, 4, img)
-	obj2.Roundness = 0.5
-	obj2.Effects = graphics.NewEffects()
-	obj2.Effects.BorderSize = 20
-	obj2.Effects.BorderColor = palette.Red
+	var sprite = graphics.NewImage(0, 0, 3, img)
+	sprite.Roundness = 0.5
+	sprite.Effects = graphics.NewEffects()
+	sprite.Effects.BorderSize = 20
+	sprite.Effects.BorderColor = palette.Red
+
+	var shape = graphics.NewShapeRoundedRectangle(0, 0, 1000, 500, 0, 0.5, palette.Red)
+	_ = shape
 
 	for window.KeepOpen() {
-		obj.Text = debug.MemoryUsage()
+		textbox.Text = debug.MemoryUsage()
 
 		// obj.Effects.TextShadowOffsetX = int8(number.Map(number.Sine(time.Running()/2), -1, 1, -128, 127))
-		view.DrawObjects(&obj)
+		view.DrawObjects(&sprite)
 	}
 }
