@@ -254,9 +254,11 @@ void main() {
     float borderSize = fragData5.y;
     vec4  borderColor = fragData7;
 
-    float tileColumns = fragData6.x;
-    float tileRows = fragData6.y;
-    float tileSize = fragData6.z;
+    float tileColumns = objKind == KIND_SPRITE ? 0.0 : fragData6.x;
+    float tileRows    = objKind == KIND_SPRITE ? 0.0 : fragData6.y;
+    float tileSize    = objKind == KIND_SPRITE ? 0.0 : fragData6.z;
+    vec2  cropBoundsU = objKind == KIND_SPRITE ? fragData6.xy / 4095.0 - 0.5 : vec2(-0.5, 0.5);
+    vec2  cropBoundsV = objKind == KIND_SPRITE ? fragData6.zw / 4095.0 - 0.5 : vec2(-0.5, 0.5);
     
     // ========================================================================
 

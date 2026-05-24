@@ -106,6 +106,8 @@ void main() {
     vec4 shadowColor_text = vec4(0.0);
     vec3 textWeights      = vec3(0.0);
     float shadowX = 0.0, shadowY = 0.0, shadowBlur = 0.0;
+    vec2 cropBoundsU = vec2(0.0);
+    vec2 cropBoundsV = vec2(0.0);
     
     if (objectType == 0) { // Shape
         // tangent is free
@@ -113,10 +115,8 @@ void main() {
     else if (objectType == 1) { // Sprite
         outlineColor = unpack_6_6_6_6(vertTangent.x);
         unpack_8_4_4_4_4(vertTangent.y, outlineSize, silhouetteColor);
-        // tangent.z is free
-        // tangent.w is free
-    }
-    else if (objectType == 2) { // Text
+        cropBoundsU = unpack_12_12(vertTangent.z); // CropMinU, CropMaxU [0, 4095]
+        cropBoundsV = unpack_12_12(vertTangent.w); // CropMinV, CropMaxV [0, 4095]
     }
     else if (objectType == 2) { // Text
         outlineColor     = unpack_6_6_6_6(vertTangent.x);
@@ -143,6 +143,10 @@ void main() {
         fragData4 = shadowColor_text;
         fragData5 = vec4(textWeights.x / 127.0, textWeights.y / 255.0, textWeights.z / 127.0, 0.0);
         fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);
+    } else if (objectType == 1) { // Sprite: forward crop bounds
+        fragData4 = silhouetteColor;
+        fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
+        fragData6 = vec4(cropBoundsU, cropBoundsV);
     } else {
         fragData4 = silhouetteColor;
         fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);

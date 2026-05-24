@@ -18,8 +18,8 @@ import (
 // Sprite:
 //  tangent.x = OutlineColor(6,6,6,6)
 //  tangent.y = OutlineSize(8) + SilhouetteColor(4,4,4,4)
-//  tangent.z = free
-//  tangent.w = free
+//  tangent.z = CropMinU(12) + CropMaxU(12)
+//  tangent.w = CropMinV(12) + CropMaxV(12)
 //
 // Text:
 //  tangent.x = OutlineColor(6,6,6,6)
@@ -82,11 +82,17 @@ func packTangentYSprite(outlineSize uint8, silhouetteColor uint) float32 {
 	var a = uint32(uint8(silhouetteColor) >> 4)         // bits 3-0
 	return pack24(o | r | g | b | a)
 }
-func packTangentZSprite() float32 {
-	return 0 // tangent.z is free for sprites
+func packCrop12_12(minLocal, maxLocal float32) float32 {
+	// Map [-0.5, 0.5] to [0, 4095] unsigned 12-bit
+	a := uint32(uint16(number.Limit(minLocal+0.5, 0, 1)*4095.0)&0xFFF) << 12
+	b := uint32(uint16(number.Limit(maxLocal+0.5, 0, 1)*4095.0) & 0xFFF)
+	return pack24(a | b)
 }
-func packTangentWSprite() float32 {
-	return 0 // tangent.w is free for sprites
+func packTangentZSprite(cropMinU, cropMaxU float32) float32 {
+	return packCrop12_12(cropMinU, cropMaxU)
+}
+func packTangentWSprite(cropMinV, cropMaxV float32) float32 {
+	return packCrop12_12(cropMinV, cropMaxV)
 }
 
 //=================================================================
