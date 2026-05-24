@@ -40,11 +40,14 @@ func main() {
 
 	var shape = graphics.NewShapeRoundedRectangle(0, 0, 1000, 500, 0, 0.5, palette.Red)
 	_ = shape
+	shape.Effects = graphics.NewEffects()
+	shape.Effects.BorderColor = palette.Green
+	shape.Effects.BorderSize = 20
 
 	for window.KeepOpen() {
 		textbox.Text = debug.MemoryUsage()
 
 		// obj.Effects.TextShadowOffsetX = int8(number.Map(number.Sine(time.Running()/2), -1, 1, -128, 127))
-		view.DrawObjects(&textbox)
+		view.DrawObjects(&shape)
 	}
 }

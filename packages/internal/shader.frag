@@ -105,11 +105,12 @@ vec4 compute_color_adjust(vec4 color, vec4 colorAdjust) {
     return color;
 }
 vec2 compute_tile(vec2 texSize, float tileColumns, float tileRows, float tileW, float tileH) {
+    vec2 uv = fragTexCoord;
     if (tileColumns == 0.0)
-        return fragTexCoord;
-
+        return uv;
+    
     ivec2 mapSize = ivec2(int(tileColumns), int(tileRows));
-    ivec2 tile = ivec2(int(fragTexCoord.x * float(mapSize.x)), int(fragTexCoord.y * float(mapSize.y)));
+    ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
     ivec2 dataUv = ivec2(linearTileID % mapSize.x, linearTileID / mapSize.x);
@@ -132,7 +133,7 @@ vec2 compute_tile(vec2 texSize, float tileColumns, float tileRows, float tileW, 
 
     float atlasCols = floor(texSize.x / tileW);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
-    vec2 localUV = fract(fragTexCoord * vec2(float(mapSize.x), float(mapSize.y)));
+    vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
     localUV -= 0.5;
     localUV.x = flip ? -localUV.x : localUV.x;
     localUV = rot == 1u ? vec2(localUV.y, -localUV.x) : localUV;
@@ -200,6 +201,7 @@ vec4 compute_sdf_shape(vec2 pLocal, vec2 halfSize, vec4 color, float roundness, 
     return color * sShape;
 }
 vec4 compute_msdf_text(vec4 outlineColor) {
+    vec2 uv = fragTexCoord;
     vec4 shadowColor = fragData4;
     float weight = fragData5.x;
     float outlineWeight = fragData5.y;
@@ -210,11 +212,11 @@ vec4 compute_msdf_text(vec4 outlineColor) {
     
     float pxRange = 8.0;
     vec2 unitRange = vec2(pxRange) / vec2(textureSize(texture0, 0));
-    vec2 screenTexSize = vec2(1.0) / fwidth(fragTexCoord);
+    vec2 screenTexSize = vec2(1.0) / fwidth(uv);
     float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
     
-    float baseSample = median(texture(texture0, fragTexCoord).rgb);
-    float shadowSample = median(texture(texture0, fragTexCoord + vec2(shadowX, shadowY) / vec2(textureSize(texture0, 0))).rgb);
+    float baseSample = median(texture(texture0, uv).rgb);
+    float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY) / vec2(textureSize(texture0, 0))).rgb);
     
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
