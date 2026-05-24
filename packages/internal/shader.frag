@@ -35,8 +35,7 @@ float shape_sdf(vec2 pLocal, vec2 halfExtents, float r, float roundness) {
     vec2 q = abs(pLocal) - halfExtents + r;
     float dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
     
-    // Handle inverted roundness
-    if (roundness < 0.0) {
+    if (roundness < 0.0) { // Handle inverted roundness
         dShape = max(r - length(max(q, 0.0)), max(abs(pLocal).x - halfExtents.x, abs(pLocal).y - halfExtents.y));
     }
     return dShape;
