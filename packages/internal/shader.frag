@@ -104,12 +104,12 @@ vec4 compute_color_adjust(vec4 color, vec4 colorAdjust) {
     color.rgb *= brightness;
     return color;
 }
-vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, float tileW, float tileH) {
+vec2 compute_tile(vec2 texSize, float tileColumns, float tileRows, float tileW, float tileH) {
     if (tileColumns == 0.0)
-        return uv;
+        return fragTexCoord;
 
     ivec2 mapSize = ivec2(int(tileColumns), int(tileRows));
-    ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
+    ivec2 tile = ivec2(int(fragTexCoord.x * float(mapSize.x)), int(fragTexCoord.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
     ivec2 dataUv = ivec2(linearTileID % mapSize.x, linearTileID / mapSize.x);
@@ -132,7 +132,7 @@ vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, floa
 
     float atlasCols = floor(texSize.x / tileW);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
-    vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
+    vec2 localUV = fract(fragTexCoord * vec2(float(mapSize.x), float(mapSize.y)));
     localUV -= 0.5;
     localUV.x = flip ? -localUV.x : localUV.x;
     localUV = rot == 1u ? vec2(localUV.y, -localUV.x) : localUV;
@@ -272,7 +272,7 @@ void main() {
         color = compute_color_adjust(color, colorAdjust1);
         finalColor = color;
     } else {
-        vec2 uv = compute_tile(fragTexCoord, texSize, tileColumns, tileRows, tileSize, tileSize);
+        vec2 uv = compute_tile(texSize, tileColumns, tileRows, tileSize, tileSize);
         if (objKind == KIND_SHAPE) { // Shape: white fill, skip pixelate/blur
             color = vec4(1.0);
         } else { // Sprite / Tilemap
