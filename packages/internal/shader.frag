@@ -199,7 +199,7 @@ vec4 compute_sdf_shape(vec2 pLocal, vec2 halfSize, vec4 color, float roundness, 
     float sShape = 1.0 - smoothstep(-af, af, dShape);
     return color * sShape;
 }
-vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
+vec4 compute_msdf_text(vec4 outlineColor) {
     vec4 shadowColor = fragData4;
     float weight = fragData5.x;
     float outlineWeight = fragData5.y;
@@ -210,18 +210,18 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     
     float pxRange = 8.0;
     vec2 unitRange = vec2(pxRange) / vec2(textureSize(texture0, 0));
-    vec2 screenTexSize = vec2(1.0) / fwidth(uv);
+    vec2 screenTexSize = vec2(1.0) / fwidth(fragTexCoord);
     float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
     
-    float baseSample = median(texture(texture0, uv).rgb);
-    float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY) / vec2(textureSize(texture0, 0))).rgb);
+    float baseSample = median(texture(texture0, fragTexCoord).rgb);
+    float shadowSample = median(texture(texture0, fragTexCoord + vec2(shadowX, shadowY) / vec2(textureSize(texture0, 0))).rgb);
     
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
     
     float thickness = weight * screenPxRange * 0.25;
     float textPxDist = basePxDist + thickness;
-    float sdfAlpha = baseColor.a * smoothstep(-0.5, 0.5, textPxDist);
+    float sdfAlpha = fragColor.a * smoothstep(-0.5, 0.5, textPxDist);
     
     float outlinePxDist = textPxDist + map(outlineWeight, 0.0, 1.0, 0, screenPxRange*0.4);
     float outlineAlpha = outlineColor.a * smoothstep(-0.5, 0.5, outlinePxDist);
@@ -232,7 +232,7 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowPxDist + shadowThickness);
     
     vec3 rgb = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);
-    rgb = mix(rgb, baseColor.rgb, sdfAlpha);
+    rgb = mix(rgb, fragColor.rgb, sdfAlpha);
     
     float alpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
     return vec4(rgb, alpha);
@@ -265,7 +265,7 @@ void main() {
     vec4 color;
 
     if (objKind == KIND_TEXT) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
-        color = compute_msdf_text(fragTexCoord, fragColor, outlineColor);
+        color = compute_msdf_text(outlineColor);
         if (color.a < 0.004)
             discard;
 

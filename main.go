@@ -32,7 +32,7 @@ func main() {
 
 	var img = assets.LoadImage("examples/data/desert-0.png")
 	var sprite = graphics.NewImage(0, 0, 3, img)
-	img.SetCrop(0, 0, 200, 200)
+	// img.SetCrop(0, 0, 200, 200)
 	sprite.Roundness = 0.5
 	sprite.Effects = graphics.NewEffects()
 	sprite.Effects.BorderSize = 20
@@ -45,6 +45,6 @@ func main() {
 		textbox.Text = debug.MemoryUsage()
 
 		// obj.Effects.TextShadowOffsetX = int8(number.Map(number.Sine(time.Running()/2), -1, 1, -128, 127))
-		view.DrawObjects(&sprite)
+		view.DrawObjects(&textbox)
 	}
 }
