@@ -150,13 +150,15 @@ vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float
     vec2 halfSize = texSize * 0.5;
     vec2 pLocal = (uv - 0.5) * texSize;
 
-    // Compensate screen-space aspect ratio: scale the axis with smaller fwidth up
-    // so both axes have equal pixel density, producing circular corners on screen
-    vec2 sd = fwidth(uv);
-    float scaleX = max(sd.y / max(sd.x, 0.0001), 1.0);
-    float scaleY = max(sd.x / max(sd.y, 0.0001), 1.0);
-    pLocal *= vec2(scaleX, scaleY);
-    halfSize *= vec2(scaleX, scaleY);
+    // Shapes use a 1×1 texture with UV [0,1] — compensate screen-space aspect ratio
+    // so corners are circular on screen. Skip for sprites/atlas textures.
+    if (texSize.x < 2.0 && texSize.y < 2.0) {
+        vec2 sd = fwidth(uv);
+        float scaleX = max(sd.y / max(sd.x, 0.0001), 1.0);
+        float scaleY = max(sd.x / max(sd.y, 0.0001), 1.0);
+        pLocal *= vec2(scaleX, scaleY);
+        halfSize *= vec2(scaleX, scaleY);
+    }
     
     float maxRadius = min(halfSize.x, halfSize.y);
     float radius = abs(roundness) * maxRadius;

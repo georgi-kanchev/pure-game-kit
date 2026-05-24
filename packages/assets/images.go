@@ -56,3 +56,19 @@ func (i ImageId) Size() (width, height int) {
 	}
 	return int(img.CropWidth), int(img.CropHeight)
 }
+func (i ImageId) Crop() (x, y, width, height float32) {
+	if i == 0 {
+		return 0, 0, 1, 1
+	}
+	var img = internal.Images[int32(i)]
+	return img.CropX, img.CropY, img.CropWidth, img.CropHeight
+}
+func (i ImageId) SetCrop(x, y, width, height float32) {
+	if i == 0 {
+		return
+	}
+	var img = internal.Images[int32(i)]
+	img.CropX, img.CropY = x, y
+	img.CropWidth, img.CropHeight = width, height
+	internal.Images[int32(i)] = img
+}
