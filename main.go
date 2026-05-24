@@ -32,11 +32,12 @@ func main() {
 
 	var img = assets.LoadImage("examples/data/desert-0.png")
 	var sprite = graphics.NewImage(0, 0, 3, img)
-	// sprite.ImageCropArea = graphics.NewArea(0, 0, 200, 200)
+	sprite.ImageCropArea = graphics.NewArea(0, 0, 200, 200)
 	sprite.Roundness = 0.5
 	sprite.Effects = graphics.NewEffects()
 	sprite.Effects.BorderSize = 20
 	sprite.Effects.BorderColor = palette.Red
+	sprite.Width = 1000
 
 	var shape = graphics.NewShapeRoundedRectangle(0, 0, 1000, 500, 0, 0.5, palette.Red)
 	_ = shape

@@ -139,7 +139,7 @@ void main() {
         fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
     }
 
-    fragLocalPos = (vertTexCoord - 0.5) * texSize;
+    fragLocalPos = vertTexCoord - 0.5;
 
     gl_Position = mvp * vec4(vertPosition, 1.0);
 }
