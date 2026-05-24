@@ -37,12 +37,12 @@ func main() {
 	obj2.Effects = graphics.NewEffects()
 	obj2.Effects.BorderSize = 10
 	obj2.Effects.BorderColor = palette.Red
-	obj2.Width = 500
+	// obj2.Width = 500
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()
 
 		// obj.Effects.TextShadowOffsetX = int8(number.Map(number.Sine(time.Running()/2), -1, 1, -128, 127))
-		view.DrawObjects(&obj)
+		view.DrawObjects(&obj2)
 	}
 }

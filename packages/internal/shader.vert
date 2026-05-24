@@ -98,16 +98,14 @@ void main() {
     vec3 textWeights      = vec3(0.0);
     float shadowX = 0.0, shadowY = 0.0, shadowBlur = 0.0;
     vec2 objectSize = vec2(0.0);
-    vec4 spriteUVBounds = vec4(0.0);
     
-    if (objectType == 0) { // Shape: UV always [0,1]
+    if (objectType == 0 || objectType == 1) { // Shape / Sprite
         objectSize = unpack_12_12(vertTangent.w);
     }
-    else if (objectType == 1) { // Sprite
+    if (objectType == 1) { // Sprite
         outlineColor     = unpack_6_6_6_6(vertTangent.x);
         silhouetteColor  = unpack_6_6_6_6(vertTangent.y);
         outlineSize      = vertTangent.z;
-        spriteUVBounds   = unpack_6_6_6_6(vertTangent.w);
     }
     else if (objectType == 2) { // Text
         outlineColor     = unpack_6_6_6_6(vertTangent.x);
@@ -136,14 +134,8 @@ void main() {
         fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);
     } else {
         fragData4 = silhouetteColor;
-        fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
+        fragData5 = vec4(outlineSize, borderSize, objectSize.x, objectSize.y);
         fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
-    }
-    if (objectType == 0) { // Shape: pass objectSize in pixels
-        fragData5.zw = objectSize;
-    } else if (objectType == 1) { // Sprite: pass UV bounds
-        fragData5.zw = spriteUVBounds.xy;
-        fragData6.zw = spriteUVBounds.zw - spriteUVBounds.xy; // uvRange
     }
 
     gl_Position = mvp * vec4(vertPosition, 1.0);

@@ -110,12 +110,9 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 	var tx, ty, tz, tw float32
 	if kind == KindText {
 		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
-	} else if kind == KindShape {
-		tx, ty, tz = packTangentXSprite(eff.OutlineColor), packTangentYSprite(eff.SilhouetteColor), eff.OutlineSize
-		tw = packTangentWShape(uint16(dst.Width), uint16(dst.Height))
 	} else {
 		tx, ty, tz = packTangentXSprite(eff.OutlineColor), packTangentYSprite(eff.SilhouetteColor), eff.OutlineSize
-		tw = packTangentWSprite(src.X*invTexW, src.Y*invTexH, (src.X+src.Width)*invTexW, (src.Y+src.Height)*invTexH)
+		tw = packTangentWSprite(uint16(dst.Width), uint16(dst.Height))
 	}
 
 	for i := range len(polygonBuf) {
