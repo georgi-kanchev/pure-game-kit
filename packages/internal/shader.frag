@@ -144,6 +144,63 @@ vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, floa
     vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
     return (coord + localUV) / atlasSizeInTiles;
 }
+vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float borderSize, vec4 borderColor) {
+    if (abs(roundness) < 0.001 && abs(borderSize) < 0.001) { return color; }
+    
+    vec2 halfSize = texSize * 0.5;
+    vec2 pLocal = (uv - 0.5) * texSize;
+
+    // Shapes use a 1×1 texture with UV [0,1] — compensate screen-space aspect ratio
+    // so corners are circular on screen. Skip for sprites/atlas textures.
+    if (texSize.x < 2.0 && texSize.y < 2.0) {
+        vec2 sd = fwidth(uv);
+        float scaleX = max(sd.y / max(sd.x, 0.0001), 1.0);
+        float scaleY = max(sd.x / max(sd.y, 0.0001), 1.0);
+        pLocal *= vec2(scaleX, scaleY);
+        halfSize *= vec2(scaleX, scaleY);
+    }
+    
+    float maxRadius = min(halfSize.x, halfSize.y);
+    float radius = abs(roundness) * maxRadius;
+    
+    // Base shape SDF
+    float dShape = shape_sdf(pLocal, halfSize, radius, roundness);
+    
+    // Calculate anti-aliasing factor
+    float af = fwidth(dShape) * 1.5;
+    float absBorder = abs(borderSize);
+
+    if (absBorder > 0.0) {
+        float sShape = 1.0 - smoothstep(-af, af, dShape);
+        float sRing;
+        
+        if (borderSize > 0.0) { 
+            // OUTER RING: Generate a larger shape that scales its corner radius to match the same roundness ratio
+            vec2 outerSize = halfSize + absBorder;
+            float outerRadius = abs(roundness) * min(outerSize.x, outerSize.y);
+            float dOuter = shape_sdf(pLocal, outerSize, outerRadius, roundness);
+            
+            float sOuter = 1.0 - smoothstep(-af, af, dOuter);
+            sRing = max(sOuter - sShape, 0.0);
+            
+        } else { 
+            // INNER RING: Generate a smaller shape
+            vec2 innerSize = max(halfSize - absBorder, vec2(0.0));
+            float innerRadius = abs(roundness) * min(innerSize.x, innerSize.y);
+            float dInner = shape_sdf(pLocal, innerSize, innerRadius, roundness);
+            
+            float sInner = 1.0 - smoothstep(-af, af, dInner);
+            sRing = max(sShape - sInner, 0.0);
+        }
+        
+        vec4 fill = color * sShape;
+        vec4 ring = borderColor * sRing;
+        return ring + fill * (1.0 - ring.a);
+    }
+
+    float sShape = 1.0 - smoothstep(-af, af, dShape);
+    return color * sShape;
+}
 vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     vec4 shadowColor = fragData4;
     float weight = fragData5.x;
@@ -182,71 +239,23 @@ vec4 compute_msdf_text(vec2 uv, vec4 baseColor, vec4 outlineColor) {
     float alpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
     return vec4(rgb, alpha);
 }
-vec4 compute_sdf_shape(vec2 uv, vec2 size, vec4 color, float roundness, float borderSize, vec4 borderColor) {
-    if (abs(roundness) < 0.001 && abs(borderSize) < 0.001) { return color; }
-    
-    vec2 halfSize = size * 0.5;
-    vec2 pLocal = (uv - 0.5) * size;
-    
-    float maxRadius = min(halfSize.x, halfSize.y);
-    float radius = abs(roundness) * maxRadius;
-    
-    // Base shape SDF
-    float dShape = shape_sdf(pLocal, halfSize, radius, roundness);
-    
-    // Calculate anti-aliasing factor
-    float af = fwidth(dShape) * 1.5;
-    float absBorder = abs(borderSize);
-    
-    if (absBorder > 0.0) {
-        float sShape = 1.0 - smoothstep(-af, af, dShape);
-        float sRing;
-        
-        if (borderSize > 0.0) { 
-            // OUTER RING: Generate a larger shape that scales its corner radius to match the same roundness ratio
-            vec2 outerSize = halfSize + absBorder;
-            float outerRadius = abs(roundness) * min(outerSize.x, outerSize.y);
-            float dOuter = shape_sdf(pLocal, outerSize, outerRadius, roundness);
-            
-            float sOuter = 1.0 - smoothstep(-af, af, dOuter);
-            sRing = max(sOuter - sShape, 0.0);
-            
-        } else { 
-            // INNER RING: Generate a smaller shape
-            vec2 innerSize = max(halfSize - absBorder, vec2(0.0));
-            float innerRadius = abs(roundness) * min(innerSize.x, innerSize.y);
-            float dInner = shape_sdf(pLocal, innerSize, innerRadius, roundness);
-            
-            float sInner = 1.0 - smoothstep(-af, af, dInner);
-            sRing = max(sShape - sInner, 0.0);
-        }
-        
-        vec4 fill = color * sShape;
-        vec4 ring = borderColor * sRing;
-        return ring + fill * (1.0 - ring.a);
-    }
-    
-    float sShape = 1.0 - smoothstep(-af, af, dShape);
-    return color * sShape;
-}
 
 void main() {
     vec2 texSize = fragData0.xy;
     float depthZ = fragData0.z;
     int objKind = int(fragData0.w);
-    
+
     vec4 colorAdjust1 = fragData1;
     vec4 data2 = fragData2;
     float roundness = data2.x;
     float pixelSize = data2.y;
     vec2 blur = data2.zw * 16.0;
-    
+
     vec4 outlineColor = fragData3;
     vec4 silhouetteColor = fragData4;
-    
+
     float outlineSize = fragData5.x;
     float borderSize = fragData5.y;
-    vec2  objectSize = fragData5.zw;  // shape/sprite dimensions in pixels
     vec4  borderColor = fragData7;
 
     float tileColumns = fragData6.x;
@@ -254,10 +263,10 @@ void main() {
     float tileSize = fragData6.z;
     
     // ========================================================================
-    
+
     vec4 color;
-    
-    if (objKind == KIND_TEXT) { // Text: MSDF path
+
+    if (objKind == KIND_TEXT) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
         color = compute_msdf_text(fragTexCoord, fragColor, outlineColor);
         if (color.a < 0.004)
             discard;
@@ -273,19 +282,19 @@ void main() {
             color = compute_blur(uv, texSize, blur);
             color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
         }
-        
-        color = compute_sdf_shape(uv, objectSize, color, roundness, borderSize, borderColor);
-        
+
+        color = compute_sdf_shape(uv, texSize, color, roundness, borderSize, borderColor);
+
         if (color.a * fragColor.a < 0.004)
             discard;
-        
+
         if (objKind != KIND_SHAPE) {
             color = compute_color_adjust(color, colorAdjust1);
             color = compute_silhouette(color, silhouetteColor);
         }
-        
+
         finalColor = color * fragColor;
     }
-    
+
     gl_FragDepth = depthZ;
 }

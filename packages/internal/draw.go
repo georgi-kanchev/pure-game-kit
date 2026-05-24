@@ -104,7 +104,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		w, ss, sb = eff.TextWeight, eff.TextShadowWeight, eff.TextShadowBlur
 		sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
 	}
-	var u, v = packU2(uint16(tex.Width), uint16(tex.Height)), packV2(eff.BorderColor)
+	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 	var tx, ty, tz, tw float32
@@ -112,7 +112,6 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
 	} else {
 		tx, ty, tz = packTangentXSprite(eff.OutlineColor), packTangentYSprite(eff.SilhouetteColor), eff.OutlineSize
-		tw = packTangentWSprite(uint16(dst.Width), uint16(dst.Height))
 	}
 
 	for i := range len(polygonBuf) {
@@ -122,7 +121,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		if kind == KindText {
 			polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ, polygonBuf[i].TW = tx, ty, tz, tw
 		} else {
-			polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ, polygonBuf[i].TW = tx, ty, tz, tw
+			polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ = tx, ty, tz
 		}
 
 	}
