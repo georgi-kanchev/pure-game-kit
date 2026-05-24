@@ -64,6 +64,14 @@ vec4 unpack_10_4_5_5(float packedFloat) {
     float blurY     = float(bits & 0x1Fu) / 31.0;
     return vec4(roundness, pixelSize, blurX, blurY);
 }
+void unpack_8_4_4_4_4(float packedFloat, out float outlineSize, out vec4 silhouetteColor) {
+    uint bits = floatBitsToUint(packedFloat);
+    outlineSize = float((bits >> 16u) & 0xFFu);
+    silhouetteColor.x = float((bits >> 12u) & 0xFu) / 15.0;
+    silhouetteColor.y = float((bits >> 8u)  & 0xFu) / 15.0;
+    silhouetteColor.z = float((bits >> 4u)  & 0xFu) / 15.0;
+    silhouetteColor.w = float(bits & 0xFu) / 15.0;
+}
 vec3 unpack_8_8_8_text_weights(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
     int rawX = int((bits >> 16u) & 0xFFu);
@@ -103,10 +111,12 @@ void main() {
         // tangent is free
     }
     else if (objectType == 1) { // Sprite
-        outlineColor    = unpack_6_6_6_6(vertTangent.x);
-        silhouetteColor = unpack_6_6_6_6(vertTangent.y);
-        outlineSize     = vertTangent.z;
+        outlineColor = unpack_6_6_6_6(vertTangent.x);
+        unpack_8_4_4_4_4(vertTangent.y, outlineSize, silhouetteColor);
+        // tangent.z is free
         // tangent.w is free
+    }
+    else if (objectType == 2) { // Text
     }
     else if (objectType == 2) { // Text
         outlineColor     = unpack_6_6_6_6(vertTangent.x);
