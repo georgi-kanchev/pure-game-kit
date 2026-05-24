@@ -171,7 +171,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 		if o.ImageId != 0 {
 			kind = internal.KindSprite // sprite
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, getColor(o.Color), mask, eff, kind)
+		internal.QueueTexture(tex.Texture, src, dst, o.Angle, o.Roundness, getColor(o.Color), mask, eff, kind)
 
 		if o.Text != "" {
 			v.queueText(o, mask, eff)
@@ -252,7 +252,7 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 
 		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 		var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
-		internal.QueueTexture(atlasTex, src, dst, o.Angle, col, mask, eff, 2)
+		internal.QueueTexture(atlasTex, src, dst, o.Angle, o.Roundness, col, mask, eff, 2)
 		x += glyph.Advance*lineHeight + gapX
 		prevGlyph = glyph
 	}

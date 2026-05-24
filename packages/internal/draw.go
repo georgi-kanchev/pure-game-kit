@@ -69,13 +69,8 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.Color, mask Area, eff *Effects, kind uint8) {
-	if dst.Width < 0 {
-		dst.Width = -dst.Width
-	}
-	if dst.Height < 0 {
-		dst.Height = -dst.Height
-	}
+func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, col rl.Color, mask Area, eff *Effects, kind uint8) {
+	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1 = src.X * invTexW, src.Y * invTexH
@@ -90,54 +85,43 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 	}
 
 	if eff.BorderSize > 0 {
-		var padX = eff.BorderSize * (dst.Width / src.Width)
-		var padY = eff.BorderSize * (dst.Height / src.Height)
-		var padU = eff.BorderSize * invTexW
-		var padV = eff.BorderSize * invTexH
-		dx[0] -= padX
-		dx[1] -= padX
-		dx[2] += padX
-		dx[3] += padX
-		dy[0] -= padY
-		dy[3] -= padY
-		dy[1] += padY
-		dy[2] += padY
-		uvs[0] -= padU
-		uvs[2] -= padU
-		uvs[4] += padU
-		uvs[6] += padU
-		uvs[1] -= padV
-		uvs[7] -= padV
-		uvs[3] += padV
-		uvs[5] += padV
+		var padX, padY = eff.BorderSize * (dst.Width / src.Width), eff.BorderSize * (dst.Height / src.Height)
+		var padU, padV = eff.BorderSize * invTexW, eff.BorderSize * invTexH
+		dx[0], dx[1], dx[2], dx[3] = dx[0]-padX, dx[1]-padX, dx[2]+padX, dx[3]+padX
+		dy[0], dy[3], dy[1], dy[2] = dy[0]-padY, dy[3]-padY, dy[1]+padY, dy[2]+padY
+		uvs[0], uvs[2], uvs[4], uvs[6] = uvs[0]-padU, uvs[2]-padU, uvs[4]+padU, uvs[6]+padU
+		uvs[1], uvs[7], uvs[3], uvs[5] = uvs[1]-padV, uvs[7]-padV, uvs[3]+padV, uvs[5]+padV
+	}
+
+	var bx, by = uint8(number.Limit(eff.BlurX, 0, 31)), uint8(number.Limit(eff.BlurY, 0, 31))
+	var ps = number.Limit(eff.PixelSize, 0, 16)
+	var oc, sc uint
+	var os, sb uint8
+	var w, ss, sx, sy int8
+	if eff != nil {
+		os = uint8(number.Limit(eff.OutlineSize, 0, 255))
+		oc, sc = eff.OutlineColor, eff.TextShadowColor
+		w, ss, sb = eff.TextWeight, eff.TextShadowWeight, eff.TextShadowBlur
+		sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
+	}
+	var u, v = packU2(uint16(tex.Width), uint16(tex.Height)), packV2(eff.BorderColor)
+	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
+	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
+	var tx, ty, tz, tw float32
+	if kind == KindText {
+		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
+	} else {
+		tx, ty, tz = packTangentXSprite(eff.OutlineColor), packTangentYSprite(eff.SilhouetteColor), eff.OutlineSize
 	}
 
 	for i := range len(polygonBuf) {
-		polygonBuf[i].U2 = packU2(uint16(tex.Width), uint16(tex.Height))
-		polygonBuf[i].V2 = packV2(eff.BorderColor)
-		polygonBuf[i].NX = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
-		polygonBuf[i].NY = packNormalY(0.5, number.Limit(eff.PixelSize, 0, 16), eff.BlurX, eff.BlurY)
-		polygonBuf[i].NZ = packNormalZ(eff.DepthZ, eff.BorderSize, kind)
+		polygonBuf[i].U2, polygonBuf[i].V2 = u, v
+		polygonBuf[i].NX, polygonBuf[i].NY, polygonBuf[i].NZ = nx, ny, nz
 
 		if kind == KindText {
-			var oc, sc uint
-			var os, sb uint8
-			var w, ss int8
-			var sx, sy int8
-			if eff != nil {
-				os = uint8(number.Limit(eff.OutlineSize, 0, 255))
-				oc, sc = eff.OutlineColor, eff.TextShadowColor
-				w, ss, sb = eff.TextWeight, eff.TextShadowWeight, eff.TextShadowBlur
-				sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
-			}
-			polygonBuf[i].TX = packTangentXText(oc)
-			polygonBuf[i].TY = packTangentYText(sc)
-			polygonBuf[i].TZ = packTangentZText(w, os, ss)
-			polygonBuf[i].TW = packTangentWText(sx, sy, sb)
+			polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ, polygonBuf[i].TW = tx, ty, tz, tw
 		} else {
-			polygonBuf[i].TX = packTangentXSprite(eff.OutlineColor)
-			polygonBuf[i].TY = packTangentYSprite(eff.SilhouetteColor)
-			polygonBuf[i].TZ = eff.OutlineSize
+			polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ = tx, ty, tz
 		}
 
 	}
@@ -146,46 +130,37 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang float32, col rl.C
 		vCount = 4
 		if ang == 0 {
 			for i := range 4 {
-				polygonBuf[i].X = dx[i] + dst.X
-				polygonBuf[i].Y = dy[i] + dst.Y
-				polygonBuf[i].U = uvs[i*2]
-				polygonBuf[i].V = uvs[i*2+1]
+				polygonBuf[i].X, polygonBuf[i].Y = dx[i]+dst.X, dy[i]+dst.Y
+				polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 			}
 		} else {
 			var sinA, cosA = SinCos(ang)
-			var cx = ww + dst.Width/2
-			var cy = wh + dst.Height/2
+			var cx, cy = ww + dst.Width/2, wh + dst.Height/2
 			for i := range 4 {
-				var rx = dx[i] - cx
-				var ry = dy[i] - cy
-				polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
-				polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
-				polygonBuf[i].U = uvs[i*2]
-				polygonBuf[i].V = uvs[i*2+1]
+				var rx, ry = dx[i] - cx, dy[i] - cy
+				polygonBuf[i].X, polygonBuf[i].Y = (rx*cosA-ry*sinA)+cx+dst.X, (rx*sinA+ry*cosA)+cy+dst.Y
+				polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 			}
 		}
 		queueVertices(polygonBuf[:4], vCount, tex, col)
-	} else { // CLIPPED PATH logic...
-		var sinA, cosA = SinCos(ang)
-		var cx = ww + dst.Width/2
-		var cy = wh + dst.Height/2
-		for i := range 4 {
-			var rx = dx[i] - cx
-			var ry = dy[i] - cy
-			polygonBuf[i].X = (rx*cosA - ry*sinA) + cx + dst.X
-			polygonBuf[i].Y = (rx*sinA + ry*cosA) + cy + dst.Y
-			polygonBuf[i].U = uvs[i*2]
-			polygonBuf[i].V = uvs[i*2+1]
-		}
-		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
-		if vCount >= 3 {
-			queueVertices(clipResultBuf[:vCount], vCount, tex, col)
-		}
+		return
+	}
+
+	var sinA, cosA = SinCos(ang)
+	var cx, cy = ww + dst.Width/2, wh + dst.Height/2
+	for i := range 4 {
+		var rx, ry = dx[i] - cx, dy[i] - cy
+		polygonBuf[i].X, polygonBuf[i].Y = (rx*cosA-ry*sinA)+cx+dst.X, (rx*sinA+ry*cosA)+cy+dst.Y
+		polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
+	}
+	vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
+	if vCount >= 3 {
+		queueVertices(clipResultBuf[:vCount], vCount, tex, col)
 	}
 }
 func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	var rect = rl.NewRectangle(x, y, width, height)
-	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, color, mask, nil, 0)
+	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, 0, color, mask, nil, 0)
 }
 func QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
 	if thickness <= 0 {

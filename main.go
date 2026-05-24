@@ -25,14 +25,15 @@ func main() {
 	obj.Effects.OutlineSize = 64
 	obj.Effects.OutlineColor = palette.Red
 
-	obj.Roundness = 0.5
-
 	window.SetTargetFPS(60)
+
+	var obj2 = graphics.NewShapeCircle(0, 0, 500, palette.Red)
+	obj2.Roundness = 0.5
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()
 
 		// obj.Effects.TextShadowOffsetX = int8(number.Map(number.Sine(time.Running()/2), -1, 1, -128, 127))
-		view.DrawObjects(&obj)
+		view.DrawObjects(&obj, &obj2)
 	}
 }

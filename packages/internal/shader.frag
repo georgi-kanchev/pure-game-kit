@@ -236,10 +236,10 @@ void main() {
     int objKind = int(fragData0.w);
 
     vec4 colorAdjust1 = fragData1;
-    vec4 rgbAdjust2 = fragData2;
-    float roundness = rgbAdjust2.x;
-    float pixelSize = rgbAdjust2.y;
-    vec2 blur = rgbAdjust2.zw * 16.0;
+    vec4 data2 = fragData2;
+    float roundness = data2.x;
+    float pixelSize = data2.y;
+    vec2 blur = data2.zw * 16.0;
 
     vec4 outlineColor = fragData3;
     vec4 silhouetteColor = fragData4;
