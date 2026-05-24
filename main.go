@@ -33,6 +33,7 @@ func main() {
 	var img = assets.LoadImage("examples/data/desert-0.png")
 	var obj2 = graphics.NewImage(0, 0, 4, img)
 	obj2.Roundness = 0.5
+
 	obj2.Effects = graphics.NewEffects()
 	obj2.Effects.BorderSize = 20
 	obj2.Effects.BorderColor = palette.Red

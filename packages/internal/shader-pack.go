@@ -77,9 +77,9 @@ func packNormalY(roundness float32, pixelSize, blurX, blurY uint8) float32 {
 }
 func packNormalZ(depthZ float32, borderSize float32, objType uint8) float32 {
 	depthZ = number.Limit(depthZ, 0, 1)
-	var d = uint32(uint16(depthZ*2047.0)) << 13            // bits 23-13 (11 bits)
+	var d = uint32(uint16(depthZ*2047.0)) << 13             // bits 23-13 (11 bits)
 	var b = uint32(uint16(int16(borderSize*16))&0x7FF) << 2 // bits 12-2  (11 bits, signed, step 1/16)
-	var t = uint32(objType & 0x3)                          // bits 1-0   (2 bits)
+	var t = uint32(objType & 0x3)                           // bits 1-0   (2 bits)
 	return pack24(d | b | t)
 }
 
