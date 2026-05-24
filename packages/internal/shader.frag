@@ -144,21 +144,11 @@ vec2 compute_tile(vec2 uv, vec2 texSize, float tileColumns, float tileRows, floa
     vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
     return (coord + localUV) / atlasSizeInTiles;
 }
-vec4 compute_sdf_shape(vec2 uv, vec2 texSize, vec4 color, float roundness, float borderSize, vec4 borderColor) {
+vec4 compute_sdf_shape(vec2 uv, vec2 size, vec4 color, float roundness, float borderSize, vec4 borderColor) {
     if (abs(roundness) < 0.001 && abs(borderSize) < 0.001) { return color; }
     
-    vec2 halfSize = texSize * 0.5;
-    vec2 pLocal = (uv - 0.5) * texSize;
-
-    // Shapes use a 1×1 texture with UV [0,1] — compensate screen-space aspect ratio
-    // so corners are circular on screen. Skip for sprites/atlas textures.
-    if (texSize.x < 2.0 && texSize.y < 2.0) {
-        vec2 sd = fwidth(uv);
-        float scaleX = max(sd.y / max(sd.x, 0.0001), 1.0);
-        float scaleY = max(sd.x / max(sd.y, 0.0001), 1.0);
-        pLocal *= vec2(scaleX, scaleY);
-        halfSize *= vec2(scaleX, scaleY);
-    }
+    vec2 halfSize = size * 0.5;
+    vec2 pLocal = (uv - 0.5) * size;
     
     float maxRadius = min(halfSize.x, halfSize.y);
     float radius = abs(roundness) * maxRadius;
@@ -256,6 +246,7 @@ void main() {
 
     float outlineSize = fragData5.x;
     float borderSize = fragData5.y;
+    vec2  objectSize = fragData5.zw;  // shape/sprite dimensions in pixels
     vec4  borderColor = fragData7;
 
     float tileColumns = fragData6.x;
@@ -283,7 +274,7 @@ void main() {
             color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
         }
 
-        color = compute_sdf_shape(uv, texSize, color, roundness, borderSize, borderColor);
+        color = compute_sdf_shape(uv, objectSize, color, roundness, borderSize, borderColor);
 
         if (color.a * fragColor.a < 0.004)
             discard;
