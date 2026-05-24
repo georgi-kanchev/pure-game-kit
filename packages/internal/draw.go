@@ -27,7 +27,7 @@ type Vertex struct {
 	U2, V2         float32 // Texcoords2
 }
 type Effects struct {
-	Gamma, Saturation, Contrast, Brightness float32 // Ranged 0..1
+	Gamma, Saturation, Contrast, Brightness int8 // Ranged -128..127, 0 = no change
 
 	OutlineSize, BorderSize float32
 
@@ -237,7 +237,7 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5, TextColor: palette.White}
+var defaultEffects = &Effects{TextColor: palette.White}
 
 //go:embed shader.frag
 var shaderFrag string

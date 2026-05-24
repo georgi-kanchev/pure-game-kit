@@ -8,6 +8,5 @@ import (
 type Effects internal.Effects
 
 func NewEffects() *Effects {
-	return &Effects{Gamma: 0.5, Saturation: 0.5, Contrast: 0.5, Brightness: 0.5,
-		TextColor: palette.White, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
+	return &Effects{TextColor: palette.White, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
 }
