@@ -44,11 +44,6 @@ type TileSet struct {
 
 //=================================================================
 
-var Textures = make(map[string]rl.Texture2D)
-var AtlasRects = make(map[string]AtlasRect)
-var Atlases = make(map[string]Atlas)
-var Boxes = make(map[string][9]string)
-
 var TileLayers = make(map[string]*TileLayer)
 var TileSets = make(map[string]*TileSet)
 

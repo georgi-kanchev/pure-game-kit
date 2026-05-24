@@ -11,6 +11,7 @@ uniform mat4 mvp;
 
 out vec2 fragTexCoord;
 out vec4 fragColor;
+out vec2 fragLocalPos;
 
 out vec4 fragData0;
 out vec4 fragData1;
@@ -137,6 +138,8 @@ void main() {
         fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
         fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
     }
+
+    fragLocalPos = (vertTexCoord - 0.5) * texSize;
 
     gl_Position = mvp * vec4(vertPosition, 1.0);
 }

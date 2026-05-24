@@ -32,6 +32,7 @@ func main() {
 
 	var img = assets.LoadImage("examples/data/desert-0.png")
 	var sprite = graphics.NewImage(0, 0, 3, img)
+	img.SetCrop(0, 0, 200, 200)
 	sprite.Roundness = 0.5
 	sprite.Effects = graphics.NewEffects()
 	sprite.Effects.BorderSize = 20
