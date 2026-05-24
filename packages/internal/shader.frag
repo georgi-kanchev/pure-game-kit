@@ -246,12 +246,13 @@ void main() {
 
     float outlineSize = fragData5.x;
     float borderSize = fragData5.y;
-    vec2  objectSize = fragData5.zw;  // shape/sprite dimensions in pixels
+    vec2  shapeOrUVMin = fragData5.zw;  // shapes: objectSize px; sprites: UV min
     vec4  borderColor = fragData7;
 
     float tileColumns = fragData6.x;
     float tileRows = fragData6.y;
     float tileSize = fragData6.z;
+    vec2  spriteUVRange = fragData6.zw;  // sprites: uvRange; shapes/tilemaps: (tileSize, 0)
     
     // ========================================================================
 
@@ -274,7 +275,20 @@ void main() {
             color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
         }
 
-        color = compute_sdf_shape(uv, objectSize, color, roundness, borderSize, borderColor);
+        // Compute SDF size and normalized UV
+        vec2 sdfSize, sdfUV;
+        if (objKind == KIND_SHAPE) {
+            sdfSize = shapeOrUVMin;           // objectSize in pixels
+            sdfUV = uv;                       // UV already [0,1]
+        } else if (objKind == KIND_SPRITE && spriteUVRange.x > 0.001) {
+            sdfUV = (uv - shapeOrUVMin) / spriteUVRange;
+            sdfSize = 1.0 / max(fwidth(sdfUV), 0.0001);
+        } else {
+            sdfSize = shapeOrUVMin;           // fallback for tilemap/other
+            sdfUV = uv;
+        }
+
+        color = compute_sdf_shape(sdfUV, sdfSize, color, roundness, borderSize, borderColor);
 
         if (color.a * fragColor.a < 0.004)
             discard;

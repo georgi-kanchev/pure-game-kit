@@ -91,10 +91,17 @@ func packTangentXSprite(outlineColor uint) float32 {
 func packTangentYSprite(silhouetteColor uint) float32 {
 	return packColor24(silhouetteColor)
 }
-func packTangentWSprite(objWidth, objHeight uint16) float32 {
-	var w = uint32(objWidth&0xFFF) << 12  // bits 23-12
-	var h = uint32(objHeight & 0xFFF)      // bits 11-0
+func packTangentWShape(objWidth, objHeight uint16) float32 {
+	var w = uint32(objWidth&0xFFF) << 12
+	var h = uint32(objHeight & 0xFFF)
 	return pack24(w | h)
+}
+func packTangentWSprite(uvMinX, uvMinY, uvMaxX, uvMaxY float32) float32 {
+	var xMin = uint32(uint8(uvMinX*63.0+0.5)) << 18 // bits 23-18
+	var yMin = uint32(uint8(uvMinY*63.0+0.5)) << 12 // bits 17-12
+	var xMax = uint32(uint8(uvMaxX*63.0+0.5)) << 6  // bits 11-6
+	var yMax = uint32(uint8(uvMaxY*63.0+0.5))       // bits 5-0
+	return pack24(xMin | yMin | xMax | yMax)
 }
 
 //=================================================================
