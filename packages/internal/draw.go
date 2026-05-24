@@ -104,7 +104,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		w, ss, sb = eff.TextWeight, eff.TextShadowWeight, eff.TextShadowBlur
 		sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
 	}
-	var u, v = packU2(uint16(tex.Width), uint16(tex.Height)), packV2(eff.BorderColor)
+	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 	var tx, ty, tz, tw float32

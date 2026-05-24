@@ -31,6 +31,9 @@ func main() {
 	// obj2.Effects = graphics.NewEffects()
 	obj2.Roundness = 0.5
 	obj2.ImageId = 0
+	obj2.Effects = graphics.NewEffects()
+	obj2.Effects.BorderSize = 0.2
+	obj2.Effects.BorderColor = palette.Red
 
 	for window.KeepOpen() {
 		obj.Text = debug.MemoryUsage()

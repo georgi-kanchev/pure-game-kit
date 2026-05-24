@@ -73,7 +73,7 @@ func Init() {
 	DefaultMaterial = rl.LoadMaterialDefault()
 
 	var img = rl.GenImageColor(1, 1, rl.White)
-	Images[0] = ImageData{Texture: rl.LoadTextureFromImage(img), CropX: 0.25, CropY: 0.25, CropWidth: 0.5, CropHeight: 0.5}
+	Images[0] = ImageData{Texture: rl.LoadTextureFromImage(img), CropX: 0, CropY: 0, CropWidth: 1, CropHeight: 1}
 	rl.UnloadImage(img)
 
 	for i := range 3600 {
