@@ -167,7 +167,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 			mask.X += float32(internal.WindowWidth) / 2
 			mask.Y += float32(internal.WindowHeight) / 2
 		}
-		var eff = (*internal.Effects)(o.Effects)
+		var eff = (*internal.Effects)(&o.Effects)
 		var kind uint8
 		if o.ImageId != 0 {
 			kind = internal.KindSprite // sprite

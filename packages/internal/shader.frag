@@ -68,7 +68,7 @@ vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize, float outlineSize) {
         return color;
     
     vec2 texel = 1.0 / texSize;
-    vec4 outlineColor = fragData3 * fragColor;
+    vec4 outlineColor = fragData3;
 
     if (texture(texture0, uv + vec2(texel.x * outlineSize, 0.0)).a > 0.0 ||
             texture(texture0, uv + vec2(-texel.x * outlineSize, 0.0)).a > 0.0 ||
@@ -288,9 +288,6 @@ void main() {
             color = compute_silhouette(color, fillColor);
         }
         
-        if (objKind != KIND_SHAPE) {
-            color *= fragColor;
-        }
         finalColor = color;
     }
 

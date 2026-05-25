@@ -12,7 +12,7 @@ type Object struct {
 	geometry.Shape
 
 	Mask    Area
-	Effects *Effects
+	Effects Effects
 
 	// image ==========================================================
 
@@ -30,46 +30,47 @@ type Object struct {
 }
 
 func NewShapePoint(x, y float32) Object {
-	var eff = NewEffects()
+	var eff = Effects(internal.DefaultEffects)
 	eff.BorderSize, eff.FillColor = 5, palette.LightGray
 	return Object{Shape: geometry.NewPoint(x, y), Effects: eff}
 }
 func NewShapeCircle(x, y, radius float32) Object {
-	var eff = NewEffects()
+	var eff = Effects(internal.DefaultEffects)
 	eff.BorderSize, eff.FillColor = 5, palette.LightGray
 	return Object{Shape: geometry.NewCircle(x, y, radius), Effects: eff}
 }
 func NewShapeRectangle(x, y, width, height, angle float32) Object {
-	var eff = NewEffects()
+	var eff = Effects(internal.DefaultEffects)
 	eff.BorderSize, eff.FillColor = 5, palette.LightGray
 	return Object{Shape: geometry.NewRectangle(x, y, width, height, angle), Effects: eff}
 }
 func NewShapeRoundedRectangle(x, y, width, height, angle, roundness float32) Object {
-	var eff = NewEffects()
+	var eff = Effects(internal.DefaultEffects)
 	eff.BorderSize, eff.FillColor = 5, palette.LightGray
 	return Object{Shape: geometry.NewRoundedRectangle(x, y, width, height, angle, roundness), Effects: eff}
 }
 func NewShapeCapsule(x1, y1, x2, y2, radius float32) Object {
-	var eff = NewEffects()
+	var eff = Effects(internal.DefaultEffects)
 	eff.BorderSize, eff.FillColor = 5, palette.LightGray
 	return Object{Shape: geometry.NewCapsule(x1, y1, x2, y2, radius), Effects: eff}
 }
 func NewShapeLine(x1, y1, x2, y2, thickness float32) Object {
-	var eff = NewEffects()
+	var eff = Effects(internal.DefaultEffects)
 	eff.BorderSize, eff.FillColor = 5, palette.LightGray
 	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness), Effects: eff}
 }
 
 func NewImage(x, y, scale float32, imageId assets.ImageId) Object {
 	var _, _, w, h = imageId.CropArea()
-	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId}
+	var eff = Effects(internal.DefaultEffects)
+	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId, Effects: eff}
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
-	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...)}
+	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: Effects(internal.DefaultEffects)}
 }
 func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
-	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId}
+	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId, Effects: Effects(internal.DefaultEffects)}
 }
 
 //=================================================================

@@ -60,7 +60,7 @@ var ShaderLoc int32 // uniform location, all properties are packed in one unifor
 var ShaderTileDataLoc int32
 var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
-var DefaultEffects = &Effects{BorderColor: palette.White, Tint: palette.White,
+var DefaultEffects = Effects{BorderColor: palette.White, Tint: palette.White,
 	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 30, TextShadowOffsetY: 30,
 	TextLineHeight: 40, TextWordWrap: true}
 
@@ -84,11 +84,11 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
 	if eff == nil {
-		eff = DefaultEffects
+		eff = &DefaultEffects
 	}
 
 	var padU, padV float32
-	if kind != KindText && eff.BorderSize > 0 {
+	if kind != KindText && eff.BorderSize > 0 { // no border padding for text symbols
 		var padX, padY = eff.BorderSize, eff.BorderSize
 		padU, padV = eff.BorderSize*(u2-u1)/dst.Width, eff.BorderSize*(v2-v1)/dst.Height
 		dx[0], dx[1], dx[2], dx[3] = dx[0]-padX, dx[1]-padX, dx[2]+padX, dx[3]+padX

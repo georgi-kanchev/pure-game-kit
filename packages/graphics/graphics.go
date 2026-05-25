@@ -20,7 +20,3 @@ type Effects internal.Effects
 func NewArea(x, y, width, height float32) Area {
 	return Area{X: x, Y: y, Width: width, Height: height}
 }
-func NewEffects() *Effects {
-	var eff = *internal.DefaultEffects
-	return (*Effects)(&eff) // copy
-}
