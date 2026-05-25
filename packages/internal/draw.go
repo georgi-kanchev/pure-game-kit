@@ -85,8 +85,8 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 	}
 
 	if kind != KindText && eff.BorderSize > 0 {
-		var padX, padY = eff.BorderSize * (dst.Width / src.Width), eff.BorderSize * (dst.Height / src.Height)
-		var padU, padV = eff.BorderSize * invTexW, eff.BorderSize * invTexH
+		var padX, padY = eff.BorderSize, eff.BorderSize
+		var padU, padV = eff.BorderSize * (u2 - u1) / dst.Width, eff.BorderSize * (v2 - v1) / dst.Height
 		dx[0], dx[1], dx[2], dx[3] = dx[0]-padX, dx[1]-padX, dx[2]+padX, dx[3]+padX
 		dy[0], dy[3], dy[1], dy[2] = dy[0]-padY, dy[3]-padY, dy[1]+padY, dy[2]+padY
 		uvs[0], uvs[2], uvs[4], uvs[6] = uvs[0]-padU, uvs[2]-padU, uvs[4]+padU, uvs[6]+padU
