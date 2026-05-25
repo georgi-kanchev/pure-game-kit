@@ -17,7 +17,7 @@ import (
 //
 // Sprite:
 //  tangent.x = OutlineColor(6,6,6,6)
-//  tangent.y = OutlineSize(8) + SilhouetteColor(4,4,4,4)
+//  tangent.y = OutlineSize(8) + FillColor(4,4,4,4)
 //  tangent.z = CropMinU(12) + CropMaxU(12)
 //  tangent.w = CropMinV(12) + CropMaxV(12)
 //
@@ -29,7 +29,7 @@ import (
 //
 // Tilemap:
 //  tangent.x = OutlineColor(6,6,6,6)
-//  tangent.y = SilhouetteColor(6,6,6,6)
+//  tangent.y = FillColor(6,6,6,6)
 //  tangent.z = TileColumns(12) + TileRows(12)
 //  tangent.w = OutlineSize(16) + TileSize(8)
 
@@ -74,12 +74,12 @@ func packNormalZ(depthZ float32, borderSize float32, objType uint8) float32 {
 func packTangentXSprite(outlineColor uint) float32 {
 	return packColor24(outlineColor)
 }
-func packTangentYSprite(outlineSize uint8, silhouetteColor uint) float32 {
-	var o = uint32(outlineSize) << 16                   // bits 23-16
-	var r = uint32(uint8(silhouetteColor>>24)>>4) << 12 // bits 15-12
-	var g = uint32(uint8(silhouetteColor>>16)>>4) << 8  // bits 11-8
-	var b = uint32(uint8(silhouetteColor>>8)>>4) << 4   // bits 7-4
-	var a = uint32(uint8(silhouetteColor) >> 4)         // bits 3-0
+func packTangentYSprite(outlineSize uint8, fillColor uint) float32 {
+	var o = uint32(outlineSize) << 16             // bits 23-16
+	var r = uint32(uint8(fillColor>>24)>>4) << 12 // bits 15-12
+	var g = uint32(uint8(fillColor>>16)>>4) << 8  // bits 11-8
+	var b = uint32(uint8(fillColor>>8)>>4) << 4   // bits 7-4
+	var a = uint32(uint8(fillColor) >> 4)         // bits 3-0
 	return pack24(o | r | g | b | a)
 }
 func packTangentZSprite(cropMinU, cropMaxU float32) float32 {

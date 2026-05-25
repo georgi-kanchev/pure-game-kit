@@ -64,13 +64,13 @@ vec4 unpack_10_4_5_5(float packedFloat) {
     float blurY     = float(bits & 0x1Fu) / 31.0;
     return vec4(roundness, pixelSize, blurX, blurY);
 }
-void unpack_8_4_4_4_4(float packedFloat, out float outlineSize, out vec4 silhouetteColor) {
+void unpack_8_4_4_4_4(float packedFloat, out float outlineSize, out vec4 fillColor) {
     uint bits = floatBitsToUint(packedFloat);
     outlineSize = float((bits >> 16u) & 0xFFu);
-    silhouetteColor.x = float((bits >> 12u) & 0xFu) / 15.0;
-    silhouetteColor.y = float((bits >> 8u)  & 0xFu) / 15.0;
-    silhouetteColor.z = float((bits >> 4u)  & 0xFu) / 15.0;
-    silhouetteColor.w = float(bits & 0xFu) / 15.0;
+    fillColor.x = float((bits >> 12u) & 0xFu) / 15.0;
+    fillColor.y = float((bits >> 8u)  & 0xFu) / 15.0;
+    fillColor.z = float((bits >> 4u)  & 0xFu) / 15.0;
+    fillColor.w = float(bits & 0xFu) / 15.0;
 }
 vec3 unpack_8_8_8_text_weights(float packedFloat) {
     uint bits = floatBitsToUint(packedFloat);
@@ -99,7 +99,7 @@ void main() {
     unpack_11_11_2(vertNormal.z, depthZ, borderSize, objectType);
     float outlineSize = 0.0;
     vec4 outlineColor   = vec4(0.0);
-    vec4 silhouetteColor = vec4(0.0);
+    vec4 fillColor = vec4(0.0);
     float tileColumns = 0.0;
     float tileRows    = 0.0;
     float tileSize    = 0.0;
@@ -115,7 +115,7 @@ void main() {
     }
     else if (objectType == 1) { // Sprite
         outlineColor = unpack_6_6_6_6(vertTangent.x);
-        unpack_8_4_4_4_4(vertTangent.y, outlineSize, silhouetteColor);
+        unpack_8_4_4_4_4(vertTangent.y, outlineSize, fillColor);
         cropBoundsU = unpack_12_12(vertTangent.z); // CropMinU, CropMaxU [0, 4095]
         cropBoundsV = unpack_12_12(vertTangent.w); // CropMinV, CropMaxV [0, 4095]
     }
@@ -127,7 +127,7 @@ void main() {
     }
     else if (objectType == 3) { // Tilemap
         outlineColor    = unpack_6_6_6_6(vertTangent.x);
-        silhouetteColor = unpack_6_6_6_6(vertTangent.y);
+        fillColor = unpack_6_6_6_6(vertTangent.y);
         vec2 tileInfo   = unpack_12_12(vertTangent.z);
         tileColumns = tileInfo.x;
         tileRows    = tileInfo.y;
@@ -145,11 +145,11 @@ void main() {
         fragData5 = vec4(textWeights.x / 127.0, textWeights.y / 255.0, textWeights.z / 127.0, 0.0);
         fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);
     } else if (objectType == 0 || objectType == 1) { // Shape or Sprite: forward crop bounds
-        fragData4 = silhouetteColor;
+        fragData4 = fillColor;
         fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
         fragData6 = vec4(cropBoundsU, cropBoundsV);
     } else { // Tilemap
-        fragData4 = silhouetteColor;
+        fragData4 = fillColor;
         fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
         fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);
     }
