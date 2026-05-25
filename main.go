@@ -40,7 +40,7 @@ func main() {
 	shape.Effects = graphics.NewEffects()
 	shape.Effects.BorderColor = palette.Green
 	shape.Effects.BorderSize = 20
-	shape.Effects.Color = palette.Red
+	shape.Effects.FillColor = palette.Red
 
 	for window.KeepOpen() {
 		textbox.Text = debug.MemoryUsage()

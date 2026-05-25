@@ -32,9 +32,10 @@ type Effects struct {
 
 	OutlineSize, BorderSize float32
 
-	Color, Tint, BorderColor uint
-	OutlineColor             uint // Not used by Shapes.
-	SilhouetteColor          uint // Not used by Shapes & Texts.
+	Tint, BorderColor uint
+
+	FillColor    uint // Not used by Texts.
+	OutlineColor uint // Not used by Shapes.
 
 	PixelSize    uint8 // Ranged 0..15; Not used by Shapes & Texts.
 	BlurX, BlurY uint8 // Ranged 0..31; Not used by Shapes & Texts.
@@ -97,7 +98,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	var ps, oc = number.Limit(eff.PixelSize, 0, 16), col.Tint(eff.OutlineColor, eff.Tint)
 	var w, sc, os = eff.TextWeight, eff.TextShadowColor, uint8(number.Limit(eff.OutlineSize, 0, 255))
 	var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
-	var r, g, b, a = col.Channels(col.Tint(eff.Color, eff.Tint))
+	var r, g, b, a = col.Channels(col.Tint(eff.FillColor, eff.Tint))
 	if kind == KindText {
 		r, g, b, a = col.Channels(col.Tint(eff.TextColor, eff.Tint))
 		sc = col.Tint(sc, eff.Tint)
@@ -112,10 +113,10 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	case KindText:
 		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
 	case KindSprite, KindShape:
-		tx, ty = packTangentXSprite(eff.OutlineColor), packTangentYSprite(os, eff.SilhouetteColor)
+		tx, ty = packTangentXSprite(eff.OutlineColor), packTangentYSprite(os, eff.FillColor)
 		tz, tw = packTangentZSprite(cropMinU, cropMaxU), packTangentWSprite(cropMinV, cropMaxV)
 	default:
-		tx, ty = packColor24(eff.OutlineColor), packColor24(eff.SilhouetteColor)
+		tx, ty = packColor24(eff.OutlineColor), packColor24(eff.FillColor)
 	}
 
 	for i := range len(polygonBuf) {
@@ -194,7 +195,7 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{Color: palette.White, Tint: palette.White, TextColor: palette.White, TextLineHeight: 40, TextWordWrap: true}
+var defaultEffects = &Effects{FillColor: palette.White, Tint: palette.White, TextColor: palette.White, TextLineHeight: 40, TextWordWrap: true}
 
 //go:embed shader.frag
 var shaderFrag string

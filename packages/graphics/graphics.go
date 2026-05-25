@@ -22,6 +22,6 @@ func NewArea(x, y, width, height float32) Area {
 	return Area{X: x, Y: y, Width: width, Height: height}
 }
 func NewEffects() *Effects {
-	return &Effects{Color: palette.Gray, Tint: palette.White, BorderColor: palette.White,
+	return &Effects{FillColor: palette.Gray, Tint: palette.White, BorderColor: palette.White,
 		TextColor: palette.White, OutlineColor: palette.DarkGray, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
 }
