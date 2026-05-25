@@ -42,8 +42,11 @@ func (i ImageId) UnloadImage() {
 	if i == 0 {
 		return
 	}
+
 	var img = internal.Images[int32(i)]
-	rl.UnloadTexture(img.Texture)
+	if i > 0 { // not crop
+		rl.UnloadTexture(img.Texture)
+	}
 	delete(internal.Images, int32(i))
 }
 func (i ImageId) SetSmoothness(smooth bool) {
