@@ -156,7 +156,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 		}
 
 		var tex = internal.Images[int32(o.ImageId)]
-		var crop = o.ImageCropArea
+		var crop = o.ImageCrop
 		if crop == (Area{}) {
 			crop = NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
 		}

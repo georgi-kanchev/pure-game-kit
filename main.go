@@ -32,8 +32,8 @@ func main() {
 	window.SetTargetFPS(60)
 
 	var img = assets.LoadImage("examples/data/desert-0.png")
-	var sprite = graphics.NewImage(0, 0, 3, img)
-	img.SetCrop(100, 100, 100, 100)
+	var crop = assets.LoadImageCrop(img, 0, 0, 100, 100)
+	var sprite = graphics.NewImage(0, 0, 3, crop)
 	sprite.Roundness = 0.5
 	sprite.Effects = graphics.NewEffects()
 	sprite.Effects.BorderSize = 20
@@ -56,6 +56,6 @@ func main() {
 		// sprite.Roundness = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
 		// sprite.ImageCropArea.X, sprite.ImageCropArea.Y = view.MousePosition()
 		// sprite.ImageCropArea.Width, sprite.ImageCropArea.Height = img.Size()
-		view.DrawObjects(&textbox)
+		view.DrawObjects(&sprite)
 	}
 }

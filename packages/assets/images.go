@@ -27,6 +27,16 @@ func LoadImage(imagePath string) ImageId {
 	internal.Images[int32(id)] = internal.ImageData{Texture: texture, CropWidth: w, CropHeight: h}
 	return ImageId(id)
 }
+func LoadImageCrop(original ImageId, x, y, width, height float32) ImageId {
+	if original == 0 {
+		return 0
+	}
+	internal.NextImageCropId--
+	var img = internal.Images[int32(original)]
+	var id = internal.NextImageCropId
+	internal.Images[int32(id)] = internal.ImageData{Texture: img.Texture, CropX: x, CropY: y, CropWidth: width, CropHeight: height}
+	return ImageId(id)
+}
 
 func (i ImageId) UnloadImage() {
 	if i == 0 {
@@ -49,26 +59,10 @@ func (i ImageId) SetSmoothness(smooth bool) {
 		rl.SetTextureFilter(img.Texture, rl.FilterPoint)
 	}
 }
-func (i ImageId) Size() (width, height float32) {
+func (i ImageId) CropArea() (x, y, width, height float32) {
 	var img, has = internal.Images[int32(i)]
 	if i == 0 || !has {
-		return 0, 0
+		return 0, 0, 0, 0
 	}
-	return img.CropWidth, img.CropHeight
-}
-func (i ImageId) Crop() (x, y, width, height float32) {
-	if i == 0 {
-		return 0, 0, 1, 1
-	}
-	var img = internal.Images[int32(i)]
 	return img.CropX, img.CropY, img.CropWidth, img.CropHeight
-}
-func (i ImageId) SetCrop(x, y, width, height float32) {
-	if i == 0 {
-		return
-	}
-	var img = internal.Images[int32(i)]
-	img.CropX, img.CropY = x, y
-	img.CropWidth, img.CropHeight = width, height
-	internal.Images[int32(i)] = img
 }

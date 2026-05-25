@@ -1,15 +1,11 @@
 TODO:
-audio, reduce complexity
-assets should be type uint ids, not strings
 textbox rework
 gui rework
 geometry rework
 graphics rework, shape render, text render
-remove delta time, make engine fixed tickrate
 event system, maybe game side? not sure
 translations
 steam
-
 nine patch should have option stretch/tile per edge/center
 
 LINKS:
@@ -23,6 +19,3 @@ https://youtu.be/JxI3Eu5DPwE
 COMMANDS:
 heap promotions
 go build -gcflags="-m" main.go
-
-race conditions
-go run -race main.go

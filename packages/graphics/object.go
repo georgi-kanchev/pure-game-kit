@@ -17,8 +17,8 @@ type Object struct {
 
 	// image ==========================================================
 
-	ImageId       assets.ImageId
-	ImageCropArea Area // Zero value = entire image
+	ImageId   assets.ImageId
+	ImageCrop Area // Zero value = original asset image (or crop)
 
 	// text ===========================================================
 
@@ -50,7 +50,7 @@ func NewShapeLine(x1, y1, x2, y2, thickness float32, color uint) Object {
 }
 
 func NewImage(x, y, scale float32, imageId assets.ImageId) Object {
-	var w, h = imageId.Size()
+	var _, _, w, h = imageId.CropArea()
 	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId, Color: palette.White}
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {

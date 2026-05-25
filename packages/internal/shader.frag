@@ -279,7 +279,7 @@ void main() {
         }
         
         if (color.a < 0.004)
-            discard;
+            discard; // helps DepthZ
         
         if (objKind != KIND_SHAPE) {
             color = compute_color_adjust(color, colorAdjust1);
