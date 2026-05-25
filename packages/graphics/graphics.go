@@ -12,7 +12,6 @@ package graphics
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/color/palette"
 )
 
 type Area struct{ X, Y, Width, Height float32 }
@@ -22,6 +21,6 @@ func NewArea(x, y, width, height float32) Area {
 	return Area{X: x, Y: y, Width: width, Height: height}
 }
 func NewEffects() *Effects {
-	return &Effects{FillColor: palette.Gray, Tint: palette.White, BorderColor: palette.White,
-		TextColor: palette.White, OutlineColor: palette.DarkGray, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
+	var eff = *internal.DefaultEffects
+	return (*Effects)(&eff) // copy
 }

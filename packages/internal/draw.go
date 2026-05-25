@@ -55,11 +55,14 @@ type Effects struct {
 	TextColor, TextBackColor, TextShadowColor                          uint
 }
 
-var DefaultMaterial rl.Material
-var DefaultMatrix rl.Matrix
 var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 var ShaderTileDataLoc int32
+var DefaultMaterial rl.Material
+var DefaultMatrix rl.Matrix
+var DefaultEffects = &Effects{BorderColor: palette.White, Tint: palette.White,
+	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 30, TextShadowOffsetY: 30,
+	TextLineHeight: 40, TextWordWrap: true}
 
 var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
 var NextImageId int16
@@ -81,7 +84,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
 	if eff == nil {
-		eff = defaultEffects
+		eff = DefaultEffects
 	}
 
 	var padU, padV float32
@@ -96,27 +99,27 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 
 	var bx, by = uint8(number.Limit(eff.BlurX, 0, 31)), uint8(number.Limit(eff.BlurY, 0, 31))
 	var ps, oc = number.Limit(eff.PixelSize, 0, 16), col.Tint(eff.OutlineColor, eff.Tint)
-	var w, sc, os = eff.TextWeight, eff.TextShadowColor, uint8(number.Limit(eff.OutlineSize, 0, 255))
-	var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
-	var r, g, b, a = col.Channels(col.Tint(eff.FillColor, eff.Tint))
-	if kind == KindText {
-		r, g, b, a = col.Channels(col.Tint(eff.TextColor, eff.Tint))
-		sc = col.Tint(sc, eff.Tint)
-	}
-	var col = color.RGBA{R: r, G: g, B: b, A: a}
+	var r, g, b, a = col.Channels(palette.White)
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
-	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
+	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(col.Tint(eff.BorderColor, eff.Tint))
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 	var tx, ty, tz, tw float32
+	var os = uint8(number.Limit(eff.OutlineSize, 0, 255))
 	switch kind {
 	case KindText:
+		var w, sc = eff.TextWeight, col.Tint(eff.TextShadowColor, eff.Tint)
+		var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
 		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
+		r, g, b, a = col.Channels(col.Tint(eff.TextColor, eff.Tint))
 	case KindSprite, KindShape:
-		tx, ty = packTangentXSprite(eff.OutlineColor), packTangentYSprite(os, eff.FillColor)
+		tx, ty = packTangentXSprite(oc), packTangentYSprite(os, col.Tint(eff.FillColor, eff.Tint))
 		tz, tw = packTangentZSprite(cropMinU, cropMaxU), packTangentWSprite(cropMinV, cropMaxV)
+		if kind == KindShape {
+			r, g, b, a = col.Channels(col.Tint(eff.FillColor, eff.Tint))
+		}
 	default:
-		tx, ty = packColor24(eff.OutlineColor), packColor24(eff.FillColor)
+		tx, ty = packColor24(oc), packColor24(col.Tint(eff.FillColor, eff.Tint))
 	}
 
 	for i := range len(polygonBuf) {
@@ -125,6 +128,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ, polygonBuf[i].TW = tx, ty, tz, tw
 	}
 
+	var finalColor = color.RGBA{R: r, G: g, B: b, A: a}
 	if mask != (Area{}) {
 		var sinA, cosA = SinCos(ang)
 		var cx, cy = ww + dst.Width/2, wh + dst.Height/2
@@ -135,7 +139,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		}
 		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
 		if vCount >= 3 {
-			queueVertices(clipResultBuf[:vCount], vCount, tex, col)
+			queueVertices(clipResultBuf[:vCount], vCount, tex, finalColor)
 		}
 		return
 	}
@@ -155,7 +159,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
 	}
-	queueVertices(polygonBuf[:4], vCount, tex, col)
+	queueVertices(polygonBuf[:4], vCount, tex, finalColor)
 }
 
 func ResetBatches() {
@@ -195,7 +199,6 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{FillColor: palette.White, Tint: palette.White, TextColor: palette.White, TextLineHeight: 40, TextWordWrap: true}
 
 //go:embed shader.frag
 var shaderFrag string

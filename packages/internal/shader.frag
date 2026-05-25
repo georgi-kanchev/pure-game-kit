@@ -192,8 +192,8 @@ vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borde
 }
 vec4 compute_msdf_text() {
     vec2 uv = fragTexCoord;
-    vec4 outlineColor = fragData3 * fragColor;
-    vec4 shadowColor = fragData4 * fragColor;
+    vec4 outlineColor = fragData3;
+    vec4 shadowColor = fragData4;
     float weight = fragData5.x;
     float outlineWeight = fragData5.y;
     float shadowWeight = fragData5.z;
