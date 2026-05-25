@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
+	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 
@@ -198,6 +199,18 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 		scale = lineHeight / 255
 		c = eff.TextColor
 		gapX, gapY = eff.TextSymbolGap*scale, eff.TextLineGap*scale
+	}
+
+	// Blend object tint into text color (per-channel multiply).
+	if o.Color != palette.White {
+		tr, tg, tb, ta := col.Channels(c)
+		or, og, ob, oa := col.Channels(o.Color)
+		c = col.RGBA(
+			uint8(uint16(tr)*uint16(or)/255),
+			uint8(uint16(tg)*uint16(og)/255),
+			uint8(uint16(tb)*uint16(ob)/255),
+			uint8(uint16(ta)*uint16(oa)/255),
+		)
 	}
 
 	var fontData = internal.Fonts[uint8(o.TextFontId)]

@@ -63,11 +63,12 @@ vec4 compute_blur(vec2 uv, vec2 texSize, vec2 blur) {
     sum += texture(texture0, uv + vec2(offset.x, offset.y));
     return sum * 0.25;
 }
-vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize, float outlineSize, vec4 outlineColor) {
+vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize, float outlineSize) {
     if (color.a > 0 || outlineSize == 0.0)
         return color;
     
     vec2 texel = 1.0 / texSize;
+    vec4 outlineColor = fragData3 * fragColor;
 
     if (texture(texture0, uv + vec2(texel.x * outlineSize, 0.0)).a > 0.0 ||
             texture(texture0, uv + vec2(-texel.x * outlineSize, 0.0)).a > 0.0 ||
@@ -149,23 +150,14 @@ vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borde
     if (abs(roundness) < 0.001 && abs(borderSize) < 0.001)
         return color;
     
-    // Remap fragLocalPos so the crop window maps to [-0.5, 0.5].
-    // Uncropped bounds are (-0.5, 0.5) → identity transform.
     vec2 cropRange = max(vec2(cropBoundsU.y - cropBoundsU.x, cropBoundsV.y - cropBoundsV.x), 0.001);
     vec2 pLocal = (fragLocalPos - vec2(cropBoundsU.x, cropBoundsV.x)) / cropRange - 0.5;
-
-    // Recover screen-pixel dimensions from derivatives.
     vec2 pixPerUnit = 1.0 / max(fwidth(pLocal), 0.0001);
     pLocal *= pixPerUnit;
     vec2 halfSize = pixPerUnit * 0.5;
-    
     float maxRadius = min(halfSize.x, halfSize.y);
     float radius = abs(roundness) * maxRadius;
-    
-    // Base shape SDF
     float dShape = shape_sdf(pLocal, halfSize, radius, roundness);
-    
-    // Calculate anti-aliasing factor
     float af = fwidth(dShape) * 1.5;
     float absBorder = abs(borderSize);
 
@@ -174,20 +166,16 @@ vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borde
         float sRing;
         
         if (borderSize > 0.0) { 
-            // OUTER RING: Generate a larger shape that scales its corner radius to match the same roundness ratio
             vec2 outerSize = halfSize + absBorder;
             float outerRadius = abs(roundness) * min(outerSize.x, outerSize.y);
             float dOuter = shape_sdf(pLocal, outerSize, outerRadius, roundness);
-            
             float sOuter = 1.0 - smoothstep(-af, af, dOuter);
             sRing = max(sOuter - sShape, 0.0);
             
         } else { 
-            // INNER RING: Generate a smaller shape
             vec2 innerSize = max(halfSize - absBorder, vec2(0.0));
             float innerRadius = abs(roundness) * min(innerSize.x, innerSize.y);
             float dInner = shape_sdf(pLocal, innerSize, innerRadius, roundness);
-            
             float sInner = 1.0 - smoothstep(-af, af, dInner);
             sRing = max(sShape - sInner, 0.0);
         }
@@ -200,9 +188,10 @@ vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borde
     float sShape = 1.0 - smoothstep(-af, af, dShape);
     return color * sShape;
 }
-vec4 compute_msdf_text(vec4 outlineColor) {
+vec4 compute_msdf_text() {
     vec2 uv = fragTexCoord;
-    vec4 shadowColor = fragData4;
+    vec4 outlineColor = fragData3 * fragColor;
+    vec4 shadowColor = fragData4 * fragColor;
     float weight = fragData5.x;
     float outlineWeight = fragData5.y;
     float shadowWeight = fragData5.z;
@@ -251,7 +240,6 @@ void main() {
     float pixelSize = data2.y;
     vec2 blur = data2.zw * 16.0;
 
-    vec4 outlineColor = fragData3;
     vec4 silhouetteColor = fragData4;
 
     float outlineSize = fragData5.x;
@@ -270,7 +258,7 @@ void main() {
     vec4 color;
 
     if (objKind == KIND_TEXT) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
-        color = compute_msdf_text(outlineColor);
+        color = compute_msdf_text();
         if (color.a < 0.004)
             discard;
 
@@ -283,22 +271,25 @@ void main() {
         } else { // Sprite / Tilemap
             uv = compute_pixelated_uv(uv, texSize, pixelSize);
             color = compute_blur(uv, texSize, blur);
-            color = compute_outline(color, uv, texSize, outlineSize, outlineColor);
+            color = compute_outline(color, uv, texSize, outlineSize);
         }
 
         if (objKind != KIND_TILEMAP) {
             color = compute_sdf_shape(color, roundness, borderSize, borderColor, cropBoundsU, cropBoundsV);
         }
-
-        if (color.a * fragColor.a < 0.004)
+        
+        if (color.a < 0.004)
             discard;
         
         if (objKind != KIND_SHAPE) {
             color = compute_color_adjust(color, colorAdjust1);
             color = compute_silhouette(color, silhouetteColor);
         }
-
-        finalColor = objKind == KIND_SHAPE ? color : color * fragColor;
+        
+        if (objKind != KIND_SHAPE) {
+            color *= fragColor;
+        }
+        finalColor = color;
     }
 
     gl_FragDepth = depthZ;
