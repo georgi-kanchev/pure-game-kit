@@ -23,7 +23,6 @@ func main() {
 	textbox.Effects.OutlineSize = 64
 	textbox.Effects.OutlineColor = palette.Red
 	textbox.Effects.BorderSize = 20
-	textbox.Effects.BorderColor = palette.White
 
 	window.SetTargetFPS(60)
 
@@ -51,6 +50,6 @@ func main() {
 		// sprite.Roundness = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
 		// sprite.ImageCropArea.X, sprite.ImageCropArea.Y = view.MousePosition()
 		// sprite.ImageCropArea.Width, sprite.ImageCropArea.Height = img.Size()
-		view.DrawObjects(&textbox)
+		view.DrawObjects(&sprite)
 	}
 }

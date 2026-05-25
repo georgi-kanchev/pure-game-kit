@@ -163,26 +163,28 @@ vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borde
 
     if (absBorder > 0.0) {
         float sShape = 1.0 - smoothstep(-af, af, dShape);
-        float sRing;
         
         if (borderSize > 0.0) { 
             vec2 outerSize = halfSize + absBorder;
             float outerRadius = abs(roundness) * min(outerSize.x, outerSize.y);
             float dOuter = shape_sdf(pLocal, outerSize, outerRadius, roundness);
             float sOuter = 1.0 - smoothstep(-af, af, dOuter);
-            sRing = max(sOuter - sShape, 0.0);
+            float sRing = max(sOuter - sShape, 0.0);
             
+            vec4 fill = color * sShape;
+            vec4 ring = borderColor * sRing;
+            return vec4(fill.rgb + ring.rgb, fill.a + ring.a);
         } else { 
             vec2 innerSize = max(halfSize - absBorder, vec2(0.0));
             float innerRadius = abs(roundness) * min(innerSize.x, innerSize.y);
             float dInner = shape_sdf(pLocal, innerSize, innerRadius, roundness);
             float sInner = 1.0 - smoothstep(-af, af, dInner);
-            sRing = max(sShape - sInner, 0.0);
+            float sRing = max(sShape - sInner, 0.0);
+            
+            vec4 fill = color * sInner;
+            vec4 ring = borderColor * sRing;
+            return vec4(fill.rgb + ring.rgb, fill.a + ring.a);
         }
-        
-        vec4 fill = color * sShape;
-        vec4 ring = borderColor * sRing;
-        return ring + fill * (1.0 - ring.a);
     }
 
     float sShape = 1.0 - smoothstep(-af, af, dShape);
@@ -273,7 +275,7 @@ void main() {
             color = compute_blur(uv, texSize, blur);
             color = compute_outline(color, uv, texSize, outlineSize);
         }
-
+        
         if (objKind != KIND_TILEMAP) {
             color = compute_sdf_shape(color, roundness, borderSize, borderColor, cropBoundsU, cropBoundsV);
         }

@@ -51,7 +51,7 @@ type Effects struct {
 	TextWordWrap, TextUnderline, TextCrossout                          bool
 	TextWeight, TextShadowWeight, TextShadowOffsetX, TextShadowOffsetY int8
 	TextShadowBlur                                                     uint8
-	TextBackColor, TextShadowColor                                     uint
+	TextColor, TextBackColor, TextShadowColor                          uint
 }
 
 var DefaultMaterial rl.Material
@@ -94,10 +94,14 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	}
 
 	var bx, by = uint8(number.Limit(eff.BlurX, 0, 31)), uint8(number.Limit(eff.BlurY, 0, 31))
-	var ps = number.Limit(eff.PixelSize, 0, 16)
-	var w, oc, sc, os = eff.TextWeight, eff.OutlineColor, eff.TextShadowColor, uint8(number.Limit(eff.OutlineSize, 0, 255))
+	var ps, oc = number.Limit(eff.PixelSize, 0, 16), col.Tint(eff.OutlineColor, eff.Tint)
+	var w, sc, os = eff.TextWeight, eff.TextShadowColor, uint8(number.Limit(eff.OutlineSize, 0, 255))
 	var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
-	var r, g, b, a = col.Channels(eff.Color)
+	var r, g, b, a = col.Channels(col.Tint(eff.Color, eff.Tint))
+	if kind == KindText {
+		r, g, b, a = col.Channels(col.Tint(eff.TextColor, eff.Tint))
+		sc = col.Tint(sc, eff.Tint)
+	}
 	var col = color.RGBA{R: r, G: g, B: b, A: a}
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
 	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
@@ -190,7 +194,7 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{Color: palette.White, Tint: palette.White, TextLineHeight: 40, TextWordWrap: true}
+var defaultEffects = &Effects{Color: palette.White, Tint: palette.White, TextColor: palette.White, TextLineHeight: 40, TextWordWrap: true}
 
 //go:embed shader.frag
 var shaderFrag string

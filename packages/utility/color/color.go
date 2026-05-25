@@ -84,6 +84,16 @@ func FadeIn(color uint, progress float32) uint {
 	a = uint8(number.Map(progress, 0, 1, float32(a), 255))
 	return RGBA(r, g, b, a)
 }
+func Tint(color uint, tint uint) uint {
+	var r, g, b, a = colorToRGBA(color)
+	var tr, tg, tb, ta = colorToRGBA(tint)
+
+	r = uint8((uint(r) * uint(tr)) / 255)
+	g = uint8((uint(g) * uint(tg)) / 255)
+	b = uint8((uint(b) * uint(tb)) / 255)
+	a = uint8((uint(a) * uint(ta)) / 255)
+	return RGBA(r, g, b, a)
+}
 func Opposite(color uint) uint {
 	var r, g, b, a = colorToRGBA(color)
 	return RGBA(255-r, 255-g, 255-b, a)

@@ -197,7 +197,7 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 	if eff != nil {
 		lineHeight = eff.TextLineHeight
 		scale = lineHeight / 255
-		c = eff.Color
+		c = eff.TextColor
 		tint = eff.Tint
 		gapX, gapY = eff.TextSymbolGap*scale, eff.TextLineGap*scale
 	}
