@@ -14,18 +14,16 @@ import (
 type View struct {
 	X, Y, Zoom, Angle float32
 
-	Area    Area // The draw area in window space. Zero value = entire window.
-	Mask    Area // In view space. Everything drawn outside of it is cropped. Zero value = no masking.
-	Effects *Effects
-	Blend   int
+	Area Area // The draw area in window space. Zero value = entire window.
+	Mask Area // In view space. Everything drawn outside of it is cropped. Zero value = no masking.
 
 	//=================================================================
 
 	velocityX, velocityY, dragVelX, dragVelY float32
 }
 
-func NewView(zoom float32) *View {
-	return &View{Zoom: zoom}
+func NewView(zoom float32) View {
+	return View{Zoom: zoom}
 }
 
 // =================================================================
