@@ -292,7 +292,7 @@ void main() {
 
         if (color.a * fragColor.a < 0.004)
             discard;
-
+        
         if (objKind != KIND_SHAPE) {
             color = compute_color_adjust(color, colorAdjust1);
             color = compute_silhouette(color, silhouetteColor);
