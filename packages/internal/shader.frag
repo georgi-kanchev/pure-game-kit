@@ -145,14 +145,18 @@ vec2 compute_tile(vec2 texSize, float tileColumns, float tileRows, float tileW, 
     vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
     return (coord + localUV) / atlasSizeInTiles;
 }
-vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borderColor) {
+vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borderColor, vec2 cropBoundsU, vec2 cropBoundsV) {
     if (abs(roundness) < 0.001 && abs(borderSize) < 0.001)
         return color;
     
+    // Remap fragLocalPos so the crop window maps to [-0.5, 0.5].
+    // Uncropped bounds are (-0.5, 0.5) → identity transform.
+    vec2 cropRange = max(vec2(cropBoundsU.y - cropBoundsU.x, cropBoundsV.y - cropBoundsV.x), 0.001);
+    vec2 pLocal = (fragLocalPos - vec2(cropBoundsU.x, cropBoundsV.x)) / cropRange - 0.5;
+
     // Recover screen-pixel dimensions from derivatives.
-    // fragLocalPos is in [−0.5, 0.5]; fwidth gives rate of change per screen pixel.
-    vec2 pixPerUnit = 1.0 / max(fwidth(fragLocalPos), 0.0001);
-    vec2 pLocal = fragLocalPos * pixPerUnit;
+    vec2 pixPerUnit = 1.0 / max(fwidth(pLocal), 0.0001);
+    pLocal *= pixPerUnit;
     vec2 halfSize = pixPerUnit * 0.5;
     
     float maxRadius = min(halfSize.x, halfSize.y);
@@ -282,7 +286,7 @@ void main() {
         }
 
         if (objKind != KIND_TILEMAP) {
-            color = compute_sdf_shape(color, roundness, borderSize, borderColor);
+            color = compute_sdf_shape(color, roundness, borderSize, borderColor, cropBoundsU, cropBoundsV);
         }
 
         if (color.a * fragColor.a < 0.004)
