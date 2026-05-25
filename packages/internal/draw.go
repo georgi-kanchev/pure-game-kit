@@ -84,9 +84,13 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		eff = defaultEffects
 	}
 
+	var padX, padY = float32(0.0), float32(0.0)
+	var padU, padV = float32(0.0), float32(0.0)
 	if kind != KindText && eff.BorderSize > 0 {
-		var padX, padY = eff.BorderSize * (dst.Width / src.Width), eff.BorderSize * (dst.Height / src.Height)
-		var padU, padV = eff.BorderSize * invTexW, eff.BorderSize * invTexH
+		padX = eff.BorderSize * (dst.Width / src.Width)
+		padY = eff.BorderSize * (dst.Height / src.Height)
+		padU = eff.BorderSize * invTexW
+		padV = eff.BorderSize * invTexH
 		dx[0], dx[1], dx[2], dx[3] = dx[0]-padX, dx[1]-padX, dx[2]+padX, dx[3]+padX
 		dy[0], dy[3], dy[1], dy[2] = dy[0]-padY, dy[3]-padY, dy[1]+padY, dy[2]+padY
 		uvs[0], uvs[2], uvs[4], uvs[6] = uvs[0]-padU, uvs[2]-padU, uvs[4]+padU, uvs[6]+padU
@@ -104,22 +108,42 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		w, ss, sb = eff.TextWeight, eff.TextShadowWeight, eff.TextShadowBlur
 		sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
 	}
+
+	var cropMinU, cropMaxU = float32(-0.5), float32(0.5) // crop bounds in UV local space [-0.5, 0.5] for SDF
+	var cropMinV, cropMaxV = float32(-0.5), float32(0.5)
+	if kind == KindSprite && mask != (Area{}) {
+		var quadMinX, quadMaxX = dst.X + ww - padX, dst.X + dst.Width + ww + padX
+		var quadMinY, quadMaxY = dst.Y + wh - padY, dst.Y + dst.Height + wh + padY
+		var visMinX, visMaxX = max(quadMinX, mask.X), min(quadMaxX, mask.X+mask.Width)
+		var visMinY, visMaxY = max(quadMinY, mask.Y), min(quadMaxY, mask.Y+mask.Height)
+
+		if visMinX < visMaxX && visMinY < visMaxY {
+			var uvMinU, uvMaxU, uvMinV, uvMaxV = u1 - padU, u2 + padU, v1 - padV, v2 + padV
+			var fracMinU, fracMaxU = (visMinX - quadMinX) / (quadMaxX - quadMinX), (visMaxX - quadMinX) / (quadMaxX - quadMinX)
+			var fracMinV, fracMaxV = (visMinY - quadMinY) / (quadMaxY - quadMinY), (visMaxY - quadMinY) / (quadMaxY - quadMinY)
+			cropMinU, cropMaxU = uvMinU+fracMinU*(uvMaxU-uvMinU)-0.5, uvMinU+fracMaxU*(uvMaxU-uvMinU)-0.5
+			cropMinV, cropMaxV = uvMinV+fracMinV*(uvMaxV-uvMinV)-0.5, uvMinV+fracMaxV*(uvMaxV-uvMinV)-0.5
+		}
+	}
+
 	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
 	var tx, ty, tz, tw float32
-	if kind == KindText {
+	switch kind {
+	case KindText:
 		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
-	} else {
-		tx, ty, tz, tw = packTangentXSprite(eff.OutlineColor), packTangentYSprite(os, eff.SilhouetteColor), packTangentZSprite(-0.5, 0.5), packTangentWSprite(-0.5, 0.5)
+	case KindSprite:
+		tx, ty = packTangentXSprite(eff.OutlineColor), packTangentYSprite(os, eff.SilhouetteColor)
+		tz, tw = packTangentZSprite(cropMinU, cropMaxU), packTangentWSprite(cropMinV, cropMaxV)
+	default:
+		tx, ty = packColor24(eff.OutlineColor), packColor24(eff.SilhouetteColor)
 	}
 
 	for i := range len(polygonBuf) {
 		polygonBuf[i].U2, polygonBuf[i].V2 = u, v
 		polygonBuf[i].NX, polygonBuf[i].NY, polygonBuf[i].NZ = nx, ny, nz
-
 		polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ, polygonBuf[i].TW = tx, ty, tz, tw
-
 	}
 
 	if mask == (Area{}) {
