@@ -2,7 +2,8 @@ package internal
 
 import (
 	_ "embed"
-	"pure-game-kit/packages/utility/angle"
+	"image/color"
+	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"unsafe"
@@ -31,9 +32,9 @@ type Effects struct {
 
 	OutlineSize, BorderSize float32
 
-	BorderColor     uint
-	OutlineColor    uint // Not used by Shapes.
-	SilhouetteColor uint // Not used by Shapes & Texts.
+	Color, Tint, BorderColor uint
+	OutlineColor             uint // Not used by Shapes.
+	SilhouetteColor          uint // Not used by Shapes & Texts.
 
 	PixelSize    uint8 // Ranged 0..15; Not used by Shapes & Texts.
 	BlurX, BlurY uint8 // Ranged 0..31; Not used by Shapes & Texts.
@@ -50,7 +51,7 @@ type Effects struct {
 	TextWordWrap, TextUnderline, TextCrossout                          bool
 	TextWeight, TextShadowWeight, TextShadowOffsetX, TextShadowOffsetY int8
 	TextShadowBlur                                                     uint8
-	TextBackColor, TextColor, TextShadowColor                          uint
+	TextBackColor, TextShadowColor                                     uint
 }
 
 var DefaultMaterial rl.Material
@@ -69,7 +70,7 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, col rl.Color, mask Area, eff *Effects, kind uint8) {
+func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -94,14 +95,10 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 
 	var bx, by = uint8(number.Limit(eff.BlurX, 0, 31)), uint8(number.Limit(eff.BlurY, 0, 31))
 	var ps = number.Limit(eff.PixelSize, 0, 16)
-	var oc, sc uint
-	var os, sb uint8
-	var w, ss, sx, sy int8
-	if eff != nil {
-		w, oc, sc, os = eff.TextWeight, eff.OutlineColor, eff.TextShadowColor, uint8(number.Limit(eff.OutlineSize, 0, 255))
-		ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
-	}
-
+	var w, oc, sc, os = eff.TextWeight, eff.OutlineColor, eff.TextShadowColor, uint8(number.Limit(eff.OutlineSize, 0, 255))
+	var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
+	var r, g, b, a = col.Channels(eff.Color)
+	var col = color.RGBA{R: r, G: g, B: b, A: a}
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
 	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
@@ -155,24 +152,6 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 	}
 	queueVertices(polygonBuf[:4], vCount, tex, col)
 }
-func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
-	var rect = rl.NewRectangle(x, y, width, height)
-	QueueTexture(Images[0].Texture, rl.NewRectangle(0, 0, 1, 1), rect, angle, 0, color, mask, nil, 0)
-}
-func QueueLine(x1, y1, x2, y2, thickness float32, color rl.Color, mask Area) {
-	if thickness <= 0 {
-		return
-	}
-
-	var ang = angle.BetweenPoints(x1, y1, x2, y2)
-	var dx, dy = x2 - x1, y2 - y1
-	var length = number.SquareRoot(dx*dx + dy*dy)
-	var perpAngle = ang - 90
-	var startX, startY = moveAtAngle(x1, y1, perpAngle, thickness*0.5)
-	QueueQuad(startX, startY, length, thickness, ang, color, mask)
-}
-
-//=================================================================
 
 func ResetBatches() {
 	if ActiveBatch != nil {
@@ -211,7 +190,7 @@ func Draw() {
 // private =================================================================
 
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
-var defaultEffects = &Effects{TextColor: palette.White, TextLineHeight: 40, TextWordWrap: true}
+var defaultEffects = &Effects{Color: palette.White, Tint: palette.White, TextLineHeight: 40, TextWordWrap: true}
 
 //go:embed shader.frag
 var shaderFrag string

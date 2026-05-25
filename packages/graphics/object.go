@@ -4,13 +4,11 @@ import (
 	"pure-game-kit/packages/assets"
 	geometry "pure-game-kit/packages/geometry2"
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/color/palette"
 	txt "pure-game-kit/packages/utility/text"
 )
 
 type Object struct {
 	geometry.Shape
-	Color uint
 
 	Mask    Area
 	Effects *Effects
@@ -30,35 +28,35 @@ type Object struct {
 	TileLayerId assets.TileLayerId
 }
 
-func NewShapePoint(x, y float32, color uint) Object {
-	return Object{Shape: geometry.NewPoint(x, y), Color: color}
+func NewShapePoint(x, y float32) Object {
+	return Object{Shape: geometry.NewPoint(x, y)}
 }
-func NewShapeCircle(x, y, radius float32, color uint) Object {
-	return Object{Shape: geometry.NewCircle(x, y, radius), Color: color}
+func NewShapeCircle(x, y, radius float32) Object {
+	return Object{Shape: geometry.NewCircle(x, y, radius)}
 }
-func NewShapeRectangle(x, y, width, height, angle float32, color uint) Object {
-	return Object{Shape: geometry.NewRectangle(x, y, width, height, angle), Color: color}
+func NewShapeRectangle(x, y, width, height, angle float32) Object {
+	return Object{Shape: geometry.NewRectangle(x, y, width, height, angle)}
 }
-func NewShapeRoundedRectangle(x, y, width, height, angle, roundness float32, color uint) Object {
-	return Object{Shape: geometry.NewRoundedRectangle(x, y, width, height, angle, roundness), Color: color}
+func NewShapeRoundedRectangle(x, y, width, height, angle, roundness float32) Object {
+	return Object{Shape: geometry.NewRoundedRectangle(x, y, width, height, angle, roundness)}
 }
-func NewShapeCapsule(x1, y1, x2, y2, radius float32, color uint) Object {
-	return Object{Shape: geometry.NewCapsule(x1, y1, x2, y2, radius), Color: color}
+func NewShapeCapsule(x1, y1, x2, y2, radius float32) Object {
+	return Object{Shape: geometry.NewCapsule(x1, y1, x2, y2, radius)}
 }
-func NewShapeLine(x1, y1, x2, y2, thickness float32, color uint) Object {
-	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness), Color: color}
+func NewShapeLine(x1, y1, x2, y2, thickness float32) Object {
+	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness)}
 }
 
 func NewImage(x, y, scale float32, imageId assets.ImageId) Object {
 	var _, _, w, h = imageId.CropArea()
-	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId, Color: palette.White}
+	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId}
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
 	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...)}
 }
 func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
-	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId, Color: palette.White}
+	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId}
 }
 
 //=================================================================

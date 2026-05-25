@@ -172,7 +172,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 		if o.ImageId != 0 {
 			kind = internal.KindSprite // sprite
 		}
-		internal.QueueTexture(tex.Texture, src, dst, o.Angle, o.Roundness, getColor(o.Color), mask, eff, kind)
+		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, eff, kind)
 
 		if o.Text != "" {
 			v.queueText(o, mask, eff)
@@ -192,32 +192,28 @@ func (v *View) area() (x, y, w, h float32) {
 func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 	var lineHeight float32 = 40
 	var scale = lineHeight / 255
-	var c = palette.White
+	var c, tint = palette.White, palette.White
 	var gapX, gapY float32
 	if eff != nil {
 		lineHeight = eff.TextLineHeight
 		scale = lineHeight / 255
-		c = eff.TextColor
+		c = eff.Color
+		tint = eff.Tint
 		gapX, gapY = eff.TextSymbolGap*scale, eff.TextLineGap*scale
 	}
 
-	// Blend object tint into text color (per-channel multiply).
-	if o.Color != palette.White {
-		tr, tg, tb, ta := col.Channels(c)
-		or, og, ob, oa := col.Channels(o.Color)
-		c = col.RGBA(
-			uint8(uint16(tr)*uint16(or)/255),
-			uint8(uint16(tg)*uint16(og)/255),
-			uint8(uint16(tb)*uint16(ob)/255),
-			uint8(uint16(ta)*uint16(oa)/255),
-		)
+	if c != palette.White { // tint text color CPU side (Color & TextColor is same field)
+		var tr, tg, tb, ta = col.Channels(tint)
+		var or, og, ob, oa = col.Channels(c)
+		var r, g = uint8(uint16(tr) * uint16(or) / 255), uint8(uint16(tg) * uint16(og) / 255)
+		var b, a = uint8(uint16(tb) * uint16(ob) / 255), uint8(uint16(ta) * uint16(oa) / 255)
+		c = col.RGBA(r, g, b, a)
 	}
 
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var x = o.X - o.Width/2
 	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight
-	var col = getColor(c)
 	var prevGlyph internal.Glyph
 	var sinA, cosA = internal.SinCos(o.Angle)
 	for _, r := range o.Text {
@@ -265,7 +261,7 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 
 		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
 		var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
-		internal.QueueTexture(atlasTex, src, dst, o.Angle, o.Roundness, col, mask, eff, 2)
+		internal.Queue(atlasTex, src, dst, o.Angle, o.Roundness, mask, eff, 2)
 		x += glyph.Advance*lineHeight + gapX
 		prevGlyph = glyph
 	}

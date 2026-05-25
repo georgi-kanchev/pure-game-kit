@@ -11,9 +11,7 @@
 package graphics
 
 import (
-	"image/color"
 	"pure-game-kit/packages/internal"
-	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 )
 
@@ -24,12 +22,5 @@ func NewArea(x, y, width, height float32) Area {
 	return Area{X: x, Y: y, Width: width, Height: height}
 }
 func NewEffects() *Effects {
-	return &Effects{TextColor: palette.White, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
-}
-
-// private ========================================================
-
-func getColor(value uint) color.RGBA {
-	var r, g, b, a = col.Channels(value)
-	return color.RGBA{R: r, G: g, B: b, A: a}
+	return &Effects{Color: palette.White, Tint: palette.White, TextShadowColor: palette.Black, TextLineHeight: 40, TextWordWrap: true}
 }

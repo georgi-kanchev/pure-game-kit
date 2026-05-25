@@ -3,7 +3,6 @@ package main
 import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/window"
@@ -16,8 +15,6 @@ func main() {
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
 	var textbox = graphics.NewTextbox(0, 0, 2000, 1500, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
 
-	textbox.Color = color.RGBA(0, 255, 255, 255)
-
 	textbox.Effects = graphics.NewEffects()
 	textbox.Effects.TextLineHeight = 100
 	textbox.Effects.TextShadowBlur = 64
@@ -25,7 +22,6 @@ func main() {
 	textbox.Effects.TextShadowOffsetY = 50
 	textbox.Effects.OutlineSize = 64
 	textbox.Effects.OutlineColor = palette.Red
-	textbox.Roundness = 0.5
 	textbox.Effects.BorderSize = 20
 	textbox.Effects.BorderColor = palette.White
 
@@ -40,13 +36,12 @@ func main() {
 	sprite.Effects.BorderColor = palette.Red
 	sprite.Width, sprite.Height = 1000, 500
 
-	var shape = graphics.NewShapeRoundedRectangle(0, 0, 1000, 500, 0, 0.5, palette.Red)
+	var shape = graphics.NewShapeRoundedRectangle(0, 0, 1000, 500, 0, 0.5)
 	_ = shape
 	shape.Effects = graphics.NewEffects()
 	shape.Effects.BorderColor = palette.Green
 	shape.Effects.BorderSize = 20
-
-	textbox.ImageId = img
+	shape.Effects.Color = palette.Red
 
 	for window.KeepOpen() {
 		textbox.Text = debug.MemoryUsage()
@@ -56,6 +51,6 @@ func main() {
 		// sprite.Roundness = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
 		// sprite.ImageCropArea.X, sprite.ImageCropArea.Y = view.MousePosition()
 		// sprite.ImageCropArea.Width, sprite.ImageCropArea.Height = img.Size()
-		view.DrawObjects(&sprite)
+		view.DrawObjects(&textbox)
 	}
 }
