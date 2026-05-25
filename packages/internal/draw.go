@@ -84,9 +84,12 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		eff = defaultEffects
 	}
 
+	padU, padV := float32(0.0), float32(0.0)
 	if kind != KindText && eff.BorderSize > 0 {
-		var padX, padY = eff.BorderSize, eff.BorderSize
-		var padU, padV = eff.BorderSize * (u2 - u1) / dst.Width, eff.BorderSize * (v2 - v1) / dst.Height
+		padX := eff.BorderSize
+		padY := eff.BorderSize
+		padU = eff.BorderSize * (u2 - u1) / dst.Width  // UV expansion matching screen px
+		padV = eff.BorderSize * (v2 - v1) / dst.Height
 		dx[0], dx[1], dx[2], dx[3] = dx[0]-padX, dx[1]-padX, dx[2]+padX, dx[3]+padX
 		dy[0], dy[3], dy[1], dy[2] = dy[0]-padY, dy[3]-padY, dy[1]+padY, dy[2]+padY
 		uvs[0], uvs[2], uvs[4], uvs[6] = uvs[0]-padU, uvs[2]-padU, uvs[4]+padU, uvs[6]+padU
@@ -105,6 +108,13 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
 	}
 
+	// Crop bounds in local space [-0.5, 0.5], expanded by border padding.
+	// The SDF remap normalizes the full padded region so the ring fills the border area.
+	cropMinU := u1 - 0.5 - padU
+	cropMaxU := u2 - 0.5 + padU
+	cropMinV := v1 - 0.5 - padV
+	cropMaxV := v2 - 0.5 + padV
+
 	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
@@ -112,10 +122,10 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 	switch kind {
 	case KindText:
 		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
-	case KindSprite:
+	case KindSprite, KindShape:
 		tx, ty = packTangentXSprite(eff.OutlineColor), packTangentYSprite(os, eff.SilhouetteColor)
-		tz = packTangentZSprite(u1-0.5, u2-0.5) // crop from source UV range
-		tw = packTangentWSprite(v1-0.5, v2-0.5)
+		tz = packTangentZSprite(cropMinU, cropMaxU)
+		tw = packTangentWSprite(cropMinV, cropMaxV)
 	default:
 		tx, ty = packColor24(eff.OutlineColor), packColor24(eff.SilhouetteColor)
 	}

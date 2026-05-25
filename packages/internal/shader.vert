@@ -110,7 +110,8 @@ void main() {
     vec2 cropBoundsV = vec2(0.0);
     
     if (objectType == 0) { // Shape
-        // tangent is free
+        cropBoundsU = unpack_12_12(vertTangent.z); // CropMinU, CropMaxU [0, 4095]
+        cropBoundsV = unpack_12_12(vertTangent.w); // CropMinV, CropMaxV [0, 4095]
     }
     else if (objectType == 1) { // Sprite
         outlineColor = unpack_6_6_6_6(vertTangent.x);
@@ -143,11 +144,11 @@ void main() {
         fragData4 = shadowColor_text;
         fragData5 = vec4(textWeights.x / 127.0, textWeights.y / 255.0, textWeights.z / 127.0, 0.0);
         fragData6 = vec4(shadowX, shadowY, shadowBlur, 0.0);
-    } else if (objectType == 1) { // Sprite: forward crop bounds
+    } else if (objectType == 0 || objectType == 1) { // Shape or Sprite: forward crop bounds
         fragData4 = silhouetteColor;
         fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
         fragData6 = vec4(cropBoundsU, cropBoundsV);
-    } else {
+    } else { // Tilemap
         fragData4 = silhouetteColor;
         fragData5 = vec4(outlineSize, borderSize, 0.0, 0.0);
         fragData6 = vec4(tileColumns, tileRows, tileSize, 0.0);

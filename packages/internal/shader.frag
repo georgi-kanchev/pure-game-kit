@@ -258,11 +258,12 @@ void main() {
     float borderSize = fragData5.y;
     vec4  borderColor = fragData7;
 
-    float tileColumns = objKind == KIND_SPRITE ? 0.0 : fragData6.x;
-    float tileRows    = objKind == KIND_SPRITE ? 0.0 : fragData6.y;
-    float tileSize    = objKind == KIND_SPRITE ? 0.0 : fragData6.z;
-    vec2  cropBoundsU = objKind == KIND_SPRITE ? fragData6.xy / 4095.0 - 0.5 : vec2(-0.5, 0.5);
-    vec2  cropBoundsV = objKind == KIND_SPRITE ? fragData6.zw / 4095.0 - 0.5 : vec2(-0.5, 0.5);
+    bool hasCrop = objKind == KIND_SHAPE || objKind == KIND_SPRITE;
+    float tileColumns = hasCrop ? 0.0 : fragData6.x;
+    float tileRows    = hasCrop ? 0.0 : fragData6.y;
+    float tileSize    = hasCrop ? 0.0 : fragData6.z;
+    vec2  cropBoundsU = hasCrop ? fragData6.xy / 4095.0 - 0.5 : vec2(-0.5, 0.5);
+    vec2  cropBoundsV = hasCrop ? fragData6.zw / 4095.0 - 0.5 : vec2(-0.5, 0.5);
     
     // ========================================================================
 
@@ -277,8 +278,8 @@ void main() {
         finalColor = color;
     } else {
         vec2 uv = compute_tile(texSize, tileColumns, tileRows, tileSize, tileSize);
-        if (objKind == KIND_SHAPE) { // Shape: white fill, skip pixelate/blur
-            color = vec4(1.0);
+        if (objKind == KIND_SHAPE) { // Shape: use vertex color as fill, skip pixelate/blur
+            color = fragColor;
         } else { // Sprite / Tilemap
             uv = compute_pixelated_uv(uv, texSize, pixelSize);
             color = compute_blur(uv, texSize, blur);
@@ -297,7 +298,7 @@ void main() {
             color = compute_silhouette(color, silhouetteColor);
         }
 
-        finalColor = color * fragColor;
+        finalColor = objKind == KIND_SHAPE ? color : color * fragColor;
     }
 
     gl_FragDepth = depthZ;
