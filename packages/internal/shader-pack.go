@@ -82,12 +82,6 @@ func packTangentYSprite(outlineSize uint8, silhouetteColor uint) float32 {
 	var a = uint32(uint8(silhouetteColor) >> 4)         // bits 3-0
 	return pack24(o | r | g | b | a)
 }
-func packCrop12_12(minLocal, maxLocal float32) float32 {
-	// Map [-0.5, 0.5] to [0, 4095] unsigned 12-bit
-	a := uint32(uint16(number.Limit(minLocal+0.5, 0, 1)*4095.0)&0xFFF) << 12
-	b := uint32(uint16(number.Limit(maxLocal+0.5, 0, 1)*4095.0) & 0xFFF)
-	return pack24(a | b)
-}
 func packTangentZSprite(cropMinU, cropMaxU float32) float32 {
 	return packCrop12_12(cropMinU, cropMaxU)
 }
@@ -150,4 +144,9 @@ func packColor24(c uint) float32 {
 	var b = uint32(uint8(c>>8)>>2) << 6
 	var a = uint32(uint8(c) >> 2)
 	return pack24(r | g | b | a)
+}
+func packCrop12_12(minLocal, maxLocal float32) float32 {
+	var a = uint32(uint16(number.Limit(minLocal+0.5, 0, 1)*4095.0)&0xFFF) << 12
+	var b = uint32(uint16(number.Limit(maxLocal+0.5, 0, 1)*4095.0) & 0xFFF)
+	return pack24(a | b) // map [-0.5, 0.5] to [0, 4095] unsigned 12-bit
 }

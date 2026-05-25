@@ -73,23 +73,19 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
-	var u1, v1 = src.X * invTexW, src.Y * invTexH
-	var u2, v2 = (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
+	var u1, v1, u2, v2 = src.X * invTexW, src.Y * invTexH, (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
 	var ww, wh = float32(WindowWidth) / 2, float32(WindowHeight) / 2
-	var dx = [4]float32{ww, ww, dst.Width + ww, dst.Width + ww}
-	var dy = [4]float32{wh, dst.Height + wh, dst.Height + wh, wh}
+	var dx, dy = [4]float32{ww, ww, dst.Width + ww, dst.Width + ww}, [4]float32{wh, dst.Height + wh, dst.Height + wh, wh}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
 	if eff == nil {
 		eff = defaultEffects
 	}
 
-	padU, padV := float32(0.0), float32(0.0)
+	var padU, padV float32
 	if kind != KindText && eff.BorderSize > 0 {
-		padX := eff.BorderSize
-		padY := eff.BorderSize
-		padU = eff.BorderSize * (u2 - u1) / dst.Width  // UV expansion matching screen px
-		padV = eff.BorderSize * (v2 - v1) / dst.Height
+		var padX, padY = eff.BorderSize, eff.BorderSize
+		padU, padV = eff.BorderSize*(u2-u1)/dst.Width, eff.BorderSize*(v2-v1)/dst.Height
 		dx[0], dx[1], dx[2], dx[3] = dx[0]-padX, dx[1]-padX, dx[2]+padX, dx[3]+padX
 		dy[0], dy[3], dy[1], dy[2] = dy[0]-padY, dy[3]-padY, dy[1]+padY, dy[2]+padY
 		uvs[0], uvs[2], uvs[4], uvs[6] = uvs[0]-padU, uvs[2]-padU, uvs[4]+padU, uvs[6]+padU
@@ -102,19 +98,11 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 	var os, sb uint8
 	var w, ss, sx, sy int8
 	if eff != nil {
-		os = uint8(number.Limit(eff.OutlineSize, 0, 255))
-		oc, sc = eff.OutlineColor, eff.TextShadowColor
-		w, ss, sb = eff.TextWeight, eff.TextShadowWeight, eff.TextShadowBlur
-		sx, sy = eff.TextShadowOffsetX, eff.TextShadowOffsetY
+		w, oc, sc, os = eff.TextWeight, eff.OutlineColor, eff.TextShadowColor, uint8(number.Limit(eff.OutlineSize, 0, 255))
+		ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
 	}
 
-	// Crop bounds in local space [-0.5, 0.5], expanded by border padding.
-	// The SDF remap normalizes the full padded region so the ring fills the border area.
-	cropMinU := u1 - 0.5 - padU
-	cropMaxU := u2 - 0.5 + padU
-	cropMinV := v1 - 0.5 - padV
-	cropMaxV := v2 - 0.5 + padV
-
+	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5 - padU, u2 - 0.5 + padU, v1 - 0.5 - padV, v2 - 0.5 + padV
 	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(eff.BorderColor)
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
 	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
@@ -124,8 +112,7 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
 	case KindSprite, KindShape:
 		tx, ty = packTangentXSprite(eff.OutlineColor), packTangentYSprite(os, eff.SilhouetteColor)
-		tz = packTangentZSprite(cropMinU, cropMaxU)
-		tw = packTangentWSprite(cropMinV, cropMaxV)
+		tz, tw = packTangentZSprite(cropMinU, cropMaxU), packTangentWSprite(cropMinV, cropMaxV)
 	default:
 		tx, ty = packColor24(eff.OutlineColor), packColor24(eff.SilhouetteColor)
 	}
@@ -136,37 +123,37 @@ func QueueTexture(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, c
 		polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ, polygonBuf[i].TW = tx, ty, tz, tw
 	}
 
-	if mask == (Area{}) {
-		vCount = 4
-		if ang == 0 {
-			for i := range 4 {
-				polygonBuf[i].X, polygonBuf[i].Y = dx[i]+dst.X, dy[i]+dst.Y
-				polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
-			}
-		} else {
-			var sinA, cosA = SinCos(ang)
-			var cx, cy = ww + dst.Width/2, wh + dst.Height/2
-			for i := range 4 {
-				var rx, ry = dx[i] - cx, dy[i] - cy
-				polygonBuf[i].X, polygonBuf[i].Y = (rx*cosA-ry*sinA)+cx+dst.X, (rx*sinA+ry*cosA)+cy+dst.Y
-				polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
-			}
+	if mask != (Area{}) {
+		var sinA, cosA = SinCos(ang)
+		var cx, cy = ww + dst.Width/2, wh + dst.Height/2
+		for i := range 4 {
+			var rx, ry = dx[i] - cx, dy[i] - cy
+			polygonBuf[i].X, polygonBuf[i].Y = (rx*cosA-ry*sinA)+cx+dst.X, (rx*sinA+ry*cosA)+cy+dst.Y
+			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
-		queueVertices(polygonBuf[:4], vCount, tex, col)
+		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
+		if vCount >= 3 {
+			queueVertices(clipResultBuf[:vCount], vCount, tex, col)
+		}
 		return
 	}
 
-	var sinA, cosA = SinCos(ang)
-	var cx, cy = ww + dst.Width/2, wh + dst.Height/2
-	for i := range 4 {
-		var rx, ry = dx[i] - cx, dy[i] - cy
-		polygonBuf[i].X, polygonBuf[i].Y = (rx*cosA-ry*sinA)+cx+dst.X, (rx*sinA+ry*cosA)+cy+dst.Y
-		polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
+	vCount = 4
+	if ang == 0 {
+		for i := range 4 {
+			polygonBuf[i].X, polygonBuf[i].Y = dx[i]+dst.X, dy[i]+dst.Y
+			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
+		}
+	} else {
+		var sinA, cosA = SinCos(ang)
+		var cx, cy = ww + dst.Width/2, wh + dst.Height/2
+		for i := range 4 {
+			var rx, ry = dx[i] - cx, dy[i] - cy
+			polygonBuf[i].X, polygonBuf[i].Y = (rx*cosA-ry*sinA)+cx+dst.X, (rx*sinA+ry*cosA)+cy+dst.Y
+			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
+		}
 	}
-	vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
-	if vCount >= 3 {
-		queueVertices(clipResultBuf[:vCount], vCount, tex, col)
-	}
+	queueVertices(polygonBuf[:4], vCount, tex, col)
 }
 func QueueQuad(x, y, width, height, angle float32, color rl.Color, mask Area) {
 	var rect = rl.NewRectangle(x, y, width, height)

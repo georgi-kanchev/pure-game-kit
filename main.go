@@ -53,6 +53,6 @@ func main() {
 		sprite.Width = number.Map(number.Sine(time.Running()/2), -1, 1, 500, 2500)
 		sprite.Effects.BorderSize = number.Map(number.Sine(time.Running()/2), -1, 1, -500, 500)
 		sprite.Roundness = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
-		view.DrawObjects(&shape)
+		view.DrawObjects(&sprite)
 	}
 }
