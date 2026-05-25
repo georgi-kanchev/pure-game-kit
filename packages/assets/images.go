@@ -49,12 +49,12 @@ func (i ImageId) SetSmoothness(smooth bool) {
 		rl.SetTextureFilter(img.Texture, rl.FilterPoint)
 	}
 }
-func (i ImageId) Size() (width, height int) {
+func (i ImageId) Size() (width, height float32) {
 	var img, has = internal.Images[int32(i)]
 	if i == 0 || !has {
 		return 0, 0
 	}
-	return int(img.CropWidth), int(img.CropHeight)
+	return img.CropWidth, img.CropHeight
 }
 func (i ImageId) Crop() (x, y, width, height float32) {
 	if i == 0 {
