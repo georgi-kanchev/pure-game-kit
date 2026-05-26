@@ -192,14 +192,15 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var x, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight
 	var prevGlyph internal.Glyph
-	var sinA, cosA = internal.SinCos(o.Angle)
+	var sin, cos = internal.SinCos(o.Angle)
 	for _, r := range o.Text {
 		var glyph = fontData.Chars[r]
 		var kerning, _ = prevGlyph.Kernings[r]
 		x += kerning * lineHeight
+		var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
 
 		if r == ' ' {
-			x += lineHeight/3 + gapX
+			x += dstW + gapX
 			prevGlyph = glyph
 			continue
 		} else if r == '\n' {
@@ -208,7 +209,6 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			continue
 		}
 
-		var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
 		var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
 		var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
 		var tbLeft, tbTop, tbRight, tbBot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
@@ -223,7 +223,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		srcX, srcY = srcX+((clipL-dstX)/dstW*srcW), srcY+((clipT-dstY)/origH*srcH)
 		srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
 		dstW, dstH = clippedW, -clippedH // restore negative convention
-		dstX, dstY = o.X+dx*cosA-dy*sinA-dstW/2, o.Y+dx*sinA+dy*cosA+dstH/2
+		dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
 		var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
 
 		internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 2)

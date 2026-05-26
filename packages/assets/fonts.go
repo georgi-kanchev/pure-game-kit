@@ -34,10 +34,15 @@ func (f FontId) UnloadFont() {
 	delete(internal.Fonts, uint8(f))
 }
 
-func (f FontId) SymbolArea(value rune, lineHeight float32) (offsetX, offsetY, width, height float32) {
+func (f FontId) SymbolArea(symbol rune, lineHeight float32) (offsetX, offsetY, width, height float32) {
 	var font = internal.Fonts[uint8(f)]
-	var g = font.Chars[value]
+	var g = font.Chars[symbol]
 	var x, y = g.PlaneBounds.Left * lineHeight, g.PlaneBounds.Top * lineHeight
 	var w, h = (g.PlaneBounds.Right - g.PlaneBounds.Left) * lineHeight, (g.PlaneBounds.Top - g.PlaneBounds.Bottom) * lineHeight
+
+	if symbol == ' ' {
+		w, h = lineHeight/3, lineHeight
+	}
+
 	return x, y, w, h
 }

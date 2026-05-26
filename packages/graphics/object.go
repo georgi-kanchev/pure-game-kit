@@ -145,3 +145,49 @@ func (o *Object) ContainsPoint(x, y float32) bool {
 func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	return o.PointToGlobal(o.Width*edgeX, o.Height*edgeY)
 }
+
+// text ===========================================================
+
+func (o *Object) TextMeasureLine(fromIndex, toIndex int) (width, height float32) {
+	var start, end = max(0, fromIndex), min(toIndex, len(o.Text))
+	if start >= end {
+		return 0, 0
+	}
+
+	var font = internal.Fonts[uint8(o.TextFontId)]
+	var lineHeight = o.Effects.TextLineHeight
+	var scale = lineHeight / 255
+	var gapX = o.Effects.TextSymbolGap * scale
+	var x, totalWidth float32
+	var prevGlyph internal.Glyph
+
+	for _, r := range o.Text[start:end] {
+		var glyph = font.Chars[r]
+		x += prevGlyph.Kernings[r] * lineHeight
+		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
+
+		if r == ' ' {
+			x += w + gapX
+			prevGlyph = glyph
+			continue
+		}
+		if r == '\n' {
+			if x > totalWidth {
+				totalWidth = x
+			}
+			x = 0
+			continue
+		}
+
+		if x+offsetX+w > totalWidth {
+			totalWidth = x + offsetX + w
+		}
+		x += glyph.Advance*lineHeight + gapX
+		prevGlyph = glyph
+	}
+
+	if x > totalWidth {
+		totalWidth = x
+	}
+	return totalWidth, lineHeight * font.LineHeight
+}
