@@ -145,15 +145,3 @@ func (o *Object) ContainsPoint(x, y float32) bool {
 func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	return o.PointToGlobal(o.Width*edgeX, o.Height*edgeY)
 }
-
-// text ===========================================================
-
-func (o *Object) TextMeasure(text string) (width, height float32) {
-	return 0, 0
-}
-func (o *Object) TextLineCount() int {
-	return 0
-}
-func (o *Object) TextSymbol(index int) Object {
-	return Object{}
-}

@@ -4,8 +4,6 @@ import (
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
-	col "pure-game-kit/packages/utility/color"
-	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -190,22 +188,11 @@ func (v *View) area() (x, y, w, h float32) {
 func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 	var lineHeight float32 = 40
 	var scale = lineHeight / 255
-	var c, tint = palette.White, palette.White
 	var gapX, gapY float32
 	if eff != nil {
 		lineHeight = eff.TextLineHeight
 		scale = lineHeight / 255
-		c = eff.TextColor
-		tint = eff.Tint
 		gapX, gapY = eff.TextSymbolGap*scale, eff.TextLineGap*scale
-	}
-
-	if c != palette.White { // tint text color CPU side (Color & TextColor is same field)
-		var tr, tg, tb, ta = col.Channels(tint)
-		var or, og, ob, oa = col.Channels(c)
-		var r, g = uint8(uint16(tr) * uint16(or) / 255), uint8(uint16(tg) * uint16(og) / 255)
-		var b, a = uint8(uint16(tb) * uint16(ob) / 255), uint8(uint16(ta) * uint16(oa) / 255)
-		c = col.RGBA(r, g, b, a)
 	}
 
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
@@ -228,10 +215,9 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 			continue
 		}
 
-		var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
+		var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
+		var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
 		var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
-		var dstX, dstY = x + plane.Left*lineHeight, y + plane.Top*lineHeight
-		var dstW, dstH = (plane.Right - plane.Left) * lineHeight, (plane.Top - plane.Bottom) * lineHeight
 		var tbLeft, tbTop, tbRight, tbBot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
 		var clipL, clipR, clipT, clipB = max(dstX, tbLeft), min(dstX+dstW, tbRight), max(dstY, tbTop), min((dstY - dstH), tbBot)
 		if clipL >= clipR || clipT >= clipB {
@@ -240,15 +226,13 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 			continue
 		}
 		var clippedW, clippedH, origH = clipR - clipL, clipB - clipT, (dstY - dstH) - dstY
-		srcX += (clipL - dstX) / dstW * srcW
-		srcY += (clipT - dstY) / origH * srcH
-		srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
-		dstX, dstY, dstW, dstH = clipL, clipT, clippedW, -clippedH // restore negative convention
-
 		var dx, dy = (clipL + clippedW/2) - o.X, ((clipT + clipB) / 2) - o.Y
+		srcX, srcY = srcX+((clipL-dstX)/dstW*srcW), srcY+((clipT-dstY)/origH*srcH)
+		srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
+		dstW, dstH = clippedW, -clippedH // restore negative convention
 		dstX, dstY = o.X+dx*cosA-dy*sinA-dstW/2, o.Y+dx*sinA+dy*cosA+dstH/2
-
 		var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
+
 		internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, 2)
 		x += glyph.Advance*lineHeight + gapX
 		prevGlyph = glyph
