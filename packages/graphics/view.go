@@ -163,15 +163,14 @@ func (v *View) DrawObjects(objects ...*Object) {
 			mask.X += float32(internal.WindowWidth) / 2
 			mask.Y += float32(internal.WindowHeight) / 2
 		}
-		var eff = (*internal.Effects)(&o.Effects)
 		var kind uint8
 		if o.ImageId != 0 {
 			kind = internal.KindSprite // sprite
 		}
-		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, eff, kind)
+		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind)
 
 		if o.Text != "" {
-			v.queueText(o, mask, eff)
+			v.queueText(o, mask)
 		}
 	}
 }
@@ -185,16 +184,10 @@ func (v *View) area() (x, y, w, h float32) {
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
 
-func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
-	var lineHeight float32 = 40
+func (v *View) queueText(o *Object, mask internal.Area) {
+	var lineHeight float32 = o.Effects.TextLineHeight
 	var scale = lineHeight / 255
-	var gapX, gapY float32
-	if eff != nil {
-		lineHeight = eff.TextLineHeight
-		scale = lineHeight / 255
-		gapX, gapY = eff.TextSymbolGap*scale, eff.TextLineGap*scale
-	}
-
+	var gapX, gapY = o.Effects.TextSymbolGap * scale, o.Effects.TextLineGap * scale
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var x, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight
@@ -233,7 +226,7 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 		dstX, dstY = o.X+dx*cosA-dy*sinA-dstW/2, o.Y+dx*sinA+dy*cosA+dstH/2
 		var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
 
-		internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, 2)
+		internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 2)
 		x += glyph.Advance*lineHeight + gapX
 		prevGlyph = glyph
 	}
