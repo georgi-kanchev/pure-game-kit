@@ -210,8 +210,7 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
-	var x = o.X - o.Width/2
-	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight
+	var x, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight
 	var prevGlyph internal.Glyph
 	var sinA, cosA = internal.SinCos(o.Angle)
 	for _, r := range o.Text {
@@ -230,36 +229,27 @@ func (v *View) queueText(o *Object, mask internal.Area, eff *internal.Effects) {
 		}
 
 		var plane, atlas = glyph.PlaneBounds, glyph.AtlasBounds
-		var srcW, srcH = atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
-		var srcX, srcY = atlas.Left, atlas.Top
+		var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
 		var dstX, dstY = x + plane.Left*lineHeight, y + plane.Top*lineHeight
 		var dstW, dstH = (plane.Right - plane.Left) * lineHeight, (plane.Top - plane.Bottom) * lineHeight
-
-		var physTop, physBot = dstY, dstY - dstH
-		var tbLeft, tbTop = o.X - o.Width/2, o.Y - o.Height/2
-		var tbRight, tbBot = o.X + o.Width/2, o.Y + o.Height/2
-		var clipLeft, clipRight = max(dstX, tbLeft), min(dstX+dstW, tbRight)
-		var clipTop, clipBot = max(physTop, tbTop), min(physBot, tbBot)
-		if clipLeft >= clipRight || clipTop >= clipBot {
+		var tbLeft, tbTop, tbRight, tbBot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
+		var clipL, clipR, clipT, clipB = max(dstX, tbLeft), min(dstX+dstW, tbRight), max(dstY, tbTop), min((dstY - dstH), tbBot)
+		if clipL >= clipR || clipT >= clipB {
 			x += glyph.Advance * lineHeight
 			prevGlyph = glyph
 			continue
 		}
-		var clippedW, clippedH = clipRight - clipLeft, clipBot - clipTop
-		var origH = physBot - physTop
-		srcX += (clipLeft - dstX) / dstW * srcW
-		srcY += (clipTop - physTop) / origH * srcH
+		var clippedW, clippedH, origH = clipR - clipL, clipB - clipT, (dstY - dstH) - dstY
+		srcX += (clipL - dstX) / dstW * srcW
+		srcY += (clipT - dstY) / origH * srcH
 		srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
-		dstX, dstY = clipLeft, clipTop
-		dstW, dstH = clippedW, -clippedH // restore negative convention
+		dstX, dstY, dstW, dstH = clipL, clipT, clippedW, -clippedH // restore negative convention
 
-		var dx, dy = (clipLeft + clippedW/2) - o.X, ((clipTop + clipBot) / 2) - o.Y
-		dstX = o.X + dx*cosA - dy*sinA - dstW/2
-		dstY = o.Y + dx*sinA + dy*cosA + dstH/2
+		var dx, dy = (clipL + clippedW/2) - o.X, ((clipT + clipB) / 2) - o.Y
+		dstX, dstY = o.X+dx*cosA-dy*sinA-dstW/2, o.Y+dx*sinA+dy*cosA+dstH/2
 
-		var dst = rl.NewRectangle(dstX, dstY, dstW, dstH)
-		var src = rl.NewRectangle(srcX, srcY, srcW, srcH)
-		internal.Queue(atlasTex, src, dst, o.Angle, o.Roundness, mask, eff, 2)
+		var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
+		internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, 2)
 		x += glyph.Advance*lineHeight + gapX
 		prevGlyph = glyph
 	}

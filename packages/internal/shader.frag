@@ -228,6 +228,9 @@ vec4 compute_msdf_text() {
     rgb = mix(rgb, fragColor.rgb, sdfAlpha);
     
     float alpha = max(shadowAlpha, max(outlineAlpha, sdfAlpha));
+    if (alpha < 0.004)
+        return vec4(1.0, 0.0, 0.0, 0.5);
+
     return vec4(rgb, alpha);
 }
 
