@@ -191,8 +191,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
-	var leftEdge = o.X - o.Width/2
-	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight
+	var leftEdge, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight
 
 	var pos int
 	for i := range o.Text {
@@ -207,8 +206,8 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
 			x += kerning * lineHeight
-			var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
 
+			var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
 			var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
 			var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
 			var tbLeft, tbTop, tbRight, tbBot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
@@ -232,7 +231,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		}
 
 		pos = lineEnd
-		if pos < len(o.Text) && o.Text[pos] == '\n' {
+		if pos < len(o.Text) {
 			pos++
 		}
 		y += lineHeight*fontData.LineHeight + gapY

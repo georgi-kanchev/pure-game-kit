@@ -178,16 +178,15 @@ func (o *Object) lineEndAndWidth(fromIndex int) (endIndex int, width float32) {
 				}
 				var wOffX, _, wW, _ = o.TextFontId.SymbolArea(wr, lineHeight)
 				var wGlyph = font.Chars[wr]
-				wX += wPrev.Kernings[wr]*lineHeight + wGlyph.Advance*lineHeight + gapX
+				wX += wPrev.Kernings[wr] * lineHeight
 				wPrev, wTotal = wGlyph, max(wX+wOffX+wW, wTotal)
+				wX += wGlyph.Advance*lineHeight + gapX
 			}
 			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width {
 				return fromIndex + i, max(totalWidth, x)
 			}
 		}
-
 		x, prevGlyph, totalWidth = x+(glyph.Advance*lineHeight+gapX), glyph, max(x+offsetX+w, totalWidth)
 	}
-
 	return len(o.Text), max(totalWidth, x)
 }

@@ -17,7 +17,7 @@ func main() {
 	textbox.Effects.FillColor = palette.DarkGray
 	textbox.Effects.TextLineHeight = 90
 	textbox.Effects.TextBackColor = palette.Red
-	textbox.Effects.TextAlignX = 1
+	textbox.Effects.TextAlignX = 0.5
 
 	window.SetTargetFPS(60)
 
