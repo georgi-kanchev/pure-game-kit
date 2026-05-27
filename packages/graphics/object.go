@@ -148,40 +148,6 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 
 // private ========================================================
 
-func (o *Object) sizeUntil(index int, symbol, orSymbol rune) (width, height float32) {
-	var start = max(0, index)
-	if start >= len(o.Text) {
-		return 0, 0
-	}
-
-	var font = internal.Fonts[uint8(o.TextFontId)]
-	var lineHeight = o.Effects.TextLineHeight
-	var scale = lineHeight / 255
-	var gapX = o.Effects.TextSymbolGap * scale
-	var x, totalWidth float32
-	var prevGlyph internal.Glyph
-
-	for _, r := range o.Text[start:] {
-		if r == symbol || r == orSymbol {
-			break
-		}
-		var glyph = font.Chars[r]
-		x += prevGlyph.Kernings[r] * lineHeight
-		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
-
-		if x+offsetX+w > totalWidth {
-			totalWidth = x + offsetX + w
-		}
-		x += glyph.Advance*lineHeight + gapX
-		prevGlyph = glyph
-	}
-
-	if x > totalWidth {
-		totalWidth = x
-	}
-	return totalWidth, lineHeight * font.LineHeight
-}
-
 func (o *Object) lineEndAndWidth(fromIndex int) (endIndex int, width float32) {
 	if fromIndex >= len(o.Text) {
 		return fromIndex, 0
@@ -208,8 +174,22 @@ func (o *Object) lineEndAndWidth(fromIndex int) (endIndex int, width float32) {
 		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
 
 		if o.Effects.TextWordWrap && r == ' ' {
-			var nextWordWidth, _ = o.sizeUntil(i+1, ' ', '\n')
-			if x+glyph.Advance*lineHeight+gapX+nextWordWidth > o.Width {
+			var wX, wTotal float32
+			var wPrev internal.Glyph
+			for _, wr := range o.Text[i+1:] {
+				if wr == ' ' || wr == '\n' {
+					break
+				}
+				var wGlyph = font.Chars[wr]
+				wX += wPrev.Kernings[wr] * lineHeight
+				var wOffX, _, wW, _ = o.TextFontId.SymbolArea(wr, lineHeight)
+				if wX+wOffX+wW > wTotal {
+					wTotal = wX + wOffX + wW
+				}
+				wX += wGlyph.Advance*lineHeight + gapX
+				wPrev = wGlyph
+			}
+			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width {
 				if x > totalWidth {
 					totalWidth = x
 				}
