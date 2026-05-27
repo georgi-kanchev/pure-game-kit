@@ -19,7 +19,7 @@ func main() {
 	textbox.Effects.TextBackColor = palette.Red
 	textbox.Effects.TextAlignX = 1
 
-	window.SetTargetFPS(60)
+	// window.SetTargetFPS(60)
 
 	for window.KeepOpen() {
 		textbox.Text = debug.MemoryUsage()
