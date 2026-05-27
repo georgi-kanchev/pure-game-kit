@@ -190,21 +190,27 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var gapX, gapY = o.Effects.TextSymbolGap * scale, o.Effects.TextLineGap * scale
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
-	var x, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight
 	var prevGlyph internal.Glyph
 	var sin, cos = internal.SinCos(o.Angle)
-	for _, r := range o.Text {
+	var lineWidth, _ = o.sizeUntil(0, '\n', '\n')
+	var x, y = (o.X - o.Width/2) + o.Effects.TextAlignX*(o.Width-lineWidth), o.Y - o.Height/2 - fontData.Ascender*lineHeight
+	for i, r := range o.Text {
 		var glyph = fontData.Chars[r]
 		var kerning, _ = prevGlyph.Kernings[r]
 		x += kerning * lineHeight
 		var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
+		var newLine = false
 
-		if r == ' ' {
-			x += dstW + gapX
-			prevGlyph = glyph
-			continue
-		} else if r == '\n' {
-			x = o.X - o.Width/2
+		if o.Effects.TextWordWrap && (r == ' ' || r == '\n') {
+			var width, _ = o.sizeUntil(i+1, ' ', '\n')
+			if x+glyph.Advance*lineHeight+gapX+width > o.Width/2 {
+				newLine = true
+			}
+		}
+
+		if newLine || r == '\n' {
+			lineWidth, _ = o.sizeUntil(i+1, '\n', '\n')
+			x = (o.X - o.Width/2) + o.Effects.TextAlignX*(o.Width-lineWidth)
 			y += lineHeight*fontData.LineHeight + gapY
 			continue
 		}

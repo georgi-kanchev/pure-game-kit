@@ -71,6 +71,10 @@ func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) uint8 {
 		font.Chars[kern.Unicode1].Kernings[kern.Unicode2] = kern.Advance
 	}
 
+	var space = font.Chars[' ']
+	space.Advance = 0.4
+	font.Chars[' '] = space
+
 	Fonts[id] = font
 	return id
 }

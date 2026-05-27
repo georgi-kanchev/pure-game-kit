@@ -146,11 +146,11 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	return o.PointToGlobal(o.Width*edgeX, o.Height*edgeY)
 }
 
-// text ===========================================================
+// private ========================================================
 
-func (o *Object) TextMeasureLine(fromIndex, toIndex int) (width, height float32) {
-	var start, end = max(0, fromIndex), min(toIndex, len(o.Text))
-	if start >= end {
+func (o *Object) sizeUntil(index int, symbol, orSymbol rune) (width, height float32) {
+	var start = max(0, index)
+	if start >= len(o.Text) {
 		return 0, 0
 	}
 
@@ -161,23 +161,13 @@ func (o *Object) TextMeasureLine(fromIndex, toIndex int) (width, height float32)
 	var x, totalWidth float32
 	var prevGlyph internal.Glyph
 
-	for _, r := range o.Text[start:end] {
+	for _, r := range o.Text[start:] {
+		if r == symbol || r == orSymbol {
+			break
+		}
 		var glyph = font.Chars[r]
 		x += prevGlyph.Kernings[r] * lineHeight
 		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
-
-		if r == ' ' {
-			x += w + gapX
-			prevGlyph = glyph
-			continue
-		}
-		if r == '\n' {
-			if x > totalWidth {
-				totalWidth = x
-			}
-			x = 0
-			continue
-		}
 
 		if x+offsetX+w > totalWidth {
 			totalWidth = x + offsetX + w

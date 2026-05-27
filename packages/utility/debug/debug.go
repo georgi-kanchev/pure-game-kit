@@ -3,8 +3,8 @@
 // Profiles the running application and analyzes the state of the project.
 package debug
 
-// this package shouldn't have any engine dependencies
-// because every other package should be able to use its error logging (avoid circular dependency)
+// this package shouldn't have any engine dependencies because every other
+// package should be able to use its error logging (avoid circular dependency)
 import (
 	"bufio"
 	"bytes"
@@ -247,13 +247,13 @@ func MemoryUsage() string {
 	memBuf = append(memBuf, " (target heap size of the next GC)\n"...)
 	memBuf = append(memBuf, "PauseTotal = "...)
 	memBuf = strconv.AppendFloat(memBuf, float64(m.PauseTotalNs)/1e9, 'f', 2, 64)
-	memBuf = append(memBuf, " s (total time spent in GC)\n"...)
+	memBuf = append(memBuf, "s (total time spent in GC)\n"...)
 	if m.LastGC == 0 {
 		memBuf = append(memBuf, "SinceLast = never\n"...)
 	} else {
 		memBuf = append(memBuf, "SinceLast = "...)
-		memBuf = strconv.AppendFloat(memBuf, time.Since(time.Unix(0, int64(m.LastGC))).Seconds(), 'f', 2, 64)
-		memBuf = append(memBuf, " s\n"...)
+		memBuf = strconv.AppendFloat(memBuf, time.Since(time.Unix(0, int64(m.LastGC))).Seconds(), 'f', 1, 64)
+		memBuf = append(memBuf, "s\n"...)
 	}
 
 	return unsafe.String(unsafe.SliceData(memBuf), len(memBuf))
