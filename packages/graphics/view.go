@@ -203,7 +203,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 
 		if o.Effects.TextWordWrap && (r == ' ' || r == '\n') {
 			var width, _ = o.sizeUntil(i+1, ' ', '\n')
-			if x+glyph.Advance*lineHeight+gapX+width > o.Width/2 {
+			if x+glyph.Advance*lineHeight+gapX+width > o.X+o.Width/2 {
 				newLine = true
 			}
 		}

@@ -13,11 +13,11 @@ func main() {
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var textbox = graphics.NewTextbox(0, 0, 2000, 1500, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
+	var textbox = graphics.NewTextbox(-200, 0, 2000, 1500, font, "^&%#@!*_Wtyg aWAY AVATAR WAVE")
 	textbox.Effects.FillColor = palette.DarkGray
 	textbox.Effects.TextLineHeight = 90
 	textbox.Effects.TextBackColor = palette.Red
-	textbox.Effects.TextAlignX = 1
+	textbox.Effects.TextAlignX = 0
 
 	window.SetTargetFPS(60)
 
