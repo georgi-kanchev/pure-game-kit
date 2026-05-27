@@ -181,3 +181,51 @@ func (o *Object) sizeUntil(index int, symbol, orSymbol rune) (width, height floa
 	}
 	return totalWidth, lineHeight * font.LineHeight
 }
+
+func (o *Object) lineEndAndWidth(fromIndex int) (endIndex int, width float32) {
+	if fromIndex >= len(o.Text) {
+		return fromIndex, 0
+	}
+
+	var lineHeight = o.Effects.TextLineHeight
+	var scale = lineHeight / 255
+	var gapX = o.Effects.TextSymbolGap * scale
+	var font = internal.Fonts[uint8(o.TextFontId)]
+	var x, totalWidth float32
+	var prevGlyph internal.Glyph
+
+	for byteIdx, r := range o.Text[fromIndex:] {
+		var i = fromIndex + byteIdx
+		if r == '\n' {
+			if x > totalWidth {
+				totalWidth = x
+			}
+			return i, totalWidth
+		}
+
+		var glyph = font.Chars[r]
+		x += prevGlyph.Kernings[r] * lineHeight
+		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
+
+		if o.Effects.TextWordWrap && r == ' ' {
+			var nextWordWidth, _ = o.sizeUntil(i+1, ' ', '\n')
+			if x+glyph.Advance*lineHeight+gapX+nextWordWidth > o.Width {
+				if x > totalWidth {
+					totalWidth = x
+				}
+				return i, totalWidth
+			}
+		}
+
+		if x+offsetX+w > totalWidth {
+			totalWidth = x + offsetX + w
+		}
+		x += glyph.Advance*lineHeight + gapX
+		prevGlyph = glyph
+	}
+
+	if x > totalWidth {
+		totalWidth = x
+	}
+	return len(o.Text), totalWidth
+}

@@ -185,55 +185,52 @@ func (v *View) area() (x, y, w, h float32) {
 }
 
 func (v *View) queueText(o *Object, mask internal.Area) {
-	var lineHeight float32 = o.Effects.TextLineHeight
+	var lineHeight = o.Effects.TextLineHeight
 	var scale = lineHeight / 255
 	var gapX, gapY = o.Effects.TextSymbolGap * scale, o.Effects.TextLineGap * scale
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
-	var prevGlyph internal.Glyph
 	var sin, cos = internal.SinCos(o.Angle)
-	var lineWidth, _ = o.sizeUntil(0, '\n', '\n')
-	var x, y = (o.X - o.Width/2) + o.Effects.TextAlignX*(o.Width-lineWidth), o.Y - o.Height/2 - fontData.Ascender*lineHeight
-	for i, r := range o.Text {
-		var glyph = fontData.Chars[r]
-		var kerning, _ = prevGlyph.Kernings[r]
-		x += kerning * lineHeight
-		var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
-		var newLine = false
+	var leftEdge = o.X - o.Width/2
+	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight
 
-		if o.Effects.TextWordWrap && (r == ' ' || r == '\n') {
-			var width, _ = o.sizeUntil(i+1, ' ', '\n')
-			if x+glyph.Advance*lineHeight+gapX+width > o.X+o.Width/2 {
-				newLine = true
+	for i := 0; i < len(o.Text); {
+		var lineEnd, lineWidth = o.lineEndAndWidth(i)
+		var x = leftEdge + o.Effects.TextAlignX*(o.Width-lineWidth)
+		var prevGlyph internal.Glyph
+
+		for _, r := range o.Text[i:lineEnd] {
+			var glyph = fontData.Chars[r]
+			var kerning, _ = prevGlyph.Kernings[r]
+			x += kerning * lineHeight
+			var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
+
+			var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
+			var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
+			var tbLeft, tbTop, tbRight, tbBot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
+			var clipL, clipR, clipT, clipB = max(dstX, tbLeft), min(dstX+dstW, tbRight), max(dstY, tbTop), min((dstY - dstH), tbBot)
+			if clipL >= clipR || clipT >= clipB {
+				x += glyph.Advance * lineHeight
+				prevGlyph = glyph
+				continue
 			}
-		}
+			var clippedW, clippedH, origH = clipR - clipL, clipB - clipT, (dstY - dstH) - dstY
+			var dx, dy = (clipL + clippedW/2) - o.X, ((clipT + clipB) / 2) - o.Y
+			srcX, srcY = srcX+((clipL-dstX)/dstW*srcW), srcY+((clipT-dstY)/origH*srcH)
+			srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
+			dstW, dstH = clippedW, -clippedH
+			dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
+			var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
 
-		if newLine || r == '\n' {
-			lineWidth, _ = o.sizeUntil(i+1, '\n', '\n')
-			x = (o.X - o.Width/2) + o.Effects.TextAlignX*(o.Width-lineWidth)
-			y += lineHeight*fontData.LineHeight + gapY
-			continue
-		}
-
-		var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
-		var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
-		var tbLeft, tbTop, tbRight, tbBot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
-		var clipL, clipR, clipT, clipB = max(dstX, tbLeft), min(dstX+dstW, tbRight), max(dstY, tbTop), min((dstY - dstH), tbBot)
-		if clipL >= clipR || clipT >= clipB {
-			x += glyph.Advance * lineHeight
+			internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 2)
+			x += glyph.Advance*lineHeight + gapX
 			prevGlyph = glyph
-			continue
 		}
-		var clippedW, clippedH, origH = clipR - clipL, clipB - clipT, (dstY - dstH) - dstY
-		var dx, dy = (clipL + clippedW/2) - o.X, ((clipT + clipB) / 2) - o.Y
-		srcX, srcY = srcX+((clipL-dstX)/dstW*srcW), srcY+((clipT-dstY)/origH*srcH)
-		srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
-		dstW, dstH = clippedW, -clippedH // restore negative convention
-		dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
-		var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
 
-		internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 2)
-		x += glyph.Advance*lineHeight + gapX
-		prevGlyph = glyph
+		i = lineEnd
+		if i < len(o.Text) && o.Text[i] == '\n' {
+			i++
+		}
+		y += lineHeight*fontData.LineHeight + gapY
 	}
 }
