@@ -177,6 +177,13 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 // private ========================================================
 
+type line struct {
+	start, end int
+	width      float32
+}
+
+var lines []line
+
 func (v *View) area() (x, y, w, h float32) {
 	if v.Area == (Area{}) {
 		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
@@ -191,25 +198,25 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
-	var totalHeight float32
+	lines = lines[:0]
+	var height float32
 	for i := 0; i < len(o.Text); {
-		var lineEnd, _ = o.lineEndAndWidth(i)
-		totalHeight += lineHeight * fontData.LineHeight
-		i = lineEnd
+		var end, width = o.lineEndAndWidth(i)
+		lines = append(lines, line{i, end, width})
+		height += lineHeight * fontData.LineHeight
+		i = end
 		if i < len(o.Text) {
-			totalHeight += gapY
+			height += gapY
 			i++
 		}
 	}
-	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight + o.Effects.TextAlignY*(o.Height-totalHeight)
-	var leftEdge = o.X - o.Width/2
+	var leftEdge, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight + o.Effects.TextAlignY*(o.Height-height)
 
-	for i := 0; i < len(o.Text); {
-		var lineEnd, lineWidth = o.lineEndAndWidth(i)
-		var x = leftEdge + o.Effects.TextAlignX*(o.Width-lineWidth)
+	for _, ln := range lines {
+		var x = leftEdge + o.Effects.TextAlignX*(o.Width-ln.width)
 		var prevGlyph internal.Glyph
 
-		for _, r := range o.Text[i:lineEnd] {
+		for _, r := range o.Text[ln.start:ln.end] {
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
 			x += kerning * lineHeight
@@ -237,10 +244,6 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			prevGlyph = glyph
 		}
 
-		i = lineEnd
-		if i < len(o.Text) {
-			i++
-		}
 		y += lineHeight*fontData.LineHeight + gapY
 	}
 }
