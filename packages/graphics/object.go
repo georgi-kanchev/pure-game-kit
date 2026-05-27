@@ -160,52 +160,34 @@ func (o *Object) lineEndAndWidth(fromIndex int) (endIndex int, width float32) {
 	var x, totalWidth float32
 	var prevGlyph internal.Glyph
 
-	for byteIdx, r := range o.Text[fromIndex:] {
-		var i = fromIndex + byteIdx
+	for i, r := range o.Text[fromIndex:] {
 		if r == '\n' {
-			if x > totalWidth {
-				totalWidth = x
-			}
-			return i, totalWidth
+			return fromIndex + i, max(totalWidth, x)
 		}
 
-		var glyph = font.Chars[r]
 		x += prevGlyph.Kernings[r] * lineHeight
 		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
+		var glyph = font.Chars[r]
 
 		if o.Effects.TextWordWrap && r == ' ' {
 			var wX, wTotal float32
 			var wPrev internal.Glyph
-			for _, wr := range o.Text[i+1:] {
+			for _, wr := range o.Text[fromIndex+i+1:] {
 				if wr == ' ' || wr == '\n' {
 					break
 				}
-				var wGlyph = font.Chars[wr]
-				wX += wPrev.Kernings[wr] * lineHeight
 				var wOffX, _, wW, _ = o.TextFontId.SymbolArea(wr, lineHeight)
-				if wX+wOffX+wW > wTotal {
-					wTotal = wX + wOffX + wW
-				}
-				wX += wGlyph.Advance*lineHeight + gapX
-				wPrev = wGlyph
+				var wGlyph = font.Chars[wr]
+				wX += wPrev.Kernings[wr]*lineHeight + wGlyph.Advance*lineHeight + gapX
+				wPrev, wTotal = wGlyph, max(wX+wOffX+wW, wTotal)
 			}
 			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width {
-				if x > totalWidth {
-					totalWidth = x
-				}
-				return i, totalWidth
+				return fromIndex + i, max(totalWidth, x)
 			}
 		}
 
-		if x+offsetX+w > totalWidth {
-			totalWidth = x + offsetX + w
-		}
-		x += glyph.Advance*lineHeight + gapX
-		prevGlyph = glyph
+		x, prevGlyph, totalWidth = x+(glyph.Advance*lineHeight+gapX), glyph, max(x+offsetX+w, totalWidth)
 	}
 
-	if x > totalWidth {
-		totalWidth = x
-	}
-	return len(o.Text), totalWidth
+	return len(o.Text), max(totalWidth, x)
 }

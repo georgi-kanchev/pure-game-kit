@@ -195,31 +195,31 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight
 
 	var pos int
-	for byteIdx := range o.Text {
-		if byteIdx < pos {
+	for i := range o.Text {
+		if i < pos {
 			continue
 		}
-		var lineEnd, lineWidth = o.lineEndAndWidth(byteIdx)
+		var lineEnd, lineWidth = o.lineEndAndWidth(i)
 		var x = leftEdge + o.Effects.TextAlignX*(o.Width-lineWidth)
 		var prevGlyph internal.Glyph
 
-		for _, r := range o.Text[byteIdx:lineEnd] {
+		for _, r := range o.Text[i:lineEnd] {
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
 			x += kerning * lineHeight
 			var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
 
-			var atlas, dstX, dstY = glyph.AtlasBounds, x+offsetX, y+offsetY
-			var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right-atlas.Left, atlas.Bottom-atlas.Top
-			var tbLeft, tbTop, tbRight, tbBot = o.X-o.Width/2, o.Y-o.Height/2, o.X+o.Width/2, o.Y+o.Height/2
-			var clipL, clipR, clipT, clipB = max(dstX, tbLeft), min(dstX+dstW, tbRight), max(dstY, tbTop), min((dstY-dstH), tbBot)
+			var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
+			var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
+			var tbLeft, tbTop, tbRight, tbBot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
+			var clipL, clipR, clipT, clipB = max(dstX, tbLeft), min(dstX+dstW, tbRight), max(dstY, tbTop), min((dstY - dstH), tbBot)
 			if clipL >= clipR || clipT >= clipB {
 				x += glyph.Advance * lineHeight
 				prevGlyph = glyph
 				continue
 			}
-			var clippedW, clippedH, origH = clipR-clipL, clipB-clipT, (dstY-dstH)-dstY
-			var dx, dy = (clipL+clippedW/2)-o.X, ((clipT+clipB)/2)-o.Y
+			var clippedW, clippedH, origH = clipR - clipL, clipB - clipT, (dstY - dstH) - dstY
+			var dx, dy = (clipL + clippedW/2) - o.X, ((clipT + clipB) / 2) - o.Y
 			srcX, srcY = srcX+((clipL-dstX)/dstW*srcW), srcY+((clipT-dstY)/origH*srcH)
 			srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
 			dstW, dstH = clippedW, -clippedH
