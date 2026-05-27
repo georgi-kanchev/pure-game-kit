@@ -191,13 +191,20 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var fontData = internal.Fonts[uint8(o.TextFontId)]
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
-	var leftEdge, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight
-
-	var pos int
-	for i := range o.Text {
-		if i < pos {
-			continue
+	var totalHeight float32
+	for i := 0; i < len(o.Text); {
+		var lineEnd, _ = o.lineEndAndWidth(i)
+		totalHeight += lineHeight * fontData.LineHeight
+		i = lineEnd
+		if i < len(o.Text) {
+			totalHeight += gapY
+			i++
 		}
+	}
+	var y = o.Y - o.Height/2 - fontData.Ascender*lineHeight + o.Effects.TextAlignY*(o.Height-totalHeight)
+	var leftEdge = o.X - o.Width/2
+
+	for i := 0; i < len(o.Text); {
 		var lineEnd, lineWidth = o.lineEndAndWidth(i)
 		var x = leftEdge + o.Effects.TextAlignX*(o.Width-lineWidth)
 		var prevGlyph internal.Glyph
@@ -230,9 +237,9 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			prevGlyph = glyph
 		}
 
-		pos = lineEnd
-		if pos < len(o.Text) {
-			pos++
+		i = lineEnd
+		if i < len(o.Text) {
+			i++
 		}
 		y += lineHeight*fontData.LineHeight + gapY
 	}
