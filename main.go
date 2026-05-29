@@ -16,11 +16,14 @@ func main() {
 	textbox.Effects.FillColor = palette.DarkGray
 	textbox.Effects.TextLineHeight = 50
 	textbox.Effects.TextBackColor = palette.Red
+	textbox.Effects.TextAlignY = 0
 
 	window.SetTargetFPS(60)
 
 	for window.KeepOpen() {
 		textbox.Text = debug.MemoryUsage()
+		var x, _ = view.MousePosition()
+		textbox.Effects.TextLineHeight = 70 + x/10
 
 		view.DrawObjects(&textbox)
 	}
