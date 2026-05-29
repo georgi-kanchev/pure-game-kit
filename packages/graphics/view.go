@@ -192,16 +192,16 @@ func (v *View) area() (x, y, w, h float32) {
 }
 
 func (v *View) queueText(o *Object, mask internal.Area) {
-	var lineHeight = o.Effects.TextLineHeight
-	var scale = lineHeight / 255
-	var gapX, gapY = o.Effects.TextSymbolGap * scale, o.Effects.TextLineGap * scale
+	var eff = (*internal.Effects)(&o.Effects)
+	var scale = eff.TextLineHeight / 255
+	var gapX, gapY = eff.TextSymbolGap * scale, eff.TextLineGap * scale
 	var fontData, has = internal.Fonts[uint8(o.TextFontId)]
 	if !has {
 		fontData = internal.Fonts[0] // fallback
 	}
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
-	var fullLineHeight = lineHeight * fontData.LineHeight
+	var fullLineHeight = eff.TextLineHeight * fontData.LineHeight
 	lines = lines[:0]
 	var height float32
 	for i := 0; i < len(o.Text); {
@@ -214,63 +214,56 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			i++
 		}
 	}
-	var leftEdge, y = o.X - o.Width/2, o.Y - o.Height/2 - fontData.Ascender*lineHeight + o.Effects.TextAlignY*(o.Height-height)
+	var y = o.Y - o.Height/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(o.Height-height)
 
 	for _, ln := range lines {
-		var x = leftEdge + o.Effects.TextAlignX*(o.Width-ln.width)
+		var x = (o.X - o.Width/2) + eff.TextAlignX*(o.Width-ln.width)
 		var prevGlyph internal.Glyph
-		var prevBgRight = o.X - o.Width/2
 
 		for _, r := range o.Text[ln.start:ln.end] {
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
-			x += kerning * lineHeight
+			x += kerning * eff.TextLineHeight
 
-			var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, lineHeight)
-			var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
-			var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
-			var left, top, right, bot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
-			var clipL, clipR, clipT, clipB = max(dstX, left), min(dstX+dstW, right), max(dstY, top), min((dstY - dstH), bot)
-			if clipL >= clipR || clipT >= clipB {
-				x += glyph.Advance * lineHeight
+			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin)
+			if eff.TextUnderline {
+				var underline = fontData.Chars['_']
+				var usrc, udst = getGlyphSrcDst(o, '_', underline, x, y, cos, sin)
+				var prev = eff.FillColor
+				eff.FillColor = eff.TextColor
+				internal.Queue(atlasTex, usrc, udst, o.Angle, 0, mask, eff, internal.KindText)
+				eff.FillColor = prev
+			}
+			if r == ' ' {
+				x += glyph.Advance * eff.TextLineHeight
 				prevGlyph = glyph
 				continue
 			}
 
-			var clippedW, clippedH, origH = clipR - clipL, clipB - clipT, (dstY - dstH) - dstY
-			var dx, dy = (clipL + clippedW/2) - o.X, ((clipT + clipB) / 2) - o.Y
-			srcX, srcY = srcX+((clipL-dstX)/dstW*srcW), srcY+((clipT-dstY)/origH*srcH)
-			srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
-			dstW, dstH = clippedW, -clippedH
-			dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
-			var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
-
-			if o.Effects.TextBackColor != 0 {
-				var bgClipL = min(prevBgRight, clipR)
-				var bgClippedW = clipR - bgClipL
-				var lineTop = y + (fontData.Ascender * lineHeight)
-				var bgClipT = max(lineTop, top)
-				var bgClipB = min(lineTop+fullLineHeight, bot)
-				var bgDstH = bgClipB - bgClipT
-				if bgDstH > 0 {
-					var bgDx = (bgClipL + bgClippedW/2) - o.X
-					var bgDy = (bgClipT + bgDstH/2) - o.Y
-					var bgSrc = rl.NewRectangle(srcX+(bgClipL-clipL)/clippedW*srcW, srcY, srcW*bgClippedW/clippedW, srcH)
-					var bgDstX = o.X + bgDx*cos - bgDy*sin - bgClippedW/2
-					var bgDstY = o.Y + bgDx*sin + bgDy*cos - bgDstH/2
-					var bgDst = rl.NewRectangle(bgDstX, bgDstY, bgClippedW, bgDstH)
-					var prev = o.Effects.FillColor
-					o.Effects.FillColor = o.Effects.TextBackColor
-					internal.Queue(atlasTex, bgSrc, bgDst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 0)
-					o.Effects.FillColor = prev
-				}
-				prevBgRight = clipR
-			}
-			internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 2)
-			x += glyph.Advance*lineHeight + gapX
+			internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
+			x += glyph.Advance*eff.TextLineHeight + gapX
 			prevGlyph = glyph
 		}
 
-		y += lineHeight*fontData.LineHeight + gapY
+		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
+}
+
+func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin float32) (src, dst rl.Rectangle) {
+	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
+	var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
+	var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
+	var left, top, right, bot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2
+	var clipL, clipR, clipT, clipB = max(dstX, left), min(dstX+dstW, right), max(dstY, top), min((dstY - dstH), bot)
+	if clipL >= clipR || clipT >= clipB {
+		return rl.Rectangle{}, rl.Rectangle{}
+	}
+
+	var clippedW, clippedH, origH = clipR - clipL, clipB - clipT, (dstY - dstH) - dstY
+	var dx, dy = (clipL + clippedW/2) - o.X, ((clipT + clipB) / 2) - o.Y
+	srcX, srcY = srcX+((clipL-dstX)/dstW*srcW), srcY+((clipT-dstY)/origH*srcH)
+	srcW, srcH = srcW*(clippedW/dstW), srcH*(clippedH/origH)
+	dstW, dstH = clippedW, -clippedH
+	dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
+	return rl.NewRectangle(srcX, srcY, srcW, srcH), rl.NewRectangle(dstX, dstY, dstW, dstH)
 }

@@ -52,11 +52,13 @@ type Glyph struct {
 var Fonts = make(map[uint8]Font) // 0 = default
 var FontNextId uint8
 
+const Crossout, Underline = '\uE000', '\uE001'
+
 func LoadFont(fontData *FontJSON, imageId int32) uint8 {
 	var id = FontNextId
 	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph),
-		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender,
-		LineHeight: fontData.Metrics.LineHeight, EmSize: fontData.Metrics.EmSize, Size: fontData.Atlas.Size,
+		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender, LineHeight: fontData.Metrics.LineHeight,
+		EmSize: fontData.Metrics.EmSize, Size: fontData.Atlas.Size,
 	}
 
 	for _, glyph := range fontData.Glyphs {
@@ -68,7 +70,7 @@ func LoadFont(fontData *FontJSON, imageId int32) uint8 {
 	}
 
 	var space = font.Chars[' ']
-	space.Advance = 0.4
+	space.Advance = 0.35
 	font.Chars[' '] = space
 
 	Fonts[id] = font
