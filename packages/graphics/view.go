@@ -195,7 +195,10 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var lineHeight = o.Effects.TextLineHeight
 	var scale = lineHeight / 255
 	var gapX, gapY = o.Effects.TextSymbolGap * scale, o.Effects.TextLineGap * scale
-	var fontData = internal.Fonts[uint8(o.TextFontId)]
+	var fontData, has = internal.Fonts[uint8(o.TextFontId)]
+	if !has {
+		fontData = internal.Fonts[0] // fallback
+	}
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
 	lines = lines[:0]
@@ -239,6 +242,12 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
 			var dst, src = rl.NewRectangle(dstX, dstY, dstW, dstH), rl.NewRectangle(srcX, srcY, srcW, srcH)
 
+			if o.Effects.TextBackColor != 0 {
+				var prev = o.Effects.FillColor
+				o.Effects.FillColor = o.Effects.TextBackColor
+				internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 0)
+				o.Effects.FillColor = prev
+			}
 			internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, (*internal.Effects)(&o.Effects), 2)
 			x += glyph.Advance*lineHeight + gapX
 			prevGlyph = glyph

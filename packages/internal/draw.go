@@ -47,12 +47,13 @@ type Effects struct {
 
 	//=================================================================
 
-	TextAlignX, TextAlignY                                             float32 // Ranged 0..1
-	TextLineHeight, TextSymbolGap, TextLineGap                         float32
-	TextWordWrap, TextUnderline, TextCrossout                          bool
-	TextWeight, TextShadowWeight, TextShadowOffsetX, TextShadowOffsetY int8
-	TextShadowBlur                                                     uint8
-	TextColor, TextBackColor, TextShadowColor                          uint
+	TextAlignX, TextAlignY                     float32 // Ranged 0..1
+	TextLineHeight, TextSymbolGap, TextLineGap float32
+	TextWordWrap, TextUnderline, TextCrossout  bool
+	TextWeight, TextShadowWeight,
+	TextShadowOffsetX, TextShadowOffsetY int8
+	TextShadowBlur                            uint8
+	TextColor, TextBackColor, TextShadowColor uint
 }
 
 var Shader rl.Shader
@@ -64,7 +65,7 @@ var DefaultEffects = Effects{BorderColor: palette.White, Tint: palette.White,
 	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 30, TextShadowOffsetY: 30,
 	TextLineHeight: 40, TextWordWrap: true}
 
-var Images = make(map[int32]ImageData) // negative = crops; 0 = White1x1; positive = full images
+var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; positive = full images
 var NextImageId int16
 var NextImageCropId int16
 

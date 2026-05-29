@@ -3,6 +3,7 @@ package internal
 import (
 	"math"
 	"pure-game-kit/packages/utility/number"
+	"pure-game-kit/packages/utility/storage"
 	"strings"
 
 	_ "embed"
@@ -59,6 +60,11 @@ var sineTable [3600]float32
 //=================================================================
 
 func Init() {
+	for i := range 3600 {
+		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
+		sineTable[i] = float32(math.Sin(rad))
+	}
+
 	if Shader.ID == 0 {
 		Shader = rl.LoadShaderFromMemory(string(shaderVert), string(shaderFrag))
 		ShaderTileDataLoc = rl.GetLocationUniform(Shader.ID, "tileData")
@@ -67,15 +73,16 @@ func Init() {
 	DefaultMatrix = rl.MatrixIdentity()
 	DefaultMaterial = rl.LoadMaterialDefault()
 
-	var img = rl.GenImageColor(1, 1, rl.White)
-	Images[0] = ImageData{Texture: rl.LoadTextureFromImage(img), CropX: 0, CropY: 0, CropWidth: 1, CropHeight: 1}
+	var img = rl.LoadImageFromMemory(".png", defaultFontAtlas, int32(len(defaultFontAtlas)))
+	var tex = rl.LoadTextureFromImage(img)
+	Images[0] = ImageData{Texture: tex, CropX: 0, CropY: 0, CropWidth: float32(img.Width - 1), CropHeight: float32(img.Height - 1)}
 	rl.UnloadImage(img)
+	rl.SetTextureFilter(tex, rl.FilterTrilinear)
 
-	for i := range 3600 {
-		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
-		sineTable[i] = float32(math.Sin(rad))
-	}
-
+	var font = string(storage.DecompressGZIP(defaultFont))
+	var fontData = &FontJSON{}
+	storage.FromJSON(font, fontData)
+	LoadFont(fontData, 0)
 }
 func UpdateWindowData() {
 	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()

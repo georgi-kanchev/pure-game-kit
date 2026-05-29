@@ -7,6 +7,8 @@ import (
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/storage"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 type FontId uint8
@@ -19,9 +21,18 @@ func LoadFont(pngPath string, jsonPath string) FontId {
 
 	var fontData = &internal.FontJSON{}
 	storage.FromJSON(file.LoadText(jsonPath), fontData)
-	var atlas = int32(LoadImage(pngPath))
-	ImageId(atlas).SetSmoothness(true) // bilinear filtering required for MSDF
-	var font = internal.LoadFont(fontData, atlas, false)
+
+	var tex = rl.LoadTexture(pngPath)
+	if tex.Width == 0 {
+		debug.LogError("Failed to load png file: \"", pngPath, "\"")
+		return 0
+	}
+	internal.NextImageId++
+	var id = internal.NextImageId
+	internal.Images[int32(id)] = internal.ImageData{Texture: tex, CropWidth: float32(tex.Width), CropHeight: float32(tex.Height)}
+
+	ImageId(id).SetSmoothness(true) // bilinear filtering required for MSDF
+	var font = internal.LoadFont(fontData, int32(id))
 	return FontId(font)
 }
 
@@ -35,7 +46,10 @@ func (f FontId) UnloadFont() {
 }
 
 func (f FontId) SymbolArea(symbol rune, lineHeight float32) (offsetX, offsetY, width, height float32) {
-	var font = internal.Fonts[uint8(f)]
+	var font, has = internal.Fonts[uint8(f)]
+	if !has {
+		font = internal.Fonts[0]
+	}
 	var g = font.Chars[symbol]
 	var x, y = g.PlaneBounds.Left * lineHeight, g.PlaneBounds.Top * lineHeight
 	var w, h = (g.PlaneBounds.Right - g.PlaneBounds.Left) * lineHeight, (g.PlaneBounds.Top - g.PlaneBounds.Bottom) * lineHeight

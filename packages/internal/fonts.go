@@ -53,10 +53,7 @@ type Glyph struct {
 var Fonts = make(map[uint8]Font) // 0 = default
 var FontNextId uint8
 
-func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) uint8 {
-	if !isDefault {
-		FontNextId++
-	}
+func LoadFont(fontData *FontJSON, imageId int32) uint8 {
 	var id = FontNextId
 	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph),
 		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender,
@@ -76,5 +73,14 @@ func LoadFont(fontData *FontJSON, imageId int32, isDefault bool) uint8 {
 	font.Chars[' '] = space
 
 	Fonts[id] = font
+	FontNextId++
 	return id
 }
+
+// private ========================================================
+
+//go:embed font.json.gz
+var defaultFont []byte
+
+//go:embed font.png
+var defaultFontAtlas []byte

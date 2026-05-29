@@ -63,9 +63,6 @@ func (i ImageId) SetSmoothness(smooth bool) {
 	}
 }
 func (i ImageId) CropArea() (x, y, width, height float32) {
-	var img, has = internal.Images[int32(i)]
-	if i == 0 || !has {
-		return 0, 0, 0, 0
-	}
+	var img = internal.Images[int32(i)]
 	return img.CropX, img.CropY, img.CropWidth, img.CropHeight
 }
