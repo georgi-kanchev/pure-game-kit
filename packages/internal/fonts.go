@@ -57,8 +57,8 @@ const Crossout, Underline = '\uE000', '\uE001'
 func LoadFont(fontData *FontJSON, imageId int32) uint8 {
 	var id = FontNextId
 	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph),
-		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender, LineHeight: fontData.Metrics.LineHeight,
-		EmSize: fontData.Metrics.EmSize, Size: fontData.Atlas.Size,
+		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender,
+		LineHeight: fontData.Metrics.LineHeight, EmSize: fontData.Metrics.EmSize, Size: fontData.Atlas.Size,
 	}
 
 	for _, glyph := range fontData.Glyphs {
@@ -67,6 +67,22 @@ func LoadFont(fontData *FontJSON, imageId int32) uint8 {
 	}
 	for _, kern := range fontData.Kernings {
 		font.Chars[kern.Unicode1].Kernings[kern.Unicode2] = kern.Advance
+	}
+
+	var dash = font.Chars['-']
+	if dash.Unicode != 0 {
+		var center = (dash.AtlasBounds.Left + dash.AtlasBounds.Right) / 2
+		dash.Unicode = Underline
+		dash.AtlasBounds.Left, dash.AtlasBounds.Right = center-1, center+1
+		font.Chars[Crossout] = dash
+	}
+
+	var underscore = font.Chars['_']
+	if underscore.Unicode != 0 {
+		var center = (underscore.AtlasBounds.Left + underscore.AtlasBounds.Right) / 2
+		underscore.Unicode = Underline
+		underscore.AtlasBounds.Left, underscore.AtlasBounds.Right = center-1, center+1
+		font.Chars[Underline] = underscore
 	}
 
 	var space = font.Chars[' ']

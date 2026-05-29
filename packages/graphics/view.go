@@ -225,22 +225,27 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			var kerning, _ = prevGlyph.Kernings[r]
 			x += kerning * eff.TextLineHeight
 
-			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin)
-			if eff.TextUnderline {
-				var underline = fontData.Chars['_']
-				var usrc, udst = getGlyphSrcDst(o, '_', underline, x, y, cos, sin)
+			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
+			var queue = func(specialRune rune) {
+				var spec = fontData.Chars[specialRune]
+				var usrc, udst = getGlyphSrcDst(o, specialRune, spec, x, y, cos, sin, dst.Width)
 				var prev = eff.FillColor
 				eff.FillColor = eff.TextColor
+				if dst != (rl.Rectangle{}) {
+					udst.Width = dst.Width
+				}
 				internal.Queue(atlasTex, usrc, udst, o.Angle, 0, mask, eff, internal.KindText)
 				eff.FillColor = prev
 			}
-			if r == ' ' {
-				x += glyph.Advance * eff.TextLineHeight
-				prevGlyph = glyph
-				continue
+			if r != ' ' {
+				internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
 			}
-
-			internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
+			if eff.TextUnderline {
+				queue(internal.Underline)
+			}
+			if eff.TextCrossout {
+				queue(internal.Crossout)
+			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
 			prevGlyph = glyph
 		}
@@ -249,8 +254,11 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	}
 }
 
-func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin float32) (src, dst rl.Rectangle) {
+func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
 	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
+	if newWidth != 0 {
+		dstW = newWidth
+	}
 	var atlas, dstX, dstY = glyph.AtlasBounds, x + offsetX, y + offsetY
 	var srcX, srcY, srcW, srcH = atlas.Left, atlas.Top, atlas.Right - atlas.Left, atlas.Bottom - atlas.Top
 	var left, top, right, bot = o.X - o.Width/2, o.Y - o.Height/2, o.X + o.Width/2, o.Y + o.Height/2

@@ -13,12 +13,14 @@ func main() {
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var textbox = graphics.NewTextbox(-200, 0, 2000, 1500, font, "jjjgy_")
+	var textbox = graphics.NewTextbox(-200, 0, 2000, 1500, font, "((")
 	textbox.Effects.FillColor = palette.DarkGray
 	textbox.Effects.TextLineHeight = 50
 	textbox.Effects.TextBackColor = palette.White
 	textbox.Effects.TextAlignY = 0
+	// textbox.Effects.TextCrossout = true
 	textbox.Effects.TextUnderline = true
+	textbox.Angle = 5
 
 	window.SetTargetFPS(60)
 
