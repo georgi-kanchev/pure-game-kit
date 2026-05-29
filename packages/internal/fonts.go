@@ -8,7 +8,6 @@ type Font struct {
 	AtlasId int32 // see assets.ImageId
 	Chars   map[rune]Glyph
 
-	// Font-wide metrics from msdf-atlas-gen (Y-down: ascender < 0, descender > 0).
 	Ascender, Descender, LineHeight, EmSize, Size float32
 }
 type FontJSON struct {

@@ -3,7 +3,6 @@ package main
 import (
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
-	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/window"
 )
 
@@ -12,7 +11,7 @@ func main() {
 	var view = graphics.NewView(1)
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var textbox = graphics.NewTextbox(-200, 0, 2000, 1500, 0)
+	var textbox = graphics.NewTextbox(-200, 0, 2000, 1500, 0, "hello -_")
 	textbox.Effects.FillColor = palette.DarkGray
 	textbox.Effects.TextLineHeight = 50
 	textbox.Effects.TextBackColor = palette.Red
@@ -21,7 +20,7 @@ func main() {
 	window.SetTargetFPS(60)
 
 	for window.KeepOpen() {
-		textbox.Text = debug.MemoryUsage()
+		// textbox.Text = debug.MemoryUsage()
 		var x, _ = view.MousePosition()
 		textbox.Effects.TextLineHeight = 70 + x/10
 
