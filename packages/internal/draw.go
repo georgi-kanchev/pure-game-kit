@@ -49,7 +49,9 @@ type Effects struct {
 
 	TextAlignX, TextAlignY                     float32 // Ranged 0..1
 	TextLineHeight, TextSymbolGap, TextLineGap float32
-	TextWordWrap, TextUnderline, TextCrossout  bool
+	TextWordWrap                               bool
+
+	TextUnderline, TextCrossout bool
 	TextWeight, TextShadowWeight,
 	TextShadowOffsetX, TextShadowOffsetY int8
 	TextShadowBlur             uint8
