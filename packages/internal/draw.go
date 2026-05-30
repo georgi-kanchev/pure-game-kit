@@ -52,8 +52,8 @@ type Effects struct {
 	TextWordWrap, TextUnderline, TextCrossout  bool
 	TextWeight, TextShadowWeight,
 	TextShadowOffsetX, TextShadowOffsetY int8
-	TextShadowBlur                            uint8
-	TextColor, TextBackColor, TextShadowColor uint
+	TextShadowBlur             uint8
+	TextColor, TextShadowColor uint
 }
 
 var Shader rl.Shader

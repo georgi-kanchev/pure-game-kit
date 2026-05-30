@@ -196,14 +196,14 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var scale = eff.TextLineHeight / 255
 	var gapX, gapY = eff.TextSymbolGap * scale, eff.TextLineGap * scale
 	var fontData, has = internal.Fonts[uint8(o.TextFontId)]
-	if !has {
-		fontData = internal.Fonts[0] // fallback
+	if !has { // fallback
+		fontData = internal.Fonts[0]
 	}
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
 	var fullLineHeight = eff.TextLineHeight * fontData.LineHeight
-	lines = lines[:0]
 	var height float32
+	lines = lines[:0]
 	for i := 0; i < len(o.Text); {
 		var end, width = o.lineEndAndWidth(i)
 		lines = append(lines, line{i, end, width})
@@ -226,25 +226,16 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			x += kerning * eff.TextLineHeight
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
-			var queue = func(specialRune rune) {
-				var spec = fontData.Chars[specialRune]
-				var usrc, udst = getGlyphSrcDst(o, specialRune, spec, x, y, cos, sin, dst.Width)
-				var prev = eff.FillColor
-				eff.FillColor = eff.TextColor
-				if dst != (rl.Rectangle{}) {
-					udst.Width = dst.Width
-				}
-				internal.Queue(atlasTex, usrc, udst, o.Angle, 0, mask, eff, internal.KindText)
-				eff.FillColor = prev
-			}
-			if r != ' ' {
+			if r != ' ' && r != '\n' {
 				internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
 			}
 			if eff.TextUnderline {
-				queue(internal.Underline)
+				var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
+				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
 			}
 			if eff.TextCrossout {
-				queue(internal.Crossout)
+				var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
+				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
 			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
 			prevGlyph = glyph
