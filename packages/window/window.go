@@ -60,7 +60,7 @@ func KeepOpen() bool {
 	internal.CacheInput()
 
 	internal.ResetBatches()
-	return true
+	return !rl.WindowShouldClose()
 }
 func Close() {
 	rl.CloseWindow()
