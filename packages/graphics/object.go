@@ -23,6 +23,7 @@ type Object struct {
 
 	Text       string
 	TextFontId assets.FontId
+	textBatch  *internal.Batch
 
 	// tilemap ========================================================
 
