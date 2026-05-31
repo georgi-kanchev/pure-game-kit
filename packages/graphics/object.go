@@ -21,9 +21,9 @@ type Object struct {
 
 	// text ===========================================================
 
-	Text       string
-	TextFontId assets.FontId
-	textBatch  *internal.Batch
+	Text        string
+	TextFontId  assets.FontId
+	textBatches []*internal.Batch
 
 	// tilemap ========================================================
 
