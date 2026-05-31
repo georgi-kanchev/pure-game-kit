@@ -9,16 +9,16 @@ import (
 )
 
 func main() {
-	window.Create("game", false, false)
+	window.Create("game", false, true)
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
-	var textbox = graphics.NewTextbox(-200, 0, 2000, 1500, font, "((")
+	var textbox = graphics.NewTextbox(-200, 0, 1500, 800, font, "((")
 	textbox.Effects.FillColor = palette.DarkGray
 	textbox.Effects.TextUnderline = true
 	textbox.Angle = 5
 
-	window.SetTargetFPS(60)
+	// window.SetTargetFPS(60)
 
 	for window.KeepOpen() {
 		textbox.Text = debug.MemoryUsage()
