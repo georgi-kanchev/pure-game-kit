@@ -154,7 +154,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 		var textBatches []*internal.Batch
 		var prevImageId = o.ImageId
-		if o.Text != "" && o.textBatchesDirty {
+		if o.Text != "" && o.textBatches == nil {
 			textBatches = make([]*internal.Batch, 0)
 			if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
 				o.ImageId = assets.ImageId(o.TextFontId)

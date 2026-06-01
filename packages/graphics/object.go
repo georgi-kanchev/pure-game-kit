@@ -24,8 +24,7 @@ type Object struct {
 	Text       string
 	TextFontId assets.FontId
 
-	textBatches      []*internal.Batch
-	textBatchesDirty bool
+	textBatches []*internal.Batch
 
 	// tilemap ========================================================
 
