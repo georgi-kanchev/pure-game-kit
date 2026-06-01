@@ -13,9 +13,10 @@ import (
 
 type Area struct{ X, Y, Width, Height float32 }
 type Batch struct {
-	mesh                 *rl.Mesh
-	meshUploaded, isText bool
-	material             rl.Material
+	mesh     *rl.Mesh
+	material rl.Material
+	meshUploaded,
+	isText, IsTextDirty bool
 
 	vertCount, indexCount int32
 
@@ -63,9 +64,11 @@ var ShaderLoc int32 // uniform location, all properties are packed in one unifor
 var ShaderTileDataLoc int32
 var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
-var DefaultEffects = Effects{BorderColor: palette.White, Tint: palette.White,
+var DefaultEffects = Effects{
+	BorderColor: palette.White, Tint: palette.White,
 	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 30, TextShadowOffsetY: 30,
-	TextLineHeight: 40, TextWordWrap: true}
+	TextLineHeight: 40, TextWordWrap: true,
+}
 
 var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; positive = full images
 var NextImageId int16
@@ -192,20 +195,23 @@ func CloseBatch() {
 }
 
 func Draw() {
-	for _, batch := range ReadyBatches {
-		if !batch.meshUploaded {
-			rl.UploadMesh(batch.mesh, true)
-			batch.meshUploaded = true
+	for _, b := range ReadyBatches {
+		if !b.meshUploaded {
+			rl.UploadMesh(b.mesh, true)
+			b.meshUploaded = true
 		}
-		rl.UpdateMeshBuffer(*batch.mesh, 0, batch.verts[:batch.vertCount*12], 0)
-		rl.UpdateMeshBuffer(*batch.mesh, 1, batch.texCoords[:batch.vertCount*8], 0)
-		rl.UpdateMeshBuffer(*batch.mesh, 2, batch.normals[:batch.vertCount*12], 0)
-		rl.UpdateMeshBuffer(*batch.mesh, 3, batch.cols[:batch.vertCount*4], 0)
-		rl.UpdateMeshBuffer(*batch.mesh, 4, batch.tangents[:batch.vertCount*16], 0)
-		rl.UpdateMeshBuffer(*batch.mesh, 5, batch.tex2s[:batch.vertCount*8], 0)
-		rl.UpdateMeshBuffer(*batch.mesh, 6, batch.indexes[:batch.indexCount*2], 0)
-		batch.mesh.TriangleCount = batch.indexCount / 3
-		rl.DrawMesh(*batch.mesh, batch.material, DefaultMatrix)
+		if !b.isText || (b.isText && b.IsTextDirty) {
+			b.IsTextDirty = false
+			rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 2, b.normals[:b.vertCount*12], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents[:b.vertCount*16], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s[:b.vertCount*8], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
+			b.mesh.TriangleCount = b.indexCount / 3
+		}
+		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
 	}
 }
 

@@ -152,15 +152,17 @@ func (v *View) DrawObjects(objects ...*Object) {
 			continue
 		}
 
-		if o.textBatches != nil { // use cache if available
+		if o.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
 			internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
 			continue
 		}
 
 		var prevImageId = o.ImageId
 		if o.Text != "" {
-			internal.IsTextMode = true
-			internal.CurrentTextBatches = make([]*internal.Batch, 0)
+			if o.TextBatch {
+				internal.IsTextMode = true
+				internal.CurrentTextBatches = make([]*internal.Batch, 0)
+			}
 			if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
 				o.ImageId = assets.ImageId(o.TextFontId)
 			}
@@ -186,10 +188,15 @@ func (v *View) DrawObjects(objects ...*Object) {
 
 		if o.Text != "" {
 			v.queueText(o, mask)
-			internal.CloseBatch()
-			o.textBatches = internal.CurrentTextBatches
-			internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
-			internal.IsTextMode = false
+			if o.TextBatch {
+				internal.CloseBatch()
+				o.textBatches = internal.CurrentTextBatches
+				internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentTextBatches...)
+				internal.IsTextMode = false
+				for _, b := range internal.CurrentTextBatches {
+					b.IsTextDirty = true
+				}
+			}
 		}
 		o.ImageId = prevImageId
 	}

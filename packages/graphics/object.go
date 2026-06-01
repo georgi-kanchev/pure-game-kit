@@ -17,12 +17,13 @@ type Object struct {
 	// image ==========================================================
 
 	ImageId   assets.ImageId
-	ImageCrop Area // Zero value = original asset image (or crop)
+	ImageCrop Area // Zero value = original asset image (or asset crop)
 
 	// text ===========================================================
 
 	Text        string
 	TextFontId  assets.FontId
+	TextBatch   bool // Caches the text visuals across frames. Useful for huge static text that changes rarely.
 	textBatches []*internal.Batch
 
 	// tilemap ========================================================
@@ -149,7 +150,8 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 
 //=================================================================
 
-func (o *Object) TextRecalculate() {
+// Works only when TextIsBatched is true. Needs to be called when the textbox visuals require a change.
+func (o *Object) TextUpdateBatch() {
 	o.textBatches = nil
 }
 
