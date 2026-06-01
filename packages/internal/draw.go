@@ -77,7 +77,7 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8, textBatches []*Batch) {
+func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8, textBatches *[]*Batch) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -171,15 +171,25 @@ func ResetBatches() {
 		ActiveBatch = nil
 	}
 	for _, rb := range ReadyBatches {
-		BatchPool = append(BatchPool, rb)
+		if !rb.isText { // text batches live on the Object, never return to pool
+			BatchPool = append(BatchPool, rb)
+		}
 	}
 	ReadyBatches = ReadyBatches[:0]
 }
-func CloseBatch() {
+func CloseBatch(textBatches *[]*Batch) {
 	if ActiveBatch != nil && ActiveBatch.vertCount > 0 {
-		ReadyBatches = append(ReadyBatches, ActiveBatch)
+		if textBatches != nil {
+			ActiveBatch.isText = true
+			*textBatches = append(*textBatches, ActiveBatch)
+		} else {
+			ReadyBatches = append(ReadyBatches, ActiveBatch)
+		}
 		ActiveBatch = nil
 	}
+}
+func QueueBatches(batches []*Batch) {
+	ReadyBatches = append(ReadyBatches, batches...)
 }
 func Draw() {
 	for _, batch := range ReadyBatches {
@@ -240,21 +250,31 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches []*Batch) {
+func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches *[]*Batch) {
+	var isText = textBatches != nil
+
 	if ActiveBatch != nil {
 		var texChanged = ActiveBatch.material.Maps.Texture.ID != tex.ID
 		var outOfSpace = ActiveBatch.vertCount+int32(len(verts)) > ActiveBatch.mesh.VertexCount
 
 		if texChanged || outOfSpace { // do we need to break the batch?
 			if ActiveBatch.vertCount > 0 {
-				ReadyBatches = append(ReadyBatches, ActiveBatch) // push to draw later
+				if isText {
+					ActiveBatch.isText = true
+					*textBatches = append(*textBatches, ActiveBatch)
+				} else {
+					ReadyBatches = append(ReadyBatches, ActiveBatch) // push to draw later
+				}
 			}
 			ActiveBatch = nil // clear active to force a new one
 		}
 	}
 
 	if ActiveBatch == nil {
-		if len(BatchPool) > 0 { // grab a fresh batch if we don't have an active one
+		if isText {
+			ActiveBatch = newBatch() // text batches are never pooled
+			ActiveBatch.isText = true
+		} else if len(BatchPool) > 0 { // grab a fresh batch if we don't have an active one
 			ActiveBatch = BatchPool[len(BatchPool)-1]
 			BatchPool = BatchPool[:len(BatchPool)-1]
 		} else {

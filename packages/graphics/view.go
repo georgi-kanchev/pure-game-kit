@@ -152,10 +152,18 @@ func (v *View) DrawObjects(objects ...*Object) {
 			continue
 		}
 
+		// If object has cached text batches, reuse them directly
+		if o.textBatches != nil {
+			internal.QueueBatches(o.textBatches)
+			continue
+		}
+
 		var textBatches []*internal.Batch
+		var tbPtr *[]*internal.Batch
 		var prevImageId = o.ImageId
-		if o.Text != "" && o.textBatches == nil {
+		if o.Text != "" {
 			textBatches = make([]*internal.Batch, 0)
+			tbPtr = &textBatches
 			if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
 				o.ImageId = assets.ImageId(o.TextFontId)
 			}
@@ -177,10 +185,12 @@ func (v *View) DrawObjects(objects ...*Object) {
 		if o.ImageId != 0 {
 			kind = internal.KindSprite
 		}
-		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind, textBatches)
+		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind, tbPtr)
 
 		if o.Text != "" {
-			v.queueText(o, mask, textBatches)
+			v.queueText(o, mask, tbPtr)
+			internal.CloseBatch(tbPtr)
+			o.textBatches = textBatches
 		}
 		o.ImageId = prevImageId
 	}
@@ -201,7 +211,7 @@ func (v *View) area() (x, y, w, h float32) {
 	}
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
-func (v *View) queueText(o *Object, mask internal.Area, batches []*internal.Batch) {
+func (v *View) queueText(o *Object, mask internal.Area, batches *[]*internal.Batch) {
 	var eff = (*internal.Effects)(&o.Effects)
 	var scale = eff.TextLineHeight / 255
 	var gapX, gapY = eff.TextSymbolGap * scale, eff.TextLineGap * scale

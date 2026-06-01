@@ -21,9 +21,8 @@ type Object struct {
 
 	// text ===========================================================
 
-	Text       string
-	TextFontId assets.FontId
-
+	Text        string
+	TextFontId  assets.FontId
 	textBatches []*internal.Batch
 
 	// tilemap ========================================================
@@ -69,8 +68,7 @@ func NewImage(x, y, scale float32, imageId assets.ImageId) Object {
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
-	return Object{
-		Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: Effects(internal.DefaultEffects)}
+	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: Effects(internal.DefaultEffects)}
 }
 func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
 	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId, Effects: Effects(internal.DefaultEffects)}
@@ -147,6 +145,12 @@ func (o *Object) ContainsPoint(x, y float32) bool {
 }
 func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	return o.PointToGlobal(o.Width*edgeX, o.Height*edgeY)
+}
+
+//=================================================================
+
+func (o *Object) TextRecalculate() {
+	o.textBatches = nil
 }
 
 // private ========================================================

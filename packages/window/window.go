@@ -40,7 +40,7 @@ func KeepOpen() bool {
 		return false
 	}
 
-	internal.CloseBatch()
+	internal.CloseBatch(nil)
 
 	rl.BeginDrawing()
 	rl.EnableDepthTest()
