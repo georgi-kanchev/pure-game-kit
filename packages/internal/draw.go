@@ -71,13 +71,15 @@ var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; p
 var NextImageId int16
 var NextImageCropId int16
 
-var ActiveBatch *Batch    // the batch currently being written to
-var ReadyBatches []*Batch // batches ready to be drawn
-var BatchPool []*Batch    // empty batches ready to be reused
+var ActiveBatch *Batch          // the batch currently being written to
+var ReadyBatches []*Batch       // batches ready to be drawn
+var BatchPool []*Batch          // empty batches ready to be reused
+var CurrentTextBatches []*Batch // text batches being built for the current object, see IsTextMode
+var IsTextMode bool             // when true, batches are accumulated into CurrentTextBatches instead of ReadyBatches
 
 //=================================================================
 
-func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8, textBatches []*Batch) []*Batch {
+func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -142,9 +144,9 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		}
 		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
 		if vCount >= 3 {
-			textBatches = queueVertices(clipResultBuf[:vCount], tex, finalColor, textBatches)
+			queueVertices(clipResultBuf[:vCount], tex, finalColor)
 		}
-		return textBatches
+		return
 	}
 
 	vCount = 4
@@ -162,8 +164,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
 	}
-	textBatches = queueVertices(polygonBuf[:4], tex, finalColor, textBatches)
-	return textBatches
+	queueVertices(polygonBuf[:4], tex, finalColor)
 }
 
 func ResetBatches() {
@@ -178,17 +179,16 @@ func ResetBatches() {
 	}
 	ReadyBatches = ReadyBatches[:0]
 }
-func CloseBatch(textBatches []*Batch) []*Batch {
+func CloseBatch() {
 	if ActiveBatch != nil && ActiveBatch.vertCount > 0 {
-		if textBatches != nil {
+		if IsTextMode {
 			ActiveBatch.isText = true
-			textBatches = append(textBatches, ActiveBatch)
+			CurrentTextBatches = append(CurrentTextBatches, ActiveBatch)
 		} else {
 			ReadyBatches = append(ReadyBatches, ActiveBatch)
 		}
 		ActiveBatch = nil
 	}
-	return textBatches
 }
 
 func Draw() {
@@ -250,18 +250,16 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches []*Batch) []*Batch {
-	var isText = textBatches != nil
-
+func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color) {
 	if ActiveBatch != nil {
 		var texChanged = ActiveBatch.material.Maps.Texture.ID != tex.ID
 		var outOfSpace = ActiveBatch.vertCount+int32(len(verts)) > ActiveBatch.mesh.VertexCount
 
 		if texChanged || outOfSpace { // do we need to break the batch?
 			if ActiveBatch.vertCount > 0 {
-				if isText {
+				if IsTextMode {
 					ActiveBatch.isText = true
-					textBatches = append(textBatches, ActiveBatch)
+					CurrentTextBatches = append(CurrentTextBatches, ActiveBatch)
 				} else {
 					ReadyBatches = append(ReadyBatches, ActiveBatch) // push to draw later
 				}
@@ -271,7 +269,7 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches [
 	}
 
 	if ActiveBatch == nil {
-		if isText {
+		if IsTextMode {
 			ActiveBatch = newBatch() // text batches are never pooled
 			ActiveBatch.isText = true
 		} else if len(BatchPool) > 0 { // grab a fresh batch if we don't have an active one
@@ -317,7 +315,6 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches [
 
 	b.vertCount += count
 	b.indexCount += trisCount * 3
-	return textBatches
 }
 
 func clipPolygonAABB(poly, outBuf, tempBuf []Vertex, mask Area) int32 {

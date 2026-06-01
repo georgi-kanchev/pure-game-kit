@@ -157,10 +157,10 @@ func (v *View) DrawObjects(objects ...*Object) {
 			continue
 		}
 
-		var textBatches []*internal.Batch
 		var prevImageId = o.ImageId
 		if o.Text != "" {
-			textBatches = make([]*internal.Batch, 0)
+			internal.IsTextMode = true
+			internal.CurrentTextBatches = make([]*internal.Batch, 0)
 			if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
 				o.ImageId = assets.ImageId(o.TextFontId)
 			}
@@ -182,13 +182,14 @@ func (v *View) DrawObjects(objects ...*Object) {
 		if o.ImageId != 0 {
 			kind = internal.KindSprite
 		}
-		textBatches = internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind, textBatches)
+		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind)
 
 		if o.Text != "" {
-			textBatches = v.queueText(o, mask, textBatches)
-			textBatches = internal.CloseBatch(textBatches)
-			o.textBatches = textBatches
+			v.queueText(o, mask)
+			internal.CloseBatch()
+			o.textBatches = internal.CurrentTextBatches
 			internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
+			internal.IsTextMode = false
 		}
 		o.ImageId = prevImageId
 	}
@@ -209,7 +210,7 @@ func (v *View) area() (x, y, w, h float32) {
 	}
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
-func (v *View) queueText(o *Object, mask internal.Area, batches []*internal.Batch) []*internal.Batch {
+func (v *View) queueText(o *Object, mask internal.Area) {
 	var eff = (*internal.Effects)(&o.Effects)
 	var scale = eff.TextLineHeight / 255
 	var gapX, gapY = eff.TextSymbolGap * scale, eff.TextLineGap * scale
@@ -245,15 +246,15 @@ func (v *View) queueText(o *Object, mask internal.Area, batches []*internal.Batc
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
 			if r != ' ' && r != '\n' {
-				batches = internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText, batches)
+				internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
 			}
 			if eff.TextUnderline {
 				var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
-				batches = internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, batches)
+				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
 			}
 			if eff.TextCrossout {
 				var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
-				batches = internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, batches)
+				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
 			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
 			prevGlyph = glyph
@@ -261,7 +262,6 @@ func (v *View) queueText(o *Object, mask internal.Area, batches []*internal.Batc
 
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
-	return batches
 }
 
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
