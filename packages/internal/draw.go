@@ -13,9 +13,9 @@ import (
 
 type Area struct{ X, Y, Width, Height float32 }
 type Batch struct {
-	mesh         *rl.Mesh
-	meshUploaded bool
-	material     rl.Material
+	mesh                 *rl.Mesh
+	meshUploaded, isText bool
+	material             rl.Material
 
 	vertCount, indexCount int32
 
@@ -77,7 +77,7 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
+func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8, textBatches []*Batch) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -142,7 +142,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		}
 		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
 		if vCount >= 3 {
-			queueVertices(clipResultBuf[:vCount], vCount, tex, finalColor)
+			queueVertices(clipResultBuf[:vCount], tex, finalColor, textBatches)
 		}
 		return
 	}
@@ -162,7 +162,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
 	}
-	queueVertices(polygonBuf[:4], vCount, tex, finalColor)
+	queueVertices(polygonBuf[:4], tex, finalColor, textBatches)
 }
 
 func ResetBatches() {
@@ -240,10 +240,10 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func queueVertices(verts []Vertex, vCount int32, tex rl.Texture2D, col rl.Color) {
+func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches []*Batch) {
 	if ActiveBatch != nil {
 		var texChanged = ActiveBatch.material.Maps.Texture.ID != tex.ID
-		var outOfSpace = ActiveBatch.vertCount+vCount > ActiveBatch.mesh.VertexCount
+		var outOfSpace = ActiveBatch.vertCount+int32(len(verts)) > ActiveBatch.mesh.VertexCount
 
 		if texChanged || outOfSpace { // do we need to break the batch?
 			if ActiveBatch.vertCount > 0 {
@@ -267,7 +267,6 @@ func queueVertices(verts []Vertex, vCount int32, tex rl.Texture2D, col rl.Color)
 		ActiveBatch.material.Shader = Shader
 	}
 
-	// write data to the active batch
 	var b = ActiveBatch
 	var count = int32(len(verts))
 	var v_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.verts[b.vertCount*12])), count*3)

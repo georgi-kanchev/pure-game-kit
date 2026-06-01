@@ -12,7 +12,6 @@ func main() {
 	window.Create("game", false, true)
 	var view = graphics.NewView(1)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
-	// var font = assets.LoadFont("tools/msdf-atlas-gen/font.png", "tools/msdf-atlas-gen/font.json")
 	var textbox = graphics.NewTextbox(-200, 0, 1500, 800, font, "((")
 	textbox.Effects.FillColor = palette.DarkGray
 	// textbox.Effects.TextUnderline = true

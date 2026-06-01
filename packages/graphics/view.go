@@ -1,6 +1,7 @@
 package graphics
 
 import (
+	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
@@ -151,6 +152,15 @@ func (v *View) DrawObjects(objects ...*Object) {
 			continue
 		}
 
+		var textBatches []*internal.Batch
+		var prevImageId = o.ImageId
+		if o.Text != "" && o.textBatchesDirty {
+			textBatches = make([]*internal.Batch, 0)
+			if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
+				o.ImageId = assets.ImageId(o.TextFontId)
+			}
+		}
+
 		var tex = internal.Images[int32(o.ImageId)]
 		var crop = o.ImageCrop
 		if crop == (Area{}) {
@@ -165,13 +175,14 @@ func (v *View) DrawObjects(objects ...*Object) {
 		}
 		var kind uint8
 		if o.ImageId != 0 {
-			kind = internal.KindSprite // sprite
+			kind = internal.KindSprite
 		}
-		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind)
+		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind, textBatches)
 
 		if o.Text != "" {
-			v.queueText(o, mask)
+			v.queueText(o, mask, textBatches)
 		}
+		o.ImageId = prevImageId
 	}
 }
 
@@ -190,8 +201,7 @@ func (v *View) area() (x, y, w, h float32) {
 	}
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
-
-func (v *View) queueText(o *Object, mask internal.Area) {
+func (v *View) queueText(o *Object, mask internal.Area, batches []*internal.Batch) {
 	var eff = (*internal.Effects)(&o.Effects)
 	var scale = eff.TextLineHeight / 255
 	var gapX, gapY = eff.TextSymbolGap * scale, eff.TextLineGap * scale
@@ -227,15 +237,15 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
 			if r != ' ' && r != '\n' {
-				internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
+				internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText, batches)
 			}
 			if eff.TextUnderline {
 				var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
-				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
+				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, batches)
 			}
 			if eff.TextCrossout {
 				var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
-				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
+				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, batches)
 			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
 			prevGlyph = glyph
