@@ -152,9 +152,8 @@ func (v *View) DrawObjects(objects ...*Object) {
 			continue
 		}
 
-		// If object has cached text batches, reuse them directly
-		if o.textBatches != nil {
-			internal.QueueBatches(o.textBatches)
+		if o.textBatches != nil { // use cache if available
+			internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
 			continue
 		}
 
@@ -191,6 +190,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 			v.queueText(o, mask, tbPtr)
 			internal.CloseBatch(tbPtr)
 			o.textBatches = textBatches
+			internal.ReadyBatches = append(internal.ReadyBatches, textBatches...)
 		}
 		o.ImageId = prevImageId
 	}

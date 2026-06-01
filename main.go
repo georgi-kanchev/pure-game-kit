@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
 )
@@ -28,9 +30,9 @@ func main() {
 		var x, _ = view.MousePosition()
 		textbox.Effects.TextLineHeight = 70 + x/10
 
-		// if keyboard.IsKeyJustPressed(key.A) {
-		textbox.TextRecalculate()
-		// }
+		if keyboard.IsKeyJustPressed(key.A) {
+			textbox.TextRecalculate()
+		}
 
 		view.DrawObjects(&textbox)
 	}

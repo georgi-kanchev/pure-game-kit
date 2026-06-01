@@ -188,9 +188,7 @@ func CloseBatch(textBatches *[]*Batch) {
 		ActiveBatch = nil
 	}
 }
-func QueueBatches(batches []*Batch) {
-	ReadyBatches = append(ReadyBatches, batches...)
-}
+
 func Draw() {
 	for _, batch := range ReadyBatches {
 		if !batch.meshUploaded {
