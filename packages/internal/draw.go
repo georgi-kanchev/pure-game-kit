@@ -77,7 +77,7 @@ var BatchPool []*Batch    // empty batches ready to be reused
 
 //=================================================================
 
-func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8, textBatches *[]*Batch) {
+func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8, textBatches []*Batch) []*Batch {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -142,9 +142,9 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		}
 		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
 		if vCount >= 3 {
-			queueVertices(clipResultBuf[:vCount], tex, finalColor, textBatches)
+			textBatches = queueVertices(clipResultBuf[:vCount], tex, finalColor, textBatches)
 		}
-		return
+		return textBatches
 	}
 
 	vCount = 4
@@ -162,7 +162,8 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
 	}
-	queueVertices(polygonBuf[:4], tex, finalColor, textBatches)
+	textBatches = queueVertices(polygonBuf[:4], tex, finalColor, textBatches)
+	return textBatches
 }
 
 func ResetBatches() {
@@ -177,16 +178,17 @@ func ResetBatches() {
 	}
 	ReadyBatches = ReadyBatches[:0]
 }
-func CloseBatch(textBatches *[]*Batch) {
+func CloseBatch(textBatches []*Batch) []*Batch {
 	if ActiveBatch != nil && ActiveBatch.vertCount > 0 {
 		if textBatches != nil {
 			ActiveBatch.isText = true
-			*textBatches = append(*textBatches, ActiveBatch)
+			textBatches = append(textBatches, ActiveBatch)
 		} else {
 			ReadyBatches = append(ReadyBatches, ActiveBatch)
 		}
 		ActiveBatch = nil
 	}
+	return textBatches
 }
 
 func Draw() {
@@ -248,7 +250,7 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches *[]*Batch) {
+func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches []*Batch) []*Batch {
 	var isText = textBatches != nil
 
 	if ActiveBatch != nil {
@@ -259,7 +261,7 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches *
 			if ActiveBatch.vertCount > 0 {
 				if isText {
 					ActiveBatch.isText = true
-					*textBatches = append(*textBatches, ActiveBatch)
+					textBatches = append(textBatches, ActiveBatch)
 				} else {
 					ReadyBatches = append(ReadyBatches, ActiveBatch) // push to draw later
 				}
@@ -315,6 +317,7 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, textBatches *
 
 	b.vertCount += count
 	b.indexCount += trisCount * 3
+	return textBatches
 }
 
 func clipPolygonAABB(poly, outBuf, tempBuf []Vertex, mask Area) int32 {
