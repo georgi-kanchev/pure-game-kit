@@ -66,8 +66,12 @@ func (f FontId) EmbedImage(symbol rune, imageId ImageId) {
 	if !has {
 		font = internal.Fonts[0]
 	}
+	var img = internal.Images[int32(imageId)]
+	var aspect = img.CropWidth / img.CropHeight
 	var g = font.Chars[symbol]
 	g.EmbededImageId = int32(imageId)
-	g.Advance = 1
+	g.Advance = aspect
+	g.PlaneBounds = internal.Bounds{Left: 0, Top: font.Ascender, Right: aspect, Bottom: font.Ascender + 1}
+	g.AtlasBounds = internal.Bounds{Left: img.CropX, Top: img.CropY, Right: img.CropX + img.CropWidth, Bottom: img.CropY + img.CropHeight}
 	font.Chars[symbol] = g
 }

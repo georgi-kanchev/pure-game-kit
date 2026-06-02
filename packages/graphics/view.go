@@ -277,7 +277,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 				}
 				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
 				eff.FillColor, eff.OutlineColor = 0, 0
-				v.queueShapeOrSprite(dst.X+dst.Width/2, dst.Y+dst.Height/2, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, Area{}, eff, mask)
+				v.queueShapeOrSprite(dst.X+dst.Width/2, dst.Y+dst.Height/2, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, NewArea(src.X, src.Y, src.Width, src.Height), eff, mask)
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
 			} else {
 				if r != ' ' && r != '\n' {
