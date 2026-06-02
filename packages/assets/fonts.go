@@ -60,3 +60,14 @@ func (f FontId) SymbolArea(symbol rune, lineHeight float32) (offsetX, offsetY, w
 
 	return x, y, w, h
 }
+
+func (f FontId) EmbedImage(symbol rune, imageId ImageId) {
+	var font, has = internal.Fonts[uint8(f)]
+	if !has {
+		font = internal.Fonts[0]
+	}
+	var g = font.Chars[symbol]
+	g.EmbededImageId = int32(imageId)
+	g.Advance = 1
+	font.Chars[symbol] = g
+}

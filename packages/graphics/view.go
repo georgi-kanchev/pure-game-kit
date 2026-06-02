@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -168,23 +169,14 @@ func (v *View) DrawObjects(objects ...*Object) {
 			}
 		}
 
-		var tex = internal.Images[int32(o.ImageId)]
-		var crop = o.ImageCrop
-		if crop == (Area{}) {
-			crop = NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
-		}
-		var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
-		var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
 		var mask = internal.Area(o.Mask)
 		if o.Mask != (Area{}) {
 			mask.X += float32(internal.WindowWidth) / 2
 			mask.Y += float32(internal.WindowHeight) / 2
 		}
-		var kind uint8
-		if o.ImageId != 0 {
-			kind = internal.KindSprite
-		}
-		internal.Queue(tex.Texture, src, dst, o.Angle, o.Roundness, mask, (*internal.Effects)(&o.Effects), kind)
+
+		var eff = (*internal.Effects)(&o.Effects)
+		v.queueShapeOrSprite(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
 
 		if o.Text != "" {
 			v.queueText(o, mask)
@@ -202,6 +194,20 @@ func (v *View) DrawObjects(objects ...*Object) {
 	}
 }
 
+func (v *View) queueShapeOrSprite(x, y, w, h, a, r float32, imageId int32, crop Area, eff *internal.Effects, mask internal.Area) {
+	var tex = internal.Images[imageId]
+	if crop == (Area{}) {
+		crop = NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+	}
+	var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
+	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
+	var kind uint8
+	if imageId != 0 {
+		kind = internal.KindSprite
+	}
+	internal.Queue(tex.Texture, src, dst, a, r, mask, eff, kind)
+}
+
 // private ========================================================
 
 type line struct {
@@ -211,12 +217,19 @@ type line struct {
 
 var lines []line
 
+var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': palette.Red, '🟧': palette.Orange,
+	'🟨': palette.Yellow, '🟩': palette.Green, '🟦': palette.Blue, '🟪': palette.Purple, '🟫': palette.Brown}
+var outlineColors = map[rune]uint{'⚪': palette.White, '⚫': palette.Black, '🔴': palette.Red, '🟠': palette.Orange,
+	'🟡': palette.Yellow, '🟢': palette.Green, '🔵': palette.Blue, '🟣': palette.Purple, '🟤': palette.Brown}
+var weights = map[rune]int8{'⏬': -100, '🔽': -50, '🔁': 0, '🔼': 50, '⏫': 100}
+
 func (v *View) area() (x, y, w, h float32) {
 	if v.Area == (Area{}) {
 		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
 	}
 	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
+
 func (v *View) queueText(o *Object, mask internal.Area) {
 	var eff = (*internal.Effects)(&o.Effects)
 	var scale = eff.TextLineHeight / 255
@@ -247,21 +260,32 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		var prevGlyph internal.Glyph
 
 		for _, r := range o.Text[ln.start:ln.end] {
+			if embedEffect(r, eff) {
+				continue // tag symbol applies to effects and gets skipped
+			}
+
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
 			x += kerning * eff.TextLineHeight
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
-			if r != ' ' && r != '\n' {
-				internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
-			}
-			if eff.TextUnderline {
-				var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
-				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
-			}
-			if eff.TextCrossout {
-				var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
-				internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
+			if glyph.EmbededImageId != 0 {
+				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
+				eff.FillColor, eff.OutlineColor = 0, 0
+				v.queueShapeOrSprite(dst.X, dst.Y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, Area{}, eff, mask)
+				eff.FillColor, eff.OutlineColor = prevFill, prevOut
+			} else {
+				if r != ' ' && r != '\n' {
+					internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
+				}
+				if eff.TextUnderline {
+					var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
+					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
+				}
+				if eff.TextCrossout {
+					var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
+					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
+				}
 			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
 			prevGlyph = glyph
@@ -270,7 +294,6 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
 }
-
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
 	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
 	if newWidth != 0 {
@@ -291,4 +314,30 @@ func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, new
 	dstW, dstH = clippedW, -clippedH
 	dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
 	return rl.NewRectangle(srcX, srcY, srcW, srcH), rl.NewRectangle(dstX, dstY, dstW, dstH)
+}
+func embedEffect(r rune, effect *internal.Effects) (success bool) {
+	if r == '✅' {
+		effect.TextUnderline = !effect.TextUnderline
+		return true
+	}
+	if r == '❎' {
+		effect.TextCrossout = !effect.TextCrossout
+		return true
+	}
+
+	var color = colors[r]
+	var outlineColor = outlineColors[r]
+	var weight, hasWeights = weights[r]
+	if color != 0 {
+		effect.TextColor = color
+		return true
+	} else if outlineColor != 0 {
+		effect.OutlineColor = outlineColor
+		return true
+	} else if hasWeights {
+		effect.TextWeight = weight
+		return true
+	}
+
+	return false
 }

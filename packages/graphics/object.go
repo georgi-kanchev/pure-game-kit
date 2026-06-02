@@ -21,6 +21,13 @@ type Object struct {
 
 	// text ===========================================================
 
+	// Tags for embeded effects:
+	//
+	//	Underline:     ✅ // toggle
+	//	Crossout:      ❎ // toggle
+	//	Weight:        ⏬🔽🔁🔼⏫
+	//	Color:         ⬜⬛🟥🟧🟨🟩🟦🟪🟫
+	//	Outline Color: ⚪⚫🔴🟠🟡🟢🔵🟣🟤
 	Text        string
 	TextFontId  assets.FontId
 	TextBatch   bool // Caches the text visuals across frames. Useful for huge static text that changes rarely.

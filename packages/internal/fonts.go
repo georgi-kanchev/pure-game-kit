@@ -42,11 +42,12 @@ type Bounds struct {
 	Top    float32 `json:"top"`
 }
 type Glyph struct {
-	Unicode     rune    `json:"unicode"`
-	Advance     float32 `json:"advance"`
-	PlaneBounds Bounds  `json:"planeBounds"`
-	AtlasBounds Bounds  `json:"atlasBounds"`
-	Kernings    map[rune]float32
+	Unicode        rune    `json:"unicode"`
+	Advance        float32 `json:"advance"`
+	PlaneBounds    Bounds  `json:"planeBounds"`
+	AtlasBounds    Bounds  `json:"atlasBounds"`
+	Kernings       map[rune]float32
+	EmbededImageId int32
 }
 
 var Fonts = make(map[uint8]Font) // 0 = default

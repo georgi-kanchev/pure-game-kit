@@ -82,8 +82,8 @@ vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize, float outlineSize) {
 
     return color;
 }
-vec4 compute_silhouette(vec4 color, vec4 fillColor) {
-    color.rgb = mix(color.rgb, fillColor.rgb, fillColor.a);
+vec4 compute_silhouette(vec4 color) {
+    color.rgb = mix(color.rgb, fragData4.rgb, fragData4.a);
     return color;
 }
 vec4 compute_color_adjust(vec4 color, vec4 colorAdjust) {
@@ -244,9 +244,7 @@ void main() {
     float roundness = data2.x;
     float pixelSize = data2.y;
     vec2 blur = data2.zw * 16.0;
-
-    vec4 fillColor = fragData4;
-
+    
     float outlineSize = fragData5.x;
     float borderSize = fragData5.y;
     vec4  borderColor = fragData7;
@@ -288,7 +286,7 @@ void main() {
         
         if (objKind != KIND_SHAPE) {
             color = compute_color_adjust(color, colorAdjust1);
-            color = compute_silhouette(color, fillColor);
+            color = compute_silhouette(color);
         }
         
         finalColor = color;
