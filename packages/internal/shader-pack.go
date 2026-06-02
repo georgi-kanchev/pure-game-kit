@@ -47,11 +47,11 @@ func packV2(borderColor uint) float32 {
 //=================================================================
 
 func packNormalX(gamma, saturation, contrast, brightness int8) float32 {
-	// Quantize int8 [-128,127] to 6-bit [0,63]; 0 → 31 (center, ~old 0.5)
-	var g = uint32((uint16(int16(gamma)+128)*63)/255) << 18      // bits 23-18
-	var s = uint32((uint16(int16(saturation)+128)*63)/255) << 12 // bits 17-12
-	var c = uint32((uint16(int16(contrast)+128)*63)/255) << 6    // bits 11-6
-	var b = uint32((uint16(int16(brightness)+128) * 63) / 255)   // bits 5-0
+	// Quantize int8 [-128,127] to 6-bit [0,63]; 0 → 32 (center, 0.5)
+	var g = uint32((uint16(int16(gamma)+128)*63+127)/255) << 18      // bits 23-18
+	var s = uint32((uint16(int16(saturation)+128)*63+127)/255) << 12 // bits 17-12
+	var c = uint32((uint16(int16(contrast)+128)*63+127)/255) << 6    // bits 11-6
+	var b = uint32((uint16(int16(brightness)+128)*63+127) / 255)     // bits 5-0
 	return pack24(g | s | c | b)
 }
 func packNormalY(roundness float32, pixelSize, blurX, blurY uint8) float32 {
