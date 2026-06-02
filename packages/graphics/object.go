@@ -28,9 +28,12 @@ type Object struct {
 	//	Weight:        ⏬🔽🔁🔼⏫
 	//	Color:         ⬜⬛🟥🟧🟨🟩🟦🟪🟫
 	//	Outline Color: ⚪⚫🔴🟠🟡🟢🔵🟣🟤
-	Text        string
-	TextFontId  assets.FontId
-	TextBatch   bool // Caches the text visuals across frames. Useful for huge static text that changes rarely.
+	Text       string
+	TextFontId assets.FontId
+
+	// Caches the text visuals across frames. Call TextUpdateBatch when visual changes are needed.
+	// Useful for a huge static text that changes rarely.
+	TextBatch   bool
 	textBatches []*internal.Batch
 
 	// tilemap ========================================================
@@ -158,6 +161,7 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 //=================================================================
 
 // Works only when TextIsBatched is true. Needs to be called when the textbox visuals require a change.
+// The update happens upon draw so calling this multiple times per frame is fine.
 func (o *Object) TextUpdateBatch() {
 	o.textBatches = nil
 }
