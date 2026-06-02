@@ -160,8 +160,8 @@ func (v *View) DrawObjects(objects ...*Object) {
 		var prevImageId = o.ImageId
 		if o.Text != "" {
 			if o.TextBatch {
-				internal.IsTextMode = true
-				internal.CurrentTextBatches = make([]*internal.Batch, 0)
+				internal.IsRecording = true
+				internal.CurrentBatchRecord = make([]*internal.Batch, 0)
 			}
 			if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
 				o.ImageId = assets.ImageId(o.TextFontId)
@@ -190,11 +190,11 @@ func (v *View) DrawObjects(objects ...*Object) {
 			v.queueText(o, mask)
 			if o.TextBatch {
 				internal.CloseBatch()
-				o.textBatches = internal.CurrentTextBatches
-				internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentTextBatches...)
-				internal.IsTextMode = false
-				for _, b := range internal.CurrentTextBatches {
-					b.IsTextDirty = true
+				o.textBatches = internal.CurrentBatchRecord
+				internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentBatchRecord...)
+				internal.IsRecording = false
+				for _, b := range internal.CurrentBatchRecord {
+					b.IsMeshDirty = true
 				}
 			}
 		}

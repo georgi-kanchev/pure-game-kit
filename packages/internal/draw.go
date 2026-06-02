@@ -16,7 +16,7 @@ type Batch struct {
 	mesh     *rl.Mesh
 	material rl.Material
 	meshUploaded,
-	isText, IsTextDirty bool
+	isRecord, IsMeshDirty bool
 
 	vertCount, indexCount int32
 
@@ -77,8 +77,8 @@ var NextImageCropId int16
 var ActiveBatch *Batch          // the batch currently being written to
 var ReadyBatches []*Batch       // batches ready to be drawn
 var BatchPool []*Batch          // empty batches ready to be reused
-var CurrentTextBatches []*Batch // text batches being built for the current object, see IsTextMode
-var IsTextMode bool             // when true, batches are accumulated into CurrentTextBatches instead of ReadyBatches
+var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
+var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
 
 //=================================================================
 
@@ -176,7 +176,7 @@ func ResetBatches() {
 		ActiveBatch = nil
 	}
 	for _, rb := range ReadyBatches {
-		if !rb.isText { // text batches live on the Object, never return to pool
+		if !rb.isRecord { // text batches live on the Object, never return to pool
 			BatchPool = append(BatchPool, rb)
 		}
 	}
@@ -184,9 +184,9 @@ func ResetBatches() {
 }
 func CloseBatch() {
 	if ActiveBatch != nil && ActiveBatch.vertCount > 0 {
-		if IsTextMode {
-			ActiveBatch.isText = true
-			CurrentTextBatches = append(CurrentTextBatches, ActiveBatch)
+		if IsRecording {
+			ActiveBatch.isRecord = true
+			CurrentBatchRecord = append(CurrentBatchRecord, ActiveBatch)
 		} else {
 			ReadyBatches = append(ReadyBatches, ActiveBatch)
 		}
@@ -200,8 +200,8 @@ func Draw() {
 			rl.UploadMesh(b.mesh, true)
 			b.meshUploaded = true
 		}
-		if !b.isText || (b.isText && b.IsTextDirty) {
-			b.IsTextDirty = false
+		if !b.isRecord || (b.isRecord && b.IsMeshDirty) {
+			b.IsMeshDirty = false
 			rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
 			rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
 			rl.UpdateMeshBuffer(*b.mesh, 2, b.normals[:b.vertCount*12], 0)
@@ -263,9 +263,9 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color) {
 
 		if texChanged || outOfSpace { // do we need to break the batch?
 			if ActiveBatch.vertCount > 0 {
-				if IsTextMode {
-					ActiveBatch.isText = true
-					CurrentTextBatches = append(CurrentTextBatches, ActiveBatch)
+				if IsRecording {
+					ActiveBatch.isRecord = true
+					CurrentBatchRecord = append(CurrentBatchRecord, ActiveBatch)
 				} else {
 					ReadyBatches = append(ReadyBatches, ActiveBatch) // push to draw later
 				}
@@ -275,9 +275,9 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color) {
 	}
 
 	if ActiveBatch == nil {
-		if IsTextMode {
+		if IsRecording {
 			ActiveBatch = newBatch() // text batches are never pooled
-			ActiveBatch.isText = true
+			ActiveBatch.isRecord = true
 		} else if len(BatchPool) > 0 { // grab a fresh batch if we don't have an active one
 			ActiveBatch = BatchPool[len(BatchPool)-1]
 			BatchPool = BatchPool[:len(BatchPool)-1]

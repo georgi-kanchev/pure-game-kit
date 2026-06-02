@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/input/keyboard"
@@ -26,7 +25,6 @@ func main() {
 	textbox.Text += textbox.Text
 	textbox.Text += textbox.Text
 
-	fmt.Printf("textbox.Text: %v\n", len(textbox.Text))
 	// textbox.Effects.TextLineHeight = 15
 	for window.KeepOpen() {
 		// textbox.Text = debug.MemoryUsage()
@@ -40,27 +38,3 @@ func main() {
 		view.DrawObjects(&textbox)
 	}
 }
-
-// func main() {
-// 	window.Create("game", false, true)
-// 	var view = graphics.NewView(1)
-// 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
-// 	var textboxes []*graphics.Object
-// 	for range 1500 {
-// 		var textbox = graphics.NewTextbox(random.Range[float32](-1500, 1500), random.Range[float32](-700, 700), 200, 80, font, "test")
-// 		textbox.Effects.FillColor = palette.DarkGray
-// 		textboxes = append(textboxes, &textbox)
-// 	}
-
-// 	for window.KeepOpen() {
-// 		// textbox.Text = debug.MemoryUsage()
-// 		// var x, _ = view.MousePosition()
-// 		// textbox.Effects.TextLineHeight = 70 + x/10
-
-// 		// if keyboard.IsKeyJustPressed(key.A) {
-// 		// 	textbox.TextUpdateBatch()
-// 		// }
-
-// 		view.DrawObjects(textboxes...)
-// 	}
-// }
