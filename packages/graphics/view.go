@@ -270,9 +270,14 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
 			if glyph.EmbededImageId != 0 {
+				if dst.Width <= 0 { // fully clipped by the textbox
+					x += glyph.Advance*eff.TextLineHeight + gapX
+					prevGlyph = glyph
+					continue
+				}
 				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
 				eff.FillColor, eff.OutlineColor = 0, 0
-				v.queueShapeOrSprite(dst.X, dst.Y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, Area{}, eff, mask)
+				v.queueShapeOrSprite(dst.X+dst.Width/2, dst.Y+dst.Height/2, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, Area{}, eff, mask)
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
 			} else {
 				if r != ' ' && r != '\n' {
