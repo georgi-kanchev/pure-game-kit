@@ -222,6 +222,7 @@ var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': p
 var outlineColors = map[rune]uint{'⚪': palette.White, '⚫': palette.Black, '🔴': palette.Red, '🟠': palette.Orange,
 	'🟡': palette.Yellow, '🟢': palette.Green, '🔵': palette.Blue, '🟣': palette.Purple, '🟤': palette.Brown}
 var weights = map[rune]int8{'⏬': -100, '🔽': -50, '🔁': 0, '🔼': 50, '⏫': 100}
+var sizes = map[rune]float32{'🔇': 0.5, '🔈': 0.75, '🔉': 1.0, '🔊': 1.25, '📢': 1.5}
 
 func (v *View) area() (x, y, w, h float32) {
 	if v.Area == (Area{}) {
@@ -254,13 +255,14 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		}
 	}
 	var y = o.Y - o.Height/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(o.Height-height)
+	var originalLineHeight = eff.TextLineHeight
 
 	for _, ln := range lines {
 		var x = (o.X - o.Width/2) + eff.TextAlignX*(o.Width-ln.width)
 		var prevGlyph internal.Glyph
 
 		for _, r := range o.Text[ln.start:ln.end] {
-			if embedEffect(r, eff) {
+			if embedEffect(r, eff, originalLineHeight) {
 				continue // tag symbol applies to effects and gets skipped
 			}
 
@@ -276,8 +278,10 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 					continue
 				}
 				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
+				var x, y = dst.X + dst.Width/2, dst.Y + dst.Height/2
+				var area = NewArea(src.X, src.Y, src.Width, src.Height)
 				eff.FillColor, eff.OutlineColor = 0, 0
-				v.queueShapeOrSprite(dst.X+dst.Width/2, dst.Y+dst.Height/2, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, NewArea(src.X, src.Y, src.Width, src.Height), eff, mask)
+				v.queueShapeOrSprite(x, y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, area, eff, mask)
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
 			} else {
 				if r != ' ' && r != '\n' {
@@ -320,7 +324,7 @@ func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, new
 	dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
 	return rl.NewRectangle(srcX, srcY, srcW, srcH), rl.NewRectangle(dstX, dstY, dstW, dstH)
 }
-func embedEffect(r rune, effect *internal.Effects) (success bool) {
+func embedEffect(r rune, effect *internal.Effects, originalLineHeight float32) (success bool) {
 	if r == '✅' {
 		effect.TextUnderline = !effect.TextUnderline
 		return true
@@ -333,6 +337,7 @@ func embedEffect(r rune, effect *internal.Effects) (success bool) {
 	var color = colors[r]
 	var outlineColor = outlineColors[r]
 	var weight, hasWeights = weights[r]
+	var size = sizes[r]
 	if color != 0 {
 		effect.TextColor = color
 		return true
@@ -341,6 +346,9 @@ func embedEffect(r rune, effect *internal.Effects) (success bool) {
 		return true
 	} else if hasWeights {
 		effect.TextWeight = weight
+		return true
+	} else if size != 0 {
+		effect.TextLineHeight = originalLineHeight * size
 		return true
 	}
 

@@ -26,6 +26,7 @@ type Object struct {
 	//	Underline:     ✅ // toggle
 	//	Crossout:      ❎ // toggle
 	//	Weight:        ⏬🔽🔁🔼⏫
+	//	Size:          🔇🔈🔉🔊📢
 	//	Color:         ⬜⬛🟥🟧🟨🟩🟦🟪🟫
 	//	Outline Color: ⚪⚫🔴🟠🟡🟢🔵🟣🟤
 	Text       string
