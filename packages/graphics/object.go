@@ -169,21 +169,26 @@ func (o *Object) TextUpdateBatch() {
 
 // private ========================================================
 
-func (o *Object) lineEndAndWidth(fromIndex int) (endIndex int, width float32) {
+func (o *Object) lineEndAndWidth(fromIndex int, lineHeight float32) (endIndex int, width float32, endLineHeight float32) {
 	if fromIndex >= len(o.Text) {
-		return fromIndex, 0
+		return fromIndex, 0, lineHeight
 	}
 
-	var lineHeight = o.Effects.TextLineHeight
-	var scale = lineHeight / 255
-	var gapX = o.Effects.TextSymbolGap * scale
+	var originalLineHeight = o.Effects.TextLineHeight
+	var gapX = o.Effects.TextSymbolGap * originalLineHeight / 255
 	var font = internal.Fonts[uint8(o.TextFontId)]
 	var x, totalWidth float32
 	var prevGlyph internal.Glyph
 
 	for i, r := range o.Text[fromIndex:] {
 		if r == '\n' {
-			return fromIndex + i, max(totalWidth, x)
+			return fromIndex + i, max(totalWidth, x), lineHeight
+		}
+
+		var sz = sizes[r]
+		if sz != 0 {
+			lineHeight = originalLineHeight * sz
+			continue
 		}
 
 		x += prevGlyph.Kernings[r] * lineHeight
@@ -193,21 +198,27 @@ func (o *Object) lineEndAndWidth(fromIndex int) (endIndex int, width float32) {
 		if o.Effects.TextWordWrap && r == ' ' {
 			var wX, wTotal float32
 			var wPrev internal.Glyph
+			var wHeight = lineHeight
 			for _, wr := range o.Text[fromIndex+i+1:] {
 				if wr == ' ' || wr == '\n' {
 					break
 				}
-				var wOffX, _, wW, _ = o.TextFontId.SymbolArea(wr, lineHeight)
+				var wsz = sizes[wr]
+				if wsz != 0 {
+					wHeight = originalLineHeight * wsz
+					continue
+				}
+				var wOffX, _, wW, _ = o.TextFontId.SymbolArea(wr, wHeight)
 				var wGlyph = font.Chars[wr]
-				wX += wPrev.Kernings[wr] * lineHeight
+				wX += wPrev.Kernings[wr] * wHeight
 				wPrev, wTotal = wGlyph, max(wX+wOffX+wW, wTotal)
-				wX += wGlyph.Advance*lineHeight + gapX
+				wX += wGlyph.Advance*wHeight + gapX
 			}
 			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width {
-				return fromIndex + i, max(totalWidth, x)
+				return fromIndex + i, max(totalWidth, x), lineHeight
 			}
 		}
 		x, prevGlyph, totalWidth = x+(glyph.Advance*lineHeight+gapX), glyph, max(x+offsetX+w, totalWidth)
 	}
-	return len(o.Text), max(totalWidth, x)
+	return len(o.Text), max(totalWidth, x), lineHeight
 }
