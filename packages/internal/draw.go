@@ -80,12 +80,26 @@ var BatchPool []*Batch          // empty batches ready to be reused
 var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
 var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
 
-var ViewArea Area // set before drawing a View's objects; zero value = entire window
+var ViewArea Area // zero value = entire window
+var ViewX, ViewY, ViewZoom, ViewAngle float32
 
 //=================================================================
 
 func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
+
+	if ViewAngle != 0 || ViewZoom != 1 || ViewX != 0 || ViewY != 0 {
+		var cx, cy = dst.X + dst.Width/2, dst.Y + dst.Height/2
+		var rx, ry = cx - ViewX, cy - ViewY
+		if ViewAngle != 0 {
+			var sin, cos = SinCos(ViewAngle)
+			cx, cy = ViewZoom*(rx*cos+ry*sin), ViewZoom*(-rx*sin+ry*cos)
+		} else {
+			cx, cy = ViewZoom*rx, ViewZoom*ry
+		}
+		dst.Width, dst.Height = dst.Width*ViewZoom, dst.Height*ViewZoom
+		dst.X, dst.Y, ang = cx-dst.Width/2, cy-dst.Height/2, ang-ViewAngle
+	}
 
 	if ViewArea != (Area{}) {
 		dst.X += ViewArea.X + ViewArea.Width/2 - float32(WindowWidth)/2
@@ -403,16 +417,11 @@ func clipPolyEdge(in, out []Vertex, isX bool, edgeVal float32, keepGreater bool)
 func areaIntersection(a, b Area) Area {
 	if a == (Area{}) {
 		return b
-	}
-	if b == (Area{}) {
+	} else if b == (Area{}) {
 		return a
 	}
-	var ax2, ay2 = a.X + a.Width, a.Y + a.Height
-	var bx2, by2 = b.X + b.Width, b.Y + b.Height
-	var ix = max(a.X, b.X)
-	var iy = max(a.Y, b.Y)
-	var ix2 = min(ax2, bx2)
-	var iy2 = min(ay2, by2)
+	var ax2, ay2, bx2, by2 = a.X + a.Width, a.Y + a.Height, b.X + b.Width, b.Y + b.Height
+	var ix, iy, ix2, iy2 = max(a.X, b.X), max(a.Y, b.Y), min(ax2, bx2), min(ay2, by2)
 	if ix >= ix2 || iy >= iy2 {
 		return Area{}
 	}

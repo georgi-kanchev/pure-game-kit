@@ -107,9 +107,25 @@ func (v *View) Bounds() (x, y, width, height float32) {
 
 func (v *View) PointFromScreen(screenX, screenY float32) (x, y float32) {
 	var wa = v.windowArea()
-	return screenX - (wa.X + wa.Width/2), screenY - (wa.Y + wa.Height/2)
+	x, y = screenX-(wa.X+wa.Width/2), screenY-(wa.Y+wa.Height/2)
+	if v.Zoom != 0 {
+		x, y = x/v.Zoom, y/v.Zoom
+	}
+	if v.Angle != 0 {
+		var sin, cos = internal.SinCos(v.Angle)
+		x, y = x*cos-y*sin, x*sin+y*cos
+	}
+	return x + v.X, y + v.Y
 }
 func (v *View) PointToScreen(x, y float32) (screenX, screenY float32) {
+	x, y = x-v.X, y-v.Y
+	if v.Angle != 0 {
+		var sin, cos = internal.SinCos(v.Angle)
+		x, y = x*cos+y*sin, -x*sin+y*cos
+	}
+	if v.Zoom != 0 {
+		x, y = x*v.Zoom, y*v.Zoom
+	}
 	var wa = v.windowArea()
 	return x + (wa.X + wa.Width/2), y + (wa.Y + wa.Height/2)
 }
@@ -128,7 +144,7 @@ func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 func (v *View) DrawColor(color uint) {
 	object.X, object.Y, object.Roundness = v.X, v.Y, 0
 	object.Width, object.Height = v.Size()
-	object.Angle, object.ImageId = -v.Angle, 0
+	object.Angle, object.ImageId = v.Angle, 0
 	object.Effects.Tint, object.Effects.FillColor, object.Text = color, 0, ""
 	object.Effects.TextLineHeight, object.Effects.TextColor = 0, 0
 	v.DrawObjects(object)
@@ -144,7 +160,7 @@ func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.Imag
 func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string) {
 	object.Effects = Effects(internal.DefaultEffects)
 	object.Text, object.Effects.FillColor, object.Roundness = text, 0, 0
-	object.TextFontId, object.Effects.TextLineHeight, object.Angle = fontId, lineHeight, 0
+	object.TextFontId, object.Effects.TextLineHeight, object.Angle = fontId, lineHeight, v.Angle
 	object.Width, object.Height = 99999, 99999
 	object.X, object.Y = x+object.Width/2, y+object.Height/2
 	object.Effects.TextColor, object.ImageId = color, 0
@@ -152,7 +168,7 @@ func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color ui
 }
 func (v *View) DrawObjects(objects ...*Object) {
 	internal.ViewArea = internal.Area(v.windowArea())
-	defer func() { internal.ViewArea = internal.Area{} }()
+	internal.ViewX, internal.ViewY, internal.ViewZoom, internal.ViewAngle = v.X, v.Y, v.Zoom, v.Angle
 
 	for _, o := range objects {
 		if o == nil || !v.IsAreaVisible(o.Bounds()) {
