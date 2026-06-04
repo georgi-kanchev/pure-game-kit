@@ -111,7 +111,7 @@ func ApplyMode(mode Mode) {
 		var m = rl.GetCurrentMonitor()
 		var pos = rl.GetMonitorPosition(m)
 		var ww, wh = Size()
-		rl.SetWindowPosition(int(pos.X)+ww/4, int(pos.Y)+wh/4)
+		rl.SetWindowPosition(int(pos.X+ww/4), int(pos.Y+wh/4))
 	}
 }
 func MoveToMonitor(monitor int) {
@@ -137,7 +137,7 @@ func SetTargetFPS(fps uint8) {
 
 //=================================================================
 
-func Size() (width, height int) {
+func Size() (width, height float32) {
 	return internal.WindowWidth, internal.WindowHeight
 }
 func Monitors() (info []string, current int) {

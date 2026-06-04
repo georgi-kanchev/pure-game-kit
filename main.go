@@ -21,17 +21,9 @@ func main() {
 	window.SetTargetFPS(60)
 
 	for window.KeepOpen() {
-		views[0].DrawColor(palette.DarkRed)
 		views[0].DrawText(0, 0, 100, 0, palette.Red, "Hello, World!")
 		views[0].Angle = number.Map(number.Sine(time.Running()), -1, 1, 0, 5)
 
-		views[1].DrawColor(palette.DarkGreen)
 		views[1].DrawText(0, 0, 100, 0, palette.Red, "Hello, World!")
-
-		views[2].DrawColor(palette.DarkBlue)
-		views[2].DrawText(0, 0, 100, 0, palette.Red, "Hello, World!")
-
-		views[3].DrawColor(palette.DarkMagenta)
-		views[3].DrawText(0, 0, 100, 0, palette.Red, "Hello, World!")
 	}
 }

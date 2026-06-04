@@ -50,7 +50,7 @@ var TileSets = make(map[string]*TileSet)
 
 //=================================================================
 
-var WindowWidth, WindowHeight int
+var WindowWidth, WindowHeight float32
 var WindowHovered, WindowFocused, WindowJustResized bool
 
 //=================================================================
@@ -85,7 +85,7 @@ func Init() {
 	LoadFont(fontData, 0)
 }
 func UpdateWindowData() {
-	WindowWidth, WindowHeight = rl.GetScreenWidth(), rl.GetScreenHeight()
+	WindowWidth, WindowHeight = float32(rl.GetScreenWidth()), float32(rl.GetScreenHeight())
 	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
 }
 

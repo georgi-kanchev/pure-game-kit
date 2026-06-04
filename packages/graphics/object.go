@@ -91,34 +91,22 @@ func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Obj
 //=================================================================
 
 func (o *Object) ViewFit(view *View) {
-	var sx, sy, sw, sh = view.area()
-	var x, y = view.PointFromScreen(sx+sw/2, sy+sh/2)
+	var x, y = view.PointFromScreen(internal.WindowWidth/2, internal.WindowHeight/2)
 	var cw, ch = view.Size()
 	var scale = min(cw/o.Width, ch/o.Height)
-
-	o.X = x - (0.5)*o.Width*scale
-	o.Y = y - (0.5)*o.Height*scale
-	o.Angle = 0
+	o.X, o.Y, o.Angle = x-(0.5)*o.Width*scale, y-(0.5)*o.Height*scale, 0
 }
 func (o *Object) ViewFill(view *View) {
-	var sx, sy, sw, sh = view.area()
-	var x, y = view.PointFromScreen(sx+sw/2, sy+sh/2)
+	var x, y = view.PointFromScreen(internal.WindowWidth/2, internal.WindowHeight/2)
 	var cw, ch = view.Size()
 	var scale = max(cw/o.Width, ch/o.Height)
-
-	o.X = x - (0.5)*o.Width*scale
-	o.Y = y - (0.5)*o.Height*scale
-	o.Angle = 0
+	o.X, o.Y, o.Angle = x-(0.5)*o.Width*scale, y-(0.5)*o.Height*scale, 0
 }
 func (o *Object) ViewStretch(view *View) {
-	var sx, sy, sw, sh = view.area()
-	var x, y = view.PointFromScreen(sx+sw/2, sy+sh/2)
+	var x, y = view.PointFromScreen(internal.WindowWidth/2, internal.WindowHeight/2)
 	var cw, ch = view.Size()
 	var scaleX, scaleY = cw / o.Width, ch / o.Height
-
-	o.X = x - (0.5)*o.Width*scaleX
-	o.Y = y - (0.5)*o.Height*scaleY
-	o.Angle = 0
+	o.X, o.Y, o.Angle = x-(0.5)*o.Width*scaleX, y-(0.5)*o.Height*scaleY, 0
 }
 
 //=================================================================
@@ -126,19 +114,12 @@ func (o *Object) ViewStretch(view *View) {
 func (o *Object) PointToLocal(x, y float32) (localX, localY float32) {
 	var dx, dy = x - o.X, y - o.Y
 	var sinL, cosL = internal.SinCos(-o.Angle)
-	var rotX = (dx*cosL - dy*sinL)
-	var rotY = (dx*sinL + dy*cosL)
-	localX = rotX + 0.5*o.Width
-	localY = rotY + 0.5*o.Height
-	return localX, localY
+	return (dx*cosL - dy*sinL) + 0.5*o.Width, (dx*sinL + dy*cosL) + 0.5*o.Height
 }
 func (o *Object) PointToGlobal(localX, localY float32) (x, y float32) {
-	var locX = (localX - (0.5 * o.Width))
-	var locY = (localY - (0.5 * o.Height))
+	var locX, locY = localX - (0.5 * o.Width), localY - (0.5 * o.Height)
 	var sinL, cosL = internal.SinCos(o.Angle)
-	x = (locX*cosL - locY*sinL) + o.X
-	y = (locX*sinL + locY*cosL) + o.Y
-	return x, y
+	return (locX*cosL - locY*sinL) + o.X, (locX*sinL + locY*cosL) + o.Y
 }
 func (o *Object) ContainsPoint(x, y float32) bool {
 	var lx, ly = o.PointToLocal(x, y)
