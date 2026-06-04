@@ -16,8 +16,14 @@ func Events() {
 	for window.KeepOpen() {
 		var x, y = view.PointFromEdge(0, 0)
 		view.DrawText(x+10, y+10, 50, 0, palette.White, debug.MemoryUsage())
-		if keyboard.IsKeyJustPressed(key.A) {
-			a += "a"
+		if keyboard.IsKeyPressed(key.A) {
+			a += "a" + "b" + "c" + "d"
+			a += "a" + "b" + "c" + "d"
+			a += "a" + "b" + "c" + "d"
+			a += "a" + "b" + "c" + "d"
+			a += "a" + "b" + "c" + "d"
+			a += "a" + "b" + "c" + "d"
+			a = "h"
 		}
 	}
 }
