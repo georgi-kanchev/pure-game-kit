@@ -401,8 +401,18 @@ func clipPolyEdge(in, out []Vertex, isX bool, edgeVal float32, keepGreater bool)
 }
 
 func areaIntersection(a, b Area) Area {
-	var ax2, ay2, bx2, by2 = a.X + a.Width, a.Y + a.Height, b.X + b.Width, b.Y + b.Height
-	var ix, iy, ix2, iy2 = max(a.X, b.X), max(a.Y, b.Y), min(ax2, bx2), min(ay2, by2)
+	if a == (Area{}) {
+		return b
+	}
+	if b == (Area{}) {
+		return a
+	}
+	var ax2, ay2 = a.X + a.Width, a.Y + a.Height
+	var bx2, by2 = b.X + b.Width, b.Y + b.Height
+	var ix = max(a.X, b.X)
+	var iy = max(a.Y, b.Y)
+	var ix2 = min(ax2, bx2)
+	var iy2 = min(ay2, by2)
 	if ix >= ix2 || iy >= iy2 {
 		return Area{}
 	}

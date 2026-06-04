@@ -2,7 +2,11 @@ package main
 
 import (
 	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/utility/color/palette"
+	"pure-game-kit/packages/utility/debug"
+	"pure-game-kit/packages/utility/text"
 	"pure-game-kit/packages/window"
 )
 
@@ -21,6 +25,10 @@ func main() {
 		viewRight.WindowArea = graphics.NewArea(w/2+50, 50, w/2-100, h-100)
 		viewRight.DrawColor(palette.DarkGreen)
 		var x, y = viewRight.MousePosition()
-		viewRight.DrawText(x, y, 100, 0, palette.Red, "Hello, World!")
+		viewRight.DrawText(x, y, 100, 0, palette.Red, text.New("x: ", x, "y: ", y))
+
+		if keyboard.IsKeyJustPressed(key.F5) {
+			print(debug.MemoryUsage())
+		}
 	}
 }
