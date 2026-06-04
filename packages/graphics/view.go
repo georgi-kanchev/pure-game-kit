@@ -105,10 +105,12 @@ func (v *View) Bounds() (x, y, width, height float32) {
 }
 
 func (v *View) PointFromScreen(screenX, screenY float32) (x, y float32) {
-	return screenX - internal.WindowWidth/2, screenY - internal.WindowHeight/2
+	var wa = v.windowArea()
+	return screenX - (wa.X + wa.Width/2), screenY - (wa.Y + wa.Height/2)
 }
 func (v *View) PointToScreen(x, y float32) (screenX, screenY float32) {
-	return x + internal.WindowWidth/2, y + internal.WindowHeight/2
+	var wa = v.windowArea()
+	return x + (wa.X + wa.Width/2), y + (wa.Y + wa.Height/2)
 }
 func (v *View) PointFromView(otherView *View, otherX, otherY float32) (myX, myY float32) {
 	return v.PointFromScreen(otherView.PointToScreen(otherX, otherY))
@@ -306,6 +308,12 @@ func (v *View) queueShapeOrSprite(x, y, w, h, a, r float32, imageId int32, crop 
 	eff.FillColor = prevFill
 }
 
+func (v *View) windowArea() Area {
+	if v.WindowArea == (Area{}) {
+		return NewArea(0, 0, internal.WindowWidth, internal.WindowHeight)
+	}
+	return v.WindowArea
+}
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
 	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
 	if newWidth != 0 {
