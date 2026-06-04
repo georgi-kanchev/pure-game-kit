@@ -14,8 +14,8 @@ import (
 type View struct {
 	X, Y, Zoom, Angle float32
 
-	Area Area // The draw area in window space. Zero value = entire window.
-	Mask Area // In view space. Everything drawn outside of it is cropped. Zero value = no masking.
+	WindowArea Area // The draw area in window space. Zero value = entire window.
+	Mask       Area // In view space. Everything drawn outside of it is cropped. Zero value = no masking.
 
 	//=================================================================
 
@@ -321,10 +321,10 @@ func (v *View) queueShapeOrSprite(x, y, w, h, a, r float32, imageId int32, crop 
 }
 
 func (v *View) area() (x, y, w, h float32) {
-	if v.Area == (Area{}) {
+	if v.WindowArea == (Area{}) {
 		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
 	}
-	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
+	return v.WindowArea.X, v.WindowArea.Y, v.WindowArea.Width, v.WindowArea.Height
 }
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
 	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
