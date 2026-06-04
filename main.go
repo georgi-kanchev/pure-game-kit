@@ -1,7 +1,16 @@
 package main
 
-import example "pure-game-kit/examples"
+import (
+	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/window"
+)
 
 func main() {
-	example.Events()
+	window.Create("game", false, true)
+	var view = graphics.NewView(1)
+
+	window.SetTargetFPS(60)
+	for window.KeepOpen() {
+		_ = view
+	}
 }

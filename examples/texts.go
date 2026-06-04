@@ -8,7 +8,7 @@ import (
 )
 
 func Texts() {
-	window.Create("game", false, true)
+	window.Create("examples - texts", false, true)
 	var font = assets.LoadFont("tools/msdf-atlas-gen/Libre.png", "tools/msdf-atlas-gen/Libre.json")
 	var view = graphics.NewView(1)
 	var textbox = graphics.NewTextbox(0, 0, 2100, 2100, font)
