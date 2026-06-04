@@ -2,6 +2,7 @@ package graphics
 
 import (
 	"pure-game-kit/packages/assets"
+	geometry "pure-game-kit/packages/geometry2"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
@@ -147,6 +148,12 @@ func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 
 //=================================================================
 
+func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint) {
+	object.Shape = geometry.NewRectangle(x, y, width, height, angle)
+	object.ImageId = imageId
+	object.Effects = Effects{Tint: tint}
+	v.DrawObjects(object)
+}
 func (v *View) DrawObjects(objects ...*Object) {
 	for _, o := range objects {
 		if o == nil || !v.IsAreaVisible(o.Bounds()) {
@@ -194,20 +201,6 @@ func (v *View) DrawObjects(objects ...*Object) {
 	}
 }
 
-func (v *View) queueShapeOrSprite(x, y, w, h, a, r float32, imageId int32, crop Area, eff *internal.Effects, mask internal.Area) {
-	var tex = internal.Images[imageId]
-	if crop == (Area{}) {
-		crop = NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
-	}
-	var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
-	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
-	var kind uint8
-	if imageId != 0 {
-		kind = internal.KindSprite
-	}
-	internal.Queue(tex.Texture, src, dst, a, r, mask, eff, kind)
-}
-
 // private ========================================================
 
 type line struct {
@@ -216,20 +209,13 @@ type line struct {
 }
 
 var lines []line
-
+var object = &Object{} // used for primitive drawing
 var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': palette.Red, '🟧': palette.Orange,
 	'🟨': palette.Yellow, '🟩': palette.Green, '🟦': palette.Blue, '🟪': palette.Purple, '🟫': palette.Brown}
 var outlineColors = map[rune]uint{'⚪': palette.White, '⚫': palette.Black, '🔴': palette.Red, '🟠': palette.Orange,
 	'🟡': palette.Yellow, '🟢': palette.Green, '🔵': palette.Blue, '🟣': palette.Purple, '🟤': palette.Brown}
 var weights = map[rune]int8{'⏬': -100, '🔽': -50, '🔁': 0, '🔼': 50, '⏫': 100}
 var sizes = map[rune]float32{'🔇': 0.5, '🔈': 0.75, '🔉': 1.0, '🔊': 1.25, '📢': 1.5}
-
-func (v *View) area() (x, y, w, h float32) {
-	if v.Area == (Area{}) {
-		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
-	}
-	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
-}
 
 func (v *View) queueText(o *Object, mask internal.Area) {
 	var eff = (*internal.Effects)(&o.Effects)
@@ -304,6 +290,32 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
+}
+func (v *View) queueShapeOrSprite(x, y, w, h, a, r float32, imageId int32, crop Area, eff *internal.Effects, mask internal.Area) {
+	var tex = internal.Images[imageId]
+	var prevFill = eff.FillColor
+	var kind uint8
+	if imageId == 0 || tex.Texture.Width == 0 {
+		imageId = 0 // fallback to default texture
+		tex = internal.Images[imageId]
+		eff.FillColor = eff.Tint
+	} else {
+		kind = internal.KindSprite
+	}
+	if crop == (Area{}) {
+		crop = NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+	}
+	var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
+	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
+	internal.Queue(tex.Texture, src, dst, a, r, mask, eff, kind)
+	eff.FillColor = prevFill
+}
+
+func (v *View) area() (x, y, w, h float32) {
+	if v.Area == (Area{}) {
+		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
+	}
+	return v.Area.X, v.Area.Y, v.Area.Width, v.Area.Height
 }
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
 	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)

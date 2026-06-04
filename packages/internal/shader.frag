@@ -275,6 +275,7 @@ void main() {
             uv = compute_pixelated_uv(uv, texSize, pixelSize);
             color = compute_blur(uv, texSize, blur);
             color = compute_outline(color, uv, texSize, outlineSize);
+            color *= fragColor;
         }
         
         if (objKind != KIND_TILEMAP) {

@@ -36,12 +36,12 @@ func LoadFont(pngPath string, jsonPath string) FontId {
 	return FontId(font)
 }
 
-func (f FontId) UnloadFont() {
+func (f FontId) Unload() {
 	var font, has = internal.Fonts[uint8(f)]
 	if !has {
 		return
 	}
-	ImageId(font.AtlasId).UnloadImage()
+	ImageId(font.AtlasId).Unload()
 	delete(internal.Fonts, uint8(f))
 }
 

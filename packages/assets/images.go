@@ -38,7 +38,7 @@ func LoadImageCrop(original ImageId, x, y, width, height float32) ImageId {
 	return ImageId(id)
 }
 
-func (i ImageId) UnloadImage() {
+func (i ImageId) Unload() {
 	if i == 0 {
 		return
 	}

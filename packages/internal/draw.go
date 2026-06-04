@@ -125,6 +125,8 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		tz, tw = packTangentZSprite(cropMinU, cropMaxU), packTangentWSprite(cropMinV, cropMaxV)
 		if kind == KindShape {
 			r, g, b, a = col.Channels(col.Tint(eff.FillColor, eff.Tint))
+		} else {
+			r, g, b, a = col.Channels(eff.Tint)
 		}
 	default:
 		tx, ty = packColor24(oc), packColor24(col.Tint(eff.FillColor, eff.Tint))
