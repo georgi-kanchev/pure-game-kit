@@ -80,10 +80,17 @@ var BatchPool []*Batch          // empty batches ready to be reused
 var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
 var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
 
+var ViewArea Area // set before drawing a View's objects; zero value = entire window
+
 //=================================================================
 
 func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
+
+	if ViewArea != (Area{}) {
+		dst.X += ViewArea.X + ViewArea.Width/2 - float32(WindowWidth)/2
+		dst.Y += ViewArea.Y + ViewArea.Height/2 - float32(WindowHeight)/2
+	}
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1, u2, v2 = src.X * invTexW, src.Y * invTexH, (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
@@ -139,7 +146,8 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	}
 
 	var finalColor = color.RGBA{R: r, G: g, B: b, A: a}
-	if mask != (Area{}) {
+	var clipMask = areaIntersection(mask, ViewArea)
+	if clipMask != (Area{}) {
 		var sinA, cosA = SinCos(ang)
 		var cx, cy = ww + dst.Width/2, wh + dst.Height/2
 		for i := range 4 {
@@ -147,7 +155,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 			polygonBuf[i].X, polygonBuf[i].Y = (rx*cosA-ry*sinA)+cx+dst.X, (rx*sinA+ry*cosA)+cy+dst.Y
 			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
-		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], mask)
+		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], clipMask)
 		if vCount >= 3 {
 			queueVertices(clipResultBuf[:vCount], tex, finalColor)
 		}
@@ -390,4 +398,13 @@ func clipPolyEdge(in, out []Vertex, isX bool, edgeVal float32, keepGreater bool)
 	}
 
 	return outCount
+}
+
+func areaIntersection(a, b Area) Area {
+	var ax2, ay2, bx2, by2 = a.X + a.Width, a.Y + a.Height, b.X + b.Width, b.Y + b.Height
+	var ix, iy, ix2, iy2 = max(a.X, b.X), max(a.Y, b.Y), min(ax2, bx2), min(ay2, by2)
+	if ix >= ix2 || iy >= iy2 {
+		return Area{}
+	}
+	return Area{X: ix, Y: iy, Width: ix2 - ix, Height: iy2 - iy}
 }

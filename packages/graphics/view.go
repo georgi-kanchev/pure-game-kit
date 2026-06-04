@@ -92,7 +92,8 @@ func (v *View) MousePosition() (x, y float32) {
 	return v.PointFromScreen(internal.MouseX, internal.MouseY)
 }
 func (v *View) Size() (width, height float32) {
-	return internal.WindowWidth / v.Zoom, internal.WindowHeight / v.Zoom
+	var windowArea = v.windowArea()
+	return windowArea.Width / v.Zoom, windowArea.Height / v.Zoom
 }
 func (v *View) Bounds() (x, y, width, height float32) {
 	var x1, y1 = v.PointFromEdge(0, 0)
@@ -150,6 +151,9 @@ func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color ui
 	v.DrawObjects(object)
 }
 func (v *View) DrawObjects(objects ...*Object) {
+	internal.ViewArea = internal.Area(v.windowArea())
+	defer func() { internal.ViewArea = internal.Area{} }()
+
 	for _, o := range objects {
 		if o == nil || !v.IsAreaVisible(o.Bounds()) {
 			continue
