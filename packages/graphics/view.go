@@ -154,70 +154,42 @@ func (v *View) DrawColor(color uint) {
 	v.DrawObjects(obj)
 }
 func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
-	// if spacingX*v.Zoom < 1 && spacingY*v.Zoom < 1 {
-	// 	return // way too dense grid - give up
-	// }
-	// v.begin()
+	if spacingX*v.Zoom < 1 && spacingY*v.Zoom < 1 {
+		return // way too dense — skip
+	}
 
-	// var renderColor = getColor(color)
-	// var sx, sy, sw, sh = v.area()
-	// var ulx, uly = v.PointFromScreen(sx, sy)
-	// var urx, ury = v.PointFromScreen(sx+sw, sy)
-	// var lrx, lry = v.PointFromScreen(sx+sw, sy+sh)
-	// var llx, lly = v.PointFromScreen(sx, sy+sh)
-	// var xs = []float32{ulx, urx, llx, lrx}
-	// var ys = []float32{uly, ury, lly, lry}
-	// var minX, maxX = xs[0], xs[0]
-	// var minY, maxY = ys[0], ys[0]
+	var minX, minY, w, h = v.Bounds()
+	var maxX, maxY = minX + w, minY + h
 
-	// for i := 1; i < 4; i++ {
-	// 	if xs[i] < minX {
-	// 		minX = xs[i]
-	// 	}
-	// 	if xs[i] > maxX {
-	// 		maxX = xs[i]
-	// 	}
-	// 	if ys[i] < minY {
-	// 		minY = ys[i]
-	// 	}
-	// 	if ys[i] > maxY {
-	// 		maxY = ys[i]
-	// 	}
-	// }
+	var left, right = number.RoundDown(minX/spacingX) * spacingX, number.RoundUp(maxX/spacingX) * spacingX
+	var top, bottom = number.RoundDown(minY/spacingY) * spacingY, number.RoundUp(maxY/spacingY) * spacingY
 
-	// var left = number.RoundDown(minX/spacingX) * spacingX
-	// var right = number.RoundUp(maxX/spacingX) * spacingX
-	// var top = number.RoundDown(minY/spacingY) * spacingY
-	// var bottom = number.RoundUp(maxY/spacingY) * spacingY
+	for x := left; x <= right; x += spacingX { // vertical
+		var t = thickness
+		if number.DivisionRemainder(x, spacingX*10) == 0 {
+			t *= 3
+		}
+		v.DrawShape(x, (top+bottom)/2, bottom-top, t, 90, 1, color)
+	}
 
-	// for x := left; x <= right; x += spacingX {
-	// 	var myThickness = thickness
-	// 	if number.DivisionRemainder(x, spacingX*10) == 0 {
-	// 		myThickness *= 3
-	// 	}
-	// 	batcher.QueueLine(x, top, x, bottom, myThickness, renderColor)
-	// }
-	// for y := top; y <= bottom; y += spacingY {
-	// 	var myThickness = thickness
-	// 	if number.DivisionRemainder(y, spacingY*10) == 0 {
-	// 		myThickness *= 3
-	// 	}
-	// 	batcher.QueueLine(left, y, right, y, myThickness, renderColor)
-	// }
+	for y := top; y <= bottom; y += spacingY { // horizontal
+		var t = thickness
+		if number.DivisionRemainder(y, spacingY*10) == 0 {
+			t *= 3
+		}
+		v.DrawShape((left+right)/2, y, right-left, t, 0, 1, color)
+	}
 
-	// if top <= 0 && bottom >= 0 {
-	// 	batcher.QueueLine(left, 0, right, 0, thickness*6, renderColor)
-	// }
-	// if left <= 0 && right >= 0 {
-	// 	batcher.QueueLine(0, top, 0, bottom, thickness*6, renderColor)
-	// }
-
-	// batcher.Draw()
-	// v.end()
+	if top <= 0 && bottom >= 0 {
+		v.DrawShape((left+right)/2, 0, right-left, thickness*6, 0, 1, color)
+	}
+	if left <= 0 && right >= 0 {
+		v.DrawShape(0, (top+bottom)/2, bottom-top, thickness*6, 90, 1, color)
+	}
 }
 func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
+	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, color, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, "", 0, 0
 	v.DrawObjects(obj)
 }

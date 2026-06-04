@@ -24,17 +24,19 @@ func main() {
 	for window.KeepOpen() {
 		var w, h = window.Size()
 		left.WindowArea = graphics.NewArea(0, 0, w/2, h)
-		left.Angle += time.Delta() * 30
+		left.Angle += time.Delta() * 10
 		left.Zoom = 1.5
-		left.DrawColor(palette.DarkRed)
+		left.DrawColor(palette.DarkGray)
+		left.DrawGrid(2, 100, 100, palette.Gray)
 		left.DrawObjects(&obj)
 		var lx, ly = left.PointFromEdge(0, 0)
 		left.DrawText(lx, ly, 100, 0, palette.White, "Hello, World!")
 
 		var margin float32 = 300
 		right.WindowArea = graphics.NewArea(w/2+margin/2, margin/2, w/2-margin, h-margin)
-		right.Zoom = number.Map(number.Sine(time.Running()), -1, 1, 0.5, 4)
-		right.DrawColor(palette.DarkGreen)
+		right.Zoom = number.Map(number.Sine(time.Running()/3), -1, 1, 0.5, 4)
+		right.DrawColor(palette.DarkGray)
+		right.DrawGrid(2, 100, 100, palette.Gray)
 		right.DrawObjects(&obj)
 		var rx, ry = right.PointFromEdge(0, 0)
 		right.DrawText(rx, ry, 100, 0, palette.White, "Hello, World!")
