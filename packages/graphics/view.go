@@ -234,7 +234,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	}
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
-	var height float32
+	var contentHeight float32
 	var originalLineHeight = eff.TextLineHeight
 	lines = lines[:0]
 	var currentLineHeight = originalLineHeight
@@ -242,15 +242,15 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		var lineStart = i
 		var end, width, endHeight = o.measureLine(i, currentLineHeight)
 		lines = append(lines, line{lineStart, end, width})
-		height += endHeight * fontData.LineHeight
+		contentHeight += endHeight * fontData.LineHeight
 		currentLineHeight = endHeight
 		i = end
 		if i < len(o.Text) {
-			height += gapY
+			contentHeight += gapY
 			i++ // skip newline
 		}
 	}
-	var y = o.Y - o.Height/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(o.Height-height)
+	var y = o.Y - o.Height/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(o.Height-contentHeight)
 
 	for _, ln := range lines {
 		var x = (o.X - o.Width/2) + eff.TextAlignX*(o.Width-ln.width)
