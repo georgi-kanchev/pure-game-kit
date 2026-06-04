@@ -141,7 +141,8 @@ func (v *View) PointToView(otherView *View, myX, myY float32) (otherX, otherY fl
 	return otherView.PointFromView(v, myX, myY)
 }
 func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
-	return v.PointFromScreen(internal.WindowWidth*edgeX, internal.WindowHeight*edgeY)
+	var wa = v.windowArea()
+	return v.PointFromScreen(wa.X+wa.Width*edgeX, wa.Y+wa.Height*edgeY)
 }
 
 //=================================================================
@@ -165,7 +166,7 @@ func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.Imag
 func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string) {
 	object.Effects = Effects(internal.DefaultEffects)
 	object.Text, object.Effects.FillColor, object.Roundness = text, 0, 0
-	object.TextFontId, object.Effects.TextLineHeight, object.Angle = fontId, lineHeight, v.Angle
+	object.TextFontId, object.Effects.TextLineHeight, object.Angle = fontId, lineHeight/v.Zoom, v.Angle
 	object.Width, object.Height = 9999, 9999
 	object.Effects.TextColor, object.ImageId = color, 0
 
