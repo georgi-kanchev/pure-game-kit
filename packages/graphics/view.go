@@ -83,12 +83,10 @@ func (v *View) MouseDragAndZoomSmoothly() {
 func (v *View) IsAreaVisible(x, y, width, height float32) bool {
 	var sx1, sy1 = v.PointToScreen(x, y)
 	var sx2, sy2 = v.PointToScreen(x+width, y+height)
-	var sMinX, sMaxX, sMinY, sMaxY = min(sx1, sx2), max(sx1, sx2), min(sy1, sy2), max(sy1, sy2)
-	return sMaxX > 0 && sMinX < internal.WindowWidth && sMaxY > 0 && sMinY < internal.WindowHeight
+	return max(sx1, sx2) > 0 && min(sx1, sx2) < internal.WindowWidth && max(sy1, sy2) > 0 && min(sy1, sy2) < internal.WindowHeight
 }
 func (v *View) IsHovered() bool {
-	var mx, my = internal.MouseX, internal.MouseY
-	return mx > 0 && my > 0 && mx < internal.WindowWidth && my < internal.WindowHeight
+	return internal.MouseX > 0 && internal.MouseY > 0 && internal.MouseX < internal.WindowWidth && internal.MouseY < internal.WindowHeight
 }
 func (v *View) MousePosition() (x, y float32) {
 	return v.PointFromScreen(internal.MouseX, internal.MouseY)
