@@ -2,7 +2,6 @@ package graphics
 
 import (
 	"pure-game-kit/packages/assets"
-	geometry "pure-game-kit/packages/geometry2"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
@@ -149,9 +148,10 @@ func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 //=================================================================
 
 func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint) {
-	object.Shape = geometry.NewRectangle(x, y, width, height, angle)
-	object.ImageId = imageId
-	object.Effects = Effects{Tint: tint}
+	object.X, object.Y, object.Roundness = x, y, 0
+	object.Width, object.Height = width, height
+	object.Angle, object.ImageId = angle, imageId
+	object.Effects.Tint, object.Effects.FillColor = tint, 0
 	v.DrawObjects(object)
 }
 func (v *View) DrawObjects(objects ...*Object) {
@@ -298,7 +298,9 @@ func (v *View) queueShapeOrSprite(x, y, w, h, a, r float32, imageId int32, crop 
 	if imageId == 0 || tex.Texture.Width == 0 {
 		imageId = 0 // fallback to default texture
 		tex = internal.Images[imageId]
-		eff.FillColor = eff.Tint
+		if eff.TextLineHeight == 0 && eff.TextColor == 0 {
+			eff.FillColor = eff.Tint
+		}
 	} else {
 		kind = internal.KindSprite
 	}

@@ -80,7 +80,9 @@ func NewImage(x, y, scale float32, imageId assets.ImageId) Object {
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
-	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: Effects(internal.DefaultEffects)}
+	var eff = Effects(internal.DefaultEffects)
+	eff.FillColor = palette.DarkGray
+	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: eff}
 }
 func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
 	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId, Effects: Effects(internal.DefaultEffects)}
@@ -120,19 +122,6 @@ func (o *Object) ViewStretch(view *View) {
 }
 
 //=================================================================
-
-func (o *Object) IsShape() bool {
-	return o.ImageId == 0 && o.TextFontId == 0 && o.TileLayerId == 0
-}
-func (o *Object) IsSprite() bool {
-	return o.ImageId != 0
-}
-func (o *Object) IsTextbox() bool {
-	return o.TextFontId != 0
-}
-func (o *Object) IsTilemap() bool {
-	return o.TileLayerId != 0
-}
 
 func (o *Object) PointToLocal(x, y float32) (localX, localY float32) {
 	var dx, dy = x - o.X, y - o.Y

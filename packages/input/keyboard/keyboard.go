@@ -2,7 +2,7 @@ package keyboard
 
 import i "pure-game-kit/packages/internal"
 
-func Input() string { return i.Input }
+func Input() []rune { return i.Input }
 
 func IsKeyHeld(key int, delay float32) bool { return i.Keys[key] && i.KeyDurs[key] > delay }
 func IsKeyPressed(key int) bool             { return i.Keys[key] }

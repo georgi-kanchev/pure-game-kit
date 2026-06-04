@@ -8,7 +8,7 @@ import (
 )
 
 var Cursor int
-var Input = ""
+var Input []rune = make([]rune, 0, 8)
 var MouseX, MouseY, MouseDeltaX, MouseDeltaY, Scroll, SmoothScroll float32
 
 var Keys, KeysPrev [350]bool
@@ -20,7 +20,7 @@ var Btns, BtnsPrev [5]bool
 var AnyBtn, AnyBtnPrev bool
 
 func CacheInput() {
-	Input = ""
+	Input = Input[:0]
 	Scroll = 0
 	cacheKeyboard()
 	cacheMouse()
@@ -120,7 +120,7 @@ func cacheKeyboard() {
 		if char == 0 {
 			break
 		}
-		Input += string(char)
+		Input = append(Input, char)
 	}
 
 	// cleanup released keys
