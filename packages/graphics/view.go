@@ -154,6 +154,13 @@ func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.Imag
 	object.Effects.Tint, object.Effects.FillColor = tint, 0
 	v.DrawObjects(object)
 }
+func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string) {
+	object.Effects = Effects(internal.DefaultEffects)
+	object.Text, object.Effects.FillColor, object.Roundness = text, 0, 0
+	object.TextFontId, object.Effects.TextLineHeight, object.Angle = fontId, lineHeight, 0
+	object.X, object.Y, object.Width, object.Height = x+object.Width/2, y+object.Height/2, 99999, 99999
+	v.DrawObjects(object)
+}
 func (v *View) DrawObjects(objects ...*Object) {
 	for _, o := range objects {
 		if o == nil || !v.IsAreaVisible(o.Bounds()) {
@@ -233,7 +240,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var currentLineHeight = originalLineHeight
 	for i := 0; i < len(o.Text); {
 		var lineStart = i
-		var end, width, endHeight = o.lineEndAndWidth(i, currentLineHeight)
+		var end, width, endHeight = o.measureLine(i, currentLineHeight)
 		lines = append(lines, line{lineStart, end, width})
 		height += endHeight * fontData.LineHeight
 		currentLineHeight = endHeight

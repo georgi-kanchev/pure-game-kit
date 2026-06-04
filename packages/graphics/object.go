@@ -158,7 +158,7 @@ func (o *Object) TextUpdateBatch() {
 
 // private ========================================================
 
-func (o *Object) lineEndAndWidth(fromIndex int, lineHeight float32) (endIndex int, width float32, endLineHeight float32) {
+func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, width float32, endLineHeight float32) {
 	if fromIndex >= len(o.Text) {
 		return fromIndex, 0, lineHeight
 	}

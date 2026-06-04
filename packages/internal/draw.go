@@ -35,7 +35,7 @@ type Effects struct {
 
 	Tint, BorderColor uint
 
-	FillColor    uint // Not used by Texts.
+	FillColor    uint
 	OutlineColor uint // Not used by Shapes.
 
 	PixelSize    uint8 // Ranged 0..15; Not used by Shapes & Texts.

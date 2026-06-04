@@ -123,9 +123,8 @@ func cacheKeyboard() {
 		Input = append(Input, char)
 	}
 
-	// cleanup released keys
 	for i := len(activeKeys) - 1; i >= 0; i-- {
-		var key = activeKeys[i]
+		var key = activeKeys[i] // cleanup released keys
 		if !keys[key] {
 			KeyDurs[key] = 0
 			activeKeys = slices.Delete(activeKeys, i, i+1)
