@@ -148,11 +148,9 @@ func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 //=================================================================
 
 func (v *View) DrawColor(color uint) {
-	obj.X, obj.Y, obj.Roundness = v.X, v.Y, 0
+	obj.X, obj.Y, obj.Roundness, obj.Angle, obj.Effects.Tint, obj.Effects.FillColor = v.X, v.Y, 0, v.Angle, color, 0
+	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, 0
 	obj.Width, obj.Height = v.Size()
-	obj.Angle, obj.ImageId = v.Angle, 0
-	obj.Effects.Tint, obj.Effects.FillColor, obj.Text = color, 0, ""
-	obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, 0
 	v.DrawObjects(obj)
 }
 func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
@@ -218,8 +216,8 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	// v.end()
 }
 func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint) {
-	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, color, 0
+	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
+	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, "", 0, 0
 	v.DrawObjects(obj)
 }
