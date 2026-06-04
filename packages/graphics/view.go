@@ -260,11 +260,6 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			if embedEffect(r, eff, originalLineHeight) {
 				continue // tag symbol applies to effects and gets skipped
 			}
-			if r == '\t' {
-				x = float32(int(x/(originalLineHeight*2))+1) * (originalLineHeight * 2)
-				prevGlyph = internal.Glyph{}
-				continue
-			}
 
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]

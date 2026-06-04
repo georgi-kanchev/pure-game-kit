@@ -180,15 +180,6 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 			continue
 		}
 
-		if r == '\t' {
-			var nextX = float32(int(x/originalLineHeight*2)+1) * (originalLineHeight * 2)
-			if nextX > o.Width {
-				return fromIndex + i, max(totalWidth, x), lineHeight
-			}
-			x, totalWidth, prevGlyph = nextX, max(totalWidth, nextX), internal.Glyph{}
-			continue
-		}
-
 		x += prevGlyph.Kernings[r] * lineHeight
 		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
 		var glyph = font.Chars[r]
