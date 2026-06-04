@@ -14,8 +14,7 @@ import (
 type View struct {
 	X, Y, Zoom, Angle float32
 
-	WindowArea Area // The draw area in window space. Zero value = entire window.
-	Mask       Area // In view space. Everything drawn outside of it is cropped. Zero value = no masking.
+	Mask Area // In view space. Everything drawn outside of it is cropped. Zero value = no masking.
 
 	//=================================================================
 
