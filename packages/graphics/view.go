@@ -123,12 +123,14 @@ func (v *View) Bounds() (x, y, width, height float32) {
 }
 
 func (v *View) PointFromScreen(screenX, screenY float32) (x, y float32) {
-	var cx, cy = v.center()
-	return screenX - cx, screenY - cy
+	var sx = screenX - float32(internal.WindowWidth/2)
+	var sy = screenY - float32(internal.WindowHeight/2)
+	return sx, sy
 }
 func (v *View) PointToScreen(x, y float32) (screenX, screenY float32) {
-	var cx, cy = v.center()
-	return x + cx, y + cy
+	var vx = x + float32(internal.WindowWidth/2)
+	var vy = y + float32(internal.WindowHeight/2)
+	return vx, vy
 }
 func (v *View) PointFromView(otherView *View, otherX, otherY float32) (myX, myY float32) {
 	var screenX, screenY = otherView.PointToScreen(otherX, otherY)
@@ -171,11 +173,6 @@ func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color ui
 	v.DrawObjects(object)
 }
 func (v *View) DrawObjects(objects ...*Object) {
-	if v.WindowArea != (Area{}) {
-		internal.ViewArea = internal.Area{X: v.WindowArea.X, Y: v.WindowArea.Y, Width: v.WindowArea.Width, Height: v.WindowArea.Height}
-		defer func() { internal.ViewArea = internal.Area{} }()
-	}
-
 	for _, o := range objects {
 		if o == nil || !v.IsAreaVisible(o.Bounds()) {
 			continue
@@ -197,12 +194,10 @@ func (v *View) DrawObjects(objects ...*Object) {
 			}
 		}
 
-		var cx, cy = v.center()
-
 		var mask = internal.Area(o.Mask)
 		if o.Mask != (Area{}) {
-			mask.X += cx
-			mask.Y += cy
+			mask.X += float32(internal.WindowWidth) / 2
+			mask.Y += float32(internal.WindowHeight) / 2
 		}
 
 		var eff = (*internal.Effects)(&o.Effects)
@@ -341,12 +336,6 @@ func (v *View) area() (x, y, w, h float32) {
 		return 0, 0, float32(internal.WindowWidth), float32(internal.WindowHeight)
 	}
 	return v.WindowArea.X, v.WindowArea.Y, v.WindowArea.Width, v.WindowArea.Height
-}
-func (v *View) center() (x, y float32) {
-	if v.WindowArea == (Area{}) {
-		return float32(internal.WindowWidth) / 2, float32(internal.WindowHeight) / 2
-	}
-	return v.WindowArea.X + v.WindowArea.Width/2, v.WindowArea.Y + v.WindowArea.Height/2
 }
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
 	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)

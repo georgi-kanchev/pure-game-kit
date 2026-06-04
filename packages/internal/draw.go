@@ -80,8 +80,6 @@ var BatchPool []*Batch          // empty batches ready to be reused
 var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
 var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
 
-var ViewArea Area // Set by View before drawing. Zero value = full window. Vertices are offset to its center and clipped to its bounds.
-
 //=================================================================
 
 func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
@@ -89,23 +87,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1, u2, v2 = src.X * invTexW, src.Y * invTexH, (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
-	var ww, wh float32
-	if ViewArea == (Area{}) {
-		ww, wh = float32(WindowWidth)/2, float32(WindowHeight)/2
-	} else {
-		ww, wh = ViewArea.X+ViewArea.Width/2, ViewArea.Y+ViewArea.Height/2
-		if mask == (Area{}) {
-			mask = ViewArea
-		} else {
-			var l, t = max(mask.X, ViewArea.X), max(mask.Y, ViewArea.Y)
-			var r, b = min(mask.X+mask.Width, ViewArea.X+ViewArea.Width), min(mask.Y+mask.Height, ViewArea.Y+ViewArea.Height)
-			if l < r && t < b {
-				mask = Area{X: l, Y: t, Width: r - l, Height: b - t}
-			} else {
-				return // fully outside view area
-			}
-		}
-	}
+	var ww, wh = float32(WindowWidth) / 2, float32(WindowHeight) / 2
 	var dx, dy = [4]float32{ww, ww, dst.Width + ww, dst.Width + ww}, [4]float32{wh, dst.Height + wh, dst.Height + wh, wh}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
