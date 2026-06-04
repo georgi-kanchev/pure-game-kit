@@ -7,6 +7,7 @@ import (
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
+	"pure-game-kit/packages/utility/point"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -161,9 +162,11 @@ func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color ui
 	object.Effects = Effects(internal.DefaultEffects)
 	object.Text, object.Effects.FillColor, object.Roundness = text, 0, 0
 	object.TextFontId, object.Effects.TextLineHeight, object.Angle = fontId, lineHeight, v.Angle
-	object.Width, object.Height = 99999, 99999
-	object.X, object.Y = x+object.Width/2, y+object.Height/2
+	object.Width, object.Height = 9999, 9999
 	object.Effects.TextColor, object.ImageId = color, 0
+
+	x, y = point.MoveAtAngle(x, y, object.Angle, object.Width/2)
+	object.X, object.Y = point.MoveAtAngle(x, y, object.Angle+90, object.Height/2)
 	v.DrawObjects(object)
 }
 func (v *View) DrawObjects(objects ...*Object) {

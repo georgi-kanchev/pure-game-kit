@@ -18,7 +18,7 @@ func main() {
 
 	var obj = graphics.NewShapeRoundedRectangle(0, 0, 400, 400, 0, 0.5)
 
-	left.X = 500
+	left.X = 0
 
 	for window.KeepOpen() {
 		// obj.Angle += time.Delta() * 30
@@ -30,8 +30,8 @@ func main() {
 		left.DrawColor(palette.DarkRed)
 		left.DrawObjects(&obj)
 
-		// var x, y = left.PointFromEdge(0, 0)
-		left.DrawText(0, 0, 50, 0, palette.White, "Hello, World!")
+		var x, y = left.PointFromEdge(0, 0)
+		left.DrawText(x, y, 50, 0, palette.White, "Hello, World!")
 
 		right.WindowArea = graphics.NewArea(w/2+50, 50, w/2-100, h-100)
 		right.DrawColor(palette.DarkGreen)
