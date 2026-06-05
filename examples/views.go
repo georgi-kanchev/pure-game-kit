@@ -15,11 +15,9 @@ func Views() {
 	window.Create("example - split screen", false, true)
 
 	var left, right = graphics.NewView(1), graphics.NewView(1)
-	window.SetTargetFPS(60)
-
 	var obj = graphics.NewShapeRoundedRectangle(0, 0, 400, 400, 0, 0.5)
-
 	left.X = 400
+	left.Zoom = 1.5
 
 	for window.KeepOpen() {
 		obj.Roundness = number.Map(number.Sine(time.Running()/3), -1, 1, 0, 1)
@@ -27,7 +25,6 @@ func Views() {
 		var w, h = window.Size()
 		left.WindowArea = graphics.NewArea(0, 0, w/2, h)
 		left.Angle += time.Delta() * 10
-		left.Zoom = 1.5
 		left.DrawColor(palette.DarkGray)
 		left.DrawGrid(2, 100, 100, palette.Gray)
 		left.DrawObjects(&obj)

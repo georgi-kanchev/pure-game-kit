@@ -17,29 +17,51 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-func LoadTiledLayers(tmxFilePath string) (tileSetId string, tileLayerIds []string) {
-	var tileset, tiled = loadTiled(tmxFilePath)
-	var dir = path.Folder(tmxFilePath)
-	var result = make(map[int]string)
-	if tileset != nil {
-		var w, h = tileset.TileWidth, tileset.TileHeight
-		dir = path.New(dir, tileset.Source)
-		dir = path.New(path.Folder(dir), tileset.Image.Source)
-		tileSetId = LoadTileSet(dir, w, h)
+type TileLayerId uint8
+type TileAtlasId uint8
+
+func LoadTileAtlas(pngPath string, tileWidth, tileHeight int) TileAtlasId {
+	internal.TileAtlasNextId++
+	var id, imageId = internal.TileAtlasNextId, LoadImage(pngPath)
+	var atlas = &internal.TileAtlas{
+		ImageId: int32(imageId), TileWidth: tileWidth, TileHeight: tileHeight, PointsPerTile: make(map[uint16][]float32)}
+	internal.TileAtlases[id] = atlas
+	return TileAtlasId(id)
+}
+func LoadTileLayer(columns, rows int) TileLayerId {
+	internal.TileLayerNextId++
+	columns, rows = number.Limit(columns, 1, 2048), number.Limit(rows, 1, 2048)
+
+	var id = internal.TileLayerNextId
+	var data = &internal.TileLayer{Image: rl.GenImageColor(columns, rows, rl.Blank), CellsWithPoints: make(map[int]struct{})}
+	var tex = rl.LoadTextureFromImage(data.Image)
+	rl.SetTextureFilter(tex, rl.FilterPoint)
+	data.Texture = tex
+	internal.TileLayers[id] = data
+	return TileLayerId(id)
+}
+func LoadTiledLayers(tmxPath string) (atlasId TileAtlasId, layerIds []TileLayerId) {
+	var tileAtlas, tiled = loadTiled(tmxPath)
+	var result, dir = make(map[int]TileLayerId), path.Folder(tmxPath)
+	if tileAtlas != nil {
+		var w, h = tileAtlas.TileWidth, tileAtlas.TileHeight
+		dir = path.New(dir, tileAtlas.Source)
+		dir = path.New(path.Folder(dir), tileAtlas.Image.Source)
+		atlasId = LoadTileAtlas(dir, w, h)
 	}
-	loadLayersRecursively(result, tmxFilePath, tileSetId, tiled, &tiled.layers)
+	loadLayersRecursively(result, tmxPath, atlasId, tiled, &tiled.layers)
 	for _, id := range tiled.LayerIdsInOrder {
-		tileLayerIds = append(tileLayerIds, result[id])
+		layerIds = append(layerIds, result[id])
 	}
-	return tileSetId, tileLayerIds
+	return atlasId, layerIds
 }
 
 // private ========================================================
 
 type tiled struct {
-	Width   int      `xml:"width,attr"`
-	Height  int      `xml:"height,attr"`
-	TileSet *tileSet `xml:"tileset"`
+	Width     int        `xml:"width,attr"`
+	Height    int        `xml:"height,attr"`
+	TileAtlas *tileAtlas `xml:"tileset"`
 	layers
 	LayerIdsInOrder []int
 }
@@ -84,7 +106,7 @@ type layerAny struct {
 type objectPoints struct {
 	Points string `xml:"points,attr"`
 }
-type tileSet struct {
+type tileAtlas struct {
 	Source string `xml:"source,attr"`
 	Image  *struct {
 		Source string `xml:"source,attr"`
@@ -122,7 +144,7 @@ var flipTable = [8]uint32{ // Index: [X Y D]
 	(1 << 31) | (3 << 29), // 7: 111 | flip x + rotation 90
 }
 
-func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
+func loadTiled(tmxFilePath string) (*tileAtlas, *tiled) {
 	var tiled *tiled
 	var mapContent = file.LoadText(tmxFilePath)
 	storage.FromXML(mapContent, &tiled)
@@ -130,15 +152,14 @@ func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
 		return nil, nil // error is in storage
 	}
 
-	if tiled.TileSet == nil {
+	if tiled.TileAtlas == nil {
 		return nil, tiled
 	}
 
-	var tileSet = tiled.TileSet
-	var dir = path.Folder(tmxFilePath)
-	if tileSet.Image == nil {
-		storage.FromXML(file.LoadText(path.New(dir, tileSet.Source)), &tileSet)
-		if tileSet == nil {
+	var atlas, dir = tiled.TileAtlas, path.Folder(tmxFilePath)
+	if atlas.Image == nil {
+		storage.FromXML(file.LoadText(path.New(dir, atlas.Source)), &atlas)
+		if atlas == nil {
 			return nil, nil // error is in storage
 		}
 	}
@@ -149,39 +170,36 @@ func loadTiled(tmxFilePath string) (*tileSet, *tiled) {
 	collection.Reverse(order)
 	tiled.LayerIdsInOrder = order
 
-	tileSet.TilesLookUp = map[uint32]*tile{}
-	for _, t := range tileSet.Tiles {
-		tileSet.TilesLookUp[t.Id] = t
-
+	atlas.TilesLookUp = map[uint32]*tile{}
+	for _, t := range atlas.Tiles {
+		atlas.TilesLookUp[t.Id] = t
 		if t.Objects != nil {
 			t.Points = loadLayerObjects(t.Objects)
 		}
 	}
-	return tileSet, tiled
+	return atlas, tiled
 }
-func loadLayersRecursively(result map[int]string, tmxFilePath, tileSetId string, tiled *tiled, layers *layers) {
+func loadLayersRecursively(result map[int]TileLayerId, tmxFilePath string, atlasId TileAtlasId, tiled *tiled, layers *layers) {
 	for _, layer := range layers.LayersTiles {
-		result[layer.Id] = loadLayerTiles(tmxFilePath, tileSetId, tiled, layer)
+		result[layer.Id] = loadLayerTiles(atlasId, tiled, layer)
 	}
 	for _, layer := range layers.LayersObjects {
-		var dataId = path.New(tmxFilePath, layer.Name)
-		internal.TileLayers[dataId] = &internal.TileLayer{ObjectPoints: loadLayerObjects(layer)}
-		result[layer.Id] = dataId
+		var id = internal.TileLayerNextId
+		internal.TileLayers[id] = &internal.TileLayer{ObjectPoints: loadLayerObjects(layer)}
+		result[layer.Id] = TileLayerId(id)
+		internal.TileLayerNextId++
 	}
 	for _, group := range layers.LayersGroups {
-		loadLayersRecursively(result, tmxFilePath, tileSetId, tiled, group)
+		loadLayersRecursively(result, tmxFilePath, atlasId, tiled, group)
 	}
 }
-func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTiles) string {
+func loadLayerTiles(atlasId TileAtlasId, tiled *tiled, layer *layerTiles) TileLayerId {
 	var tileData = text.Trim(layer.TileData.Tiles)
-	var tiles = make([]uint32, tiled.Width*tiled.Height)
-	var csv = layer.TileData.Encoding == "csv"
-	var dataId = ""
+	var tiles, csv = make([]uint32, tiled.Width*tiled.Height), layer.TileData.Encoding == "csv"
 	var data *internal.TileLayer
-	var tileSet = internal.TileSets[tileSetId]
-
-	dataId = LoadTileData(path.New(tmxFilePath, layer.Name), tiled.Width, tiled.Height)
-	data = internal.TileLayers[dataId]
+	var atlas = internal.TileAtlases[uint8(atlasId)]
+	var dataId = LoadTileLayer(tiled.Width, tiled.Height)
+	data = internal.TileLayers[uint8(dataId)]
 
 	if layer.TileData.Encoding == "base64" {
 		var b64 = text.FromBase64(text.Trim(tileData))
@@ -221,12 +239,12 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 
 			var raw = tiles[index]
 			var id = ((raw & 0x1FFFFFFF) - 1)
-			var tile = tiled.TileSet.TilesLookUp[id]
-			if tile != nil && tile.Objects != nil && tileSet != nil {
-				var tilePts, has = tileSet.PointsPerTile[uint16(tile.Id)]
+			var tile = tiled.TileAtlas.TilesLookUp[id]
+			if tile != nil && tile.Objects != nil && atlas != nil {
+				var tilePts, has = atlas.PointsPerTile[uint16(tile.Id)]
 				if !has {
 					tilePts = loadLayerObjects(tile.Objects)
-					tileSet.PointsPerTile[uint16(tile.Id)] = tilePts
+					atlas.PointsPerTile[uint16(tile.Id)] = tilePts
 				}
 
 				var cellIndex1D = number.Indexes2DToIndex1D(j, i, tiled.Width, tiled.Height)
@@ -263,19 +281,16 @@ func loadLayerTiles(tmxFilePath, tileSetId string, tiled *tiled, layer *layerTil
 			finalTile |= frameSpeed << 16
 			finalTile |= id & 0xFFFF
 
-			var r = uint8((finalTile >> 24) & 0xFF)
-			var g = uint8((finalTile >> 16) & 0xFF)
-			var b = uint8((finalTile >> 8) & 0xFF)
-			var a = uint8((finalTile >> 0) & 0xFF)
+			var r, g = uint8((finalTile >> 24) & 0xFF), uint8((finalTile >> 16) & 0xFF)
+			var b, a = uint8((finalTile >> 8) & 0xFF), uint8((finalTile >> 0) & 0xFF)
 			var col = rl.NewColor(r, g, b, a)
-
 			var index1D = number.Indexes2DToIndex1D(i, j, int(data.Image.Width), int(data.Image.Height))
 			pixels[index1D] = col
 			rl.ImageDrawPixel(data.Image, int32(j), int32(i), col)
 		}
 	}
 	var rect = rl.NewRectangle(0, 0, float32(data.Texture.Width), float32(data.Texture.Height))
-	rl.UpdateTextureRec(*data.Texture, rect, pixels)
+	rl.UpdateTextureRec(data.Texture, rect, pixels)
 	return dataId
 }
 func loadLayerObjects(layer *layerObjects) []float32 {
@@ -295,9 +310,7 @@ func loadLayerObjects(layer *layerObjects) []float32 {
 				data = text.New(0, ",", 0)
 			} else if o.Ellipse != nil {
 				const segments = 32
-				var rx, ry = o.Width / 2, o.Height / 2
-				var step = 360.0 / float32(segments)
-
+				var rx, ry, step = o.Width / 2, o.Height / 2, 360.0 / float32(segments)
 				for i := range segments {
 					var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
 					var x, y = (cx + 1) * rx, (cy + 1) * ry // shift from center-based to tiled's top-left-based
@@ -306,13 +319,11 @@ func loadLayerObjects(layer *layerObjects) []float32 {
 				}
 				closedShape = true
 			} else if o.Capsule != nil {
-				var segments = 16
-				var radius = o.Height / 2
+				var segments, radius = 16, o.Height / 2
 				if o.Width < o.Height {
 					radius = o.Width / 2
 				}
-				var step = 180.0 / float32(segments)
-				var isVertical = o.Height > o.Width
+				var step, isVertical = 180.0 / float32(segments), o.Height > o.Width
 				if isVertical {
 					for i := range segments + 1 {
 						var cx, cy = point.MoveAtAngle(0, 0, 180.0+float32(i)*step, 1)
@@ -368,10 +379,7 @@ func tilesFromBytes(data []byte) []uint32 {
 	if len(data)%4 != 0 {
 		return nil
 	}
-
-	var numElements = len(data) / 4
-	var result = make([]uint32, numElements)
-	var reader = bytes.NewReader(data)
+	var result, reader = make([]uint32, len(data)/4), bytes.NewReader(data)
 	var err = binary.Read(reader, binary.LittleEndian, &result)
 	if err != nil {
 		return nil

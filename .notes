@@ -1,8 +1,7 @@
 TODO:
-textbox rework
+tilemap
 gui rework
 geometry rework
-graphics rework, shape render, text render
 event system, maybe game side? not sure
 translations
 steam

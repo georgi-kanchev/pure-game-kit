@@ -17,45 +17,10 @@ type ImageData struct {
 	CropX, CropY, CropWidth, CropHeight float32
 }
 
-type AtlasRect struct {
-	CellX, CellY,
-	CountX, CountY float32
-	AtlasId   string
-	Rotations int
-	Flip      bool
-}
-type Atlas struct {
-	TextureId string
-	CellWidth, CellHeight,
-	Gap int
-}
-type TileLayer struct {
-	Image   *rl.Image
-	Texture *rl.Texture2D
-
-	LastDirtyTime   float32
-	CellsWithPoints map[int]struct{}
-	ObjectPoints    []float32
-}
-type TileSet struct {
-	ImageId               int32
-	TileWidth, TileHeight int
-	PointsPerTile         map[uint16][]float32
-}
-
-//=================================================================
-
-var TileLayers = make(map[string]*TileLayer)
-var TileSets = make(map[string]*TileSet)
-
 //=================================================================
 
 var WindowWidth, WindowHeight float32
 var WindowHovered, WindowFocused, WindowJustResized bool
-
-//=================================================================
-
-var sineTable [3600]float32
 
 //=================================================================
 
@@ -99,6 +64,8 @@ func SinCos(degrees float32) (sin, cos float32) {
 }
 
 // private ========================================================
+
+var sineTable [3600]float32
 
 func moveAtAngle(x, y, angle, step float32) (float32, float32) {
 	var sin, cos = SinCos(angle)
