@@ -137,6 +137,13 @@ func SetTargetFPS(fps uint8) {
 
 //=================================================================
 
+func MousePosition() (x, y float32) {
+	return internal.MouseX, internal.MouseY
+}
+func MouseDelta() (deltaX, deltaY float32) {
+	return internal.MouseDeltaX, internal.MouseDeltaY
+}
+
 func Size() (width, height float32) {
 	return internal.WindowWidth, internal.WindowHeight
 }

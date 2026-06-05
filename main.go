@@ -29,17 +29,17 @@ func main() {
 		left.DrawColor(palette.DarkGray)
 		left.DrawGrid(2, 100, 100, palette.Gray)
 		left.DrawObjects(&obj)
-		var lx, ly = left.PointFromEdge(0, 0)
-		left.DrawText(lx, ly, 100, 0, palette.White, "Hello, World!")
+		var lx, ly = left.PointFromScreen(left.WindowArea.X+10, left.WindowArea.Y+10)
+		left.DrawText(lx, ly, 100, 0, palette.White, "Left View")
 
 		var margin float32 = 300
-		right.WindowArea = graphics.NewArea(w/2+margin/2, margin/2, w/2-margin, h-margin)
+		right.WindowArea = graphics.NewArea(w/2-margin/2, margin/2, w/2-margin, h-margin)
 		right.Zoom = number.Map(number.Sine(time.Running()/3), -1, 1, 0.5, 4)
-		right.DrawColor(palette.DarkGray)
+		// right.DrawColor(palette.DarkGray)
 		right.DrawGrid(2, 100, 100, palette.Gray)
 		right.DrawObjects(&obj)
-		var rx, ry = right.PointFromEdge(0, 0)
-		right.DrawText(rx, ry, 100, 0, palette.White, "Hello, World!")
+		var rx, ry = right.PointFromScreen(right.WindowArea.X+10, right.WindowArea.Y+10)
+		right.DrawText(rx, ry, 100, 0, palette.White, "Right View")
 
 		if keyboard.IsKeyJustPressed(key.F5) {
 			print(debug.MemoryUsage())
