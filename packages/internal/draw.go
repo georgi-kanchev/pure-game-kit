@@ -87,6 +87,7 @@ var ViewX, ViewY, ViewZoom, ViewAngle float32
 
 func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
+	var borderSz = eff.BorderSize * ViewZoom
 
 	if ViewAngle != 0 || ViewZoom != 1 || ViewX != 0 || ViewY != 0 {
 		var cx, cy = dst.X + dst.Width/2, dst.Y + dst.Height/2
@@ -117,11 +118,10 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	}
 
 	var padU, padV float32
-	if kind != KindText && eff.BorderSize > 0 { // no border padding for text symbols
-		var padX, padY = eff.BorderSize, eff.BorderSize
-		padU, padV = eff.BorderSize*(u2-u1)/dst.Width, eff.BorderSize*(v2-v1)/dst.Height
-		dx[0], dx[1], dx[2], dx[3] = dx[0]-padX, dx[1]-padX, dx[2]+padX, dx[3]+padX
-		dy[0], dy[3], dy[1], dy[2] = dy[0]-padY, dy[3]-padY, dy[1]+padY, dy[2]+padY
+	if kind != KindText && borderSz > 0 { // no border padding for text symbols
+		padU, padV = borderSz*(u2-u1)/dst.Width, borderSz*(v2-v1)/dst.Height
+		dx[0], dx[1], dx[2], dx[3] = dx[0]-borderSz, dx[1]-borderSz, dx[2]+borderSz, dx[3]+borderSz
+		dy[0], dy[3], dy[1], dy[2] = dy[0]-borderSz, dy[3]-borderSz, dy[1]+borderSz, dy[2]+borderSz
 		uvs[0], uvs[2], uvs[4], uvs[6] = uvs[0]-padU, uvs[2]-padU, uvs[4]+padU, uvs[6]+padU
 		uvs[1], uvs[7], uvs[3], uvs[5] = uvs[1]-padV, uvs[7]-padV, uvs[3]+padV, uvs[5]+padV
 	}
@@ -132,7 +132,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
 	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(col.Tint(eff.BorderColor, eff.Tint))
 	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
-	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, eff.BorderSize, kind)
+	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, borderSz, kind)
 	var tx, ty, tz, tw float32
 	var os = uint8(number.Limit(eff.OutlineSize, 0, 255))
 	switch kind {
