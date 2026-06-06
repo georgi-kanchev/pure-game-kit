@@ -260,6 +260,8 @@ void main() {
 
     vec4 color;
 
+    gl_FragDepth = depthZ;
+
     if (objKind == KIND_TEXT) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
         color = compute_msdf_text();
         if (color.a < 0.004)
@@ -267,31 +269,29 @@ void main() {
 
         color = compute_color_adjust(color, colorAdjust1);
         finalColor = color;
-    } else {
-        vec2 uv = compute_tile(texSize, tileColumns, tileRows, tileSize, tileSize);
-        if (objKind == KIND_SHAPE) { // Shape: use vertex color as fill, skip pixelate/blur
-            color = fragColor;
-        } else { // Sprite / Tilemap
-            uv = compute_pixelated_uv(uv, texSize, pixelSize);
-            color = compute_blur(uv, texSize, blur);
-            color = compute_outline(color, uv, texSize, outlineSize);
-            color *= fragColor;
-        }
-        
-        if (objKind != KIND_TILEMAP) {
-            color = compute_sdf_shape(color, roundness, borderSize, borderColor, cropBoundsU, cropBoundsV);
-        }
-        
-        if (color.a < 0.004)
-            discard; // helps DepthZ
-        
-        if (objKind != KIND_SHAPE) {
-            color = compute_color_adjust(color, colorAdjust1);
-            color = compute_silhouette(color);
-        }
-        
-        finalColor = color;
+        return;
     }
 
-    gl_FragDepth = depthZ;
+    vec2 uv = compute_tile(texSize, tileColumns, tileRows, tileSize, tileSize);
+    if (objKind == KIND_SHAPE) { // Shape: use vertex color as fill, skip pixelate/blur
+        color = fragColor;
+    } else { // Sprite / Tilemap
+        uv = compute_pixelated_uv(uv, texSize, pixelSize);
+        color = compute_blur(uv, texSize, blur);
+        color = compute_outline(color, uv, texSize, outlineSize);
+        color *= fragColor;
+    }
+    
+    if (objKind != KIND_SHAPE)
+        color = compute_silhouette(color);
+    
+    color = compute_sdf_shape(color, roundness, borderSize, borderColor, cropBoundsU, cropBoundsV);
+    
+    if (color.a < 0.004)
+        discard; // helps DepthZ
+    
+    if (objKind != KIND_SHAPE)
+        color = compute_color_adjust(color, colorAdjust1);
+    
+    finalColor = color;
 }
