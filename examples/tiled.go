@@ -12,7 +12,7 @@ func Tiled() {
 	var view = graphics.NewView(3)
 	var atlasId, layerIds = assets.LoadTiledLayers("examples/data/map.tmx")
 
-	var obj = graphics.NewTilemap(1, atlasId, layerIds[0])
+	var obj = graphics.NewTilemap(1, atlasId, layerIds[2])
 
 	obj.Effects.BorderSize = 2
 	obj.Effects.BorderColor = palette.Cyan

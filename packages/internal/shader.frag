@@ -140,9 +140,7 @@ vec2 compute_tile(vec2 texSize, float tileColumns, float tileRows, float tileW, 
     localUV = rot == 2u ? vec2(-localUV.x, -localUV.y) : localUV;
     localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV;
     localUV += 0.5;
-
-    localUV = mix(localUV, vec2(0.5), 1.0 / vec2(tileW, tileH));
-
+    
     vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
     return (coord + localUV) / atlasSizeInTiles;
 }

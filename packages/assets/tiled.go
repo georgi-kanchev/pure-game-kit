@@ -23,6 +23,7 @@ type TileAtlasId uint8
 func LoadTileAtlas(pngPath string, tileSize int) TileAtlasId {
 	internal.TileAtlasNextId++
 	var id, imageId = internal.TileAtlasNextId, LoadImage(pngPath)
+	rl.SetTextureFilter(internal.Images[int32(imageId)].Texture, rl.FilterPoint)
 	var atlas = &internal.TileAtlas{
 		ImageId: int32(imageId), TileSize: tileSize, PointsPerTile: make(map[uint16][]float32)}
 	internal.TileAtlases[id] = atlas
