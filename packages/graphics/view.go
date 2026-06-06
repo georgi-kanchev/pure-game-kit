@@ -189,7 +189,7 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 }
 func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, color, 0
+	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, "", 0, 0
 	v.DrawObjects(obj)
 }
@@ -209,67 +209,66 @@ func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color ui
 	obj.X, obj.Y = point.MoveAtAngle(x, y, obj.Angle+90, obj.Height/2)
 	v.DrawObjects(obj)
 }
-func (v *View) DrawObjects(objects ...*Object) {
+func (v *View) DrawObjects(object *Object) {
 	internal.ViewArea = internal.Area(v.windowArea())
 	internal.ViewX, internal.ViewY, internal.ViewZoom, internal.ViewAngle = v.X, v.Y, v.Zoom, v.Angle
 
-	for _, o := range objects {
-		if o == nil || !v.IsAreaVisible(o.Bounds()) {
-			continue
-		}
-
-		if o.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
-			internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
-			continue
-		}
-
-		var prevImageId = o.ImageId
-		if o.Text != "" {
-			if o.TextBatch {
-				internal.IsRecording = true
-				internal.CurrentBatchRecord = make([]*internal.Batch, 0)
-			}
-			if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
-				o.ImageId = assets.ImageId(o.TextFontId)
-			}
-		}
-
-		var mask = internal.Area(o.Mask)
-		if o.Mask != (Area{}) {
-			mask.X += float32(internal.WindowWidth) / 2
-			mask.Y += float32(internal.WindowHeight) / 2
-		}
-
-		var eff = (*internal.Effects)(&o.Effects)
-
-		if o.TileAtlasId != 0 && o.TileLayerId != 0 {
-			var layer = internal.TileLayers[uint8(o.TileLayerId)]
-			var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
-			if layer.Image != nil {
-				var tex = internal.Images[atlas.ImageId]
-				var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
-				var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
-				var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
-				internal.Queue(tex.Texture, layer.Texture, src, dst, o.Angle, 0, mask, eff, 3, uint8(atlas.TileSize), cols, rows)
-			}
-			continue
-		}
-		v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
-
-		if o.Text != "" {
-			v.queueText(o, mask)
-			if o.TextBatch {
-				internal.CloseBatch()
-				o.textBatches = internal.CurrentBatchRecord
-				internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentBatchRecord...)
-				internal.IsRecording = false
-				for _, b := range internal.CurrentBatchRecord {
-					b.IsMeshDirty = true
-				}
-			}
-		}
-		o.ImageId = prevImageId
+	var o = object
+	if o == nil || !v.IsAreaVisible(o.Bounds()) {
+		return
 	}
+
+	if o.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
+		internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
+		return
+	}
+
+	var prevImageId = o.ImageId
+	if o.Text != "" {
+		if o.TextBatch {
+			internal.IsRecording = true
+			internal.CurrentBatchRecord = make([]*internal.Batch, 0)
+		}
+		if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
+			o.ImageId = assets.ImageId(o.TextFontId)
+		}
+	}
+
+	var mask = internal.Area(o.Mask)
+	if o.Mask != (Area{}) {
+		mask.X += float32(internal.WindowWidth) / 2
+		mask.Y += float32(internal.WindowHeight) / 2
+	}
+
+	var eff = (*internal.Effects)(&o.Effects)
+
+	if o.TileAtlasId != 0 && o.TileLayerId != 0 {
+		var layer = internal.TileLayers[uint8(o.TileLayerId)]
+		var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
+		if layer.Image != nil {
+			var tex = internal.Images[atlas.ImageId]
+			var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+			var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
+			var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
+			internal.Queue(tex.Texture, layer.Texture, src, dst, o.Angle, 0, mask, eff, 3, uint8(atlas.TileSize), cols, rows)
+		}
+		return
+	}
+	v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
+
+	if o.Text != "" {
+		v.queueText(o, mask)
+		if o.TextBatch {
+			internal.CloseBatch()
+			o.textBatches = internal.CurrentBatchRecord
+			internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentBatchRecord...)
+			internal.IsRecording = false
+			for _, b := range internal.CurrentBatchRecord {
+				b.IsMeshDirty = true
+			}
+		}
+	}
+	o.ImageId = prevImageId
 }
 
 // private ========================================================
@@ -369,9 +368,6 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop Area, eff
 	if imageId == 0 || tex.Texture.Width == 0 {
 		imageId = 0 // fallback to default texture
 		tex = internal.Images[imageId]
-		if eff.TextLineHeight == 0 && eff.TextColor == 0 {
-			eff.FillColor = eff.Tint
-		}
 	} else {
 		kind = internal.KindSprite
 	}

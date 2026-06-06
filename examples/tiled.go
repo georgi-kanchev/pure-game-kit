@@ -12,26 +12,31 @@ func Tiled() {
 	var view = graphics.NewView(3)
 	var atlasId, layerIds = assets.LoadTiledLayers("examples/data/map.tmx")
 
-	var layers []*graphics.Object
+	var layers []graphics.Object
 	for _, id := range layerIds {
 		var layer = graphics.NewTilemap(1, atlasId, id)
-		layers = append(layers, &layer)
+		layers = append(layers, layer)
 	}
 
 	var shapes = layers[1].TilemapShapes()
-	var objs []*graphics.Object
+	var objs []graphics.Object
 	for _, v := range shapes {
-		var obj = &graphics.Object{Shape: v}
-		obj.Effects.Tint = palette.Red
-		// obj.Effects.FillColor = palette.Red
+		var obj = graphics.Object{Shape: v}
+		obj.Effects.Tint = palette.White
+		obj.Effects.FillColor = palette.Red
 		objs = append(objs, obj)
 	}
 
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
-		view.DrawGrid(1, 16, 16, palette.Gray)
-		view.DrawObjects(layers...)
-		view.DrawObjects(objs...)
+		view.DrawGrid(1, 16, 16, palette.DarkGray)
+
+		for _, l := range layers {
+			view.DrawObjects(&l)
+		}
+		for _, o := range objs {
+			view.DrawObjects(&o)
+		}
 	}
 }
