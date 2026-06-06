@@ -17,29 +17,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type TileLayerId uint8
-type TileAtlasId uint8
-
-func LoadTileAtlas(pngPath string, tileWidth, tileHeight int) TileAtlasId {
-	internal.TileAtlasNextId++
-	var id, imageId = internal.TileAtlasNextId, LoadImage(pngPath)
-	var atlas = &internal.TileAtlas{
-		ImageId: int32(imageId), TileWidth: tileWidth, TileHeight: tileHeight, PointsPerTile: make(map[uint16][]float32)}
-	internal.TileAtlases[id] = atlas
-	return TileAtlasId(id)
-}
-func LoadTileLayer(columns, rows int) TileLayerId {
-	internal.TileLayerNextId++
-	columns, rows = number.Limit(columns, 1, 2048), number.Limit(rows, 1, 2048)
-
-	var id = internal.TileLayerNextId
-	var data = &internal.TileLayer{Image: rl.GenImageColor(columns, rows, rl.Blank), CellsWithPoints: make(map[int]struct{})}
-	var tex = rl.LoadTextureFromImage(data.Image)
-	rl.SetTextureFilter(tex, rl.FilterPoint)
-	data.Texture = tex
-	internal.TileLayers[id] = data
-	return TileLayerId(id)
-}
 func LoadTiledLayers(tmxPath string) (atlasId TileAtlasId, layerIds []TileLayerId) {
 	var tileAtlas, tiled = loadTiled(tmxPath)
 	var result, dir = make(map[int]TileLayerId), path.Folder(tmxPath)

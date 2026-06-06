@@ -39,6 +39,7 @@ type Object struct {
 
 	// tilemap ========================================================
 
+	TileAtlasId assets.TileAtlasId
 	TileLayerId assets.TileLayerId
 }
 
@@ -84,8 +85,15 @@ func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) 
 	eff.FillColor = palette.DarkGray
 	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: eff}
 }
-func NewTilemap(atlasImageId assets.ImageId, tileLayerId assets.TileLayerId) Object {
-	return Object{Shape: geometry.NewRectangle(0, 0, 100, 100, 0), TileLayerId: tileLayerId, Effects: Effects(internal.DefaultEffects)}
+func NewTilemap(atlasId assets.TileAtlasId, layerId assets.TileLayerId) Object {
+	var tilemap = Object{TileAtlasId: atlasId, TileLayerId: layerId, Effects: Effects(internal.DefaultEffects)}
+	var atlas = internal.TileAtlases[uint8(atlasId)]
+	var data = internal.TileLayers[uint8(layerId)]
+	if atlas != nil && data != nil && data.Image.Width != 0 {
+		tilemap.Width = float32(data.Image.Width * int32(atlas.TileWidth))
+		tilemap.Height = float32(data.Image.Height * int32(atlas.TileHeight))
+	}
+	return tilemap
 }
 
 //=================================================================
@@ -129,7 +137,7 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 	return o.PointToGlobal(o.Width*edgeX, o.Height*edgeY)
 }
 
-//=================================================================
+// text ===========================================================
 
 // Works only when TextIsBatched is true. Needs to be called when the textbox visuals require a change.
 // The update happens upon draw so calling this multiple times per frame is fine.
