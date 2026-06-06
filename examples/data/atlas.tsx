@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.2" name="atlas" tilewidth="16" tileheight="16" tilecount="336" columns="21">
+<tileset version="1.10" tiledversion="1.12.2" name="atlas" tilewidth="16" tileheight="16" tilecount="336" columns="21">
  <image source="atlas.png" width="336" height="256"/>
+ <tile id="21">
+  <objectgroup draworder="index" id="2">
+   <object id="2" x="6" y="7" width="15" height="13">
+    <capsule/>
+   </object>
+  </objectgroup>
+ </tile>
  <tile id="22">
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="4" width="16" height="12"/>

@@ -5,11 +5,11 @@ import rl "github.com/gen2brain/raylib-go/raylib"
 type TileLayer struct {
 	Image         *rl.Image
 	Texture       rl.Texture2D
-	Columns, Rows int
+	Columns, Rows int // present because Object layers don't have an Image data to get size from
 
 	LastDirtyTime   float32
-	CellsWithPoints map[int]struct{}
-	Objects         [][6]float32 // was ObjectPoints []float32 — each Shape represents one Tiled object
+	CellsWithPoints map[int]struct{} // hash set, 0 byte per value, only check if key is present
+	Objects         [][6]float32     // was ObjectPoints []float32 — each Shape represents one Tiled object
 }
 type TileAtlas struct {
 	ImageId       int32

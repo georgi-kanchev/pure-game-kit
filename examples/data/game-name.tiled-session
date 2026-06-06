@@ -47,8 +47,8 @@
         },
         "atlas.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 0.75,
-            "scaleInEditor": 8
+            "scaleInDock": 4,
+            "scaleInEditor": 5.5
         },
         "desert.tmx": {
             "expandedObjectLayers": [
@@ -73,11 +73,11 @@
             "expandedObjectLayers": [
                 5
             ],
-            "scale": 1,
-            "selectedLayer": 1,
+            "scale": 8,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 118,
-                "y": 246.5
+                "x": 247.125,
+                "y": 122.8125
             }
         },
         "map.tmx#atlas": {
@@ -128,15 +128,16 @@
     "map.tileWidth": 12,
     "map.width": 1,
     "openFiles": [
-        "map.tmx"
+        "map.tmx",
+        "atlas.tsx"
     ],
     "project": "game-name.tiled-project",
     "property.type": "list",
     "recentFiles": [
+        "atlas.tsx",
         "map.tmx",
         "/home/gojur/Desktop/atlas.tsx",
         "/home/gojur/code/battle-brothers-clone/data/worlds/01/points.tmx",
-        "atlas.tsx",
         "/home/gojur/code/battle-brothers-clone/data/battlegrounds/tiles.tsx",
         "/home/gojur/code/battle-brothers-clone/data/battlegrounds/test/map.tmx",
         "/home/gojur/code/battle-brothers-clone/data/worlds/01/shapes.tmx",

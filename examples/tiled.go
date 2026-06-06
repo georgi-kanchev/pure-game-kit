@@ -27,6 +27,15 @@ func Tiled() {
 		objs = append(objs, obj)
 	}
 
+	var cellShapes = layers[3].TilemapShapes()
+	var cellObjs []graphics.Object
+	for _, v := range cellShapes {
+		var obj = graphics.Object{Shape: v}
+		obj.Effects.Tint = palette.White
+		obj.Effects.FillColor = palette.Red
+		cellObjs = append(cellObjs, obj)
+	}
+
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
@@ -37,6 +46,9 @@ func Tiled() {
 		}
 		for _, o := range objs {
 			view.DrawObjects(&o)
+		}
+		for _, c := range cellObjs {
+			view.DrawObjects(&c)
 		}
 	}
 }

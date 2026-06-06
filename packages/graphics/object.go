@@ -326,7 +326,11 @@ func (o *Object) TilemapShapesFromTile(tileId uint16) []geometry.Shape {
 }
 
 func (o *Object) TilemapSize() (columns, rows int) {
-	return 1, 1
+	var layer = internal.TileLayers[uint8(o.TileLayerId)]
+	if layer == nil {
+		return 0, 0
+	}
+	return layer.Columns, layer.Rows
 }
 func (o *Object) TilemapSizeTile() (width, height float32) {
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
