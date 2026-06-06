@@ -35,7 +35,8 @@ func LoadTileLayer(columns, rows int) TileLayerId {
 	columns, rows = number.Limit(columns, 1, 2048), number.Limit(rows, 1, 2048)
 
 	var id = internal.TileLayerNextId
-	var data = &internal.TileLayer{Image: rl.GenImageColor(columns, rows, rl.Blank), CellsWithPoints: make(map[int]struct{})}
+	var data = &internal.TileLayer{Columns: columns, Rows: rows,
+		Image: rl.GenImageColor(columns, rows, rl.Blank), CellsWithPoints: make(map[int]struct{})}
 	var tex = rl.LoadTextureFromImage(data.Image)
 	rl.SetTextureFilter(tex, rl.FilterPoint)
 	data.Texture = tex
@@ -189,7 +190,7 @@ func loadLayersRecursively(result map[int]TileLayerId, tmxFilePath string, atlas
 	for _, layer := range layers.LayersObjects {
 		internal.TileLayerNextId++
 		var id = internal.TileLayerNextId
-		internal.TileLayers[id] = &internal.TileLayer{Objects: loadLayerObjects(layer)}
+		internal.TileLayers[id] = &internal.TileLayer{Objects: loadLayerObjects(layer), Columns: tiled.Width, Rows: tiled.Height}
 		result[layer.Id] = TileLayerId(id)
 	}
 	for _, group := range layers.LayersGroups {

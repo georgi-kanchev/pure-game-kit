@@ -91,11 +91,11 @@ func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) 
 }
 func NewTilemap(scale float32, atlasId assets.TileAtlasId, layerId assets.TileLayerId) Object {
 	var tilemap = Object{TileAtlasId: atlasId, TileLayerId: layerId, Effects: Effects(internal.DefaultEffects)}
+	var layer = internal.TileLayers[uint8(layerId)]
 	var atlas = internal.TileAtlases[uint8(atlasId)]
-	var data = internal.TileLayers[uint8(layerId)]
-	if atlas != nil && data != nil && data.Image != nil {
-		tilemap.Width = float32(data.Image.Width*int32(atlas.TileSize)) * scale
-		tilemap.Height = float32(data.Image.Height*int32(atlas.TileSize)) * scale
+	if atlas != nil && layer != nil {
+		tilemap.Width = float32(layer.Columns) * float32(atlas.TileSize) * scale
+		tilemap.Height = float32(layer.Columns) * float32(atlas.TileSize) * scale
 	}
 	return tilemap
 }
@@ -283,7 +283,8 @@ func (o *Object) TilemapShapes() []geometry.Shape {
 	if layer.Image == nil || layer.Texture.Width == 0 { // is object layer
 		var result = make([]geometry.Shape, len(layer.Objects))
 		for i, s := range layer.Objects {
-			result[i] = geometry.Shape{X: s[0], Y: s[1], Width: s[2], Height: s[3], Angle: s[4], Roundness: s[5]}
+			var x, y = o.PointToGlobal(s[0], s[1])
+			result[i] = geometry.Shape{X: x, Y: y, Width: s[2], Height: s[3], Angle: s[4], Roundness: s[5]}
 		}
 		return result
 	}
@@ -301,7 +302,12 @@ func (o *Object) TilemapShapesAtCell(column, row int) []geometry.Shape {
 	if tile.Id == 0 {
 		return nil
 	}
-	return o.TilemapShapesFromTile(tile.Id)
+	var tw, th = o.TilemapSizeTile()
+	var shapes = o.TilemapShapesFromTile(tile.Id)
+	for i := range shapes {
+		shapes[i].X, shapes[i].Y = o.PointToGlobal(shapes[i].X+float32(column)*tw, shapes[i].Y+float32(row)*th)
+	}
+	return shapes
 }
 func (o *Object) TilemapShapesFromTile(tileId uint16) []geometry.Shape {
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]

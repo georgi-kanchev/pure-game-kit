@@ -22,8 +22,8 @@ func Tiled() {
 	var objs []*graphics.Object
 	for _, v := range shapes {
 		var obj = &graphics.Object{Shape: v}
-		obj.Effects.Tint = palette.White
-		obj.Effects.FillColor = palette.Red
+		obj.Effects.Tint = palette.Red
+		// obj.Effects.FillColor = palette.Red
 		objs = append(objs, obj)
 	}
 

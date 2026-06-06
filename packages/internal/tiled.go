@@ -3,8 +3,9 @@ package internal
 import rl "github.com/gen2brain/raylib-go/raylib"
 
 type TileLayer struct {
-	Image   *rl.Image
-	Texture rl.Texture2D
+	Image         *rl.Image
+	Texture       rl.Texture2D
+	Columns, Rows int
 
 	LastDirtyTime   float32
 	CellsWithPoints map[int]struct{}

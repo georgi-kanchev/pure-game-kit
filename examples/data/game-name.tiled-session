@@ -47,7 +47,7 @@
         },
         "atlas.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 5.5,
+            "scaleInDock": 0.75,
             "scaleInEditor": 8
         },
         "desert.tmx": {
@@ -73,11 +73,11 @@
             "expandedObjectLayers": [
                 5
             ],
-            "scale": 2,
+            "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1143.75,
-                "y": 624.75
+                "x": 118,
+                "y": 246.5
             }
         },
         "map.tmx#atlas": {
