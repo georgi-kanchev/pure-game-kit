@@ -21,6 +21,8 @@ type Batch struct {
 	vertCount, indexCount int32
 
 	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
+
+	tileDataTex rl.Texture2D // tile layer texture (set only for KindTilemap batches)
 }
 type Vertex struct {
 	X, Y, U, V     float32
@@ -85,7 +87,7 @@ var ViewX, ViewY, ViewZoom, ViewAngle float32
 
 //=================================================================
 
-func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind, tileSz uint8, cols, rows uint16) {
+func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind, tileSz uint8, cols, rows uint16) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 	var borderSz = eff.BorderSize * ViewZoom
 
@@ -174,7 +176,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		}
 		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], clipMask)
 		if vCount >= 3 {
-			queueVertices(clipResultBuf[:vCount], tex, finalColor)
+			queueVertices(clipResultBuf[:vCount], tex, finalColor, tiles)
 		}
 		return
 	}
@@ -194,7 +196,7 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
 	}
-	queueVertices(polygonBuf[:4], tex, finalColor)
+	queueVertices(polygonBuf[:4], tex, finalColor, tiles)
 }
 
 func ResetBatches() {
@@ -238,6 +240,9 @@ func Draw() {
 			rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
 			b.mesh.TriangleCount = b.indexCount / 3
 		}
+		if b.tileDataTex.ID != 0 {
+			rl.SetShaderValueTexture(Shader, ShaderTileDataLoc, b.tileDataTex)
+		}
 		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
 	}
 }
@@ -276,19 +281,17 @@ func newBatch() *Batch {
 
 	b.material = DefaultMaterial
 	b.material.Maps = &rl.MaterialMap{
-		Texture: DefaultMaterial.Maps.Texture,
-		Color:   DefaultMaterial.Maps.Color,
-		Value:   DefaultMaterial.Maps.Value,
-	}
+		Texture: DefaultMaterial.Maps.Texture, Color: DefaultMaterial.Maps.Color, Value: DefaultMaterial.Maps.Value}
 	b.material.Shader = Shader
 	return b
 }
-func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color) {
+func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, tileTex rl.Texture2D) {
 	if ActiveBatch != nil {
 		var texChanged = ActiveBatch.material.Maps.Texture.ID != tex.ID
+		var tileTexChanged = ActiveBatch.tileDataTex.ID != tileTex.ID
 		var outOfSpace = ActiveBatch.vertCount+int32(len(verts)) > ActiveBatch.mesh.VertexCount
 
-		if texChanged || outOfSpace { // do we need to break the batch?
+		if texChanged || tileTexChanged || outOfSpace { // do we need to break the batch?
 			if ActiveBatch.vertCount > 0 {
 				if IsRecording {
 					ActiveBatch.isRecord = true
@@ -316,6 +319,7 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color) {
 		ActiveBatch.indexCount = 0
 		ActiveBatch.material.Maps.Texture = tex
 		ActiveBatch.material.Shader = Shader
+		ActiveBatch.tileDataTex = tileTex
 	}
 
 	var b = ActiveBatch

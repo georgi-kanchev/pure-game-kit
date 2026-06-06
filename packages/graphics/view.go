@@ -250,7 +250,7 @@ func (v *View) DrawObjects(objects ...*Object) {
 				var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
 				var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
 				var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
-				internal.Queue(tex.Texture, src, dst, o.Angle, 0, mask, eff, internal.KindTilemap, uint8(atlas.TileSize), cols, rows)
+				internal.Queue(tex.Texture, layer.Texture, src, dst, o.Angle, 0, mask, eff, 3, uint8(atlas.TileSize), cols, rows)
 			}
 			continue
 		}
@@ -344,15 +344,15 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
 			} else {
 				if r != ' ' && r != '\n' {
-					internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
+					internal.Queue(atlasTex, rl.Texture2D{}, src, dst, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 				if eff.TextUnderline {
 					var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
-					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
+					internal.Queue(atlasTex, rl.Texture2D{}, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 				if eff.TextCrossout {
 					var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
-					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
+					internal.Queue(atlasTex, rl.Texture2D{}, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
@@ -380,7 +380,7 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop Area, eff
 	}
 	var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
 	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
-	internal.Queue(tex.Texture, src, dst, a, r, mask, eff, kind, 0, 0, 0)
+	internal.Queue(tex.Texture, rl.Texture2D{}, src, dst, a, r, mask, eff, kind, 0, 0, 0)
 	eff.FillColor = prevFill
 }
 
