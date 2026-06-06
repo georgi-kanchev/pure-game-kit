@@ -241,7 +241,17 @@ func (v *View) DrawObjects(objects ...*Object) {
 		}
 
 		var eff = (*internal.Effects)(&o.Effects)
-		v.queueShapeOrSprite(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
+
+		if o.TileAtlasId != 0 && o.TileLayerId != 0 {
+			// var layer = internal.TileLayers[uint8(o.TileLayerId)]
+			var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
+			var tex = internal.Images[atlas.ImageId]
+			var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+			var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
+			internal.Queue(tex.Texture, src, dst, o.Angle, 0, mask, eff, internal.KindTilemap)
+			continue
+		}
+		v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
 
 		if o.Text != "" {
 			v.queueText(o, mask)
@@ -327,7 +337,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 				var x, y = dst.X + dst.Width/2, dst.Y + dst.Height/2
 				var area = NewArea(src.X, src.Y, src.Width, src.Height)
 				eff.FillColor, eff.OutlineColor = 0, 0
-				v.queueShapeOrSprite(x, y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, area, eff, mask)
+				v.queueQuad(x, y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, area, eff, mask)
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
 			} else {
 				if r != ' ' && r != '\n' {
@@ -349,7 +359,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
 }
-func (v *View) queueShapeOrSprite(x, y, w, h, a, r float32, imageId int32, crop Area, eff *internal.Effects, mask internal.Area) {
+func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop Area, eff *internal.Effects, mask internal.Area) {
 	var tex = internal.Images[imageId]
 	var prevFill = eff.FillColor
 	var kind uint8

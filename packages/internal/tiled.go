@@ -5,7 +5,6 @@ import rl "github.com/gen2brain/raylib-go/raylib"
 type TileLayer struct {
 	Image   *rl.Image
 	Texture rl.Texture2D
-	AtlasId uint8
 
 	LastDirtyTime   float32
 	CellsWithPoints map[int]struct{}
