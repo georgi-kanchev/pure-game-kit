@@ -30,7 +30,7 @@
  <group id="3" name="Group Layer 1">
   <layer id="4" name="Tile Layer 3" width="32" height="32">
    <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA+3RsRFAQBRF0VcFekAP6AGpGEUrxWtgd0ew8wP3zNzoBz94EgB800hPKx1d0P/eDW4M+j+52S1B/1e3uT1x9z7yPqq1z+kudyfu7JPfp7bSPgAA4L9ereUkRAAQAAA=
+   H4sIAAAAAAAAA+3RMRJAQBBE0T4F7rDcAXdYUjHuH+tAupRgawL/Vf1ogglaAoBvGtdKWxf0P7neDUH/Rze5Oeh/dotbC/d7H9XaZ3eHOwt39nnep7a3fQAAwH9d6wfNdQAQAAA=
   </data>
   </layer>
  </group>

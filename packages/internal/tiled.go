@@ -7,14 +7,13 @@ type TileLayer struct {
 	Texture       rl.Texture2D
 	Columns, Rows int // present because Object layers don't have an Image data to get size from
 
-	LastDirtyTime   float32
 	CellsWithPoints map[int]struct{} // hash set, 0 byte per value, only check if key is present
-	Objects         [][6]float32     // was ObjectPoints []float32 — each Shape represents one Tiled object
+	Objects         [][6]float32
 }
 type TileAtlas struct {
 	ImageId       int32
 	TileSize      int
-	ShapesPerTile map[uint16][][6]float32 // was PointsPerTile map[uint16][]float32
+	ShapesPerTile map[uint16][][6]float32
 }
 
 //=================================================================

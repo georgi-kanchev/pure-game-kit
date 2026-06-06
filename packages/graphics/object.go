@@ -239,8 +239,6 @@ func (o *Object) TilemapSetArea(column, row, width, height int, tile Tile) {
 			}
 
 			var index1D = number.Indexes2DToIndex1D(j, i, w, h)
-			layer.LastDirtyTime = internal.Runtime
-
 			if cellHasPts {
 				layer.CellsWithPoints[index1D] = struct{}{}
 			} else {
@@ -305,6 +303,19 @@ func (o *Object) TilemapShapesAtCell(column, row int) []geometry.Shape {
 	var tw, th = o.TilemapSizeTile()
 	var shapes = o.TilemapShapesFromTile(tile.Id)
 	for i := range shapes {
+		var relX, relY = shapes[i].X - tw/2, shapes[i].Y - th/2
+		switch tile.Rotations90 {
+		case 1:
+			relX, relY, shapes[i].Angle = -relY, relX, shapes[i].Angle+90
+		case 2:
+			relX, relY, shapes[i].Angle = -relX, -relY, shapes[i].Angle+180
+		case 3:
+			relX, relY, shapes[i].Angle = relY, -relX, shapes[i].Angle+270
+		}
+		if tile.Flip {
+			relX, shapes[i].Angle = -relX, -shapes[i].Angle
+		}
+		shapes[i].X, shapes[i].Y = relX+tw/2, relY+th/2
 		shapes[i].X, shapes[i].Y = o.PointToGlobal(shapes[i].X+float32(column)*tw, shapes[i].Y+float32(row)*th)
 	}
 	return shapes

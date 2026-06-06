@@ -251,7 +251,6 @@ func loadLayerTiles(atlasId TileAtlasId, tiled *tiled, layer *layerTiles) TileLa
 
 				var cellIndex1D = number.Indexes2DToIndex1D(j, i, tiled.Width, tiled.Height)
 				data.CellsWithPoints[cellIndex1D] = struct{}{}
-				data.LastDirtyTime = internal.Runtime
 			}
 
 			var frameCount, frameSpeed, animOffset uint32
