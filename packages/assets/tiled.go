@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/xml"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/is"
@@ -25,7 +26,7 @@ func LoadTileAtlas(pngPath string, tileSize int) TileAtlasId {
 	var id, imageId = internal.TileAtlasNextId, LoadImage(pngPath)
 	rl.SetTextureFilter(internal.Images[int32(imageId)].Texture, rl.FilterPoint)
 	var atlas = &internal.TileAtlas{
-		ImageId: int32(imageId), TileSize: tileSize, PointsPerTile: make(map[uint16][]float32)}
+		ImageId: int32(imageId), TileSize: tileSize, ShapesPerTile: make(map[uint16][][6]float32)}
 	internal.TileAtlases[id] = atlas
 	return TileAtlasId(id)
 }
@@ -126,7 +127,7 @@ type tile struct {
 		Frames []*tileFrame `xml:"frame"`
 	} `xml:"animation"`
 
-	Points []float32
+	Points [][6]float32
 }
 type tileFrame struct {
 	TileId   uint32 `xml:"tileid,attr"`
@@ -188,7 +189,7 @@ func loadLayersRecursively(result map[int]TileLayerId, tmxFilePath string, atlas
 	for _, layer := range layers.LayersObjects {
 		internal.TileLayerNextId++
 		var id = internal.TileLayerNextId
-		internal.TileLayers[id] = &internal.TileLayer{ObjectPoints: loadLayerObjects(layer)}
+		internal.TileLayers[id] = &internal.TileLayer{Objects: loadLayerObjects(layer)}
 		result[layer.Id] = TileLayerId(id)
 	}
 	for _, group := range layers.LayersGroups {
@@ -243,10 +244,10 @@ func loadLayerTiles(atlasId TileAtlasId, tiled *tiled, layer *layerTiles) TileLa
 			var id = ((raw & 0x1FFFFFFF) - 1)
 			var tile = tiled.TileAtlas.TilesLookUp[id]
 			if tile != nil && tile.Objects != nil && atlas != nil {
-				var tilePts, has = atlas.PointsPerTile[uint16(tile.Id)]
+				var tilePts, has = atlas.ShapesPerTile[uint16(tile.Id)]
 				if !has {
 					tilePts = loadLayerObjects(tile.Objects)
-					atlas.PointsPerTile[uint16(tile.Id)] = tilePts
+					atlas.ShapesPerTile[uint16(tile.Id)] = tilePts
 				}
 
 				var cellIndex1D = number.Indexes2DToIndex1D(j, i, tiled.Width, tiled.Height)
@@ -295,84 +296,72 @@ func loadLayerTiles(atlasId TileAtlasId, tiled *tiled, layer *layerTiles) TileLa
 	rl.UpdateTextureRec(data.Texture, rect, pixels)
 	return dataId
 }
-func loadLayerObjects(layer *layerObjects) []float32 {
-	var result []float32
-	for objIndex, o := range layer.Objects {
-		var data = "" // slow motherfucker but builder makes it complicated & slow loading doesn't really matter
-		var closedShape = false
-		if o.Polyline != nil {
-			data = o.Polyline.Points
-		}
+func loadLayerObjects(layer *layerObjects) [][6]float32 {
+	var result [][6]float32
+	for _, o := range layer.Objects {
+
 		if o.Polygon != nil {
-			data = o.Polygon.Points
-			closedShape = true
+			var pts = parsePointPairs(o.Polygon.Points)
+			result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, true)...)
+			continue
 		}
-		if data == "" {
-			if o.Point != nil {
-				data = text.New(0, ",", 0)
-			} else if o.Ellipse != nil {
-				const segments = 32
-				var rx, ry, step = o.Width / 2, o.Height / 2, 360.0 / float32(segments)
-				for i := range segments {
-					var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
-					var x, y = (cx + 1) * rx, (cy + 1) * ry // shift from center-based to tiled's top-left-based
-					var value = text.New(x, ",", y, " ")
-					data += value
-				}
-				closedShape = true
-			} else if o.Capsule != nil {
-				var segments, radius = 16, o.Height / 2
-				if o.Width < o.Height {
-					radius = o.Width / 2
-				}
-				var step, isVertical = 180.0 / float32(segments), o.Height > o.Width
-				if isVertical {
-					for i := range segments + 1 {
-						var cx, cy = point.MoveAtAngle(0, 0, 180.0+float32(i)*step, 1)
-						var x, y = (cx + 1) * radius, (cy + 1) * radius
-						data += text.New(x, ",", y, " ")
-					}
-					for i := range segments + 1 {
-						var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
-						var x, y = (cx + 1) * radius, (cy+1)*radius + (o.Height - 2*radius)
-						data += text.New(x, ",", y, " ")
-					}
-				} else {
-					for i := range segments + 1 {
-						var cx, cy = point.MoveAtAngle(0, 0, 90.0+float32(i)*step, 1)
-						var x, y = (cx + 1) * radius, (cy + 1) * radius
-						data += text.New(x, ",", y, " ")
-					}
-					for i := range segments + 1 {
-						var cx, cy = point.MoveAtAngle(0, 0, 270.0+float32(i)*step, 1)
-						var x, y = (cx+1)*radius + (o.Width - 2*radius), (cy + 1) * radius
-						data += text.New(x, ",", y, " ")
-					}
-				}
-				closedShape = true
-			} else { // assume it's a rectangle
-				data = text.New(0, ",", 0, " ", o.Width, ",", 0, " ", o.Width, ",", o.Height, " ", 0, ",", o.Height)
-				closedShape = true
-			}
+		if o.Polyline != nil {
+			var pts = parsePointPairs(o.Polyline.Points)
+			result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, false)...)
+			continue
 		}
 
-		var corners []float32
-		var pts = text.Split(text.Trim(data), " ")
-		for _, pt := range pts {
-			var xy = text.Split(pt, ",")
-			if len(xy) == 2 {
-				var x, y = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
-				x, y = point.RotateAroundPoint(o.X+x, o.Y+y, o.X, o.Y, o.Rotation)
-				corners = append(corners, x, y)
-			}
+		var cx, cy = o.X + o.Width/2, o.Y + o.Height/2
+
+		if o.Point != nil {
+			result = append(result, [6]float32{o.X, o.Y, 0, 0, 0, 1}) // point = zero-size circle
+		} else if o.Ellipse != nil {
+			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 1})
+		} else if o.Capsule != nil {
+			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 1})
+		} else { // assume rectangle
+			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
 		}
-		if closedShape {
-			corners = append(corners, corners[0], corners[1])
+	}
+	return result
+}
+
+func parsePointPairs(data string) []float32 {
+	var pts []float32
+	var trimmed = text.Trim(data)
+	if trimmed == "" {
+		return pts
+	}
+	for _, pt := range text.Split(trimmed, " ") {
+		var xy = text.Split(pt, ",")
+		if len(xy) == 2 {
+			pts = append(pts, text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1]))
 		}
-		if objIndex > 0 {
-			result = append(result, number.NaN(), number.NaN())
-		}
-		result = append(result, corners...)
+	}
+	return pts
+}
+
+func edgesToLineShapes(originX, originY, rotation float32, pts []float32, closed bool) [][6]float32 {
+	if len(pts) < 4 {
+		return nil
+	}
+	var n = len(pts) / 2
+	var edges = n
+	if !closed {
+		edges = n - 1
+	}
+	var result = make([][6]float32, 0, edges)
+	for i := range edges {
+		var next = (i + 1) % n
+		var x1, y1 = pts[i*2], pts[i*2+1]
+		var x2, y2 = pts[next*2], pts[next*2+1]
+		x1, y1 = point.RotateAroundPoint(originX+x1, originY+y1, originX, originY, rotation)
+		x2, y2 = point.RotateAroundPoint(originX+x2, originY+y2, originX, originY, rotation)
+		var mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+		var dx, dy = x2 - x1, y2 - y1
+		var length = number.SquareRoot(dx*dx + dy*dy)
+		var ang = angle.BetweenPoints(x1, y1, x2, y2)
+		result = append(result, [6]float32{mx, my, length, 0, ang, 0})
 	}
 	return result
 }

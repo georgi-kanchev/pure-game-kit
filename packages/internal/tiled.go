@@ -8,12 +8,12 @@ type TileLayer struct {
 
 	LastDirtyTime   float32
 	CellsWithPoints map[int]struct{}
-	ObjectPoints    []float32
+	Objects         [][6]float32 // was ObjectPoints []float32 — each Shape represents one Tiled object
 }
 type TileAtlas struct {
 	ImageId       int32
 	TileSize      int
-	PointsPerTile map[uint16][]float32
+	ShapesPerTile map[uint16][][6]float32 // was PointsPerTile map[uint16][]float32
 }
 
 //=================================================================

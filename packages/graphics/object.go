@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
-	"pure-game-kit/packages/utility/point"
 	txt "pure-game-kit/packages/utility/text"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -208,10 +207,10 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 
 //=================================================================
 
-func (o *Object) SetTile(column, row int, tile Tile) {
-	o.SetTileArea(column, row, 1, 1, tile)
+func (o *Object) TilemapSet(column, row int, tile Tile) {
+	o.TilemapSetArea(column, row, 1, 1, tile)
 }
-func (o *Object) SetTileArea(column, row, width, height int, tile Tile) {
+func (o *Object) TilemapSetArea(column, row, width, height int, tile Tile) {
 	var layer = internal.TileLayers[uint8(o.TileLayerId)]
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
 	if layer == nil {
@@ -228,13 +227,13 @@ func (o *Object) SetTileArea(column, row, width, height int, tile Tile) {
 	var r, g = uint8((packed >> 24) & 0xFF), uint8((packed >> 16) & 0xFF)
 	var b, a = uint8((packed >> 8) & 0xFF), uint8((packed >> 0) & 0xFF)
 	var colr, rect = rl.NewColor(r, g, b, a), rl.NewRectangle(float32(column), float32(row), float32(width), float32(height))
-	var w, h = o.Size()
-	var _, cellHasPts = atlas.PointsPerTile[tile.Id]
+	var w, h = o.TilemapSize()
+	var _, cellHasPts = atlas.ShapesPerTile[tile.Id]
 
 	for i := row; i < row+height; i++ {
 		for j := column; j < column+width; j++ {
-			var prevTile = o.TileAtCell(j, i)
-			var _, prevCellHasPts = atlas.PointsPerTile[prevTile.Id]
+			var prevTile = o.TilemapAtCell(j, i)
+			var _, prevCellHasPts = atlas.ShapesPerTile[prevTile.Id]
 			if !prevCellHasPts && !cellHasPts {
 				continue
 			}
@@ -256,7 +255,7 @@ func (o *Object) SetTileArea(column, row, width, height int, tile Tile) {
 
 //=================================================================
 
-func (o *Object) TileAtCell(column, row int) Tile {
+func (o *Object) TilemapAtCell(column, row int) Tile {
 	var layer = internal.TileLayers[uint8(o.TileLayerId)]
 	if layer == nil {
 		return Tile{}
@@ -275,75 +274,62 @@ func (o *Object) TileAtCell(column, row int) Tile {
 	}
 }
 
-func (o *Object) Points() []float32 {
+func (o *Object) TilemapShapes() []geometry.Shape {
 	var layer = internal.TileLayers[uint8(o.TileLayerId)]
 	if layer == nil {
 		return nil
 	}
 
 	if layer.Image == nil || layer.Texture.Width == 0 { // is object layer
-		var copy = collection.Copy(layer.ObjectPoints)
-		for p := 0; p < len(copy); p += 2 {
-			copy[p], copy[p+1] = o.PointToGlobal(copy[p], copy[p+1])
+		var result = make([]geometry.Shape, len(layer.Objects))
+		for i, s := range layer.Objects {
+			result[i] = geometry.Shape{X: s[0], Y: s[1], Width: s[2], Height: s[3], Angle: s[4], Roundness: s[5]}
 		}
-		return copy
+		return result
 	}
 
-	var w, h = o.Size()
-	var result = make([]float32, 0, 32)
-	var afterFirst = false
+	var w, h = o.TilemapSize()
+	var result []geometry.Shape
 	for cellIndex1D := range layer.CellsWithPoints {
 		var row, column = number.Index1DToIndexes2D(cellIndex1D, w, h)
-		result = append(result, o.PointsAtCell(column, row)...)
-		if !afterFirst {
-			result = append(result, number.NaN(), number.NaN())
-			afterFirst = true
-		}
+		result = append(result, o.TilemapShapesAtCell(column, row)...)
 	}
 	return result
 }
-func (o *Object) PointsAtCell(column, row int) []float32 {
-	var tile = o.TileAtCell(column, row)
+func (o *Object) TilemapShapesAtCell(column, row int) []geometry.Shape {
+	var tile = o.TilemapAtCell(column, row)
 	if tile.Id == 0 {
 		return nil
 	}
-	var ptsPerTile = o.PointsFromTile(tile.Id)
-	var result = make([]float32, 0, len(ptsPerTile))
-	var tw, th = o.SizeTile()
-	for i := 1; i < len(ptsPerTile); i += 2 {
-		var x, y = ptsPerTile[i-1], ptsPerTile[i]
-		x, y = point.RotateAroundPoint(x, y, tw/2, th/2, float32(tile.Rotations90)*90)
-		if tile.Flip {
-			x = tw - x
-		}
-		x, y = o.PointToGlobal(x+float32(column)*tw, y+float32(row)*th)
-		result = append(result, x, y)
-	}
-	return result
+	return o.TilemapShapesFromTile(tile.Id)
 }
-func (o *Object) PointsFromTile(tileId uint16) []float32 {
+func (o *Object) TilemapShapesFromTile(tileId uint16) []geometry.Shape {
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
 	if atlas == nil {
 		return nil
 	}
-	var pts, has = atlas.PointsPerTile[tileId]
+	var shapes, has = atlas.ShapesPerTile[tileId]
 	if !has {
 		return nil
 	}
-	return collection.Copy(pts)
+	var result = make([]geometry.Shape, len(shapes))
+	for i, s := range shapes {
+		result[i] = geometry.Shape{X: s[0], Y: s[1], Width: s[2], Height: s[3], Angle: s[4], Roundness: s[5]}
+	}
+	return result
 }
 
-func (o *Object) Size() (columns, rows int) {
+func (o *Object) TilemapSize() (columns, rows int) {
 	return 1, 1
 }
-func (o *Object) SizeTile() (width, height float32) {
+func (o *Object) TilemapSizeTile() (width, height float32) {
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
 	if atlas == nil {
 		return number.NaN(), number.NaN()
 	}
 	return float32(atlas.TileSize), float32(atlas.TileSize)
 }
-func (o *Object) SizeTileSet() (columns, rows int) {
+func (o *Object) TilemapSizeAtlas() (columns, rows int) {
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
 	if atlas == nil {
 		return 0, 0
@@ -352,7 +338,7 @@ func (o *Object) SizeTileSet() (columns, rows int) {
 	return tw / atlas.TileSize, th / atlas.TileSize
 }
 
-func (o *Object) TileCount() int {
-	var w, h = o.SizeTileSet()
+func (o *Object) TilemapTileCount() int {
+	var w, h = o.TilemapSizeAtlas()
 	return w * h
 }

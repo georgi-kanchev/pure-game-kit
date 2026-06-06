@@ -15,8 +15,16 @@ func Tiled() {
 	var layers []*graphics.Object
 	for _, id := range layerIds {
 		var layer = graphics.NewTilemap(1, atlasId, id)
-		layer.X += 200
 		layers = append(layers, &layer)
+	}
+
+	var shapes = layers[1].TilemapShapes()
+	var objs []*graphics.Object
+	for _, v := range shapes {
+		var obj = &graphics.Object{Shape: v}
+		obj.Effects.Tint = palette.White
+		obj.Effects.FillColor = palette.Red
+		objs = append(objs, obj)
 	}
 
 	for window.KeepOpen() {
@@ -24,5 +32,6 @@ func Tiled() {
 
 		view.DrawGrid(1, 16, 16, palette.Gray)
 		view.DrawObjects(layers...)
+		view.DrawObjects(objs...)
 	}
 }
