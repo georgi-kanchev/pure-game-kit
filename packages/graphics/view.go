@@ -245,11 +245,13 @@ func (v *View) DrawObjects(objects ...*Object) {
 		if o.TileAtlasId != 0 && o.TileLayerId != 0 {
 			var layer = internal.TileLayers[uint8(o.TileLayerId)]
 			var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
-			var tex = internal.Images[atlas.ImageId]
-			var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
-			var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
-			var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
-			internal.Queue(tex.Texture, src, dst, o.Angle, 0, mask, eff, internal.KindTilemap, uint8(atlas.TileSize), cols, rows)
+			if layer.Image != nil {
+				var tex = internal.Images[atlas.ImageId]
+				var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+				var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
+				var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
+				internal.Queue(tex.Texture, src, dst, o.Angle, 0, mask, eff, internal.KindTilemap, uint8(atlas.TileSize), cols, rows)
+			}
 			continue
 		}
 		v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
