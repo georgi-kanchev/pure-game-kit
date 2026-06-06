@@ -243,12 +243,13 @@ func (v *View) DrawObjects(objects ...*Object) {
 		var eff = (*internal.Effects)(&o.Effects)
 
 		if o.TileAtlasId != 0 && o.TileLayerId != 0 {
-			// var layer = internal.TileLayers[uint8(o.TileLayerId)]
+			var layer = internal.TileLayers[uint8(o.TileLayerId)]
 			var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
 			var tex = internal.Images[atlas.ImageId]
 			var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
 			var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
-			internal.Queue(tex.Texture, src, dst, o.Angle, 0, mask, eff, internal.KindTilemap)
+			var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
+			internal.Queue(tex.Texture, src, dst, o.Angle, 0, mask, eff, internal.KindTilemap, uint8(atlas.TileSize), cols, rows)
 			continue
 		}
 		v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
@@ -341,15 +342,15 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
 			} else {
 				if r != ' ' && r != '\n' {
-					internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText)
+					internal.Queue(atlasTex, src, dst, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 				if eff.TextUnderline {
 					var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
-					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
+					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 				if eff.TextCrossout {
 					var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
-					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText)
+					internal.Queue(atlasTex, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
@@ -377,7 +378,7 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop Area, eff
 	}
 	var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
 	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
-	internal.Queue(tex.Texture, src, dst, a, r, mask, eff, kind)
+	internal.Queue(tex.Texture, src, dst, a, r, mask, eff, kind, 0, 0, 0)
 	eff.FillColor = prevFill
 }
 

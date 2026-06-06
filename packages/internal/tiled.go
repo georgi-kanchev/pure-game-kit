@@ -11,9 +11,9 @@ type TileLayer struct {
 	ObjectPoints    []float32
 }
 type TileAtlas struct {
-	ImageId               int32
-	TileWidth, TileHeight int
-	PointsPerTile         map[uint16][]float32
+	ImageId       int32
+	TileSize      int
+	PointsPerTile map[uint16][]float32
 }
 
 //=================================================================

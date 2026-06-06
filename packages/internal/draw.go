@@ -85,7 +85,7 @@ var ViewX, ViewY, ViewZoom, ViewAngle float32
 
 //=================================================================
 
-func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind uint8) {
+func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind, tileSz uint8, cols, rows uint16) {
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 	var borderSz = eff.BorderSize * ViewZoom
 
@@ -149,6 +149,9 @@ func Queue(tex rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Are
 		} else {
 			r, g, b, a = col.Channels(eff.Tint)
 		}
+	case KindTilemap:
+		tx, ty = packTangentXTilemap(oc), packTangentYTilemap(col.Tint(eff.FillColor, eff.Tint))
+		tz, tw = packTangentZTilemap(cols, rows), packTangentWTilemap(uint16(os), tileSz)
 	default:
 		tx, ty = packColor24(oc), packColor24(col.Tint(eff.FillColor, eff.Tint))
 	}

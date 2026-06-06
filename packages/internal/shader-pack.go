@@ -51,7 +51,7 @@ func packNormalX(gamma, saturation, contrast, brightness int8) float32 {
 	var g = uint32((uint16(int16(gamma)+128)*63+127)/255) << 18      // bits 23-18
 	var s = uint32((uint16(int16(saturation)+128)*63+127)/255) << 12 // bits 17-12
 	var c = uint32((uint16(int16(contrast)+128)*63+127)/255) << 6    // bits 11-6
-	var b = uint32((uint16(int16(brightness)+128)*63+127) / 255)     // bits 5-0
+	var b = uint32((uint16(int16(brightness)+128)*63 + 127) / 255)   // bits 5-0
 	return pack24(g | s | c | b)
 }
 func packNormalY(roundness float32, pixelSize, blurX, blurY uint8) float32 {
@@ -94,8 +94,8 @@ func packTangentWSprite(cropMinV, cropMaxV float32) float32 {
 func packTangentXTilemap(outlineColor uint) float32 {
 	return packColor24(outlineColor)
 }
-func packTangentYTilemap(silhouetteColor uint) float32 {
-	return packColor24(silhouetteColor)
+func packTangentYTilemap(fillColor uint) float32 {
+	return packColor24(fillColor)
 }
 func packTangentZTilemap(tileCols, tileRows uint16) float32 {
 	var c = uint32(tileCols&0xFFF) << 12 // bits 23-12

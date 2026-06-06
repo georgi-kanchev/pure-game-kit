@@ -20,11 +20,11 @@ import (
 type TileLayerId uint8
 type TileAtlasId uint8
 
-func LoadTileAtlas(pngPath string, tileWidth, tileHeight int) TileAtlasId {
+func LoadTileAtlas(pngPath string, tileSize int) TileAtlasId {
 	internal.TileAtlasNextId++
 	var id, imageId = internal.TileAtlasNextId, LoadImage(pngPath)
 	var atlas = &internal.TileAtlas{
-		ImageId: int32(imageId), TileWidth: tileWidth, TileHeight: tileHeight, PointsPerTile: make(map[uint16][]float32)}
+		ImageId: int32(imageId), TileSize: tileSize, PointsPerTile: make(map[uint16][]float32)}
 	internal.TileAtlases[id] = atlas
 	return TileAtlasId(id)
 }
@@ -45,10 +45,10 @@ func LoadTiledLayers(tmxPath string) (atlasId TileAtlasId, layerIds []TileLayerI
 	var tileAtlas, tiled = loadTiled(tmxPath)
 	var result, dir = make(map[int]TileLayerId), path.Folder(tmxPath)
 	if tileAtlas != nil {
-		var w, h = tileAtlas.TileWidth, tileAtlas.TileHeight
+		var w, _ = tileAtlas.TileWidth, tileAtlas.TileHeight
 		dir = path.New(dir, tileAtlas.Source)
 		dir = path.New(path.Folder(dir), tileAtlas.Image.Source)
-		atlasId = LoadTileAtlas(dir, w, h)
+		atlasId = LoadTileAtlas(dir, w)
 	}
 	loadLayersRecursively(result, tmxPath, atlasId, tiled, &tiled.layers)
 	for _, id := range tiled.LayerIdsInOrder {

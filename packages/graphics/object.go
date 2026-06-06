@@ -90,13 +90,13 @@ func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) 
 	eff.FillColor = palette.DarkGray
 	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: eff}
 }
-func NewTilemap(atlasId assets.TileAtlasId, layerId assets.TileLayerId) Object {
+func NewTilemap(scale float32, atlasId assets.TileAtlasId, layerId assets.TileLayerId) Object {
 	var tilemap = Object{TileAtlasId: atlasId, TileLayerId: layerId, Effects: Effects(internal.DefaultEffects)}
 	var atlas = internal.TileAtlases[uint8(atlasId)]
 	var data = internal.TileLayers[uint8(layerId)]
 	if atlas != nil && data != nil && data.Image != nil {
-		tilemap.Width = float32(data.Image.Width * int32(atlas.TileWidth))
-		tilemap.Height = float32(data.Image.Height * int32(atlas.TileHeight))
+		tilemap.Width = float32(data.Image.Width*int32(atlas.TileSize)) * scale
+		tilemap.Height = float32(data.Image.Height*int32(atlas.TileSize)) * scale
 	}
 	return tilemap
 }
@@ -343,7 +343,7 @@ func (o *Object) SizeTile() (width, height float32) {
 	if atlas == nil {
 		return number.NaN(), number.NaN()
 	}
-	return float32(atlas.TileWidth), float32(atlas.TileHeight)
+	return float32(atlas.TileSize), float32(atlas.TileSize)
 }
 func (o *Object) SizeTileSet() (columns, rows int) {
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
@@ -351,7 +351,7 @@ func (o *Object) SizeTileSet() (columns, rows int) {
 		return 0, 0
 	}
 	var tw, th = 1, 1
-	return tw / atlas.TileWidth, th / atlas.TileHeight
+	return tw / atlas.TileSize, th / atlas.TileSize
 }
 
 func (o *Object) TileCount() int {
