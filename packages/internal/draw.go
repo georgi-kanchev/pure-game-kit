@@ -224,6 +224,8 @@ func CloseBatch() {
 }
 
 func Draw() {
+	rl.SetShaderValue(Shader, ShaderLoc, []float32{Runtime}, rl.ShaderUniformFloat)
+
 	for _, b := range ReadyBatches {
 		if !b.meshUploaded {
 			rl.UploadMesh(b.mesh, true)
