@@ -12,15 +12,17 @@ func Tiled() {
 	var view = graphics.NewView(3)
 	var atlasId, layerIds = assets.LoadTiledLayers("examples/data/map.tmx")
 
-	var obj = graphics.NewTilemap(1, atlasId, layerIds[2])
-
-	obj.Effects.BorderSize = 2
-	obj.Effects.BorderColor = palette.Cyan
+	var layers []*graphics.Object
+	for _, id := range layerIds {
+		var layer = graphics.NewTilemap(1, atlasId, id)
+		layer.X += 200
+		layers = append(layers, &layer)
+	}
 
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
 		view.DrawGrid(1, 16, 16, palette.Gray)
-		view.DrawObjects(&obj)
+		view.DrawObjects(layers...)
 	}
 }

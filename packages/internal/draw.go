@@ -243,6 +243,9 @@ func Draw() {
 			b.mesh.TriangleCount = b.indexCount / 3
 		}
 		if b.tileDataTex.ID != 0 {
+			rl.DrawRenderBatchActive()         // flush raylib's internal batch to mess texture slots
+			rl.ActiveTextureSlot(1)            // switch to slot 1
+			rl.EnableTexture(b.tileDataTex.ID) // bind data texture there
 			rl.SetShaderValueTexture(Shader, ShaderTileDataLoc, b.tileDataTex)
 		}
 		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)

@@ -16,7 +16,7 @@ import (
 type Object struct {
 	geometry.Shape
 
-	Mask    Area
+	Mask    Area // In window space.
 	Effects Effects
 
 	// image ==========================================================
