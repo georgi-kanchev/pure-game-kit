@@ -321,8 +321,6 @@ func (o *Object) PointsAtCell(column, row int) []float32 {
 	}
 	return result
 }
-
-// The points are in tile space.
 func (o *Object) PointsFromTile(tileId uint16) []float32 {
 	var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
 	if atlas == nil {
