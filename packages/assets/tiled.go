@@ -5,13 +5,11 @@ import (
 	"encoding/binary"
 	"encoding/xml"
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/is"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/path"
-	"pure-game-kit/packages/utility/point"
 	"pure-game-kit/packages/utility/storage"
 	"pure-game-kit/packages/utility/text"
 
@@ -300,34 +298,24 @@ func loadLayerTiles(atlasId TileAtlasId, tiled *tiled, layer *layerTiles) TileLa
 func loadLayerObjects(layer *layerObjects) [][6]float32 {
 	var result [][6]float32
 	for _, o := range layer.Objects {
-
 		if o.Polygon != nil {
-			var pts = parsePointPairs(o.Polygon.Points)
-			result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, true)...)
-			continue
-		}
-		if o.Polyline != nil {
-			var pts = parsePointPairs(o.Polyline.Points)
-			result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, false)...)
-			continue
-		}
-
-		var cx, cy = o.X + o.Width/2, o.Y + o.Height/2
-
-		if o.Point != nil {
-			result = append(result, [6]float32{o.X, o.Y, 0, 0, 0, 1}) // point = zero-size circle
-		} else if o.Ellipse != nil {
-			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 1})
-		} else if o.Capsule != nil {
-			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 1})
+			// var pts = pointsFromString(o.Polygon.Points)
+			// result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, true)...)
+		} else if o.Polyline != nil {
+			// var pts = pointsFromString(o.Polyline.Points)
+			// result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, false)...)
+		} else if o.Point != nil {
+			result = append(result, [6]float32{o.X, o.Y, 5, 5, 0, 1})
+		} else if o.Ellipse != nil || o.Capsule != nil {
+			result = append(result, [6]float32{o.X + o.Width/2, o.Y + o.Height/2, o.Width, o.Height, o.Rotation, 1})
 		} else { // assume rectangle
-			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
+			result = append(result, [6]float32{o.X + o.Width/2, o.Y + o.Height/2, o.Width, o.Height, o.Rotation, 0})
 		}
 	}
 	return result
 }
 
-func parsePointPairs(data string) []float32 {
+func pointsFromString(data string) []float32 {
 	var pts []float32
 	var trimmed = text.Trim(data)
 	if trimmed == "" {
@@ -341,32 +329,6 @@ func parsePointPairs(data string) []float32 {
 	}
 	return pts
 }
-
-func edgesToLineShapes(originX, originY, rotation float32, pts []float32, closed bool) [][6]float32 {
-	if len(pts) < 4 {
-		return nil
-	}
-	var n = len(pts) / 2
-	var edges = n
-	if !closed {
-		edges = n - 1
-	}
-	var result = make([][6]float32, 0, edges)
-	for i := range edges {
-		var next = (i + 1) % n
-		var x1, y1 = pts[i*2], pts[i*2+1]
-		var x2, y2 = pts[next*2], pts[next*2+1]
-		x1, y1 = point.RotateAroundPoint(originX+x1, originY+y1, originX, originY, rotation)
-		x2, y2 = point.RotateAroundPoint(originX+x2, originY+y2, originX, originY, rotation)
-		var mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-		var dx, dy = x2 - x1, y2 - y1
-		var length = number.SquareRoot(dx*dx + dy*dy)
-		var ang = angle.BetweenPoints(x1, y1, x2, y2)
-		result = append(result, [6]float32{mx, my, length, 0, ang, 0})
-	}
-	return result
-}
-
 func tilesFromBytes(data []byte) []uint32 {
 	if len(data)%4 != 0 {
 		return nil
@@ -378,7 +340,6 @@ func tilesFromBytes(data []byte) []uint32 {
 	}
 	return result
 }
-
 func getLayersOrder(layers []*layerAny) []int {
 	var result = []int{}
 	collection.Reverse(layers)
