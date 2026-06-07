@@ -273,18 +273,30 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 func loadLayerObjects(layer *layerObjects) [][6]float32 {
 	var result [][6]float32
 	for _, o := range layer.Objects {
-		if o.Polygon != nil || o.Polyline != nil {
+		if o.Polygon != nil || o.Polyline != nil { // lines/polygons not handled here
 		} else if o.Gid != 0 {
-			result = append(result, [6]float32{o.X + o.Width/2, o.Y - o.Height/2, o.Width, o.Height, o.Rotation, 0})
+			var cx, cy = pivotToCenter(o.X, o.Y, o.Width/2, -o.Height/2, o.Rotation)
+			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
 		} else if o.Point != nil {
 			result = append(result, [6]float32{o.X, o.Y, 5, 5, 0, 1})
 		} else if o.Ellipse != nil || o.Capsule != nil {
-			result = append(result, [6]float32{o.X + o.Width/2, o.Y + o.Height/2, o.Width, o.Height, o.Rotation, 1})
+			var cx, cy = pivotToCenter(o.X, o.Y, o.Width/2, o.Height/2, o.Rotation)
+			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 1})
 		} else { // assume rectangle
-			result = append(result, [6]float32{o.X + o.Width/2, o.Y + o.Height/2, o.Width, o.Height, o.Rotation, 0})
+			var cx, cy = pivotToCenter(o.X, o.Y, o.Width/2, o.Height/2, o.Rotation)
+			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
 		}
 	}
 	return result
+}
+
+func pivotToCenter(x, y, halfW, halfH, angle float32) (cx, cy float32) {
+	// converts a Tiled pivot position (top-left for regular, bottom-center for GID) to a center-center position
+	if angle == 0 {
+		return x + halfW, y + halfH
+	}
+	var sin, cos = internal.SinCos(angle)
+	return x + halfW*cos - halfH*sin, y + halfW*sin + halfH*cos
 }
 
 func pointsFromString(data string) []float32 {

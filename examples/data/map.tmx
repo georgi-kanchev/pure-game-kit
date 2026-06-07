@@ -8,7 +8,7 @@
  </layer>
  <objectgroup color="#ff0000" id="5" name="Objects">
   <object id="1" x="112" y="56" width="52" height="56"/>
-  <object id="2" x="176" y="148" width="68" height="48" rotation="66.1965"/>
+  <object id="2" x="152.596" y="227.549" width="68" height="48" rotation="256.157"/>
   <object id="3" x="340.639" y="162.085" rotation="48.4084">
    <polygon points="0,0 -16,16 -16,32 10.6905,69.1748 32,48 32,16"/>
   </object>
@@ -21,7 +21,7 @@
   <object id="7" x="160" y="232" width="36" height="86" rotation="35.0628">
    <capsule/>
   </object>
-  <object id="8" gid="64" x="251" y="105" width="45" height="44"/>
+  <object id="8" gid="64" x="296.431" y="61.45" width="45" height="44" rotation="181.135"/>
  </objectgroup>
  <layer id="2" name="Foreground" width="32" height="32">
   <data encoding="base64" compression="gzip">
