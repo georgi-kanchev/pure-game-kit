@@ -25,6 +25,6 @@ func Texts() {
 		var x, _ = view.MousePosition()
 		textbox.Effects.TextLineHeight = 70 + x/5
 
-		view.DrawObjects(&textbox)
+		view.DrawObject(&textbox)
 	}
 }

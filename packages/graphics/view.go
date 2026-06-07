@@ -151,7 +151,7 @@ func (v *View) DrawColor(color uint) {
 	obj.X, obj.Y, obj.Roundness, obj.Angle, obj.Effects.Tint, obj.Effects.FillColor = v.X, v.Y, 0, v.Angle, color, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, 0
 	obj.Width, obj.Height = v.Size()
-	v.DrawObjects(obj)
+	v.DrawObject(obj)
 }
 func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 	if spacingX*v.Zoom < 1 && spacingY*v.Zoom < 1 {
@@ -191,13 +191,13 @@ func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color ui
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, "", 0, 0
-	v.DrawObjects(obj)
+	v.DrawObject(obj)
 }
 func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, tint, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, imageId
-	v.DrawObjects(obj)
+	v.DrawObject(obj)
 }
 func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string) {
 	obj.Effects = Effects(internal.DefaultEffects)
@@ -207,9 +207,9 @@ func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color ui
 
 	x, y = point.MoveAtAngle(x, y, obj.Angle, obj.Width/2)
 	obj.X, obj.Y = point.MoveAtAngle(x, y, obj.Angle+90, obj.Height/2)
-	v.DrawObjects(obj)
+	v.DrawObject(obj)
 }
-func (v *View) DrawObjects(object *Object) {
+func (v *View) DrawObject(object *Object) {
 	internal.ViewArea = internal.Area(v.windowArea())
 	internal.ViewX, internal.ViewY, internal.ViewZoom, internal.ViewAngle = v.X, v.Y, v.Zoom, v.Angle
 

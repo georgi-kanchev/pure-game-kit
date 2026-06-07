@@ -19,22 +19,7 @@ func Tiled() {
 	}
 
 	var shapes = layers[1].TilemapShapes()
-	var objs []graphics.Object
-	for _, v := range shapes {
-		var obj = graphics.Object{Shape: v}
-		obj.Effects.Tint = palette.White
-		obj.Effects.FillColor = palette.Red
-		objs = append(objs, obj)
-	}
-
 	var cellShapes = layers[3].TilemapShapes()
-	var cellObjs []graphics.Object
-	for _, v := range cellShapes {
-		var obj = graphics.Object{Shape: v}
-		obj.Effects.Tint = palette.White
-		obj.Effects.FillColor = palette.Red
-		cellObjs = append(cellObjs, obj)
-	}
 
 	layers[0].TileLayerId.SetTile(0, 0, assets.NewTile(55))
 
@@ -44,13 +29,13 @@ func Tiled() {
 		view.DrawGrid(1, 16, 16, palette.DarkGray)
 
 		for _, l := range layers {
-			view.DrawObjects(&l)
+			view.DrawObject(&l)
 		}
-		for _, o := range objs {
-			view.DrawObjects(&o)
+		for _, s := range shapes {
+			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.Red)
 		}
-		for _, c := range cellObjs {
-			view.DrawObjects(&c)
+		for _, s := range cellShapes {
+			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed)
 		}
 	}
 }

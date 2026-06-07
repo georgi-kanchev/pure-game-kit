@@ -27,7 +27,7 @@ func Views() {
 		left.Angle += time.Delta() * 10
 		left.DrawColor(palette.DarkGray)
 		left.DrawGrid(2, 100, 100, palette.Gray)
-		left.DrawObjects(&obj)
+		left.DrawObject(&obj)
 		var lx, ly = left.PointFromScreen(left.WindowArea.X+10, left.WindowArea.Y+10)
 		left.DrawText(lx, ly, 100, 0, palette.White, "Left View")
 
@@ -36,7 +36,7 @@ func Views() {
 		right.Zoom = number.Map(number.Sine(time.Running()/3), -1, 1, 0.2, 4)
 		right.DrawColor(palette.Gray)
 		right.DrawGrid(2, 100, 100, palette.LightGray)
-		right.DrawObjects(&obj)
+		right.DrawObject(&obj)
 		var rx, ry = right.PointFromScreen(right.WindowArea.X+10, right.WindowArea.Y+10)
 		right.DrawText(rx, ry, 100, 0, palette.White, "Right View")
 
