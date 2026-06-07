@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/collection"
-	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/is"
 	"pure-game-kit/packages/utility/number"
@@ -16,23 +15,6 @@ import (
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
-
-type TileLayerId uint8
-
-func LoadTileLayer(columns, rows, tileSize int, imageId ImageId) TileLayerId {
-	internal.TileLayerNextId++
-	columns, rows = number.Limit(columns, 1, 2048), number.Limit(rows, 1, 2048)
-
-	var id = internal.TileLayerNextId
-	var data = &internal.TileLayer{Columns: columns, Rows: rows,
-		Image: rl.GenImageColor(columns, rows, rl.Blank), CellsWithPoints: make(map[int]struct{}),
-		TileSize: tileSize, ImageId: int32(imageId), ShapesPerTile: make(map[uint16][][6]float32)}
-	var tex = rl.LoadTextureFromImage(data.Image)
-	rl.SetTextureFilter(tex, rl.FilterPoint)
-	data.Texture = tex
-	internal.TileLayers[id] = data
-	return TileLayerId(id)
-}
 
 // Expects a Tiled map file with a single embedded tileset atlas.
 func LoadTileLayersFromTiled(tmxPath string) []TileLayerId {
@@ -54,100 +36,6 @@ func LoadTileLayersFromTiled(tmxPath string) []TileLayerId {
 		layerIds = append(layerIds, result[id])
 	}
 	return layerIds
-}
-
-//=================================================================
-
-func (l TileLayerId) SetTile(column, row int, tile Tile) {
-	l.SetTileArea(column, row, 1, 1, tile)
-}
-func (l TileLayerId) SetTileArea(column, row, width, height int, tile Tile) {
-	var layer = internal.TileLayers[uint8(l)]
-	if layer == nil {
-		return
-	}
-
-	var packed = newTilePacked(tile)
-	var r, g = uint8((packed >> 24) & 0xFF), uint8((packed >> 16) & 0xFF)
-	var b, a = uint8((packed >> 8) & 0xFF), uint8((packed >> 0) & 0xFF)
-	var colr, rect = rl.NewColor(r, g, b, a), rl.NewRectangle(float32(column), float32(row), float32(width), float32(height))
-	var columns, rows = layer.Columns, layer.Rows
-	var _, cellHasPts = layer.ShapesPerTile[tile.Id]
-
-	for i := row; i < row+height; i++ {
-		for j := column; j < column+width; j++ {
-			var prevTile = l.TileAtCell(j, i)
-			var _, prevCellHasPts = layer.ShapesPerTile[prevTile.Id]
-			if !prevCellHasPts && !cellHasPts {
-				continue
-			}
-
-			var index1D = number.Indexes2DToIndex1D(j, i, columns, rows)
-			if cellHasPts {
-				layer.CellsWithPoints[index1D] = struct{}{}
-			} else {
-				delete(layer.CellsWithPoints, index1D)
-			}
-		}
-	}
-
-	rl.ImageDrawRectangle(layer.Image, int32(column), int32(row), int32(width), int32(height), colr)
-	rl.UpdateTextureRec(layer.Texture, rect, collection.SameItems(width*height, colr))
-}
-func (l TileLayerId) SetAtlasId(atlasId ImageId) {
-	var layer = internal.TileLayers[uint8(l)]
-	if layer == nil {
-		return
-	}
-	layer.ImageId = int32(atlasId)
-}
-
-//=================================================================
-
-func (l TileLayerId) TileAtCell(column, row int) Tile {
-	var layer = internal.TileLayers[uint8(l)]
-	if layer == nil {
-		return Tile{}
-	}
-
-	var c = rl.GetImageColor(*layer.Image, int32(column), int32(row))
-	color.RGBA(c.R, c.G, c.B, c.A)
-	var packed = uint32(c.R)<<24 | uint32(c.G)<<16 | uint32(c.B)<<8 | uint32(c.A)
-	return newTileUnpacked(packed)
-}
-
-func (l TileLayerId) Size() (columns, rows int) {
-	var layer = internal.TileLayers[uint8(l)]
-	if layer == nil {
-		return 0, 0
-	}
-	return layer.Columns, layer.Rows
-}
-func (l TileLayerId) TileSize() (width, height float32) {
-	var layer = internal.TileLayers[uint8(l)]
-	if layer == nil {
-		return number.NaN(), number.NaN()
-	}
-	return float32(layer.TileSize), float32(layer.TileSize)
-}
-func (l TileLayerId) AtlasSize() (columns, rows int) {
-	var layer = internal.TileLayers[uint8(l)]
-	if layer == nil {
-		return 0, 0
-	}
-	var tex = internal.Images[layer.ImageId]
-	return int(tex.CropWidth) / layer.TileSize, int(tex.CropHeight) / layer.TileSize
-}
-func (l TileLayerId) TileCount() int {
-	var w, h = l.AtlasSize()
-	return w * h
-}
-func (l TileLayerId) AtlasId() ImageId {
-	var layer = internal.TileLayers[uint8(l)]
-	if layer == nil {
-		return 0
-	}
-	return ImageId(layer.ImageId)
 }
 
 // private ========================================================

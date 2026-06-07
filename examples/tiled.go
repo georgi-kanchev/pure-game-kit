@@ -1,9 +1,11 @@
 package example
 
 import (
+	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
+	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/window"
 )
 
@@ -22,6 +24,8 @@ func Tiled() {
 	var cellShapes = layers[3].TilemapShapes()
 
 	layers[0].TileLayerId.SetTile(0, 0, assets.NewTile(55))
+
+	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
 
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
