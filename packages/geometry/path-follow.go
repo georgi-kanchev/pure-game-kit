@@ -8,7 +8,7 @@ import (
 
 // Calculates the minimal subsections of the routes to traverse to reach target.
 // Start point and target point can be anywhere (not necessarily on the paths). Multiple paths can be separated by [NaN, NaN].
-func FollowPaths(startX, startY, targetX, targetY float32, paths ...float32) []float32 {
+func FollowPaths(startX, startY, targetX, targetY float32, paths []float32) []float32 {
 	var allNodes = createNodes(paths)
 	var sx, sy, startNode = closestPointOnPath(startX, startY, allNodes)
 	var tx, ty, targetNode = closestPointOnPath(targetX, targetY, allNodes)

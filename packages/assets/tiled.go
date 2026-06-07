@@ -164,9 +164,9 @@ func loadLayersRecursively(result map[int]TileLayerId, tmxFilePath string, image
 	for _, layer := range layers.LayersObjects {
 		internal.TileLayerNextId++
 		var id = internal.TileLayerNextId
+		var objs, pts = loadLayerObjects(layer)
 		internal.TileLayers[id] = &internal.TileLayer{
-			Objects: loadLayerObjects(layer), Columns: tiled.Width, Rows: tiled.Height, TileSize: tiled.TileAtlas.TileWidth,
-		}
+			Objects: objs, Paths: pts, Columns: tiled.Width, Rows: tiled.Height, TileSize: tiled.TileAtlas.TileWidth}
 		result[layer.Id] = TileLayerId(id)
 	}
 	for _, group := range layers.LayersGroups {
@@ -219,10 +219,10 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 			var id = ((raw & 0x1FFFFFFF) - 1)
 			var tile = tiled.TileAtlas.TilesLookUp[id]
 			if tile != nil && tile.Objects != nil {
-				var tilePts, has = data.ShapesPerTile[uint16(tile.Id)]
+				var tileShapes, has = data.ShapesPerTile[uint16(tile.Id)]
 				if !has {
-					tilePts = loadLayerObjects(tile.Objects)
-					data.ShapesPerTile[uint16(tile.Id)] = tilePts
+					tileShapes, _ = loadLayerObjects(tile.Objects)
+					data.ShapesPerTile[uint16(tile.Id)] = tileShapes
 				}
 
 				var cellIndex1D = number.Indexes2DToIndex1D(j, i, tiled.Width, tiled.Height)
@@ -270,24 +270,42 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 	rl.UpdateTextureRec(data.Texture, rect, pixels)
 	return dataId
 }
-func loadLayerObjects(layer *layerObjects) [][6]float32 {
-	var result [][6]float32
+func loadLayerObjects(layer *layerObjects) (shapes [][6]float32, pts []float32) {
 	for _, o := range layer.Objects {
 		if o.Polygon != nil || o.Polyline != nil { // lines/polygons not handled here
+			if pts != nil {
+				pts = append(pts, number.NaN(), number.NaN())
+			}
+			var ptsString string
+			if o.Polygon != nil {
+				ptsString = o.Polygon.Points
+			} else if o.Polyline != nil {
+				ptsString = o.Polyline.Points
+			}
+			var sin, cos float32 = 0, 1
+			if o.Rotation != 0 {
+				sin, cos = internal.SinCos(o.Rotation)
+			}
+			var split = text.Split(ptsString, " ")
+			for _, v := range split {
+				var xy = text.Split(v, ",")
+				var px, py = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
+				pts = append(pts, o.X+px*cos-py*sin, o.Y+px*sin+py*cos)
+			}
 		} else if o.Gid != 0 {
 			var cx, cy = pivotToCenter(o.X, o.Y, o.Width/2, -o.Height/2, o.Rotation)
-			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
+			shapes = append(shapes, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
 		} else if o.Point != nil {
-			result = append(result, [6]float32{o.X, o.Y, 5, 5, 0, 1})
+			shapes = append(shapes, [6]float32{o.X, o.Y, 5, 5, 0, 1})
 		} else if o.Ellipse != nil || o.Capsule != nil {
 			var cx, cy = pivotToCenter(o.X, o.Y, o.Width/2, o.Height/2, o.Rotation)
-			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 1})
+			shapes = append(shapes, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 1})
 		} else { // assume rectangle
 			var cx, cy = pivotToCenter(o.X, o.Y, o.Width/2, o.Height/2, o.Rotation)
-			result = append(result, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
+			shapes = append(shapes, [6]float32{cx, cy, o.Width, o.Height, o.Rotation, 0})
 		}
 	}
-	return result
+	return shapes, pts
 }
 
 func pivotToCenter(x, y, halfW, halfH, angle float32) (cx, cy float32) {
@@ -299,20 +317,6 @@ func pivotToCenter(x, y, halfW, halfH, angle float32) (cx, cy float32) {
 	return x + halfW*cos - halfH*sin, y + halfW*sin + halfH*cos
 }
 
-func pointsFromString(data string) []float32 {
-	var pts []float32
-	var trimmed = text.Trim(data)
-	if trimmed == "" {
-		return pts
-	}
-	for _, pt := range text.Split(trimmed, " ") {
-		var xy = text.Split(pt, ",")
-		if len(xy) == 2 {
-			pts = append(pts, text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1]))
-		}
-	}
-	return pts
-}
 func tilesFromBytes(data []byte) []uint32 {
 	if len(data)%4 != 0 {
 		return nil

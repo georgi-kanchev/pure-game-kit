@@ -13,6 +13,7 @@ type TileLayer struct {
 	ShapesPerTile   map[uint16][][6]float32
 	CellsWithPoints map[int]struct{} // hash set, 0 byte per value, only check if key is present
 	Objects         [][6]float32
+	Paths           []float32
 }
 
 //=================================================================

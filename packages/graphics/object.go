@@ -209,6 +209,22 @@ func (o *Object) TilemapShapesFromTile(tileId uint16) []geometry.Shape {
 	}
 	return result
 }
+func (o *Object) TilemapPaths() []float32 {
+	var layer = internal.TileLayers[uint8(o.TileLayerId)]
+	if layer == nil || len(layer.Paths) == 0 {
+		return nil
+	}
+	var result = make([]float32, len(layer.Paths))
+	for i := 0; i < len(layer.Paths); i += 2 {
+		var px, py = layer.Paths[i], layer.Paths[i+1]
+		if number.IsNaN(px) || number.IsNaN(py) {
+			result[i], result[i+1] = px, py
+			continue
+		}
+		result[i], result[i+1] = o.PointToGlobal(px, py)
+	}
+	return result
+}
 
 // private ========================================================
 
