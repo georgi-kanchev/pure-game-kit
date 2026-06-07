@@ -6,17 +6,13 @@ import (
 	"pure-game-kit/packages/utility/point"
 )
 
-// calculates the minimal subsections of the routes to traverse to reach target
-//
-// start and target point can be anywhere (not necessarily on the paths)
-//
-// multiple paths can be separated by [NaN, NaN]
+// Calculates the minimal subsections of the routes to traverse to reach target.
+// Start point and target point can be anywhere (not necessarily on the paths). Multiple paths can be separated by [NaN, NaN].
 func FollowPaths(startX, startY, targetX, targetY float32, paths ...float32) []float32 {
 	var allNodes = createNodes(paths)
 	var sx, sy, startNode = closestPointOnPath(startX, startY, allNodes)
 	var tx, ty, targetNode = closestPointOnPath(targetX, targetY, allNodes)
-	var path = startNode.walk(targetNode)
-	var result = []float32{startX, startY, sx, sy}
+	var path, result = startNode.walk(targetNode), []float32{startX, startY, sx, sy}
 	if len(path) == 0 { // no path was found, perhaps the end target is a disconnected one
 		return result
 	}
@@ -44,15 +40,14 @@ func (pq npq) Less(i, j int) bool { return pq[i].SearchDist < pq[j].SearchDist }
 func (pq npq) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
 func (pq *npq) Push(x any)        { *pq = append(*pq, x.(*n)) }
 func (pq *npq) Pop() any {
-	old := *pq
-	n := old[len(old)-1]
+	var old = *pq
+	var n = old[len(old)-1]
 	*pq = old[:len(old)-1]
 	return n
 }
 
 func createNodes(points []float32) []*n {
-	var result = []*n{}
-	var pathIndex = 0
+	var result, pathIndex = []*n{}, 0
 	for i := 0; i < len(points); i += 2 {
 		var px, py = points[i], points[i+1]
 		if number.IsNaN(px) || number.IsNaN(py) {
@@ -81,8 +76,7 @@ func createNodes(points []float32) []*n {
 	return result
 }
 func (start *n) walk(end *n) []float32 {
-	var all []*n
-	var stack []*n = []*n{start}
+	var all, stack = []*n{}, []*n{start}
 	for len(stack) > 0 {
 		var cur = stack[len(stack)-1]
 		stack = stack[:len(stack)-1]
@@ -121,28 +115,23 @@ func (start *n) walk(end *n) []float32 {
 			}
 			var dist = cur.SearchDist + point.DistanceToPoint(cur.X, cur.Y, nb.X, nb.Y)
 			if dist < nb.SearchDist {
-				nb.SearchDist = dist
-				nb.SearchPrev = cur
+				nb.SearchDist, nb.SearchPrev = dist, cur
 				heap.Push(prioQueue, nb)
 			}
 		}
 	}
-
 	return nil
 }
 func (n *n) reconstructPath() []float32 {
-	var result []float32
-	var unique = map[[2]float32]any{}
+	var result, unique = []float32{}, map[[2]float32]any{}
 	for n != nil {
 		var p = [2]float32{n.X, n.Y}
 		var _, has = unique[p]
 		if !has {
 			result = append([]float32{p[0], p[1]}, result...)
 		}
-		unique[p] = nil
-		n = n.SearchPrev
+		unique[p], n = nil, n.SearchPrev
 	}
-
 	return result
 }
 func closestPointOnPath(x, y float32, nodes []*n) (closestX, closestY float32, newNode *n) {
@@ -155,14 +144,11 @@ func closestPointOnPath(x, y float32, nodes []*n) (closestX, closestY float32, n
 			continue // ignore path connections
 		}
 
-		var line = NewLine(p1.X, p1.Y, p2.X, p2.Y)
-		var curX, curY = line.ClosestToPoint(x, y)
+		var curX, curY = NewLine(p1.X, p1.Y, p2.X, p2.Y).ClosestToPoint(x, y)
 		var dist = point.DistanceToPoint(x, y, curX, curY)
 
 		if dist < bestDist {
-			bestDist = dist
-			closestX, closestY = curX, curY
-			bestP1, bestP2 = p1, p2
+			bestDist, closestX, closestY, bestP1, bestP2 = dist, curX, curY, p1, p2
 		}
 	}
 
@@ -192,12 +178,8 @@ func remove180Turns(path []float32) []float32 {
 	var result = make([]float32, 0, nCount)
 	result = append(result, path[0], path[1])
 	for i := 2; i < nCount-2; i += 2 {
-		var ax, ay = result[len(result)-2], result[len(result)-1]
-		var bx, by = path[i], path[i+1]
-		var cx, cy = path[i+2], path[i+3]
-
-		var l1, l2 = NewLine(ax, ay, bx, by), NewLine(bx, by, cx, cy)
-		var ang1, ang2 = l1.Angle(), l2.Angle()
+		var ax, ay, bx, by, cx, cy = result[len(result)-2], result[len(result)-1], path[i], path[i+1], path[i+2], path[i+3]
+		var ang1, ang2 = NewLine(ax, ay, bx, by).Angle(), NewLine(bx, by, cx, cy).Angle()
 		var diff = number.Wrap(ang2-ang1, 0, 360)
 		if !number.IsWithin(diff, 180, 0.1) {
 			result = append(result, bx, by)

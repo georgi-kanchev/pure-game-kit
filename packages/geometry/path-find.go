@@ -28,17 +28,9 @@ type node struct {
 var directions = [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
 var directionsDiag = [][2]int{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
 
-func (pq priorityQueue) Len() int {
-	return len(pq)
-}
-func (pq priorityQueue) Less(i, j int) bool {
-	return pq[i].f() < pq[j].f()
-}
-func (pq priorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-	pq[i].index = i
-	pq[j].index = j
-}
+func (pq priorityQueue) Len() int           { return len(pq) }
+func (pq priorityQueue) Less(i, j int) bool { return pq[i].f() < pq[j].f() }
+func (pq priorityQueue) Swap(i, j int)      { pq[i], pq[j], pq[i].index, pq[j].index = pq[j], pq[i], i, j }
 func (pq *priorityQueue) Push(x any) {
 	var n = x.(*node)
 	n.index = len(*pq)
@@ -46,22 +38,17 @@ func (pq *priorityQueue) Push(x any) {
 }
 func (pq *priorityQueue) Pop() any {
 	var old = *pq
-	var n = len(old)
-	var item = old[n-1]
+	var item = old[len(old)-1]
 	item.index = -1
-	*pq = old[:n-1]
+	*pq = old[:len(old)-1]
 	return item
 }
-
-func (n *node) f() float32 {
-	return n.g + n.h
-}
+func (n *node) f() float32 { return n.g + n.h }
 
 func heuristic(ax, ay, bx, by int) float32 {
 	var dx, dy = float32(ax - bx), float32(ay - by)
 	return float32(math.Sqrt(float64(dx*dx + dy*dy)))
 }
-
 func removeRedundantPoints(points []float32) []float32 {
 	var pts = collection.Clone(points)
 	if len(pts) < 6 {
@@ -69,21 +56,15 @@ func removeRedundantPoints(points []float32) []float32 {
 	}
 
 	for i := 2; i < len(pts)-2; i += 2 {
-		var ax, ay = pts[i-2], pts[i-1]
-		var bx, by = pts[i], pts[i+1]
-		var cx, cy = pts[i+2], pts[i+3]
-
+		var ax, ay, bx, by, cx, cy = pts[i-2], pts[i-1], pts[i], pts[i+1], pts[i+2], pts[i+3]
 		var cross = (bx-ax)*(cy-ay) - (by-ay)*(cx-ax)
-
 		if cross > -0.001 && cross < 0.001 {
 			pts = append(pts[:i], pts[i+2:]...)
 			i -= 2
 		}
 	}
-
 	return pts
 }
-
 func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []float32 {
 	if s == nil {
 		return nil
@@ -93,9 +74,7 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 	stx, sty, tarx, tary = stx/w, sty/h, tarx/w, tary/h
 	var sx, sy = int(number.RoundDown(stx, 0)), int(number.RoundDown(sty, 0))
 	var tx, ty = int(number.RoundDown(tarx, 0)), int(number.RoundDown(tary, 0))
-	var open = &priorityQueue{}
-	var startNode = &node{x: sx, y: sy, g: 0, h: heuristic(sx, sy, tx, ty)}
-	var visited = map[[2]int]*node{}
+	var open, startNode, visited = &priorityQueue{}, &node{x: sx, y: sy, g: 0, h: heuristic(sx, sy, tx, ty)}, map[[2]int]*node{}
 
 	heap.Init(open)
 	heap.Push(open, startNode)
@@ -107,7 +86,7 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 		return []float32{}
 	}
 
-	currentDirs := directions
+	var currentDirs = directions
 	if diag {
 		currentDirs = append(currentDirs, directionsDiag...)
 	}
@@ -122,8 +101,7 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 
 			for i := 0; i < len(result)/4; i++ {
 				var idx1, idx2 = i * 2, len(result) - 2 - (i * 2)
-				result[idx1], result[idx2] = result[idx2], result[idx1]
-				result[idx1+1], result[idx2+1] = result[idx2+1], result[idx1+1]
+				result[idx1], result[idx2], result[idx1+1], result[idx2+1] = result[idx2], result[idx1], result[idx2+1], result[idx1+1]
 			}
 
 			if minPts {
@@ -156,12 +134,10 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 			}
 
 			if newG < old.g {
-				old.g = newG
-				old.parent = current
+				old.g, old.parent = newG, current
 				heap.Fix(open, old.index)
 			}
 		}
 	}
-
 	return []float32{}
 }
