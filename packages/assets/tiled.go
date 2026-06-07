@@ -185,6 +185,7 @@ type layerObjects struct {
 		X        float32 `xml:"x,attr"`
 		Y        float32 `xml:"y,attr"`
 		Rotation float32 `xml:"rotation,attr"`
+		Gid      uint16  `xml:"gid,attr"`
 		Polygon  *struct {
 			Points string `xml:"points,attr"`
 		} `xml:"polygon"`
@@ -389,12 +390,9 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 func loadLayerObjects(layer *layerObjects) [][6]float32 {
 	var result [][6]float32
 	for _, o := range layer.Objects {
-		if o.Polygon != nil {
-			// var pts = pointsFromString(o.Polygon.Points)
-			// result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, true)...)
-		} else if o.Polyline != nil {
-			// var pts = pointsFromString(o.Polyline.Points)
-			// result = append(result, edgesToLineShapes(o.X, o.Y, o.Rotation, pts, false)...)
+		if o.Polygon != nil || o.Polyline != nil {
+		} else if o.Gid != 0 {
+			result = append(result, [6]float32{o.X + o.Width/2, o.Y - o.Height/2, o.Width, o.Height, o.Rotation, 0})
 		} else if o.Point != nil {
 			result = append(result, [6]float32{o.X, o.Y, 5, 5, 0, 1})
 		} else if o.Ellipse != nil || o.Capsule != nil {

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="8">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="32" height="32" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="10">
  <tileset firstgid="1" source="atlas.tsx"/>
  <layer id="1" name="Ground" width="32" height="32">
   <data encoding="base64" compression="gzip">
@@ -21,6 +21,7 @@
   <object id="7" x="160" y="232" width="36" height="86" rotation="35.0628">
    <capsule/>
   </object>
+  <object id="8" gid="64" x="251" y="105" width="45" height="44"/>
  </objectgroup>
  <layer id="2" name="Foreground" width="32" height="32">
   <data encoding="base64" compression="gzip">
@@ -30,7 +31,7 @@
  <group id="3" name="Group Layer 1">
   <layer id="4" name="Tile Layer 3" width="32" height="32">
    <data encoding="base64" compression="gzip">
-   H4sIAAAAAAAAA+3RMRJAQBBE0T4F7rDcAXdYUjHuH+tAupRgawL/Vf1ogglaAoBvGtdKWxf0P7neDUH/Rze5Oeh/dotbC/d7H9XaZ3eHOwt39nnep7a3fQAAwH9d6wfNdQAQAAA=
+   H4sIAAAAAAAAA+3RsRFAQBRF0VcFekAP6AGpGEUqzWtgd0ew8wP3zNzoBz94EgB800hPKx1d0P/eDW4M+j+52S1B/1e3uT1x9z7yPqq1z+kudyfu7JPfp7bSPgAA4L9erKkXCgAQAAA=
   </data>
   </layer>
  </group>

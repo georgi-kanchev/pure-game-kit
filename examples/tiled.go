@@ -26,8 +26,6 @@ func Tiled() {
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
-		view.DrawGrid(1, 16, 16, palette.DarkGray)
-
 		for _, l := range layers {
 			view.DrawObject(&l)
 		}
@@ -37,5 +35,7 @@ func Tiled() {
 		for _, s := range cellShapes {
 			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed)
 		}
+
+		view.DrawGrid(0.3, 16, 16, palette.DarkGray)
 	}
 }
