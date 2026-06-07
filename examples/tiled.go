@@ -10,11 +10,11 @@ import (
 func Tiled() {
 	window.Create("example - tiled", false, true)
 	var view = graphics.NewView(3)
-	var atlasId, layerIds = assets.LoadTiledLayers("examples/data/map.tmx")
+	var layerIds = assets.LoadTileLayersFromTiled("examples/data/map.tmx")
 
 	var layers []graphics.Object
 	for _, id := range layerIds {
-		var layer = graphics.NewTilemap(1, atlasId, id)
+		var layer = graphics.NewTilemap(1, id)
 		layers = append(layers, layer)
 	}
 
@@ -35,6 +35,8 @@ func Tiled() {
 		obj.Effects.FillColor = palette.Red
 		cellObjs = append(cellObjs, obj)
 	}
+
+	layers[0].TileLayerId.SetTile(0, 0, assets.NewTile(55))
 
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()

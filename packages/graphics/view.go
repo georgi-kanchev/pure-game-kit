@@ -242,15 +242,14 @@ func (v *View) DrawObjects(object *Object) {
 
 	var eff = (*internal.Effects)(&o.Effects)
 
-	if o.TileAtlasId != 0 && o.TileLayerId != 0 {
+	if o.TileLayerId != 0 {
 		var layer = internal.TileLayers[uint8(o.TileLayerId)]
-		var atlas = internal.TileAtlases[uint8(o.TileAtlasId)]
 		if layer.Image != nil {
-			var tex = internal.Images[atlas.ImageId]
+			var tex = internal.Images[layer.ImageId]
 			var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
 			var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
 			var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
-			internal.Queue(tex.Texture, layer.Texture, src, dst, o.Angle, 0, mask, eff, 3, uint8(atlas.TileSize), cols, rows)
+			internal.Queue(tex.Texture, layer.Texture, src, dst, o.Angle, 0, mask, eff, 3, uint8(layer.TileSize), cols, rows)
 		}
 		return
 	}
