@@ -110,8 +110,6 @@ type tile struct {
 			Duration int    `xml:"duration,attr"`
 		} `xml:"frame"`
 	} `xml:"animation"`
-
-	Points [][6]float32
 }
 
 const flips = 0x80000000 | 0x40000000 | 0x20000000 // flipX | flipY | flipDiag
@@ -156,9 +154,6 @@ func loadTiled(tmxFilePath string) (*atlas, *tiled) {
 	atlas.TilesLookUp = map[uint32]*tile{}
 	for _, t := range atlas.Tiles {
 		atlas.TilesLookUp[t.Id] = t
-		if t.Objects != nil {
-			t.Points = loadLayerObjects(t.Objects)
-		}
 	}
 	return atlas, tiled
 }
