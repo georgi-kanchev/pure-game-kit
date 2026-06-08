@@ -1,39 +1,28 @@
 package geometry
 
 import (
+	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
 )
 
 type ShapeGrid struct {
-	cells                 map[[2]int][]*Shape
-	cellWidth, cellHeight int
+	cells    map[[2]int][]*Shape
+	cellSize int
 }
 
-func NewShapeGrid(cellWidth, cellHeight int) *ShapeGrid {
-	return &ShapeGrid{cellWidth: cellWidth, cellHeight: cellHeight, cells: make(map[[2]int][]*Shape)}
+func NewShapeGrid(cellSize int) *ShapeGrid {
+	return &ShapeGrid{cellSize: cellSize, cells: make(map[[2]int][]*Shape)}
 }
 
 //=================================================================
 
 func (s *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
 	var key = [2]int{x, y}
-	var w, h = s.cellWidth, s.cellHeight
 	s.cells[key] = []*Shape{}
-
-	for _, shape := range shapes {
-		shape.gridX = float32(x*w) + (float32(w) * 0.5)
-		shape.gridY = float32(y*h) + (float32(h) * 0.5)
-	}
 	s.cells[key] = append(s.cells[key], shapes...)
 }
 
 //=================================================================
-
-func (s *ShapeGrid) Cell(shape *Shape) (cellX, cellY int) {
-	var w, h = float32(s.cellWidth), float32(s.cellHeight)
-	var x, y = shape.gridX / w, shape.gridY / h
-	return int(x), int(y)
-}
 
 func (s *ShapeGrid) All() []*Shape {
 	var result = []*Shape{}
@@ -50,7 +39,7 @@ func (s *ShapeGrid) AtCell(x, y int) []*Shape {
 	return []*Shape{}
 }
 func (s *ShapeGrid) AtPoint(x, y float32) []*Shape {
-	var w, h = float32(s.cellWidth), float32(s.cellHeight)
+	var w, h = float32(s.cellSize), float32(s.cellSize)
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
@@ -58,12 +47,14 @@ func (s *ShapeGrid) AtPoint(x, y float32) []*Shape {
 	return s.AtCell(int(i), int(j))
 }
 func (s *ShapeGrid) AroundLine(line *Shape) []*Shape {
-	var w, h = float32(s.cellWidth), float32(s.cellHeight)
+	var w, h = float32(s.cellSize), float32(s.cellSize)
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
 
-	var ax, ay, bx, by = line.endpoints()
+	var sin, cos = internal.SinCos(line.Angle)
+	var hw = line.Width * 0.5
+	var ax, ay, bx, by = line.X - cos*hw, line.Y - sin*hw, line.X + cos*hw, line.Y + sin*hw
 	var result []*Shape
 	var x0, y0, x1, y1 = ax / w, ay / h, bx / w, by / h
 	var ix0, iy0 = int(number.RoundDown(x0)), int(number.RoundDown(y0))
@@ -112,21 +103,6 @@ func (s *ShapeGrid) AroundLine(line *Shape) []*Shape {
 		}
 	}
 
-	return result
-}
-func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
-	var w, h = float32(s.cellWidth), float32(s.cellHeight)
-	if w == 0 || h == 0 {
-		return []*Shape{}
-	}
-
-	var corners = shape.CornerPoints()
-	var result = []*Shape{}
-
-	for i := 2; i < len(corners); i += 2 {
-		var line = NewLine(corners[i-2], corners[i-1], corners[i], corners[i+1], 0)
-		result = append(result, s.AroundLine(&line)...)
-	}
 	return result
 }
 

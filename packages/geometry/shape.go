@@ -7,10 +7,7 @@ import (
 	"pure-game-kit/packages/utility/point"
 )
 
-type Shape struct {
-	X, Y, Width, Height, Angle, Roundness float32
-	gridX, gridY                          float32
-}
+type Shape struct{ X, Y, Width, Height, Angle, Roundness float32 }
 
 func NewPoint(x, y float32) Shape {
 	return Shape{X: x, Y: y}
@@ -43,12 +40,9 @@ func NewLine(x1, y1, x2, y2, thickness float32) Shape {
 func (s Shape) DistanceToPoint(x, y float32) float32 {
 	var px, py = x - s.X, y - s.Y
 	var sinR, cosR = internal.SinCos(-s.Angle)
-	var lx = px*cosR - py*sinR
-	var ly = px*sinR + py*cosR
-	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var lx, ly, hx, hy = px*cosR - py*sinR, px*sinR + py*cosR, s.Width * 0.5, s.Height * 0.5
 	var r = s.roundness() * min(hx, hy)
-	var qx = number.Absolute(lx) - (hx - r)
-	var qy = number.Absolute(ly) - (hy - r)
+	var qx, qy = number.Absolute(lx) - (hx - r), number.Absolute(ly) - (hy - r)
 	return number.SquareRoot(max(qx, 0)*max(qx, 0)+max(qy, 0)*max(qy, 0)) + min(max(qx, qy), 0) - r
 }
 func (s Shape) ContainsPoint(x, y float32) bool {
@@ -57,24 +51,19 @@ func (s Shape) ContainsPoint(x, y float32) bool {
 func (s Shape) ClosestPointToEdge(x, y float32) (edgeX, edgeY float32) {
 	var px, py = x - s.X, y - s.Y
 	var sinR, cosR = internal.SinCos(-s.Angle)
-	var lx = px*cosR - py*sinR
-	var ly = px*sinR + py*cosR
-	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var lx, ly, hx, hy = px*cosR - py*sinR, px*sinR + py*cosR, s.Width * 0.5, s.Height * 0.5
 	var r = s.roundness() * min(hx, hy)
 	var cx = max(-(hx - r), min(hx-r, lx))
 	var cy = max(-(hy - r), min(hy-r, ly))
 	var dx, dy = lx - cx, ly - cy
 	var dist = number.SquareRoot(dx*dx + dy*dy)
-
 	var bx, by float32
+
 	if dist > 1e-6 {
-		bx = cx + r*dx/dist
-		by = cy + r*dy/dist
+		bx, by = cx+r*dx/dist, cy+r*dy/dist
 	} else { // inside inner box: push to nearest flat face
-		var dPosX, dNegX = hx - lx, hx + lx
-		var dPosY, dNegY = hy - ly, hy + ly
-		var minD = min(min(dPosX, dNegX), min(dPosY, dNegY))
-		switch minD {
+		var dPosX, dNegX, dPosY, dNegY = hx - lx, hx + lx, hy - ly, hy + ly
+		switch min(min(dPosX, dNegX), min(dPosY, dNegY)) {
 		case dPosX:
 			bx, by = hx, ly
 		case dNegX:
@@ -85,7 +74,6 @@ func (s Shape) ClosestPointToEdge(x, y float32) (edgeX, edgeY float32) {
 			bx, by = lx, -hy
 		}
 	}
-
 	return bx*cosR + by*sinR + s.X, -bx*sinR + by*cosR + s.Y
 }
 func (s Shape) Raycast(x, y, angle, length float32) (hitX, hitY float32) {
@@ -110,16 +98,14 @@ func (s Shape) Bounds() (x, y, width, height float32) {
 	sinR, cosR = number.Absolute(sinR), number.Absolute(cosR)
 	var hx, hy = s.Width * 0.5, s.Height * 0.5
 	var r = s.roundness() * min(hx, hy)
-	var extentX = (hx-r)*cosR + (hy-r)*sinR + r
-	var extentY = (hx-r)*sinR + (hy-r)*cosR + r
+	var extentX, extentY = (hx-r)*cosR + (hy-r)*sinR + r, (hx-r)*sinR + (hy-r)*cosR + r
 	return s.X - extentX, s.Y - extentY, extentX * 2, extentY * 2
 }
 func (s Shape) Overlaps(target Shape) bool {
 	// AABB broadphase
 	var sMinX, sMinY, sW, sH = s.Bounds()
 	var oMinX, oMinY, oW, oH = target.Bounds()
-	var sMaxX, sMaxY = sMinX + sW, sMinY + sH
-	var oMaxX, oMaxY = oMinX + oW, oMinY + oH
+	var sMaxX, sMaxY, oMaxX, oMaxY = sMinX + sW, sMinY + sH, oMinX + oW, oMinY + oH
 	if sMaxX < oMinX || oMaxX < sMinX || sMaxY < oMinY || oMaxY < sMinY {
 		return false
 	}
@@ -128,33 +114,26 @@ func (s Shape) Overlaps(target Shape) bool {
 	var sSin, sCos = internal.SinCos(s.Angle)
 	var oSin, oCos = internal.SinCos(target.Angle)
 
-	var projX = number.Absolute(dx*sCos + dy*sSin) // s local X
-	if projX > s.support(sCos, sSin, sCos, sSin)+target.support(sCos, sSin, oCos, oSin) {
-		return false
+	if number.Absolute(dx*sCos+dy*sSin) > s.support(sCos, sSin, sCos, sSin)+target.support(sCos, sSin, oCos, oSin) {
+		return false // s local X
 	}
-	var projY = number.Absolute(dx*-sSin + dy*sCos) // s local Y
-	if projY > s.support(-sSin, sCos, sCos, sSin)+target.support(-sSin, sCos, oCos, oSin) {
-		return false
+	if number.Absolute(dx*-sSin+dy*sCos) > s.support(-sSin, sCos, sCos, sSin)+target.support(-sSin, sCos, oCos, oSin) {
+		return false // s local Y
 	}
-	var projOx = number.Absolute(dx*oCos + dy*oSin) // other local X
-	if projOx > s.support(oCos, oSin, sCos, sSin)+target.support(oCos, oSin, oCos, oSin) {
-		return false
+	if number.Absolute(dx*oCos+dy*oSin) > s.support(oCos, oSin, sCos, sSin)+target.support(oCos, oSin, oCos, oSin) {
+		return false // other local X
 	}
-
-	var projOy = number.Absolute(dx*-oSin + dy*oCos) // other local Y
-	if projOy > s.support(-oSin, oCos, sCos, sSin)+target.support(-oSin, oCos, oCos, oSin) {
-		return false
+	if number.Absolute(dx*-oSin+dy*oCos) > s.support(-oSin, oCos, sCos, sSin)+target.support(-oSin, oCos, oCos, oSin) {
+		return false // other local Y
 	}
 
-	// corner axis
 	var pAx, pAy = s.nearestInnerBoxPoint(target.X, target.Y, sCos, sSin)
 	var pBx, pBy = target.nearestInnerBoxPoint(s.X, s.Y, oCos, oSin)
 	var cax, cay = pBx - pAx, pBy - pAy
 	var l = number.SquareRoot(cax*cax + cay*cay)
-	if l > 1e-6 {
+	if l > 1e-6 { // corner axis
 		cax, cay = cax/l, cay/l
-		var proj = number.Absolute(dx*cax + dy*cay)
-		if proj > s.support(cax, cay, sCos, sSin)+target.support(cax, cay, oCos, oSin) {
+		if number.Absolute(dx*cax+dy*cay) > s.support(cax, cay, sCos, sSin)+target.support(cax, cay, oCos, oSin) {
 			return false
 		}
 	}
@@ -216,12 +195,11 @@ func (s Shape) Collide(target Shape) Shape {
 		}
 	}
 
-	// corner axis
 	var pAx, pAy = s.nearestInnerBoxPoint(target.X, target.Y, sCos, sSin)
 	var pBx, pBy = target.nearestInnerBoxPoint(s.X, s.Y, oCos, oSin)
 	var ax0, ax1 = pBx - pAx, pBy - pAy
 	var l = number.SquareRoot(ax0*ax0 + ax1*ax1)
-	if l > 1e-6 {
+	if l > 1e-6 { // corner axis
 		ax0, ax1 = ax0/l, ax1/l
 		var d = dx*ax0 + dy*ax1
 		if d < 0 {
@@ -233,59 +211,23 @@ func (s Shape) Collide(target Shape) Shape {
 		}
 	}
 
-	target.X += minAx0 * minDepth
-	target.Y += minAx1 * minDepth
+	target.X, target.Y = target.X+(minAx0*minDepth), target.Y+(minAx1*minDepth)
 	return target
-}
-
-//=================================================================
-
-// CornerPoints returns the 4 world-space corners of the shape as x,y pairs
-// (including a closing pair, for compatibility with line-traversal code).
-func (s Shape) CornerPoints() []float32 {
-	var sin, cos = internal.SinCos(s.Angle)
-	var hw, hh = s.Width * 0.5, s.Height * 0.5
-	// local corners: TL, TR, BR, BL
-	var lx = [4]float32{-hw, hw, hw, -hw}
-	var ly = [4]float32{-hh, -hh, hh, hh}
-	var result = make([]float32, 0, 10) // 4 corners + closing = 5 pairs = 10 floats
-	for i := range 4 {
-		var wx = s.X + s.gridX + lx[i]*cos - ly[i]*sin
-		var wy = s.Y + s.gridY + lx[i]*sin + ly[i]*cos
-		result = append(result, wx, wy)
-	}
-	// close the loop
-	result = append(result, result[0], result[1])
-	return result
-}
-
-// endpoints returns the two endpoints of a line-shape (used by ShapeGrid.AroundLine).
-func (s Shape) endpoints() (ax, ay, bx, by float32) {
-	var sin, cos = internal.SinCos(s.Angle)
-	var hw = s.Width * 0.5
-	return s.X - cos*hw, s.Y - sin*hw, s.X + cos*hw, s.Y + sin*hw
 }
 
 // private ========================================================
 
+func (s Shape) roundness() float32 { return max(min(s.Roundness, 1), 0) }
 func (s Shape) support(ax0, ax1, cosR, sinR float32) float32 {
 	var hx, hy = s.Width * 0.5, s.Height * 0.5
 	var r = s.roundness() * min(hx, hy)
-	var dX = number.Absolute(ax0*cosR + ax1*sinR)
-	var dY = number.Absolute(-ax0*sinR + ax1*cosR)
+	var dX, dY = number.Absolute(ax0*cosR + ax1*sinR), number.Absolute(-ax0*sinR + ax1*cosR)
 	return (hx-r)*dX + (hy-r)*dY + r
 }
 func (s Shape) nearestInnerBoxPoint(px, py, cosR, sinR float32) (float32, float32) {
 	var rx, ry = px - s.X, py - s.Y
-	var lx = rx*cosR + ry*sinR
-	var ly = -rx*sinR + ry*cosR
-	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var lx, ly, hx, hy = rx*cosR + ry*sinR, -rx*sinR + ry*cosR, s.Width * 0.5, s.Height * 0.5
 	var r = s.roundness() * min(hx, hy)
-	lx = max(-(hx - r), min(hx-r, lx))
-	ly = max(-(hy - r), min(hy-r, ly))
+	lx, ly = max(-(hx-r), min(hx-r, lx)), max(-(hy-r), min(hy-r, ly))
 	return s.X + lx*cosR - ly*sinR, s.Y + lx*sinR + ly*cosR
-}
-
-func (s Shape) roundness() float32 {
-	return max(min(s.Roundness, 1), 0)
 }

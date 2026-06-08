@@ -70,7 +70,7 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 		return nil
 	}
 
-	var w, h = float32(s.cellWidth), float32(s.cellHeight)
+	var w, h = float32(s.cellSize), float32(s.cellSize)
 	stx, sty, tarx, tary = stx/w, sty/h, tarx/w, tary/h
 	var sx, sy = int(number.RoundDown(stx, 0)), int(number.RoundDown(sty, 0))
 	var tx, ty = int(number.RoundDown(tarx, 0)), int(number.RoundDown(tary, 0))
