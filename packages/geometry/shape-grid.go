@@ -6,56 +6,56 @@ import (
 )
 
 type ShapeGrid struct {
-	cells    map[[2]int][]*Shape
+	cells    map[[2]int][]Shape
 	cellSize int
 }
 
 func NewShapeGrid(cellSize int) *ShapeGrid {
-	return &ShapeGrid{cellSize: cellSize, cells: make(map[[2]int][]*Shape)}
+	return &ShapeGrid{cellSize: cellSize, cells: make(map[[2]int][]Shape)}
 }
 
 //=================================================================
 
-func (s *ShapeGrid) SetAtCell(x, y int, shapes ...*Shape) {
+func (s *ShapeGrid) SetAtCell(x, y int, shapes ...Shape) {
 	var key = [2]int{x, y}
-	s.cells[key] = []*Shape{}
+	s.cells[key] = []Shape{}
 	s.cells[key] = append(s.cells[key], shapes...)
 }
 
 //=================================================================
 
-func (s *ShapeGrid) All() []*Shape {
-	var result = []*Shape{}
+func (s *ShapeGrid) All() []Shape {
+	var result = []Shape{}
 	for k := range s.cells {
 		result = append(result, s.AtCell(k[0], k[1])...)
 	}
 	return result
 }
-func (s *ShapeGrid) AtCell(x, y int) []*Shape {
+func (s *ShapeGrid) AtCell(x, y int) []Shape {
 	var shapes, has = s.cells[[2]int{x, y}]
 	if has {
 		return shapes
 	}
-	return []*Shape{}
+	return []Shape{}
 }
-func (s *ShapeGrid) AtPoint(x, y float32) []*Shape {
+func (s *ShapeGrid) AtPoint(x, y float32) []Shape {
 	var w, h = float32(s.cellSize), float32(s.cellSize)
 	if w == 0 || h == 0 {
-		return []*Shape{}
+		return []Shape{}
 	}
 	var i, j = number.RoundDown(x / w), number.RoundDown(y / h)
 	return s.AtCell(int(i), int(j))
 }
-func (s *ShapeGrid) AroundLine(line *Shape) []*Shape {
+func (s *ShapeGrid) AroundLine(line Shape) []Shape {
 	var w, h = float32(s.cellSize), float32(s.cellSize)
 	if w == 0 || h == 0 {
-		return []*Shape{}
+		return []Shape{}
 	}
 
 	var sin, cos = internal.SinCos(line.Angle)
 	var hw = line.Width * 0.5
 	var ax, ay, bx, by = line.X - cos*hw, line.Y - sin*hw, line.X + cos*hw, line.Y + sin*hw
-	var result []*Shape
+	var result []Shape
 	var x0, y0, x1, y1 = ax / w, ay / h, bx / w, by / h
 	var ix0, iy0 = int(number.RoundDown(x0)), int(number.RoundDown(y0))
 	var ix1, iy1 = int(number.RoundDown(x1)), int(number.RoundDown(y1))
