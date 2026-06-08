@@ -1,7 +1,6 @@
 package geometry
 
 import (
-	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
 )
 
@@ -38,71 +37,19 @@ func (s *ShapeGrid) AtCell(x, y int) []Shape {
 	}
 	return []Shape{}
 }
-func (s *ShapeGrid) AtPoint(x, y float32) []Shape {
-	var w, h = float32(s.cellSize), float32(s.cellSize)
-	if w == 0 || h == 0 {
-		return []Shape{}
+func (s *ShapeGrid) Neighbors(shape Shape, chunkSize float32) []Shape {
+	if chunkSize <= 0 {
+		return nil
 	}
-	var i, j = number.RoundDown(x / w), number.RoundDown(y / h)
-	return s.AtCell(int(i), int(j))
-}
-func (s *ShapeGrid) AroundLine(line Shape) []Shape {
-	var w, h = float32(s.cellSize), float32(s.cellSize)
-	if w == 0 || h == 0 {
-		return []Shape{}
-	}
-
-	var sin, cos = internal.SinCos(line.Angle)
-	var hw = line.Width * 0.5
-	var ax, ay, bx, by = line.X - cos*hw, line.Y - sin*hw, line.X + cos*hw, line.Y + sin*hw
-	var result []Shape
-	var x0, y0, x1, y1 = ax / w, ay / h, bx / w, by / h
-	var ix0, iy0 = int(number.RoundDown(x0)), int(number.RoundDown(y0))
-	var ix1, iy1 = int(number.RoundDown(x1)), int(number.RoundDown(y1))
-	var dx, dy = x1 - x0, y1 - y0
-	var stepX, stepY int
-	var tMaxX, tMaxY, tDeltaX, tDeltaY float32
-
-	if dx > 0 {
-		stepX = 1
-		tMaxX = (float32(ix0+1) - x0) / dx
-		tDeltaX = 1 / dx
-	} else if dx < 0 {
-		stepX = -1
-		tMaxX = (x0 - float32(ix0)) / -dx
-		tDeltaX = 1 / -dx
-	} else {
-		stepX = 0
-		tMaxX = number.Infinity()
-	}
-
-	if dy > 0 {
-		stepY = 1
-		tMaxY = (float32(iy0+1) - y0) / dy
-		tDeltaY = 1 / dy
-	} else if dy < 0 {
-		stepY = -1
-		tMaxY = (y0 - float32(iy0)) / -dy
-		tDeltaY = 1 / -dy
-	} else {
-		stepY = 0
-		tMaxY = number.Infinity()
-	}
-
-	for { // Traverse until reaching the target cell
-		result = append(result, s.AtCell(ix0, iy0)...)
-		if ix0 == ix1 && iy0 == iy1 {
-			break
-		}
-		if tMaxX < tMaxY {
-			ix0 += stepX
-			tMaxX += tDeltaX
-		} else {
-			iy0 += stepY
-			tMaxY += tDeltaY
+	var minX, minY, w, h = shape.Bounds()
+	var result, maxX, maxY = []Shape{}, minX + w, minY + h
+	var startX, startY = int(number.RoundDown(minX / chunkSize)), int(number.RoundDown(minY / chunkSize))
+	var endX, endY = int(number.RoundDown(maxX / chunkSize)), int(number.RoundDown(maxY / chunkSize))
+	for cx := startX; cx <= endX; cx++ {
+		for cy := startY; cy <= endY; cy++ {
+			result = append(result, s.AtCell(cx, cy)...)
 		}
 	}
-
 	return result
 }
 
