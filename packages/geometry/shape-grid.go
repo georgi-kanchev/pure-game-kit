@@ -57,14 +57,15 @@ func (s *ShapeGrid) AtPoint(x, y float32) []*Shape {
 	var i, j = number.RoundDown(x / w), number.RoundDown(y / h)
 	return s.AtCell(int(i), int(j))
 }
-func (s *ShapeGrid) AroundLine(line Line) []*Shape {
+func (s *ShapeGrid) AroundLine(line *Shape) []*Shape {
 	var w, h = float32(s.cellWidth), float32(s.cellHeight)
 	if w == 0 || h == 0 {
 		return []*Shape{}
 	}
 
+	var ax, ay, bx, by = line.endpoints()
 	var result []*Shape
-	var x0, y0, x1, y1 = line.Ax / w, line.Ay / h, line.Bx / w, line.By / h
+	var x0, y0, x1, y1 = ax / w, ay / h, bx / w, by / h
 	var ix0, iy0 = int(number.RoundDown(x0)), int(number.RoundDown(y0))
 	var ix1, iy1 = int(number.RoundDown(x1)), int(number.RoundDown(y1))
 	var dx, dy = x1 - x0, y1 - y0
@@ -122,9 +123,9 @@ func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 	var corners = shape.CornerPoints()
 	var result = []*Shape{}
 
-	for i := 2; i < len(corners); i += 2 { // step by 2 and look back to the previous x, y pair
-		var line = NewLine(corners[i-2], corners[i-1], corners[i], corners[i+1])
-		result = append(result, s.AroundLine(line)...)
+	for i := 2; i < len(corners); i += 2 {
+		var line = NewLine(corners[i-2], corners[i-1], corners[i], corners[i+1], 0)
+		result = append(result, s.AroundLine(&line)...)
 	}
 	return result
 }

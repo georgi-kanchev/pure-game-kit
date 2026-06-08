@@ -2,373 +2,290 @@ package geometry
 
 import (
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/point"
 )
 
 type Shape struct {
-	X, Y, Angle, ScaleX, ScaleY,
-
-	minX, minY, maxX, maxY,
-	gridX, gridY float32
-
-	corners []float32
+	X, Y, Width, Height, Angle, Roundness float32
+	gridX, gridY                          float32
 }
 
-// Shapes separated by NaN pair.
-func NewShapes(corners ...float32) []*Shape {
-	var curPts []float32
-	var result []*Shape
-	for i := 0; i < len(corners); i += 2 {
-		var x, y = corners[i], corners[i+1]
-		if number.IsNaN(x) || number.IsNaN(y) {
-			if len(curPts) > 0 {
-				result = append(result, NewShapeCorners(curPts...))
-				curPts = []float32{}
-			}
-			continue
-		}
-		curPts = append(curPts, x, y)
-	}
-	if len(curPts) > 0 {
-		result = append(result, NewShapeCorners(curPts...))
-	}
-	return result
+func NewPoint(x, y float32) Shape {
+	return Shape{X: x, Y: y}
 }
-func NewShapeCorners(corners ...float32) *Shape {
-	if len(corners) == 0 {
-		return &Shape{}
-	}
-
-	var n = len(corners) // close shape if it already isn't (compare first pair to last pair)
-	if n >= 4 && (corners[0] != corners[n-2] || corners[1] != corners[n-1]) {
-		corners = append(corners, corners[0], corners[1])
-	}
-
-	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+func NewCircle(x, y, radius float32) Shape {
+	return Shape{X: x, Y: y, Width: radius * 2, Height: radius * 2, Roundness: 1.0}
 }
-func NewShapeSides(radius float32, sides int) *Shape {
-	var corners []float32
-	var step float32 = 360.0 / float32(sides)
-	for i := range sides {
-		var x, y = point.MoveAtAngle(0, 0, step*float32(i)-90, radius)
-		corners = append(corners, x, y)
-	}
-
-	if len(corners) >= 2 {
-		corners = append(corners, corners[0], corners[1])
-	}
-
-	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+func NewRectangle(x, y, width, height, angle float32) Shape {
+	return Shape{X: x, Y: y, Width: width, Height: height, Angle: angle}
 }
-func NewShapeQuad(width, height, pivotX, pivotY float32) *Shape {
-	var offX, offY = width * pivotX, height * pivotY
-	var corners = []float32{
-		-offX, -offY,
-		width - offX, -offY,
-		width - offX, height - offY,
-		-offX, height - offY,
-		-offX, -offY,
-	}
-	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+func NewRoundedRectangle(x, y, width, height, angle, roundness float32) Shape {
+	return Shape{X: x, Y: y, Width: width, Height: height, Angle: angle, Roundness: roundness}
 }
-func NewShapeQuadRounded(width, height, radius, pivotX, pivotY float32, segments int) *Shape {
-	var maxRadius = width / 2
-	if height/2 < maxRadius {
-		maxRadius = height / 2
-	}
-	if radius > maxRadius {
-		radius = maxRadius
-	}
-
-	const pi = 3.14159
-	var offX, offY = width * pivotX, height * pivotY
-	var corners []float32
-	var addCorner = func(cx, cy, startAngle float32) {
-		for i := 0; i <= segments; i++ {
-			var angle = startAngle + (float32(i)/float32(segments))*(pi/2)
-			var px = cx + radius*number.Cosine(angle)
-			var py = cy + radius*number.Sine(angle)
-			corners = append(corners, px-offX, py-offY)
-		}
-	}
-	addCorner(width-radius, radius, -pi/2)    // top right
-	addCorner(width-radius, height-radius, 0) // bottom right
-	addCorner(radius, height-radius, pi/2)    // bottom left
-	addCorner(radius, radius, pi)             // top left
-
-	// Close the shape
-	corners = append(corners, corners[0], corners[1])
-	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+func NewCapsule(x1, y1, x2, y2, radius float32) Shape {
+	var dist = point.DistanceToPoint(x1, y1, x2, y2)
+	var ang = angle.BetweenPoints(x1, y1, x2, y2)
+	var midX, midY = point.MoveAtAngle(x1, y1, ang, dist*0.5)
+	return Shape{X: midX, Y: midY, Width: dist + (radius * 2), Height: radius * 2, Angle: ang, Roundness: 1.0}
 }
-func NewShapeEllipse(width, height float32, segments int) *Shape {
-	if segments < 3 {
-		segments = 3
-	}
-
-	var rx, ry = width / 2, height / 2
-	// Pre-allocate space for x,y pairs plus closing pair
-	var corners = make([]float32, 0, (segments+1)*2)
-	var step = 360.0 / float32(segments)
-
-	for i := 0; i < segments; i++ {
-		var cx, cy = point.MoveAtAngle(0, 0, float32(i)*step, 1)
-		corners = append(corners, cx*rx, cy*ry)
-	}
-	corners = append(corners, corners[0], corners[1])
-
-	return &Shape{ScaleX: 1, ScaleY: 1, corners: corners}
+func NewLine(x1, y1, x2, y2, thickness float32) Shape {
+	var dist = point.DistanceToPoint(x1, y1, x2, y2)
+	var ang = angle.BetweenPoints(x1, y1, x2, y2)
+	var midX, midY = point.MoveAtAngle(x1, y1, ang, dist*0.5)
+	return Shape{X: midX, Y: midY, Width: dist, Height: thickness, Angle: ang}
 }
 
 //=================================================================
 
-func (s *Shape) CornerPoints() []float32 {
-	if s == nil {
-		return nil
-	}
-
-	var result = make([]float32, len(s.corners))
-	s.minX, s.minY = number.Infinity(), number.Infinity()
-	s.maxX, s.maxY = number.NegativeInfinity(), number.NegativeInfinity()
-
-	var sin, cos = internal.SinCos(s.Angle)
-
-	for i := 0; i < len(s.corners); i += 2 {
-		var x, y = s.corners[i], s.corners[i+1]
-
-		x *= s.ScaleX
-		y *= s.ScaleY
-
-		var resultX = s.gridX + s.X + (x*cos - y*sin)
-		var resultY = s.gridY + s.Y + (x*sin + y*cos)
-
-		if s.minX > resultX {
-			s.minX = resultX
-		}
-		if s.minY > resultY {
-			s.minY = resultY
-		}
-		if s.maxX < resultX {
-			s.maxX = resultX
-		}
-		if s.maxY < resultY {
-			s.maxY = resultY
-		}
-
-		result[i], result[i+1] = resultX, resultY
-	}
-	return result
+// Negative result means inside, zero means on the edge, positive means outside.
+func (s Shape) DistanceToPoint(x, y float32) float32 {
+	var px, py = x - s.X, y - s.Y
+	var sinR, cosR = internal.SinCos(-s.Angle)
+	var lx = px*cosR - py*sinR
+	var ly = px*sinR + py*cosR
+	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var r = s.roundness() * min(hx, hy)
+	var qx = number.Absolute(lx) - (hx - r)
+	var qy = number.Absolute(ly) - (hy - r)
+	return number.SquareRoot(max(qx, 0)*max(qx, 0)+max(qy, 0)*max(qy, 0)) + min(max(qx, qy), 0) - r
 }
-func (s *Shape) Collide(velocityX, velocityY float32, targets ...*Shape) (newVelocityX, newVelocityY float32) {
-	for _, target := range targets {
-		if s.minX == 0 && s.minY == 0 && s.maxX == 0 && s.maxY == 0 {
-			s.CornerPoints()
-		}
-		if target.minX == 0 && target.minY == 0 && target.maxX == 0 && target.maxY == 0 {
-			target.CornerPoints()
-		}
+func (s Shape) ContainsPoint(x, y float32) bool {
+	return s.DistanceToPoint(x, y) <= 0
+}
+func (s Shape) ClosestPointToEdge(x, y float32) (edgeX, edgeY float32) {
+	var px, py = x - s.X, y - s.Y
+	var sinR, cosR = internal.SinCos(-s.Angle)
+	var lx = px*cosR - py*sinR
+	var ly = px*sinR + py*cosR
+	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var r = s.roundness() * min(hx, hy)
+	var cx = max(-(hx - r), min(hx-r, lx))
+	var cy = max(-(hy - r), min(hy-r, ly))
+	var dx, dy = lx - cx, ly - cy
+	var dist = number.SquareRoot(dx*dx + dy*dy)
 
-		if !s.inBoundingBoxShape(*target) {
-			continue
-		}
-
-		var cax = s.minX + (s.maxX-s.minX)/2
-		var cay = s.minY + (s.maxY-s.minY)/2
-		var cbx = target.minX + (target.maxX-target.minX)/2
-		var cby = target.minY + (target.maxY-target.minY)/2
-
-		var corners = s.CornerPoints()
-		var targetCorners = target.CornerPoints()
-
-		// Remove closing point for SAT calculation
-		if len(corners) >= 4 {
-			corners = corners[:len(corners)-2]
-		}
-		if len(targetCorners) >= 4 {
-			targetCorners = targetCorners[:len(targetCorners)-2]
-		}
-
-		var projectPolygon = func(axisX, axisY float32, points []float32) (min, max float32) {
-			var dot float32 = axisX*points[0] + axisY*points[1]
-			min, max = dot, dot
-
-			for i := 2; i < len(points); i += 2 {
-				var d float32 = axisX*points[i] + axisY*points[i+1]
-				if d < min {
-					min = d
-				} else if d > max {
-					max = d
-				}
-			}
-			return
-		}
-
-		var willIntersect = true
-		var minIntervalDistance = number.Infinity()
-		var tAxisX, tAxisY float32
-
-		// Combine edge checking loop
-		var totalPoints = len(corners) + len(targetCorners)
-		for i := 0; i < totalPoints; i += 2 {
-			var x1, y1, x2, y2 float32
-
-			if i < len(corners) {
-				x1, y1 = corners[i], corners[i+1]
-				var next = (i + 2) % len(corners)
-				x2, y2 = corners[next], corners[next+1]
-			} else {
-				var idx = i - len(corners)
-				x1, y1 = targetCorners[idx], targetCorners[idx+1]
-				var next = (idx + 2) % len(targetCorners)
-				x2, y2 = targetCorners[next], targetCorners[next+1]
-			}
-
-			// Normal of the edge
-			var axisX, axisY = -(y2 - y1), (x2 - x1)
-			var axisLen = number.SquareRoot(axisX*axisX + axisY*axisY)
-			if axisLen != 0 {
-				axisX /= axisLen
-				axisY /= axisLen
-			} else {
-				continue
-			}
-
-			var minA, maxA = projectPolygon(axisX, axisY, corners)
-			var minB, maxB = projectPolygon(axisX, axisY, targetCorners)
-
-			var velocityProjection = axisX*velocityX + axisY*velocityY
-			if velocityProjection < 0 {
-				minA += velocityProjection
-			} else {
-				maxA += velocityProjection
-			}
-
-			var iDist = minA - maxB
-			if minA < minB {
-				iDist = minB - maxA
-			}
-
-			if iDist > 0 {
-				willIntersect = false
-				break
-			}
-
-			var absInterval = number.Unsign(iDist)
-			if absInterval < minIntervalDistance {
-				minIntervalDistance = absInterval
-				tAxisX, tAxisY = axisX, axisY
-
-				if (cax-cbx)*tAxisX+(cay-cby)*tAxisY < 0 {
-					tAxisX, tAxisY = -tAxisX, -tAxisY
-				}
-			}
-		}
-
-		if willIntersect {
-			velocityX += tAxisX * minIntervalDistance
-			velocityY += tAxisY * minIntervalDistance
+	var bx, by float32
+	if dist > 1e-6 {
+		bx = cx + r*dx/dist
+		by = cy + r*dy/dist
+	} else { // inside inner box: push to nearest flat face
+		var dPosX, dNegX = hx - lx, hx + lx
+		var dPosY, dNegY = hy - ly, hy + ly
+		var minD = min(min(dPosX, dNegX), min(dPosY, dNegY))
+		switch minD {
+		case dPosX:
+			bx, by = hx, ly
+		case dNegX:
+			bx, by = -hx, ly
+		case dPosY:
+			bx, by = lx, hy
+		default:
+			bx, by = lx, -hy
 		}
 	}
-	return velocityX, velocityY
+
+	return bx*cosR + by*sinR + s.X, -bx*sinR + by*cosR + s.Y
 }
-
-//=================================================================
-
-// all check methods are made with speed in mind, not so much readability
-// they should have the least iterations and allocations (once per API call for CornerPoints())
-// don't be a smartass by "simplifying" and reusing them internally in the future
-
-func (s *Shape) IsContainingPoint(x, y float32) bool {
-	var corners = s.CornerPoints()
-
-	if !s.inBoundingBoxPoint(x, y) {
+func (s Shape) Raycast(x, y, angle, length float32) (hitX, hitY float32) {
+	var lx, ly = point.MoveAtAngle(x, y, angle, length*0.5)
+	if !s.Overlaps(Shape{X: lx, Y: ly, Width: length, Angle: angle}) {
+		return number.NaN(), number.NaN()
+	}
+	var dy, dx = internal.SinCos(angle)
+	var t = float32(0)
+	for range 64 {
+		var cx, cy = x + t*dx, y + t*dy
+		var dist = s.DistanceToPoint(cx, cy)
+		if dist <= 1e-4 {
+			return s.ClosestPointToEdge(cx, cy)
+		}
+		t += dist
+	}
+	return number.NaN(), number.NaN()
+}
+func (s Shape) Bounds() (x, y, width, height float32) {
+	var sinR, cosR = internal.SinCos(s.Angle)
+	sinR, cosR = number.Absolute(sinR), number.Absolute(cosR)
+	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var r = s.roundness() * min(hx, hy)
+	var extentX = (hx-r)*cosR + (hy-r)*sinR + r
+	var extentY = (hx-r)*sinR + (hy-r)*cosR + r
+	return s.X - extentX, s.Y - extentY, extentX * 2, extentY * 2
+}
+func (s Shape) Overlaps(target Shape) bool {
+	// AABB broadphase
+	var sMinX, sMinY, sW, sH = s.Bounds()
+	var oMinX, oMinY, oW, oH = target.Bounds()
+	var sMaxX, sMaxY = sMinX + sW, sMinY + sH
+	var oMaxX, oMaxY = oMinX + oW, oMinY + oH
+	if sMaxX < oMinX || oMaxX < sMinX || sMaxY < oMinY || oMaxY < sMinY {
 		return false
 	}
 
-	return s.internalIsContainingPoint(corners, x, y)
-}
+	var dx, dy = target.X - s.X, target.Y - s.Y
+	var sSin, sCos = internal.SinCos(s.Angle)
+	var oSin, oCos = internal.SinCos(target.Angle)
 
-func (s *Shape) CrossPointsWithLines(lines ...Line) []float32 {
-	var corners = s.CornerPoints()
-	var result []float32
+	var projX = number.Absolute(dx*sCos + dy*sSin) // s local X
+	if projX > s.support(sCos, sSin, sCos, sSin)+target.support(sCos, sSin, oCos, oSin) {
+		return false
+	}
+	var projY = number.Absolute(dx*-sSin + dy*sCos) // s local Y
+	if projY > s.support(-sSin, sCos, sCos, sSin)+target.support(-sSin, sCos, oCos, oSin) {
+		return false
+	}
+	var projOx = number.Absolute(dx*oCos + dy*oSin) // other local X
+	if projOx > s.support(oCos, oSin, sCos, sSin)+target.support(oCos, oSin, oCos, oSin) {
+		return false
+	}
 
-	for _, line := range lines {
-		if s.inBoundingBoxLine(line) {
-			var pts = s.internalCrossPointsWithLine(corners, line)
-			result = append(result, pts...)
-		}
+	var projOy = number.Absolute(dx*-oSin + dy*oCos) // other local Y
+	if projOy > s.support(-oSin, oCos, sCos, sSin)+target.support(-oSin, oCos, oCos, oSin) {
+		return false
 	}
-	return result
-}
-func (s *Shape) IsCrossingLines(lines ...Line) bool {
-	var corners = s.CornerPoints()
-	for _, line := range lines {
-		if s.inBoundingBoxLine(line) && s.internalIsCrossingLine(corners, line) {
-			return true
-		}
-	}
-	return false
-}
-func (s *Shape) IsContainingLines(lines ...Line) bool {
-	var corners = s.CornerPoints()
-	for _, line := range lines {
-		if !s.inBoundingBoxLine(line) || !s.internalIsContainingLine(corners, line) {
+
+	// corner axis
+	var pAx, pAy = s.nearestInnerBoxPoint(target.X, target.Y, sCos, sSin)
+	var pBx, pBy = target.nearestInnerBoxPoint(s.X, s.Y, oCos, oSin)
+	var cax, cay = pBx - pAx, pBy - pAy
+	var l = number.SquareRoot(cax*cax + cay*cay)
+	if l > 1e-6 {
+		cax, cay = cax/l, cay/l
+		var proj = number.Absolute(dx*cax + dy*cay)
+		if proj > s.support(cax, cay, sCos, sSin)+target.support(cax, cay, oCos, oSin) {
 			return false
 		}
 	}
 	return true
 }
-func (s *Shape) IsOverlappingLines(lines ...Line) bool {
-	var corners = s.CornerPoints()
-	for _, line := range lines {
-		if s.inBoundingBoxLine(line) && s.internalIsOverlappingLine(corners, line) {
-			return true
+func (s Shape) Collide(target Shape) Shape {
+	if !s.Overlaps(target) {
+		return target
+	}
+
+	var dx, dy = target.X - s.X, target.Y - s.Y
+	var sSin, sCos = internal.SinCos(s.Angle)
+	var oSin, oCos = internal.SinCos(target.Angle)
+	var minDepth = number.ValueBiggest[float32]()
+	var minAx0, minAx1 float32
+
+	{ // s local X
+		var ax0, ax1 = sCos, sSin
+		var d = dx*ax0 + dy*ax1
+		if d < 0 {
+			d, ax0, ax1 = -d, -ax0, -ax1
+		}
+		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		if depth < minDepth {
+			minDepth, minAx0, minAx1 = depth, ax0, ax1
 		}
 	}
-	return false
+	{ // s local Y
+		var ax0, ax1 = -sSin, sCos
+		var d = dx*ax0 + dy*ax1
+		if d < 0 {
+			d, ax0, ax1 = -d, -ax0, -ax1
+		}
+		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		if depth < minDepth {
+			minDepth, minAx0, minAx1 = depth, ax0, ax1
+		}
+	}
+	{ // other local X
+		var ax0, ax1 = oCos, oSin
+		var d = dx*ax0 + dy*ax1
+		if d < 0 {
+			d, ax0, ax1 = -d, -ax0, -ax1
+		}
+		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		if depth < minDepth {
+			minDepth, minAx0, minAx1 = depth, ax0, ax1
+		}
+	}
+	{ // other local Y
+		var ax0, ax1 = -oSin, oCos
+		var d = dx*ax0 + dy*ax1
+		if d < 0 {
+			d, ax0, ax1 = -d, -ax0, -ax1
+		}
+		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		if depth < minDepth {
+			minDepth, minAx0, minAx1 = depth, ax0, ax1
+		}
+	}
+
+	// corner axis
+	var pAx, pAy = s.nearestInnerBoxPoint(target.X, target.Y, sCos, sSin)
+	var pBx, pBy = target.nearestInnerBoxPoint(s.X, s.Y, oCos, oSin)
+	var ax0, ax1 = pBx - pAx, pBy - pAy
+	var l = number.SquareRoot(ax0*ax0 + ax1*ax1)
+	if l > 1e-6 {
+		ax0, ax1 = ax0/l, ax1/l
+		var d = dx*ax0 + dy*ax1
+		if d < 0 {
+			d, ax0, ax1 = -d, -ax0, -ax1
+		}
+		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		if depth < minDepth {
+			minDepth, minAx0, minAx1 = depth, ax0, ax1
+		}
+	}
+
+	target.X += minAx0 * minDepth
+	target.Y += minAx1 * minDepth
+	return target
 }
 
-func (s *Shape) CrossPointsWithShapes(shapes ...*Shape) []float32 {
-	var corners = s.CornerPoints()
-	var result []float32
+//=================================================================
 
-	for _, target := range shapes {
-		var targetCorners = target.CornerPoints()
-		if s.inBoundingBoxShape(*target) {
-			var pts = s.internalCrossPointsWithShape(corners, targetCorners)
-			result = append(result, pts...)
-		}
+// CornerPoints returns the 4 world-space corners of the shape as x,y pairs
+// (including a closing pair, for compatibility with line-traversal code).
+func (s Shape) CornerPoints() []float32 {
+	var sin, cos = internal.SinCos(s.Angle)
+	var hw, hh = s.Width * 0.5, s.Height * 0.5
+	// local corners: TL, TR, BR, BL
+	var lx = [4]float32{-hw, hw, hw, -hw}
+	var ly = [4]float32{-hh, -hh, hh, hh}
+	var result = make([]float32, 0, 10) // 4 corners + closing = 5 pairs = 10 floats
+	for i := range 4 {
+		var wx = s.X + s.gridX + lx[i]*cos - ly[i]*sin
+		var wy = s.Y + s.gridY + lx[i]*sin + ly[i]*cos
+		result = append(result, wx, wy)
 	}
+	// close the loop
+	result = append(result, result[0], result[1])
 	return result
 }
-func (s *Shape) IsCrossingShapes(shapes ...*Shape) bool {
-	var corners = s.CornerPoints()
-	for _, target := range shapes {
-		var targetCorners = target.CornerPoints()
-		if s.inBoundingBoxShape(*target) && s.internalIsCrossingShape(corners, targetCorners) {
-			return true
-		}
-	}
-	return false
-}
-func (s *Shape) IsContainingShapes(shapes ...*Shape) bool {
-	var corners = s.CornerPoints()
-	for _, target := range shapes {
-		var targetCorners = target.CornerPoints()
-		if !s.inBoundingBoxShape(*target) || !s.internalIsContainingShapes(corners, targetCorners) {
-			return false
-		}
-	}
-	return true
-}
-func (s *Shape) IsOverlappingShapes(shapes ...*Shape) bool {
-	var corners = s.CornerPoints()
 
-	for _, target := range shapes {
-		var targetCorners = target.CornerPoints()
-		if s.inBoundingBoxShape(*target) && s.internalIsOverlappingShape(corners, targetCorners, target) {
-			return true
-		}
-	}
-	return false
+// endpoints returns the two endpoints of a line-shape (used by ShapeGrid.AroundLine).
+func (s Shape) endpoints() (ax, ay, bx, by float32) {
+	var sin, cos = internal.SinCos(s.Angle)
+	var hw = s.Width * 0.5
+	return s.X - cos*hw, s.Y - sin*hw, s.X + cos*hw, s.Y + sin*hw
+}
+
+// private ========================================================
+
+func (s Shape) support(ax0, ax1, cosR, sinR float32) float32 {
+	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var r = s.roundness() * min(hx, hy)
+	var dX = number.Absolute(ax0*cosR + ax1*sinR)
+	var dY = number.Absolute(-ax0*sinR + ax1*cosR)
+	return (hx-r)*dX + (hy-r)*dY + r
+}
+func (s Shape) nearestInnerBoxPoint(px, py, cosR, sinR float32) (float32, float32) {
+	var rx, ry = px - s.X, py - s.Y
+	var lx = rx*cosR + ry*sinR
+	var ly = -rx*sinR + ry*cosR
+	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var r = s.roundness() * min(hx, hy)
+	lx = max(-(hx - r), min(hx-r, lx))
+	ly = max(-(hy - r), min(hy-r, ly))
+	return s.X + lx*cosR - ly*sinR, s.Y + lx*sinR + ly*cosR
+}
+
+func (s Shape) roundness() float32 {
+	return max(min(s.Roundness, 1), 0)
 }

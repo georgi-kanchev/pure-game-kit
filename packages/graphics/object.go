@@ -2,7 +2,7 @@ package graphics
 
 import (
 	"pure-game-kit/packages/assets"
-	geometry "pure-game-kit/packages/geometry2"
+	geometry "pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
