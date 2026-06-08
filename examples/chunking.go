@@ -5,7 +5,6 @@ import (
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
-	"pure-game-kit/packages/utility/text"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
@@ -20,9 +19,9 @@ func Chunking() {
 
 	grid.SetAtCell(0, 0, geometry.NewCircle(50, 50, 40))
 	grid.SetAtCell(2, 0, geometry.NewRectangle(250, 50, 80, 50, 30))
-	grid.SetAtCell(-1, 1, geometry.NewCapsule(-50, 150, 60, 0, 15))
+	grid.SetAtCell(-1, 1, geometry.NewCapsule(-50, 150, -100, 150, 15))
 	grid.SetAtCell(3, 1, geometry.NewRoundedRectangle(350, 150, 90, 60, 0, 0.4))
-	grid.SetAtCell(0, 2, geometry.NewLine(50, 500, 40, 250, 12))
+	grid.SetAtCell(0, 2, geometry.NewLine(80, 280, 30, 250, 12))
 	grid.SetAtCell(2, 2, geometry.NewCircle(250, 250, 35))
 	grid.SetAtCell(4, -1, geometry.NewRectangle(450, -50, 50, 70, -15))
 
@@ -30,7 +29,7 @@ func Chunking() {
 		view.MouseDragAndZoom()
 
 		var mx, my = view.MousePosition()
-		var query = geometry.NewRectangle(mx, my, 150, 90, number.Sine(time.Running())*15)
+		var query = geometry.NewRectangle(mx, my, 150, 90, time.Running()*10)
 		var neighbors = grid.Neighbors(query)
 
 		view.DrawColor(palette.Black)
@@ -44,8 +43,7 @@ func Chunking() {
 		var ey = int(number.RoundDown(qMaxY / cellSize))
 		for cx := sx; cx <= ex; cx++ {
 			for cy := sy; cy <= ey; cy++ {
-				view.DrawShape(float32(cx)*cellSize+cellSize/2, float32(cy)*cellSize+cellSize/2,
-					cellSize, cellSize, 0, 0, palette.Gray)
+				view.DrawShape(float32(cx)*cellSize+cellSize/2, float32(cy)*cellSize+cellSize/2, cellSize, cellSize, 0, 0, palette.Gray)
 			}
 		}
 
@@ -63,10 +61,5 @@ func Chunking() {
 		}
 
 		view.DrawShape(query.X, query.Y, query.Width, query.Height, query.Angle, query.Roundness, palette.White)
-		view.DrawShape(qMinX+qW/2, qMinY+qH/2, qW, qH, 0, 0, palette.Red)
-
-		var hudX, hudY = view.PointFromScreen(16, 16)
-		var cellCount = (ex - sx + 1) * (ey - sy + 1)
-		view.DrawText(hudX, hudY, 22, 0, palette.White, text.New("neighbors: ", len(neighbors), " cells touched: ", cellCount))
 	}
 }
