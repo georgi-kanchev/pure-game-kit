@@ -6,10 +6,10 @@ import (
 
 type ShapeGrid struct {
 	cells    map[[2]int][]Shape
-	cellSize int
+	cellSize float32
 }
 
-func NewShapeGrid(cellSize int) *ShapeGrid {
+func NewShapeGrid(cellSize float32) *ShapeGrid {
 	return &ShapeGrid{cellSize: cellSize, cells: make(map[[2]int][]Shape)}
 }
 
@@ -37,14 +37,14 @@ func (s *ShapeGrid) AtCell(x, y int) []Shape {
 	}
 	return []Shape{}
 }
-func (s *ShapeGrid) Neighbors(shape Shape, chunkSize float32) []Shape {
-	if chunkSize <= 0 {
+func (s *ShapeGrid) Neighbors(shape Shape) []Shape {
+	if s.cellSize <= 0 {
 		return nil
 	}
 	var minX, minY, w, h = shape.Bounds()
 	var result, maxX, maxY = []Shape{}, minX + w, minY + h
-	var startX, startY = int(number.RoundDown(minX / chunkSize)), int(number.RoundDown(minY / chunkSize))
-	var endX, endY = int(number.RoundDown(maxX / chunkSize)), int(number.RoundDown(maxY / chunkSize))
+	var startX, startY = int(number.RoundDown(minX / s.cellSize)), int(number.RoundDown(minY / s.cellSize))
+	var endX, endY = int(number.RoundDown(maxX / s.cellSize)), int(number.RoundDown(maxY / s.cellSize))
 	for cx := startX; cx <= endX; cx++ {
 		for cy := startY; cy <= endY; cy++ {
 			result = append(result, s.AtCell(cx, cy)...)
