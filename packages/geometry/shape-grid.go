@@ -133,7 +133,7 @@ func (s *ShapeGrid) AroundShape(shape *Shape) []*Shape {
 // This quirk makes regular 2D distances incorrect, instead use:
 //
 //	shapeGrid.RangeDistance(...)
-func (s *ShapeGrid) Range(startX, startY int, maxDistance float32, diagonals bool) [][2]int {
+func (s *ShapeGrid) RangeCells(startX, startY int, maxDistance float32, diagonals bool) [][2]int {
 	type state struct {
 		x, y          int
 		remainingDist float32
@@ -191,7 +191,7 @@ func (s *ShapeGrid) Range(startX, startY int, maxDistance float32, diagonals boo
 	}
 	return result
 }
-func RangeDistance(x, y, targetX, targetY int) float32 {
+func (s *ShapeGrid) RangeDistance(x, y, targetX, targetY int) float32 {
 	var dx, dy = number.Absolute(targetX - x), number.Absolute(targetY - y)
 	var diag = number.Minimum(dx, dy)
 	var straight = number.Maximum(dx, dy) - diag

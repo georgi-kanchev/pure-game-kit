@@ -2,11 +2,12 @@ package geometry
 
 import (
 	"container/heap"
+	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/point"
 )
 
-// Calculates the minimal subsections of the routes to traverse to reach target.
+// Calculates the minimal subsections of the routes to traverse to reach the target point.
 // Start point and target point can be anywhere (not necessarily on the paths). Multiple paths can be separated by [NaN, NaN].
 func FollowPaths(startX, startY, targetX, targetY float32, paths []float32) []float32 {
 	var allNodes = createNodes(paths)
@@ -144,7 +145,7 @@ func closestPointOnPath(x, y float32, nodes []*n) (closestX, closestY float32, n
 			continue // ignore path connections
 		}
 
-		var curX, curY = NewLine(p1.X, p1.Y, p2.X, p2.Y).ClosestToPoint(x, y)
+		var curX, curY = NewLine(p1.X, p1.Y, p2.X, p2.Y, 0.1).ClosestPointToEdge(x, y)
 		var dist = point.DistanceToPoint(x, y, curX, curY)
 
 		if dist < bestDist {
@@ -179,7 +180,7 @@ func remove180Turns(path []float32) []float32 {
 	result = append(result, path[0], path[1])
 	for i := 2; i < nCount-2; i += 2 {
 		var ax, ay, bx, by, cx, cy = result[len(result)-2], result[len(result)-1], path[i], path[i+1], path[i+2], path[i+3]
-		var ang1, ang2 = NewLine(ax, ay, bx, by).Angle(), NewLine(bx, by, cx, cy).Angle()
+		var ang1, ang2 = angle.BetweenPoints(ax, ay, bx, by), angle.BetweenPoints(bx, by, cx, cy)
 		var diff = number.Wrap(ang2-ang1, 0, 360)
 		if !number.IsWithin(diff, 180, 0.1) {
 			result = append(result, bx, by)

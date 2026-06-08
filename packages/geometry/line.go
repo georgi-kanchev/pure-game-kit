@@ -54,29 +54,21 @@ func (l Line) CrossPointWithLine(target Line) (x, y float32) {
 	return ix, iy
 }
 func (l Line) ClosestToPoint(targetX, targetY float32) (x, y float32) {
-	var ax, ay = l.Ax, l.Ay
-	var bx, by = l.Bx, l.By
-	var apx, apy = targetX - ax, targetY - ay
+	var ax, ay, bx, by = l.Ax, l.Ay, l.Bx, l.By
 	var abx, aby = bx - ax, by - ay
 	var magnitude = abx*abx + aby*aby
-
 	if magnitude == 0 { // Line is just a point
 		return ax, ay
 	}
 
-	var dot = apx*abx + apy*aby
-	var distance = dot / magnitude
-
+	var distance = ((targetX-ax)*abx + (targetY-ay)*aby) / magnitude
 	if distance < 0 {
 		return ax, ay
 	}
 	if distance > 1 {
 		return bx, by
 	}
-
-	var cx = ax + abx*distance
-	var cy = ay + aby*distance
-	return cx, cy
+	return ax + abx*distance, ay + aby*distance
 }
 
 func (l Line) IsCrossingLine(target Line) bool {
