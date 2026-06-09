@@ -53,8 +53,7 @@ func (s Shape) ClosestPointToEdge(x, y float32) (edgeX, edgeY float32) {
 	var sinR, cosR = internal.SinCos(-s.Angle)
 	var lx, ly, hx, hy = px*cosR - py*sinR, px*sinR + py*cosR, s.Width * 0.5, s.Height * 0.5
 	var r = s.roundness() * min(hx, hy)
-	var cx = max(-(hx - r), min(hx-r, lx))
-	var cy = max(-(hy - r), min(hy-r, ly))
+	var cx, cy = max(-(hx - r), min(hx-r, lx)), max(-(hy - r), min(hy-r, ly))
 	var dx, dy = lx - cx, ly - cy
 	var dist = number.SquareRoot(dx*dx + dy*dy)
 	var bx, by float32
@@ -140,13 +139,13 @@ func (s Shape) Overlaps(target Shape) bool {
 	return true
 }
 func (s Shape) Collide(target Shape) Shape {
-	if !s.Overlaps(target) {
-		return target
+	if !target.Overlaps(s) {
+		return s
 	}
 
-	var dx, dy = target.X - s.X, target.Y - s.Y
-	var sSin, sCos = internal.SinCos(s.Angle)
-	var oSin, oCos = internal.SinCos(target.Angle)
+	var dx, dy = s.X - target.X, s.Y - target.Y
+	var sSin, sCos = internal.SinCos(target.Angle)
+	var oSin, oCos = internal.SinCos(s.Angle)
 	var minDepth = number.ValueBiggest[float32]()
 	var minAx0, minAx1 float32
 
@@ -156,7 +155,7 @@ func (s Shape) Collide(target Shape) Shape {
 		if d < 0 {
 			d, ax0, ax1 = -d, -ax0, -ax1
 		}
-		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		var depth = target.support(ax0, ax1, sCos, sSin) + s.support(ax0, ax1, oCos, oSin) - d
 		if depth < minDepth {
 			minDepth, minAx0, minAx1 = depth, ax0, ax1
 		}
@@ -167,7 +166,7 @@ func (s Shape) Collide(target Shape) Shape {
 		if d < 0 {
 			d, ax0, ax1 = -d, -ax0, -ax1
 		}
-		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		var depth = target.support(ax0, ax1, sCos, sSin) + s.support(ax0, ax1, oCos, oSin) - d
 		if depth < minDepth {
 			minDepth, minAx0, minAx1 = depth, ax0, ax1
 		}
@@ -178,7 +177,7 @@ func (s Shape) Collide(target Shape) Shape {
 		if d < 0 {
 			d, ax0, ax1 = -d, -ax0, -ax1
 		}
-		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		var depth = target.support(ax0, ax1, sCos, sSin) + s.support(ax0, ax1, oCos, oSin) - d
 		if depth < minDepth {
 			minDepth, minAx0, minAx1 = depth, ax0, ax1
 		}
@@ -189,14 +188,14 @@ func (s Shape) Collide(target Shape) Shape {
 		if d < 0 {
 			d, ax0, ax1 = -d, -ax0, -ax1
 		}
-		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		var depth = target.support(ax0, ax1, sCos, sSin) + s.support(ax0, ax1, oCos, oSin) - d
 		if depth < minDepth {
 			minDepth, minAx0, minAx1 = depth, ax0, ax1
 		}
 	}
 
-	var pAx, pAy = s.nearestInnerBoxPoint(target.X, target.Y, sCos, sSin)
-	var pBx, pBy = target.nearestInnerBoxPoint(s.X, s.Y, oCos, oSin)
+	var pAx, pAy = target.nearestInnerBoxPoint(s.X, s.Y, sCos, sSin)
+	var pBx, pBy = s.nearestInnerBoxPoint(target.X, target.Y, oCos, oSin)
 	var ax0, ax1 = pBx - pAx, pBy - pAy
 	var l = number.SquareRoot(ax0*ax0 + ax1*ax1)
 	if l > 1e-6 { // corner axis
@@ -205,14 +204,14 @@ func (s Shape) Collide(target Shape) Shape {
 		if d < 0 {
 			d, ax0, ax1 = -d, -ax0, -ax1
 		}
-		var depth = s.support(ax0, ax1, sCos, sSin) + target.support(ax0, ax1, oCos, oSin) - d
+		var depth = target.support(ax0, ax1, sCos, sSin) + s.support(ax0, ax1, oCos, oSin) - d
 		if depth < minDepth {
 			minDepth, minAx0, minAx1 = depth, ax0, ax1
 		}
 	}
 
-	target.X, target.Y = target.X+(minAx0*minDepth), target.Y+(minAx1*minDepth)
-	return target
+	s.X, s.Y = s.X+(minAx0*minDepth), s.Y+(minAx1*minDepth)
+	return s
 }
 
 // private ========================================================
