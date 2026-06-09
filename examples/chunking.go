@@ -5,18 +5,18 @@ import (
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/input/keyboard"
 	"pure-game-kit/packages/input/keyboard/key"
+	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
-	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
 func Chunking() {
-	window.Create("example - shape grid chunking", true, true)
+	window.Create("example - shape grid chunking", false, true)
 
 	var view = graphics.NewView(1)
 
-	const cellSize float32 = 100
+	const cellSize float32 = 50
 	var grid = geometry.NewShapeGrid(cellSize)
 
 	var circle = geometry.NewCircle(400, 400, 150)
@@ -26,24 +26,27 @@ func Chunking() {
 	grid.AddShapes(geometry.NewRoundedRectangle(700, 200, 250, 300, 45, 0.3))
 	grid.AddShapes(geometry.NewLine(0, 0, 500, 500, 40))
 
-	var x, y float32 = -500, -500
+	var player = geometry.NewRectangle(-300, -300, 150, 90, 0)
+
+	window.SetTargetFPS(0)
 
 	for window.KeepOpen() {
 		view.MouseDragAndZoom()
 
-		var speed = 100 * time.Delta()
+		var speed = 300 * time.Delta()
 		if keyboard.IsKeyPressed(key.A) {
-			x -= speed
+			player.X -= speed
 		}
 		if keyboard.IsKeyPressed(key.D) {
-			x += speed
+			player.X += speed
 		}
 		if keyboard.IsKeyPressed(key.W) {
-			y -= speed
+			player.Y -= speed
 		}
 		if keyboard.IsKeyPressed(key.S) {
-			y += speed
+			player.Y += speed
 		}
+		player.Angle = time.Running() * 20
 
 		if keyboard.IsKeyJustPressed(key.Enter) {
 			grid.AddShapes(circle)
@@ -52,23 +55,26 @@ func Chunking() {
 			grid.RemoveShapes(circle)
 		}
 
-		var query = geometry.NewRectangle(x, y, 150, 90, time.Running()*10)
-		var neighbors = grid.Neighbors(query)
+		var neighbors = grid.Neighbors(player)
+		for _, neighbor := range neighbors {
+			player = player.Collide(neighbor)
+		}
 
-		view.DrawColor(palette.Black)
-		view.DrawGrid(1, cellSize, cellSize, palette.White)
-
-		var qMinX, qMinY, qW, qH = query.Bounds()
-		var qMaxX, qMaxY = qMinX + qW, qMinY + qH
-		var sx = int(number.RoundDown(qMinX / cellSize))
-		var sy = int(number.RoundDown(qMinY / cellSize))
-		var ex = int(number.RoundDown(qMaxX / cellSize))
-		var ey = int(number.RoundDown(qMaxY / cellSize))
-		for cx := sx; cx <= ex; cx++ {
-			for cy := sy; cy <= ey; cy++ {
-				view.DrawShape(float32(cx)*cellSize+cellSize/2, float32(cy)*cellSize+cellSize/2, cellSize, cellSize, 0, 0, palette.Gray)
+		for y := -10; y < 20; y++ {
+			for x := -10; x < 20; x++ {
+				var sh = grid.AtCell(x, y)
+				var col = palette.DarkRed
+				if len(sh) > 0 {
+					col = palette.DarkGreen
+				}
+				view.DrawShape(float32(x)*cellSize+cellSize/2, float32(y)*cellSize+cellSize/2, cellSize, cellSize, 0, 0, col)
 			}
 		}
+
+		var bx, by, bw, bh = player.Bounds()
+		view.DrawShape(bx+bw/2, by+bh/2, bw, bh, 0, 0, color.RGBA(0, 0, 0, 128))
+
+		view.DrawGrid(1, cellSize, cellSize, palette.Gray)
 
 		for _, sh := range grid.All() {
 			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.LightGray)
@@ -76,11 +82,6 @@ func Chunking() {
 		for _, sh := range neighbors {
 			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.Yellow)
 		}
-
-		for _, neighbor := range neighbors {
-			query = query.Collide(neighbor)
-		}
-		x, y = query.X, query.Y
-		view.DrawShape(query.X, query.Y, query.Width, query.Height, query.Angle, query.Roundness, palette.White)
+		view.DrawShape(player.X, player.Y, player.Width, player.Height, player.Angle, player.Roundness, palette.White)
 	}
 }

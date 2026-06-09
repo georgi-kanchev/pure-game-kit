@@ -25,10 +25,15 @@ func (s *ShapeGrid) AddShapes(shapes ...Shape) {
 	for i, sh := range shapes {
 		var actualIndex = startIndex + i
 		var startX, startY, endX, endY = s.cellsUnderShape(sh)
+
 		for cy := startY; cy <= endY; cy++ {
 			for cx := startX; cx <= endX; cx++ {
-				key := [2]int{cx, cy}
-				s.cells[key] = append(s.cells[key], actualIndex)
+				var cenX, cenY = (float32(cx) * s.chunkSize) + (s.chunkSize * 0.5), (float32(cy) * s.chunkSize) + (s.chunkSize * 0.5)
+				var cellShape = NewRectangle(cenX, cenY, s.chunkSize, s.chunkSize, 0)
+				if sh.Overlaps(cellShape) {
+					var key = [2]int{cx, cy}
+					s.cells[key] = append(s.cells[key], actualIndex)
+				}
 			}
 		}
 	}
@@ -40,9 +45,14 @@ func (s *ShapeGrid) RemoveShapes(shapes ...Shape) {
 
 		for cy := startY; cy <= endY; cy++ {
 			for cx := startX; cx <= endX; cx++ {
+				var cenX, cenY = (float32(cx) * s.chunkSize) + (s.chunkSize * 0.5), (float32(cy) * s.chunkSize) + (s.chunkSize * 0.5)
+				var cellShape = NewRectangle(cenX, cenY, s.chunkSize, s.chunkSize, 0)
+				if !target.Overlaps(cellShape) {
+					continue
+				}
+
 				var key = [2]int{cx, cy}
 				var indices, has = s.cells[key]
-
 				if !has {
 					continue
 				}
@@ -98,14 +108,19 @@ func (s *ShapeGrid) Neighbors(shape Shape) []Shape {
 
 	var startX, startY, endX, endY = s.cellsUnderShape(shape)
 	var uniqueIndices = make(map[int]struct{})
+
 	for cy := startY; cy <= endY; cy++ {
 		for cx := startX; cx <= endX; cx++ {
+			// var cenX, cenY = (float32(cx) * s.chunkSize) + (s.chunkSize * 0.5), (float32(cy) * s.chunkSize) + (s.chunkSize * 0.5)
+			// var cellShape = NewRectangle(cenX, cenY, s.chunkSize, s.chunkSize, 0)
+			// if shape.Overlaps(cellShape) {
 			var indices, has = s.cells[[2]int{cx, cy}]
 			if has {
 				for _, idx := range indices {
 					uniqueIndices[idx] = struct{}{}
 				}
 			}
+			// }
 		}
 	}
 
