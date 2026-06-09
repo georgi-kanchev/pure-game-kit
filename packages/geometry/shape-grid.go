@@ -111,16 +111,12 @@ func (s *ShapeGrid) Neighbors(shape Shape) []Shape {
 
 	for cy := startY; cy <= endY; cy++ {
 		for cx := startX; cx <= endX; cx++ {
-			// var cenX, cenY = (float32(cx) * s.chunkSize) + (s.chunkSize * 0.5), (float32(cy) * s.chunkSize) + (s.chunkSize * 0.5)
-			// var cellShape = NewRectangle(cenX, cenY, s.chunkSize, s.chunkSize, 0)
-			// if shape.Overlaps(cellShape) {
 			var indices, has = s.cells[[2]int{cx, cy}]
 			if has {
 				for _, idx := range indices {
 					uniqueIndices[idx] = struct{}{}
 				}
 			}
-			// }
 		}
 	}
 
