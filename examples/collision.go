@@ -11,8 +11,8 @@ import (
 	"pure-game-kit/packages/window"
 )
 
-func Chunking() {
-	window.Create("example - shape grid chunking", false, true)
+func Collision() {
+	window.Create("example - collision", false, true)
 
 	var view = graphics.NewView(1)
 
@@ -84,6 +84,6 @@ func Chunking() {
 
 		var mx, my = view.MousePosition()
 		var pts = grid.FindPathDiagonally(player.X, player.Y, mx, my, true)
-		view.DrawLinePath(pts, 5, palette.Cyan)
+		view.DrawPath(pts, 5, palette.Cyan)
 	}
 }

@@ -194,7 +194,7 @@ func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color ui
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, "", 0, 0
 	v.DrawObject(obj)
 }
-func (v *View) DrawLinePath(points []float32, thickness float32, color uint) {
+func (v *View) DrawPath(points []float32, thickness float32, color uint) {
 	if len(points) < 4 {
 		return
 	}
