@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/point"
@@ -192,6 +193,27 @@ func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color ui
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, "", 0, 0
 	v.DrawObject(obj)
+}
+func (v *View) DrawLinePath(points []float32, thickness float32, color uint) {
+	if len(points) < 4 {
+		return
+	}
+
+	for i := 2; i < len(points); i += 2 {
+		var x1, y1, x2, y2 = points[i-2], points[i-1], points[i], points[i+1]
+		var isNaN = number.IsNaN(x1) || number.IsNaN(y1) || number.IsNaN(x2) || number.IsNaN(y2)
+		var isPoint = x1 == x2 && y1 == y2
+		if isNaN || isPoint {
+			continue
+		}
+		var dist = point.DistanceToPoint(x1, y1, x2, y2)
+		var midX, midY, ang = (x1 + x2) / 2, (y1 + y2) / 2, angle.BetweenPoints(x1, y1, x2, y2)
+		if i == 2 {
+			v.DrawShape(x1, y1, thickness, thickness, 0, 1, color)
+		}
+		v.DrawShape(x2, y2, thickness, thickness, 0, 1, color)
+		v.DrawShape(midX, midY, dist, thickness, ang, 0, color)
+	}
 }
 func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0

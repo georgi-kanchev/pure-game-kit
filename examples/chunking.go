@@ -28,8 +28,6 @@ func Chunking() {
 
 	var player = geometry.NewRectangle(-300, -300, 150, 90, 0)
 
-	window.SetTargetFPS(0)
-
 	for window.KeepOpen() {
 		view.MouseDragAndZoom()
 
@@ -83,5 +81,9 @@ func Chunking() {
 			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.Yellow)
 		}
 		view.DrawShape(player.X, player.Y, player.Width, player.Height, player.Angle, player.Roundness, palette.White)
+
+		var mx, my = view.MousePosition()
+		var pts = grid.FindPathDiagonally(player.X, player.Y, mx, my, true)
+		view.DrawLinePath(pts, 5, palette.Cyan)
 	}
 }

@@ -22,7 +22,6 @@ type node struct {
 	x, y   int
 	g, h   float32
 	parent *node
-	index  int // for heap
 }
 
 var directions = [][2]int{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
@@ -30,16 +29,11 @@ var directionsDiag = [][2]int{{1, 1}, {1, -1}, {-1, 1}, {-1, -1}}
 
 func (pq priorityQueue) Len() int           { return len(pq) }
 func (pq priorityQueue) Less(i, j int) bool { return pq[i].f() < pq[j].f() }
-func (pq priorityQueue) Swap(i, j int)      { pq[i], pq[j], pq[i].index, pq[j].index = pq[j], pq[i], i, j }
-func (pq *priorityQueue) Push(x any) {
-	var n = x.(*node)
-	n.index = len(*pq)
-	*pq = append(*pq, n)
-}
+func (pq priorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+func (pq *priorityQueue) Push(x any)        { *pq = append(*pq, x.(*node)) }
 func (pq *priorityQueue) Pop() any {
 	var old = *pq
 	var item = old[len(old)-1]
-	item.index = -1
 	*pq = old[:len(old)-1]
 	return item
 }
@@ -74,17 +68,19 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 	stx, sty, tarx, tary = stx/w, sty/h, tarx/w, tary/h
 	var sx, sy = int(number.RoundDown(stx, 0)), int(number.RoundDown(sty, 0))
 	var tx, ty = int(number.RoundDown(tarx, 0)), int(number.RoundDown(tary, 0))
-	var open, startNode, visited = &priorityQueue{}, &node{x: sx, y: sy, g: 0, h: heuristic(sx, sy, tx, ty)}, map[[2]int]*node{}
+	var startKey = [2]int{sx, sy}
+	var targetKey = [2]int{tx, ty}
 
-	heap.Init(open)
-	heap.Push(open, startNode)
-	visited[[2]int{sx, sy}] = startNode
-
-	var _, startBlocked = s.cells[[2]int{sx, sy}]
-	var _, targetBlocked = s.cells[[2]int{tx, ty}]
+	var _, startBlocked = s.cells[startKey]
+	var _, targetBlocked = s.cells[targetKey]
 	if startBlocked || targetBlocked {
 		return []float32{}
 	}
+
+	var open = &priorityQueue{}
+	var bestG = map[[2]int]float32{startKey: 0}
+	heap.Init(open)
+	heap.Push(open, &node{x: sx, y: sy, g: 0, h: heuristic(sx, sy, tx, ty)})
 
 	var currentDirs = directions
 	if diag {
@@ -93,6 +89,11 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 
 	for i := 0; open.Len() > 0 && i < 9999; i++ {
 		var current = heap.Pop(open).(*node)
+
+		if current.g > bestG[[2]int{current.x, current.y}] {
+			continue // Skip stale entries (better g was already found for this cell)
+		}
+
 		if current.x == tx && current.y == ty {
 			var result = make([]float32, 0)
 			for cur := current; cur != nil; cur = cur.parent {
@@ -113,8 +114,7 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 		for _, dir := range currentDirs {
 			var nx, ny = current.x + dir[0], current.y + dir[1]
 			var key = [2]int{nx, ny}
-			var _, blocked = s.cells[key]
-			if blocked {
+			if _, blocked := s.cells[key]; blocked {
 				continue
 			}
 
@@ -124,19 +124,12 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 			}
 
 			var newG = current.g + moveCost
-			var old, seen = visited[key]
-
-			if !seen {
-				var n = &node{x: nx, y: ny, g: newG, h: heuristic(nx, ny, tx, ty), parent: current}
-				visited[key] = n
-				heap.Push(open, n)
+			if prevG, seen := bestG[key]; seen && newG >= prevG {
 				continue
 			}
 
-			if newG < old.g {
-				old.g, old.parent = newG, current
-				heap.Fix(open, old.index)
-			}
+			bestG[key] = newG
+			heap.Push(open, &node{x: nx, y: ny, g: newG, h: heuristic(nx, ny, tx, ty), parent: current})
 		}
 	}
 	return []float32{}
