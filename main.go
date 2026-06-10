@@ -3,6 +3,6 @@ package main
 import example "pure-game-kit/examples"
 
 func main() {
-	example.Translations()
+	example.NinePatch()
 	example.CommandsEvents()
 }
