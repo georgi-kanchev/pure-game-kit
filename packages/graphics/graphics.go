@@ -3,9 +3,8 @@
 // the graphical objects are still very lightweight and exist independently of them.
 // The concept map of the package looks like this:
 //   - View - draws objects
-//   - Quad - no asset, flat color (useful for batching shapes)
+//   - Shape - no asset, flat color (useful for batching geometry)
 //   - ├ Sprite - texture asset
-//   - ├ NinePatch - box asset
 //   - ├ TextBox - font asset
 //   - └ TileMap - tile set asset + tile data asset
 package graphics
