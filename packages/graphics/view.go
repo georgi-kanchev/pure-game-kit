@@ -221,6 +221,13 @@ func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.Imag
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, imageId
 	v.DrawObject(obj)
 }
+func (v *View) DrawNinePatch(x, y, width, height, angle float32, ninePatchId assets.NinePatchId, tint uint) {
+	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0
+	obj.Angle, obj.Effects.Tint = angle, tint
+	obj.NinePatchId, obj.ImageId, obj.TileLayerId, obj.TextFontId, obj.Text, obj.Effects.FillColor = ninePatchId, 0, 0, 0, "", 0
+	obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, 0
+	v.DrawObject(obj)
+}
 func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string) {
 	obj.Effects = Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 9999, 9999, 0, 0
@@ -275,7 +282,11 @@ func (v *View) DrawObject(object *Object) {
 		}
 		return
 	}
-	v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
+	if o.NinePatchId != 0 {
+		v.drawNinePatch(o, mask)
+	} else {
+		v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
+	}
 
 	if o.Text != "" {
 		v.queueText(o, mask)
@@ -307,6 +318,35 @@ var outlineColors = map[rune]uint{'⚪': palette.White, '⚫': palette.Black, '�
 	'🟡': palette.Yellow, '🟢': palette.Green, '🔵': palette.Blue, '🟣': palette.Purple, '🟤': palette.Brown}
 var weights = map[rune]int8{'⏬': -100, '🔽': -50, '🔁': 0, '🔼': 50, '⏫': 100}
 var sizes = map[rune]float32{'🔇': 0.5, '🔈': 0.75, '🔉': 1.0, '🔊': 1.25, '📢': 1.5}
+
+func (v *View) drawNinePatch(o *Object, mask internal.Area) {
+	var np = internal.NinePatches[uint8(o.NinePatchId)]
+	var tex = internal.Images[np.ImageId]
+	var eff = (*internal.Effects)(&o.Effects)
+	var srcX, srcY, srcW, srcH = tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight
+	var l, r, t, b = np.Left, np.Right, np.Top, np.Bottom
+	var cw, ch, mw, mh = srcW - l - r, srcH - t - b, o.Width - l - r, o.Height - t - b // center size on src & dst
+	if cw <= 0 || ch <= 0 {
+		return
+	}
+
+	var ox, oy = o.X - o.Width/2, o.Y - o.Height/2
+	var sx, sw = [3]float32{srcX, srcX + l, srcX + l + cw}, [3]float32{l, cw, r}
+	var dx, dw = [3]float32{ox, ox + l, ox + l + mw}, [3]float32{l, mw, r}
+	var sy, sh = [3]float32{srcY, srcY + t, srcY + t + ch}, [3]float32{t, ch, b}
+	var dy, dh = [3]float32{oy, oy + t, oy + t + mh}, [3]float32{t, mh, b}
+
+	for row := range 3 {
+		for col := range 3 {
+			if sw[col] <= 0 || sh[row] <= 0 || dw[col] <= 0 || dh[row] <= 0 {
+				continue
+			}
+			var crop = NewArea(sx[col], sy[row], sw[col], sh[row])
+			var cx, cy = dx[col] + dw[col]/2, dy[row] + dh[row]/2
+			v.queueQuad(cx, cy, dw[col], dh[row], o.Angle, o.Roundness, np.ImageId, crop, eff, mask)
+		}
+	}
+}
 
 func (v *View) queueText(o *Object, mask internal.Area) {
 	var eff = (*internal.Effects)(&o.Effects)

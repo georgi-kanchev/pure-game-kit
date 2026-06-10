@@ -41,6 +41,10 @@ type Object struct {
 	// tilemap ========================================================
 
 	TileLayerId assets.TileLayerId
+
+	// nine-patch =====================================================
+
+	NinePatchId assets.NinePatchId
 }
 
 func NewShapePoint(x, y float32) Object {
@@ -93,6 +97,10 @@ func NewTilemap(scale float32, layerId assets.TileLayerId) Object {
 		tilemap.Height = float32(layer.Rows) * float32(layer.TileSize) * scale
 	}
 	return tilemap
+}
+func NewNinePatch(x, y, width, height float32, ninePatchId assets.NinePatchId) Object {
+	var eff = Effects(internal.DefaultEffects)
+	return Object{Shape: geometry.NewRectangle(x, y, width, height, 0), NinePatchId: ninePatchId, Effects: eff}
 }
 
 //=================================================================
