@@ -66,9 +66,8 @@ func cacheMouse() {
 		}
 	}
 
-	// cleanup released buttons
 	for i := len(activeBtns) - 1; i >= 0; i-- {
-		if !btns[activeBtns[i]] {
+		if !btns[activeBtns[i]] { // cleanup released buttons
 			activeBtns = slices.Delete(activeBtns, i, i+1)
 		}
 	}
@@ -85,7 +84,7 @@ func cacheMouse() {
 	if SmoothScroll != 0 && number.IsWithin(SmoothScroll, 0, 0.0001) {
 		SmoothScroll = 0
 	}
-	if AnyBtn || AnyKey {
+	if AnyBtn {
 		SmoothScroll = 0
 	}
 

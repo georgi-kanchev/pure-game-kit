@@ -11,8 +11,8 @@ import (
 	"pure-game-kit/packages/window"
 )
 
-func Collision() {
-	window.Create("example - collision", false, true)
+func CollisionGrid() {
+	window.Create("example - collision grid", false, true)
 
 	var view = graphics.NewView(1)
 
@@ -29,7 +29,7 @@ func Collision() {
 	var player = geometry.NewRectangle(-300, -300, 150, 90, 0)
 
 	for window.KeepOpen() {
-		view.MouseDragAndZoom()
+		view.MouseDragAndZoomSmoothly()
 
 		var speed = 300 * time.Delta()
 		if keyboard.IsKeyPressed(key.A) {
