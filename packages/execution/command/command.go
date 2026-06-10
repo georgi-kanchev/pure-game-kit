@@ -1,25 +1,24 @@
-// A very simple terminal-like command creation and execution.
-// Turns a line of text (string command name + string parameters) into custom code execution.
+// A very simple console-like command execution. Can act as an event system too.
+//
+// Turns a line of text (string command name + string parameters) into immediate mode custom code execution (no callbacks).
+// Commands that are triggered at any time this frame can be received only throughout the entire next frame.
 package command
 
 import (
-	"pure-game-kit/packages/utility/debug"
+	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/text"
 )
-
-func New(name string, execution func(parameters []string) (output string)) {
-	commands[name] = execution
-}
-
-//=================================================================
 
 // Command examples:
 //
 //	command_name: param0, param1, param2
-//	log_messages: `hello, world!`, 1, 2, 3, 4, true, false, true
-//	debug: true
+//	log_messages: `hello, world!`, 123, true, false // strings are escaped by `
+//	player_died: 35, 4 // from health points, by enemy index etc
+//	toggle_fullscreen // parameters are optional
 //	change_window_title: `My own window!`
-func Execute(command string) (output string) {
+//	debug: true
+func Execute(command string) {
 	command = text.Trim(text.Remove(command, "\r", "\n"))
 	var replaced, originals = replaceStrings(command, quote, quote, placeholder)
 	command = replaced
@@ -33,12 +32,6 @@ func Execute(command string) (output string) {
 		parts = []string{}
 	}
 
-	var execution, has = commands[name]
-	if !has {
-		debug.LogError("Command not found: \"", command, "\"")
-		return ""
-	}
-
 	var originalStringIndex = 0
 	for i := range parts {
 		parts[i] = text.Trim(parts[i])
@@ -48,17 +41,33 @@ func Execute(command string) (output string) {
 			originalStringIndex++
 		}
 	}
+	internal.NewCommands[name] = parts
+}
 
-	return execution(parts)
+func JustExecuted(name string) bool {
+	var _, has = internal.OldCommands[name]
+	return has
+}
+func GrabText(name string, parameterIndex int) string {
+	var params, _ = internal.OldCommands[name]
+	if parameterIndex < 0 || parameterIndex >= len(params) {
+		return ""
+	}
+	return params[parameterIndex]
+}
+func GrabNumber[T number.Number](name string, parameterIndex int) T {
+	var params, _ = internal.OldCommands[name]
+	if parameterIndex < 0 || parameterIndex >= len(params) {
+		return T(0)
+	}
+	return text.ToNumber[T](params[parameterIndex])
 }
 
 // private ========================================================
 
 const dividerParts = ","
 const dividerName = ':'
-const quote = '"'
-
-var commands = make(map[string]func([]string) string)
+const quote = '`'
 
 func substringUntilChar(txt string, char rune) string {
 	var index = text.IndexOf(txt, string(char))
