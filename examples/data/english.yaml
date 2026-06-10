@@ -1,0 +1,23 @@
+# Tags for embeded effects:
+# Underline     ✅ // toggle
+# Crossout      ❎ // toggle
+# Weight        ⏬🔽🔁🔼⏫
+# Size          🔇🔈🔉🔊📢
+# Color         ⬜⬛🟥🟧🟨🟩🟦🟪🟫
+# Outline Color ⚪⚫🔴🟠🟡🟢🔵🟣🟤
+
+menu_play: "Play"
+menu_settings: "Settings"
+menu_quit: "Quit"
+msg_welcome: "Welcome back, player!"
+you_took_num_damage: "You took [NUM] damage!"
+
+intro_cutscene_dialog: | # '|' keeps all line breaks exactly as written
+  Long ago, the world was at peace.
+  Then, 🔼everything🔁 changed when the code broke.
+  Only the developer could save them.
+
+credits_legal: > # '>' folds all newlines into single spaces
+  Copyright 2026. All rights reserved. 
+  Unauthorized duplication, hacking, or reverse engineering 
+  is strictly prohibited by the cyber-laws of the grid.

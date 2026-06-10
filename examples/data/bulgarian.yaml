@@ -1,0 +1,17 @@
+menu_play: "Играй"
+menu_settings: "Настройки"
+menu_quit: "Излез"
+msg_welcome: "Добре дошъл отново, играч!"
+you_took_num_damage: "Ти пое [NUM] щета!"
+
+# '|' keeps all line breaks exactly as written
+intro_cutscene_dialog: |
+  Long ago, the world was at peace.
+  Then, everything changed when the code broke.
+  Only the developer could save them.
+
+# '>' folds all newlines into single spaces - great for wrapping long paragraphs without introducing line breaks into the in-game text
+credits_legal: >
+  Copyright 2026. All rights reserved. 
+  Unauthorized duplication, hacking, or reverse engineering 
+  is strictly prohibited by the cyber-laws of the grid.

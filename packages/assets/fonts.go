@@ -44,7 +44,6 @@ func (f FontId) Unload() {
 	ImageId(font.AtlasId).Unload()
 	delete(internal.Fonts, uint8(f))
 }
-
 func (f FontId) SymbolArea(symbol rune, lineHeight float32) (offsetX, offsetY, width, height float32) {
 	var font, has = internal.Fonts[uint8(f)]
 	if !has {
@@ -60,7 +59,6 @@ func (f FontId) SymbolArea(symbol rune, lineHeight float32) (offsetX, offsetY, w
 
 	return x, y, w, h
 }
-
 func (f FontId) EmbedImage(symbol rune, imageId ImageId) {
 	var font, has = internal.Fonts[uint8(f)]
 	if !has {
