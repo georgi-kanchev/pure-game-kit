@@ -384,39 +384,38 @@ func appendThousands(buf []byte, n uint64) []byte {
 
 // copied from utility/text.New()
 func elements(elements ...any) string {
-	var result = ""
+	builder.Reset()
 	for _, e := range elements {
 		switch v := e.(type) {
 		case string:
-			result += v
+			builder.WriteString(v)
 		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
-			result += fmt.Sprintf("%d", v)
+			fmt.Fprintf(&builder, "%d", v)
 		case float32:
-			result += strconv.FormatFloat(float64(v), 'f', -1, 32)
+			builder.WriteString(strconv.FormatFloat(float64(v), 'f', -1, 32))
 		case float64:
-			result += strconv.FormatFloat(v, 'f', -1, 64)
+			builder.WriteString(strconv.FormatFloat(v, 'f', -1, 64))
+		case bool:
+			if v {
+				builder.WriteString("true")
+			} else {
+				builder.WriteString("false")
+			}
 		case fmt.Stringer:
-			result += v.String()
+			builder.WriteString(v.String())
 		default:
 			var value = reflect.ValueOf(e)
 			var valueType = value.Type()
-
-			if value.IsNil() {
-				continue
-			}
-
 			if valueType.Kind() == reflect.Struct {
-				result += fmt.Sprintf("%+v", e) // struct
+				fmt.Fprintf(&builder, "%+v", e) // struct
 				continue
 			}
-
-			if valueType.Kind() == reflect.Ptr && valueType.Elem().Kind() == reflect.Struct {
-				result += fmt.Sprintf("%+v", value.Elem().Interface()) // pointer to struct
+			if valueType.Kind() == reflect.Pointer && valueType.Elem().Kind() == reflect.Struct {
+				fmt.Fprintf(&builder, "%+v", value.Elem().Interface()) // pointer to struct
 				continue
 			}
-
-			result += fmt.Sprint(e) // fallback
+			fmt.Fprint(&builder, e) // fallback
 		}
 	}
-	return result
+	return builder.String()
 }

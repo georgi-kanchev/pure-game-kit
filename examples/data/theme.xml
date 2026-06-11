@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<theme>
+  <label ver="0" imageId="1" disabled="1" state="0.5", color="255 0 0 255" borderColor="0 255 0 255" borderSize="-5" fontId="" textColor="0 0 0 255" textAlignX="1"/>
+</theme>
+
+const (
+	Class    = "class"    // [widget]
+	Id       = "id"       // [widget] [container]
+	X        = "x"        // [widget] [container]
+	Y        = "y"        // [widget] [container]
+	ThemeId  = "themeId"  // [widget] [container]
+	Hidden   = "hidden"   // [widget] [container] "1" = true, "" = false
+	Disabled = "disabled" // [widget] [container] "1" = true, "" = false
+
+	Width   = "width"   // [widget] [theme] [container]
+	Height  = "height"  // [widget] [theme] [container]
+	AssetId = "assetId" // [widget] [theme] [container]
+	GapX    = "gapX"    // [widget] [theme] [container] X spacing between self & previous widget
+	GapY    = "gapY"    // [widget] [theme] [container] Y spacing between self & previous widget
+
+	TargetId = "targetId" // [container] which container fields to use with Target... dynamics
+	AnchorX  = "anchorX"  // [container] no effect when X scroll, example: 0 = left, 0.5 = center, 1 = right
+	AnchorY  = "anchorY"  // [container] no effect when Y scroll, example: 0 = top, 0.5 = center, 1 = bottom
+
+	Value         = "value"         // [widget] used by slider & checkbox to represent state
+	FillContainer = "fillContainer" // [widget] treated as the graphics of its container, not a standalone widget
+	NewRow        = "newRow"        // [widget] skipped for first widget in container; example: "200", "" = GapY
+	OffsetX       = "offsetX"       // [widget]
+	OffsetY       = "offsetY"       // [widget]
+	TooltipText   = "tooltipText"   // [widget]
+
+	ToggleButtonId = "toggleButtonId" // [widget] [theme] hides/shows widget when button is clicked
+	TooltipId      = "tooltipId"      // [widget] [theme]
+	TooltipMargin  = "tooltipMargin"  // [widget] [theme]
+	TooltipSound   = "tooltipSound"   // [widget] [theme] default: "~popup"
+	Color          = "color"          // [widget] [theme] example: "255 0 0 255"
+	FrameColor     = "frameColor"     // [widget] [theme] example: "255 0 0 255"
+	FrameSize      = "frameSize"      // [widget] [theme] positive outward, negative inward
+
+	Text           = "text"           // [widget] [theme]
+	TextFontId     = "textFontId"     // [widget] [theme]
+	TextColor      = "textColor"      // [widget] [theme] default: "127 127 127 255"
+	TextLineHeight = "textLineHeight" // [widget] [theme] default: "30"
+	TextLineGap    = "textLineGap"    // [widget] [theme]
+	TextSymbolGap  = "textSymbolGap"  // [widget] [theme] default: "0.2"
+	TextAlignmentX = "textAlignmentX" // [widget] [theme]
+	TextAlignmentY = "textAlignmentY" // [widget] [theme]
+	TextWordWrap   = "textWordWrap"   // [widget] [theme] example: "" = true, all else = false
+
+	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
+	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
+	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
+	ButtonHotkey         = "buttonHotkey"         // [widget] [theme] space-separated hotkeys, any of which can be pressed at all times
+	ButtonSoundPress     = "buttonSoundPress"     // [widget] [theme] default: "~press"
+	ButtonSoundRelease   = "buttonSoundRelease"   // [widget] [theme] default: "~release"
+
+	SliderStep          = "sliderStep"          // [widget] [theme] step <= 0 hides indicators, example: "-0.1", "0.2"
+	SliderStepAssetId   = "sliderStepAssetId"   // [widget] [theme]
+	SliderHandleAssetId = "sliderHandleAssetId" // [widget] [theme]
+	SliderSound         = "sliderSound"         // [widget] [theme] default: "~slider"
+
+	CheckboxThemeId  = "checkboxThemeId"  // [widget] [theme]
+	CheckboxGroup    = "checkboxGroup"    // [widget] [theme]
+	CheckboxSoundOn  = "checkboxSoundOn"  // [widget] [theme] default: "~on"
+	CheckboxSoundOff = "checkboxSoundOff" // [widget] [theme] default: "~off"
+
+	MenuContainerId = "menuContainerId" // [widget] [theme] which container should this menu toggle
+	MenuSound       = "menuSound"       // [widget] [theme] default: "~popup"
+
+	InputFieldMargin      = "inputFieldMargin"      // [widget] [theme] default: "10"
+	InputFieldPlaceholder = "inputFieldPlaceholder" // [widget] [theme] default: "Type..."
+	InputFieldSoundType   = "inputFieldSoundType"   // [widget] [theme] default: "~write"
+	InputFieldSoundErase  = "inputFieldSoundErase"  // [widget] [theme] default: "~erase"
+
+	DraggableAssetId       = "draggableAssetId"       // [widget] [theme]
+	DraggableAssetColor    = "draggableAssetColor"    // [widget] [theme] default: "255 255 255 255"
+	DraggableAssetScale    = "draggableAssetScale"    // [widget] [theme] default: "1"
+	DraggableCancelSoundId = "draggableCancelSoundId" // [widget] [theme] default: "~error"
+)

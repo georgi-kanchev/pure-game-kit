@@ -7,10 +7,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var calcValues = make([]float32, 0, 8)
-var calcOperators = make([]rune, 0, 8)
-
-func Calculate(mathExpression string, vars func(string) float32) float32 {
+func Calculate(mathExpression string, variables func(string) float32) float32 {
 	mathExpression = Remove(mathExpression, " ")
 	calcValues = calcValues[:0]
 	calcOperators = calcOperators[:0]
@@ -62,10 +59,10 @@ func Calculate(mathExpression string, vars func(string) float32) float32 {
 			}
 			var name = mathExpression[start:i]
 			i--
-			if vars == nil {
+			if variables == nil {
 				return number.NaN()
 			}
-			var v = vars(name)
+			var v = variables(name)
 			if number.IsNaN(v) {
 				return number.NaN()
 			}
@@ -97,6 +94,9 @@ func OpenURL(url string) {
 }
 
 // private ========================================================
+
+var calcValues = make([]float32, 0, 8)
+var calcOperators = make([]rune, 0, 8)
 
 func repeatPad(padStr string, totalRunes int) string {
 	if padStr == "" {

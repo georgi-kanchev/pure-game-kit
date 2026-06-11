@@ -15,23 +15,26 @@ func LoadTranslations(yamlPath string) LanguageId {
 		return 0
 	}
 
-	allTranslations = append(allTranslations, lang)
-	return LanguageId(len(allTranslations))
+	nextId++
+	var id = LanguageId(nextId)
+	allTranslations[id] = lang
+	return id
 }
 
 func (l LanguageId) Translate(tag string) string {
-	if l == 0 || int(l) > len(allTranslations) {
+	var value, has = allTranslations[l]
+	if !has {
 		return ""
 	}
-	return allTranslations[l-1].tags[tag]
+	return value.tags[tag]
 }
-
 func (l LanguageId) Unload() {
-	clear(allTranslations[l-1].tags)
+	delete(allTranslations, l)
 }
 
 // private ========================================================
 
 type lang struct{ tags map[string]string }
 
-var allTranslations []lang
+var allTranslations map[LanguageId]lang
+var nextId uint32
