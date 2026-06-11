@@ -308,14 +308,14 @@
     pointer-events: none;
 }
 
-.break-wrap {
+.newrow-wrap {
     display: flex;
     gap: 4px;
     align-items: center;
     min-width: 0;
 }
 
-.break-toggle {
+.newrow-toggle {
     flex-shrink: 0;
     width: 28px;
     height: 24px;
@@ -326,13 +326,13 @@
     background: #111;
 }
 
-.break-toggle:hover {
+.newrow-toggle:hover {
     background: #1c1c1c;
     box-shadow: none;
     border-color: #555;
 }
 
-.break-toggle.active {
+.newrow-toggle.active {
     border-color: #ff9d5c;
     color: #ff9d5c;
 }

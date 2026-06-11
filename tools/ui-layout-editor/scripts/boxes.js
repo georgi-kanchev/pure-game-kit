@@ -203,7 +203,7 @@ function select(item) {
             updateAlignBtns(itemAlignXGroup, b.itemAlignX ?? 0);
             updateAlignBtns(itemAlignYGroup, b.itemAlignY ?? 0);
             itemGapInput.value = b.itemGap ?? 0;
-            itemBreakInput.value = b.itemBreak ?? 0;
+            itemNewRowInput.value = b.itemBreak ?? 0;
             visibilityBtn.classList.toggle('hidden-state', !item._box.visible);
             visibilityBtn.disabled = !!item._box.targets?.v;
             updateLabelPosBtn(item._box);

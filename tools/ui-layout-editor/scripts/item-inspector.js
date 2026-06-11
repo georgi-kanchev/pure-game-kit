@@ -5,7 +5,7 @@ function updateItemInspectorDimensions() {
     document.getElementById('itemInputY').value = f.y ?? '';
     document.getElementById('itemInputW').value = f.w ?? '';
     document.getElementById('itemInputH').value = f.h ?? '';
-    itemBreakInp.value = f.break ?? '';
+    itemNewRowInp.value = f.break ?? '';
 }
 
 itemInspName.addEventListener('input', () => {
@@ -24,22 +24,22 @@ itemVisBtn.addEventListener('click', () => {
     drawView();
 });
 
-itemBreakBtn.addEventListener('click', () => {
+itemNewRowBtn.addEventListener('click', () => {
     if (!selectedItemState) return;
     const itemData = selectedItemState.itemData;
     itemData.break = !itemData.break;
     if (itemData.break && !itemData.formulas?.break) {
         if (!itemData.formulas) itemData.formulas = {};
-        itemData.formulas.break = 'mb';
+        itemData.formulas.break = 'mnr';
     }
-    itemBreakBtn.classList.toggle('active', !!itemData.break);
-    itemBreakInp.style.display = itemData.break ? '' : 'none';
-    if (itemData.break) itemBreakInp.value = itemData.formulas.break;
+    itemNewRowBtn.classList.toggle('active', !!itemData.break);
+    itemNewRowInp.style.display = itemData.break ? '' : 'none';
+    if (itemData.break) itemNewRowInp.value = itemData.formulas.break;
     clampBoxScroll(selectedItemState.boxData);
     drawView();
 });
 
-itemBreakInp.addEventListener('input', e => {
+itemNewRowInp.addEventListener('input', e => {
     if (!selectedItemState) return;
     if (!selectedItemState.itemData.formulas) selectedItemState.itemData.formulas = {};
     selectedItemState.itemData.formulas.break = e.target.value;

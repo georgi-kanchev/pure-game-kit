@@ -7,13 +7,13 @@ const itemSpacingXInput = document.getElementById('itemSpacingX');
 const itemSpacingYInput = document.getElementById('itemSpacingY');
 const itemAlignXGroup = document.getElementById('itemAlignXGroup');
 const itemAlignYGroup = document.getElementById('itemAlignYGroup');
-const itemBreakInput = document.getElementById('itemBreak');
+const itemNewRowInput = document.getElementById('itemNewRow');
 const itemInspector = document.getElementById('itemInspector');
 const itemInspName = document.getElementById('itemInspName');
 const itemInspId = document.getElementById('itemInspId');
 const itemVisBtn = document.getElementById('itemVisBtn');
-const itemBreakBtn = document.getElementById('itemBreakBtn');
-const itemBreakInp = document.getElementById('itemBreakInp');
+const itemNewRowBtn = document.getElementById('itemNewRowBtn');
+const itemNewRowInp = document.getElementById('itemNewRowInp');
 
 let selectedItemState = null;
 
@@ -92,8 +92,8 @@ function selectItemRow(row) {
     itemInspName.value = row._item.name;
     itemInspId.textContent = `Item #${row.querySelector('.item-index').textContent} in Box #${boxes.indexOf(row._box)}`;
     itemVisBtn.classList.toggle('hidden-state', !row._item.visible);
-    itemBreakBtn.classList.toggle('active', !!row._item.break);
-    itemBreakInp.style.display = row._item.break ? '' : 'none';
+    itemNewRowBtn.classList.toggle('active', !!row._item.break);
+    itemNewRowInp.style.display = row._item.break ? '' : 'none';
     updateItemInspectorDimensions();
     drawView();
 }
@@ -110,7 +110,7 @@ for (const [input, key, numeric] of [
     [itemSpacingXInput, 'itemSpacingX', true],
     [itemSpacingYInput, 'itemSpacingY', true],
     [itemGapInput, 'itemGap', true],
-    [itemBreakInput, 'itemBreak', true],
+    [itemNewRowInput, 'itemBreak', true],
 ]) {
     input.addEventListener('input', () => {
         const item = getSelected();

@@ -6,7 +6,7 @@ const FORMULA_PARAMS = [
 ];
 const formulaCache = new Map();
 
-const ITEM_FORMULA_PARAMS = ['ow', 'oh', 'ov', 'osx', 'osy', 'og', 'mb', 'mx', 'my', 'mw', 'mh'];
+const ITEM_FORMULA_PARAMS = ['ow', 'oh', 'ov', 'osx', 'osy', 'og', 'mnr', 'mx', 'my', 'mw', 'mh'];
 const itemFormulaCache = new Map();
 
 function compileItemFormula(expr) {

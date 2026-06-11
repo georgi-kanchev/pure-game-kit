@@ -62,7 +62,7 @@ function importXml(text) {
             itemSpacingX: parseFloat(itemSp[0]) || 0,
             itemSpacingY: parseFloat(itemSp[1]) || 0,
             itemGap:     parseFloat(el.getAttribute('itGap')) || 0,
-            itemBreak:   parseFloat(el.getAttribute('itBr')) || 0,
+            itemBreak:   parseFloat(el.getAttribute('itNewRow')) || 0,
             itemAlignX:  parseFloat(itemAl[0]) || 0,
             itemAlignY:  parseFloat(itemAl[1]) || 0,
         };
@@ -85,10 +85,10 @@ function importXml(text) {
         const box = newBoxes[parseInt(el.getAttribute('boxId'))];
         if (!box) return;
         const expr = el.getAttribute('expr')?.split(' ') ?? [];
-        const hasBreak = el.getAttribute('br') === '1';
+        const hasBreak = el.getAttribute('newRow') === '1';
         const formulas = {};
         ['x','y','w','h'].forEach((dim, i) => { if (expr[i]) formulas[dim] = expr[i]; });
-        if (hasBreak) formulas.break = el.getAttribute('brExpr') ?? '';
+        if (hasBreak) formulas.break = el.getAttribute('newRowExpr') ?? '';
         box.items.push({
             name:    el.getAttribute('name') ?? '',
             visible: el.getAttribute('vis') !== '0',
@@ -161,7 +161,7 @@ function buildXml() {
         lines.push(
             `    <box id="${i}" name=${xmlAttr(box.name)} namePos="${box.labelPos ?? 'bl'}" col="${box.color ?? ''}" vis="${box.visible ? 1 : 0}"`,
             `        rect="${fmt(r.x)} ${fmt(r.y)} ${fmt(r.w)} ${fmt(r.h)}" expr=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} tar="${tid(t.x)} ${tid(t.y)} ${tid(t.w)} ${tid(t.h)}"`,
-            `        itSz=${xmlAttr(`${fmtF(box.itemWidth ?? 40)} ${fmtF(box.itemHeight ?? 20)}`)} itSp="${box.itemSpacingX ?? 0} ${box.itemSpacingY ?? 0}" itGap="${box.itemGap ?? 0}" itBr="${box.itemBreak ?? 0}" itAl="${box.itemAlignX ?? 0} ${box.itemAlignY ?? 0}" />`,
+            `        itSz=${xmlAttr(`${fmtF(box.itemWidth ?? 40)} ${fmtF(box.itemHeight ?? 20)}`)} itSp="${box.itemSpacingX ?? 0} ${box.itemSpacingY ?? 0}" itGap="${box.itemGap ?? 0}" itNewRow="${box.itemBreak ?? 0}" itAl="${box.itemAlignX ?? 0} ${box.itemAlignY ?? 0}" />`,
         );
     });
     lines.push('  </boxes>');
@@ -173,7 +173,7 @@ function buildXml() {
         resolveItems(box).forEach(({ item, x, y, w, h }) => {
             const f = item.formulas ?? {};
             lines.push(
-                `    <item id="${itemId++}" boxId="${boxId}" name=${xmlAttr(item.name)} vis="${item.visible !== false ? 1 : 0}" rect="${fmt(x - br.x)} ${fmt(y - br.y)} ${fmt(w)} ${fmt(h)}" expr=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} br="${item.break ? 1 : 0}" brExpr=${xmlAttr(fmtF(f.break))} />`,
+                `    <item id="${itemId++}" boxId="${boxId}" name=${xmlAttr(item.name)} vis="${item.visible !== false ? 1 : 0}" rect="${fmt(x - br.x)} ${fmt(y - br.y)} ${fmt(w)} ${fmt(h)}" expr=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} newRow="${item.break ? 1 : 0}" newRowExpr=${xmlAttr(fmtF(f.break))} />`,
             );
         });
     });
