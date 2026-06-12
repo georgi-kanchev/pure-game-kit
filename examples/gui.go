@@ -13,7 +13,7 @@ func GUI() {
 
 	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
 
-	var boxCols, itemCols = [4]uint{}, [19]uint{}
+	var boxCols, itemCols = [5]uint{}, [20]uint{}
 	for i := range boxCols {
 		boxCols[i] = color.RandomDark()
 	}
