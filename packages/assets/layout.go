@@ -33,8 +33,8 @@ func (l LayoutId) Box(id int, zoom float32) (x, y, width, height float32) {
 	if !has || id < 0 || id >= len(layout.Boxes) {
 		return
 	}
-	var rx, ry, rw, rh = dynamic(&layout, id, zoom, nil, 0)
-	return rx + rw/2, ry + rh/2, rw, rh
+	var rx, ry, rw, rh = dynamic(&layout, id, nil, 0)
+	return (rx + rw/2) * zoom, (ry + rh/2) * zoom, rw * zoom, rh * zoom
 }
 
 func (l LayoutId) Item(id int, zoom float32) (x, y, width, height float32) {
@@ -42,13 +42,13 @@ func (l LayoutId) Item(id int, zoom float32) (x, y, width, height float32) {
 	if !has || id < 0 || id >= len(layout.Items) {
 		return
 	}
-	var rx, ry, rw, rh = itemDynamic(&layout, id, zoom)
-	return rx + rw/2, ry + rh/2, rw, rh
+	var rx, ry, rw, rh = itemDynamic(&layout, id)
+	return (rx + rw/2) * zoom, (ry + rh/2) * zoom, rw * zoom, rh * zoom
 }
 
 // private ========================================================
 
-func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int]bool, depth int) (x, y, w, h float32) {
+func dynamic(layout *internal.Layout, boxId int, resolving map[int]bool, depth int) (x, y, w, h float32) {
 	if depth > 8 {
 		return
 	}
@@ -75,9 +75,9 @@ func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int
 	box.Vars["mux"], box.Vars["muy"] = box.Vars["mx"]+box.Vars["mw"]/2, box.Vars["my"]
 	box.Vars["mdx"], box.Vars["mdy"] = box.Vars["mux"], box.Vars["my"]+box.Vars["mh"]
 
-	// Screen rect (origin at top-left; formulas reference these for layout math)
-	box.Vars["sx"], box.Vars["sy"] = -(internal.WindowWidth*zoom)/2, -(internal.WindowHeight*zoom)/2
-	box.Vars["sw"], box.Vars["sh"] = internal.WindowWidth*zoom, internal.WindowHeight*zoom
+	// Screen rect (formulas reference these for layout math)
+	box.Vars["sx"], box.Vars["sy"] = -internal.WindowWidth/2, -internal.WindowHeight/2
+	box.Vars["sw"], box.Vars["sh"] = internal.WindowWidth, internal.WindowHeight
 	box.Vars["slx"], box.Vars["sly"] = box.Vars["sx"], box.Vars["sy"]+box.Vars["sh"]/2
 	box.Vars["srx"], box.Vars["sry"] = box.Vars["sx"]+box.Vars["sw"], box.Vars["sly"]
 	box.Vars["sux"], box.Vars["suy"] = box.Vars["sx"]+box.Vars["sw"]/2, box.Vars["sy"]
@@ -95,7 +95,7 @@ func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int
 			var tid = text.ToNumber[int](tars[0])
 			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
 				resolving[boxId] = true
-				box.Vars["tx"], _, _, _ = dynamic(layout, tid, zoom, resolving, depth+1)
+				box.Vars["tx"], _, _, _ = dynamic(layout, tid, resolving, depth+1)
 				delete(resolving, boxId)
 			}
 		}
@@ -103,7 +103,7 @@ func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int
 			var tid = text.ToNumber[int](tars[1])
 			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
 				resolving[boxId] = true
-				_, box.Vars["ty"], _, _ = dynamic(layout, tid, zoom, resolving, depth+1)
+				_, box.Vars["ty"], _, _ = dynamic(layout, tid, resolving, depth+1)
 				delete(resolving, boxId)
 			}
 		}
@@ -111,7 +111,7 @@ func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int
 			var tid = text.ToNumber[int](tars[2])
 			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
 				resolving[boxId] = true
-				_, _, box.Vars["tw"], _ = dynamic(layout, tid, zoom, resolving, depth+1)
+				_, _, box.Vars["tw"], _ = dynamic(layout, tid, resolving, depth+1)
 				delete(resolving, boxId)
 			}
 		}
@@ -119,7 +119,7 @@ func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int
 			var tid = text.ToNumber[int](tars[3])
 			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
 				resolving[boxId] = true
-				_, _, _, box.Vars["th"] = dynamic(layout, tid, zoom, resolving, depth+1)
+				_, _, _, box.Vars["th"] = dynamic(layout, tid, resolving, depth+1)
 				delete(resolving, boxId)
 			}
 		}
@@ -148,12 +148,12 @@ func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int
 	return rx, ry, rw, rh
 }
 
-func itemDynamic(layout *internal.Layout, itemId int, zoom float32) (x, y, w, h float32) {
+func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
 
 	// Resolve the owning box (raw top-left result)
-	var bx, by, bw, bh = dynamic(layout, int(item.BoxId), zoom, nil, 0)
+	var bx, by, bw, bh = dynamic(layout, int(item.BoxId), nil, 0)
 
 	if item.Variables == nil {
 		item.Variables = make(map[string]float32)

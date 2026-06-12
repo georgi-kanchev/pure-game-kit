@@ -9,7 +9,7 @@ import (
 
 func GUI() {
 	window.Create("example - gui", true, true)
-	var view = graphics.NewView(1)
+	var view = graphics.NewView(1.2)
 
 	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
 
