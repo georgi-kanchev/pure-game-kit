@@ -33,8 +33,9 @@ func (l LayoutId) Box(id int, zoom float32) (x, y, width, height float32) {
 	if !has || id < 0 || id >= len(layout.Boxes) {
 		return
 	}
-	var rx, ry, rw, rh = dynamic(&layout, id, 0)
-	return (rx + rw/2), (ry + rh/2), rw, rh
+	var rx, ry, rw, rh = boxDynamic(&layout, id, 0)
+	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
+	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
 
 func (l LayoutId) Item(id int, zoom float32) (x, y, width, height float32) {
@@ -43,12 +44,13 @@ func (l LayoutId) Item(id int, zoom float32) (x, y, width, height float32) {
 		return
 	}
 	var rx, ry, rw, rh = itemDynamic(&layout, id)
-	return (rx + rw/2), (ry + rh/2), rw, rh
+	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
+	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
 
 // private ========================================================
 
-func dynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float32) {
+func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float32) {
 	if depth > 8 {
 		return
 	}
@@ -64,29 +66,30 @@ func dynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float32)
 		clear(box.Vars)
 	}
 
-	var rectScale float32 = 1 //float32(math.Sqrt(float64(internal.WindowWidth*internal.WindowHeight))) / 512
-	box.Vars["mx"], box.Vars["my"] = text.ToNumber[float32](rect[0])*rectScale, text.ToNumber[float32](rect[1])*rectScale
-	box.Vars["mw"], box.Vars["mh"] = text.ToNumber[float32](rect[2])*rectScale, text.ToNumber[float32](rect[3])*rectScale
+	// Editor viewport: matches JS getViewSize() — base=512 scaled by game's aspect ratio.
+	// Formulas (and their literals like "65") are authored at this scale, so all vars
+	// stay in editor-pixels. The gameScale conversion only happens at Box()/Item().
+	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
+	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
+
+	box.Vars["mx"], box.Vars["my"] = text.ToNumber[float32](rect[0]), text.ToNumber[float32](rect[1])
+	box.Vars["mw"], box.Vars["mh"] = text.ToNumber[float32](rect[2]), text.ToNumber[float32](rect[3])
 	box.Vars["mlx"], box.Vars["mly"] = box.Vars["mx"], box.Vars["my"]+box.Vars["mh"]/2
 	box.Vars["mrx"], box.Vars["mry"] = box.Vars["mx"]+box.Vars["mw"], box.Vars["mly"]
 	box.Vars["mux"], box.Vars["muy"] = box.Vars["mx"]+box.Vars["mw"]/2, box.Vars["my"]
 	box.Vars["mdx"], box.Vars["mdy"] = box.Vars["mux"], box.Vars["my"]+box.Vars["mh"]
 
-	box.Vars["sx"], box.Vars["sy"] = -internal.WindowWidth/2, -internal.WindowHeight/2
-	box.Vars["sw"], box.Vars["sh"] = internal.WindowWidth, internal.WindowHeight
+	box.Vars["sx"], box.Vars["sy"], box.Vars["sw"], box.Vars["sh"] = -ew/2, -eh/2, ew, eh
 	box.Vars["slx"], box.Vars["sly"] = box.Vars["sx"], box.Vars["sy"]+box.Vars["sh"]/2
 	box.Vars["srx"], box.Vars["sry"] = box.Vars["sx"]+box.Vars["sw"], box.Vars["sly"]
 	box.Vars["sux"], box.Vars["suy"] = box.Vars["sx"]+box.Vars["sw"]/2, box.Vars["sy"]
 	box.Vars["sdx"], box.Vars["sdy"] = box.Vars["sux"], box.Vars["sy"]+box.Vars["sh"]
 
 	box.Vars["tx"], box.Vars["ty"], box.Vars["tw"], box.Vars["th"] = 0, 0, 0, 0
-	box.Vars["tlx"], box.Vars["tly"] = 0, 0
-	box.Vars["trx"], box.Vars["try"] = 0, 0
-	box.Vars["tux"], box.Vars["tuy"] = 0, 0
-	box.Vars["tdx"], box.Vars["tdy"] = 0, 0
+	box.Vars["tlx"], box.Vars["tly"], box.Vars["trx"], box.Vars["try"] = 0, 0, 0, 0
+	box.Vars["tux"], box.Vars["tuy"], box.Vars["tdx"], box.Vars["tdy"] = 0, 0, 0, 0
 
 	var variables = varLookup(box.Vars)
-
 	if len(tars) == 4 {
 		setTargetVars(layout, box.Vars, tars[0], depth+1)
 		var rx = text.Calculate(expr[0], variables)
@@ -99,53 +102,18 @@ func dynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float32)
 
 		setTargetVars(layout, box.Vars, tars[3], depth+1)
 		var rh = text.Calculate(expr[3], variables)
-
 		return rx, ry, rw, rh
 	}
 
-	var rx = text.Calculate(expr[0], variables)
-	var ry = text.Calculate(expr[1], variables)
-	var rw = text.Calculate(expr[2], variables)
-	var rh = text.Calculate(expr[3], variables)
+	var rx, ry = text.Calculate(expr[0], variables), text.Calculate(expr[1], variables)
+	var rw, rh = text.Calculate(expr[2], variables), text.Calculate(expr[3], variables)
 	return rx, ry, rw, rh
 }
-
-func setTargetVars(layout *internal.Layout, vars map[string]float32, tar string, depth int) {
-	if tar != "" {
-		var tid = text.ToNumber[int](tar)
-		if tid >= 0 && tid < len(layout.Boxes) {
-			vars["tx"], vars["ty"], vars["tw"], vars["th"] = dynamic(layout, tid, depth)
-		} else {
-			vars["tx"], vars["ty"], vars["tw"], vars["th"] = 0, 0, 0, 0
-		}
-	} else {
-		vars["tx"], vars["ty"], vars["tw"], vars["th"] = 0, 0, 0, 0
-	}
-	vars["tlx"] = vars["tx"]
-	vars["tly"] = vars["ty"] + vars["th"]/2
-	vars["trx"] = vars["tx"] + vars["tw"]
-	vars["try"] = vars["tly"]
-	vars["tux"] = vars["tx"] + vars["tw"]/2
-	vars["tuy"] = vars["ty"]
-	vars["tdx"] = vars["tux"]
-	vars["tdy"] = vars["ty"] + vars["th"]
-}
-
-func varLookup(vars map[string]float32) func(string) float32 {
-	return func(v string) float32 {
-		var value, has = vars[v]
-		if !has {
-			return number.NaN()
-		}
-		return value
-	}
-}
-
 func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
 
-	var bx, by, bw, bh = dynamic(layout, int(item.BoxId), 0)
+	var bx, by, bw, bh = boxDynamic(layout, int(item.BoxId), 0)
 
 	if item.Variables == nil {
 		item.Variables = make(map[string]float32)
@@ -194,4 +162,30 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		rh = item.Variables["mh"]
 	}
 	return rx, ry, rw, rh
+}
+
+func setTargetVars(layout *internal.Layout, vars map[string]float32, tar string, depth int) {
+	if tar != "" {
+		var targetId = text.ToNumber[int](tar)
+		if targetId >= 0 && targetId < len(layout.Boxes) {
+			vars["tx"], vars["ty"], vars["tw"], vars["th"] = boxDynamic(layout, targetId, depth)
+		} else {
+			vars["tx"], vars["ty"], vars["tw"], vars["th"] = 0, 0, 0, 0
+		}
+	} else {
+		vars["tx"], vars["ty"], vars["tw"], vars["th"] = 0, 0, 0, 0
+	}
+	vars["tlx"], vars["tly"] = vars["tx"], vars["ty"]+vars["th"]/2
+	vars["trx"], vars["try"] = vars["tx"]+vars["tw"], vars["tly"]
+	vars["tux"], vars["tuy"] = vars["tx"]+vars["tw"]/2, vars["ty"]
+	vars["tdx"], vars["tdy"] = vars["tux"], vars["ty"]+vars["th"]
+}
+func varLookup(vars map[string]float32) func(string) float32 {
+	return func(v string) float32 {
+		var value, has = vars[v]
+		if !has {
+			return number.NaN()
+		}
+		return value
+	}
 }
