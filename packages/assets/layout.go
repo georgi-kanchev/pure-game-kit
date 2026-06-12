@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"math"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/number"
@@ -67,9 +68,11 @@ func dynamic(layout *internal.Layout, boxId int, resolving map[int]bool, depth i
 		clear(box.Vars)
 	}
 
-	// My rect (from stored rectangle — these are top-left coordinates)
-	box.Vars["mx"], box.Vars["my"] = text.ToNumber[float32](rect[0]), text.ToNumber[float32](rect[1])
-	box.Vars["mw"], box.Vars["mh"] = text.ToNumber[float32](rect[2]), text.ToNumber[float32](rect[3])
+	// My rect (from stored rectangle — editor-viewport pixels; scale to game resolution)
+	// Editor uses base=512, so the ratio from editor to game is sqrt(W·H)/512.
+	var rectScale = float32(math.Sqrt(float64(internal.WindowWidth*internal.WindowHeight))) / 512
+	box.Vars["mx"], box.Vars["my"] = text.ToNumber[float32](rect[0])*rectScale, text.ToNumber[float32](rect[1])*rectScale
+	box.Vars["mw"], box.Vars["mh"] = text.ToNumber[float32](rect[2])*rectScale, text.ToNumber[float32](rect[3])*rectScale
 	box.Vars["mlx"], box.Vars["mly"] = box.Vars["mx"], box.Vars["my"]+box.Vars["mh"]/2
 	box.Vars["mrx"], box.Vars["mry"] = box.Vars["mx"]+box.Vars["mw"], box.Vars["mly"]
 	box.Vars["mux"], box.Vars["muy"] = box.Vars["mx"]+box.Vars["mw"]/2, box.Vars["my"]
