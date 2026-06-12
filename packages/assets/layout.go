@@ -91,39 +91,39 @@ func dynamic(layout *internal.Layout, boxId int, zoom float32, resolving map[int
 	box.Vars["tdx"], box.Vars["tdy"] = 0, 0
 
 	if len(tars) == 4 {
-		var dims = [4]struct {
-			key string
-			tar string
-		}{
-			{"tx", tars[0]},
-			{"ty", tars[1]},
-			{"tw", tars[2]},
-			{"th", tars[3]},
+		if tars[0] != "" {
+			var tid = text.ToNumber[int](tars[0])
+			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
+				resolving[boxId] = true
+				box.Vars["tx"], _, _, _ = dynamic(layout, tid, zoom, resolving, depth+1)
+				delete(resolving, boxId)
+			}
 		}
-		for _, d := range dims {
-			if d.tar == "" {
-				continue
+		if tars[1] != "" {
+			var tid = text.ToNumber[int](tars[1])
+			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
+				resolving[boxId] = true
+				_, box.Vars["ty"], _, _ = dynamic(layout, tid, zoom, resolving, depth+1)
+				delete(resolving, boxId)
 			}
-			var tid = text.ToNumber[int](d.tar)
-			if resolving[tid] || tid < 0 || tid >= len(layout.Boxes) {
-				continue
+		}
+		if tars[2] != "" {
+			var tid = text.ToNumber[int](tars[2])
+			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
+				resolving[boxId] = true
+				_, _, box.Vars["tw"], _ = dynamic(layout, tid, zoom, resolving, depth+1)
+				delete(resolving, boxId)
 			}
-			resolving[boxId] = true
-			var ttx, tty, ttw, tth = dynamic(layout, tid, zoom, resolving, depth+1)
-			delete(resolving, boxId)
-			switch d.key {
-			case "tx":
-				box.Vars["tx"] = ttx
-			case "ty":
-				box.Vars["ty"] = tty
-			case "tw":
-				box.Vars["tw"] = ttw
-			case "th":
-				box.Vars["th"] = tth
+		}
+		if tars[3] != "" {
+			var tid = text.ToNumber[int](tars[3])
+			if !resolving[tid] && tid >= 0 && tid < len(layout.Boxes) {
+				resolving[boxId] = true
+				_, _, _, box.Vars["th"] = dynamic(layout, tid, zoom, resolving, depth+1)
+				delete(resolving, boxId)
 			}
 		}
 
-		// Recompute derived t-vars
 		box.Vars["tlx"] = box.Vars["tx"]
 		box.Vars["tly"] = box.Vars["ty"] + box.Vars["th"]/2
 		box.Vars["trx"] = box.Vars["tx"] + box.Vars["tw"]
