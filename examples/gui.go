@@ -12,9 +12,12 @@ func GUI() {
 	var view = graphics.NewView(1)
 
 	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
-	_ = layout
 
 	for window.KeepOpen() {
-		view.DrawColor(palette.Black)
+		var x, y, w, h = layout.Box(0, view.Zoom)
+		view.DrawShape(x, y, w, h, 0, 0, palette.White)
+
+		var x1, y1, w1, h1 = layout.Box(1, view.Zoom)
+		view.DrawShape(x1, y1, w1, h1, 0, 0, palette.Red)
 	}
 }

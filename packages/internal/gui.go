@@ -12,12 +12,13 @@ type Layout struct {
 		Visible      int    `xml:"vis,attr"`
 		Rectangle    string `xml:"rect,attr"`
 		Expression   string `xml:"expr,attr"`
-		Target       string `xml:"tar,attr"`
+		Targets      string `xml:"tar,attr"`
 		ItemSize     string `xml:"itSz,attr"`
 		ItemSpacing  string `xml:"itSp,attr"`
 		ItemGap      int    `xml:"itGap,attr"`
 		ItemNewRow   int    `xml:"itNewRow,attr"`
 		ItemAlign    string `xml:"itAl,attr"`
+		Vars         map[string]float32
 	} `xml:"boxes>box"`
 	Items []struct {
 		Id               uint32 `xml:"id,attr"`
@@ -28,6 +29,7 @@ type Layout struct {
 		Expression       string `xml:"expr,attr"`
 		NewRow           int    `xml:"newRow,attr"`
 		NewRowExpression string `xml:"newRowExpr,attr"`
+		Variables        map[string]float32
 	} `xml:"items>item"`
 }
 
