@@ -66,11 +66,8 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 		clear(box.Vars)
 	}
 
-	// Editor viewport: matches JS getViewSize() — base=512 scaled by game's aspect ratio.
-	// Formulas (and their literals like "65") are authored at this scale, so all vars
-	// stay in editor-pixels. The gameScale conversion only happens at Box()/Item().
-	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
-	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
+	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // scales according to editor
+	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // bigger windows cause bigger literals
 
 	box.Vars["mx"], box.Vars["my"] = text.ToNumber[float32](rect[0]), text.ToNumber[float32](rect[1])
 	box.Vars["mw"], box.Vars["mh"] = text.ToNumber[float32](rect[2]), text.ToNumber[float32](rect[3])
@@ -93,13 +90,10 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 	if len(tars) == 4 {
 		setTargetVars(layout, box.Vars, tars[0], depth+1)
 		var rx = text.Calculate(expr[0], variables)
-
 		setTargetVars(layout, box.Vars, tars[1], depth+1)
 		var ry = text.Calculate(expr[1], variables)
-
 		setTargetVars(layout, box.Vars, tars[2], depth+1)
 		var rw = text.Calculate(expr[2], variables)
-
 		setTargetVars(layout, box.Vars, tars[3], depth+1)
 		var rh = text.Calculate(expr[3], variables)
 		return rx, ry, rw, rh

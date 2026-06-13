@@ -32,16 +32,9 @@ func CountOccurrences(text, part string) int {
 	return strings.Count(text, part)
 }
 
-// Same as IsEmpty(...)
-func IsBlank(text string) bool {
+func IsEmpty(text string) bool {
 	return Trim(text) == ""
 }
-
-// Same as IsBlank(...)
-func IsEmpty(text string) bool {
-	return IsBlank(text)
-}
-
 func IsAllLetters(text string) bool {
 	if len(text) == 0 {
 		return false

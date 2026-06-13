@@ -1,6 +1,7 @@
 package text
 
 import (
+	"fmt"
 	"pure-game-kit/packages/utility/number"
 	"strings"
 )
@@ -20,7 +21,6 @@ func Part(text string, fromIndex, toIndex int) string {
 	if start > end {
 		return ""
 	}
-
 	return string(runes[start:end])
 }
 func Replace(text, part, with string) string {
@@ -73,43 +73,40 @@ func Limit(text string, length int, indicator ...string) string {
 		}
 		return ind + string(textRunes[textLen-trimLen:])
 	}
-
 	return text
 }
 
 // Returns the text before the part. If the part is not found, returns the original text.
 func Before(text, part string) string {
-	var pos = strings.Index(text, part)
-	if pos == -1 {
+	var before, _, ok = strings.Cut(text, part)
+	if !ok {
 		return text
 	}
-	return text[:pos]
+	return before
 }
 
 // Returns the text after the part. If the part is not found, returns the original text.
 func After(text, part string) string {
-	pos := strings.Index(text, part)
-	if pos == -1 {
+	var _, after, ok = strings.Cut(text, part)
+	if !ok {
 		return text
 	}
-	return text[pos+len(part):]
+	return after
 }
 
 // Returns the text between the first part and the second part. If one of the parts is not found,
 // returns the original text.
 func Between(text, firstPart, secondPart string) string {
-	sPos := strings.Index(text, firstPart)
-	if sPos == -1 {
+	var _, after, ok = strings.Cut(text, firstPart)
+	if !ok {
 		return text
 	}
 
-	// Start searching for the endAnchor AFTER the startAnchor
-	remaining := text[sPos+len(firstPart):]
-	ePos := strings.Index(remaining, secondPart)
+	var remaining = after // start searching for the endAnchor AFTER the startAnchor
+	var ePos = strings.Index(remaining, secondPart)
 	if ePos == -1 {
 		return text
 	}
-
 	return remaining[:ePos]
 }
 
@@ -129,7 +126,6 @@ func Wrap(text string, lineLength int) string {
 
 	builder.Reset()
 	var runes = []rune(text)
-
 	for i, r := range runes {
 		builder.WriteRune(r)
 		var reachedEnd = (i+1)%lineLength == 0
@@ -154,7 +150,6 @@ func WrapWords(text string, lineLength int) string {
 
 	builder.Reset()
 	var currentLineLength = 0
-
 	for i, word := range words {
 		var wordLen = len([]rune(word))
 		if currentLineLength+wordLen > lineLength && currentLineLength > 0 { // longer than line length
@@ -175,4 +170,27 @@ func WrapWords(text string, lineLength int) string {
 		}
 	}
 	return builder.String()
+}
+
+// Converts the text to lowercase
+func ToLowerCase(text string) string {
+	return strings.ToLower(text)
+}
+
+// Converts the text to UPPERCASE
+func ToUpperCase(text string) string {
+	return strings.ToUpper(text)
+}
+
+func FormatByteSize(byteSize int) string {
+	const unit = 1024
+	if byteSize < unit {
+		return fmt.Sprintf("%d B", byteSize)
+	}
+	var div, exp = int(unit), 0
+	for n := byteSize / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.3f %cB", float32(byteSize)/float32(div), "KMGTPE"[exp])
 }

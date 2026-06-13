@@ -180,7 +180,7 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 	var data = internal.TileLayers[uint8(dataId)]
 
 	if layer.TileData.Encoding == "base64" {
-		var b64 = text.FromBase64(text.Trim(tileData))
+		var b64 = storage.FromBase64(text.Trim(tileData))
 		switch layer.TileData.Compression {
 		case "gzip":
 			tiles = tilesFromBytes(storage.DecompressGZIP([]byte(b64)))

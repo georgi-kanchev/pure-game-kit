@@ -25,6 +25,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"compress/zlib"
+	b64 "encoding/base64"
 	"encoding/gob"
 	"encoding/json"
 	"encoding/xml"
@@ -173,4 +174,15 @@ func DecompressGZIP(data []byte) []byte {
 	}
 	return result
 
+}
+
+func ToBase64(text string) string {
+	return b64.StdEncoding.EncodeToString([]byte(text))
+}
+func FromBase64(base64 string) string {
+	var decodedBytes, err = b64.StdEncoding.DecodeString(base64)
+	if err != nil {
+		return ""
+	}
+	return string(decodedBytes)
 }

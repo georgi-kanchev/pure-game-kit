@@ -100,3 +100,55 @@ func ChopStart(text, part string) string {
 func ChopEnd(text, part string) string {
 	return strings.TrimSuffix(text, part)
 }
+
+// Returns part of a string split by a divider without any allocations.
+func SplitIndex(text, divider string, tokenIndex int) string {
+	if divider == "" {
+		if tokenIndex < len(text) {
+			return text[tokenIndex : tokenIndex+1]
+		}
+		return ""
+	}
+
+	var currIndex = 0
+	for {
+		var sepIndex = strings.Index(text, divider)
+		if sepIndex == -1 {
+			if currIndex == tokenIndex {
+				return text
+			} // if separator isn't found, we are at the last token
+			break
+		}
+
+		if currIndex == tokenIndex {
+			return text[:sepIndex]
+		} // if this matches the target index, return the substring up to the separator
+
+		text = text[sepIndex+len(divider):]
+		currIndex++ // advance the string past the separator and increment the token counter
+	}
+	return ""
+}
+
+// Returns the total number of parts that would result from splitting the text by the divider without any allocations.
+func SplitCount(text, divider string) int {
+	if text == "" {
+		return 0
+	}
+	if divider == "" {
+		return len(text)
+	}
+
+	var count = 0
+	for {
+		var sepIndex = strings.Index(text, divider)
+		if sepIndex == -1 {
+			count++ // Count the final remaining token
+			break
+		}
+
+		count++
+		text = text[sepIndex+len(divider):]
+	}
+	return count
+}
