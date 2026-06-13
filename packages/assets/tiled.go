@@ -189,26 +189,20 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 		}
 	}
 
-	var rows []string
-	if csv {
-		rows = text.Split(tileData, "\n")
-	}
-
 	var pixels = make([]rl.Color, data.Texture.Width*data.Texture.Height)
 	for i := range tiled.Height {
-		var columns []string
+		var row string
 		if csv {
-			var row = rows[i]
+			row = text.SplitIndex(tileData, "\n", i)
 			if text.EndsWith(row, ",") {
 				row = text.Part(row, 0, text.Length(row)-1)
 			}
-			columns = text.Split(row, ",")
 		}
 
 		for j := range tiled.Width {
 			var index = number.Indexes2DToIndex1D(i, j, tiled.Width, tiled.Height)
 			if csv {
-				tiles[index] = text.ToNumber[uint32](columns[j])
+				tiles[index] = text.ToNumber[uint32](text.SplitIndex(row, ",", j))
 			}
 
 			if tiles[index] == 0 {
@@ -286,10 +280,10 @@ func loadLayerObjects(layer *layerObjects) (shapes [][6]float32, pts []float32) 
 			if o.Rotation != 0 {
 				sin, cos = internal.SinCos(o.Rotation)
 			}
-			var split = text.Split(ptsString, " ")
-			for _, v := range split {
-				var xy = text.Split(v, ",")
-				var px, py = text.ToNumber[float32](xy[0]), text.ToNumber[float32](xy[1])
+			var splitCount = text.SplitCount(ptsString, " ")
+			for k := 0; k < splitCount; k++ {
+				var v = text.SplitIndex(ptsString, " ", k)
+				var px, py = text.ToNumber[float32](text.SplitIndex(v, ",", 0)), text.ToNumber[float32](text.SplitIndex(v, ",", 1))
 				pts = append(pts, o.X+px*cos-py*sin, o.Y+px*sin+py*cos)
 			}
 		} else if o.Gid != 0 {

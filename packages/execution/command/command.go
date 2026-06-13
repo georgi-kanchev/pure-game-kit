@@ -23,7 +23,11 @@ func Execute(command string) {
 	var replaced, originals = replaceStrings(command, quote, quote, placeholder)
 	command = replaced
 
-	var parts = text.Split(command, dividerParts)
+	var partCount = text.SplitCount(command, dividerParts)
+	var parts = make([]string, partCount)
+	for i := 0; i < partCount; i++ {
+		parts[i] = text.SplitIndex(command, dividerParts, i)
+	}
 	var name = text.Trim(substringUntilChar(parts[0], dividerName))
 	parts[0] = text.Remove(parts[0], string(dividerName))
 	parts[0] = text.Trim(text.Remove(parts[0], name))
