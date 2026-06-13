@@ -57,7 +57,6 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 
 	var box = &layout.Boxes[boxId]
 
-
 	if box.Vars == nil {
 		box.Vars = make(map[string]float32)
 	} else {
@@ -67,8 +66,10 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // scales according to editor
 	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // bigger windows cause bigger literals
 
-	box.Vars["mx"], box.Vars["my"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 0)), text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 1))
-	box.Vars["mw"], box.Vars["mh"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 2)), text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 3))
+	box.Vars["mx"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 0))
+	box.Vars["my"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 1))
+	box.Vars["mw"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 2))
+	box.Vars["mh"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 3))
 	box.Vars["mlx"], box.Vars["mly"] = box.Vars["mx"], box.Vars["my"]+box.Vars["mh"]/2
 	box.Vars["mrx"], box.Vars["mry"] = box.Vars["mx"]+box.Vars["mw"], box.Vars["mly"]
 	box.Vars["mux"], box.Vars["muy"] = box.Vars["mx"]+box.Vars["mw"]/2, box.Vars["my"]
@@ -97,8 +98,10 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 		return rx, ry, rw, rh
 	}
 
-	var rx, ry = text.Calculate(text.SplitIndex(box.Expression, " ", 0), variables), text.Calculate(text.SplitIndex(box.Expression, " ", 1), variables)
-	var rw, rh = text.Calculate(text.SplitIndex(box.Expression, " ", 2), variables), text.Calculate(text.SplitIndex(box.Expression, " ", 3), variables)
+	var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), variables)
+	var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), variables)
+	var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), variables)
+	var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), variables)
 	return rx, ry, rw, rh
 }
 func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {

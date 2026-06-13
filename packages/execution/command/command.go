@@ -25,7 +25,7 @@ func Execute(command string) {
 
 	var partCount = text.SplitCount(command, dividerParts)
 	var parts = make([]string, partCount)
-	for i := 0; i < partCount; i++ {
+	for i := range partCount {
 		parts[i] = text.SplitIndex(command, dividerParts, i)
 	}
 	var name = text.Trim(substringUntilChar(parts[0], dividerName))
