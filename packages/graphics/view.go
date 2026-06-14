@@ -2,6 +2,7 @@ package graphics
 
 import (
 	"pure-game-kit/packages/assets"
+	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
@@ -10,9 +11,8 @@ import (
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/point"
-	"pure-game-kit/packages/utility/text"
-	"pure-game-kit/packages/utility/time"
-	"strings"
+	"strconv"
+	"unsafe"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -25,6 +25,8 @@ type View struct {
 	//=================================================================
 
 	velocityX, velocityY, dragVelX, dragVelY float32
+
+	debugBuffer []byte
 }
 
 func NewView(zoom float32) View { return View{Zoom: zoom} }
@@ -298,10 +300,18 @@ func (v *View) DrawObject(object *Object) {
 }
 func (v *View) DrawDebugInfo(detailed bool) {
 	var tlx, tly = v.PointFromScreen(10, 10)
+	var size = float32(40)
 
-	v.DrawText(tlx, tly, 50, 0, palette.White, text.New(time.FPS()), Area{})
+	if condition.TrueEvery(0.1, 0xdeadc0de) {
+		v.debugBuffer = v.debugBuffer[:0]
+		v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.FPS), 'f', 1, 32)
+		v.debugBuffer = append(v.debugBuffer, " FPS"...)
+	}
+
+	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
+	v.DrawText(tlx, tly, size, 0, palette.White, str, Area{})
 	if detailed {
-		v.DrawText(tlx, tly+50, 50, 0, palette.White, debug.MemoryUsage(), Area{})
+		v.DrawText(tlx, tly+size/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
 	}
 }
 
@@ -312,7 +322,6 @@ type line struct {
 	width      float32
 }
 
-var debugBuilder strings.Builder
 var lines []line
 var obj = &Object{} // used for primitive drawing
 var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': palette.Red, '🟧': palette.Orange,
