@@ -72,6 +72,7 @@ func GrabNumber[T number.Number](name string, parameterIndex int) T {
 const dividerParts = ","
 const dividerName = ':'
 const quote = '`'
+const placeholder rune = '\x1A'
 
 func substringUntilChar(txt string, char rune) string {
 	var index = text.IndexOf(txt, string(char))
@@ -80,9 +81,6 @@ func substringUntilChar(txt string, char rune) string {
 	}
 	return txt[:index]
 }
-
-const placeholder rune = '\x1A'
-
 func replaceStrings(txt string, openQuote, closeQuote, placeholder rune) (replaced string, originals []string) {
 	var replacedRunes []rune
 	var extracted []string

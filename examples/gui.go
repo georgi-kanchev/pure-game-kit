@@ -27,9 +27,9 @@ func GUI() {
 			view.DrawShape(x, y, w, h, 0, 0, c)
 		}
 
-		// for i, c := range itemCols {
-		// 	var x, y, w, h = layout.Item(i, view.Zoom)
-		// 	view.DrawShape(x, y, w, h, 0, 0, c)
-		// }
+		for i, c := range itemCols {
+			var x, y, w, h = layout.Item(i, view.Zoom)
+			view.DrawShape(x, y, w, h, 0, 0, c)
+		}
 	}
 }

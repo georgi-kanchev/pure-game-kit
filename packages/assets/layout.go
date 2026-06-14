@@ -37,7 +37,6 @@ func (l LayoutId) Box(id int, zoom float32) (x, y, width, height float32) {
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
-
 func (l LayoutId) Item(id int, zoom float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
@@ -107,7 +106,6 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
-
 	var bx, by, bw, bh = boxDynamic(layout, int(item.BoxId), 0)
 
 	if item.Variables == nil {
@@ -117,10 +115,8 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	}
 
 	item.Variables["ow"], item.Variables["oh"] = bw, bh
-	item.Variables["ov"] = 1
-	item.Variables["osx"], item.Variables["osy"] = 0, 0
-	item.Variables["og"] = float32(box.ItemGap)
-	item.Variables["mnr"] = float32(box.ItemNewRow)
+	item.Variables["ov"], item.Variables["osx"], item.Variables["osy"] = 1, 0, 0
+	item.Variables["og"], item.Variables["mnr"] = float32(box.ItemGap), float32(box.ItemNewRow)
 
 	if text.SplitCount(box.ItemSize, " ") >= 2 {
 		var look = varLookup(item.Variables)
@@ -137,7 +133,6 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	item.Variables["mx"], item.Variables["my"] = bx, by
 
 	var variables = varLookup(item.Variables)
-
 	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), variables)
 	if number.IsNaN(rx) {
 		rx = item.Variables["mx"]
@@ -168,10 +163,8 @@ func setTargetVars(layout *internal.Layout, vars map[string]float32, tar string,
 	} else {
 		vars["tx"], vars["ty"], vars["tw"], vars["th"] = 0, 0, 0, 0
 	}
-	vars["tlx"], vars["tly"] = vars["tx"], vars["ty"]+vars["th"]/2
-	vars["trx"], vars["try"] = vars["tx"]+vars["tw"], vars["tly"]
-	vars["tux"], vars["tuy"] = vars["tx"]+vars["tw"]/2, vars["ty"]
-	vars["tdx"], vars["tdy"] = vars["tux"], vars["ty"]+vars["th"]
+	vars["tlx"], vars["tly"], vars["trx"], vars["try"] = vars["tx"], vars["ty"]+vars["th"]/2, vars["tx"]+vars["tw"], vars["tly"]
+	vars["tux"], vars["tuy"], vars["tdx"], vars["tdy"] = vars["tx"]+vars["tw"]/2, vars["ty"], vars["tux"], vars["ty"]+vars["th"]
 }
 func varLookup(vars map[string]float32) func(string) float32 {
 	return func(v string) float32 {
