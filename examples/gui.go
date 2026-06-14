@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color"
+	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/window"
 )
 
@@ -22,6 +23,8 @@ func GUI() {
 	}
 
 	window.SetTargetFPS(0)
+
+	debug.ProfileCPU(10)
 
 	for window.KeepOpen() {
 		for i, c := range boxCols {

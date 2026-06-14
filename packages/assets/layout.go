@@ -64,43 +64,38 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 	}
 
 	var box = &layout.Boxes[boxId]
-	if box.Vars == nil {
-		box.Vars = make(map[string]float32)
-	} else {
-		clear(box.Vars)
-	}
+	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
+	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
 
-	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // scales according to editor
-	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // bigger windows cause bigger literals
+	box.Vars = internal.Vars{}
+	box.Vars.Mx = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 0))
+	box.Vars.My = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 1))
+	box.Vars.Mw = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 2))
+	box.Vars.Mh = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 3))
+	box.Vars.Mlx, box.Vars.Mly = box.Vars.Mx, box.Vars.My+box.Vars.Mh/2
+	box.Vars.Mrx, box.Vars.Mry = box.Vars.Mx+box.Vars.Mw, box.Vars.Mly
+	box.Vars.Mux, box.Vars.Muy = box.Vars.Mx+box.Vars.Mw/2, box.Vars.My
+	box.Vars.Mdx, box.Vars.Mdy = box.Vars.Mux, box.Vars.My+box.Vars.Mh
 
-	box.Vars["mx"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 0))
-	box.Vars["my"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 1))
-	box.Vars["mw"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 2))
-	box.Vars["mh"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 3))
-	box.Vars["mlx"], box.Vars["mly"] = box.Vars["mx"], box.Vars["my"]+box.Vars["mh"]/2
-	box.Vars["mrx"], box.Vars["mry"] = box.Vars["mx"]+box.Vars["mw"], box.Vars["mly"]
-	box.Vars["mux"], box.Vars["muy"] = box.Vars["mx"]+box.Vars["mw"]/2, box.Vars["my"]
-	box.Vars["mdx"], box.Vars["mdy"] = box.Vars["mux"], box.Vars["my"]+box.Vars["mh"]
+	box.Vars.Sx, box.Vars.Sy, box.Vars.Sw, box.Vars.Sh = -ew/2, -eh/2, ew, eh
+	box.Vars.Slx, box.Vars.Sly = box.Vars.Sx, box.Vars.Sy+box.Vars.Sh/2
+	box.Vars.Srx, box.Vars.Sry = box.Vars.Sx+box.Vars.Sw, box.Vars.Sly
+	box.Vars.Sux, box.Vars.Suy = box.Vars.Sx+box.Vars.Sw/2, box.Vars.Sy
+	box.Vars.Sdx, box.Vars.Sdy = box.Vars.Sux, box.Vars.Sy+box.Vars.Sh
 
-	box.Vars["sx"], box.Vars["sy"], box.Vars["sw"], box.Vars["sh"] = -ew/2, -eh/2, ew, eh
-	box.Vars["slx"], box.Vars["sly"] = box.Vars["sx"], box.Vars["sy"]+box.Vars["sh"]/2
-	box.Vars["srx"], box.Vars["sry"] = box.Vars["sx"]+box.Vars["sw"], box.Vars["sly"]
-	box.Vars["sux"], box.Vars["suy"] = box.Vars["sx"]+box.Vars["sw"]/2, box.Vars["sy"]
-	box.Vars["sdx"], box.Vars["sdy"] = box.Vars["sux"], box.Vars["sy"]+box.Vars["sh"]
+	box.Vars.Tx, box.Vars.Ty, box.Vars.Tw, box.Vars.Th = 0, 0, 0, 0
+	box.Vars.Tlx, box.Vars.Tly, box.Vars.Trx, box.Vars.Try = 0, 0, 0, 0
+	box.Vars.Tux, box.Vars.Tuy, box.Vars.Tdx, box.Vars.Tdy = 0, 0, 0, 0
 
-	box.Vars["tx"], box.Vars["ty"], box.Vars["tw"], box.Vars["th"] = 0, 0, 0, 0
-	box.Vars["tlx"], box.Vars["tly"], box.Vars["trx"], box.Vars["try"] = 0, 0, 0, 0
-	box.Vars["tux"], box.Vars["tuy"], box.Vars["tdx"], box.Vars["tdy"] = 0, 0, 0, 0
-
-	var variables = varLookup(box.Vars)
+	var variables = box.Vars.Lookup()
 	if text.SplitCount(box.Targets, " ") == 4 {
-		setTargetVars(layout, box.Vars, text.SplitIndex(box.Targets, " ", 0), depth+1)
+		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 0), depth+1)
 		var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), variables)
-		setTargetVars(layout, box.Vars, text.SplitIndex(box.Targets, " ", 1), depth+1)
+		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 1), depth+1)
 		var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), variables)
-		setTargetVars(layout, box.Vars, text.SplitIndex(box.Targets, " ", 2), depth+1)
+		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 2), depth+1)
 		var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), variables)
-		setTargetVars(layout, box.Vars, text.SplitIndex(box.Targets, " ", 3), depth+1)
+		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 3), depth+1)
 		var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), variables)
 		return rx, ry, rw, rh
 	}
@@ -116,13 +111,9 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	var box = &layout.Boxes[item.BoxId]
 	var bx, by, bw, bh = boxDynamic(layout, int(item.BoxId), 0)
 
-	if item.Variables == nil {
-		item.Variables = make(map[string]float32)
-	} else {
-		clear(item.Variables)
-	}
+	item.Vars = internal.Vars{}
 
-	item.Variables["ow"], item.Variables["oh"], item.Variables["ov"] = bw, bh, 1
+	item.Vars.Ow, item.Vars.Oh, item.Vars.Ov = bw, bh, 1
 
 	var osx, osy float32
 	if text.SplitCount(box.ItemSpacing, " ") >= 2 {
@@ -130,19 +121,19 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		osy = text.ToNumber[float32](text.SplitIndex(box.ItemSpacing, " ", 1))
 	}
 	var og, mb = box.ItemGap, box.ItemNewRow
-	item.Variables["osx"], item.Variables["osy"], item.Variables["og"], item.Variables["mnr"] = osx, osy, og, mb
+	item.Vars.Osx, item.Vars.Osy, item.Vars.Og, item.Vars.Mnr = osx, osy, og, mb
 
 	if text.SplitCount(box.ItemSize, " ") >= 2 {
-		var vars = varLookup(item.Variables)
-		item.Variables["mw"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), vars)
-		item.Variables["mh"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), vars)
+		var vars = item.Vars.Lookup()
+		item.Vars.Mw = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), vars)
+		item.Vars.Mh = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), vars)
 	} else if text.SplitCount(item.Size, " ") >= 2 {
-		item.Variables["mw"] = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 0))
-		item.Variables["mh"] = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 1))
+		item.Vars.Mw = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 0))
+		item.Vars.Mh = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 1))
 	} else {
-		item.Variables["mw"], item.Variables["mh"] = 40, 20
+		item.Vars.Mw, item.Vars.Mh = 40, 20
 	}
-	var defW, defH = item.Variables["mw"], item.Variables["mh"]
+	var defW, defH = item.Vars.Mw, item.Vars.Mh
 	var alignX, alignY float32
 	if text.SplitCount(box.ItemAlign, " ") >= 2 {
 		alignX = text.ToNumber[float32](text.SplitIndex(box.ItemAlign, " ", 0))
@@ -161,17 +152,17 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		if it.NewRow == 1 {
 			curY += rowMaxH + mb
 			if it.NewRowExpression != "" {
-				item.Variables["mx"], item.Variables["my"], item.Variables["mw"], item.Variables["mh"] = curX, curY, defW, defH
-				curY += text.Calculate(it.NewRowExpression, varLookup(item.Variables))
+				item.Vars.Mx, item.Vars.My, item.Vars.Mw, item.Vars.Mh = curX, curY, defW, defH
+				curY += text.Calculate(it.NewRowExpression, item.Vars.Lookup())
 			}
 			curX = bx + osx
 			rowMaxH = 0
 		}
 
-		item.Variables["mx"], item.Variables["my"], item.Variables["mw"], item.Variables["mh"] = curX, curY, defW, defH
+		item.Vars.Mx, item.Vars.My, item.Vars.Mw, item.Vars.Mh = curX, curY, defW, defH
 		var itW, itH = defW, defH
 		if text.SplitCount(it.Expression, " ") == 4 {
-			var vars = varLookup(item.Variables)
+			var vars = item.Vars.Lookup()
 			itW = text.Calculate(text.SplitIndex(it.Expression, " ", 2), vars)
 			itH = text.Calculate(text.SplitIndex(it.Expression, " ", 3), vars)
 		}
@@ -192,10 +183,10 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		}
 	}
 
-	item.Variables["mx"], item.Variables["my"] = targetMX+(bx+bw-maxX)*alignX, targetMY+(by+bh-maxY)*alignY
-	item.Variables["mw"], item.Variables["mh"] = defW, defH
+	item.Vars.Mx, item.Vars.My = targetMX+(bx+bw-maxX)*alignX, targetMY+(by+bh-maxY)*alignY
+	item.Vars.Mw, item.Vars.Mh = defW, defH
 
-	var variables = varLookup(item.Variables)
+	var variables = item.Vars.Lookup()
 	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), variables)
 	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), variables)
 	var rw = text.Calculate(text.SplitIndex(item.Expression, " ", 2), variables)
@@ -203,26 +194,17 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	return rx, ry, rw, rh
 }
 
-func setTargetVars(layout *internal.Layout, vars map[string]float32, tar string, depth int) {
+func setTargetVars(layout *internal.Layout, vars *internal.Vars, tar string, depth int) {
 	if tar != "" {
 		var targetId = text.ToNumber[int](tar)
 		if targetId >= 0 && targetId < len(layout.Boxes) {
-			vars["tx"], vars["ty"], vars["tw"], vars["th"] = boxDynamic(layout, targetId, depth)
+			vars.Tx, vars.Ty, vars.Tw, vars.Th = boxDynamic(layout, targetId, depth)
 		} else {
-			vars["tx"], vars["ty"], vars["tw"], vars["th"] = 0, 0, 0, 0
+			vars.Tx, vars.Ty, vars.Tw, vars.Th = 0, 0, 0, 0
 		}
 	} else {
-		vars["tx"], vars["ty"], vars["tw"], vars["th"] = 0, 0, 0, 0
+		vars.Tx, vars.Ty, vars.Tw, vars.Th = 0, 0, 0, 0
 	}
-	vars["tlx"], vars["tly"], vars["trx"], vars["try"] = vars["tx"], vars["ty"]+vars["th"]/2, vars["tx"]+vars["tw"], vars["tly"]
-	vars["tux"], vars["tuy"], vars["tdx"], vars["tdy"] = vars["tx"]+vars["tw"]/2, vars["ty"], vars["tux"], vars["ty"]+vars["th"]
-}
-func varLookup(vars map[string]float32) func(string) float32 {
-	return func(v string) float32 {
-		var value, has = vars[v]
-		if !has {
-			return number.NaN()
-		}
-		return value
-	}
+	vars.Tlx, vars.Tly, vars.Trx, vars.Try = vars.Tx, vars.Ty+vars.Th/2, vars.Tx+vars.Tw, vars.Tly
+	vars.Tux, vars.Tuy, vars.Tdx, vars.Tdy = vars.Tx+vars.Tw/2, vars.Ty, vars.Tux, vars.Ty+vars.Th
 }
