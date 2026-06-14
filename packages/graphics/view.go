@@ -7,8 +7,12 @@ import (
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/color/palette"
+	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/point"
+	"pure-game-kit/packages/utility/text"
+	"pure-game-kit/packages/utility/time"
+	"strings"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -292,6 +296,14 @@ func (v *View) DrawObject(object *Object) {
 	}
 	o.ImageId = prevImageId
 }
+func (v *View) DrawDebugInfo(detailed bool) {
+	var tlx, tly = v.PointFromScreen(10, 10)
+
+	v.DrawText(tlx, tly, 50, 0, palette.White, text.New(time.FPS()), Area{})
+	if detailed {
+		v.DrawText(tlx, tly+50, 50, 0, palette.White, debug.MemoryUsage(), Area{})
+	}
+}
 
 // private ========================================================
 
@@ -300,6 +312,7 @@ type line struct {
 	width      float32
 }
 
+var debugBuilder strings.Builder
 var lines []line
 var obj = &Object{} // used for primitive drawing
 var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': palette.Red, '🟧': palette.Orange,

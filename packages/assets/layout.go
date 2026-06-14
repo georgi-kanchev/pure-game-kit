@@ -21,7 +21,6 @@ func LoadLayout(xmlPath string) LayoutId {
 	internal.NextLayoutId++
 	var id = internal.NextLayoutId
 	internal.Layouts[id] = &layout
-	LayoutId(id).Recalculate()
 	return LayoutId(id)
 }
 
@@ -29,41 +28,23 @@ func (l LayoutId) Unload() {
 	delete(internal.Layouts, uint32(l))
 }
 
-func (l LayoutId) Recalculate() {
-	var layout, has = internal.Layouts[uint32(l)]
-	if has {
-		layout.CacheVersion++
-	}
-}
 func (l LayoutId) BoxArea(id int, zoom float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Boxes) {
 		return
 	}
-	var box = &layout.Boxes[id]
-	if box.CacheVersion == layout.CacheVersion {
-		return box.CacheX, box.CacheY, box.CacheW, box.CacheH
-	}
 	var rx, ry, rw, rh = boxDynamic(layout, id, 0)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	box.CacheX, box.CacheY, box.CacheW, box.CacheH = (rx+rw/2)*sc, (ry+rh/2)*sc, rw*sc, rh*sc
-	box.CacheVersion = layout.CacheVersion
-	return box.CacheX, box.CacheY, box.CacheW, box.CacheH
+	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
 func (l LayoutId) ItemArea(id int, zoom, scrollX, scrollY float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
 		return
 	}
-	var item = &layout.Items[id]
-	if item.CacheVersion == layout.CacheVersion {
-		return item.CacheX, item.CacheY, item.CacheW, item.CacheH
-	}
 	var rx, ry, rw, rh = itemDynamic(layout, id, scrollX, scrollY)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	item.CacheX, item.CacheY, item.CacheW, item.CacheH = (rx+rw/2)*sc, (ry+rh/2)*sc, rw*sc, rh*sc
-	item.CacheVersion = layout.CacheVersion
-	return item.CacheX, item.CacheY, item.CacheW, item.CacheH
+	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
 func (l LayoutId) ItemMask(id int, zoom float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]

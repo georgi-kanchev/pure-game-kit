@@ -48,7 +48,6 @@ func KeepOpen() bool {
 	rl.EnableDepthTest()
 	rl.ClearScreenBuffers()
 	internal.Draw()
-	rl.DrawFPS(10, 10)
 	rl.DisableDepthTest()
 	rl.EndDrawing()
 

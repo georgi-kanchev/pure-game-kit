@@ -33,9 +33,6 @@ type Layout struct {
 		ItemNewRow   float32 `xml:"itNewRow,attr"`
 		ItemAlign    string  `xml:"itAl,attr"`
 		Vars         Vars
-
-		CacheX, CacheY, CacheW, CacheH float32
-		CacheVersion                   uint32
 	} `xml:"boxes>box"`
 	Items []struct {
 		Id               uint32  `xml:"id,attr"`
@@ -47,9 +44,6 @@ type Layout struct {
 		NewRow           float32 `xml:"newRow,attr"`
 		NewRowExpression string  `xml:"newRowExpr,attr"`
 		Vars             Vars
-
-		CacheX, CacheY, CacheW, CacheH float32
-		CacheVersion                   uint32
 	} `xml:"items>item"`
 
 	CacheVersion uint32
