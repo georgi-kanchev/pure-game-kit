@@ -36,7 +36,7 @@ func Create(title string, vsync, antialias bool) {
 	internal.Init()
 }
 func KeepOpen() bool {
-	internal.GameTimeMs = time.Since(gameLogicStart).Milliseconds()
+	internal.GameBusyMs = time.Since(gameLogicStart).Milliseconds()
 	var engineFrameStart = time.Now()
 	if !isInit {
 		debug.Print("[window.KeepOpen]: Window not yet created. Call `window.Create()`.")
@@ -67,7 +67,7 @@ func KeepOpen() bool {
 
 	internal.ResetBatches()
 	var shouldClose = !rl.WindowShouldClose()
-	internal.EngineTimeMs = time.Since(engineFrameStart).Milliseconds()
+	internal.EngineBusyMs = time.Since(engineFrameStart).Milliseconds()
 	gameLogicStart = time.Now()
 	return shouldClose
 }

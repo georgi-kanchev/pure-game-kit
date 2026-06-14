@@ -308,10 +308,10 @@ func (v *View) DrawDebugInfo(detailed bool) {
 		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
 
 		if detailed {
-			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.EngineTimeMs), 10)
-			v.debugBuffer = append(v.debugBuffer, "ms engine time / "...)
-			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.GameTimeMs), 10)
-			v.debugBuffer = append(v.debugBuffer, "ms game time\n"...)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.EngineBusyMs), 10)
+			v.debugBuffer = append(v.debugBuffer, "ms engine busy / "...)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.GameBusyMs), 10)
+			v.debugBuffer = append(v.debugBuffer, "ms game busy\n"...)
 
 			if internal.WindowVsync {
 				v.debugBuffer = append(v.debugBuffer, "vsync on / "...)

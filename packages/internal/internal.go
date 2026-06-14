@@ -17,7 +17,7 @@ type ImageData struct {
 	CropX, CropY, CropWidth, CropHeight float32
 }
 
-var GameTimeMs, EngineTimeMs int64
+var GameBusyMs, EngineBusyMs int64
 
 //=================================================================
 
