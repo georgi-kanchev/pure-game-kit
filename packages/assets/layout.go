@@ -55,7 +55,6 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 	}
 
 	var box = &layout.Boxes[boxId]
-
 	if box.Vars == nil {
 		box.Vars = make(map[string]float32)
 	} else {
@@ -67,8 +66,8 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 
 	box.Vars["mx"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 0))
 	box.Vars["my"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 1))
-	box.Vars["mw"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 2)) * ew / 512
-	box.Vars["mh"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 3)) * eh / 512
+	box.Vars["mw"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 2))
+	box.Vars["mh"] = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 3))
 	box.Vars["mlx"], box.Vars["mly"] = box.Vars["mx"], box.Vars["my"]+box.Vars["mh"]/2
 	box.Vars["mrx"], box.Vars["mry"] = box.Vars["mx"]+box.Vars["mw"], box.Vars["mly"]
 	box.Vars["mux"], box.Vars["muy"] = box.Vars["mx"]+box.Vars["mw"]/2, box.Vars["my"]
@@ -118,14 +117,11 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	item.Variables["ov"], item.Variables["osx"], item.Variables["osy"] = 1, 0, 0
 	item.Variables["og"], item.Variables["mnr"] = float32(box.ItemGap), float32(box.ItemNewRow)
 
-	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // scales according to editor
-	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight) // bigger windows cause bigger literals
-
 	if text.SplitCount(item.Rectangle, " ") == 4 {
-		item.Variables["mx"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 0))
-		item.Variables["my"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 1))
-		item.Variables["mw"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 2)) * ew / 512
-		item.Variables["mh"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 3)) * eh / 512
+		item.Variables["mx"] = bx + text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 0))
+		item.Variables["my"] = by + text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 1))
+		item.Variables["mw"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 2))
+		item.Variables["mh"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 3))
 	}
 
 	if text.SplitCount(box.ItemSize, " ") >= 2 {
@@ -133,36 +129,12 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		item.Variables["mw"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), vars)
 		item.Variables["mh"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), vars)
 	}
-	if number.IsNaN(item.Variables["mw"]) {
-		item.Variables["mw"] = 40 * ew / 512
-	}
-	if number.IsNaN(item.Variables["mh"]) {
-		item.Variables["mh"] = 20 * eh / 512
-	}
-	if number.IsNaN(item.Variables["mx"]) {
-		item.Variables["mx"] = bx
-	}
-	if number.IsNaN(item.Variables["my"]) {
-		item.Variables["my"] = by
-	}
 
 	var variables = varLookup(item.Variables)
 	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), variables)
-	if number.IsNaN(rx) {
-		rx = item.Variables["mx"]
-	}
 	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), variables)
-	if number.IsNaN(ry) {
-		ry = item.Variables["my"]
-	}
 	var rw = text.Calculate(text.SplitIndex(item.Expression, " ", 2), variables)
-	if number.IsNaN(rw) {
-		rw = item.Variables["mw"]
-	}
 	var rh = text.Calculate(text.SplitIndex(item.Expression, " ", 3), variables)
-	if number.IsNaN(rh) {
-		rh = item.Variables["mh"]
-	}
 	return rx, ry, rw, rh
 }
 
