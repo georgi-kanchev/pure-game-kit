@@ -20,8 +20,6 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
-	window.SetTargetFPS(60)
-
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var x, y, w, h = layout.BoxArea(i, view.Zoom)

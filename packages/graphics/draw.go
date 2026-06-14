@@ -237,7 +237,7 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	}
 
 	if detailed {
-		v.DrawText(tlx, tly+(size*14)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
+		v.DrawText(tlx, tly+(size*15)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
 	}
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
 	v.DrawText(tlx, tly, size, 0, palette.White, str, Area{})

@@ -41,5 +41,6 @@ func Tiled() {
 		}
 
 		view.DrawGrid(0.3, 16, 16, palette.DarkGray)
+		view.DrawDebugInfo(true)
 	}
 }

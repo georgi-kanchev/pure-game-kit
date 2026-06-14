@@ -26,5 +26,6 @@ func Texts() {
 		textbox.Effects.TextLineHeight = 70 + x/5
 
 		view.DrawObject(&textbox)
+		view.DrawDebugInfo(true)
 	}
 }
