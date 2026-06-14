@@ -185,12 +185,16 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 	activeVars = &box.Vars
 	if text.SplitCount(box.Targets, " ") == 4 {
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 0), depth+1)
+		activeVars = &box.Vars
 		var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), lookup)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 1), depth+1)
+		activeVars = &box.Vars
 		var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), lookup)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 2), depth+1)
+		activeVars = &box.Vars
 		var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), lookup)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 3), depth+1)
+		activeVars = &box.Vars
 		var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), lookup)
 		return rx, ry, rw, rh
 	}

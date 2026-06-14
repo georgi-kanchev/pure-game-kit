@@ -223,8 +223,11 @@ func CloseBatch() {
 	}
 }
 
+var uniforms [1]float32 // reused to avoid per-frame []float32 allocation
+
 func Draw() {
-	rl.SetShaderValue(Shader, ShaderLoc, []float32{Runtime}, rl.ShaderUniformFloat)
+	uniforms[0] = Runtime
+	rl.SetShaderValue(Shader, ShaderLoc, uniforms[:], rl.ShaderUniformFloat)
 
 	for _, b := range ReadyBatches {
 		if !b.meshUploaded {
