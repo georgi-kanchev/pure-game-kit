@@ -18,25 +18,25 @@
         itSz="40 20" itSp="0 0" itGap="0" itNewRow="0" itAl="0.5 0.5" />
   </boxes>
   <items>
-    <item id="0" boxId="1" name="Victory" vis="1" rect="0 0 40 13.95" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="1" boxId="1" name="(4 rounds)" vis="1" rect="0 13.94 40 6.95" expr="mx my mw mh-7" newRow="1" newRowExpr="mnr" />
-    <item id="2" boxId="2" name="Statistics" vis="1" rect="0 0 40 10.09" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="3" boxId="2" name="Loot" vis="1" rect="0 15.09 40 10.09" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="4" boxId="3" name="Unit 1" vis="1" rect="0 0 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="5" boxId="3" name="Unit 2" vis="1" rect="151.78 0 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="6" boxId="3" name="Unit 3" vis="1" rect="303.56 0 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="7" boxId="3" name="Unit 4" vis="1" rect="0 55 151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
-    <item id="8" boxId="3" name="Unit 5" vis="1" rect="151.78 55 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="9" boxId="3" name="Unit 6" vis="1" rect="303.56 55 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="10" boxId="3" name="Unit 7" vis="1" rect="0 110 151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
-    <item id="11" boxId="3" name="Unit 8" vis="1" rect="151.78 110 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="12" boxId="3" name="Unit 9" vis="1" rect="303.56 110 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="13" boxId="3" name="Unit 10" vis="1" rect="0 165 151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
-    <item id="14" boxId="3" name="Unit 11" vis="1" rect="151.78 165 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="15" boxId="3" name="Unit 12" vis="1" rect="303.56 165 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="16" boxId="3" name="Unit 13" vis="1" rect="0 220 151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
-    <item id="17" boxId="3" name="Unit 14" vis="1" rect="151.78 220 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="18" boxId="3" name="Unit 15" vis="1" rect="303.56 220 151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="19" boxId="4" name="Leave" vis="1" rect="0 0 40 17.02" expr="mx my mw oh" newRow="0" newRowExpr="" />
+    <item id="0" boxId="1" name="Victory" vis="1" size="40 13.95" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="1" boxId="1" name="(4 rounds)" vis="1" size="40 6.95" expr="mx my mw mh-7" newRow="1" newRowExpr="mnr" />
+    <item id="2" boxId="2" name="Statistics" vis="1" size="40 10.09" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="3" boxId="2" name="Loot" vis="1" size="40 10.09" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="4" boxId="3" name="Unit 1" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="5" boxId="3" name="Unit 2" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="6" boxId="3" name="Unit 3" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="7" boxId="3" name="Unit 4" vis="1" size="151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
+    <item id="8" boxId="3" name="Unit 5" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="9" boxId="3" name="Unit 6" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="10" boxId="3" name="Unit 7" vis="1" size="151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
+    <item id="11" boxId="3" name="Unit 8" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="12" boxId="3" name="Unit 9" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="13" boxId="3" name="Unit 10" vis="1" size="151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
+    <item id="14" boxId="3" name="Unit 11" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="15" boxId="3" name="Unit 12" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="16" boxId="3" name="Unit 13" vis="1" size="151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
+    <item id="17" boxId="3" name="Unit 14" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="18" boxId="3" name="Unit 15" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="19" boxId="4" name="Leave" vis="1" size="40 17.02" expr="mx my mw oh" newRow="0" newRowExpr="" />
   </items>
 </layout>

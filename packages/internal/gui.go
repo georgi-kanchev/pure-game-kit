@@ -25,7 +25,7 @@ type Layout struct {
 		BoxId            uint32  `xml:"boxId,attr"`
 		Name             string  `xml:"name,attr"`
 		Visible          int     `xml:"vis,attr"`
-		Rectangle        string  `xml:"rect,attr"`
+		Size             string  `xml:"size,attr"`
 		Expression       string  `xml:"expr,attr"`
 		NewRow           float32 `xml:"newRow,attr"`
 		NewRowExpression string  `xml:"newRowExpr,attr"`

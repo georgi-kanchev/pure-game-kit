@@ -127,9 +127,9 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		var vars = varLookup(item.Variables)
 		item.Variables["mw"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), vars)
 		item.Variables["mh"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), vars)
-	} else if text.SplitCount(item.Rectangle, " ") == 4 {
-		item.Variables["mw"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 2))
-		item.Variables["mh"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 3))
+	} else if text.SplitCount(item.Size, " ") >= 2 {
+		item.Variables["mw"] = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 0))
+		item.Variables["mh"] = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 1))
 	} else {
 		item.Variables["mw"], item.Variables["mh"] = 40, 20
 	}

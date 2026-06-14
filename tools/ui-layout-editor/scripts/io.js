@@ -173,7 +173,7 @@ function buildXml() {
         resolveItems(box).forEach(({ item, x, y, w, h }) => {
             const f = item.formulas ?? {};
             lines.push(
-                `    <item id="${itemId++}" boxId="${boxId}" name=${xmlAttr(item.name)} vis="${item.visible !== false ? 1 : 0}" rect="${fmt(x - br.x)} ${fmt(y - br.y)} ${fmt(w)} ${fmt(h)}" expr=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} newRow="${item.break ? 1 : 0}" newRowExpr=${xmlAttr(fmtF(f.break))} />`,
+                `    <item id="${itemId++}" boxId="${boxId}" name=${xmlAttr(item.name)} vis="${item.visible !== false ? 1 : 0}" size="${fmt(w)} ${fmt(h)}" expr=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} newRow="${item.break ? 1 : 0}" newRowExpr=${xmlAttr(fmtF(f.break))} />`,
             );
         });
     });
