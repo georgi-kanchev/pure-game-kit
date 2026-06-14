@@ -113,47 +113,35 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		clear(item.Variables)
 	}
 
-	item.Variables["ow"], item.Variables["oh"] = bw, bh
-	item.Variables["ov"] = 1
+	item.Variables["ow"], item.Variables["oh"], item.Variables["ov"] = bw, bh, 1
 
-	// parse spacing, gap, newRow base
 	var osx, osy float32
 	if text.SplitCount(box.ItemSpacing, " ") >= 2 {
 		osx = text.ToNumber[float32](text.SplitIndex(box.ItemSpacing, " ", 0))
 		osy = text.ToNumber[float32](text.SplitIndex(box.ItemSpacing, " ", 1))
 	}
-	item.Variables["osx"], item.Variables["osy"] = osx, osy
-	var og = float32(box.ItemGap)
-	var mb = float32(box.ItemNewRow)
-	item.Variables["og"], item.Variables["mnr"] = og, mb
+	var og, mb = box.ItemGap, box.ItemNewRow
+	item.Variables["osx"], item.Variables["osy"], item.Variables["og"], item.Variables["mnr"] = osx, osy, og, mb
 
-	// default item size from box.ItemSize (evaluated with ow/oh)
 	if text.SplitCount(box.ItemSize, " ") >= 2 {
 		var vars = varLookup(item.Variables)
 		item.Variables["mw"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), vars)
 		item.Variables["mh"] = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), vars)
-	}
-	// fall back to item.Rectangle
-	if number.IsNaN(item.Variables["mw"]) && text.SplitCount(item.Rectangle, " ") == 4 {
+	} else if text.SplitCount(item.Rectangle, " ") == 4 {
 		item.Variables["mw"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 2))
-	}
-	if number.IsNaN(item.Variables["mh"]) && text.SplitCount(item.Rectangle, " ") == 4 {
 		item.Variables["mh"] = text.ToNumber[float32](text.SplitIndex(item.Rectangle, " ", 3))
+	} else {
+		item.Variables["mw"], item.Variables["mh"] = 40, 20
 	}
-	// absolute fallback
-	if number.IsNaN(item.Variables["mw"]) {
-		item.Variables["mw"] = 40
+	var defW, defH = item.Variables["mw"], item.Variables["mh"]
+	var alignX, alignY float32
+	if text.SplitCount(box.ItemAlign, " ") >= 2 {
+		alignX = text.ToNumber[float32](text.SplitIndex(box.ItemAlign, " ", 0))
+		alignY = text.ToNumber[float32](text.SplitIndex(box.ItemAlign, " ", 1))
 	}
-	if number.IsNaN(item.Variables["mh"]) {
-		item.Variables["mh"] = 20
-	}
-	var defW = item.Variables["mw"]
-	var defH = item.Variables["mh"]
 
-	// flow layout: walk items in this box to compute mx, my
-	var curX = bx + osx
-	var curY = by + osy
-	var rowMaxH float32 = 0
+	var curX, curY, maxX, maxY = bx + osx, by + osy, bx, by
+	var rowMaxH, targetMX, targetMY float32
 
 	for i := 0; i < len(layout.Items); i++ {
 		var it = &layout.Items[i]
@@ -161,48 +149,32 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 			continue
 		}
 
-		// newRow: advance Y and reset X
 		if it.NewRow == 1 {
 			curY += rowMaxH + mb
 			if it.NewRowExpression != "" {
-				var brkVars = map[string]float32{
-					"ow":  bw, "oh":  bh, "ov": 1,
-					"osx": osx, "osy": osy, "og": og, "mnr": mb,
-					"mx": curX, "my": curY, "mw": defW, "mh": defH,
-				}
-				var brk = text.Calculate(it.NewRowExpression, varLookup(brkVars))
-				if !number.IsNaN(brk) {
-					curY += brk
-				}
+				item.Variables["mx"], item.Variables["my"], item.Variables["mw"], item.Variables["mh"] = curX, curY, defW, defH
+				curY += text.Calculate(it.NewRowExpression, varLookup(item.Variables))
 			}
 			curX = bx + osx
 			rowMaxH = 0
 		}
 
-		// compute this item's w/h for flow advance
-		var itW = defW
-		var itH = defH
+		item.Variables["mx"], item.Variables["my"], item.Variables["mw"], item.Variables["mh"] = curX, curY, defW, defH
+		var itW, itH = defW, defH
 		if text.SplitCount(it.Expression, " ") == 4 {
-			var flowVars = map[string]float32{
-				"ow":  bw, "oh":  bh, "ov": 1,
-				"osx": osx, "osy": osy, "og": og, "mnr": mb,
-				"mx": curX, "my": curY, "mw": defW, "mh": defH,
-			}
-			var look = varLookup(flowVars)
-			var fw = text.Calculate(text.SplitIndex(it.Expression, " ", 2), look)
-			if !number.IsNaN(fw) {
-				itW = fw
-			}
-			var fh = text.Calculate(text.SplitIndex(it.Expression, " ", 3), look)
-			if !number.IsNaN(fh) {
-				itH = fh
-			}
+			var vars = varLookup(item.Variables)
+			itW = text.Calculate(text.SplitIndex(it.Expression, " ", 2), vars)
+			itH = text.Calculate(text.SplitIndex(it.Expression, " ", 3), vars)
 		}
 
 		if i == itemId {
-			item.Variables["mx"] = curX
-			item.Variables["my"] = curY
-			break
+			targetMX, targetMY = curX, curY
+		}
+		if curX+itW > maxX {
+			maxX = curX + itW
+		}
+		if curY+itH > maxY {
+			maxY = curY + itH
 		}
 
 		curX += itW + og
@@ -211,31 +183,14 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		}
 	}
 
-	// fallback if flow didn't set mx/my (e.g. item not found in loop)
-	if number.IsNaN(item.Variables["mx"]) {
-		item.Variables["mx"] = bx + osx
-	}
-	if number.IsNaN(item.Variables["my"]) {
-		item.Variables["my"] = by + osy
-	}
+	item.Variables["mx"], item.Variables["my"] = targetMX+(bx+bw-maxX)*alignX, targetMY+(by+bh-maxY)*alignY
+	item.Variables["mw"], item.Variables["mh"] = defW, defH
 
 	var variables = varLookup(item.Variables)
 	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), variables)
-	if number.IsNaN(rx) {
-		rx = item.Variables["mx"]
-	}
 	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), variables)
-	if number.IsNaN(ry) {
-		ry = item.Variables["my"]
-	}
 	var rw = text.Calculate(text.SplitIndex(item.Expression, " ", 2), variables)
-	if number.IsNaN(rw) {
-		rw = item.Variables["mw"]
-	}
 	var rh = text.Calculate(text.SplitIndex(item.Expression, " ", 3), variables)
-	if number.IsNaN(rh) {
-		rh = item.Variables["mh"]
-	}
 	return rx, ry, rw, rh
 }
 

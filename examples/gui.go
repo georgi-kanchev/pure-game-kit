@@ -8,7 +8,7 @@ import (
 )
 
 func GUI() {
-	window.Create("example - gui", true, true)
+	window.Create("example - gui", false, true)
 	var view = graphics.NewView(1)
 
 	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
@@ -20,6 +20,8 @@ func GUI() {
 	for i := range itemCols {
 		itemCols[i] = color.RandomDark()
 	}
+
+	window.SetTargetFPS(0)
 
 	for window.KeepOpen() {
 		for i, c := range boxCols {
