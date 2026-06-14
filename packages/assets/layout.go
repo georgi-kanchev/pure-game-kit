@@ -37,12 +37,12 @@ func (l LayoutId) BoxArea(id int, zoom float32) (x, y, width, height float32) {
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
-func (l LayoutId) ItemArea(id int, zoom float32) (x, y, width, height float32) {
+func (l LayoutId) ItemArea(id int, zoom, scrollX, scrollY float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
 		return
 	}
-	var rx, ry, rw, rh = itemDynamic(&layout, id)
+	var rx, ry, rw, rh = itemDynamic(&layout, id, scrollX, scrollY)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
@@ -57,6 +57,101 @@ func (l LayoutId) ItemMask(id int, zoom float32) (x, y, width, height float32) {
 }
 
 // private ========================================================
+
+// activeVars is set before calling lookup — avoids closure allocation
+var activeVars *internal.Vars
+
+func lookup(name string) float32 {
+	switch name {
+	case "mx":
+		return activeVars.Mx
+	case "my":
+		return activeVars.My
+	case "mw":
+		return activeVars.Mw
+	case "mh":
+		return activeVars.Mh
+	case "mlx":
+		return activeVars.Mlx
+	case "mly":
+		return activeVars.Mly
+	case "mrx":
+		return activeVars.Mrx
+	case "mry":
+		return activeVars.Mry
+	case "mux":
+		return activeVars.Mux
+	case "muy":
+		return activeVars.Muy
+	case "mdx":
+		return activeVars.Mdx
+	case "mdy":
+		return activeVars.Mdy
+	case "sx":
+		return activeVars.Sx
+	case "sy":
+		return activeVars.Sy
+	case "sw":
+		return activeVars.Sw
+	case "sh":
+		return activeVars.Sh
+	case "slx":
+		return activeVars.Slx
+	case "sly":
+		return activeVars.Sly
+	case "srx":
+		return activeVars.Srx
+	case "sry":
+		return activeVars.Sry
+	case "sux":
+		return activeVars.Sux
+	case "suy":
+		return activeVars.Suy
+	case "sdx":
+		return activeVars.Sdx
+	case "sdy":
+		return activeVars.Sdy
+	case "tx":
+		return activeVars.Tx
+	case "ty":
+		return activeVars.Ty
+	case "tw":
+		return activeVars.Tw
+	case "th":
+		return activeVars.Th
+	case "tlx":
+		return activeVars.Tlx
+	case "tly":
+		return activeVars.Tly
+	case "trx":
+		return activeVars.Trx
+	case "try":
+		return activeVars.Try
+	case "tux":
+		return activeVars.Tux
+	case "tuy":
+		return activeVars.Tuy
+	case "tdx":
+		return activeVars.Tdx
+	case "tdy":
+		return activeVars.Tdy
+	case "ow":
+		return activeVars.Ow
+	case "oh":
+		return activeVars.Oh
+	case "ov":
+		return activeVars.Ov
+	case "osx":
+		return activeVars.Osx
+	case "osy":
+		return activeVars.Osy
+	case "og":
+		return activeVars.Og
+	case "mnr":
+		return activeVars.Mnr
+	}
+	return 0
+}
 
 func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float32) {
 	if depth > 8 {
@@ -87,26 +182,26 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 	box.Vars.Tlx, box.Vars.Tly, box.Vars.Trx, box.Vars.Try = 0, 0, 0, 0
 	box.Vars.Tux, box.Vars.Tuy, box.Vars.Tdx, box.Vars.Tdy = 0, 0, 0, 0
 
-	var variables = box.Vars.Lookup()
+	activeVars = &box.Vars
 	if text.SplitCount(box.Targets, " ") == 4 {
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 0), depth+1)
-		var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), variables)
+		var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), lookup)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 1), depth+1)
-		var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), variables)
+		var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), lookup)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 2), depth+1)
-		var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), variables)
+		var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), lookup)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 3), depth+1)
-		var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), variables)
+		var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), lookup)
 		return rx, ry, rw, rh
 	}
 
-	var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), variables)
-	var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), variables)
-	var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), variables)
-	var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), variables)
+	var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), lookup)
+	var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), lookup)
+	var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), lookup)
+	var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), lookup)
 	return rx, ry, rw, rh
 }
-func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
+func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY float32) (x, y, w, h float32) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
 	var bx, by, bw, bh = boxDynamic(layout, int(item.BoxId), 0)
@@ -123,10 +218,10 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	var og, mb = box.ItemGap, box.ItemNewRow
 	item.Vars.Osx, item.Vars.Osy, item.Vars.Og, item.Vars.Mnr = osx, osy, og, mb
 
+	activeVars = &item.Vars
 	if text.SplitCount(box.ItemSize, " ") >= 2 {
-		var vars = item.Vars.Lookup()
-		item.Vars.Mw = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), vars)
-		item.Vars.Mh = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), vars)
+		item.Vars.Mw = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), lookup)
+		item.Vars.Mh = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), lookup)
 	} else if text.SplitCount(item.Size, " ") >= 2 {
 		item.Vars.Mw = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 0))
 		item.Vars.Mh = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 1))
@@ -153,7 +248,7 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 			curY += rowMaxH + mb
 			if it.NewRowExpression != "" {
 				item.Vars.Mx, item.Vars.My, item.Vars.Mw, item.Vars.Mh = curX, curY, defW, defH
-				curY += text.Calculate(it.NewRowExpression, item.Vars.Lookup())
+				curY += text.Calculate(it.NewRowExpression, lookup)
 			}
 			curX = bx + osx
 			rowMaxH = 0
@@ -162,9 +257,8 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 		item.Vars.Mx, item.Vars.My, item.Vars.Mw, item.Vars.Mh = curX, curY, defW, defH
 		var itW, itH = defW, defH
 		if text.SplitCount(it.Expression, " ") == 4 {
-			var vars = item.Vars.Lookup()
-			itW = text.Calculate(text.SplitIndex(it.Expression, " ", 2), vars)
-			itH = text.Calculate(text.SplitIndex(it.Expression, " ", 3), vars)
+			itW = text.Calculate(text.SplitIndex(it.Expression, " ", 2), lookup)
+			itH = text.Calculate(text.SplitIndex(it.Expression, " ", 3), lookup)
 		}
 
 		if i == itemId {
@@ -186,11 +280,13 @@ func itemDynamic(layout *internal.Layout, itemId int) (x, y, w, h float32) {
 	item.Vars.Mx, item.Vars.My = targetMX+(bx+bw-maxX)*alignX, targetMY+(by+bh-maxY)*alignY
 	item.Vars.Mw, item.Vars.Mh = defW, defH
 
-	var variables = item.Vars.Lookup()
-	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), variables)
-	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), variables)
-	var rw = text.Calculate(text.SplitIndex(item.Expression, " ", 2), variables)
-	var rh = text.Calculate(text.SplitIndex(item.Expression, " ", 3), variables)
+	item.Vars.Mx -= max(0, maxX-(bx+bw)) * scrollX
+	item.Vars.My -= max(0, maxY-(by+bh)) * scrollY
+
+	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), lookup)
+	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), lookup)
+	var rw = text.Calculate(text.SplitIndex(item.Expression, " ", 2), lookup)
+	var rh = text.Calculate(text.SplitIndex(item.Expression, " ", 3), lookup)
 	return rx, ry, rw, rh
 }
 
