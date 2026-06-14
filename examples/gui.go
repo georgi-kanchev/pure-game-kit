@@ -4,6 +4,8 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color"
+	"pure-game-kit/packages/utility/number"
+	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
@@ -20,18 +22,22 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
+	// window.SetTargetFPS(0)
+
+	var a float32
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var x, y, w, h = layout.BoxArea(i, view.Zoom)
 			view.DrawShape(x, y, w, h, 0, 0, c, graphics.Area{})
 		}
 
+		a = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
 		for i, c := range itemCols {
-			var x, y, w, h = layout.ItemArea(i, view.Zoom, 0, 0)
+			var x, y, w, h = layout.ItemArea(i, view.Zoom, 0, a)
 			var mask = graphics.NewArea(layout.ItemMask(i, view.Zoom))
 			view.DrawShape(x, y, w, h, 0, 0, c, mask)
 		}
 
-		view.DrawDebugInfo(true)
+		view.DrawDebugInfo(false)
 	}
 }

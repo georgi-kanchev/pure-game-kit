@@ -160,7 +160,7 @@ func (v *View) DrawObject(object *Object) {
 	o.ImageId = prevImageId
 }
 func (v *View) DrawDebugInfo(detailed bool) {
-	var tlx, tly = v.PointFromScreen(10, 10)
+	var tlx, tly = v.PointFromScreen(5, 5)
 	const size float32 = 30
 
 	if condition.TrueEvery(0.1, 0xdeadc0de) {
