@@ -25,13 +25,14 @@ func GUI() {
 
 	for window.KeepOpen() {
 		for i, c := range boxCols {
-			var x, y, w, h = layout.Box(i, view.Zoom)
-			view.DrawShape(x, y, w, h, 0, 0, c)
+			var x, y, w, h = layout.BoxArea(i, view.Zoom)
+			view.DrawShape(x, y, w, h, 0, 0, c, graphics.Area{})
 		}
 
 		for i, c := range itemCols {
-			var x, y, w, h = layout.Item(i, view.Zoom)
-			view.DrawShape(x, y, w, h, 0, 0, c)
+			var x, y, w, h = layout.ItemArea(i, view.Zoom)
+			var mask = graphics.NewArea(layout.BoxArea(layout.ItemOwner(i), view.Zoom))
+			view.DrawShape(x, y, w, h, 0, 0, c, mask)
 		}
 	}
 }

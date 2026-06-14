@@ -34,10 +34,10 @@ func Tiled() {
 			view.DrawObject(&l)
 		}
 		for _, s := range shapes {
-			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.Red)
+			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.Red, graphics.Area{})
 		}
 		for _, s := range cellShapes {
-			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed)
+			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed, graphics.Area{})
 		}
 
 		view.DrawGrid(0.3, 16, 16, palette.DarkGray)

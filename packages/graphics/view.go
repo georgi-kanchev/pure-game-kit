@@ -170,7 +170,7 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 		if number.DivisionRemainder(x, spacingX*10) == 0 {
 			t *= 3
 		}
-		v.DrawShape(x, (top+bottom)/2, bottom-top, t, 90, 1, color)
+		v.DrawShape(x, (top+bottom)/2, bottom-top, t, 90, 1, color, Area{})
 	}
 
 	for y := top; y <= bottom; y += spacingY { // horizontal
@@ -178,23 +178,23 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 		if number.DivisionRemainder(y, spacingY*10) == 0 {
 			t *= 3
 		}
-		v.DrawShape((left+right)/2, y, right-left, t, 0, 1, color)
+		v.DrawShape((left+right)/2, y, right-left, t, 0, 1, color, Area{})
 	}
 
 	if top <= 0 && bottom >= 0 {
-		v.DrawShape((left+right)/2, 0, right-left, thickness*6, 0, 1, color)
+		v.DrawShape((left+right)/2, 0, right-left, thickness*6, 0, 1, color, Area{})
 	}
 	if left <= 0 && right >= 0 {
-		v.DrawShape(0, (top+bottom)/2, bottom-top, thickness*6, 90, 1, color)
+		v.DrawShape(0, (top+bottom)/2, bottom-top, thickness*6, 90, 1, color, Area{})
 	}
 }
-func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint) {
+func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint, mask Area) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, "", 0, 0
+	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Mask = 0, "", 0, 0, mask
 	v.DrawObject(obj)
 }
-func (v *View) DrawPath(points []float32, thickness float32, color uint) {
+func (v *View) DrawPath(points []float32, thickness float32, color uint, mask Area) {
 	if len(points) < 4 {
 		return
 	}
@@ -209,23 +209,24 @@ func (v *View) DrawPath(points []float32, thickness float32, color uint) {
 		var dist = point.DistanceToPoint(x1, y1, x2, y2)
 		var midX, midY, ang = (x1 + x2) / 2, (y1 + y2) / 2, angle.BetweenPoints(x1, y1, x2, y2)
 		if i == 2 {
-			v.DrawShape(x1, y1, thickness, thickness, 0, 1, color)
+			v.DrawShape(x1, y1, thickness, thickness, 0, 1, color, mask)
 		}
-		v.DrawShape(x2, y2, thickness, thickness, 0, 1, color)
-		v.DrawShape(midX, midY, dist, thickness, ang, 0, color)
+		v.DrawShape(x2, y2, thickness, thickness, 0, 1, color, mask)
+		v.DrawShape(midX, midY, dist, thickness, ang, 0, color, mask)
 	}
 }
-func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint) {
+func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint, mask Area) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, tint, 0
+	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask = angle, 0, tint, 0, mask
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, imageId
 	v.DrawObject(obj)
 }
-func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string) {
+func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string, mask Area) {
 	obj.Effects = Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 9999, 9999, 0, 0
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = v.Angle, 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = fontId, text, lineHeight/v.Zoom, color
+	obj.Mask = mask
 
 	x, y = point.MoveAtAngle(x, y, obj.Angle, obj.Width/2)
 	obj.X, obj.Y = point.MoveAtAngle(x, y, obj.Angle+90, obj.Height/2)

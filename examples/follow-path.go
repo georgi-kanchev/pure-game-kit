@@ -59,14 +59,14 @@ func FollowPath() {
 		}
 
 		// cam.DrawLinesPath(3, color.Red, paths...)
-		view.DrawPath(p1, 5, randomColors[0])
-		view.DrawPath(p2, 5, randomColors[1])
-		view.DrawPath(p3, 5, randomColors[2])
-		view.DrawPath(p4, 5, randomColors[3])
-		view.DrawPath(p5, 5, randomColors[4])
-		view.DrawPath(p6, 5, randomColors[5])
-		view.DrawPath(p7, 5, randomColors[6])
-		view.DrawPath(p8, 5, randomColors[7])
-		view.DrawPath(result, 2, palette.Red)
+		view.DrawPath(p1, 5, randomColors[0], graphics.Area{})
+		view.DrawPath(p2, 5, randomColors[1], graphics.Area{})
+		view.DrawPath(p3, 5, randomColors[2], graphics.Area{})
+		view.DrawPath(p4, 5, randomColors[3], graphics.Area{})
+		view.DrawPath(p5, 5, randomColors[4], graphics.Area{})
+		view.DrawPath(p6, 5, randomColors[5], graphics.Area{})
+		view.DrawPath(p7, 5, randomColors[6], graphics.Area{})
+		view.DrawPath(p8, 5, randomColors[7], graphics.Area{})
+		view.DrawPath(result, 2, palette.Red, graphics.Area{})
 	}
 }

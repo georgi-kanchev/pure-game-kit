@@ -28,7 +28,7 @@ func (l LayoutId) Unload() {
 	delete(internal.Layouts, uint32(l))
 }
 
-func (l LayoutId) Box(id int, zoom float32) (x, y, width, height float32) {
+func (l LayoutId) BoxArea(id int, zoom float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Boxes) {
 		return
@@ -37,7 +37,7 @@ func (l LayoutId) Box(id int, zoom float32) (x, y, width, height float32) {
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
-func (l LayoutId) Item(id int, zoom float32) (x, y, width, height float32) {
+func (l LayoutId) ItemArea(id int, zoom float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
 		return
@@ -45,6 +45,13 @@ func (l LayoutId) Item(id int, zoom float32) (x, y, width, height float32) {
 	var rx, ry, rw, rh = itemDynamic(&layout, id)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
+}
+func (l LayoutId) ItemOwner(id int) (ownerId int) {
+	var layout, has = internal.Layouts[uint32(l)]
+	if !has || id < 0 || id >= len(layout.Items) {
+		return
+	}
+	return int(layout.Items[id].BoxId)
 }
 
 // private ========================================================
