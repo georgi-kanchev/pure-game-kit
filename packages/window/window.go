@@ -36,7 +36,7 @@ func Create(title string, vsync, antialias bool) {
 	internal.Init()
 }
 func KeepOpen() bool {
-	internal.GameBusyMs = time.Since(gameLogicStart).Milliseconds()
+	internal.GameBusyMicroSec = time.Since(gameLogicStart).Microseconds()
 	var engineFrameStart = time.Now()
 	if !isInit {
 		debug.Print("[window.KeepOpen]: Window not yet created. Call `window.Create()`.")
@@ -67,7 +67,7 @@ func KeepOpen() bool {
 
 	internal.ResetBatches()
 	var shouldClose = !rl.WindowShouldClose()
-	internal.EngineBusyMs = time.Since(engineFrameStart).Milliseconds()
+	internal.EngineBusyMicroSec = time.Since(engineFrameStart).Microseconds()
 	gameLogicStart = time.Now()
 	return shouldClose
 }
@@ -140,7 +140,7 @@ func SetIcon(imagePath string) {
 	rl.SetWindowIcon(*img)
 }
 func SetTargetFPS(fps uint8) {
-	targetFPS = fps
+	internal.WindowTargetFPS = fps
 	rl.SetTargetFPS(int32(fps))
 }
 
@@ -185,7 +185,7 @@ func CurrentMode() Mode {
 	return ModeFloating
 }
 func TargetFPS() uint8 {
-	return targetFPS
+	return internal.WindowTargetFPS
 }
 
 func IsFocused() bool {
@@ -198,5 +198,4 @@ func IsJustResized() bool {
 // private ========================================================
 
 var gameLogicStart time.Time
-var targetFPS uint8
 var terminate, isInit bool

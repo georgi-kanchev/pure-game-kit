@@ -308,21 +308,44 @@ func (v *View) DrawDebugInfo(detailed bool) {
 		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
 
 		if detailed {
-			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.EngineBusyMs), 10)
-			v.debugBuffer = append(v.debugBuffer, "ms engine busy / "...)
-			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.GameBusyMs), 10)
-			v.debugBuffer = append(v.debugBuffer, "ms game busy\n"...)
-
+			var targetFPS = internal.WindowTargetFPS
 			if internal.WindowVsync {
-				v.debugBuffer = append(v.debugBuffer, "vsync on / "...)
-			} else {
-				v.debugBuffer = append(v.debugBuffer, "vsync off / "...)
+				targetFPS = byte(rl.GetMonitorRefreshRate(rl.GetCurrentMonitor()))
 			}
-			if internal.WindowAntialias {
-				v.debugBuffer = append(v.debugBuffer, "antialias on\n"...)
+			if targetFPS == 0 {
+				v.debugBuffer = append(v.debugBuffer, "unlimited target FPS"...)
 			} else {
-				v.debugBuffer = append(v.debugBuffer, "antialias off\n"...)
+				v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(targetFPS), 10)
+				v.debugBuffer = append(v.debugBuffer, " target FPS"...)
 			}
+			if internal.WindowVsync {
+				v.debugBuffer = append(v.debugBuffer, " = monitor hz | vsync on\n"...)
+			} else {
+				v.debugBuffer = append(v.debugBuffer, " | vsync off\n"...)
+			}
+
+			var frameTargetMicroSec = 1000000.0 / float64(targetFPS)
+			v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.EngineBusyMicroSec)/1000, 'f', 3, 32)
+			v.debugBuffer = append(v.debugBuffer, "ms"...)
+			if targetFPS > 0 {
+				v.debugBuffer = append(v.debugBuffer, " ("...)
+				var percent = (float64(internal.EngineBusyMicroSec) / frameTargetMicroSec) * 100
+				v.debugBuffer = strconv.AppendFloat(v.debugBuffer, percent, 'f', 0, 32)
+				v.debugBuffer = append(v.debugBuffer, "%)"...)
+			}
+			v.debugBuffer = append(v.debugBuffer, " engine busy (draw + internal + idle)"...)
+			v.debugBuffer = append(v.debugBuffer, "\n"...)
+			v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.GameBusyMicroSec)/1000, 'f', 3, 32)
+			v.debugBuffer = append(v.debugBuffer, "ms"...)
+			if targetFPS > 0 {
+				v.debugBuffer = append(v.debugBuffer, " ("...)
+				var percent = (float64(internal.GameBusyMicroSec) / frameTargetMicroSec) * 100
+				v.debugBuffer = strconv.AppendFloat(v.debugBuffer, percent, 'f', 0, 32)
+				v.debugBuffer = append(v.debugBuffer, "%)"...)
+			}
+			v.debugBuffer = append(v.debugBuffer, " game busy"...)
+			v.debugBuffer = append(v.debugBuffer, "\n"...)
+
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.DrawCalls))
 			v.debugBuffer = append(v.debugBuffer, " draw calls\n"...)
 
@@ -334,15 +357,15 @@ func (v *View) DrawDebugInfo(detailed bool) {
 			v.debugBuffer = append(v.debugBuffer, "s runtime\n\n"...)
 
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageId+1))
-			v.debugBuffer = append(v.debugBuffer, " images / "...)
+			v.debugBuffer = append(v.debugBuffer, " images | "...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageCropId))
 			v.debugBuffer = append(v.debugBuffer, " crops\n"...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Fonts)))
-			v.debugBuffer = append(v.debugBuffer, " fonts / "...)
+			v.debugBuffer = append(v.debugBuffer, " fonts | "...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Translations)))
 			v.debugBuffer = append(v.debugBuffer, " translations\n"...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Sounds)))
-			v.debugBuffer = append(v.debugBuffer, " sounds / "...)
+			v.debugBuffer = append(v.debugBuffer, " sounds | "...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Music)))
 			v.debugBuffer = append(v.debugBuffer, " music\n"...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.TileLayers)))
@@ -353,7 +376,7 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	}
 
 	if detailed {
-		v.DrawText(tlx, tly+(size*12)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
+		v.DrawText(tlx, tly+(size*14)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
 	}
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
 	v.DrawText(tlx, tly, size, 0, palette.White, str, Area{})

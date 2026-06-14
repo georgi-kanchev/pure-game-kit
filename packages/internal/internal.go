@@ -17,13 +17,14 @@ type ImageData struct {
 	CropX, CropY, CropWidth, CropHeight float32
 }
 
-var GameBusyMs, EngineBusyMs int64
+var GameBusyMicroSec, EngineBusyMicroSec int64
 
 //=================================================================
 
 var WindowWidth, WindowHeight float32
 var WindowHovered, WindowFocused, WindowJustResized bool
 var WindowVsync, WindowAntialias bool
+var WindowTargetFPS byte
 
 //=================================================================
 

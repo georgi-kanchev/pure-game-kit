@@ -20,7 +20,7 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
-	window.SetTargetFPS(0)
+	window.SetTargetFPS(60)
 
 	for window.KeepOpen() {
 		for i, c := range boxCols {
