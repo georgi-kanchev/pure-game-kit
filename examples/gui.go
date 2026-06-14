@@ -9,7 +9,7 @@ import (
 
 func GUI() {
 	window.Create("example - gui", false, true)
-	var view = graphics.NewView(1.2)
+	var view = graphics.NewView(1)
 	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
 
 	var boxCols, itemCols = [5]uint{}, [20]uint{}

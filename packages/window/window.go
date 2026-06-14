@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/text"
+	"time"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -15,9 +16,11 @@ const ModeFloating, ModeMaximized, ModeFullscreen, ModeFullscreenBorderless Mode
 func Create(title string, vsync, antialias bool) {
 	var flags uint32 = rl.FlagWindowResizable
 	if vsync {
+		internal.WindowVsync = true
 		flags |= rl.FlagVsyncHint
 	}
 	if antialias {
+		internal.WindowAntialias = true
 		flags |= rl.FlagMsaa4xHint
 	}
 
@@ -33,6 +36,8 @@ func Create(title string, vsync, antialias bool) {
 	internal.Init()
 }
 func KeepOpen() bool {
+	internal.GameTimeMs = time.Since(gameLogicStart).Milliseconds()
+	var engineFrameStart = time.Now()
 	if !isInit {
 		debug.Print("[window.KeepOpen]: Window not yet created. Call `window.Create()`.")
 		return false
@@ -61,7 +66,10 @@ func KeepOpen() bool {
 	internal.CacheInput()
 
 	internal.ResetBatches()
-	return !rl.WindowShouldClose()
+	var shouldClose = !rl.WindowShouldClose()
+	internal.EngineTimeMs = time.Since(engineFrameStart).Milliseconds()
+	gameLogicStart = time.Now()
+	return shouldClose
 }
 func Close() {
 	rl.CloseWindow()
@@ -189,5 +197,6 @@ func IsJustResized() bool {
 
 // private ========================================================
 
+var gameLogicStart time.Time
 var targetFPS uint8
 var terminate, isInit bool

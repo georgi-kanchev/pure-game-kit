@@ -308,6 +308,21 @@ func (v *View) DrawDebugInfo(detailed bool) {
 		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
 
 		if detailed {
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.EngineTimeMs), 10)
+			v.debugBuffer = append(v.debugBuffer, "ms engine time / "...)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.GameTimeMs), 10)
+			v.debugBuffer = append(v.debugBuffer, "ms game time\n"...)
+
+			if internal.WindowVsync {
+				v.debugBuffer = append(v.debugBuffer, "vsync on / "...)
+			} else {
+				v.debugBuffer = append(v.debugBuffer, "vsync off / "...)
+			}
+			if internal.WindowAntialias {
+				v.debugBuffer = append(v.debugBuffer, "antialias on\n"...)
+			} else {
+				v.debugBuffer = append(v.debugBuffer, "antialias off\n"...)
+			}
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.DrawCalls))
 			v.debugBuffer = append(v.debugBuffer, " draw calls\n"...)
 
@@ -338,7 +353,7 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	}
 
 	if detailed {
-		v.DrawText(tlx, tly+(size*11)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
+		v.DrawText(tlx, tly+(size*12)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
 	}
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
 	v.DrawText(tlx, tly, size, 0, palette.White, str, Area{})
