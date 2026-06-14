@@ -81,6 +81,7 @@ var ReadyBatches []*Batch       // batches ready to be drawn
 var BatchPool []*Batch          // empty batches ready to be reused
 var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
 var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
+var DrawCalls int               // used for debug info, no functional purpose - shows the amount of ReadyBatches
 
 var ViewArea Area // zero value = entire window
 var ViewX, ViewY, ViewZoom, ViewAngle float32
@@ -229,6 +230,7 @@ func Draw() {
 	uniforms[0] = Runtime
 	rl.SetShaderValue(Shader, ShaderLoc, uniforms[:], rl.ShaderUniformFloat)
 
+	DrawCalls = len(ReadyBatches)
 	for _, b := range ReadyBatches {
 		if !b.meshUploaded {
 			rl.UploadMesh(b.mesh, true)

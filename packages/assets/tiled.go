@@ -162,10 +162,9 @@ func loadLayersRecursively(result map[int]TileLayerId, tmxFilePath string, image
 		result[layer.Id] = loadLayerTiles(imageId, tileSize, tiled, layer)
 	}
 	for _, layer := range layers.LayersObjects {
-		internal.TileLayerNextId++
-		var id = internal.TileLayerNextId
+		var id = len(internal.TileLayers) + 1
 		var objs, pts = loadLayerObjects(layer)
-		internal.TileLayers[id] = &internal.TileLayer{
+		internal.TileLayers[uint8(id)] = &internal.TileLayer{
 			Objects: objs, Paths: pts, Columns: tiled.Width, Rows: tiled.Height, TileSize: tiled.TileAtlas.TileWidth}
 		result[layer.Id] = TileLayerId(id)
 	}

@@ -300,19 +300,48 @@ func (v *View) DrawObject(object *Object) {
 }
 func (v *View) DrawDebugInfo(detailed bool) {
 	var tlx, tly = v.PointFromScreen(10, 10)
-	var size = float32(40)
+	const size float32 = 30
 
 	if condition.TrueEvery(0.1, 0xdeadc0de) {
 		v.debugBuffer = v.debugBuffer[:0]
-		v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.FPS), 'f', 1, 32)
-		v.debugBuffer = append(v.debugBuffer, " FPS"...)
+		v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.FPS), 'f', 0, 32)
+		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
+
+		if detailed {
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.DrawCalls))
+			v.debugBuffer = append(v.debugBuffer, " draw calls\n"...)
+
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.Runtime/3600), 10)
+			v.debugBuffer = append(v.debugBuffer, "h "...)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.Runtime/60), 10)
+			v.debugBuffer = append(v.debugBuffer, "m "...)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.Runtime)%60, 10)
+			v.debugBuffer = append(v.debugBuffer, "s runtime\n\n"...)
+
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageId+1))
+			v.debugBuffer = append(v.debugBuffer, " images / "...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageCropId))
+			v.debugBuffer = append(v.debugBuffer, " crops\n"...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Fonts)))
+			v.debugBuffer = append(v.debugBuffer, " fonts / "...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Translations)))
+			v.debugBuffer = append(v.debugBuffer, " translations\n"...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Sounds)))
+			v.debugBuffer = append(v.debugBuffer, " sounds / "...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Music)))
+			v.debugBuffer = append(v.debugBuffer, " music\n"...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.TileLayers)))
+			v.debugBuffer = append(v.debugBuffer, " tile layers\n"...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Layouts)))
+			v.debugBuffer = append(v.debugBuffer, " GUI layouts\n"...)
+		}
 	}
 
+	if detailed {
+		v.DrawText(tlx, tly+(size*11)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
+	}
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
 	v.DrawText(tlx, tly, size, 0, palette.White, str, Area{})
-	if detailed {
-		v.DrawText(tlx, tly+size/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
-	}
 }
 
 // private ========================================================
@@ -480,4 +509,17 @@ func embedEffect(r rune, effect *internal.Effects, originalLineHeight float32) (
 	}
 
 	return false
+}
+
+func appendThousands(buf []byte, n uint64) []byte {
+	var tmp [32]byte
+	var s = strconv.AppendUint(tmp[:0], n, 10)
+	var length = len(s)
+	for i, c := range s {
+		if i > 0 && (length-i)%3 == 0 {
+			buf = append(buf, ' ')
+		}
+		buf = append(buf, c)
+	}
+	return buf
 }

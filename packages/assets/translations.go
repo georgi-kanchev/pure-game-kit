@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/storage"
 )
@@ -8,33 +9,25 @@ import (
 type LanguageId uint32
 
 func LoadTranslations(yamlPath string) LanguageId {
-	var lang = lang{tags: make(map[string]string)}
-	storage.FromYAML(file.LoadText(yamlPath), &lang.tags)
+	var lang = internal.Lang{Tags: make(map[string]string)}
+	storage.FromYAML(file.LoadText(yamlPath), &lang.Tags)
 
-	if len(lang.tags) == 0 {
+	if len(lang.Tags) == 0 {
 		return 0
 	}
 
-	nextId++
-	var id = LanguageId(nextId)
-	allTranslations[id] = lang
+	var id = LanguageId(len(internal.Translations) + 1)
+	internal.Translations[uint32(id)] = lang
 	return id
 }
 
 func (l LanguageId) Translate(tag string) string {
-	var value, has = allTranslations[l]
+	var value, has = internal.Translations[uint32(l)]
 	if !has {
 		return ""
 	}
-	return value.tags[tag]
+	return value.Tags[tag]
 }
 func (l LanguageId) Unload() {
-	delete(allTranslations, l)
+	delete(internal.Translations, uint32(l))
 }
-
-// private ========================================================
-
-type lang struct{ tags map[string]string }
-
-var allTranslations map[LanguageId]lang
-var nextId uint32

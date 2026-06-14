@@ -19,4 +19,3 @@ type TileLayer struct {
 //=================================================================
 
 var TileLayers = make(map[uint8]*TileLayer)
-var TileLayerNextId uint8

@@ -39,17 +39,16 @@ func NewTileAnimated(id uint16, frameCount, frameOffset, frameSpeed byte) Tile {
 }
 
 func LoadTileLayer(columns, rows, tileSize int, imageId ImageId) TileLayerId {
-	internal.TileLayerNextId++
 	columns, rows = number.Limit(columns, 1, 2048), number.Limit(rows, 1, 2048)
 
-	var id = internal.TileLayerNextId
+	var id = len(internal.TileLayers) + 1
 	var data = &internal.TileLayer{Columns: columns, Rows: rows,
 		Image: rl.GenImageColor(columns, rows, rl.Blank), CellsWithPoints: make(map[int]struct{}),
 		TileSize: tileSize, ImageId: int32(imageId), ShapesPerTile: make(map[uint16][][6]float32)}
 	var tex = rl.LoadTextureFromImage(data.Image)
 	rl.SetTextureFilter(tex, rl.FilterPoint)
 	data.Texture = tex
-	internal.TileLayers[id] = data
+	internal.TileLayers[uint8(id)] = data
 	return TileLayerId(id)
 }
 

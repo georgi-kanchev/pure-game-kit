@@ -53,7 +53,7 @@ func (l LayoutId) ItemMask(id int, zoom float32) (x, y, width, height float32) {
 	}
 	var ownerId = layout.Items[id].BoxId
 	var ox, oy, ow, oh = l.BoxArea(int(ownerId), zoom)
-	return ox - ow/2, oy - oh/2, ow, oh
+	return (ox - ow/2) * zoom, (oy - oh/2) * zoom, ow * zoom, oh * zoom
 }
 
 // private ========================================================

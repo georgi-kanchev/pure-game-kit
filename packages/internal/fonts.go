@@ -49,14 +49,15 @@ type Glyph struct {
 	Kernings       map[rune]float32
 	EmbededImageId int32
 }
+type Lang struct{ Tags map[string]string }
 
+var Translations map[uint32]Lang
 var Fonts = make(map[uint8]Font) // 0 = default
-var FontNextId uint8
 
 const Crossout, Underline = '\uE000', '\uE001'
 
 func LoadFont(fontData *FontJSON, imageId int32) uint8 {
-	var id = FontNextId
+	var id = len(Fonts)
 	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph),
 		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender,
 		LineHeight: fontData.Metrics.LineHeight, EmSize: fontData.Metrics.EmSize, Size: fontData.Atlas.Size,
@@ -90,9 +91,8 @@ func LoadFont(fontData *FontJSON, imageId int32) uint8 {
 	space.Advance = 0.35
 	font.Chars[' '] = space
 
-	Fonts[id] = font
-	FontNextId++
-	return id
+	Fonts[uint8(id)] = font
+	return uint8(id)
 }
 
 // private ========================================================
