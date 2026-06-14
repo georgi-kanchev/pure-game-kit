@@ -31,7 +31,7 @@ func GUI() {
 
 		for i, c := range itemCols {
 			var x, y, w, h = layout.ItemArea(i, view.Zoom)
-			var mask = graphics.NewArea(layout.BoxArea(layout.ItemOwner(i), view.Zoom))
+			var mask = graphics.NewArea(layout.ItemMask(i, view.Zoom))
 			view.DrawShape(x, y, w, h, 0, 0, c, mask)
 		}
 	}

@@ -46,12 +46,14 @@ func (l LayoutId) ItemArea(id int, zoom float32) (x, y, width, height float32) {
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
 }
-func (l LayoutId) ItemOwner(id int) (ownerId int) {
+func (l LayoutId) ItemMask(id int, zoom float32) (x, y, width, height float32) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
 		return
 	}
-	return int(layout.Items[id].BoxId)
+	var ownerId = layout.Items[id].BoxId
+	var ox, oy, ow, oh = l.BoxArea(int(ownerId), zoom)
+	return ox - ow/2, oy - oh/2, ow, oh
 }
 
 // private ========================================================
