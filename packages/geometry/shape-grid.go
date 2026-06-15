@@ -82,28 +82,26 @@ func (s *ShapeGrid) RemoveShapes(shapes ...Shape) {
 
 //=================================================================
 
-func (s *ShapeGrid) All() []Shape {
-	var result = make([]Shape, 0, len(s.shapes))
+func (s *ShapeGrid) All(result *[]Shape) {
+	*result = (*result)[:0]
 	for _, sh := range s.shapes {
 		if sh != (Shape{}) { // Filter out the removed shapes
-			result = append(result, sh)
+			*result = append(*result, sh)
 		}
 	}
-	return result
 }
-func (s *ShapeGrid) AtCell(x, y int) []Shape {
-	var result []Shape
+func (s *ShapeGrid) AtCell(x, y int, result *[]Shape) {
+	*result = (*result)[:0]
 	var shapes, has = s.cells[[2]int{x, y}]
 	if has {
 		for _, index := range shapes {
-			result = append(result, s.shapes[index])
+			*result = append(*result, s.shapes[index])
 		}
 	}
-	return result
 }
-func (s *ShapeGrid) Neighbors(shape Shape) []Shape {
+func (s *ShapeGrid) Neighbors(shape Shape, result *[]Shape) {
 	if s.chunkSize <= 0 {
-		return nil
+		return
 	}
 
 	var startX, startY, endX, endY = s.cellsUnderShape(shape)
@@ -120,11 +118,10 @@ func (s *ShapeGrid) Neighbors(shape Shape) []Shape {
 		}
 	}
 
-	var result []Shape
+	*result = (*result)[:0]
 	for idx := range uniqueIndices {
-		result = append(result, s.shapes[idx])
+		*result = append(*result, s.shapes[idx])
 	}
-	return result
 }
 
 // Diagonals take 1.5 cells distance-wise. This way, range calculations are rounded & have no weird left-overs.

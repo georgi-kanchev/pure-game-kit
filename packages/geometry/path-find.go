@@ -7,11 +7,11 @@ import (
 	"pure-game-kit/packages/utility/number"
 )
 
-func (s *ShapeGrid) FindPath(startX, startY, targetX, targetY float32, minimizePoints bool) []float32 {
-	return s.findPath(startX, startY, targetX, targetY, minimizePoints, false)
+func (s *ShapeGrid) FindPath(startX, startY, targetX, targetY float32, minimizePoints bool, result *[]float32) {
+	s.findPath(startX, startY, targetX, targetY, minimizePoints, false, result)
 }
-func (s *ShapeGrid) FindPathDiagonally(startX, startY, targetX, targetY float32, minimizePoints bool) []float32 {
-	return s.findPath(startX, startY, targetX, targetY, minimizePoints, true)
+func (s *ShapeGrid) FindPathDiagonally(startX, startY, targetX, targetY float32, minimizePoints bool, result *[]float32) {
+	s.findPath(startX, startY, targetX, targetY, minimizePoints, true, result)
 }
 
 // private ========================================================
@@ -59,11 +59,11 @@ func removeRedundantPoints(points []float32) []float32 {
 	}
 	return pts
 }
-func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []float32 {
+func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool, result *[]float32) {
 	if s == nil {
-		return nil
+		return
 	}
-
+	*result = (*result)[:0]
 	var w, h = float32(s.chunkSize), float32(s.chunkSize)
 	stx, sty, tarx, tary = stx/w, sty/h, tarx/w, tary/h
 	var sx, sy = int(number.RoundDown(stx, 0)), int(number.RoundDown(sty, 0))
@@ -74,7 +74,7 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 	var _, startBlocked = s.cells[startKey]
 	var _, targetBlocked = s.cells[targetKey]
 	if startBlocked || targetBlocked {
-		return []float32{}
+		return
 	}
 
 	var open = &priorityQueue{}
@@ -95,20 +95,20 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 		}
 
 		if current.x == tx && current.y == ty {
-			var result = make([]float32, 0)
 			for cur := current; cur != nil; cur = cur.parent {
-				result = append(result, (float32(cur.x)+0.5)*w, (float32(cur.y)+0.5)*h)
+				*result = append(*result, (float32(cur.x)+0.5)*w, (float32(cur.y)+0.5)*h)
 			}
 
-			for i := 0; i < len(result)/4; i++ {
-				var idx1, idx2 = i * 2, len(result) - 2 - (i * 2)
-				result[idx1], result[idx2], result[idx1+1], result[idx2+1] = result[idx2], result[idx1], result[idx2+1], result[idx1+1]
+			for i := 0; i < len(*result)/4; i++ {
+				var idx1, idx2 = i * 2, len(*result) - 2 - (i * 2)
+				(*result)[idx1], (*result)[idx2] = (*result)[idx2], (*result)[idx1]
+				(*result)[idx1+1], (*result)[idx2+1] = (*result)[idx2+1], (*result)[idx1+1]
 			}
 
 			if minPts {
-				result = removeRedundantPoints(result)
+				*result = removeRedundantPoints(*result)
 			}
-			return result
+			return
 		}
 
 		for _, dir := range currentDirs {
@@ -132,5 +132,4 @@ func (s *ShapeGrid) findPath(stx, sty, tarx, tary float32, minPts, diag bool) []
 			heap.Push(open, &node{x: nx, y: ny, g: newG, h: heuristic(nx, ny, tx, ty), parent: current})
 		}
 	}
-	return []float32{}
 }

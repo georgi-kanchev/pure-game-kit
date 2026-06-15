@@ -30,6 +30,11 @@ func CollisionGrid() {
 
 	window.SetTargetFPS(0)
 
+	var all = make([]geometry.Shape, 0)
+	var atCell = make([]geometry.Shape, 0)
+	var neighbors = make([]geometry.Shape, 0)
+	var pathPts = make([]float32, 0)
+
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
@@ -55,16 +60,16 @@ func CollisionGrid() {
 			grid.RemoveShapes(circle)
 		}
 
-		var neighbors = grid.Neighbors(player)
+		grid.Neighbors(player, &neighbors)
 		for _, neighbor := range neighbors {
 			player = player.Collide(neighbor)
 		}
 
 		for y := -10; y < 20; y++ {
 			for x := -10; x < 20; x++ {
-				var sh = grid.AtCell(x, y)
+				grid.AtCell(x, y, &atCell)
 				var col = palette.DarkRed
-				if len(sh) > 0 {
+				if len(atCell) > 0 {
 					col = palette.DarkGreen
 				}
 				view.DrawShape(float32(x)*cellSize+cellSize/2, float32(y)*cellSize+cellSize/2, cellSize, cellSize, 0, 0, col, graphics.Area{})
@@ -76,7 +81,8 @@ func CollisionGrid() {
 
 		view.DrawGrid(1, cellSize, cellSize, palette.Gray)
 
-		for _, sh := range grid.All() {
+		grid.All(&all)
+		for _, sh := range all {
 			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.LightGray, graphics.Area{})
 		}
 		for _, sh := range neighbors {
@@ -85,8 +91,8 @@ func CollisionGrid() {
 		view.DrawShape(player.X, player.Y, player.Width, player.Height, player.Angle, player.Roundness, palette.White, graphics.Area{})
 
 		var mx, my = view.MousePosition()
-		var pts = grid.FindPathDiagonally(player.X, player.Y, mx, my, true)
-		view.DrawPath(pts, 5, palette.Cyan, graphics.Area{})
+		grid.FindPathDiagonally(player.X, player.Y, mx, my, true, &pathPts)
+		view.DrawPath(pathPts, 5, palette.Cyan, graphics.Area{})
 		view.DrawDebugInfo(true)
 	}
 }
