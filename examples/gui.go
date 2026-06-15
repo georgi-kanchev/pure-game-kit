@@ -22,7 +22,7 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
-	// window.SetTargetFPS(0)
+	window.SetTargetFPS(0)
 
 	var a float32
 	for window.KeepOpen() {
@@ -38,6 +38,6 @@ func GUI() {
 			view.DrawShape(x, y, w, h, 0, 0, c, mask)
 		}
 
-		view.DrawDebugInfo(false)
+		view.DrawDebugInfo(true)
 	}
 }
