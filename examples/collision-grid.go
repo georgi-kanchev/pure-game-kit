@@ -28,6 +28,8 @@ func CollisionGrid() {
 
 	var player = geometry.NewRectangle(-300, -300, 150, 90, 0)
 
+	window.SetTargetFPS(0)
+
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
@@ -85,5 +87,6 @@ func CollisionGrid() {
 		var mx, my = view.MousePosition()
 		var pts = grid.FindPathDiagonally(player.X, player.Y, mx, my, true)
 		view.DrawPath(pts, 5, palette.Cyan, graphics.Area{})
+		view.DrawDebugInfo(true)
 	}
 }
