@@ -50,10 +50,10 @@ func KeepOpen() bool {
 	internal.UpdateCommands()
 
 	rl.BeginDrawing()
-	rl.EnableDepthTest()
+	// rl.EnableDepthTest()
 	rl.ClearScreenBuffers()
 	internal.Draw()
-	rl.DisableDepthTest()
+	// rl.DisableDepthTest()
 	rl.EndDrawing()
 
 	//=================================================================

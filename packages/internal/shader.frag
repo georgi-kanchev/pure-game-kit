@@ -258,7 +258,7 @@ void main() {
 
     vec4 color;
     
-    gl_FragDepth = depthZ;
+    // gl_FragDepth = depthZ;
     
     if (objKind == KIND_TEXT) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
         color = compute_msdf_text();
@@ -285,8 +285,8 @@ void main() {
     
     color = compute_sdf_shape(color, roundness, borderSize, borderColor, cropBoundsU, cropBoundsV);
     
-    if (color.a < 0.004)
-        discard; // helps DepthZ
+    // if (color.a < 0.004)
+        // discard; // helps DepthZ
     
     if (objKind != KIND_SHAPE)
         color = compute_color_adjust(color, colorAdjust1);

@@ -19,6 +19,8 @@ func Views() {
 	left.X = 400
 	left.Zoom = 1.5
 
+	window.SetTargetFPS(0)
+
 	for window.KeepOpen() {
 		obj.Roundness = number.Map(number.Sine(time.Running()/3), -1, 1, 0, 1)
 
@@ -43,5 +45,7 @@ func Views() {
 		if keyboard.IsKeyJustPressed(key.F5) {
 			print(debug.MemoryUsage())
 		}
+
+		left.DrawDebugInfo(true)
 	}
 }

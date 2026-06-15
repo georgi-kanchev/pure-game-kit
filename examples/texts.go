@@ -21,6 +21,8 @@ func Texts() {
 
 	font.EmbedImage('🪓', img)
 
+	window.SetTargetFPS(0)
+
 	for window.KeepOpen() {
 		var x, _ = view.MousePosition()
 		textbox.Effects.TextLineHeight = 70 + x/5

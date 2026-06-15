@@ -27,6 +27,8 @@ func Tiled() {
 
 	fmt.Printf("debug.LinesOfCode(): %v\n", debug.LinesOfCode())
 
+	window.SetTargetFPS(0)
+
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
