@@ -46,15 +46,19 @@ func FollowPath() {
 		randomColors = append(randomColors, color.Random())
 	}
 
+	window.SetTargetFPS(0)
+
+	var result = make([]float32, 0)
+
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 		view.DrawGrid(1, 32, 32, palette.DarkGray)
 
 		var mx, my = view.MousePosition()
-		var result = geometry.FollowPaths(startX, startY, mx, my, paths)
+		geometry.FollowPaths(startX, startY, mx, my, paths, &result)
 
 		if mouse.IsButtonJustPressed(button.Left) {
-			geometry.FollowPaths(startX, startY, mx, my, paths)
+			// geometry.FollowPaths(startX, startY, mx, my, paths)
 			startX, startY = mx, my
 		}
 
@@ -68,5 +72,7 @@ func FollowPath() {
 		view.DrawPath(p7, 5, randomColors[6], graphics.Area{})
 		view.DrawPath(p8, 5, randomColors[7], graphics.Area{})
 		view.DrawPath(result, 2, palette.Red, graphics.Area{})
+
+		view.DrawDebugInfo(true)
 	}
 }
