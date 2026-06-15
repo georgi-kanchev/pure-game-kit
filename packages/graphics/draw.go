@@ -163,7 +163,7 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	var tlx, tly = v.PointFromScreen(5, 5)
 	const size float32 = 30
 
-	if condition.TrueEvery(0.1, 0xdeadc0de) {
+	if condition.TrueEvery(0.2, 0xdeadc0de) {
 		v.debugBuffer = v.debugBuffer[:0]
 		v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.FPS), 'f', 0, 32)
 		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
@@ -237,7 +237,8 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	}
 
 	if detailed {
-		v.DrawText(tlx, tly+(size*15)/v.Zoom, size, 0, palette.White, debug.MemoryUsage(), Area{})
+		var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*15)/v.Zoom)
+		v.DrawText(x, y, size, 0, palette.White, debug.MemoryUsage(), Area{})
 	}
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
 	v.DrawText(tlx, tly, size, 0, palette.White, str, Area{})

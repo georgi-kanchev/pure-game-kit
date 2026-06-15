@@ -2,10 +2,7 @@ package example
 
 import (
 	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/input/keyboard"
-	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/utility/color/palette"
-	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
@@ -41,10 +38,6 @@ func Views() {
 		right.DrawObject(&obj)
 		var rx, ry = right.PointFromScreen(right.WindowArea.X+10, right.WindowArea.Y+10)
 		right.DrawText(rx, ry, 100, 0, palette.White, "Right View", graphics.Area{})
-
-		if keyboard.IsKeyJustPressed(key.F5) {
-			print(debug.MemoryUsage())
-		}
 
 		left.DrawDebugInfo(true)
 	}
