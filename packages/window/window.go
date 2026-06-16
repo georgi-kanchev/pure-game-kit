@@ -46,15 +46,15 @@ func KeepOpen() bool {
 		return false
 	}
 
-	internal.CloseBatch()
 	internal.UpdateCommands()
 
-	rl.BeginDrawing()
-	// rl.EnableDepthTest()
-	rl.ClearScreenBuffers()
 	internal.Draw()
-	// rl.DisableDepthTest()
+	rl.DisableDepthTest()
 	rl.EndDrawing()
+
+	rl.BeginDrawing()
+	rl.EnableDepthTest()
+	rl.ClearScreenBuffers()
 
 	//=================================================================
 
@@ -65,7 +65,6 @@ func KeepOpen() bool {
 	internal.FrameDelta = rl.GetFrameTime()
 	internal.CacheInput()
 
-	internal.ResetBatches()
 	var shouldClose = !rl.WindowShouldClose()
 	internal.EngineBusyMicroSec = time.Since(engineFrameStart).Microseconds()
 	gameLogicStart = time.Now()
@@ -142,6 +141,9 @@ func SetIcon(imagePath string) {
 func SetTargetFPS(fps uint8) {
 	internal.WindowTargetFPS = fps
 	rl.SetTargetFPS(int32(fps))
+}
+func TakeScreenshot(pngPath string) {
+	rl.TakeScreenshot(pngPath)
 }
 
 //=================================================================

@@ -201,16 +201,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 }
 
 func ResetBatches() {
-	if ActiveBatch != nil {
-		BatchPool = append(BatchPool, ActiveBatch)
-		ActiveBatch = nil
-	}
-	for _, rb := range ReadyBatches {
-		if !rb.isRecord { // text batches live on the Object, never return to pool
-			BatchPool = append(BatchPool, rb)
-		}
-	}
-	ReadyBatches = ReadyBatches[:0]
+
 }
 func CloseBatch() {
 	if ActiveBatch != nil && ActiveBatch.vertCount > 0 {
@@ -227,6 +218,8 @@ func CloseBatch() {
 var uniforms [1]float32 // reused to avoid per-frame []float32 allocation
 
 func Draw() {
+	CloseBatch()
+
 	uniforms[0] = Runtime
 	rl.SetShaderValue(Shader, ShaderLoc, uniforms[:], rl.ShaderUniformFloat)
 
@@ -255,6 +248,17 @@ func Draw() {
 		}
 		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
 	}
+
+	if ActiveBatch != nil {
+		BatchPool = append(BatchPool, ActiveBatch)
+		ActiveBatch = nil
+	}
+	for _, rb := range ReadyBatches {
+		if !rb.isRecord { // text batches live on the Object, never return to pool
+			BatchPool = append(BatchPool, rb)
+		}
+	}
+	ReadyBatches = ReadyBatches[:0]
 }
 
 // private =================================================================

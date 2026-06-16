@@ -37,7 +37,6 @@ func GUI() {
 			var mask = graphics.NewArea(layout.ItemMask(i, view.Zoom))
 			view.DrawShape(x, y, w, h, 0, 0, c, mask)
 		}
-
-		view.DrawDebugInfo(true)
+		view.DrawDebugInfo(false)
 	}
 }

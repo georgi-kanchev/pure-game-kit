@@ -29,7 +29,7 @@ func Running() float32 { return internal.Runtime }
 func Clock() float32   { return internal.Clock }
 func Delta() float32   { return internal.FrameDelta }
 func Frame() uint64    { return internal.Frame }
-func FPS() float32     { return internal.FPS }
+func FPS() int         { return int(internal.FPS) }
 
 func ToMilliseconds(seconds float32) float32 { return seconds * 1000 }
 func ToMinutes(secodns float32) float32      { return secodns / 60 }
