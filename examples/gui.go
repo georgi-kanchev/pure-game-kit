@@ -27,14 +27,15 @@ func GUI() {
 	var a float32
 	for window.KeepOpen() {
 		for i, c := range boxCols {
-			gui.Shape(c, 0, layout.BoxArea(i, gui.Scale), assets.Area{})
+			var area, _, _ = layout.BoxArea(i)
+			gui.Shape(c, 0, area, assets.Area{})
 		}
 
 		a = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
 		gui.Scale = 0.5 + a/2
 
 		for i, c := range itemCols {
-			var area, mask = layout.ItemArea(i, gui.Scale, 0, a), layout.ItemMask(i, gui.Scale)
+			var area, mask = layout.Item(i, 0, a)
 			gui.Shape(c, 0, area, mask)
 			switch i {
 			case 0:

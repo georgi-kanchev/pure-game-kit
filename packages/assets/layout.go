@@ -29,32 +29,28 @@ func (l LayoutId) Unload() {
 	delete(internal.Layouts, uint32(l))
 }
 
-func (l LayoutId) BoxArea(id int, zoom float32) Area {
+func (l LayoutId) BoxArea(id int) (area Area, scrollX, scrollY bool) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Boxes) {
-		return Area{}
+		return Area{}, false, false
 	}
 	var rx, ry, rw, rh = boxDynamic(layout, id, 0)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	return Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
+	area = Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
+	return area, false, false
 }
-func (l LayoutId) ItemArea(id int, zoom, scrollX, scrollY float32) Area {
+func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask Area) {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
-		return Area{}
+		return Area{}, Area{}
 	}
 	var rx, ry, rw, rh = itemDynamic(layout, id, scrollX, scrollY)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	return Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
-}
-func (l LayoutId) ItemMask(id int, zoom float32) Area {
-	var layout, has = internal.Layouts[uint32(l)]
-	if !has || id < 0 || id >= len(layout.Items) {
-		return Area{}
-	}
 	var ownerId = layout.Items[id].BoxId
-	var o = l.BoxArea(int(ownerId), zoom)
-	return Area{X: (o.X - o.Width/2) * zoom, Y: (o.Y - o.Height/2) * zoom, Width: o.Width * zoom, Height: o.Height * zoom}
+	var o, _, _ = l.BoxArea(int(ownerId))
+	area = Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
+	mask = Area{X: (o.X - o.Width/2), Y: (o.Y - o.Height/2), Width: o.Width, Height: o.Height}
+	return area, mask
 }
 
 // private ========================================================

@@ -33,6 +33,7 @@ func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
 
 func Label(text string, area, mask assets.Area) {
 	view.Zoom = Scale
+	mask.X, mask.Y, mask.Width, mask.Height = mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Effects.TextAlignX, obj.Effects.TextAlignY = 0.5, 0.5
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
@@ -43,11 +44,11 @@ func Label(text string, area, mask assets.Area) {
 }
 func Shape(color uint, roundness float32, area, mask assets.Area) {
 	view.Zoom = Scale
+	mask.X, mask.Y, mask.Width, mask.Height = mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
-	obj.Text = ""
-	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(mask)
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
 	view.DrawObject(&obj)
 }
 
