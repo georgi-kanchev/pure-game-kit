@@ -24,10 +24,12 @@ func GUI() {
 
 	window.SetTargetFPS(0)
 
+	layout.SetVisibleItem(2, false)
+
 	var a float32
 	for window.KeepOpen() {
 		for i, c := range boxCols {
-			var area, _, _ = layout.BoxArea(i)
+			var area, _, _ = layout.Box(i)
 			gui.Shape(c, 0, area, assets.Area{})
 		}
 
