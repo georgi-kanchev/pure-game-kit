@@ -137,7 +137,7 @@ func (v *View) PointFromView(otherView *View, otherX, otherY float32) (myX, myY 
 func (v *View) PointToView(otherView *View, myX, myY float32) (otherX, otherY float32) {
 	return otherView.PointFromView(v, myX, myY)
 }
-func (v *View) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
+func (v *View) PointFromEdge(horizontal, vertical float32) (x, y float32) {
 	var wa = v.windowArea()
-	return v.PointFromScreen(wa.X+wa.Width*edgeX, wa.Y+wa.Height*edgeY)
+	return v.PointFromScreen(wa.X+wa.Width*horizontal, wa.Y+wa.Height*vertical)
 }

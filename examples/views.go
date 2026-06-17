@@ -28,7 +28,7 @@ func Views() {
 		left.DrawGrid(2, 100, 100, palette.Gray)
 		left.DrawObject(&obj)
 		var lx, ly = left.PointFromScreen(left.WindowArea.X+10, left.WindowArea.Y+10)
-		left.DrawText(lx, ly, 100, 0, palette.White, "Left View", graphics.Area{})
+		left.DrawText("Left View", lx, ly, 100, 0, palette.White, graphics.Area{})
 
 		var margin float32 = 300
 		right.WindowArea = graphics.NewArea(w/2-margin/2, margin/2, w/2-margin, h-margin)
@@ -37,7 +37,7 @@ func Views() {
 		right.DrawGrid(2, 100, 100, palette.LightGray)
 		right.DrawObject(&obj)
 		var rx, ry = right.PointFromScreen(right.WindowArea.X+10, right.WindowArea.Y+10)
-		right.DrawText(rx, ry, 100, 0, palette.White, "Right View", graphics.Area{})
+		right.DrawText("Right View", rx, ry, 100, 0, palette.White, graphics.Area{})
 
 		left.DrawDebugInfo(true)
 	}

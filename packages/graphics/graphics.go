@@ -13,7 +13,7 @@ import (
 	"pure-game-kit/packages/internal"
 )
 
-type Area struct{ X, Y, Width, Height float32 }
+type Area = internal.Area
 type Effects internal.Effects
 
 func NewArea(x, y, width, height float32) Area {

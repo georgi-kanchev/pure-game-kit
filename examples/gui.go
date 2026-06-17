@@ -2,8 +2,9 @@ package example
 
 import (
 	"pure-game-kit/packages/assets"
-	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/gui"
 	"pure-game-kit/packages/utility/color"
+	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
@@ -11,7 +12,6 @@ import (
 
 func GUI() {
 	window.Create("example - gui", false, true)
-	var view = graphics.NewView(1)
 	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
 
 	var boxCols, itemCols = [5]uint{}, [20]uint{}
@@ -27,16 +27,26 @@ func GUI() {
 	var a float32
 	for window.KeepOpen() {
 		for i, c := range boxCols {
-			var x, y, w, h = layout.BoxArea(i, view.Zoom)
-			view.DrawShape(x, y, w, h, 0, 0, c, graphics.Area{})
+			gui.Shape(c, 0, layout.BoxArea(i, gui.Scale), assets.Area{})
 		}
 
 		a = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
+		gui.Scale = 0.5 + a/2
+
 		for i, c := range itemCols {
-			var x, y, w, h = layout.ItemArea(i, view.Zoom, 0, a)
-			var mask = graphics.NewArea(layout.ItemMask(i, view.Zoom))
-			view.DrawShape(x, y, w, h, 0, 0, c, mask)
+			var area, mask = layout.ItemArea(i, gui.Scale, 0, a), layout.ItemMask(i, gui.Scale)
+			gui.Shape(c, 0, area, mask)
+			switch i {
+			case 0:
+				gui.Label("Victory", area, mask)
+			case 1:
+				gui.Label("(4 rounds)", area, mask)
+			case 5:
+				gui.Label("UNIT", area, mask)
+			}
 		}
-		view.DrawDebugInfo(false)
+		var area = gui.AreaHUD(0.5, 1, 0.2, 200)
+		area.Y -= 50
+		gui.Shape(palette.Red, 1, area, assets.Area{})
 	}
 }

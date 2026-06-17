@@ -18,7 +18,7 @@ func Translations() {
 	bulgarian.Unload()
 
 	for window.KeepOpen() {
-		view.DrawText(0, 0, 100, 0, palette.White, lang.Translate(tag), graphics.Area{})
+		view.DrawText(lang.Translate(tag), 0, 0, 100, 0, palette.White, graphics.Area{})
 		// view.DrawText(0, 100, 100, 0, palette.White, bulgarian.Translate(tag, graphics.Area{}))
 	}
 }

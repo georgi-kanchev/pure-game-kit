@@ -88,7 +88,7 @@ func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.Imag
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, imageId
 	v.DrawObject(obj)
 }
-func (v *View) DrawText(x, y, lineHeight float32, fontId assets.FontId, color uint, text string, mask Area) {
+func (v *View) DrawText(text string, x, y, lineHeight float32, fontId assets.FontId, color uint, mask Area) {
 	obj.Effects = Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 9999, 9999, 0, 0
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = v.Angle, 0, palette.White, 0
@@ -239,8 +239,8 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	var tlx, tly = v.PointFromScreen(5, 15)
 	var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*15)/v.Zoom)
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
-	v.DrawText(tlx, tly, size, 0, palette.White, str, Area{})
-	v.DrawText(x, y, size, 0, palette.White, debug.MemoryUsage(), Area{})
+	v.DrawText(str, tlx, tly, size, 0, palette.White, Area{})
+	v.DrawText(debug.MemoryUsage(), x, y, size, 0, palette.White, Area{})
 	// rl.DrawText(str, 10, 15, 32, rl.White)
 	// rl.DrawText(debug.MemoryUsage(), 10, 400, 32, rl.White)
 

@@ -8,6 +8,7 @@ import (
 	"pure-game-kit/packages/utility/text"
 )
 
+type Area = internal.Area
 type LayoutId uint32
 
 func LoadLayout(xmlPath string) LayoutId {
@@ -28,32 +29,32 @@ func (l LayoutId) Unload() {
 	delete(internal.Layouts, uint32(l))
 }
 
-func (l LayoutId) BoxArea(id int, zoom float32) (x, y, width, height float32) {
+func (l LayoutId) BoxArea(id int, zoom float32) Area {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Boxes) {
-		return
+		return Area{}
 	}
 	var rx, ry, rw, rh = boxDynamic(layout, id, 0)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
+	return Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
 }
-func (l LayoutId) ItemArea(id int, zoom, scrollX, scrollY float32) (x, y, width, height float32) {
+func (l LayoutId) ItemArea(id int, zoom, scrollX, scrollY float32) Area {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
-		return
+		return Area{}
 	}
 	var rx, ry, rw, rh = itemDynamic(layout, id, scrollX, scrollY)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	return (rx + rw/2) * sc, (ry + rh/2) * sc, rw * sc, rh * sc
+	return Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
 }
-func (l LayoutId) ItemMask(id int, zoom float32) (x, y, width, height float32) {
+func (l LayoutId) ItemMask(id int, zoom float32) Area {
 	var layout, has = internal.Layouts[uint32(l)]
 	if !has || id < 0 || id >= len(layout.Items) {
-		return
+		return Area{}
 	}
 	var ownerId = layout.Items[id].BoxId
-	var ox, oy, ow, oh = l.BoxArea(int(ownerId), zoom)
-	return (ox - ow/2) * zoom, (oy - oh/2) * zoom, ow * zoom, oh * zoom
+	var o = l.BoxArea(int(ownerId), zoom)
+	return Area{X: (o.X - o.Width/2) * zoom, Y: (o.Y - o.Height/2) * zoom, Width: o.Width * zoom, Height: o.Height * zoom}
 }
 
 // private ========================================================
