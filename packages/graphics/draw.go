@@ -55,12 +55,6 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 		v.DrawShape(0, (top+bottom)/2, bottom-top, thickness*6, 90, 1, color, Area{})
 	}
 }
-func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint, mask Area) {
-	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Mask = 0, "", 0, 0, mask
-	v.DrawObject(obj)
-}
 func (v *View) DrawPath(points []float32, thickness float32, color uint, mask Area) {
 	if len(points) < 4 {
 		return
@@ -82,6 +76,12 @@ func (v *View) DrawPath(points []float32, thickness float32, color uint, mask Ar
 		v.DrawShape(midX, midY, dist, thickness, ang, 0, color, mask)
 	}
 }
+func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint, mask Area) {
+	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
+	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
+	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Mask = 0, "", 0, 0, mask
+	v.DrawObject(obj)
+}
 func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint, mask Area) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask = angle, 0, tint, 0, mask
@@ -89,11 +89,10 @@ func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.Imag
 	v.DrawObject(obj)
 }
 func (v *View) DrawText(text string, x, y, lineHeight float32, fontId assets.FontId, color uint, mask Area) {
-	obj.Effects = Effects(internal.DefaultEffects)
+	obj.Effects, obj.Mask = Effects(internal.DefaultEffects), mask
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 9999, 9999, 0, 0
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = v.Angle, 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = fontId, text, lineHeight/v.Zoom, color
-	obj.Mask = mask
 
 	x, y = point.MoveAtAngle(x, y, obj.Angle, obj.Width/2)
 	obj.X, obj.Y = point.MoveAtAngle(x, y, obj.Angle+90, obj.Height/2)

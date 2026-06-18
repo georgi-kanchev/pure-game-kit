@@ -2,6 +2,7 @@ package example
 
 import (
 	"pure-game-kit/packages/assets"
+	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
 	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
@@ -13,6 +14,7 @@ import (
 func GUI() {
 	window.Create("example - gui", false, true)
 	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
+	var view = graphics.NewView(1)
 
 	var boxCols, itemCols = [5]uint{}, [20]uint{}
 	for i := range boxCols {
@@ -24,8 +26,6 @@ func GUI() {
 
 	window.SetTargetFPS(0)
 
-	layout.SetVisibleItem(2, false)
-
 	var a float32
 	for window.KeepOpen() {
 		for i, c := range boxCols {
@@ -34,7 +34,7 @@ func GUI() {
 		}
 
 		a = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
-		gui.Scale = 0.5 + a/2
+		// gui.Scale = 0.5 + a/2
 
 		for i, c := range itemCols {
 			var area, mask = layout.Item(i, 0, a)
@@ -50,6 +50,8 @@ func GUI() {
 		}
 		var area = gui.AreaHUD(0.5, 1, 0.2, 200)
 		area.Y -= 50
-		gui.Shape(palette.Red, 1, area, assets.Area{})
+		gui.Button("", palette.Red, area, assets.Area{})
+
+		view.DrawDebugInfo(false)
 	}
 }
