@@ -4,6 +4,9 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/input/mouse"
+	"pure-game-kit/packages/input/mouse/button"
+	"pure-game-kit/packages/input/mouse/cursor"
 	"pure-game-kit/packages/internal"
 	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
@@ -16,8 +19,7 @@ var Scale float32 = 1
 //
 // width/height 0..1 = screen edge percent, > 1 = absolute screen pixels
 func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
-	view.Zoom = Scale
-
+	update()
 	if width >= 0 && width <= 1 {
 		var w, _ = view.Size()
 		width = w * width
@@ -36,7 +38,7 @@ func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
 }
 
 func Label(text string, area, mask assets.Area) {
-	view.Zoom = Scale
+	update()
 	mask.X, mask.Y, mask.Width, mask.Height = mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Effects.TextAlignX, obj.Effects.TextAlignY = 0.5, 0.5
@@ -57,7 +59,7 @@ func Shape(color uint, roundness float32, area, mask assets.Area) {
 	view.DrawObject(&obj)
 }
 func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
-	view.Zoom = Scale
+	update()
 	mask.X, mask.Y, mask.Width, mask.Height = mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
@@ -66,21 +68,40 @@ func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
 	view.DrawObject(&obj)
 }
 
-func Button(text string, color uint, area, mask assets.Area) {
-	if isHovered(area, 1) {
-		color = col.Brighten(color, 0.2)
+func Button(text string, area, mask assets.Area) {
+	update()
+	const roundness = 0.2
+	var color = palette.Gray
+
+	if isHovered(area, roundness) {
+		mouse.SetCursor(cursor.Hand)
+		if mouse.IsButtonPressed(button.Left) {
+			color = col.Darken(color, 0.15)
+		} else {
+			color = col.Brighten(color, 0.15)
+		}
 	}
 
-	Shape(color, 0.1, area, mask)
+	Shape(color, roundness, area, mask)
 }
 
 // private ========================================================
 
 var view graphics.View
 var obj graphics.Object
+var lastUpdateOnFrame uint64
 
 var wasHovered assets.Area
 
 func isHovered(area assets.Area, roundness float32) bool {
 	return geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness).ContainsPoint(view.MousePosition())
+}
+
+func update() {
+	if internal.Frame == lastUpdateOnFrame { // only once per frame
+		return
+	}
+	lastUpdateOnFrame = internal.Frame
+	view.Zoom = Scale
+	mouse.SetCursor(cursor.Arrow)
 }

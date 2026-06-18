@@ -40,7 +40,7 @@ var (
 	Violet      = color.RGB(143, 0, 255)   // RGB(A): 143 0 255 (255)
 	Purple      = color.RGB(75, 0, 130)    // RGB(A): 75 0 130 (255)
 	Orange      = color.RGB(255, 127, 80)  // RGB(A): 255 127 80 (255)
-	Brown       = color.RGB(150, 105, 25)  // RGB(A): 150 105 25 (255)
+	Brown       = color.RGB(93, 33, 4)     // RGB(A): 93 33 4 (255)
 	Azure       = color.RGB(0, 127, 255)   // RGB(A): 0 127 255 (255)
 	ForestGreen = color.RGB(34, 139, 34)   // RGB(A): 34 139 34 (255)
 	SkyBlue     = color.RGB(135, 206, 235) // RGB(A): 135 206 235 (255)

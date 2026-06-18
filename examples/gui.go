@@ -5,7 +5,6 @@ import (
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
 	"pure-game-kit/packages/utility/color"
-	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
@@ -24,7 +23,10 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
-	window.SetTargetFPS(0)
+	// window.SetTargetFPS(0)
+	var r, g, b, al = color.Channels(1562445055)
+
+	_, _, _, _ = r, g, b, al
 
 	var a float32
 	for window.KeepOpen() {
@@ -50,7 +52,7 @@ func GUI() {
 		}
 		var area = gui.AreaHUD(0.5, 1, 0.2, 200)
 		area.Y -= 50
-		gui.Button("", palette.Red, area, assets.Area{})
+		gui.Button("", area, assets.Area{})
 
 		view.DrawDebugInfo(false)
 	}

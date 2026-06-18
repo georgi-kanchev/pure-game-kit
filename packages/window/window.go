@@ -46,8 +46,6 @@ func KeepOpen() bool {
 		return false
 	}
 
-	internal.UpdateCommands()
-
 	internal.Draw()
 	rl.DisableDepthTest()
 	rl.EndDrawing()
@@ -58,11 +56,11 @@ func KeepOpen() bool {
 
 	//=================================================================
 
+	internal.FrameDelta = rl.GetFrameTime()
+	internal.UpdateCommands()
 	internal.UpdateWindowData()
 	internal.UpdateAudio()
 	internal.UpdateTimeData()
-
-	internal.FrameDelta = rl.GetFrameTime()
 	internal.CacheInput()
 
 	var shouldClose = !rl.WindowShouldClose()
