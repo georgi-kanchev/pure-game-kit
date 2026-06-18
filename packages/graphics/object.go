@@ -241,7 +241,7 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 
 	for i, r := range o.Text[fromIndex:] {
 		if r == '\n' {
-			return fromIndex + i, max(totalWidth, x), lineHeight
+			return fromIndex + i, totalWidth, lineHeight
 		}
 
 		var sz = sizes[r]
@@ -251,7 +251,6 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 		}
 
 		x += prevGlyph.Kernings[r] * lineHeight
-		var offsetX, _, w, _ = o.TextFontId.SymbolArea(r, lineHeight)
 		var glyph = font.Chars[r]
 
 		if o.Effects.TextWordWrap && r == ' ' {
@@ -274,10 +273,10 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 				wX += wGlyph.Advance*wHeight + gapX
 			}
 			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width {
-				return fromIndex + i, max(totalWidth, x), lineHeight
+				return fromIndex + i, totalWidth, lineHeight
 			}
 		}
-		x, prevGlyph, totalWidth = x+(glyph.Advance*lineHeight+gapX), glyph, max(x+offsetX+w, totalWidth)
+		x, prevGlyph, totalWidth = x+(glyph.Advance*lineHeight+gapX), glyph, max(x+glyph.Advance*lineHeight, totalWidth)
 	}
-	return len(o.Text), max(totalWidth, x), lineHeight
+	return len(o.Text), totalWidth, lineHeight
 }

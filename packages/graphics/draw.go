@@ -103,7 +103,7 @@ func (v *View) DrawObject(object *Object) {
 	internal.ViewX, internal.ViewY, internal.ViewZoom, internal.ViewAngle = v.X, v.Y, v.Zoom, v.Angle
 
 	var o = object
-	if o == nil || !v.IsAreaVisible(o.Bounds()) {
+	if o == nil || !v.IsAreaVisible(o.Bounds()) || (o.Width == 0 && o.Height == 0) {
 		return
 	}
 

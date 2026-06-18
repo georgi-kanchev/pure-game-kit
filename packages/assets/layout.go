@@ -21,6 +21,22 @@ func LoadLayout(xmlPath string) LayoutId {
 
 	internal.NextLayoutId++
 	var id = internal.NextLayoutId
+
+	for i := range layout.Items { // pre-calculate item range indexes for each box
+		var b = int(layout.Items[i].BoxId)
+		if !layout.Boxes[b].ItemRangeCalculated {
+			layout.Boxes[b].ItemStart = len(layout.Items)
+			layout.Boxes[b].ItemEnd = 0
+			layout.Boxes[b].ItemRangeCalculated = true
+		}
+		if i < layout.Boxes[b].ItemStart {
+			layout.Boxes[b].ItemStart = i
+		}
+		if i+1 > layout.Boxes[b].ItemEnd {
+			layout.Boxes[b].ItemEnd = i + 1
+		}
+	}
+
 	internal.Layouts[id] = &layout
 	return LayoutId(id)
 }
@@ -131,7 +147,10 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY float32) (x, y, w, h float32, vis bool) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
-	var bx, by, bw, bh, bv = boxDynamic(layout, int(item.BoxId), 0)
+	if box.Visible == 0 {
+		return 0, 0, 0, 0, false
+	}
+	var bx, by, bw, bh, _ = boxDynamic(layout, int(item.BoxId), 0)
 
 	item.Vars = internal.Vars{}
 	item.Vars.Ow, item.Vars.Oh, item.Vars.Ov = bw, bh, 1
@@ -163,9 +182,9 @@ func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY float32) 
 
 	var curX, curY, maxX, maxY = bx + osx, by + osy, bx, by
 	var rowMaxH, targetMX, targetMY float32
-	for i := 0; i < len(layout.Items); i++ {
+	for i := box.ItemStart; i < box.ItemEnd; i++ {
 		var it = &layout.Items[i]
-		if it.BoxId != item.BoxId || it.Visible == 0 {
+		if it.Visible == 0 {
 			continue
 		}
 
@@ -210,7 +229,7 @@ func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY float32) 
 	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), variable)
 	var rw = text.Calculate(text.SplitIndex(item.Expression, " ", 2), variable)
 	var rh = text.Calculate(text.SplitIndex(item.Expression, " ", 3), variable)
-	return rx, ry, rw, rh, bv && item.Visible == 1
+	return rx, ry, rw, rh, item.Visible == 1
 }
 
 func setTargetVars(layout *internal.Layout, vars *internal.Vars, tar string, depth int) {

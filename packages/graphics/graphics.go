@@ -1,12 +1,6 @@
 // Strictly tied to the window, drawing on it through a view and converting between the two coordinate systems.
 // The view's drawing consists of two categories: primitives and objects. While using the assets for drawing,
 // the graphical objects are still very lightweight and exist independently of them.
-// The concept map of the package looks like this:
-//   - View - draws objects
-//   - Shape - no asset, flat color (useful for batching geometry)
-//   - ├ Sprite - texture asset
-//   - ├ TextBox - font asset
-//   - └ TileMap - tile set asset + tile data asset
 package graphics
 
 import (

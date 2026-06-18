@@ -24,9 +24,6 @@ func GUI() {
 	}
 
 	// window.SetTargetFPS(0)
-	var r, g, b, al = color.Channels(1562445055)
-
-	_, _, _, _ = r, g, b, al
 
 	var a float32
 	for window.KeepOpen() {
@@ -50,9 +47,17 @@ func GUI() {
 				gui.Label("UNIT", area, mask)
 			}
 		}
-		var area = gui.AreaHUD(0.5, 1, 0.2, 200)
+		var area = gui.AreaHUD(0, 1, 500, 150)
+		area.X += 50
 		area.Y -= 50
-		gui.Button(-1, "", area, assets.Area{})
+		gui.Button("click me!", area, assets.Area{})
+
+		area.Width /= 2
+		area.Height /= 2
+		gui.Button("above", area, assets.Area{})
+		if gui.IsJustUnhovered() {
+			print("hi")
+		}
 
 		view.DrawDebugInfo(false)
 	}
