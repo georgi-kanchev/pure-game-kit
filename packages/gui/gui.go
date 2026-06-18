@@ -37,7 +37,7 @@ func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
 }
 
 func Label(text string, area, mask assets.Area) {
-	mask = update(area, mask, 0)
+	update(area, 0)
 
 	if text == "" {
 		return
@@ -47,31 +47,31 @@ func Label(text string, area, mask assets.Area) {
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, text, area.Height*0.8, palette.White
-	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(mask)
+	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(scaleMask(mask))
 	view.DrawObject(&obj)
 }
 func Shape(color uint, roundness float32, area, mask assets.Area) {
-	mask = update(area, mask, 0)
+	update(area, 0)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(scaleMask(mask)), ""
 	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.25)
 	view.DrawObject(&obj)
 }
 func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
-	mask = update(area, mask, 0)
+	update(area, 0)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = imageId, tint, 0
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(scaleMask(mask)), ""
 	view.DrawObject(&obj)
 }
 
 func Button(text string, area, mask assets.Area) {
-	mask = update(area, mask, 0)
+	update(area, 0)
 
 	const roundness = 0.2
 	var color = palette.Gray
@@ -86,6 +86,7 @@ func Button(text string, area, mask assets.Area) {
 	}
 
 	skipUpdate = true
+	mask = scaleMask(mask)
 	Shape(color, roundness, area, mask)
 	Label(text, area, mask)
 	skipUpdate = false
@@ -113,11 +114,12 @@ var skipUpdate = false // used for internal calls to the widget functions only f
 
 var hovered, wasHovered, justHovered, wasJustHovered int
 
-func update(area, mask assets.Area, roundness float32) (scaledMask assets.Area) {
-	mask.X, mask.Y, mask.Width, mask.Height = mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale
-
+func scaleMask(mask assets.Area) assets.Area {
+	return assets.Area{X: mask.X * Scale, Y: mask.Y * Scale, Width: mask.Width * Scale, Height: mask.Height * Scale}
+}
+func update(area assets.Area, roundness float32) {
 	if skipUpdate {
-		return mask
+		return
 	}
 	if geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness).ContainsPoint(view.MousePosition()) {
 		hovered = widgetId + 1
@@ -125,7 +127,7 @@ func update(area, mask assets.Area, roundness float32) (scaledMask assets.Area) 
 
 	if internal.Frame == lastUpdateOnFrame { // only once per frame
 		widgetId++
-		return mask
+		return
 	}
 
 	lastUpdateOnFrame = internal.Frame
@@ -135,6 +137,4 @@ func update(area, mask assets.Area, roundness float32) (scaledMask assets.Area) 
 	wasHovered = hovered        // 1 frame ago
 	justHovered = 0             // current frame
 	hovered = 0                 // current frame
-	widgetId = 1
-	return mask
 }
