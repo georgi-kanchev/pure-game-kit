@@ -32,8 +32,7 @@ func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
 	width, height = width*Scale, height*Scale
 	var tlx, tly = view.PointFromEdge(0, 0)
 	var brx, bry = view.PointFromEdge(1, 1)
-	var x = number.Map(horizontal, 0, 1, tlx+width/2, brx-width/2)
-	var y = number.Map(vertical, 0, 1, tly+height/2, bry-height/2)
+	var x, y = number.Map(horizontal, 0, 1, tlx+width/2, brx-width/2), number.Map(vertical, 0, 1, tly+height/2, bry-height/2)
 	return assets.Area{X: x, Y: y, Width: width, Height: height}
 }
 
@@ -55,7 +54,7 @@ func Shape(color uint, roundness float32, area, mask assets.Area) {
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
 	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
-	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.2)
+	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.25)
 	view.DrawObject(&obj)
 }
 func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
@@ -68,7 +67,7 @@ func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
 	view.DrawObject(&obj)
 }
 
-func Button(text string, area, mask assets.Area) {
+func Button(itemId int, text string, area, mask assets.Area) {
 	update()
 	const roundness = 0.2
 	var color = palette.Gray
@@ -80,6 +79,8 @@ func Button(text string, area, mask assets.Area) {
 		} else {
 			color = col.Brighten(color, 0.15)
 		}
+
+		wasHovered = itemId
 	}
 
 	Shape(color, roundness, area, mask)
@@ -91,7 +92,7 @@ var view graphics.View
 var obj graphics.Object
 var lastUpdateOnFrame uint64
 
-var wasHovered assets.Area
+var wasHovered = -1
 
 func isHovered(area assets.Area, roundness float32) bool {
 	return geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness).ContainsPoint(view.MousePosition())

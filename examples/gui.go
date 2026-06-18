@@ -52,7 +52,7 @@ func GUI() {
 		}
 		var area = gui.AreaHUD(0.5, 1, 0.2, 200)
 		area.Y -= 50
-		gui.Button("", area, assets.Area{})
+		gui.Button(-1, "", area, assets.Area{})
 
 		view.DrawDebugInfo(false)
 	}
