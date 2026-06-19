@@ -47,7 +47,7 @@ func GUI() {
 				gui.Label("UNIT", area, mask)
 			}
 		}
-		var area = gui.AreaHUD(0, 1, 500, 150)
+		var area = gui.AreaHUD(0.5, 1, 500, 150)
 		area.X += 50
 		area.Y -= 50
 		gui.Button("click me!", area, assets.Area{})
@@ -55,8 +55,8 @@ func GUI() {
 		area.Width /= 2
 		area.Height /= 2
 		gui.Button("above", area, assets.Area{})
-		if gui.IsJustUnhovered() {
-			print("hi")
+		if gui.IsJustClicked() {
+			print("above")
 		}
 
 		view.DrawDebugInfo(false)

@@ -37,7 +37,8 @@ func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
 }
 
 func Label(text string, area, mask assets.Area) {
-	update(area, 0)
+	mask = scaleMask(mask)
+	update(area, mask, 0)
 
 	if text == "" {
 		return
@@ -47,46 +48,55 @@ func Label(text string, area, mask assets.Area) {
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, text, area.Height*0.8, palette.White
-	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(scaleMask(mask))
+	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(mask)
+
+	// obj.Text = txt.New(WidgetCounter)
+
 	view.DrawObject(&obj)
 }
 func Shape(color uint, roundness float32, area, mask assets.Area) {
-	update(area, 0)
+	mask = scaleMask(mask)
+	update(area, mask, roundness)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(scaleMask(mask)), ""
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
 	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.25)
+
+	// obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0, 0, false
+	// obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, txt.New(WidgetCounter), 20, palette.White
+
 	view.DrawObject(&obj)
 }
 func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
-	update(area, 0)
+	mask = scaleMask(mask)
+	update(area, mask, 0)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = imageId, tint, 0
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(scaleMask(mask)), ""
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
 	view.DrawObject(&obj)
 }
 
 func Button(text string, area, mask assets.Area) {
-	update(area, 0)
-
 	const roundness = 0.2
-	var color = palette.Gray
+	var baseColor = palette.Gray
+	var color = baseColor
+	mask = scaleMask(mask)
+
+	update(area, mask, roundness)
 
 	if IsHovered() {
 		mouse.SetCursor(cursor.Hand)
-		if mouse.IsButtonPressed(button.Left) {
-			color = col.Darken(color, 0.15)
-		} else {
-			color = col.Brighten(color, 0.15)
-		}
+		color = col.Brighten(baseColor, 0.15)
+	}
+	if IsClicked() {
+		color = col.Darken(color, 0.15)
 	}
 
 	skipUpdate = true
-	mask = scaleMask(mask)
 	Shape(color, roundness, area, mask)
 	Label(text, area, mask)
 	skipUpdate = false
@@ -95,13 +105,20 @@ func Button(text string, area, mask assets.Area) {
 //=================================================================
 
 func IsHovered() bool {
-	return hovered == widgetId && wasHovered == widgetId
+	return nowActive == widgetCounter
 }
 func IsJustHovered() bool {
-	return hovered == widgetId && wasHovered == widgetId && wasJustHovered != widgetId
+	return nowActive == widgetCounter && lastActive != widgetCounter
 }
 func IsJustUnhovered() bool {
-	return hovered != widgetId && wasHovered == widgetId && wasJustHovered == widgetId
+	return lastActive == widgetCounter && nowActive != widgetCounter
+}
+
+func IsClicked() bool {
+	return clickedWidget == widgetCounter
+}
+func IsJustClicked() bool {
+	return justClickedWidget == widgetCounter
 }
 
 // private ========================================================
@@ -109,32 +126,63 @@ func IsJustUnhovered() bool {
 var view graphics.View
 var obj graphics.Object
 var lastUpdateOnFrame uint64
-var widgetId = 0       // resets every frame, each widget increases it, used for id
+var widgetCounter = 0  // resets every frame, each widget increases it, used for id
 var skipUpdate = false // used for internal calls to the widget functions only for drawing (no input)
 
-var hovered, wasHovered, justHovered, wasJustHovered int
+var nowHovered int  // the latest widget under the mouse on the current frame
+var lastHovered int // the hovered widget from the previous frame
+var nowActive int   // the active widget for interaction on the current frame
+var lastActive int  // the active widget from the previous frame
+
+var clickedWidget int     // the widget that was initially clicked and is being held
+var justClickedWidget int // the widget that completed a full press-and-release cycle this frame
 
 func scaleMask(mask assets.Area) assets.Area {
 	return assets.Area{X: mask.X * Scale, Y: mask.Y * Scale, Width: mask.Width * Scale, Height: mask.Height * Scale}
 }
-func update(area assets.Area, roundness float32) {
+func update(area, mask assets.Area, roundness float32) {
 	if skipUpdate {
 		return
 	}
-	if geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness).ContainsPoint(view.MousePosition()) {
-		hovered = widgetId + 1
+
+	if internal.Frame != lastUpdateOnFrame { // frame reset, runs exactly once on the first widget of a new frame
+		lastUpdateOnFrame = internal.Frame
+		lastActive = nowActive
+
+		if nowHovered == lastHovered {
+			nowActive = nowHovered // widget won input last frame AND won input this frame
+		} else {
+			nowActive = 0 // focus broken or shifting
+		}
+
+		justClickedWidget = 0
+		if mouse.IsButtonJustPressed(button.Left) {
+			clickedWidget = nowActive //  lock the active widget to whatever is currently hovered
+		} else if mouse.IsButtonJustReleased(button.Left) {
+			if clickedWidget != 0 && clickedWidget == nowActive { // same widget we started clicking on?
+				justClickedWidget = clickedWidget
+			}
+			clickedWidget = 0 // clear the lock
+		} else if !mouse.IsButtonPressed(button.Left) {
+			clickedWidget = 0 // if the button not held, ensure nothing is active
+		}
+
+		lastHovered = nowHovered
+		nowHovered = 0
+		widgetCounter = 0
+
+		view.Zoom = Scale
+		mouse.SetCursor(cursor.Arrow)
 	}
 
-	if internal.Frame == lastUpdateOnFrame { // only once per frame
-		widgetId++
-		return
-	}
+	widgetCounter++
 
-	lastUpdateOnFrame = internal.Frame
-	view.Zoom = Scale
-	mouse.SetCursor(cursor.Arrow)
-	wasJustHovered = wasHovered // 2 frames ago
-	wasHovered = hovered        // 1 frame ago
-	justHovered = 0             // current frame
-	hovered = 0                 // current frame
+	var mx, my = view.MousePosition()
+	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)
+	var maskHor = mx >= mask.X && mx <= mask.X+mask.Width
+	var maskVer = my >= mask.Y && my <= mask.Y+mask.Height
+	var maskCheck = mask == (assets.Area{}) || (mask != (assets.Area{}) && maskHor && maskVer)
+	if shape.ContainsPoint(mx, my) && maskCheck {
+		nowHovered = widgetCounter // top-most logic: later widgets naturally overwrite earlier widgets
+	}
 }
