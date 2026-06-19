@@ -104,21 +104,32 @@ func Button(text string, area, mask assets.Area) {
 
 //=================================================================
 
-func IsHovered() bool {
-	return nowActive == widgetCounter
-}
-func IsJustHovered() bool {
-	return nowActive == widgetCounter && lastActive != widgetCounter
-}
-func IsJustUnhovered() bool {
-	return lastActive == widgetCounter && nowActive != widgetCounter
-}
+func IsHovered() bool       { return nowActive == widgetCounter }
+func IsJustHovered() bool   { return nowActive == widgetCounter && lastActive != widgetCounter }
+func IsJustUnhovered() bool { return lastActive == widgetCounter && nowActive != widgetCounter }
 
-func IsClicked() bool {
-	return clickedWidget == widgetCounter
+func IsClicked() bool     { return clickedWidget == widgetCounter }
+func IsJustClicked() bool { return justClickedWidget == widgetCounter }
+
+func IsJustDragged() bool { return IsHovered() && mouse.IsButtonJustPressed(button.Left) }
+func IsJustDropped() bool {
+	return lastClickedWidget == widgetCounter && !IsClicked() && mouse.IsButtonJustReleased(button.Left)
 }
-func IsJustClicked() bool {
-	return justClickedWidget == widgetCounter
+func IsJustDroppedUpon() bool {
+	return drag != (assets.Area{}) && nowHovered == widgetCounter && mouse.IsButtonJustReleased(button.Left)
+}
+func Drag() assets.Area {
+	if IsJustDragged() {
+		drag = widgetArea
+	}
+	if IsClicked() {
+		var mx, my = mouse.CursorDelta()
+		drag.X, drag.Y = drag.X+mx/Scale, drag.Y+my/Scale
+	}
+	if mouse.IsButtonJustReleased(button.Left) {
+		drag = assets.Area{}
+	}
+	return drag
 }
 
 // private ========================================================
@@ -134,8 +145,10 @@ var lastHovered int // the hovered widget from the previous frame
 var nowActive int   // the active widget for interaction on the current frame
 var lastActive int  // the active widget from the previous frame
 
+var lastClickedWidget int // the widget that was clicked last frame
 var clickedWidget int     // the widget that was initially clicked and is being held
 var justClickedWidget int // the widget that completed a full press-and-release cycle this frame
+var widgetArea, drag assets.Area
 
 func scaleMask(mask assets.Area) assets.Area {
 	return assets.Area{X: mask.X * Scale, Y: mask.Y * Scale, Width: mask.Width * Scale, Height: mask.Height * Scale}
@@ -155,6 +168,7 @@ func update(area, mask assets.Area, roundness float32) {
 			nowActive = 0 // focus broken or shifting
 		}
 
+		lastClickedWidget = clickedWidget
 		justClickedWidget = 0
 		if mouse.IsButtonJustPressed(button.Left) {
 			clickedWidget = nowActive //  lock the active widget to whatever is currently hovered
@@ -176,6 +190,7 @@ func update(area, mask assets.Area, roundness float32) {
 	}
 
 	widgetCounter++
+	widgetArea = area
 
 	var mx, my = view.MousePosition()
 	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)

@@ -4,7 +4,10 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
+	"pure-game-kit/packages/input/mouse"
+	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/utility/color"
+	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
@@ -26,6 +29,8 @@ func GUI() {
 	// window.SetTargetFPS(0)
 
 	var a float32
+	var unit1 = "hungry"
+	var btn = "drag me!"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
@@ -35,6 +40,10 @@ func GUI() {
 		a = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
 		// gui.Scale = 0.5 + a/2
 
+		if mouse.IsButtonJustReleased(button.Left) {
+			print()
+		}
+
 		for i, c := range itemCols {
 			var area, mask = layout.Item(i, 0, a)
 			gui.Shape(c, 0, area, mask)
@@ -43,6 +52,11 @@ func GUI() {
 				gui.Label("Victory", area, mask)
 			case 1:
 				gui.Label("(4 rounds)", area, mask)
+			case 4:
+				if gui.IsJustDroppedUpon() {
+					unit1 = "yummy"
+				}
+				gui.Label(unit1, area, mask)
 			case 5:
 				gui.Label("UNIT", area, mask)
 			}
@@ -50,14 +64,14 @@ func GUI() {
 		var area = gui.AreaHUD(0.5, 1, 500, 150)
 		area.X += 50
 		area.Y -= 50
-		gui.Button("click me!", area, assets.Area{})
-
-		area.Width /= 2
-		area.Height /= 2
-		gui.Button("above", area, assets.Area{})
-		if gui.IsJustClicked() {
-			print("above")
+		gui.Button(btn, area, assets.Area{})
+		if gui.IsJustDragged() {
+			btn = "dragging..."
 		}
+		if gui.IsJustDropped() {
+			btn = "dropped!"
+		}
+		gui.Shape(palette.White, 1, gui.Drag(), assets.Area{})
 
 		view.DrawDebugInfo(false)
 	}
