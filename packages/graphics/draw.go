@@ -273,6 +273,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var sin, cos = internal.SinCos(o.Angle)
 	var contentHeight float32
 	var originalLineHeight = eff.TextLineHeight
+	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
 	lines = lines[:0]
 	var currentLineHeight = originalLineHeight
 	for i := 0; i < len(o.Text); {
@@ -287,10 +288,10 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			i++ // skip newline
 		}
 	}
-	var y = o.Y - o.Height/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(o.Height-contentHeight)
+	var y = o.Y - h/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(h-contentHeight)
 
 	for _, ln := range lines {
-		var x = (o.X - o.Width/2) + eff.TextAlignX*(o.Width-ln.width)
+		var x = (o.X - w/2) + eff.TextAlignX*(w-ln.width)
 		var prevGlyph internal.Glyph
 
 		for _, r := range o.Text[ln.start:ln.end] {

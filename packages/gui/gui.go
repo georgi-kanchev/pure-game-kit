@@ -49,7 +49,6 @@ func Label(text string, area, mask assets.Area) {
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, text, area.Height*0.8, palette.White
 	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(mask)
-
 	// obj.Text = txt.New(WidgetCounter)
 
 	view.DrawObject(&obj)
@@ -81,7 +80,7 @@ func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
 }
 
 func Button(text string, area, mask assets.Area) {
-	const roundness = 0.2
+	const roundness = 1
 	var baseColor = palette.Gray
 	var color = baseColor
 	mask = scaleMask(mask)

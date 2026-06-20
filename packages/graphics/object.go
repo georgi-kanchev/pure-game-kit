@@ -234,7 +234,8 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 	}
 
 	var originalLineHeight = o.Effects.TextLineHeight
-	var gapX = o.Effects.TextSymbolGap * originalLineHeight / 255
+	var scale = originalLineHeight / 255
+	var gapX = o.Effects.TextSymbolGap * scale
 	var font = internal.Fonts[uint8(o.TextFontId)]
 	var x, totalWidth float32
 	var prevGlyph internal.Glyph
@@ -272,7 +273,7 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 				wPrev, wTotal = wGlyph, max(wX+wOffX+wW, wTotal)
 				wX += wGlyph.Advance*wHeight + gapX
 			}
-			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width {
+			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width-o.Effects.TextMarginX {
 				return fromIndex + i, totalWidth, lineHeight
 			}
 		}

@@ -61,7 +61,7 @@ func GUI() {
 				gui.Label("UNIT", area, mask)
 			}
 		}
-		var area = gui.AreaHUD(0.5, 1, 500, 150)
+		var area = gui.AreaHUD(0.5, 1, 450, 150)
 		area.X += 50
 		area.Y -= 50
 		gui.Button(btn, area, assets.Area{})
