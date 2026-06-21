@@ -8,6 +8,7 @@ import (
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/input/mouse/cursor"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/color"
 	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
@@ -79,6 +80,46 @@ func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
 	view.DrawObject(&obj)
 }
 
+func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32) {
+	var layout = internal.Layouts[uint32(layoutId)]
+	if layout == nil {
+		return
+	}
+	var box = layout.Boxes[boxId]
+	var _, contentH = box.ContentWidth, box.ContentHeight
+	var area = layoutId.Box(boxId)
+	var size = 10 * Scale
+	var mx, my = view.MousePosition()
+	var _, mdy = view.MouseDelta()
+	var hoveredX = mx > area.X-area.Width/2 && mx < area.X+area.Width/2
+	var hoveredY = my > area.Y-area.Height/2 && my < area.Y+area.Height/2
+	if contentH > area.Height {
+		var ver = assets.Area{X: area.X + area.Width/2 - size/2, Y: area.Y, Width: size, Height: area.Height}
+		var handle = assets.Area{X: ver.X, Width: size, Height: (area.Height / contentH) * area.Height}
+		var top, bot = ver.Y - ver.Height/2, ver.Y + ver.Height/2
+		var instant = false
+		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
+		Shape(color.RGBA(0, 0, 0, 127), 0, ver, assets.Area{})
+		if nowHovered == widgetCounter {
+			mouse.SetCursor(cursor.Hand)
+		}
+		if IsClicked() {
+			instant = true
+		}
+		Shape(palette.White, 1, handle, assets.Area{})
+		if IsClicked() {
+			handle.Y += mdy
+		}
+		if instant {
+			handle.Y = my
+		}
+		if hoveredX && hoveredY {
+			handle.Y -= mouse.ScrollSmooth()
+		}
+		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
+		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)
+	}
+}
 func Button(text string, area, mask assets.Area) {
 	const roundness = 0.2
 	var baseColor = palette.Gray

@@ -4,11 +4,7 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
-	"pure-game-kit/packages/input/mouse"
-	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/utility/color"
-	"pure-game-kit/packages/utility/number"
-	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
@@ -27,23 +23,15 @@ func GUI() {
 
 	// window.SetTargetFPS(0)
 
-	var a float32
+	var hor, ver float32
 	var input = "hello, world!"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
-			var area, _, _ = layout.Box(i)
-			gui.Shape(c, 0, area, assets.Area{})
-		}
-
-		a = number.Map(number.Sine(time.Running()), -1, 1, 0, 1)
-		// gui.Scale = 0.5 + a/2
-
-		if mouse.IsButtonJustReleased(button.Left) {
-			print()
+			gui.Shape(c, 0, layout.Box(i), assets.Area{})
 		}
 
 		for i, c := range itemCols {
-			var area, mask = layout.Item(i, 0, a)
+			var area, mask = layout.Item(i, 0, ver)
 			gui.Shape(c, 0, area, mask)
 			switch i {
 			case 0:
@@ -58,6 +46,8 @@ func GUI() {
 		area.X += 50
 		area.Y -= 50
 		gui.Inputbox(&input, area, assets.Area{})
+
+		gui.Scrolls(layout, 3, &hor, &ver)
 
 		view.DrawDebugInfo(false)
 	}

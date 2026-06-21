@@ -93,6 +93,10 @@ func (v *View) IsHovered() bool {
 func (v *View) MousePosition() (x, y float32) {
 	return v.PointFromScreen(internal.MouseX, internal.MouseY)
 }
+func (v *View) MouseDelta() (deltaX, deltaY float32) {
+	var mx, my = mouse.CursorDelta()
+	return mx * v.Zoom, my * v.Zoom
+}
 func (v *View) Size() (width, height float32) {
 	var windowArea = v.windowArea()
 	return windowArea.Width / v.Zoom, windowArea.Height / v.Zoom

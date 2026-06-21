@@ -45,39 +45,39 @@ func (l LayoutId) Unload() {
 	delete(internal.Layouts, uint32(l))
 }
 
-func (l LayoutId) Box(id int) (area Area, scrollX, scrollY bool) {
-	var layout, has = internal.Layouts[uint32(l)]
-	if !has || id < 0 || id >= len(layout.Boxes) {
-		return Area{}, false, false
+func (l LayoutId) Box(id int) (area Area) {
+	var layout = internal.Layouts[uint32(l)]
+	if layout == nil {
+		return Area{}
 	}
 	var rx, ry, rw, rh, rv = boxDynamic(layout, id, 0)
 	if !rv {
-		return Area{}, false, false // not visible
+		return Area{} // not visible
 	}
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	area = Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
-	return area, false, false
+	return area
 }
 func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask Area) {
-	var layout, has = internal.Layouts[uint32(l)]
-	if !has || id < 0 || id >= len(layout.Items) {
+	var layout = internal.Layouts[uint32(l)]
+	if layout == nil || id < 0 || id >= len(layout.Items) {
 		return Area{}, Area{}
 	}
-	var rx, ry, rw, rh, rv = itemDynamic(layout, id, scrollX, scrollY)
+	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
+	var rx, ry, rw, rh, rv = itemDynamic(layout, id, scrollX, scrollY, sc)
 	if !rv {
 		return Area{}, Area{} // not visible
 	}
-	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	var ownerId = layout.Items[id].BoxId
-	var o, _, _ = l.Box(int(ownerId))
+	var o = l.Box(int(ownerId))
 	area = Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
 	mask = Area{X: (o.X - o.Width/2), Y: (o.Y - o.Height/2), Width: o.Width, Height: o.Height}
 	return area, mask
 }
 
 func (l LayoutId) SetVisibleItem(id int, visible bool) {
-	var layout, has = internal.Layouts[uint32(l)]
-	if !has || id < 0 || id >= len(layout.Items) {
+	var layout = internal.Layouts[uint32(l)]
+	if layout == nil || id < 0 || id >= len(layout.Items) {
 		return
 	}
 	var item = &layout.Items[id]
@@ -144,7 +144,7 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h float
 	var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), variable)
 	return rx, ry, rw, rh, box.Visible == 1
 }
-func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY float32) (x, y, w, h float32, vis bool) {
+func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY, sc float32) (x, y, w, h float32, vis bool) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
 	if box.Visible == 0 {
@@ -224,6 +224,8 @@ func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY float32) 
 	item.Vars.Mx, item.Vars.My = targetMX+(bx+bw-maxX)*alignX, targetMY+(by+bh-maxY)*alignY
 	item.Vars.Mw, item.Vars.Mh = defW, defH
 	item.Vars.Mx, item.Vars.My = item.Vars.Mx-(max(0, maxX-(bx+bw))*scrollX), item.Vars.My-(max(0, maxY-(by+bh))*scrollY)
+
+	box.ContentWidth, box.ContentHeight = (maxX-bx)*sc-1, (maxY-by)*sc-1
 
 	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), variable)
 	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), variable)

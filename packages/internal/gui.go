@@ -19,22 +19,23 @@ type Vars struct {
 type Layout struct {
 	XMLName xml.Name `xml:"layout"`
 	Boxes   []struct {
-		Id                  uint32  `xml:"id,attr"`
-		Name                string  `xml:"name,attr"`
-		NamePosition        string  `xml:"namePos,attr"`
-		Color               string  `xml:"col,attr"`
-		Visible             int     `xml:"vis,attr"`
-		Rectangle           string  `xml:"rect,attr"`
-		Expression          string  `xml:"expr,attr"`
-		Targets             string  `xml:"tar,attr"`
-		ItemSize            string  `xml:"itSz,attr"`
-		ItemSpacing         string  `xml:"itSp,attr"`
-		ItemGap             float32 `xml:"itGap,attr"`
-		ItemNewRow          float32 `xml:"itNewRow,attr"`
-		ItemAlign           string  `xml:"itAl,attr"`
-		Vars                Vars
-		ItemStart, ItemEnd  int // cache on load
-		ItemRangeCalculated bool
+		Id                          uint32  `xml:"id,attr"`
+		Name                        string  `xml:"name,attr"`
+		NamePosition                string  `xml:"namePos,attr"`
+		Color                       string  `xml:"col,attr"`
+		Visible                     int     `xml:"vis,attr"`
+		Rectangle                   string  `xml:"rect,attr"`
+		Expression                  string  `xml:"expr,attr"`
+		Targets                     string  `xml:"tar,attr"`
+		ItemSize                    string  `xml:"itSz,attr"`
+		ItemSpacing                 string  `xml:"itSp,attr"`
+		ItemGap                     float32 `xml:"itGap,attr"`
+		ItemNewRow                  float32 `xml:"itNewRow,attr"`
+		ItemAlign                   string  `xml:"itAl,attr"`
+		Vars                        Vars
+		ItemStart, ItemEnd          int // cache on load
+		ItemRangeCalculated         bool
+		ContentWidth, ContentHeight float32
 	} `xml:"boxes>box"`
 	Items []struct {
 		Id               uint32  `xml:"id,attr"`
