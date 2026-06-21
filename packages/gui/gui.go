@@ -100,7 +100,7 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
 		Shape(color.RGBA(0, 0, 0, 127), 0, hor, assets.Area{})
-		if nowHovered == widgetCounter {
+		if IsHovered() {
 			mouse.SetCursor(cursor.Hand)
 		}
 		if IsClicked() {
@@ -127,7 +127,7 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
 		Shape(color.RGBA(0, 0, 0, 127), 0, ver, assets.Area{})
-		if nowHovered == widgetCounter {
+		if IsHovered() {
 			mouse.SetCursor(cursor.Hand)
 		}
 		if IsClicked() {
@@ -155,7 +155,7 @@ func Button(text string, area, mask assets.Area) {
 
 	update(area, mask, roundness)
 
-	if IsHovered() {
+	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
 		color = col.Brighten(baseColor, 0.15)
 	}
@@ -174,7 +174,7 @@ func Inputbox(text *string, area, mask assets.Area) {
 	mask = scaleMask(mask)
 	update(area, mask, roundness)
 
-	if IsHovered() {
+	if IsFocused() {
 		mouse.SetCursor(cursor.Input)
 	}
 
@@ -197,19 +197,20 @@ func Inputbox(text *string, area, mask assets.Area) {
 
 //=================================================================
 
-func IsHovered() bool       { return nowActive == widgetCounter }
-func IsJustHovered() bool   { return nowActive == widgetCounter && lastActive != widgetCounter }
-func IsJustUnhovered() bool { return lastActive == widgetCounter && nowActive != widgetCounter }
+func IsHovered() bool       { return nowHovered == widgetCounter }
+func IsFocused() bool       { return nowFocused == widgetCounter }
+func IsJustFocused() bool   { return nowFocused == widgetCounter && lastFocused != widgetCounter }
+func IsJustUnfocused() bool { return lastFocused == widgetCounter && nowFocused != widgetCounter }
 
 func IsClicked() bool     { return clickedWidget == widgetCounter }
 func IsJustClicked() bool { return justClickedWidget == widgetCounter }
 
-func IsJustDragged() bool { return IsHovered() && mouse.IsButtonJustPressed(button.Left) }
+func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
 func IsJustDropped() bool {
 	return lastClickedWidget == widgetCounter && !IsClicked() && mouse.IsButtonJustReleased(button.Left)
 }
 func IsJustDroppedUpon() bool {
-	return drag != (assets.Area{}) && nowHovered == widgetCounter && mouse.IsButtonJustReleased(button.Left)
+	return drag != (assets.Area{}) && IsHovered() && mouse.IsButtonJustReleased(button.Left)
 }
 func Drag() assets.Area {
 	if IsJustDragged() {
@@ -235,8 +236,8 @@ var skipUpdate = false // used for internal calls to the widget functions only f
 
 var nowHovered int  // the latest widget under the mouse on the current frame
 var lastHovered int // the hovered widget from the previous frame
-var nowActive int   // the active widget for interaction on the current frame
-var lastActive int  // the active widget from the previous frame
+var nowFocused int  // the focused widget for interaction on the current frame
+var lastFocused int // the focused widget from the previous frame
 
 var lastClickedWidget int // the widget that was clicked last frame
 var clickedWidget int     // the widget that was initially clicked and is being held
@@ -255,20 +256,20 @@ func update(area, mask assets.Area, roundness float32) {
 
 	if internal.Frame != lastUpdateOnFrame { // frame reset, runs exactly once on the first widget of a new frame
 		lastUpdateOnFrame = internal.Frame
-		lastActive = nowActive
+		lastFocused = nowFocused
 
 		if nowHovered == lastHovered {
-			nowActive = nowHovered // widget won input last frame AND won input this frame
+			nowFocused = nowHovered // widget won input last frame AND won input this frame
 		} else {
-			nowActive = 0 // focus broken or shifting
+			nowFocused = 0 // focus broken or shifting
 		}
 
 		lastClickedWidget = clickedWidget
 		justClickedWidget = 0
 		if mouse.IsButtonJustPressed(button.Left) {
-			clickedWidget = nowActive //  lock the active widget to whatever is currently hovered
+			clickedWidget = nowFocused //  lock the active widget to whatever is currently hovered
 		} else if mouse.IsButtonJustReleased(button.Left) {
-			if clickedWidget != 0 && clickedWidget == nowActive { // same widget we started clicking on?
+			if clickedWidget != 0 && clickedWidget == nowFocused { // same widget we started clicking on?
 				justClickedWidget = clickedWidget
 			}
 			clickedWidget = 0 // clear the lock
