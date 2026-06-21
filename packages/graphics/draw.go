@@ -362,7 +362,8 @@ func (v *View) windowArea() Area {
 	return v.WindowArea
 }
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
-	var offsetX, offsetY, dstW, dstH = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
+	var symbol = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
+	var offsetX, offsetY, dstW, dstH = symbol.X, symbol.Y, symbol.Width, symbol.Height
 	if newWidth != 0 {
 		dstW = newWidth
 	}

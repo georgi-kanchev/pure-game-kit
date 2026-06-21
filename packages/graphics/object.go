@@ -267,10 +267,10 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 					wHeight = originalLineHeight * wsz
 					continue
 				}
-				var wOffX, _, wW, _ = o.TextFontId.SymbolArea(wr, wHeight)
+				var symbol = o.TextFontId.SymbolArea(wr, wHeight)
 				var wGlyph = font.Chars[wr]
 				wX += wPrev.Kernings[wr] * wHeight
-				wPrev, wTotal = wGlyph, max(wX+wOffX+wW, wTotal)
+				wPrev, wTotal = wGlyph, max(wX+symbol.X+symbol.Width, wTotal)
 				wX += wGlyph.Advance*wHeight + gapX
 			}
 			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width-o.Effects.TextMarginX {

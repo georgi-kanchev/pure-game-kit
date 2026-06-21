@@ -44,7 +44,7 @@ func (f FontId) Unload() {
 	ImageId(font.AtlasId).Unload()
 	delete(internal.Fonts, uint8(f))
 }
-func (f FontId) SymbolArea(symbol rune, lineHeight float32) (offsetX, offsetY, width, height float32) {
+func (f FontId) SymbolArea(symbol rune, lineHeight float32) Area {
 	var font, has = internal.Fonts[uint8(f)]
 	if !has {
 		font = internal.Fonts[0]
@@ -56,20 +56,19 @@ func (f FontId) SymbolArea(symbol rune, lineHeight float32) (offsetX, offsetY, w
 	if symbol == ' ' {
 		w, h = lineHeight/3, lineHeight
 	}
-
-	return x, y, w, h
+	return Area{X: x, Y: y, Width: w, Height: h}
 }
 func (f FontId) EmbedImage(symbol rune, imageId ImageId) {
 	var font, has = internal.Fonts[uint8(f)]
 	if !has {
 		font = internal.Fonts[0]
 	}
-	var img = internal.Images[int32(imageId)]
-	var aspect = img.CropWidth / img.CropHeight
+	var i = internal.Images[int32(imageId)]
+	var aspect = i.CropWidth / i.CropHeight
 	var g = font.Chars[symbol]
 	g.EmbededImageId = int32(imageId)
 	g.Advance = aspect
 	g.PlaneBounds = internal.Bounds{Left: 0, Top: font.Ascender, Right: aspect, Bottom: font.Ascender + 1}
-	g.AtlasBounds = internal.Bounds{Left: img.CropX, Top: img.CropY, Right: img.CropX + img.CropWidth, Bottom: img.CropY + img.CropHeight}
+	g.AtlasBounds = internal.Bounds{Left: i.CropX, Top: i.CropY, Right: i.CropX + i.CropWidth, Bottom: i.CropY + i.CropHeight}
 	font.Chars[symbol] = g
 }
