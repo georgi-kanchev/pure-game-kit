@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/utility/color"
-	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
@@ -29,8 +28,7 @@ func GUI() {
 	// window.SetTargetFPS(0)
 
 	var a float32
-	var unit1 = "hungry"
-	var btn = "drag me!"
+	var input = "hello, world!"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
@@ -52,11 +50,6 @@ func GUI() {
 				gui.Label("Victory", area, mask)
 			case 1:
 				gui.Label("(4 rounds)", area, mask)
-			case 4:
-				if gui.IsJustDroppedUpon() {
-					unit1 = "yummy"
-				}
-				gui.Label(unit1, area, mask)
 			case 5:
 				gui.Label("UNIT", area, mask)
 			}
@@ -64,14 +57,7 @@ func GUI() {
 		var area = gui.AreaHUD(0.5, 1, 450, 150)
 		area.X += 50
 		area.Y -= 50
-		gui.Button(btn, area, assets.Area{})
-		if gui.IsJustDragged() {
-			btn = "dragging..."
-		}
-		if gui.IsJustDropped() {
-			btn = "dropped!"
-		}
-		gui.Shape(palette.White, 1, gui.Drag(), assets.Area{})
+		gui.Inputbox(&input, area, assets.Area{})
 
 		view.DrawDebugInfo(false)
 	}

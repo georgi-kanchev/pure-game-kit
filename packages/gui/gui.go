@@ -80,7 +80,7 @@ func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
 }
 
 func Button(text string, area, mask assets.Area) {
-	const roundness = 1
+	const roundness = 0.2
 	var baseColor = palette.Gray
 	var color = baseColor
 	mask = scaleMask(mask)
@@ -99,6 +99,32 @@ func Button(text string, area, mask assets.Area) {
 	Shape(color, roundness, area, mask)
 	Label(text, area, mask)
 	skipUpdate = false
+}
+func Inputbox(text *string, area, mask assets.Area) {
+	const roundness = 0.2
+	var color = palette.DarkGray
+	mask = scaleMask(mask)
+	update(area, mask, roundness)
+
+	if IsHovered() {
+		mouse.SetCursor(cursor.Input)
+	}
+
+	obj.Effects = graphics.Effects(internal.DefaultEffects)
+	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
+	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
+	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.25)
+	view.DrawObject(&obj)
+
+	obj.Effects = graphics.Effects(internal.DefaultEffects)
+	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0, 0.5, false
+	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
+	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
+	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
+	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(mask)
+	obj.Effects.TextMarginX = 30
+	view.DrawObject(&obj)
 }
 
 //=================================================================
@@ -148,6 +174,8 @@ var lastClickedWidget int // the widget that was clicked last frame
 var clickedWidget int     // the widget that was initially clicked and is being held
 var justClickedWidget int // the widget that completed a full press-and-release cycle this frame
 var widgetArea, drag assets.Area
+
+var inputCursorIndex int
 
 func scaleMask(mask assets.Area) assets.Area {
 	return assets.Area{X: mask.X * Scale, Y: mask.Y * Scale, Width: mask.Width * Scale, Height: mask.Height * Scale}
