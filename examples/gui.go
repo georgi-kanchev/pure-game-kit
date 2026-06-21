@@ -31,7 +31,7 @@ func GUI() {
 		}
 
 		for i, c := range itemCols {
-			var area, mask = layout.Item(i, 0, ver)
+			var area, mask = layout.Item(i, hor, ver)
 			gui.Shape(c, 0, area, mask)
 			switch i {
 			case 0:

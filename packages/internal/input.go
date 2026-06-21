@@ -9,7 +9,7 @@ import (
 
 var Cursor int
 var Input []rune = make([]rune, 0, 8)
-var MouseX, MouseY, MouseDeltaX, MouseDeltaY, Scroll, SmoothScroll float32
+var MouseX, MouseY, MouseDeltaX, MouseDeltaY, ScrollX, SmoothScrollX, ScrollY, SmoothScrollY float32
 
 var Keys, KeysPrev [350]bool
 var KeyDurs [350]float32
@@ -20,8 +20,7 @@ var Btns, BtnsPrev [5]bool
 var AnyBtn, AnyBtnPrev bool
 
 func CacheInput() {
-	Input = Input[:0]
-	Scroll = 0
+	ScrollX, ScrollY, Input = 0, 0, Input[:0]
 	cacheKeyboard()
 	cacheMouse()
 }
@@ -51,7 +50,8 @@ func cacheMouse() {
 		}
 	}
 
-	Scroll += rl.GetMouseWheelMoveV().Y
+	var wheel = rl.GetMouseWheelMoveV()
+	ScrollX, ScrollY = ScrollX+wheel.X, ScrollY+wheel.Y
 	var pos = rl.GetMousePosition()
 	MouseDeltaX, MouseDeltaY = pos.X-MouseX, pos.Y-MouseY
 	MouseX, MouseY = pos.X, pos.Y
@@ -79,13 +79,19 @@ func cacheMouse() {
 	}
 
 	const scrollAccel, scrollDecay = 600.0, 8.0
-	SmoothScroll += Scroll * scrollAccel * FrameDelta
-	SmoothScroll *= number.Exponential(-scrollDecay * FrameDelta)
-	if SmoothScroll != 0 && number.IsWithin(SmoothScroll, 0, 0.0001) {
-		SmoothScroll = 0
+	SmoothScrollX += ScrollX * scrollAccel * FrameDelta
+	SmoothScrollY += ScrollY * scrollAccel * FrameDelta
+	SmoothScrollX *= number.Exponential(-scrollDecay * FrameDelta)
+	SmoothScrollY *= number.Exponential(-scrollDecay * FrameDelta)
+	if SmoothScrollX != 0 && number.IsWithin(SmoothScrollX, 0, 0.0001) {
+		SmoothScrollX = 0
+	}
+	if SmoothScrollY != 0 && number.IsWithin(SmoothScrollY, 0, 0.0001) {
+		SmoothScrollY = 0
 	}
 	if AnyBtn {
-		SmoothScroll = 0
+		SmoothScrollX = 0
+		SmoothScrollY = 0
 	}
 
 	if !WindowFocused {

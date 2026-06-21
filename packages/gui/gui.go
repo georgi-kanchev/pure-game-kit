@@ -4,6 +4,8 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/input/mouse/cursor"
@@ -86,18 +88,43 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		return
 	}
 	var box = layout.Boxes[boxId]
-	var _, contentH = box.ContentWidth, box.ContentHeight
-	var area = layoutId.Box(boxId)
-	var size = 10 * Scale
+	var size, area, contentW, contentH = 10 * Scale, layoutId.Box(boxId), box.ContentWidth, box.ContentHeight
 	var mx, my = view.MousePosition()
-	var _, mdy = view.MouseDelta()
+	var mdx, mdy = view.MouseDelta()
 	var hoveredX = mx > area.X-area.Width/2 && mx < area.X+area.Width/2
 	var hoveredY = my > area.Y-area.Height/2 && my < area.Y+area.Height/2
-	if contentH > area.Height {
+	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
+	if horizontal != nil && contentW > area.Width {
+		var hor = assets.Area{X: area.X, Y: area.Y + area.Height/2 - size/2, Width: area.Width, Height: size}
+		var handle = assets.Area{Y: hor.Y, Width: (area.Width / contentW) * area.Width, Height: size}
+		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
+		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
+		Shape(color.RGBA(0, 0, 0, 127), 0, hor, assets.Area{})
+		if nowHovered == widgetCounter {
+			mouse.SetCursor(cursor.Hand)
+		}
+		if IsClicked() {
+			instant = true
+		}
+		Shape(palette.White, 1, handle, assets.Area{})
+		if instant && mouse.IsButtonJustPressed(button.Left) {
+			handle.X = mx
+		}
+		if IsClicked() || instant {
+			handle.X += mdx
+		}
+		if shift && hoveredX && hoveredY {
+			handle.X -= mouse.ScrollSmoothY()
+		} else if !shift && hoveredX && hoveredY {
+			handle.X -= mouse.ScrollSmoothX()
+		}
+		handle.X = number.Limit(handle.X, left+handle.Width/2, right-handle.Width/2)
+		*horizontal = number.Map(handle.X, left+handle.Width/2, right-handle.Width/2, 0, 1)
+	}
+	if vertical != nil && contentH > area.Height {
 		var ver = assets.Area{X: area.X + area.Width/2 - size/2, Y: area.Y, Width: size, Height: area.Height}
 		var handle = assets.Area{X: ver.X, Width: size, Height: (area.Height / contentH) * area.Height}
-		var top, bot = ver.Y - ver.Height/2, ver.Y + ver.Height/2
-		var instant = false
+		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
 		Shape(color.RGBA(0, 0, 0, 127), 0, ver, assets.Area{})
 		if nowHovered == widgetCounter {
@@ -107,14 +134,14 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 			instant = true
 		}
 		Shape(palette.White, 1, handle, assets.Area{})
-		if IsClicked() {
-			handle.Y += mdy
-		}
-		if instant {
+		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.Y = my
 		}
-		if hoveredX && hoveredY {
-			handle.Y -= mouse.ScrollSmooth()
+		if IsClicked() || instant {
+			handle.Y += mdy
+		}
+		if !shift && hoveredX && hoveredY {
+			handle.Y -= mouse.ScrollSmoothY()
 		}
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
 		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)

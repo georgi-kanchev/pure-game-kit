@@ -6,8 +6,10 @@ func SetCursor(cursor int) { i.Cursor = cursor }
 
 func CursorDelta() (x, y float32) { return i.MouseDeltaX, i.MouseDeltaY }
 
-func Scroll() float32       { return i.Scroll }
-func ScrollSmooth() float32 { return i.SmoothScroll }
+func ScrollY() float32       { return i.ScrollY }
+func ScrollSmoothY() float32 { return i.SmoothScrollY }
+func ScrollX() float32       { return i.ScrollX }       // laptop touchpad has it
+func ScrollSmoothX() float32 { return i.SmoothScrollX } // laptop touchpad has it
 
 func IsButtonPressed(button int) bool      { return i.Btns[button] }
 func IsButtonJustPressed(button int) bool  { return i.Btns[button] && !i.BtnsPrev[button] }

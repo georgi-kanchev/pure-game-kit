@@ -24,7 +24,7 @@ func NewView(zoom float32) View { return View{Zoom: zoom} }
 // =================================================================
 
 func (v *View) MouseDragAndZoom() {
-	var oldZoom, scroll = v.Zoom, mouse.Scroll()
+	var oldZoom, scroll = v.Zoom, mouse.ScrollY()
 
 	if scroll != 0 {
 		v.Zoom *= 1 + 0.05*scroll
@@ -42,7 +42,7 @@ func (v *View) MouseDragAndZoom() {
 	}
 }
 func (v *View) MouseDragAndZoomSmoothly() {
-	var oldZoom, scroll = v.Zoom, mouse.ScrollSmooth()
+	var oldZoom, scroll = v.Zoom, mouse.ScrollSmoothY()
 
 	if scroll != 0 {
 		v.Zoom *= 1 + 0.001*scroll
