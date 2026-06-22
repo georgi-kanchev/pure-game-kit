@@ -2,14 +2,3 @@
 // The view's drawing consists of two categories: primitives and objects. While using the assets for drawing,
 // the graphical objects are still very lightweight and exist independently of them.
 package graphics
-
-import (
-	"pure-game-kit/packages/internal"
-)
-
-type Area = internal.Area
-type Effects internal.Effects
-
-func NewArea(x, y, width, height float32) Area {
-	return Area{X: x, Y: y, Width: width, Height: height}
-}

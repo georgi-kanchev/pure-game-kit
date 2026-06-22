@@ -1,6 +1,7 @@
 package graphics
 
 import (
+	geometry "pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
 	"pure-game-kit/packages/internal"
@@ -10,7 +11,7 @@ import (
 type View struct {
 	X, Y, Zoom, Angle float32
 
-	WindowArea Area // The drawing area in window space. Zero value = entire window.
+	WindowArea geometry.Area // The drawing area in window space. Zero value = entire window.
 
 	//=================================================================
 

@@ -2,6 +2,7 @@ package example
 
 import (
 	"pure-game-kit/packages/assets"
+	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
 	"pure-game-kit/packages/utility/color"
@@ -27,7 +28,7 @@ func GUI() {
 	var input = "hello, world!"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
-			gui.Shape(c, 0, layout.Box(i), assets.Area{})
+			gui.Shape(c, 0, layout.Box(i), geometry.Area{})
 		}
 
 		for i, c := range itemCols {
@@ -45,7 +46,7 @@ func GUI() {
 		var area = gui.AreaHUD(0.5, 1, 450, 150)
 		area.X += 50
 		area.Y -= 50
-		gui.Inputbox(&input, area, assets.Area{})
+		gui.Inputbox(&input, area, geometry.Area{})
 
 		gui.Scrolls(layout, 3, &hor, &ver)
 

@@ -3,6 +3,7 @@ package example
 import (
 	"fmt"
 	"pure-game-kit/packages/assets"
+	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/debug"
@@ -36,10 +37,10 @@ func Tiled() {
 			view.DrawObject(&l)
 		}
 		for _, s := range shapes {
-			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.Red, graphics.Area{})
+			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.Red, geometry.Area{})
 		}
 		for _, s := range cellShapes {
-			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed, graphics.Area{})
+			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed, geometry.Area{})
 		}
 
 		view.DrawGrid(0.3, 16, 16, palette.DarkGray)

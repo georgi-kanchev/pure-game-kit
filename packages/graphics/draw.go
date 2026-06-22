@@ -3,6 +3,7 @@ package graphics
 import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/execution/condition"
+	geometry "pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/angle"
 	"pure-game-kit/packages/utility/color/palette"
@@ -37,7 +38,7 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 		if number.DivisionRemainder(x, spacingX*10) == 0 {
 			t *= 3
 		}
-		v.DrawShape(x, (top+bottom)/2, bottom-top, t, 90, 1, color, Area{})
+		v.DrawShape(x, (top+bottom)/2, bottom-top, t, 90, 1, color, geometry.Area{})
 	}
 
 	for y := top; y <= bottom; y += spacingY { // horizontal
@@ -45,17 +46,17 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 		if number.DivisionRemainder(y, spacingY*10) == 0 {
 			t *= 3
 		}
-		v.DrawShape((left+right)/2, y, right-left, t, 0, 1, color, Area{})
+		v.DrawShape((left+right)/2, y, right-left, t, 0, 1, color, geometry.Area{})
 	}
 
 	if top <= 0 && bottom >= 0 {
-		v.DrawShape((left+right)/2, 0, right-left, thickness*6, 0, 1, color, Area{})
+		v.DrawShape((left+right)/2, 0, right-left, thickness*6, 0, 1, color, geometry.Area{})
 	}
 	if left <= 0 && right >= 0 {
-		v.DrawShape(0, (top+bottom)/2, bottom-top, thickness*6, 90, 1, color, Area{})
+		v.DrawShape(0, (top+bottom)/2, bottom-top, thickness*6, 90, 1, color, geometry.Area{})
 	}
 }
-func (v *View) DrawPath(points []float32, thickness float32, color uint, mask Area) {
+func (v *View) DrawPath(points []float32, thickness float32, color uint, mask geometry.Area) {
 	if len(points) < 4 {
 		return
 	}
@@ -76,19 +77,19 @@ func (v *View) DrawPath(points []float32, thickness float32, color uint, mask Ar
 		v.DrawShape(midX, midY, dist, thickness, ang, 0, color, mask)
 	}
 }
-func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint, mask Area) {
+func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint, mask geometry.Area) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Mask = 0, "", 0, 0, mask
 	v.DrawObject(obj)
 }
-func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint, mask Area) {
+func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint, mask geometry.Area) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask = angle, 0, tint, 0, mask
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, imageId
 	v.DrawObject(obj)
 }
-func (v *View) DrawText(text string, x, y, lineHeight float32, fontId assets.FontId, color uint, mask Area) {
+func (v *View) DrawText(text string, x, y, lineHeight float32, fontId assets.FontId, color uint, mask geometry.Area) {
 	obj.Effects, obj.Mask = Effects(internal.DefaultEffects), mask
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 9999, 9999, 0, 0
 	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = v.Angle, 0, palette.White, 0
@@ -124,7 +125,7 @@ func (v *View) DrawObject(object *Object) {
 	}
 
 	var mask = internal.Area(o.Mask)
-	if o.Mask != (Area{}) {
+	if o.Mask != (geometry.Area{}) {
 		mask.X += float32(internal.WindowWidth) / 2
 		mask.Y += float32(internal.WindowHeight) / 2
 	}
@@ -238,8 +239,8 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	var tlx, tly = v.PointFromScreen(5, 15)
 	var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*15)/v.Zoom)
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
-	v.DrawText(str, tlx, tly, size, 0, palette.White, Area{})
-	v.DrawText(debug.MemoryUsage(), x, y, size, 0, palette.White, Area{})
+	v.DrawText(str, tlx, tly, size, 0, palette.White, geometry.Area{})
+	v.DrawText(debug.MemoryUsage(), x, y, size, 0, palette.White, geometry.Area{})
 	// rl.DrawText(str, 10, 15, 32, rl.White)
 	// rl.DrawText(debug.MemoryUsage(), 10, 400, 32, rl.White)
 
@@ -312,7 +313,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 				}
 				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
 				var x, y = dst.X + dst.Width/2, dst.Y + dst.Height/2
-				var area = NewArea(src.X, src.Y, src.Width, src.Height)
+				var area = geometry.NewArea(src.X, src.Y, src.Width, src.Height)
 				eff.FillColor, eff.OutlineColor = 0, 0
 				v.queueQuad(x, y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, area, eff, mask)
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
@@ -336,7 +337,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
 }
-func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop Area, eff *internal.Effects, mask internal.Area) {
+func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.Area, eff *internal.Effects, mask internal.Area) {
 	var tex = internal.Images[imageId]
 	var prevFill = eff.FillColor
 	var kind uint8
@@ -346,8 +347,8 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop Area, eff
 	} else {
 		kind = internal.KindSprite
 	}
-	if crop == (Area{}) {
-		crop = NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+	if crop == (geometry.Area{}) {
+		crop = geometry.NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
 	}
 	var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
 	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
@@ -355,9 +356,9 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop Area, eff
 	eff.FillColor = prevFill
 }
 
-func (v *View) windowArea() Area {
-	if v.WindowArea == (Area{}) {
-		return NewArea(0, 0, internal.WindowWidth, internal.WindowHeight)
+func (v *View) windowArea() geometry.Area {
+	if v.WindowArea == (geometry.Area{}) {
+		return geometry.NewArea(0, 0, internal.WindowWidth, internal.WindowHeight)
 	}
 	return v.WindowArea
 }

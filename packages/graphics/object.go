@@ -9,16 +9,18 @@ import (
 	txt "pure-game-kit/packages/utility/text"
 )
 
+type Effects internal.Effects
+
 type Object struct {
 	geometry.Shape
 
-	Mask    Area // In window space.
+	Mask    geometry.Area // In window space.
 	Effects Effects
 
 	// image ==========================================================
 
 	ImageId   assets.ImageId
-	ImageCrop Area // Zero value = original asset image (or asset crop)
+	ImageCrop geometry.Area // Zero value = original asset image (or asset crop)
 
 	// text ===========================================================
 

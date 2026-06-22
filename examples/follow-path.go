@@ -63,15 +63,15 @@ func FollowPath() {
 		}
 
 		// cam.DrawLinesPath(3, color.Red, paths...)
-		view.DrawPath(p1, 5, randomColors[0], graphics.Area{})
-		view.DrawPath(p2, 5, randomColors[1], graphics.Area{})
-		view.DrawPath(p3, 5, randomColors[2], graphics.Area{})
-		view.DrawPath(p4, 5, randomColors[3], graphics.Area{})
-		view.DrawPath(p5, 5, randomColors[4], graphics.Area{})
-		view.DrawPath(p6, 5, randomColors[5], graphics.Area{})
-		view.DrawPath(p7, 5, randomColors[6], graphics.Area{})
-		view.DrawPath(p8, 5, randomColors[7], graphics.Area{})
-		view.DrawPath(result, 2, palette.Red, graphics.Area{})
+		view.DrawPath(p1, 5, randomColors[0], geometry.Area{})
+		view.DrawPath(p2, 5, randomColors[1], geometry.Area{})
+		view.DrawPath(p3, 5, randomColors[2], geometry.Area{})
+		view.DrawPath(p4, 5, randomColors[3], geometry.Area{})
+		view.DrawPath(p5, 5, randomColors[4], geometry.Area{})
+		view.DrawPath(p6, 5, randomColors[5], geometry.Area{})
+		view.DrawPath(p7, 5, randomColors[6], geometry.Area{})
+		view.DrawPath(p8, 5, randomColors[7], geometry.Area{})
+		view.DrawPath(result, 2, palette.Red, geometry.Area{})
 
 		view.DrawDebugInfo(true)
 	}

@@ -3,6 +3,7 @@ package assets
 import (
 	_ "embed"
 
+	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/file"
@@ -44,7 +45,7 @@ func (f FontId) Unload() {
 	ImageId(font.AtlasId).Unload()
 	delete(internal.Fonts, uint8(f))
 }
-func (f FontId) SymbolArea(symbol rune, lineHeight float32) Area {
+func (f FontId) SymbolArea(symbol rune, lineHeight float32) geometry.Area {
 	var font, has = internal.Fonts[uint8(f)]
 	if !has {
 		font = internal.Fonts[0]
@@ -56,7 +57,7 @@ func (f FontId) SymbolArea(symbol rune, lineHeight float32) Area {
 	if symbol == ' ' {
 		w, h = lineHeight/3, lineHeight
 	}
-	return Area{X: x, Y: y, Width: w, Height: h}
+	return geometry.Area{X: x, Y: y, Width: w, Height: h}
 }
 func (f FontId) EmbedImage(symbol rune, imageId ImageId) {
 	var font, has = internal.Fonts[uint8(f)]

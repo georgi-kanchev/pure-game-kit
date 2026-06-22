@@ -2,6 +2,7 @@ package example
 
 import (
 	"pure-game-kit/packages/assets"
+	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
@@ -18,7 +19,7 @@ func Translations() {
 	bulgarian.Unload()
 
 	for window.KeepOpen() {
-		view.DrawText(lang.Translate(tag), 0, 0, 100, 0, palette.White, graphics.Area{})
+		view.DrawText(lang.Translate(tag), 0, 0, 100, 0, palette.White, geometry.Area{})
 		// view.DrawText(0, 100, 100, 0, palette.White, bulgarian.Translate(tag, graphics.Area{}))
 	}
 }

@@ -21,7 +21,7 @@ var Scale float32 = 1
 // horizontal/vertical 0..1 screen edge percent
 //
 // width/height 0..1 = screen edge percent, > 1 = absolute screen pixels
-func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
+func AreaHUD(horizontal, vertical, width, height float32) geometry.Area {
 	if width >= 0 && width <= 1 {
 		var w, _ = view.Size()
 		width = w * width
@@ -36,10 +36,10 @@ func AreaHUD(horizontal, vertical, width, height float32) assets.Area {
 	var tlx, tly = view.PointFromEdge(0, 0)
 	var brx, bry = view.PointFromEdge(1, 1)
 	var x, y = number.Map(horizontal, 0, 1, tlx+width/2, brx-width/2), number.Map(vertical, 0, 1, tly+height/2, bry-height/2)
-	return assets.Area{X: x, Y: y, Width: width, Height: height}
+	return geometry.Area{X: x, Y: y, Width: width, Height: height}
 }
 
-func Label(text string, area, mask assets.Area) {
+func Label(text string, area, mask geometry.Area) {
 	mask = scaleMask(mask)
 	update(area, mask, 0)
 
@@ -51,19 +51,19 @@ func Label(text string, area, mask assets.Area) {
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, text, area.Height*0.8, palette.White
-	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(mask)
+	obj.X, obj.Y, obj.Mask = area.X, area.Y, mask
 	// obj.Text = txt.New(WidgetCounter)
 
 	view.DrawObject(&obj)
 }
-func Shape(color uint, roundness float32, area, mask assets.Area) {
+func Shape(color uint, roundness float32, area, mask geometry.Area) {
 	mask = scaleMask(mask)
 	update(area, mask, roundness)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, mask, ""
 	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.25)
 
 	// obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0, 0, false
@@ -71,14 +71,14 @@ func Shape(color uint, roundness float32, area, mask assets.Area) {
 
 	view.DrawObject(&obj)
 }
-func Image(imageId assets.ImageId, tint uint, area, mask assets.Area) {
+func Image(imageId assets.ImageId, tint uint, area, mask geometry.Area) {
 	mask = scaleMask(mask)
 	update(area, mask, 0)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = imageId, tint, 0
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, mask, ""
 	view.DrawObject(&obj)
 }
 
@@ -91,63 +91,61 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	var size, area, contentW, contentH = 10 * Scale, layoutId.Box(boxId), box.ContentWidth, box.ContentHeight
 	var mx, my = view.MousePosition()
 	var mdx, mdy = view.MouseDelta()
-	var hoveredX = mx > area.X-area.Width/2 && mx < area.X+area.Width/2
-	var hoveredY = my > area.Y-area.Height/2 && my < area.Y+area.Height/2
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	if horizontal != nil && contentW > area.Width {
-		var hor = assets.Area{X: area.X, Y: area.Y + area.Height/2 - size/2, Width: area.Width, Height: size}
-		var handle = assets.Area{Y: hor.Y, Width: (area.Width / contentW) * area.Width, Height: size}
+		var hor = geometry.Area{X: area.X, Y: area.Y + area.Height/2 - size/2, Width: area.Width, Height: size}
+		var handle = geometry.Area{Y: hor.Y, Width: (area.Width / contentW) * area.Width, Height: size}
 		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
-		Shape(color.RGBA(0, 0, 0, 127), 0, hor, assets.Area{})
+		Shape(color.RGBA(0, 0, 0, 127), 0, hor, geometry.Area{})
 		if IsHovered() {
 			mouse.SetCursor(cursor.Hand)
 		}
 		if IsClicked() {
 			instant = true
 		}
-		Shape(palette.White, 1, handle, assets.Area{})
+		Shape(palette.White, 1, handle, geometry.Area{})
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.X = mx
 		}
 		if IsClicked() || instant {
 			handle.X += mdx
 		}
-		if shift && hoveredX && hoveredY {
-			handle.X -= mouse.ScrollSmoothY()
-		} else if !shift && hoveredX && hoveredY {
-			handle.X -= mouse.ScrollSmoothX()
+		if shift && area.ContainsPoint(mx, my) {
+			handle.X -= mouse.ScrollY() * scrollSpeed
+		} else if !shift && area.ContainsPoint(mx, my) {
+			handle.X -= mouse.ScrollX() * scrollSpeed
 		}
 		handle.X = number.Limit(handle.X, left+handle.Width/2, right-handle.Width/2)
 		*horizontal = number.Map(handle.X, left+handle.Width/2, right-handle.Width/2, 0, 1)
 	}
 	if vertical != nil && contentH > area.Height {
-		var ver = assets.Area{X: area.X + area.Width/2 - size/2, Y: area.Y, Width: size, Height: area.Height}
-		var handle = assets.Area{X: ver.X, Width: size, Height: (area.Height / contentH) * area.Height}
+		var ver = geometry.Area{X: area.X + area.Width/2 - size/2, Y: area.Y, Width: size, Height: area.Height}
+		var handle = geometry.Area{X: ver.X, Width: size, Height: (area.Height / contentH) * area.Height}
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
-		Shape(color.RGBA(0, 0, 0, 127), 0, ver, assets.Area{})
+		Shape(color.RGBA(0, 0, 0, 127), 0, ver, geometry.Area{})
 		if IsHovered() {
 			mouse.SetCursor(cursor.Hand)
 		}
 		if IsClicked() {
 			instant = true
 		}
-		Shape(palette.White, 1, handle, assets.Area{})
+		Shape(palette.White, 1, handle, geometry.Area{})
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.Y = my
 		}
 		if IsClicked() || instant {
 			handle.Y += mdy
 		}
-		if !shift && hoveredX && hoveredY {
-			handle.Y -= mouse.ScrollSmoothY()
+		if !shift && area.ContainsPoint(mx, my) {
+			handle.Y -= mouse.ScrollY() * scrollSpeed
 		}
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
 		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)
 	}
 }
-func Button(text string, area, mask assets.Area) {
+func Button(text string, area, mask geometry.Area) {
 	const roundness = 0.2
 	var baseColor = palette.Gray
 	var color = baseColor
@@ -168,7 +166,7 @@ func Button(text string, area, mask assets.Area) {
 	Label(text, area, mask)
 	skipUpdate = false
 }
-func Inputbox(text *string, area, mask assets.Area) {
+func Inputbox(text *string, area, mask geometry.Area) {
 	const roundness = 0.2
 	var color = palette.DarkGray
 	mask = scaleMask(mask)
@@ -181,7 +179,7 @@ func Inputbox(text *string, area, mask assets.Area) {
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, graphics.Area(mask), ""
+	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, mask, ""
 	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.25)
 	view.DrawObject(&obj)
 
@@ -190,7 +188,7 @@ func Inputbox(text *string, area, mask assets.Area) {
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
-	obj.X, obj.Y, obj.Mask = area.X, area.Y, graphics.Area(mask)
+	obj.X, obj.Y, obj.Mask = area.X, area.Y, mask
 	obj.Effects.TextMarginX = 30
 	view.DrawObject(&obj)
 }
@@ -210,9 +208,9 @@ func IsJustDropped() bool {
 	return lastClickedWidget == widgetCounter && !IsClicked() && mouse.IsButtonJustReleased(button.Left)
 }
 func IsJustDroppedUpon() bool {
-	return drag != (assets.Area{}) && IsHovered() && mouse.IsButtonJustReleased(button.Left)
+	return drag != (geometry.Area{}) && IsHovered() && mouse.IsButtonJustReleased(button.Left)
 }
-func Drag() assets.Area {
+func Drag() geometry.Area {
 	if IsJustDragged() {
 		drag = widgetArea
 	}
@@ -221,7 +219,7 @@ func Drag() assets.Area {
 		drag.X, drag.Y = drag.X+mx/Scale, drag.Y+my/Scale
 	}
 	if mouse.IsButtonJustReleased(button.Left) {
-		drag = assets.Area{}
+		drag = geometry.Area{}
 	}
 	return drag
 }
@@ -233,6 +231,7 @@ var obj graphics.Object
 var lastUpdateOnFrame uint64
 var widgetCounter = 0  // resets every frame, each widget increases it, used for id
 var skipUpdate = false // used for internal calls to the widget functions only for drawing (no input)
+const scrollSpeed float32 = 20
 
 var nowHovered int  // the latest widget under the mouse on the current frame
 var lastHovered int // the hovered widget from the previous frame
@@ -242,14 +241,14 @@ var lastFocused int // the focused widget from the previous frame
 var lastClickedWidget int // the widget that was clicked last frame
 var clickedWidget int     // the widget that was initially clicked and is being held
 var justClickedWidget int // the widget that completed a full press-and-release cycle this frame
-var widgetArea, drag assets.Area
+var widgetArea, drag geometry.Area
 
 var inputCursorIndex int
 
-func scaleMask(mask assets.Area) assets.Area {
-	return assets.Area{X: mask.X * Scale, Y: mask.Y * Scale, Width: mask.Width * Scale, Height: mask.Height * Scale}
+func scaleMask(mask geometry.Area) geometry.Area {
+	return geometry.Area{X: mask.X * Scale, Y: mask.Y * Scale, Width: mask.Width * Scale, Height: mask.Height * Scale}
 }
-func update(area, mask assets.Area, roundness float32) {
+func update(area, mask geometry.Area, roundness float32) {
 	if skipUpdate {
 		return
 	}
@@ -292,7 +291,7 @@ func update(area, mask assets.Area, roundness float32) {
 	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)
 	var maskHor = mx >= mask.X && mx <= mask.X+mask.Width
 	var maskVer = my >= mask.Y && my <= mask.Y+mask.Height
-	var maskCheck = mask == (assets.Area{}) || (mask != (assets.Area{}) && maskHor && maskVer)
+	var maskCheck = mask == (geometry.Area{}) || (mask != (geometry.Area{}) && maskHor && maskVer)
 	if shape.ContainsPoint(mx, my) && maskCheck {
 		nowHovered = widgetCounter // top-most logic: later widgets naturally overwrite earlier widgets
 	}

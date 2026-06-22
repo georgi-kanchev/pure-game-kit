@@ -72,27 +72,28 @@ func CollisionGrid() {
 				if len(atCell) > 0 {
 					col = palette.DarkGreen
 				}
-				view.DrawShape(float32(x)*cellSize+cellSize/2, float32(y)*cellSize+cellSize/2, cellSize, cellSize, 0, 0, col, graphics.Area{})
+				var sx, sy = float32(x)*cellSize + cellSize/2, float32(y)*cellSize + cellSize/2
+				view.DrawShape(sx, sy, cellSize, cellSize, 0, 0, col, geometry.Area{})
 			}
 		}
 
 		var bx, by, bw, bh = player.Bounds()
-		view.DrawShape(bx+bw/2, by+bh/2, bw, bh, 0, 0, color.RGBA(0, 0, 0, 128), graphics.Area{})
+		view.DrawShape(bx+bw/2, by+bh/2, bw, bh, 0, 0, color.RGBA(0, 0, 0, 128), geometry.Area{})
 
 		view.DrawGrid(1, cellSize, cellSize, palette.Gray)
 
 		grid.All(&all)
 		for _, sh := range all {
-			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.LightGray, graphics.Area{})
+			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.LightGray, geometry.Area{})
 		}
 		for _, sh := range neighbors {
-			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.Yellow, graphics.Area{})
+			view.DrawShape(sh.X, sh.Y, sh.Width, sh.Height, sh.Angle, sh.Roundness, palette.Yellow, geometry.Area{})
 		}
-		view.DrawShape(player.X, player.Y, player.Width, player.Height, player.Angle, player.Roundness, palette.White, graphics.Area{})
+		view.DrawShape(player.X, player.Y, player.Width, player.Height, player.Angle, player.Roundness, palette.White, geometry.Area{})
 
 		var mx, my = view.MousePosition()
 		grid.FindPathDiagonally(player.X, player.Y, mx, my, true, &pathPts)
-		view.DrawPath(pathPts, 5, palette.Cyan, graphics.Area{})
+		view.DrawPath(pathPts, 5, palette.Cyan, geometry.Area{})
 		view.DrawDebugInfo(true)
 	}
 }

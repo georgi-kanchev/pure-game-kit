@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/number"
@@ -8,7 +9,6 @@ import (
 	"pure-game-kit/packages/utility/text"
 )
 
-type Area = internal.Area
 type LayoutId uint32
 
 func LoadLayout(xmlPath string) LayoutId {
@@ -45,33 +45,33 @@ func (l LayoutId) Unload() {
 	delete(internal.Layouts, uint32(l))
 }
 
-func (l LayoutId) Box(id int) (area Area) {
+func (l LayoutId) Box(id int) (area geometry.Area) {
 	var layout = internal.Layouts[uint32(l)]
 	if layout == nil {
-		return Area{}
+		return geometry.Area{}
 	}
 	var rx, ry, rw, rh, rv = boxDynamic(layout, id, 0)
 	if !rv {
-		return Area{} // not visible
+		return geometry.Area{} // not visible
 	}
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	area = Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
+	area = geometry.Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
 	return area
 }
-func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask Area) {
+func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Area) {
 	var layout = internal.Layouts[uint32(l)]
 	if layout == nil || id < 0 || id >= len(layout.Items) {
-		return Area{}, Area{}
+		return geometry.Area{}, geometry.Area{}
 	}
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
 	var rx, ry, rw, rh, rv = itemDynamic(layout, id, scrollX, scrollY, sc)
 	if !rv {
-		return Area{}, Area{} // not visible
+		return geometry.Area{}, geometry.Area{} // not visible
 	}
 	var ownerId = layout.Items[id].BoxId
 	var o = l.Box(int(ownerId))
-	area = Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
-	mask = Area{X: (o.X - o.Width/2), Y: (o.Y - o.Height/2), Width: o.Width, Height: o.Height}
+	area = geometry.Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
+	mask = geometry.Area{X: (o.X - o.Width/2), Y: (o.Y - o.Height/2), Width: o.Width, Height: o.Height}
 	return area, mask
 }
 
