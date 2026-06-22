@@ -114,7 +114,7 @@ func (v *View) Bounds() (x, y, width, height float32) {
 
 func (v *View) PointFromScreen(screenX, screenY float32) (x, y float32) {
 	var wa = v.windowArea()
-	x, y = screenX-(wa.X+wa.Width/2), screenY-(wa.Y+wa.Height/2)
+	x, y = screenX-wa.X, screenY-wa.Y
 	if v.Zoom != 0 {
 		x, y = x/v.Zoom, y/v.Zoom
 	}
@@ -134,7 +134,7 @@ func (v *View) PointToScreen(x, y float32) (screenX, screenY float32) {
 		x, y = x*v.Zoom, y*v.Zoom
 	}
 	var wa = v.windowArea()
-	return x + (wa.X + wa.Width/2), y + (wa.Y + wa.Height/2)
+	return x + wa.X, y + wa.Y
 }
 func (v *View) PointFromView(otherView *View, otherX, otherY float32) (myX, myY float32) {
 	return v.PointFromScreen(otherView.PointToScreen(otherX, otherY))
@@ -144,5 +144,5 @@ func (v *View) PointToView(otherView *View, myX, myY float32) (otherX, otherY fl
 }
 func (v *View) PointFromEdge(horizontal, vertical float32) (x, y float32) {
 	var wa = v.windowArea()
-	return v.PointFromScreen(wa.X+wa.Width*horizontal, wa.Y+wa.Height*vertical)
+	return v.PointFromScreen(wa.X-wa.Width/2+wa.Width*horizontal, wa.Y-wa.Height/2+wa.Height*vertical)
 }

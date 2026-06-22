@@ -23,21 +23,21 @@ func Views() {
 		obj.Roundness = number.Map(number.Sine(time.Running()/3), -1, 1, 0, 1)
 
 		var w, h = window.Size()
-		left.WindowArea = geometry.NewArea(0, 0, w/2, h)
+		left.WindowArea = geometry.NewArea(w/4, h/2, w/2, h)
 		left.Angle += time.Delta() * 10
 		left.DrawColor(palette.DarkGray)
 		left.DrawGrid(2, 100, 100, palette.Gray)
 		left.DrawObject(&obj)
-		var lx, ly = left.PointFromScreen(left.WindowArea.X+10, left.WindowArea.Y+10)
+		var lx, ly = left.PointFromScreen(left.WindowArea.X-left.WindowArea.Width/2+10, left.WindowArea.Y-left.WindowArea.Height/2+10)
 		left.DrawText("Left View", lx, ly, 100, 0, palette.White, geometry.Area{})
 
 		var margin float32 = 300
-		right.WindowArea = geometry.NewArea(w/2-margin/2, margin/2, w/2-margin, h-margin)
+		right.WindowArea = geometry.NewArea(3*w/4-margin, h/2, w/2-margin, h-margin)
 		right.Zoom = number.Map(number.Sine(time.Running()/3), -1, 1, 0.2, 4)
 		right.DrawColor(palette.Gray)
 		right.DrawGrid(2, 100, 100, palette.LightGray)
 		right.DrawObject(&obj)
-		var rx, ry = right.PointFromScreen(right.WindowArea.X+10, right.WindowArea.Y+10)
+		var rx, ry = right.PointFromScreen(right.WindowArea.X-right.WindowArea.Width/2+10, right.WindowArea.Y-right.WindowArea.Height/2+10)
 		right.DrawText("Right View", rx, ry, 100, 0, palette.White, geometry.Area{})
 
 		left.DrawDebugInfo(true)

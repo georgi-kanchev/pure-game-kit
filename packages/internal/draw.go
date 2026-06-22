@@ -107,8 +107,8 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	}
 
 	if ViewArea != (Area{}) {
-		dst.X += ViewArea.X + ViewArea.Width/2 - float32(WindowWidth)/2
-		dst.Y += ViewArea.Y + ViewArea.Height/2 - float32(WindowHeight)/2
+		dst.X += ViewArea.X - float32(WindowWidth)/2
+		dst.Y += ViewArea.Y - float32(WindowHeight)/2
 	}
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -370,7 +370,7 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, tileTex rl.Te
 }
 
 func clipPolygonAABB(poly, outBuf, tempBuf []Vertex, mask Area) int32 {
-	var minX, maxX, minY, maxY = mask.X, mask.X + mask.Width, mask.Y, mask.Y + mask.Height
+	var minX, maxX, minY, maxY = mask.X - mask.Width/2, mask.X + mask.Width/2, mask.Y - mask.Height/2, mask.Y + mask.Height/2
 	var count = clipPolyEdge(poly, tempBuf, true, minX, true)
 	if count == 0 {
 		return 0
@@ -442,10 +442,11 @@ func areaIntersection(a, b Area) Area {
 	} else if b == (Area{}) {
 		return a
 	}
-	var ax2, ay2, bx2, by2 = a.X + a.Width, a.Y + a.Height, b.X + b.Width, b.Y + b.Height
-	var ix, iy, ix2, iy2 = max(a.X, b.X), max(a.Y, b.Y), min(ax2, bx2), min(ay2, by2)
-	if ix >= ix2 || iy >= iy2 {
+	var al, at, ar, ab = a.X - a.Width/2, a.Y - a.Height/2, a.X + a.Width/2, a.Y + a.Height/2
+	var bl, bt, br, bb = b.X - b.Width/2, b.Y - b.Height/2, b.X + b.Width/2, b.Y + b.Height/2
+	var il, it, ir, ib = max(al, bl), max(at, bt), min(ar, br), min(ab, bb)
+	if il >= ir || it >= ib {
 		return Area{}
 	}
-	return Area{X: ix, Y: iy, Width: ix2 - ix, Height: iy2 - iy}
+	return Area{X: (il + ir) / 2, Y: (it + ib) / 2, Width: ir - il, Height: ib - it}
 }

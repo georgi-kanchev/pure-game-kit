@@ -71,7 +71,7 @@ func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Ar
 	var ownerId = layout.Items[id].BoxId
 	var o = l.Box(int(ownerId))
 	area = geometry.Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
-	mask = geometry.Area{X: (o.X - o.Width/2), Y: (o.Y - o.Height/2), Width: o.Width, Height: o.Height}
+	mask = geometry.Area{X: o.X, Y: o.Y, Width: o.Width, Height: o.Height}
 	return area, mask
 }
 

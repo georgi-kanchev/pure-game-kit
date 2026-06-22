@@ -289,8 +289,8 @@ func update(area, mask geometry.Area, roundness float32) {
 
 	var mx, my = view.MousePosition()
 	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)
-	var maskHor = mx >= mask.X && mx <= mask.X+mask.Width
-	var maskVer = my >= mask.Y && my <= mask.Y+mask.Height
+	var maskHor = mx >= mask.X-mask.Width/2 && mx <= mask.X+mask.Width/2
+	var maskVer = my >= mask.Y-mask.Height/2 && my <= mask.Y+mask.Height/2
 	var maskCheck = mask == (geometry.Area{}) || (mask != (geometry.Area{}) && maskHor && maskVer)
 	if shape.ContainsPoint(mx, my) && maskCheck {
 		nowHovered = widgetCounter // top-most logic: later widgets naturally overwrite earlier widgets

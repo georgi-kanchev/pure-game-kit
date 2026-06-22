@@ -313,7 +313,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 				}
 				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
 				var x, y = dst.X + dst.Width/2, dst.Y + dst.Height/2
-				var area = geometry.NewArea(src.X, src.Y, src.Width, src.Height)
+				var area = geometry.NewArea(src.X+src.Width/2, src.Y+src.Height/2, src.Width, src.Height)
 				eff.FillColor, eff.OutlineColor = 0, 0
 				v.queueQuad(x, y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, area, eff, mask)
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
@@ -348,9 +348,9 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.
 		kind = internal.KindSprite
 	}
 	if crop == (geometry.Area{}) {
-		crop = geometry.NewArea(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
+		crop = geometry.NewArea(tex.CropX+tex.CropWidth/2, tex.CropY+tex.CropHeight/2, tex.CropWidth, tex.CropHeight)
 	}
-	var src = rl.NewRectangle(crop.X, crop.Y, crop.Width, crop.Height)
+	var src = rl.NewRectangle(crop.X-crop.Width/2, crop.Y-crop.Height/2, crop.Width, crop.Height)
 	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
 	internal.Queue(tex.Texture, rl.Texture2D{}, src, dst, a, r, mask, eff, kind, 0, 0, 0)
 	eff.FillColor = prevFill
@@ -358,7 +358,7 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.
 
 func (v *View) windowArea() geometry.Area {
 	if v.WindowArea == (geometry.Area{}) {
-		return geometry.NewArea(0, 0, internal.WindowWidth, internal.WindowHeight)
+		return geometry.NewArea(internal.WindowWidth/2, internal.WindowHeight/2, internal.WindowWidth, internal.WindowHeight)
 	}
 	return v.WindowArea
 }
