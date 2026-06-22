@@ -92,6 +92,7 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	var mx, my = view.MousePosition()
 	var mdx, mdy = view.MouseDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
+	var hovered = area.ContainsPoint(mx, my)
 	if horizontal != nil && contentW > area.Width {
 		var hor = geometry.Area{X: area.X, Y: area.Y + area.Height/2 - size/2, Width: area.Width, Height: size}
 		var handle = geometry.Area{Y: hor.Y, Width: (area.Width / contentW) * area.Width, Height: size}
@@ -111,9 +112,12 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		if IsClicked() || instant {
 			handle.X += mdx
 		}
-		if shift && area.ContainsPoint(mx, my) {
+		if hovered && mouse.IsButtonPressed(button.Middle) {
+			handle.X -= mdx * (hor.Width - handle.Width) / (contentW - area.Width)
+		}
+		if shift && hovered {
 			handle.X -= mouse.ScrollY() * scrollSpeed
-		} else if !shift && area.ContainsPoint(mx, my) {
+		} else if !shift && hovered {
 			handle.X -= mouse.ScrollX() * scrollSpeed
 		}
 		handle.X = number.Limit(handle.X, left+handle.Width/2, right-handle.Width/2)
@@ -138,7 +142,10 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		if IsClicked() || instant {
 			handle.Y += mdy
 		}
-		if !shift && area.ContainsPoint(mx, my) {
+		if hovered && mouse.IsButtonPressed(button.Middle) {
+			handle.Y -= mdy * (ver.Height - handle.Height) / (contentH - area.Height)
+		}
+		if !shift && hovered {
 			handle.Y -= mouse.ScrollY() * scrollSpeed
 		}
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
