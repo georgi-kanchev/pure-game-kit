@@ -92,17 +92,24 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	var mx, my = view.MousePosition()
 	var mdx, mdy = view.MouseDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
-	var hovered = area.ContainsPoint(mx, my)
-	if hovered && mouse.IsButtonJustPressed(button.Middle) {
-		scrollDraggedLayoutId = layoutId
-		scrollDraggedBoxId = boxId
+	var hovered, hasHor, hasVer = area.ContainsPoint(mx, my), contentW > area.Width, contentH > area.Height
+	if internal.Frame != lastScrollFrame {
+		lastScrollFrame, lastScrollHoveredLayoutId = internal.Frame, scrollHoveredLayoutId
+		lastScrollHoveredBoxId, scrollHoveredLayoutId, scrollHoveredBoxId = scrollHoveredBoxId, 0, 0
+	}
+	if hovered {
+		scrollHoveredLayoutId, scrollHoveredBoxId = layoutId, boxId
+	}
+	if lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBoxId == boxId && mouse.IsButtonJustPressed(button.Middle) {
+		scrollDraggedLayoutId, scrollDraggedBoxId = layoutId, boxId
 	}
 	if mouse.IsButtonJustReleased(button.Middle) || !mouse.IsButtonPressed(button.Middle) {
-		scrollDraggedLayoutId = 0
-		scrollDraggedBoxId = 0
+		scrollDraggedLayoutId, scrollDraggedBoxId = 0, 0
 	}
+
 	var dragging = scrollDraggedLayoutId == layoutId && scrollDraggedBoxId == boxId && mouse.IsButtonPressed(button.Middle)
-	if horizontal != nil && contentW > area.Width {
+	var scrolling = lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBoxId == boxId
+	if horizontal != nil && hasHor {
 		var hor = geometry.Area{X: area.X, Y: area.Y + area.Height/2 - size/2, Width: area.Width, Height: size}
 		var handle = geometry.Area{Y: hor.Y, Width: (area.Width / contentW) * area.Width, Height: size}
 		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
@@ -112,27 +119,29 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 			mouse.SetCursor(cursor.Hand)
 		}
 		if IsClicked() {
-			instant = true
+			instant = true // use after widget Shape to account for limiting
 		}
 		Shape(palette.White, 1, handle, geometry.Area{})
 		if instant && mouse.IsButtonJustPressed(button.Left) {
-			handle.X = mx
+			handle.X = mx // click on scroll body (not handle)
 		}
 		if IsClicked() || instant {
-			handle.X += mdx
+			handle.X += mdx // dragging handle or scroll body after instant click
 		}
-		if dragging {
+		if dragging { // middle mouse button dragging on parent box
 			handle.X -= mdx * (hor.Width - handle.Width) / (contentW - area.Width)
 		}
-		if shift && hovered {
-			handle.X -= mouse.ScrollY() * scrollSpeed
-		} else if !shift && hovered {
-			handle.X -= mouse.ScrollX() * scrollSpeed
+		if scrolling {
+			if shift || !hasVer { // no vertical - so can be scrolled
+				handle.X -= mouse.ScrollY() * scrollSpeed
+			} else { // regular scrolling
+				handle.X -= mouse.ScrollX() * scrollSpeed
+			}
 		}
 		handle.X = number.Limit(handle.X, left+handle.Width/2, right-handle.Width/2)
 		*horizontal = number.Map(handle.X, left+handle.Width/2, right-handle.Width/2, 0, 1)
 	}
-	if vertical != nil && contentH > area.Height {
+	if vertical != nil && hasVer {
 		var ver = geometry.Area{X: area.X + area.Width/2 - size/2, Y: area.Y, Width: size, Height: area.Height}
 		var handle = geometry.Area{X: ver.X, Width: size, Height: (area.Height / contentH) * area.Height}
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
@@ -142,19 +151,19 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 			mouse.SetCursor(cursor.Hand)
 		}
 		if IsClicked() {
-			instant = true
+			instant = true // use after widget Shape to account for limiting
 		}
 		Shape(palette.White, 1, handle, geometry.Area{})
 		if instant && mouse.IsButtonJustPressed(button.Left) {
-			handle.Y = my
+			handle.Y = my // click on scroll body (not handle)
 		}
 		if IsClicked() || instant {
-			handle.Y += mdy
+			handle.Y += mdy // dragging handle or scroll body after instant click
 		}
-		if dragging {
+		if dragging { // middle mouse button dragging on parent box
 			handle.Y -= mdy * (ver.Height - handle.Height) / (contentH - area.Height)
 		}
-		if !shift && hovered {
+		if !shift && scrolling { // regular scrolling
 			handle.Y -= mouse.ScrollY() * scrollSpeed
 		}
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
@@ -216,8 +225,8 @@ func IsFocused() bool       { return nowFocused == widgetCounter }
 func IsJustFocused() bool   { return nowFocused == widgetCounter && lastFocused != widgetCounter }
 func IsJustUnfocused() bool { return lastFocused == widgetCounter && nowFocused != widgetCounter }
 
-func IsClicked() bool       { return clickedWidget == widgetCounter }
-func IsJustClicked() bool   { return justClickedWidget == widgetCounter }
+func IsClicked() bool     { return clickedWidget == widgetCounter }
+func IsJustClicked() bool { return justClickedWidget == widgetCounter }
 
 func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
 func IsJustDropped() bool {
@@ -254,11 +263,16 @@ var lastHovered int // the hovered widget from the previous frame
 var nowFocused int  // the focused widget for interaction on the current frame
 var lastFocused int // the focused widget from the previous frame
 
-var lastClickedWidget int   // the widget that was clicked last frame
-var clickedWidget int       // the widget that was initially clicked and is being held
-var justClickedWidget int   // the widget that completed a full press-and-release cycle this frame
+var lastClickedWidget int // the widget that was clicked last frame
+var clickedWidget int     // the widget that was initially clicked and is being held
+var justClickedWidget int // the widget that completed a full press-and-release cycle this frame
 var scrollDraggedLayoutId assets.LayoutId
 var scrollDraggedBoxId int
+var scrollHoveredLayoutId assets.LayoutId
+var scrollHoveredBoxId int
+var lastScrollHoveredLayoutId assets.LayoutId
+var lastScrollHoveredBoxId int
+var lastScrollFrame uint64
 var widgetArea, drag geometry.Area
 
 var inputCursorIndex int
