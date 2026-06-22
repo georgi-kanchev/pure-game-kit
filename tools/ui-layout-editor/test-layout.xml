@@ -16,6 +16,9 @@
     <box id="4" name="Buttons" namePos="bl" col="#e84040" vis="1"
         rect="113.83 302.98 455.33 17.02" expr="tx tdy tw mh" tar="0 3 0 "
         itSz="40 20" itSp="0 0" itGap="0" itNewRow="0" itAl="0.5 0.5" />
+    <box id="5" name="Box 6" namePos="bl" col="#909098" vis="1"
+        rect="241.5 142 200 100" expr="sux-25 sly-50 50 100" tar="   "
+        itSz="40 20" itSp="0 0" itGap="0" itNewRow="0" itAl="0 0" />
   </boxes>
   <items>
     <item id="0" boxId="1" name="Victory" vis="1" size="40 13.95" expr="mx my mw mh" newRow="0" newRowExpr="" />
@@ -25,8 +28,8 @@
     <item id="4" boxId="3" name="Unit 1" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
     <item id="5" boxId="3" name="Unit 2" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
     <item id="6" boxId="3" name="Unit 3" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
-    <item id="7" boxId="3" name="Unit 4" vis="1" size="151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
-    <item id="8" boxId="3" name="Unit 5" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="7" boxId="3" name="Unit 4" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="8" boxId="3" name="Unit 5" vis="1" size="151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
     <item id="9" boxId="3" name="Unit 6" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
     <item id="10" boxId="3" name="Unit 7" vis="1" size="151.78 55" expr="mx my mw mh" newRow="1" newRowExpr="mnr" />
     <item id="11" boxId="3" name="Unit 8" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
@@ -38,5 +41,9 @@
     <item id="17" boxId="3" name="Unit 14" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
     <item id="18" boxId="3" name="Unit 15" vis="1" size="151.78 55" expr="mx my mw mh" newRow="0" newRowExpr="" />
     <item id="19" boxId="4" name="Leave" vis="1" size="40 17.02" expr="mx my mw oh" newRow="0" newRowExpr="" />
+    <item id="20" boxId="5" name="Item 1" vis="1" size="40 20" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="21" boxId="5" name="Item 2" vis="1" size="40 20" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="22" boxId="5" name="Item 3" vis="1" size="40 20" expr="mx my mw mh" newRow="0" newRowExpr="" />
+    <item id="23" boxId="5" name="Item 4" vis="1" size="40 20" expr="mx my mw mh" newRow="0" newRowExpr="" />
   </items>
 </layout>

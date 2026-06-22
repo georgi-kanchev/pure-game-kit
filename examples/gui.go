@@ -6,6 +6,7 @@ import (
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
 	"pure-game-kit/packages/utility/color"
+	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
 )
 
@@ -25,6 +26,7 @@ func GUI() {
 	// window.SetTargetFPS(0)
 
 	var hor, ver float32
+	var hor2, ver2 float32
 	var input = "hello, world!"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
@@ -49,6 +51,13 @@ func GUI() {
 		gui.Inputbox(&input, area, geometry.Area{})
 
 		gui.Scrolls(layout, 3, &hor, &ver)
+
+		gui.Shape(palette.Azure, 0, layout.Box(5), geometry.Area{})
+		gui.Scrolls(layout, 5, &hor2, &ver2)
+		for i := range 4 {
+			var area, mask = layout.Item(20+i, hor2, ver2)
+			gui.Shape(palette.Beige, 0, area, mask)
+		}
 
 		view.DrawDebugInfo(false)
 	}

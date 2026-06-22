@@ -93,6 +93,15 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	var mdx, mdy = view.MouseDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var hovered = area.ContainsPoint(mx, my)
+	if hovered && mouse.IsButtonJustPressed(button.Middle) {
+		scrollDraggedLayoutId = layoutId
+		scrollDraggedBoxId = boxId
+	}
+	if mouse.IsButtonJustReleased(button.Middle) || !mouse.IsButtonPressed(button.Middle) {
+		scrollDraggedLayoutId = 0
+		scrollDraggedBoxId = 0
+	}
+	var dragging = scrollDraggedLayoutId == layoutId && scrollDraggedBoxId == boxId && mouse.IsButtonPressed(button.Middle)
 	if horizontal != nil && contentW > area.Width {
 		var hor = geometry.Area{X: area.X, Y: area.Y + area.Height/2 - size/2, Width: area.Width, Height: size}
 		var handle = geometry.Area{Y: hor.Y, Width: (area.Width / contentW) * area.Width, Height: size}
@@ -112,7 +121,7 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		if IsClicked() || instant {
 			handle.X += mdx
 		}
-		if hovered && mouse.IsButtonPressed(button.Middle) {
+		if dragging {
 			handle.X -= mdx * (hor.Width - handle.Width) / (contentW - area.Width)
 		}
 		if shift && hovered {
@@ -142,7 +151,7 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		if IsClicked() || instant {
 			handle.Y += mdy
 		}
-		if hovered && mouse.IsButtonPressed(button.Middle) {
+		if dragging {
 			handle.Y -= mdy * (ver.Height - handle.Height) / (contentH - area.Height)
 		}
 		if !shift && hovered {
@@ -207,8 +216,8 @@ func IsFocused() bool       { return nowFocused == widgetCounter }
 func IsJustFocused() bool   { return nowFocused == widgetCounter && lastFocused != widgetCounter }
 func IsJustUnfocused() bool { return lastFocused == widgetCounter && nowFocused != widgetCounter }
 
-func IsClicked() bool     { return clickedWidget == widgetCounter }
-func IsJustClicked() bool { return justClickedWidget == widgetCounter }
+func IsClicked() bool       { return clickedWidget == widgetCounter }
+func IsJustClicked() bool   { return justClickedWidget == widgetCounter }
 
 func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
 func IsJustDropped() bool {
@@ -245,9 +254,11 @@ var lastHovered int // the hovered widget from the previous frame
 var nowFocused int  // the focused widget for interaction on the current frame
 var lastFocused int // the focused widget from the previous frame
 
-var lastClickedWidget int // the widget that was clicked last frame
-var clickedWidget int     // the widget that was initially clicked and is being held
-var justClickedWidget int // the widget that completed a full press-and-release cycle this frame
+var lastClickedWidget int   // the widget that was clicked last frame
+var clickedWidget int       // the widget that was initially clicked and is being held
+var justClickedWidget int   // the widget that completed a full press-and-release cycle this frame
+var scrollDraggedLayoutId assets.LayoutId
+var scrollDraggedBoxId int
 var widgetArea, drag geometry.Area
 
 var inputCursorIndex int
