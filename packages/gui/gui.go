@@ -86,8 +86,9 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	if layout == nil {
 		return
 	}
+	var scrollSpeed = 20 / Scale
 	var box = layout.Boxes[boxId]
-	var size, area, contentW, contentH = 10 * Scale, layoutId.Box(boxId), box.ContentWidth, box.ContentHeight
+	var size, area, contentW, contentH = 12 * Scale, layoutId.Box(boxId), box.ContentWidth, box.ContentHeight
 	var mx, my = view.MousePosition()
 	var mdx, mdy = view.MouseDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
@@ -217,6 +218,48 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	view.DrawObject(&obj)
 }
 
+// Negative step hides the indicators.
+func Slider(value *float32, step float32, area, mask geometry.Area) {
+	const roundness = 1
+	var baseColor = palette.Gray
+	var color = baseColor
+	var dragging = false
+	var left, right = area.X - area.Width/2, area.X + area.Width/2
+	var x = number.Map(*value, 0, 1, left+area.Height/2, right-area.Height/2)
+
+	mask = scaleMask(mask)
+
+	Shape(palette.DarkGray, roundness, area, mask)
+	if IsFocused() {
+		mouse.SetCursor(cursor.Hand)
+		color = col.Brighten(baseColor, 0.15)
+	}
+	if IsClicked() {
+		color = col.Darken(color, 0.15)
+		dragging = true
+	}
+
+	skipUpdate = true
+	if step > 0 {
+		var minX = left + area.Height/2
+		var maxX = right - area.Height/2
+		var stepSize = number.Map(step, 0, 1, area.Height/20, area.Height/2)
+		for t := float32(0.0); t <= 1.0+0.001; t += step {
+			var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
+			Shape(palette.DarkGray, 1, stepArea, mask)
+		}
+	}
+	Shape(color, 1, geometry.NewArea(x, area.Y, area.Height, area.Height), mask)
+
+	if dragging {
+		x, _ = view.MousePosition()
+	}
+	x = number.Limit(x, left+area.Height/2, right-area.Height/2)
+	*value = number.Map(x, left+area.Height/2, right-area.Height/2, 0, 1)
+	*value = number.Snap(*value, number.Absolute(step))
+	skipUpdate = false
+}
+
 //=================================================================
 
 func IsHovered() bool       { return nowHovered == widgetCounter }
@@ -249,8 +292,6 @@ func Drag() geometry.Area {
 }
 
 // private ========================================================
-
-const scrollSpeed float32 = 20
 
 var view graphics.View
 var obj graphics.Object

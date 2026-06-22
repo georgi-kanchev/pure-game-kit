@@ -27,9 +27,11 @@ func GUI() {
 
 	// window.SetTargetFPS(0)
 
+	gui.Scale = 1.5
+
 	var hor, ver float32
 	var hor2, ver2 float32
-	var input = "hello, world!"
+	var value float32
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			gui.Shape(c, 0, layout.Box(i), geometry.Area{})
@@ -47,10 +49,10 @@ func GUI() {
 				gui.Label("UNIT", area, mask)
 			}
 		}
-		var area = gui.AreaHUD(0.5, 1, 450, 150)
+		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.X += 50
 		area.Y -= 50
-		gui.Inputbox(&input, area, geometry.Area{})
+		gui.Slider(&value, 0.1, area, geometry.Area{})
 		gui.Scrolls(layout, 3, &hor, &ver)
 
 		if keyboard.IsKeyPressed(key.A) {
