@@ -60,7 +60,7 @@ func (f FontId) SymbolArea(symbol rune, lineHeight float32) geometry.Area {
 	if symbol == ' ' {
 		w, h = lineHeight/3, lineHeight
 	}
-	return geometry.Area{X: x, Y: y, Width: w, Height: h}
+	return geometry.NewArea(x, y, w, h)
 }
 func (f FontId) EmbedImage(symbol rune, imageId ImageId) {
 	var font, has = internal.Fonts[uint8(f)]

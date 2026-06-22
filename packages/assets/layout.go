@@ -55,7 +55,7 @@ func (l LayoutId) Box(id int) (area geometry.Area) {
 		return geometry.Area{} // not visible
 	}
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	area = geometry.Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
+	area = geometry.NewArea((rx+rw/2)*sc, (ry+rh/2)*sc, rw*sc, rh*sc)
 	return area
 }
 func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Area) {
@@ -70,8 +70,8 @@ func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Ar
 	}
 	var ownerId = layout.Items[id].BoxId
 	var o = l.Box(int(ownerId))
-	area = geometry.Area{X: (rx + rw/2) * sc, Y: (ry + rh/2) * sc, Width: rw * sc, Height: rh * sc}
-	mask = geometry.Area{X: o.X, Y: o.Y, Width: o.Width, Height: o.Height}
+	area = geometry.NewArea((rx+rw/2)*sc, (ry+rh/2)*sc, rw*sc, rh*sc)
+	mask = geometry.NewArea(o.X, o.Y, o.Width, o.Height)
 	return area, mask
 }
 

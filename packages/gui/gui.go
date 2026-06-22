@@ -36,7 +36,7 @@ func AreaHUD(horizontal, vertical, width, height float32) geometry.Area {
 	var tlx, tly = view.PointFromEdge(0, 0)
 	var brx, bry = view.PointFromEdge(1, 1)
 	var x, y = number.Map(horizontal, 0, 1, tlx+width/2, brx-width/2), number.Map(vertical, 0, 1, tly+height/2, bry-height/2)
-	return geometry.Area{X: x, Y: y, Width: width, Height: height}
+	return geometry.NewArea(x, y, width, height)
 }
 
 func Label(text string, area, mask geometry.Area) {
@@ -110,8 +110,8 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	var dragging = scrollDraggedLayoutId == layoutId && scrollDraggedBoxId == boxId && mouse.IsButtonPressed(button.Middle)
 	var scrolling = lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBoxId == boxId
 	if horizontal != nil && hasHor {
-		var hor = geometry.Area{X: area.X, Y: area.Y + area.Height/2 - size/2, Width: area.Width, Height: size}
-		var handle = geometry.Area{Y: hor.Y, Width: (area.Width / contentW) * area.Width, Height: size}
+		var hor = geometry.NewArea(area.X, area.Y+area.Height/2-size/2, area.Width, size)
+		var handle = geometry.NewArea(0, hor.Y, (area.Width/contentW)*area.Width, size)
 		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
 		Shape(color.RGBA(0, 0, 0, 127), 0, hor, geometry.Area{})
@@ -142,8 +142,8 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 		*horizontal = number.Map(handle.X, left+handle.Width/2, right-handle.Width/2, 0, 1)
 	}
 	if vertical != nil && hasVer {
-		var ver = geometry.Area{X: area.X + area.Width/2 - size/2, Y: area.Y, Width: size, Height: area.Height}
-		var handle = geometry.Area{X: ver.X, Width: size, Height: (area.Height / contentH) * area.Height}
+		var ver = geometry.NewArea(area.X+area.Width/2-size/2, area.Y, size, area.Height)
+		var handle = geometry.NewArea(ver.X, 0, size, (area.Height/contentH)*area.Height)
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
 		Shape(color.RGBA(0, 0, 0, 127), 0, ver, geometry.Area{})
@@ -278,7 +278,7 @@ var widgetArea, drag geometry.Area
 var inputCursorIndex int
 
 func scaleMask(mask geometry.Area) geometry.Area {
-	return geometry.Area{X: mask.X * Scale, Y: mask.Y * Scale, Width: mask.Width * Scale, Height: mask.Height * Scale}
+	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)
 }
 func update(area, mask geometry.Area, roundness float32) {
 	if skipUpdate {
