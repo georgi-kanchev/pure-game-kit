@@ -86,7 +86,7 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	if layout == nil {
 		return
 	}
-	var scrollSpeed = 20 / Scale
+	var scrollSpeed = 40 / Scale
 	var box = layout.Boxes[boxId]
 	var size, area, contentW, contentH = 12 * Scale, layoutId.Box(boxId), box.ContentWidth, box.ContentHeight
 	var mx, my = view.MousePosition()

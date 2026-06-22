@@ -27,7 +27,7 @@ func GUI() {
 
 	// window.SetTargetFPS(0)
 
-	gui.Scale = 1.5
+	gui.Scale = 1.2
 
 	var hor, ver float32
 	var hor2, ver2 float32
