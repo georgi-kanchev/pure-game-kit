@@ -90,7 +90,7 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	var box = layout.Boxes[boxId]
 	var size, area, contentW, contentH = 12 * Scale, layoutId.Box(boxId), box.ContentWidth, box.ContentHeight
 	var mx, my = view.MousePosition()
-	var mdx, mdy = view.MouseDelta()
+	var mdx, mdy = mouse.CursorDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var hovered, hasHor, hasVer = area.ContainsPoint(mx, my), contentW > area.Width, contentH > area.Height
 	if internal.Frame != lastScrollFrame {
@@ -126,10 +126,10 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 			handle.X = mx // click on scroll body (not handle)
 		}
 		if IsClicked() || instant {
-			handle.X += mdx // dragging handle or scroll body after instant click
+			handle.X += mdx / Scale // dragging handle or scroll body after instant click
 		}
 		if dragging { // middle mouse button dragging on parent box
-			handle.X -= mdx * (hor.Width - handle.Width) / (contentW - area.Width)
+			handle.X -= mdx / Scale * (hor.Width - handle.Width) / (contentW - area.Width)
 		}
 		if scrolling {
 			if shift || !hasVer { // no vertical - so can be scrolled
@@ -158,10 +158,10 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 			handle.Y = my // click on scroll body (not handle)
 		}
 		if IsClicked() || instant {
-			handle.Y += mdy // dragging handle or scroll body after instant click
+			handle.Y += mdy / Scale // dragging handle or scroll body after instant click
 		}
 		if dragging { // middle mouse button dragging on parent box
-			handle.Y -= mdy * (ver.Height - handle.Height) / (contentH - area.Height)
+			handle.Y -= mdy / Scale * (ver.Height - handle.Height) / (contentH - area.Height)
 		}
 		if !shift && scrolling { // regular scrolling
 			handle.Y -= mouse.ScrollY() * scrollSpeed

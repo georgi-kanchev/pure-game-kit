@@ -49,11 +49,12 @@ func GUI() {
 				gui.Label("UNIT", area, mask)
 			}
 		}
+		gui.Scrolls(layout, 3, &hor, &ver)
+
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.X += 50
 		area.Y -= 50
 		gui.Slider(&value, 0.1, area, geometry.Area{})
-		gui.Scrolls(layout, 3, &hor, &ver)
 
 		if keyboard.IsKeyPressed(key.A) {
 			gui.Shape(palette.Azure, 0, layout.Box(5), geometry.Area{})
