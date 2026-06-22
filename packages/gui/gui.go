@@ -95,20 +95,20 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	var hovered, hasHor, hasVer = area.ContainsPoint(mx, my), contentW > area.Width, contentH > area.Height
 	if internal.Frame != lastScrollFrame {
 		lastScrollFrame, lastScrollHoveredLayoutId = internal.Frame, scrollHoveredLayoutId
-		lastScrollHoveredBoxId, scrollHoveredLayoutId, scrollHoveredBoxId = scrollHoveredBoxId, 0, 0
+		lastScrollHoveredBox, scrollHoveredLayoutId, scrollHoveredBox = scrollHoveredBox, 0, 0
 	}
 	if hovered {
-		scrollHoveredLayoutId, scrollHoveredBoxId = layoutId, boxId
+		scrollHoveredLayoutId, scrollHoveredBox = layoutId, boxId
 	}
-	if lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBoxId == boxId && mouse.IsButtonJustPressed(button.Middle) {
-		scrollDraggedLayoutId, scrollDraggedBoxId = layoutId, boxId
+	if lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBox == boxId && mouse.IsButtonJustPressed(button.Middle) {
+		scrollDraggedLayoutId, scrollDraggedBox = layoutId, boxId
 	}
 	if mouse.IsButtonJustReleased(button.Middle) || !mouse.IsButtonPressed(button.Middle) {
-		scrollDraggedLayoutId, scrollDraggedBoxId = 0, 0
+		scrollDraggedLayoutId, scrollDraggedBox = 0, 0
 	}
 
-	var dragging = scrollDraggedLayoutId == layoutId && scrollDraggedBoxId == boxId && mouse.IsButtonPressed(button.Middle)
-	var scrolling = lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBoxId == boxId
+	var dragging = scrollDraggedLayoutId == layoutId && scrollDraggedBox == boxId && mouse.IsButtonPressed(button.Middle)
+	var scrolling = lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBox == boxId
 	if horizontal != nil && hasHor {
 		var hor = geometry.NewArea(area.X, area.Y+area.Height/2-size/2, area.Width, size)
 		var handle = geometry.NewArea(0, hor.Y, (area.Width/contentW)*area.Width, size)
@@ -251,28 +251,18 @@ func Drag() geometry.Area {
 
 // private ========================================================
 
-var view graphics.View
-var obj graphics.Object
-var lastUpdateOnFrame uint64
-var widgetCounter = 0  // resets every frame, each widget increases it, used for id
-var skipUpdate = false // used for internal calls to the widget functions only for drawing (no input)
 const scrollSpeed float32 = 20
 
-var nowHovered int  // the latest widget under the mouse on the current frame
-var lastHovered int // the hovered widget from the previous frame
-var nowFocused int  // the focused widget for interaction on the current frame
-var lastFocused int // the focused widget from the previous frame
+var view graphics.View
+var obj graphics.Object
+var skipUpdate bool   // used for internal calls to the widget functions only for drawing (no input)
+var widgetCounter int // resets every frame, each widget increases it, used for id, checked against the below ids
 
-var lastClickedWidget int // the widget that was clicked last frame
-var clickedWidget int     // the widget that was initially clicked and is being held
-var justClickedWidget int // the widget that completed a full press-and-release cycle this frame
-var scrollDraggedLayoutId assets.LayoutId
-var scrollDraggedBoxId int
-var scrollHoveredLayoutId assets.LayoutId
-var scrollHoveredBoxId int
-var lastScrollHoveredLayoutId assets.LayoutId
-var lastScrollHoveredBoxId int
-var lastScrollFrame uint64
+var nowHovered, lastHovered, nowFocused, lastFocused int
+var lastClickedWidget, clickedWidget, justClickedWidget int
+var scrollDraggedBox, scrollHoveredBox, lastScrollHoveredBox int
+var scrollDraggedLayoutId, scrollHoveredLayoutId, lastScrollHoveredLayoutId assets.LayoutId
+var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag geometry.Area
 
 var inputCursorIndex int
@@ -286,8 +276,7 @@ func update(area, mask geometry.Area, roundness float32) {
 	}
 
 	if internal.Frame != lastUpdateOnFrame { // frame reset, runs exactly once on the first widget of a new frame
-		lastUpdateOnFrame = internal.Frame
-		lastFocused = nowFocused
+		lastUpdateOnFrame, lastFocused = internal.Frame, nowFocused
 
 		if nowHovered == lastHovered {
 			nowFocused = nowHovered // widget won input last frame AND won input this frame
@@ -295,8 +284,7 @@ func update(area, mask geometry.Area, roundness float32) {
 			nowFocused = 0 // focus broken or shifting
 		}
 
-		lastClickedWidget = clickedWidget
-		justClickedWidget = 0
+		lastClickedWidget, justClickedWidget = clickedWidget, 0
 		if mouse.IsButtonJustPressed(button.Left) {
 			clickedWidget = nowFocused //  lock the active widget to whatever is currently hovered
 		} else if mouse.IsButtonJustReleased(button.Left) {
@@ -309,15 +297,11 @@ func update(area, mask geometry.Area, roundness float32) {
 		}
 
 		lastHovered = nowHovered
-		nowHovered = 0
-		widgetCounter = 0
-
-		view.Zoom = Scale
+		view.Zoom, nowHovered, widgetCounter = Scale, 0, 0
 		mouse.SetCursor(cursor.Arrow)
 	}
 
-	widgetCounter++
-	widgetArea = area
+	widgetCounter, widgetArea = widgetCounter+1, area
 
 	var mx, my = view.MousePosition()
 	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)
