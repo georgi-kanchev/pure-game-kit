@@ -222,11 +222,9 @@ func Inputbox(text *string, area, mask geometry.Area) {
 func Slider(value *float32, step float32, area, mask geometry.Area) {
 	const roundness = 1
 	var baseColor = palette.Gray
-	var color = baseColor
-	var dragging = false
+	var color, dragging = baseColor, false
 	var left, right = area.X - area.Width/2, area.X + area.Width/2
 	var x = number.Map(*value, 0, 1, left+area.Height/2, right-area.Height/2)
-
 	mask = scaleMask(mask)
 
 	Shape(palette.DarkGray, roundness, area, mask)
@@ -235,15 +233,12 @@ func Slider(value *float32, step float32, area, mask geometry.Area) {
 		color = col.Brighten(baseColor, 0.15)
 	}
 	if IsClicked() {
-		color = col.Darken(color, 0.15)
-		dragging = true
+		color, dragging = col.Darken(color, 0.15), true
 	}
 
 	skipUpdate = true
 	if step > 0 {
-		var minX = left + area.Height/2
-		var maxX = right - area.Height/2
-		var stepSize = number.Map(step, 0, 1, area.Height/20, area.Height/2)
+		var stepSize, minX, maxX = number.Map(step, 0, 1, area.Height/20, area.Height/2), left + area.Height/2, right - area.Height/2
 		for t := float32(0.0); t <= 1.0+0.001; t += step {
 			var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
 			Shape(palette.DarkGray, 1, stepArea, mask)
