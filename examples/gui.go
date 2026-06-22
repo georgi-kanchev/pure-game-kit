@@ -5,6 +5,8 @@ import (
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/gui"
+	"pure-game-kit/packages/input/keyboard"
+	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
@@ -49,14 +51,15 @@ func GUI() {
 		area.X += 50
 		area.Y -= 50
 		gui.Inputbox(&input, area, geometry.Area{})
-
 		gui.Scrolls(layout, 3, &hor, &ver)
 
-		gui.Shape(palette.Azure, 0, layout.Box(5), geometry.Area{})
-		gui.Scrolls(layout, 5, &hor2, &ver2)
-		for i := range 4 {
-			var area, mask = layout.Item(20+i, hor2, ver2)
-			gui.Shape(palette.Beige, 0, area, mask)
+		if keyboard.IsKeyPressed(key.A) {
+			gui.Shape(palette.Azure, 0, layout.Box(5), geometry.Area{})
+			gui.Scrolls(layout, 5, &hor2, &ver2)
+			for i := range 4 {
+				var area, mask = layout.Item(20+i, hor2, ver2)
+				gui.Shape(palette.Beige, 0, area, mask)
+			}
 		}
 
 		view.DrawDebugInfo(false)

@@ -31,8 +31,7 @@ func AreaHUD(horizontal, vertical, width, height float32) geometry.Area {
 		height = h * height
 	}
 
-	view.Zoom = Scale
-	width, height = width*Scale, height*Scale
+	width, height, view.Zoom = width*Scale, height*Scale, Scale
 	var tlx, tly = view.PointFromEdge(0, 0)
 	var brx, bry = view.PointFromEdge(1, 1)
 	var x, y = number.Map(horizontal, 0, 1, tlx+width/2, brx-width/2), number.Map(vertical, 0, 1, tly+height/2, bry-height/2)
