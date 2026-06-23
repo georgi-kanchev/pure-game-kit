@@ -39,12 +39,17 @@ func AreaHUD(horizontal, vertical, width, height float32) geometry.Area {
 }
 
 func Label(text string, area, mask geometry.Area) {
+	if area == (geometry.Area{}) {
+		return
+	}
+
 	mask = scaleMask(mask)
 	update(area, mask, 0)
 
 	if text == "" {
 		return
 	}
+
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0.5, 0.5, false
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
@@ -56,6 +61,9 @@ func Label(text string, area, mask geometry.Area) {
 	view.DrawObject(&obj)
 }
 func Shape(color uint, roundness float32, area, mask geometry.Area) {
+	if area == (geometry.Area{}) {
+		return
+	}
 	mask = scaleMask(mask)
 	update(area, mask, roundness)
 
@@ -71,6 +79,9 @@ func Shape(color uint, roundness float32, area, mask geometry.Area) {
 	view.DrawObject(&obj)
 }
 func Image(imageId assets.ImageId, tint uint, area, mask geometry.Area) {
+	if area == (geometry.Area{}) {
+		return
+	}
 	mask = scaleMask(mask)
 	update(area, mask, 0)
 
@@ -171,6 +182,9 @@ func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32)
 	}
 }
 func Button(text string, area, mask geometry.Area) {
+	if area == (geometry.Area{}) {
+		return
+	}
 	const roundness = 0.2
 	var baseColor = palette.Gray
 	var color = baseColor
@@ -192,6 +206,9 @@ func Button(text string, area, mask geometry.Area) {
 	skipUpdate = false
 }
 func Inputbox(text *string, area, mask geometry.Area) {
+	if area == (geometry.Area{}) {
+		return
+	}
 	const roundness = 0.2
 	var color = palette.DarkGray
 	mask = scaleMask(mask)
