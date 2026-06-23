@@ -280,9 +280,6 @@ func Drag() geometry.Area {
 		var mx, my = mouse.CursorDelta()
 		drag.X, drag.Y = drag.X+mx/Scale, drag.Y+my/Scale
 	}
-	if mouse.IsButtonJustReleased(button.Left) {
-		drag = geometry.Area{}
-	}
 	return drag
 }
 
@@ -299,6 +296,7 @@ var scrollDraggedBox, scrollHoveredBox, lastScrollHoveredBox int
 var scrollDraggedLayoutId, scrollHoveredLayoutId, lastScrollHoveredLayoutId assets.LayoutId
 var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag geometry.Area
+var droppedLastFrame bool
 
 var inputCursorIndex int
 
@@ -329,6 +327,14 @@ func update(area, mask geometry.Area, roundness float32) {
 			clickedWidget = 0 // clear the lock
 		} else if !mouse.IsButtonPressed(button.Left) {
 			clickedWidget = 0 // if the button not held, ensure nothing is active
+		}
+
+		if droppedLastFrame {
+			drag = geometry.Area{}
+			droppedLastFrame = false
+		}
+		if mouse.IsButtonJustReleased(button.Left) && drag != (geometry.Area{}) {
+			droppedLastFrame = true
 		}
 
 		lastHovered = nowHovered

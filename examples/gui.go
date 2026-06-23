@@ -27,11 +27,13 @@ func GUI() {
 
 	// window.SetTargetFPS(0)
 
-	gui.Scale = 1.2
+	gui.Scale = 1
 
 	var hor, ver float32
 	var hor2, ver2 float32
 	var value float32
+	var unit = "GIVE ME"
+	var dragging = geometry.Area{}
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			gui.Shape(c, 0, layout.Box(i), geometry.Area{})
@@ -40,13 +42,18 @@ func GUI() {
 		for i, c := range itemCols {
 			var area, mask = layout.Item(i, hor, ver)
 			gui.Shape(c, 0, area, mask)
+
 			switch i {
 			case 0:
 				gui.Label("Victory", area, mask)
+				dragging = gui.Drag()
 			case 1:
 				gui.Label("(4 rounds)", area, mask)
 			case 5:
-				gui.Label("UNIT", area, mask)
+				gui.Label(unit, area, mask)
+				if gui.IsJustDroppedUpon() {
+					unit = "yummy!"
+				}
 			}
 		}
 		gui.Scrolls(layout, 3, &hor, &ver)
@@ -64,6 +71,8 @@ func GUI() {
 				gui.Shape(palette.Beige, 0, area, mask)
 			}
 		}
+
+		gui.Shape(palette.Teal, 1, dragging, geometry.Area{})
 
 		view.DrawDebugInfo(false)
 	}
