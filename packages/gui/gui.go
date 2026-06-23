@@ -92,34 +92,30 @@ func Image(imageId assets.ImageId, tint uint, area, mask geometry.Area) {
 	view.DrawObject(&obj)
 }
 
-func Scrolls(layoutId assets.LayoutId, boxId int, horizontal, vertical *float32) {
-	var layout = internal.Layouts[uint32(layoutId)]
-	if layout == nil {
-		return
-	}
+func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area geometry.Area) {
 	var scrollSpeed = 40 / Scale
-	var box = layout.Boxes[boxId]
-	var size, area, contentW, contentH = 12 * Scale, layoutId.Box(boxId), box.ContentWidth, box.ContentHeight
+	var size, contentW, contentH = 12 * Scale, contentWidth, contentHeight
 	var mx, my = view.MousePosition()
 	var mdx, mdy = mouse.CursorDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var hovered, hasHor, hasVer = area.ContainsPoint(mx, my), contentW > area.Width, contentH > area.Height
+	var scrollId = widgetCounter
 	if internal.Frame != lastScrollFrame {
-		lastScrollFrame, lastScrollHoveredLayoutId = internal.Frame, scrollHoveredLayoutId
-		lastScrollHoveredBox, scrollHoveredLayoutId, scrollHoveredBox = scrollHoveredBox, 0, 0
+		lastScrollFrame, lastScrollHoveredWidget = internal.Frame, scrollHoveredWidget
+		scrollHoveredWidget = 0
 	}
 	if hovered {
-		scrollHoveredLayoutId, scrollHoveredBox = layoutId, boxId
+		scrollHoveredWidget = scrollId
 	}
-	if lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBox == boxId && mouse.IsButtonJustPressed(button.Middle) {
-		scrollDraggedLayoutId, scrollDraggedBox = layoutId, boxId
+	if lastScrollHoveredWidget == scrollId && mouse.IsButtonJustPressed(button.Middle) {
+		scrollDraggedWidget = scrollId
 	}
 	if mouse.IsButtonJustReleased(button.Middle) || !mouse.IsButtonPressed(button.Middle) {
-		scrollDraggedLayoutId, scrollDraggedBox = 0, 0
+		scrollDraggedWidget = 0
 	}
 
-	var dragging = scrollDraggedLayoutId == layoutId && scrollDraggedBox == boxId && mouse.IsButtonPressed(button.Middle)
-	var scrolling = lastScrollHoveredLayoutId == layoutId && lastScrollHoveredBox == boxId
+	var dragging = scrollDraggedWidget == scrollId && mouse.IsButtonPressed(button.Middle)
+	var scrolling = lastScrollHoveredWidget == scrollId
 	if horizontal != nil && hasHor {
 		var hor = geometry.NewArea(area.X, area.Y+area.Height/2-size/2, area.Width, size)
 		var handle = geometry.NewArea(0, hor.Y, (area.Width/contentW)*area.Width, size)
@@ -309,8 +305,7 @@ var widgetCounter int // resets every frame, each widget increases it, used for 
 
 var nowHovered, lastHovered, nowFocused, lastFocused int
 var lastClickedWidget, clickedWidget, justClickedWidget int
-var scrollDraggedBox, scrollHoveredBox, lastScrollHoveredBox int
-var scrollDraggedLayoutId, scrollHoveredLayoutId, lastScrollHoveredLayoutId assets.LayoutId
+var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
 var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag geometry.Area
 var droppedLastFrame bool

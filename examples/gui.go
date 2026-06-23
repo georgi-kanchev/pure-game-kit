@@ -32,7 +32,8 @@ func GUI() {
 	var value float32
 	for window.KeepOpen() {
 		for i, c := range boxCols {
-			gui.Shape(c, 0, layout.Box(i), geometry.Area{})
+			var area, _, _ = layout.Box(i)
+			gui.Shape(c, 0, area, geometry.Area{})
 		}
 
 		for i, c := range itemCols {
@@ -48,7 +49,6 @@ func GUI() {
 				gui.Label("UNIT", area, mask)
 			}
 		}
-		gui.Scrolls(layout, 3, &hor, &ver)
 
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.X += 50
@@ -56,13 +56,17 @@ func GUI() {
 		gui.Slider(&value, 0.1, area, geometry.Area{})
 
 		if keyboard.IsKeyPressed(key.A) {
-			gui.Shape(palette.Azure, 0, layout.Box(5), geometry.Area{})
-			gui.Scrolls(layout, 5, &hor2, &ver2)
+			var area, cw, ch = layout.Box(5)
+			gui.Shape(palette.Azure, 0, area, geometry.Area{})
+			gui.Scrolls(&hor2, &ver2, cw, ch, area)
 			for i := range 4 {
 				var area, mask = layout.Item(20+i, hor2, ver2)
 				gui.Shape(palette.Beige, 0, area, mask)
 			}
 		}
+
+		var unitsArea, ucw, uch = layout.Box(3)
+		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea)
 
 		view.DrawDebugInfo(false)
 	}
