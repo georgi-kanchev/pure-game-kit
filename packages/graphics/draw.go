@@ -276,6 +276,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var originalLineHeight = eff.TextLineHeight
 	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
 	lines = lines[:0]
+	o.TextSymbols = o.TextSymbols[:0]
 	var currentLineHeight = originalLineHeight
 	for i := 0; i < len(o.Text); {
 		var lineStart = i
@@ -305,6 +306,8 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			x += kerning * eff.TextLineHeight
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
+			o.TextSymbols = append(o.TextSymbols, geometry.NewArea(dst.X+dst.Width/2, dst.Y-dst.Height/2, dst.Width, -dst.Height))
+
 			if glyph.EmbededImageId != 0 {
 				if dst.Width <= 0 { // fully clipped by the textbox
 					x += glyph.Advance*eff.TextLineHeight + gapX

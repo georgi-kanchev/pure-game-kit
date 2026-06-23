@@ -238,6 +238,11 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
 	obj.X, obj.Y, obj.Mask = area.X, area.Y, mask
 	obj.Effects.TextMarginX = 30
+
+	// for _, r := range *text {
+	// var area = obj.TextFontId.SymbolArea(r, obj.Effects.TextLineHeight)
+	// }
+
 	view.DrawObject(&obj)
 }
 

@@ -29,7 +29,7 @@ func GUI() {
 
 	var hor, ver float32
 	var hor2, ver2 float32
-	var value float32
+	var input = "hello, world!"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
@@ -53,7 +53,7 @@ func GUI() {
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.X += 50
 		area.Y -= 50
-		gui.Slider(&value, 0.1, area, geometry.Area{})
+		gui.Inputbox(&input, area, geometry.Area{})
 
 		if keyboard.IsKeyPressed(key.A) {
 			var area, cw, ch = layout.Box(5)

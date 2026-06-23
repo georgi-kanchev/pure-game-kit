@@ -1,8 +1,11 @@
 package example
 
 import (
+	"fmt"
 	"pure-game-kit/packages/assets"
+	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
+	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
 )
@@ -27,10 +30,16 @@ func Texts() {
 	// window.SetTargetFPS(0)
 
 	for window.KeepOpen() {
-		var x, _ = view.MousePosition()
-		textbox.Effects.TextLineHeight = 70 + x/5
+		var x, y = view.MousePosition()
+		// textbox.Effects.TextLineHeight = 70 + x/5
+
+		fmt.Printf("textbox.TextIndexAtPoint(x, y): %v\n", textbox.TextIndexAtPoint(x, y))
 
 		view.DrawObject(&textbox)
 		view.DrawDebugInfo(false)
+
+		for _, v := range textbox.TextSymbols {
+			view.DrawShape(v.X, v.Y, v.Width, v.Height, 0, 0, color.RGBA(255, 0, 0, 100), geometry.Area{})
+		}
 	}
 }

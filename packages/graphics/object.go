@@ -39,6 +39,7 @@ type Object struct {
 	// Useful for a huge static text that changes rarely.
 	TextBatch   bool
 	textBatches []*internal.Batch
+	TextSymbols []geometry.Area // Cached per-symbol areas built during DrawObject, used by TextIndexAtPoint.
 
 	// tilemap ========================================================
 
@@ -144,6 +145,16 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 // The update happens upon draw so calling this multiple times per frame is fine.
 func (o *Object) TextUpdateBatch() {
 	o.textBatches = nil
+}
+
+// Returns the character index at screen coordinates. Uses the cached symbol areas from the last DrawObject call.
+func (o *Object) TextIndexAtPoint(x, y float32) int {
+	for i, a := range o.TextSymbols {
+		if a.ContainsPoint(x, y) {
+			return i
+		}
+	}
+	return -1
 }
 
 // tilemap ========================================================
