@@ -127,6 +127,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
+			mouse.SetCursor(cursor.Resize1)
 		}
 		Shape(palette.White, 1, handle, geometry.Area{})
 		if instant && mouse.IsButtonJustPressed(button.Left) {
@@ -134,9 +135,11 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		if IsClicked() || instant {
 			handle.X += mdx / Scale // dragging handle or scroll body after instant click
+			mouse.SetCursor(cursor.Resize1)
 		}
 		if dragging { // middle mouse button dragging on parent box
 			handle.X -= mdx / Scale * (hor.Width - handle.Width) / (contentW - area.Width)
+			mouse.SetCursor(cursor.Resize1)
 		}
 		if scrolling {
 			if shift || !hasVer { // no vertical - so can be scrolled
@@ -159,6 +162,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
+			mouse.SetCursor(cursor.Resize2)
 		}
 		Shape(palette.White, 1, handle, geometry.Area{})
 		if instant && mouse.IsButtonJustPressed(button.Left) {
@@ -166,9 +170,14 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		if IsClicked() || instant {
 			handle.Y += mdy / Scale // dragging handle or scroll body after instant click
+			mouse.SetCursor(cursor.Resize2)
 		}
 		if dragging { // middle mouse button dragging on parent box
 			handle.Y -= mdy / Scale * (ver.Height - handle.Height) / (contentH - area.Height)
+			mouse.SetCursor(cursor.Resize2)
+			if horizontal != nil && hasHor {
+				mouse.SetCursor(cursor.Move)
+			}
 		}
 		if !shift && scrolling { // regular scrolling
 			handle.Y -= mouse.ScrollY() * scrollSpeed
@@ -176,6 +185,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
 		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)
 	}
+
 }
 func Button(text string, area, mask geometry.Area) {
 	if area == (geometry.Area{}) {
@@ -247,6 +257,7 @@ func Slider(value *float32, step float32, area, mask geometry.Area) {
 	}
 	if IsClicked() {
 		color, dragging = col.Darken(color, 0.15), true
+		mouse.SetCursor(cursor.Resize1)
 	}
 
 	skipUpdate = true
