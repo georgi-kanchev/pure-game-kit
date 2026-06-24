@@ -7,6 +7,7 @@ import (
 	"pure-game-kit/packages/gui"
 	"pure-game-kit/packages/input/keyboard"
 	"pure-game-kit/packages/input/keyboard/key"
+	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
@@ -36,6 +37,10 @@ func GUI() {
 			gui.Shape(c, 0, area, geometry.Area{})
 		}
 
+		if mouse.ScrollY() != 0 {
+			print()
+		}
+
 		for i, c := range itemCols {
 			var area, mask = layout.Item(i, hor, ver)
 			gui.Shape(c, 0, area, mask)
@@ -50,6 +55,9 @@ func GUI() {
 			}
 		}
 
+		var unitsArea, ucw, uch = layout.Box(3)
+		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea)
+
 		if keyboard.IsKeyPressed(key.A) {
 			var area, cw, ch = layout.Box(5)
 			gui.Shape(palette.Azure, 0, area, geometry.Area{})
@@ -59,9 +67,6 @@ func GUI() {
 				gui.Shape(palette.Beige, 0, area, mask)
 			}
 		}
-
-		var unitsArea, ucw, uch = layout.Box(3)
-		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea)
 
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.X += 50

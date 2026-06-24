@@ -188,7 +188,6 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
 		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)
 	}
-
 }
 func Button(text string, area, mask geometry.Area) {
 	if area == (geometry.Area{}) {
@@ -268,12 +267,12 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	}
 
 	inputCursorTimer += internal.FrameDelta
-	if (kb.IsKeyJustPressed(key.LeftArrow) || kb.IsKeyHeld(key.LeftArrow, 0.5)) && !kb.IsKeyPressed(key.RightArrow) {
+	if kb.IsKeyJustPressed(key.LeftArrow) || kb.IsKeyHeld(key.LeftArrow, 0.5) {
 		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
 		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
 			inputIndexSelection = inputIndexCursor
 		}
-	} else if (kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5)) && !kb.IsKeyPressed(key.LeftArrow) {
+	} else if kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5) {
 		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
 		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
 			inputIndexSelection = inputIndexCursor
