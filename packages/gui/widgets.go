@@ -47,7 +47,7 @@ func Label(text string, area, mask geometry.Area) {
 	}
 
 	mask = scaleMask(mask)
-	update(area, mask, 0)
+	handleInput(area, mask, 0)
 
 	if text == "" {
 		return
@@ -68,7 +68,7 @@ func Shape(color uint, roundness float32, area, mask geometry.Area) {
 		return
 	}
 	mask = scaleMask(mask)
-	update(area, mask, roundness)
+	handleInput(area, mask, roundness)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
@@ -86,7 +86,7 @@ func Image(imageId assets.ImageId, tint uint, area, mask geometry.Area) {
 		return
 	}
 	mask = scaleMask(mask)
-	update(area, mask, 0)
+	handleInput(area, mask, 0)
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
@@ -198,7 +198,7 @@ func Button(text string, area, mask geometry.Area) {
 	var color = baseColor
 	mask = scaleMask(mask)
 
-	update(area, mask, roundness)
+	handleInput(area, mask, roundness)
 
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
@@ -208,10 +208,10 @@ func Button(text string, area, mask geometry.Area) {
 		color = col.Darken(color, 0.15)
 	}
 
-	skipUpdate = true
+	skipInput = true
 	Shape(color, roundness, area, mask)
 	Label(text, area, mask)
-	skipUpdate = false
+	skipInput = false
 }
 func Inputbox(text *string, area, mask geometry.Area) {
 	if area == (geometry.Area{}) {
@@ -222,7 +222,7 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	var borderColor = col.Darken(color, 0.25)
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
 	mask = scaleMask(mask)
-	update(area, mask, roundness)
+	handleInput(area, mask, roundness)
 
 	if IsFocused() {
 		mouse.SetCursor(cursor.Input)
@@ -239,9 +239,9 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	view.DrawObject(&obj)
 
 	if inputIndexCursor != inputIndexSelection {
-		skipUpdate = true
+		skipInput = true
 		Shape(palette.Azure, 0.4, geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax+8*Scale, obj.Height*0.85), area)
-		skipUpdate = false
+		skipInput = false
 	}
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
@@ -267,8 +267,7 @@ func Inputbox(text *string, area, mask geometry.Area) {
 			}
 			var dist = number.Absolute(mx - x)
 			if dist < closestDist {
-				closestDist = dist
-				closestIndex = i
+				closestDist, closestIndex = dist, i
 			}
 			i++
 		}
@@ -287,7 +286,27 @@ func Inputbox(text *string, area, mask geometry.Area) {
 		return
 	}
 
-	inputCursorTimer += internal.FrameDelta
+	var input = keyboard.Input()
+	if a != b && (len(input) > 0 || keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyJustPressed(key.Delete)) {
+		deleteRuneRange(text, a, b) // delete selection
+		inputIndexCursor, inputIndexSelection, inputCursorTimer = a, a, 0
+	} else {
+		if keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace, 0.5) {
+			deleteRuneRange(text, inputIndexCursor, inputIndexCursor-1)
+			inputIndexCursor = number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
+			inputIndexSelection, inputCursorTimer = inputIndexCursor, 0
+		} else if keyboard.IsKeyJustPressed(key.Delete) || keyboard.IsKeyHeld(key.Delete, 0.5) {
+			deleteRuneRange(text, inputIndexCursor, inputIndexCursor+1)
+			inputCursorTimer = 0
+		}
+	}
+	if len(input) > 0 {
+		var inputStr = string(input)
+		*text = txt.Insert(*text, inputStr, inputIndexCursor)
+		inputIndexCursor = number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
+		inputCursorTimer, inputIndexSelection = 0, inputIndexCursor
+	}
+
 	if kb.IsKeyJustPressed(key.LeftArrow) || kb.IsKeyHeld(key.LeftArrow, 0.5) {
 		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
 		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
@@ -301,12 +320,11 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	}
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
-	}
-	if inputCursorTimer < 0.5 {
+	} else if inputCursorTimer < 0.5 {
 		var cursorX = obj.TextCursorPositionAt(inputIndexCursor)
-		skipUpdate = true
+		skipInput = true
 		Shape(palette.White, 1, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), geometry.Area{})
-		skipUpdate = false
+		skipInput = false
 	}
 }
 
@@ -329,7 +347,7 @@ func Slider(value *float32, step float32, area, mask geometry.Area) {
 		mouse.SetCursor(cursor.Resize1)
 	}
 
-	skipUpdate = true
+	skipInput = true
 	if step > 0 {
 		var stepSize, minX, maxX = number.Map(step, 0, 1, area.Height/20, area.Height/2), left + area.Height/2, right - area.Height/2
 		for t := float32(0.0); t <= 1.0+0.001; t += step {
@@ -345,104 +363,31 @@ func Slider(value *float32, step float32, area, mask geometry.Area) {
 	x = number.Limit(x, left+area.Height/2, right-area.Height/2)
 	*value = number.Map(x, left+area.Height/2, right-area.Height/2, 0, 1)
 	*value = number.Snap(*value, number.Absolute(step))
-	skipUpdate = false
-}
-
-//=================================================================
-
-func IsHovered() bool       { return nowHovered == widgetCounter }
-func IsFocused() bool       { return nowFocused == widgetCounter }
-func IsJustFocused() bool   { return nowFocused == widgetCounter && lastFocused != widgetCounter }
-func IsJustUnfocused() bool { return lastFocused == widgetCounter && nowFocused != widgetCounter }
-
-func IsClicked() bool     { return clickedWidget == widgetCounter }
-func IsJustClicked() bool { return justClickedWidget == widgetCounter }
-
-func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
-func IsJustDropped() bool {
-	return lastClickedWidget == widgetCounter && !IsClicked() && mouse.IsButtonJustReleased(button.Left)
-}
-func IsJustDroppedUpon() bool {
-	return drag != (geometry.Area{}) && IsHovered() && mouse.IsButtonJustReleased(button.Left)
-}
-func Drag() geometry.Area {
-	if IsJustDragged() {
-		drag = widgetArea
-	}
-	if IsClicked() {
-		var mx, my = mouse.CursorDelta()
-		drag.X, drag.Y = drag.X+mx/Scale, drag.Y+my/Scale
-	}
-	return drag
+	skipInput = false
 }
 
 // private ========================================================
 
-var view graphics.View
-var obj graphics.Object
-var skipUpdate bool   // used for internal calls to the widget input functions only for drawing (no input)
-var widgetCounter int // resets every frame, each widget increases it, used for id, checked against the below ids
-
-var nowHovered, lastHovered, nowFocused, lastFocused int
-var lastClickedWidget, clickedWidget, justClickedWidget int
-var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
-var lastUpdateOnFrame, lastScrollFrame uint64
-var widgetArea, drag geometry.Area
-var droppedLastFrame bool
-
-var typingIn, inputIndexCursor, inputIndexSelection int = 0, 0, 0
-var inputCursorTimer, ax, bx float32
+var view, obj = graphics.View{}, graphics.Object{}
 
 func scaleMask(mask geometry.Area) geometry.Area {
 	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)
 }
-func update(area, mask geometry.Area, roundness float32) {
-	if skipUpdate {
+func deleteRuneRange(text *string, start, end int) {
+	if text == nil || *text == "" {
 		return
 	}
 
-	if internal.Frame != lastUpdateOnFrame { // frame reset, runs exactly once on the first widget of a new frame
-		lastUpdateOnFrame, lastFocused = internal.Frame, nowFocused
-
-		if nowHovered == lastHovered {
-			nowFocused = nowHovered // widget won input last frame AND won input this frame
-		} else {
-			nowFocused = 0 // focus broken or shifting
-		}
-
-		lastClickedWidget, justClickedWidget = clickedWidget, 0
-		if mouse.IsButtonJustPressed(button.Left) {
-			clickedWidget = nowFocused //  lock the active widget to whatever is currently hovered
-		} else if mouse.IsButtonJustReleased(button.Left) {
-			if clickedWidget != 0 && clickedWidget == nowFocused { // same widget we started clicking on?
-				justClickedWidget = clickedWidget
-			}
-			clickedWidget = 0 // clear the lock
-		} else if !mouse.IsButtonPressed(button.Left) {
-			clickedWidget = 0 // if the button not held, ensure nothing is active
-		}
-
-		if droppedLastFrame {
-			drag = geometry.Area{}
-			droppedLastFrame = false
-		}
-		if mouse.IsButtonJustReleased(button.Left) && drag != (geometry.Area{}) {
-			droppedLastFrame = true
-		}
-
-		lastHovered = nowHovered
-		view.Zoom, nowHovered, widgetCounter = Scale, 0, 0
-		mouse.SetCursor(cursor.Arrow)
+	var runes = []rune(*text)
+	var totalRunes = len(runes)
+	if start > end {
+		start, end = end, start
+	}
+	start, end = max(start, 0), min(end, totalRunes)
+	if start >= totalRunes {
+		return // invalid range or nothing to delete
 	}
 
-	widgetCounter, widgetArea = widgetCounter+1, area
-
-	var mx, my = view.MousePosition()
-	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)
-	var maskHor = mx >= mask.X-mask.Width/2 && mx <= mask.X+mask.Width/2
-	var maskVer = my >= mask.Y-mask.Height/2 && my <= mask.Y+mask.Height/2
-	var maskCheck = mask == (geometry.Area{}) || (mask != (geometry.Area{}) && maskHor && maskVer)
-	if shape.ContainsPoint(mx, my) && maskCheck {
-		nowHovered = widgetCounter // top-most logic: later widgets naturally overwrite earlier widgets
-	}
+	runes = append(runes[:start], runes[end:]...) // delete the range in-place
+	*text = string(runes)                         // update the underlying string
 }

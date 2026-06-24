@@ -58,7 +58,7 @@ func GUI() {
 		var unitsArea, ucw, uch = layout.Box(3)
 		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea)
 
-		if keyboard.IsKeyPressed(key.A) {
+		if !gui.IsTyping() && keyboard.IsKeyPressed(key.A) {
 			var area, cw, ch = layout.Box(5)
 			gui.Shape(palette.Azure, 0, area, geometry.Area{})
 			gui.Scrolls(&hor2, &ver2, cw, ch, area)

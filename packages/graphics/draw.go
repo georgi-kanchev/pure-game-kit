@@ -145,7 +145,7 @@ func (v *View) DrawObject(object *Object) {
 	}
 	v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
 
-	if o.Text != "" {
+	if o.Text != "" || o.Effects.TextIsInput { // empty input text needs a cursor position
 		v.queueText(o, mask)
 		if o.Effects.TextBatch {
 			internal.CloseBatch()
@@ -274,17 +274,22 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var sin, cos = internal.SinCos(o.Angle)
 	var contentHeight float32
 	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
+	var txt = o.Text
+	if eff.TextIsInput && txt == "" {
+		txt = " " // empty input string should have a cursor position
+	}
+
 	lines = lines[:0]
 	o.textCursorPos = o.textCursorPos[:0]
 	var currentLineHeight = eff.TextLineHeight
-	for i := 0; i < len(o.Text); {
+	for i := 0; i < len(txt); {
 		var lineStart = i
 		var end, width, endHeight = o.measureLine(i, currentLineHeight)
 		lines = append(lines, line{lineStart, end, width})
 		contentHeight += endHeight * fontData.LineHeight
 		currentLineHeight = endHeight
 		i = end
-		if i < len(o.Text) {
+		if i < len(txt) {
 			contentHeight += gapY
 			i++ // skip newline
 		}
@@ -295,7 +300,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		var x = (o.X - w/2) + eff.TextAlignX*(w-ln.width)
 		var prevGlyph internal.Glyph
 
-		for _, r := range o.Text[ln.start:ln.end] {
+		for _, r := range txt[ln.start:ln.end] {
 			if !o.Effects.TextIsInput && o.embedEffect(r, eff) {
 				continue // tag symbol applies to effects and gets skipped
 			}
@@ -346,7 +351,6 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			endX, endY = o.X+endX*cos-endY*sin, o.Y+endX*sin+endY*cos
 			o.textCursorPos = append(o.textCursorPos, endX)
 		}
-
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
 }
