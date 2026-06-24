@@ -256,12 +256,33 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)
 	ax, bx = obj.TextCursorPositionAt(a), obj.TextCursorPositionAt(b)
 
+	if IsClicked() {
+		var i, closestIndex int
+		var x, closestDist float32 = 0, 99999
+		var mx, _ = view.MousePosition()
+		for {
+			x = obj.TextCursorPositionAt(i)
+			if number.IsNaN(x) {
+				break
+			}
+			var dist = number.Absolute(mx - x)
+			if dist < closestDist {
+				closestDist = dist
+				closestIndex = i
+			}
+			i++
+		}
+		inputIndexCursor, inputCursorTimer = closestIndex, 0
+		if mouse.IsButtonJustPressed(button.Left) {
+			inputIndexSelection = closestIndex
+		}
+	}
+
 	if IsFocused() && mouseInput {
 		inputCursorTimer, typingIn = 0, widgetCounter
 	} else if (!IsFocused() && typingIn == widgetCounter && mouseInput) || !window.IsFocused() {
-		typingIn = 0
+		typingIn, inputIndexSelection = 0, inputIndexCursor
 	}
-
 	if typingIn != widgetCounter {
 		return
 	}
@@ -287,7 +308,6 @@ func Inputbox(text *string, area, mask geometry.Area) {
 		Shape(palette.White, 1, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), geometry.Area{})
 		skipUpdate = false
 	}
-
 }
 
 // Negative step hides the indicators.
@@ -370,7 +390,7 @@ var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag geometry.Area
 var droppedLastFrame bool
 
-var typingIn, inputIndexCursor, inputIndexSelection int = 0, 0, 5
+var typingIn, inputIndexCursor, inputIndexSelection int = 0, 0, 0
 var inputCursorTimer, ax, bx float32
 
 func scaleMask(mask geometry.Area) geometry.Area {

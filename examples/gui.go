@@ -73,6 +73,6 @@ func GUI() {
 		area.Y -= 50
 		gui.Inputbox(&input, area, geometry.Area{})
 
-		view.DrawDebugInfo(false)
+		view.DrawDebugInfo(true)
 	}
 }
