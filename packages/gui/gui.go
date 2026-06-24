@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/input/keyboard"
+	kb "pure-game-kit/packages/input/keyboard"
 	"pure-game-kit/packages/input/keyboard/key"
 	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/input/mouse/button"
@@ -15,6 +16,7 @@ import (
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	txt "pure-game-kit/packages/utility/text"
+	"pure-game-kit/packages/window"
 )
 
 var Scale float32 = 1
@@ -218,19 +220,30 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	}
 	const roundness = 0.2
 	var color = palette.DarkGray
+	var borderColor = col.Darken(color, 0.25)
+	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
 	mask = scaleMask(mask)
 	update(area, mask, roundness)
 
 	if IsFocused() {
 		mouse.SetCursor(cursor.Input)
 	}
+	if typingIn == widgetCounter {
+		borderColor = palette.Gray
+	}
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, roundness
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
 	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, mask, ""
-	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, col.Darken(color, 0.25)
+	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, borderColor
 	view.DrawObject(&obj)
+
+	if inputIndexCursor != inputIndexSelection {
+		skipUpdate = true
+		Shape(palette.Azure, 0.4, geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax+8*Scale, obj.Height*0.85), area)
+		skipUpdate = false
+	}
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0, 0.5, false
@@ -238,25 +251,44 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
 	obj.X, obj.Y, obj.Mask = area.X, area.Y, mask
-	obj.Effects.TextHasCursor, obj.Effects.TextMarginX = true, 30
+	obj.Effects.TextIsInput, obj.Effects.TextMarginX = true, 30
 	view.DrawObject(&obj)
 
-	inputCursorTimer += internal.FrameDelta
-	if keyboard.IsKeyJustPressed(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow, 0.5) {
-		inputCursorTimer, inputCursorIndex = 0, number.Limit(inputCursorIndex-1, 0, txt.Length(*text))
+	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)
+	ax, bx = obj.TextCursorPositionAt(a), obj.TextCursorPositionAt(b)
+
+	if IsFocused() && mouseInput {
+		inputCursorTimer, typingIn = 0, widgetCounter
+	} else if (!IsFocused() && typingIn == widgetCounter && mouseInput) || !window.IsFocused() {
+		typingIn = 0
 	}
-	if keyboard.IsKeyJustPressed(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow, 0.5) {
-		inputCursorTimer, inputCursorIndex = 0, number.Limit(inputCursorIndex+1, 0, txt.Length(*text))
+
+	if typingIn != widgetCounter {
+		return
+	}
+
+	inputCursorTimer += internal.FrameDelta
+	if (kb.IsKeyJustPressed(key.LeftArrow) || kb.IsKeyHeld(key.LeftArrow, 0.5)) && !kb.IsKeyPressed(key.RightArrow) {
+		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
+		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
+			inputIndexSelection = inputIndexCursor
+		}
+	} else if (kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5)) && !kb.IsKeyPressed(key.LeftArrow) {
+		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
+		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
+			inputIndexSelection = inputIndexCursor
+		}
 	}
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
 	}
 	if inputCursorTimer < 0.5 {
-		var cursorX = obj.TextCursorPositionAt(inputCursorIndex)
+		var cursorX = obj.TextCursorPositionAt(inputIndexCursor)
 		skipUpdate = true
 		Shape(palette.White, 1, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), geometry.Area{})
 		skipUpdate = false
 	}
+
 }
 
 // Negative step hides the indicators.
@@ -329,7 +361,7 @@ func Drag() geometry.Area {
 
 var view graphics.View
 var obj graphics.Object
-var skipUpdate bool   // used for internal calls to the widget functions only for drawing (no input)
+var skipUpdate bool   // used for internal calls to the widget input functions only for drawing (no input)
 var widgetCounter int // resets every frame, each widget increases it, used for id, checked against the below ids
 
 var nowHovered, lastHovered, nowFocused, lastFocused int
@@ -339,8 +371,8 @@ var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag geometry.Area
 var droppedLastFrame bool
 
-var inputCursorIndex int = 3
-var inputCursorTimer float32
+var typingIn, inputIndexCursor, inputIndexSelection int = 0, 0, 5
+var inputCursorTimer, ax, bx float32
 
 func scaleMask(mask geometry.Area) geometry.Area {
 	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)

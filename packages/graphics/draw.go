@@ -273,11 +273,10 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
 	var contentHeight float32
-	var originalLineHeight = eff.TextLineHeight
 	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
 	lines = lines[:0]
 	o.textCursorPos = o.textCursorPos[:0]
-	var currentLineHeight = originalLineHeight
+	var currentLineHeight = eff.TextLineHeight
 	for i := 0; i < len(o.Text); {
 		var lineStart = i
 		var end, width, endHeight = o.measureLine(i, currentLineHeight)
@@ -297,10 +296,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		var prevGlyph internal.Glyph
 
 		for _, r := range o.Text[ln.start:ln.end] {
-			if embedEffect(r, eff, originalLineHeight) {
-				if o.Effects.TextHasCursor {
-					o.textCursorPos = append(o.textCursorPos, number.NaN())
-				}
+			if !o.Effects.TextIsInput && o.embedEffect(r, eff) {
 				continue // tag symbol applies to effects and gets skipped
 			}
 
@@ -310,7 +306,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
 
-			if o.Effects.TextHasCursor {
+			if o.Effects.TextIsInput {
 				var midX, midY = (x - gapX/2) - o.X, (y + (fontData.Ascender+fontData.Descender)*eff.TextLineHeight/2) - o.Y
 				midX, midY = o.X+midX*cos-midY*sin, o.Y+midX*sin+midY*cos
 				o.textCursorPos = append(o.textCursorPos, midX)
@@ -345,7 +341,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			prevGlyph = glyph
 		}
 
-		if o.Effects.TextHasCursor {
+		if o.Effects.TextIsInput {
 			var endX, endY = (x - gapX/2) - o.X, (y + (fontData.Ascender+fontData.Descender)*eff.TextLineHeight/2) - o.Y
 			endX, endY = o.X+endX*cos-endY*sin, o.Y+endX*sin+endY*cos
 			o.textCursorPos = append(o.textCursorPos, endX)
@@ -400,36 +396,6 @@ func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, new
 	dstW, dstH = clippedW, -clippedH
 	dstX, dstY = o.X+dx*cos-dy*sin-dstW/2, o.Y+dx*sin+dy*cos+dstH/2
 	return rl.NewRectangle(srcX, srcY, srcW, srcH), rl.NewRectangle(dstX, dstY, dstW, dstH)
-}
-func embedEffect(r rune, effect *internal.Effects, originalLineHeight float32) (success bool) {
-	if r == '✅' {
-		effect.TextUnderline = !effect.TextUnderline
-		return true
-	}
-	if r == '❎' {
-		effect.TextCrossout = !effect.TextCrossout
-		return true
-	}
-
-	var color = colors[r]
-	var outlineColor = outlineColors[r]
-	var weight, hasWeights = weights[r]
-	var size = sizes[r]
-	if color != 0 {
-		effect.TextColor = color
-		return true
-	} else if outlineColor != 0 {
-		effect.OutlineColor = outlineColor
-		return true
-	} else if hasWeights {
-		effect.TextWeight = weight
-		return true
-	} else if size != 0 {
-		effect.TextLineHeight = originalLineHeight * size
-		return true
-	}
-
-	return false
 }
 
 func appendThousands(buf []byte, n uint64) []byte {

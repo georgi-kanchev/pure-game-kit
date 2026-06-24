@@ -12,7 +12,6 @@ var Input []rune = make([]rune, 0, 8)
 var MouseX, MouseY, MouseDeltaX, MouseDeltaY, ScrollX, SmoothScrollX, ScrollY, SmoothScrollY float32
 
 var Keys, KeysPrev [350]bool
-var KeyDurs [350]float32
 var AnyKey, AnyKeyPrev bool
 var KeyCount int
 
@@ -114,7 +113,6 @@ func cacheKeyboard() {
 	}
 	for i := len(activeKeys) - 1; i >= 0; i-- {
 		var key = activeKeys[i]
-		KeyDurs[key] += FrameDelta
 		if rl.IsKeyReleased(key) {
 			keys[key] = false
 		}
@@ -131,7 +129,6 @@ func cacheKeyboard() {
 	for i := len(activeKeys) - 1; i >= 0; i-- {
 		var key = activeKeys[i] // cleanup released keys
 		if !keys[key] {
-			KeyDurs[key] = 0
 			activeKeys = slices.Delete(activeKeys, i, i+1)
 		}
 	}

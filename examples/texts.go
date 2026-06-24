@@ -2,11 +2,8 @@ package example
 
 import (
 	"pure-game-kit/packages/assets"
-	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
-	"pure-game-kit/packages/utility/number"
-	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
@@ -26,8 +23,6 @@ func Texts() {
 	textbox.Roundness = 0.2
 	textbox.Angle = 5
 
-	textbox.Effects.TextHasCursor = true
-
 	font.EmbedImage('🪓', img)
 
 	// window.SetTargetFPS(0)
@@ -36,11 +31,7 @@ func Texts() {
 		var x, _ = view.MousePosition()
 		textbox.Effects.TextLineHeight = 70 + x/5
 
-		var index = number.Map(number.Sine(time.Running()/5), -1, 1, 0, 300)
-		var cx = textbox.TextCursorPositionAt(int(index))
-
 		view.DrawObject(&textbox)
-		view.DrawShape(cx, textbox.Y, 10, textbox.Effects.TextLineHeight*1.2, textbox.Angle, 1, palette.Red, geometry.Area{})
 		view.DrawDebugInfo(false)
 	}
 }

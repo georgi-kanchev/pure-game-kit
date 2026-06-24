@@ -144,7 +144,7 @@ func (o *Object) TextUpdateBatch() {
 	o.textBatches = nil
 }
 func (o *Object) TextCursorPositionAt(index int) float32 {
-	if !o.Effects.TextHasCursor || index < 0 || index >= len(o.textCursorPos) {
+	if !o.Effects.TextIsInput || index < 0 || index >= len(o.textCursorPos) {
 		return number.NaN()
 	}
 	return o.textCursorPos[index]
@@ -247,7 +247,7 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 	var prevGlyph internal.Glyph
 
 	for i, r := range o.Text[fromIndex:] {
-		if r == '\n' {
+		if !o.Effects.TextIsInput && r == '\n' {
 			return fromIndex + i, totalWidth, lineHeight
 		}
 
@@ -265,7 +265,7 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 			var wPrev internal.Glyph
 			var wHeight = lineHeight
 			for _, wr := range o.Text[fromIndex+i+1:] {
-				if wr == ' ' || wr == '\n' {
+				if wr == ' ' || (!o.Effects.TextIsInput && wr == '\n') {
 					break
 				}
 				var wsz = sizes[wr]
@@ -286,4 +286,33 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 		x, prevGlyph, totalWidth = x+(glyph.Advance*lineHeight+gapX), glyph, max(x+glyph.Advance*lineHeight, totalWidth)
 	}
 	return len(o.Text), totalWidth, lineHeight
+}
+func (o *Object) embedEffect(r rune, effect *internal.Effects) (success bool) {
+	if r == '✅' {
+		effect.TextUnderline = !effect.TextUnderline
+		return true
+	}
+	if r == '❎' {
+		effect.TextCrossout = !effect.TextCrossout
+		return true
+	}
+
+	var color = colors[r]
+	var outlineColor = outlineColors[r]
+	var weight, hasWeights = weights[r]
+	var size = sizes[r]
+	if color != 0 {
+		effect.TextColor = color
+		return true
+	} else if outlineColor != 0 {
+		effect.OutlineColor = outlineColor
+		return true
+	} else if hasWeights {
+		effect.TextWeight = weight
+		return true
+	} else if size != 0 {
+		effect.TextLineHeight = o.Effects.TextLineHeight * size
+		return true
+	}
+	return false
 }

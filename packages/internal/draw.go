@@ -55,7 +55,7 @@ type Effects struct {
 	TextMarginX, TextMarginY float32
 	TextWordWrap bool
 
-	TextHasCursor bool // Caches the cursor positions from the last draw. Used by object.TextCursorPositionAt.
+	TextIsInput bool // No new lines; no effects; caches the cursor positions from the last draw.
 
 	// Caches the text visuals across frames. Call object.TextUpdateBatch when visual changes are needed.
 	// Useful for a huge static texts that change rarely.

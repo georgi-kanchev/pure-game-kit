@@ -8,7 +8,13 @@ import (
 func Input() []rune { return i.Input }
 
 func IsKeyHeld(key int, delay float32) bool {
-	if !i.Keys[key] || i.KeyDurs[key] < delay {
+	if IsKeyPressed(key) {
+		keyHoldDuration += internal.FrameDelta
+	}
+	if IsKeyJustReleased(key) {
+		keyHoldDuration = 0
+	}
+	if !i.Keys[key] || keyHoldDuration < delay {
 		return false
 	}
 	if internal.Runtime > holdTimeStart+0.05 {
@@ -32,7 +38,7 @@ func IsComboHeld(delay float32, keys ...int) bool {
 
 //=================================================================
 
-var holdTimeStart float32
+var holdTimeStart, keyHoldDuration float32
 
 func combo(keys []int) bool {
 	if i.KeyCount != len(keys) {

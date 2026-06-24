@@ -29,7 +29,7 @@ func GUI() {
 
 	var hor, ver float32
 	var hor2, ver2 float32
-	var input = "hello, world!"
+	var input = "hello, world! test"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
