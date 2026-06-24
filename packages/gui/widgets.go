@@ -217,7 +217,7 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	if area == (geometry.Area{}) {
 		return
 	}
-	const roundness = 0.2
+	const roundness, marginX = 0.2, 30.0
 	var color = palette.DarkGray
 	var borderColor = col.Darken(color, 0.25)
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
@@ -240,7 +240,9 @@ func Inputbox(text *string, area, mask geometry.Area) {
 
 	if inputIndexCursor != inputIndexSelection {
 		skipInput = true
+		area.Width -= marginX
 		Shape(palette.Azure, 0.4, geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax+8*Scale, obj.Height*0.85), area)
+		area.Width += marginX
 		skipInput = false
 	}
 
@@ -249,8 +251,8 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
-	obj.X, obj.Y, obj.Mask = area.X, area.Y, mask
-	obj.Effects.TextIsInput, obj.Effects.TextMarginX = true, 30
+	obj.Effects.TextIsInput, obj.Effects.TextMarginX = true, marginX
+	obj.X, obj.Y, obj.Mask = area.X, area.Y, area
 	view.DrawObject(&obj)
 
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)

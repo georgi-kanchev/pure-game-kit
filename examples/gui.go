@@ -69,8 +69,8 @@ func GUI() {
 		}
 
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
-		area.X += 50
 		area.Y -= 50
+
 		gui.Inputbox(&input, area, geometry.Area{})
 
 		view.DrawDebugInfo(true)

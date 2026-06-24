@@ -1,6 +1,9 @@
 package geometry
 
-import "pure-game-kit/packages/internal"
+import (
+	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/number"
+)
 
 type Area internal.Area
 
@@ -10,12 +13,17 @@ func (a Area) ContainsPoint(x, y float32) bool {
 	return x > a.X-a.Width/2 && x < a.X+a.Width/2 && y > a.Y-a.Height/2 && y < a.Y+a.Height/2
 }
 func (a Area) Overlaps(target Area) bool {
-	var dx, dy = a.X - target.X, a.Y - target.Y
-	if dx < 0 {
-		dx = -dx
+	return number.Absolute(a.X-target.X) < (a.Width+target.Width)/2 && number.Absolute(a.Y-target.Y) < (a.Height+target.Height)/2
+}
+func (a Area) Intersect(target Area) Area {
+	if target == (Area{}) {
+		return a
 	}
-	if dy < 0 {
-		dy = -dy
+	if !a.Overlaps(target) {
+		return Area{}
 	}
-	return dx < (a.Width+target.Width)/2 && dy < (a.Height+target.Height)/2
+	var minX, maxX = max(a.X-a.Width/2, target.X-target.Width/2), min(a.X+a.Width/2, target.X+target.Width/2)
+	var minY, maxY = max(a.Y-a.Height/2, target.Y-target.Height/2), min(a.Y+a.Height/2, target.Y+target.Height/2)
+	var newWidth, newHeight = maxX - minX, maxY - minY
+	return NewArea(minX+newWidth/2, minY+newHeight/2, newWidth, newHeight)
 }
