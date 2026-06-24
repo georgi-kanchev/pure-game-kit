@@ -25,7 +25,7 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
-	gui.Scale = 1
+	gui.Scale = 1.2
 
 	var hor, ver float32
 	var hor2, ver2 float32
@@ -50,11 +50,6 @@ func GUI() {
 			}
 		}
 
-		var area = gui.AreaHUD(0.5, 1, 700, 100)
-		area.X += 50
-		area.Y -= 50
-		gui.Inputbox(&input, area, geometry.Area{})
-
 		if keyboard.IsKeyPressed(key.A) {
 			var area, cw, ch = layout.Box(5)
 			gui.Shape(palette.Azure, 0, area, geometry.Area{})
@@ -67,6 +62,11 @@ func GUI() {
 
 		var unitsArea, ucw, uch = layout.Box(3)
 		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea)
+
+		var area = gui.AreaHUD(0.5, 1, 700, 100)
+		area.X += 50
+		area.Y -= 50
+		gui.Inputbox(&input, area, geometry.Area{})
 
 		view.DrawDebugInfo(false)
 	}

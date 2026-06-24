@@ -6,6 +6,13 @@ import (
 	"unicode/utf8"
 )
 
+func At(text string, index int) rune {
+	var runes = []rune(text)
+	if index < 0 || index >= len(runes) {
+		return 0
+	}
+	return runes[index] // works for non-ascii characters too
+}
 func Length(text string) int {
 	return utf8.RuneCountInString(text)
 }

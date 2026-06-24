@@ -14,6 +14,7 @@ import (
 	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
+	txt "pure-game-kit/packages/utility/text"
 )
 
 var Scale float32 = 1
@@ -237,13 +238,25 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
 	obj.X, obj.Y, obj.Mask = area.X, area.Y, mask
-	obj.Effects.TextMarginX = 30
-
-	// for _, r := range *text {
-	// var area = obj.TextFontId.SymbolArea(r, obj.Effects.TextLineHeight)
-	// }
-
+	obj.Effects.TextHasCursor, obj.Effects.TextMarginX = true, 30
 	view.DrawObject(&obj)
+
+	inputCursorTimer += internal.FrameDelta
+	if keyboard.IsKeyJustPressed(key.LeftArrow) || keyboard.IsKeyHeld(key.LeftArrow, 0.5) {
+		inputCursorTimer, inputCursorIndex = 0, number.Limit(inputCursorIndex-1, 0, txt.Length(*text))
+	}
+	if keyboard.IsKeyJustPressed(key.RightArrow) || keyboard.IsKeyHeld(key.RightArrow, 0.5) {
+		inputCursorTimer, inputCursorIndex = 0, number.Limit(inputCursorIndex+1, 0, txt.Length(*text))
+	}
+	if inputCursorTimer > 1 {
+		inputCursorTimer = 0
+	}
+	if inputCursorTimer < 0.5 {
+		var cursorX = obj.TextCursorPositionAt(inputCursorIndex)
+		skipUpdate = true
+		Shape(palette.White, 1, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), geometry.Area{})
+		skipUpdate = false
+	}
 }
 
 // Negative step hides the indicators.
@@ -326,7 +339,8 @@ var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag geometry.Area
 var droppedLastFrame bool
 
-var inputCursorIndex int
+var inputCursorIndex int = 3
+var inputCursorTimer float32
 
 func scaleMask(mask geometry.Area) geometry.Area {
 	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)

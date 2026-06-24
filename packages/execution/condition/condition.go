@@ -11,12 +11,10 @@ func JustTurnedTrue(condition bool, key any) bool {
 }
 func TrueEvery(seconds float32, key any) bool {
 	var start, has = trueEvery[key]
-
 	if !has || internal.Runtime > start+seconds {
 		trueEvery[key] = internal.Runtime
 		return has
 	}
-
 	return false
 }
 

@@ -35,11 +35,8 @@ type Object struct {
 	Text       string
 	TextFontId assets.FontId
 
-	// Caches the text visuals across frames. Call TextUpdateBatch when visual changes are needed.
-	// Useful for a huge static text that changes rarely.
-	TextBatch   bool
-	textBatches []*internal.Batch
-	TextSymbols []geometry.Area // Cached per-symbol areas built during DrawObject, used by TextIndexAtPoint.
+	textBatches   []*internal.Batch
+	textCursorPos []float32
 
 	// tilemap ========================================================
 
@@ -146,15 +143,11 @@ func (o *Object) PointFromEdge(edgeX, edgeY float32) (x, y float32) {
 func (o *Object) TextUpdateBatch() {
 	o.textBatches = nil
 }
-
-// Returns the character index at screen coordinates. Uses the cached symbol areas from the last DrawObject call.
-func (o *Object) TextIndexAtPoint(x, y float32) int {
-	for i, a := range o.TextSymbols {
-		if a.ContainsPoint(x, y) {
-			return i
-		}
+func (o *Object) TextCursorPositionAt(index int) float32 {
+	if !o.Effects.TextHasCursor || index < 0 || index >= len(o.textCursorPos) {
+		return number.NaN()
 	}
-	return -1
+	return o.textCursorPos[index]
 }
 
 // tilemap ========================================================

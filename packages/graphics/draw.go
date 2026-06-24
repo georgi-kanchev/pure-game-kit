@@ -108,14 +108,14 @@ func (v *View) DrawObject(object *Object) {
 		return
 	}
 
-	if o.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
+	if o.Effects.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
 		internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
 		return
 	}
 
 	var prevImageId = o.ImageId
 	if o.Text != "" {
-		if o.TextBatch {
+		if o.Effects.TextBatch {
 			internal.IsRecording = true
 			internal.CurrentBatchRecord = make([]*internal.Batch, 0)
 		}
@@ -147,7 +147,7 @@ func (v *View) DrawObject(object *Object) {
 
 	if o.Text != "" {
 		v.queueText(o, mask)
-		if o.TextBatch {
+		if o.Effects.TextBatch {
 			internal.CloseBatch()
 			o.textBatches = internal.CurrentBatchRecord
 			internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentBatchRecord...)
@@ -276,7 +276,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var originalLineHeight = eff.TextLineHeight
 	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
 	lines = lines[:0]
-	o.TextSymbols = o.TextSymbols[:0]
+	o.textCursorPos = o.textCursorPos[:0]
 	var currentLineHeight = originalLineHeight
 	for i := 0; i < len(o.Text); {
 		var lineStart = i
@@ -298,6 +298,9 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 
 		for _, r := range o.Text[ln.start:ln.end] {
 			if embedEffect(r, eff, originalLineHeight) {
+				if o.Effects.TextHasCursor {
+					o.textCursorPos = append(o.textCursorPos, number.NaN())
+				}
 				continue // tag symbol applies to effects and gets skipped
 			}
 
@@ -306,7 +309,12 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			x += kerning * eff.TextLineHeight
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
-			o.TextSymbols = append(o.TextSymbols, geometry.NewArea(dst.X+dst.Width/2, dst.Y-dst.Height/2, dst.Width, -dst.Height))
+
+			if o.Effects.TextHasCursor {
+				var midX, midY = (x - gapX/2) - o.X, (y + (fontData.Ascender+fontData.Descender)*eff.TextLineHeight/2) - o.Y
+				midX, midY = o.X+midX*cos-midY*sin, o.Y+midX*sin+midY*cos
+				o.textCursorPos = append(o.textCursorPos, midX)
+			}
 
 			if glyph.EmbededImageId != 0 {
 				if dst.Width <= 0 { // fully clipped by the textbox
@@ -335,6 +343,12 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			}
 			x += glyph.Advance*eff.TextLineHeight + gapX
 			prevGlyph = glyph
+		}
+
+		if o.Effects.TextHasCursor {
+			var endX, endY = (x - gapX/2) - o.X, (y + (fontData.Ascender+fontData.Descender)*eff.TextLineHeight/2) - o.Y
+			endX, endY = o.X+endX*cos-endY*sin, o.Y+endX*sin+endY*cos
+			o.textCursorPos = append(o.textCursorPos, endX)
 		}
 
 		y += eff.TextLineHeight*fontData.LineHeight + gapY

@@ -1,13 +1,25 @@
 package keyboard
 
-import i "pure-game-kit/packages/internal"
+import (
+	"pure-game-kit/packages/internal"
+	i "pure-game-kit/packages/internal"
+)
 
 func Input() []rune { return i.Input }
 
-func IsKeyHeld(key int, delay float32) bool { return i.Keys[key] && i.KeyDurs[key] > delay }
-func IsKeyPressed(key int) bool             { return i.Keys[key] }
-func IsKeyJustPressed(key int) bool         { return i.Keys[key] && !i.KeysPrev[key] }
-func IsKeyJustReleased(key int) bool        { return !i.Keys[key] && i.KeysPrev[key] }
+func IsKeyHeld(key int, delay float32) bool {
+	if !i.Keys[key] || i.KeyDurs[key] < delay {
+		return false
+	}
+	if internal.Runtime > holdTimeStart+0.05 {
+		holdTimeStart = internal.Runtime
+		return true
+	}
+	return false
+}
+func IsKeyPressed(key int) bool      { return i.Keys[key] }
+func IsKeyJustPressed(key int) bool  { return i.Keys[key] && !i.KeysPrev[key] }
+func IsKeyJustReleased(key int) bool { return !i.Keys[key] && i.KeysPrev[key] }
 
 func IsAnyKeyPressed() bool      { return i.AnyKey }
 func IsAnyKeyJustPressed() bool  { return i.AnyKey && !i.AnyKeyPrev }
@@ -19,6 +31,8 @@ func IsComboHeld(delay float32, keys ...int) bool {
 }
 
 //=================================================================
+
+var holdTimeStart float32
 
 func combo(keys []int) bool {
 	if i.KeyCount != len(keys) {
