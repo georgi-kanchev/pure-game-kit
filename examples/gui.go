@@ -31,6 +31,7 @@ func GUI() {
 	var hor, ver float32
 	var hor2, ver2 float32
 	var input = "hello, world! test"
+	var input2 = "tttttt"
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
@@ -52,7 +53,10 @@ func GUI() {
 				gui.Label("(4 rounds)", area, mask)
 			case 5:
 				gui.Label("UNIT", area, mask)
+			case 6:
+				gui.Inputbox(&input2, area, mask)
 			}
+
 		}
 
 		var unitsArea, ucw, uch = layout.Box(3)

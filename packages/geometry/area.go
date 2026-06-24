@@ -20,7 +20,7 @@ func (a Area) Intersect(target Area) Area {
 		return a
 	}
 	if !a.Overlaps(target) {
-		return Area{}
+		return NewArea(number.NaN(), number.NaN(), number.NaN(), number.NaN())
 	}
 	var minX, maxX = max(a.X-a.Width/2, target.X-target.Width/2), min(a.X+a.Width/2, target.X+target.Width/2)
 	var minY, maxY = max(a.Y-a.Height/2, target.Y-target.Height/2), min(a.Y+a.Height/2, target.Y+target.Height/2)
