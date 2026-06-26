@@ -236,24 +236,25 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, scaleMask(mask), ""
 	obj.Effects.BorderSize, obj.Effects.BorderColor = -10, borderColor
 	view.DrawObject(&obj)
+	area.Width -= marginX
 
 	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection {
 		skipInput = true
-		area.Width -= marginX
 		Shape(palette.Azure, 0.4, geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax+8*Scale, obj.Height*0.85), area.Intersect(mask))
-		area.Width += marginX
 		skipInput = false
 	}
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0, 0.5, false
-	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, 0
+	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 99999, area.Height, 0, 0
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
 	obj.Effects.TextIsInput, obj.Effects.TextMarginX = true, marginX
-	area.Width -= marginX
-	obj.X, obj.Y, obj.Mask = area.X, area.Y, scaleMask(area.Intersect(mask))
-	area.Width += marginX
+	var x = area.X + obj.Width/2 - area.Width/2 - marginX/2
+	if typingIn == widgetCounter {
+		x += inputScroll
+	}
+	obj.X, obj.Y, obj.Mask = x, area.Y, scaleMask(area.Intersect(mask))
 	view.DrawObject(&obj)
 
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)
@@ -285,7 +286,7 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	if IsFocused() && mouseInput {
 		inputCursorTimer, typingIn = 0, widgetCounter
 	} else if (!IsFocused() && typingIn == widgetCounter && mouseInput) || !window.IsFocused() {
-		typingIn, inputIndexSelection = 0, inputIndexCursor
+		typingIn, inputIndexSelection, inputScroll = 0, inputIndexCursor, 0
 	}
 	if typingIn != widgetCounter {
 		return
@@ -305,12 +306,6 @@ func Inputbox(text *string, area, mask geometry.Area) {
 			inputCursorTimer = 0
 		}
 	}
-	if len(input) > 0 {
-		var inputStr = string(input)
-		*text = txt.Insert(*text, inputStr, inputIndexCursor)
-		inputIndexCursor = number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
-		inputCursorTimer, inputIndexSelection = 0, inputIndexCursor
-	}
 
 	if kb.IsKeyJustPressed(key.LeftArrow) || kb.IsKeyHeld(key.LeftArrow, 0.5) {
 		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
@@ -323,13 +318,27 @@ func Inputbox(text *string, area, mask geometry.Area) {
 			inputIndexSelection = inputIndexCursor
 		}
 	}
+
+	var cursorX = obj.TextCursorPositionAt(inputIndexCursor)
+	if cursorX > area.X+area.Width/2 {
+		inputScroll -= cursorX - (area.X + area.Width/2)
+	} else if cursorX < area.X-area.Width/2 {
+		inputScroll += (area.X - area.Width/2) - cursorX
+	}
+	cursorX = number.Limit(cursorX, area.X-area.Width/2, area.X+area.Width/2)
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
 	} else if inputCursorTimer < 0.5 {
-		var cursorX = obj.TextCursorPositionAt(inputIndexCursor)
 		skipInput = true
 		Shape(palette.White, 1, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), mask)
 		skipInput = false
+	}
+
+	if len(input) > 0 {
+		var inputStr = string(input)
+		*text = txt.Insert(*text, inputStr, inputIndexCursor)
+		inputIndexCursor = number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
+		inputCursorTimer, inputIndexSelection = 0, inputIndexCursor
 	}
 }
 

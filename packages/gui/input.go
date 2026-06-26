@@ -8,7 +8,8 @@ import (
 	"pure-game-kit/packages/internal"
 )
 
-func IsTyping() bool { return typingIn != 0 }
+func IsAnyTyping() bool { return typingIn != 0 }
+func IsTyping() bool    { return typingIn == widgetCounter }
 
 func IsHovered() bool       { return nowHovered == widgetCounter }
 func IsFocused() bool       { return nowFocused == widgetCounter }
@@ -49,7 +50,7 @@ var widgetArea, drag geometry.Area
 var droppedLastFrame bool
 
 var typingIn, inputIndexCursor, inputIndexSelection int = 0, 0, 0
-var inputCursorTimer, ax, bx float32
+var inputCursorTimer, ax, bx, inputScroll float32
 
 func handleInput(area, mask geometry.Area, roundness float32) {
 	if skipInput {
