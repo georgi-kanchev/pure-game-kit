@@ -318,9 +318,7 @@ func Inputbox(text *string, area, mask geometry.Area) {
 		} else {
 			inputIndexCursor = a
 		}
-		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
-			inputIndexSelection = inputIndexCursor
-		}
+		tryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5) {
 		inputCursorTimer = 0
 		if a == b {
@@ -328,9 +326,15 @@ func Inputbox(text *string, area, mask geometry.Area) {
 		} else {
 			inputIndexCursor = b
 		}
-		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
-			inputIndexSelection = inputIndexCursor
-		}
+		tryShiftSelect()
+	} else if kb.IsKeyJustPressed(key.UpArrow) || kb.IsKeyJustPressed(key.Home) {
+		inputIndexCursor, inputCursorTimer = 0, 0
+		tryShiftSelect()
+	} else if kb.IsKeyJustPressed(key.DownArrow) || kb.IsKeyJustPressed(key.End) {
+		inputIndexCursor, inputCursorTimer = txt.Length(*text), 0
+		tryShiftSelect()
+	} else if kb.IsComboJustPressed(key.LeftControl, key.A) || kb.IsComboJustPressed(key.RightControl, key.A) {
+		inputIndexCursor, inputIndexSelection = txt.Length(*text), 0
 	}
 
 	var cursorX = obj.TextCursorPositionAt(inputIndexCursor)
@@ -418,4 +422,9 @@ func deleteRuneRange(text *string, start, end int) {
 
 	runes = append(runes[:start], runes[end:]...) // delete the range in-place
 	*text = string(runes)                         // update the underlying string
+}
+func tryShiftSelect() {
+	if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
+		inputIndexSelection = inputIndexCursor
+	}
 }
