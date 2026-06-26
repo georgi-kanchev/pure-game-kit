@@ -286,7 +286,11 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	if IsFocused() && mouseInput {
 		inputCursorTimer, typingIn = 0, widgetCounter
 	} else if (!IsFocused() && typingIn == widgetCounter && mouseInput) || !window.IsFocused() {
-		typingIn, inputIndexSelection, inputScroll = 0, inputIndexCursor, 0
+		typingIn, inputIndexSelection = 0, inputIndexCursor
+
+	}
+	if typingIn != lastTypingIn { // no longer typing or switching inputbox while typing
+		inputScroll = 0
 	}
 	if typingIn != widgetCounter {
 		return

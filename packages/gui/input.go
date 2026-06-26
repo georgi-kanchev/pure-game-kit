@@ -49,7 +49,7 @@ var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag geometry.Area
 var droppedLastFrame bool
 
-var typingIn, inputIndexCursor, inputIndexSelection int = 0, 0, 0
+var lastTypingIn, typingIn, inputIndexCursor, inputIndexSelection int
 var inputCursorTimer, ax, bx, inputScroll float32
 
 func handleInput(area, mask geometry.Area, roundness float32) {
@@ -58,7 +58,7 @@ func handleInput(area, mask geometry.Area, roundness float32) {
 	}
 
 	if internal.Frame != lastUpdateOnFrame { // frame reset, runs exactly once on the first widget of a new frame
-		lastUpdateOnFrame, lastFocused = internal.Frame, nowFocused
+		lastUpdateOnFrame, lastFocused, lastTypingIn = internal.Frame, nowFocused, typingIn
 		inputCursorTimer += internal.FrameDelta
 
 		if nowHovered == lastHovered {
