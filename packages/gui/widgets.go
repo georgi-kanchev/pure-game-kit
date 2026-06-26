@@ -312,12 +312,22 @@ func Inputbox(text *string, area, mask geometry.Area) {
 	}
 
 	if kb.IsKeyJustPressed(key.LeftArrow) || kb.IsKeyHeld(key.LeftArrow, 0.5) {
-		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
+		inputCursorTimer = 0
+		if a == b {
+			inputIndexCursor = number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
+		} else {
+			inputIndexCursor = a
+		}
 		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
 			inputIndexSelection = inputIndexCursor
 		}
 	} else if kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5) {
-		inputCursorTimer, inputIndexCursor = 0, number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
+		inputCursorTimer = 0
+		if a == b {
+			inputIndexCursor = number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
+		} else {
+			inputIndexCursor = b
+		}
 		if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
 			inputIndexSelection = inputIndexCursor
 		}
