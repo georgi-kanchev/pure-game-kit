@@ -54,7 +54,7 @@ func GUI() {
 			case 5:
 				gui.Label("UNIT", area, mask)
 			case 6:
-				gui.Inputbox(&input2, area, mask)
+				gui.Inputbox(&input2, "mhm...", area, mask)
 			}
 
 		}
@@ -75,7 +75,7 @@ func GUI() {
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.Y -= 50
 
-		gui.Inputbox(&input, area, geometry.Area{})
+		gui.Inputbox(&input, "enter name...", area, geometry.Area{})
 
 		view.DrawDebugInfo(true)
 	}

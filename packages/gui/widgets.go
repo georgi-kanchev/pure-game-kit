@@ -213,7 +213,7 @@ func Button(text string, area, mask geometry.Area) {
 	Label(text, area, mask)
 	skipInput = false
 }
-func Inputbox(text *string, area, mask geometry.Area) {
+func Inputbox(text *string, placeholder string, area, mask geometry.Area) {
 	if area == (geometry.Area{}) {
 		return
 	}
@@ -255,6 +255,11 @@ func Inputbox(text *string, area, mask geometry.Area) {
 		x += inputScroll
 	}
 	obj.X, obj.Y, obj.Mask = x, area.Y, scaleMask(area.Intersect(mask))
+	if obj.Text == "" {
+		obj.Text = placeholder
+		obj.Effects.TextColor = col.RGBA(40, 40, 40, 255)
+		obj.Effects.TextShadowColor = 0
+	}
 	view.DrawObject(&obj)
 
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)
@@ -335,6 +340,10 @@ func Inputbox(text *string, area, mask geometry.Area) {
 		tryShiftSelect()
 	} else if kb.IsComboJustPressed(key.LeftControl, key.A) || kb.IsComboJustPressed(key.RightControl, key.A) {
 		inputIndexCursor, inputIndexSelection = txt.Length(*text), 0
+	}
+
+	if *text == "" { // cannot select placeholder text
+		inputIndexCursor, inputIndexSelection = 0, 0
 	}
 
 	var cursorX = obj.TextCursorPositionAt(inputIndexCursor)
