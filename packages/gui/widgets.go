@@ -303,15 +303,15 @@ func Inputbox(text *string, placeholder string, area, mask geometry.Area) {
 
 	var input = keyboard.Input()
 	if a != b && (len(input) > 0 || keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyJustPressed(key.Delete)) {
-		deleteRuneRange(text, a, b) // delete selection
+		inputDeleteRuneRange(text, a, b) // delete selection
 		inputIndexCursor, inputIndexSelection, inputCursorTimer = a, a, 0
 	} else {
 		if keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace, 0.5) {
-			deleteRuneRange(text, inputIndexCursor, inputIndexCursor-1)
+			inputDeleteRuneRange(text, inputIndexCursor, inputIndexCursor-1)
 			inputIndexCursor = number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
 			inputIndexSelection, inputCursorTimer = inputIndexCursor, 0
 		} else if keyboard.IsKeyJustPressed(key.Delete) || keyboard.IsKeyHeld(key.Delete, 0.5) {
-			deleteRuneRange(text, inputIndexCursor, inputIndexCursor+1)
+			inputDeleteRuneRange(text, inputIndexCursor, inputIndexCursor+1)
 			inputCursorTimer = 0
 		}
 	}
@@ -323,7 +323,7 @@ func Inputbox(text *string, placeholder string, area, mask geometry.Area) {
 		} else {
 			inputIndexCursor = a
 		}
-		tryShiftSelect()
+		inputTryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5) {
 		inputCursorTimer = 0
 		if a == b {
@@ -331,13 +331,13 @@ func Inputbox(text *string, placeholder string, area, mask geometry.Area) {
 		} else {
 			inputIndexCursor = b
 		}
-		tryShiftSelect()
+		inputTryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.UpArrow) || kb.IsKeyJustPressed(key.Home) {
 		inputIndexCursor, inputCursorTimer = 0, 0
-		tryShiftSelect()
+		inputTryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.DownArrow) || kb.IsKeyJustPressed(key.End) {
 		inputIndexCursor, inputCursorTimer = txt.Length(*text), 0
-		tryShiftSelect()
+		inputTryShiftSelect()
 	} else if kb.IsComboJustPressed(key.LeftControl, key.A) || kb.IsComboJustPressed(key.RightControl, key.A) {
 		inputIndexCursor, inputIndexSelection = txt.Length(*text), 0
 	}
@@ -414,7 +414,7 @@ var view, obj = graphics.View{}, graphics.Object{}
 func scaleMask(mask geometry.Area) geometry.Area {
 	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)
 }
-func deleteRuneRange(text *string, start, end int) {
+func inputDeleteRuneRange(text *string, start, end int) {
 	if text == nil || *text == "" {
 		return
 	}
@@ -432,7 +432,7 @@ func deleteRuneRange(text *string, start, end int) {
 	runes = append(runes[:start], runes[end:]...) // delete the range in-place
 	*text = string(runes)                         // update the underlying string
 }
-func tryShiftSelect() {
+func inputTryShiftSelect() {
 	if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
 		inputIndexSelection = inputIndexCursor
 	}

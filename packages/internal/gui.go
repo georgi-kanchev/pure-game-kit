@@ -21,33 +21,36 @@ type Layout struct {
 	Boxes   []struct {
 		Id                          uint32  `xml:"id,attr"`
 		Name                        string  `xml:"name,attr"`
-		NamePosition                string  `xml:"namePos,attr"`
-		Color                       string  `xml:"col,attr"`
-		Visible                     int     `xml:"vis,attr"`
-		Rectangle                   string  `xml:"rect,attr"`
-		Expression                  string  `xml:"expr,attr"`
-		Targets                     string  `xml:"tar,attr"`
-		ItemSize                    string  `xml:"itSz,attr"`
-		ItemSpacing                 string  `xml:"itSp,attr"`
-		ItemGap                     float32 `xml:"itGap,attr"`
-		ItemNewRow                  float32 `xml:"itNewRow,attr"`
-		ItemAlign                   string  `xml:"itAl,attr"`
+		NamePosition                string  `xml:"namePosition,attr"`
+		Color                       string  `xml:"color,attr"`
+		Visible                     int     `xml:"visible,attr"`
+		Rectangle                   string  `xml:"rectangle,attr"`
+		Math                        string  `xml:"math,attr"`
+		Targets                     string  `xml:"target,attr"`
+		ItemSize                    string  `xml:"itemSize,attr"`
+		ItemSpacing                 string  `xml:"itemSpacing,attr"`
+		ItemGap                     float32 `xml:"itemGap,attr"`
+		ItemNewRow                  float32 `xml:"itemNewRow,attr"`
+		ItemAlign                   string  `xml:"itemAlign,attr"`
 		Vars                        Vars
 		ItemStart, ItemEnd          int // cache on load
 		ItemRangeCalculated         bool
 		ContentWidth, ContentHeight float32
 	} `xml:"boxes>box"`
 	Items []struct {
-		Id               uint32  `xml:"id,attr"`
-		BoxId            uint32  `xml:"boxId,attr"`
-		Name             string  `xml:"name,attr"`
-		Visible          int     `xml:"vis,attr"`
-		Size             string  `xml:"size,attr"`
-		Expression       string  `xml:"expr,attr"`
-		NewRow           float32 `xml:"newRow,attr"`
-		NewRowExpression string  `xml:"newRowExpr,attr"`
-		Vars             Vars
+		Id         uint32 `xml:"id,attr"`
+		BoxId      uint32 `xml:"boxId,attr"`
+		Name       string `xml:"name,attr"`
+		Visible    int    `xml:"visible,attr"`
+		Size       string `xml:"size,attr"`
+		Expression string `xml:"math,attr"`
+		NewRowMath string `xml:"newRowMath,attr"`
+		Vars       Vars
 	} `xml:"items>item"`
+}
+
+type Theme struct {
+	XMLName xml.Name `xml:"theme"`
 }
 
 var Layouts map[uint32]*Layout = make(map[uint32]*Layout)

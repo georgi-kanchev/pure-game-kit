@@ -125,23 +125,23 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h, cw, 
 	if text.SplitCount(box.Targets, " ") == 4 {
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 0), depth+1)
 		activeVars = &box.Vars
-		var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), variable)
+		var rx = text.Calculate(text.SplitIndex(box.Math, " ", 0), variable)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 1), depth+1)
 		activeVars = &box.Vars
-		var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), variable)
+		var ry = text.Calculate(text.SplitIndex(box.Math, " ", 1), variable)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 2), depth+1)
 		activeVars = &box.Vars
-		var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), variable)
+		var rw = text.Calculate(text.SplitIndex(box.Math, " ", 2), variable)
 		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 3), depth+1)
 		activeVars = &box.Vars
-		var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), variable)
+		var rh = text.Calculate(text.SplitIndex(box.Math, " ", 3), variable)
 		return rx, ry, rw, rh, box.ContentWidth, box.ContentHeight, box.Visible == 1
 	}
 
-	var rx = text.Calculate(text.SplitIndex(box.Expression, " ", 0), variable)
-	var ry = text.Calculate(text.SplitIndex(box.Expression, " ", 1), variable)
-	var rw = text.Calculate(text.SplitIndex(box.Expression, " ", 2), variable)
-	var rh = text.Calculate(text.SplitIndex(box.Expression, " ", 3), variable)
+	var rx = text.Calculate(text.SplitIndex(box.Math, " ", 0), variable)
+	var ry = text.Calculate(text.SplitIndex(box.Math, " ", 1), variable)
+	var rw = text.Calculate(text.SplitIndex(box.Math, " ", 2), variable)
+	var rh = text.Calculate(text.SplitIndex(box.Math, " ", 3), variable)
 	return rx, ry, rw, rh, box.ContentWidth, box.ContentHeight, box.Visible == 1
 }
 func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY, sc float32) (x, y, w, h float32, vis bool) {
@@ -188,11 +188,11 @@ func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY, sc float
 			continue
 		}
 
-		if it.NewRow == 1 {
+		if it.NewRowMath != "" {
 			curY += rowMaxH + mb
-			if it.NewRowExpression != "" {
+			if it.NewRowMath != "" {
 				item.Vars.Mx, item.Vars.My, item.Vars.Mw, item.Vars.Mh = curX, curY, defW, defH
-				curY += text.Calculate(it.NewRowExpression, variable)
+				curY += text.Calculate(it.NewRowMath, variable)
 			}
 			curX = bx + osx
 			rowMaxH = 0
