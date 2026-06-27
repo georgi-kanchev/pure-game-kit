@@ -1,82 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <theme>
-  <label version="0" fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="1 0.5" weight="0" color="#ffffff"
-      outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30" />
-  <button version="0" fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="1 0.5" weight="0" color="#ffffff"
-      outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30" />
+	<image imageId="0" roundness="0" color="#ffffff" borderSize="0" borderColor="#000000" />
+	<text fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="0 0" weight="0" fillColor="#ffffff"
+    outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+	<label fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" fillColor="#ffffff"
+    outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+	<button>
+		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+			<disabled color="#555555"/>
+			<focused color="#ff8c8c"/>
+			<clicked color="#a04444"/>
+		</body>
+		<value fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" fillColor="#ffffff"
+    	outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
+			<disabled fillColor="#555555"/>
+			<focused fillColor="#ff8c8c"/>
+			<clicked fillColor="#a04444"/>
+		</value>
+	</button>
+	<scroll>
+		<body roundness="0.5" color="#0000007a"/>
+		<handle roundness="0.5" color="#ffffff">
+			<focused color="#ff8c8c"/>
+			<clicked color="#a04444"/>
+		</handle>
+	</scroll>
+	<slider>
+		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+			<disabled color="#555555"/>
+			<focused color="#ff8c8c"/>
+			<clicked color="#a04444"/>
+		</body>
+		<handle imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+			<disabled color="#555555"/>
+			<focused color="#ff8c8c"/>
+			<clicked color="#a04444"/>
+		</handle>
+		<step imageId="0" roundness="0.5" color="#ffffff" borderSize="0" borderColor="#000000"/>
+	</slider>
+	<inputbox>
+		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+			<disabled color="#555555"/>
+			<typing borderColor="#ff8c8c"/>
+		</body>
+		<value fontId="0" gap="0 0" margin="10 10" weight="0" fillColor="#ffffff"
+    	outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
+			<disabled fillColor="#555555"/>
+			<typing fillColor="#ff8c8c"/>
+		</value>
+		<placeholder fontId="0" gap="0 0" margin="10 10" weight="0" fillColor="#ffffff"
+    	outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+		<selection roundness="0.5" color="#00aeff" borderSize="-10" borderColor="#8c8c8c"/>
+		<cursor width="10" roundness="0.5" color="#ffffff"/>
+	</inputbox>
 </theme>
-
-const (
-	Class    = "class"    // [widget]
-	Id       = "id"       // [widget] [container]
-	X        = "x"        // [widget] [container]
-	Y        = "y"        // [widget] [container]
-	ThemeId  = "themeId"  // [widget] [container]
-	Hidden   = "hidden"   // [widget] [container] "1" = true, "" = false
-	Disabled = "disabled" // [widget] [container] "1" = true, "" = false
-
-	Width   = "width"   // [widget] [theme] [container]
-	Height  = "height"  // [widget] [theme] [container]
-	AssetId = "assetId" // [widget] [theme] [container]
-	GapX    = "gapX"    // [widget] [theme] [container] X spacing between self & previous widget
-	GapY    = "gapY"    // [widget] [theme] [container] Y spacing between self & previous widget
-
-	TargetId = "targetId" // [container] which container fields to use with Target... dynamics
-	AnchorX  = "anchorX"  // [container] no effect when X scroll, example: 0 = left, 0.5 = center, 1 = right
-	AnchorY  = "anchorY"  // [container] no effect when Y scroll, example: 0 = top, 0.5 = center, 1 = bottom
-
-	Value         = "value"         // [widget] used by slider & checkbox to represent state
-	FillContainer = "fillContainer" // [widget] treated as the graphics of its container, not a standalone widget
-	NewRow        = "newRow"        // [widget] skipped for first widget in container; example: "200", "" = GapY
-	OffsetX       = "offsetX"       // [widget]
-	OffsetY       = "offsetY"       // [widget]
-	TooltipText   = "tooltipText"   // [widget]
-
-	ToggleButtonId = "toggleButtonId" // [widget] [theme] hides/shows widget when button is clicked
-	TooltipId      = "tooltipId"      // [widget] [theme]
-	TooltipMargin  = "tooltipMargin"  // [widget] [theme]
-	TooltipSound   = "tooltipSound"   // [widget] [theme] default: "~popup"
-	Color          = "color"          // [widget] [theme] example: "255 0 0 255"
-	FrameColor     = "frameColor"     // [widget] [theme] example: "255 0 0 255"
-	FrameSize      = "frameSize"      // [widget] [theme] positive outward, negative inward
-
-	Text           = "text"           // [widget] [theme]
-	TextFontId     = "textFontId"     // [widget] [theme]
-	TextColor      = "textColor"      // [widget] [theme] default: "127 127 127 255"
-	TextLineHeight = "textLineHeight" // [widget] [theme] default: "30"
-	TextLineGap    = "textLineGap"    // [widget] [theme]
-	TextSymbolGap  = "textSymbolGap"  // [widget] [theme] default: "0.2"
-	TextAlignmentX = "textAlignmentX" // [widget] [theme]
-	TextAlignmentY = "textAlignmentY" // [widget] [theme]
-	TextWordWrap   = "textWordWrap"   // [widget] [theme] example: "" = true, all else = false
-
-	ButtonThemeIdHover   = "buttonThemeIdHover"   // [widget] [theme]
-	ButtonThemeIdPress   = "buttonThemeIdPress"   // [widget] [theme]
-	ButtonThemeIdDisable = "buttonThemeIdDisable" // [widget] [theme]
-	ButtonHotkey         = "buttonHotkey"         // [widget] [theme] space-separated hotkeys, any of which can be pressed at all times
-	ButtonSoundPress     = "buttonSoundPress"     // [widget] [theme] default: "~press"
-	ButtonSoundRelease   = "buttonSoundRelease"   // [widget] [theme] default: "~release"
-
-	SliderStep          = "sliderStep"          // [widget] [theme] step <= 0 hides indicators, example: "-0.1", "0.2"
-	SliderStepAssetId   = "sliderStepAssetId"   // [widget] [theme]
-	SliderHandleAssetId = "sliderHandleAssetId" // [widget] [theme]
-	SliderSound         = "sliderSound"         // [widget] [theme] default: "~slider"
-
-	CheckboxThemeId  = "checkboxThemeId"  // [widget] [theme]
-	CheckboxGroup    = "checkboxGroup"    // [widget] [theme]
-	CheckboxSoundOn  = "checkboxSoundOn"  // [widget] [theme] default: "~on"
-	CheckboxSoundOff = "checkboxSoundOff" // [widget] [theme] default: "~off"
-
-	MenuContainerId = "menuContainerId" // [widget] [theme] which container should this menu toggle
-	MenuSound       = "menuSound"       // [widget] [theme] default: "~popup"
-
-	InputFieldMargin      = "inputFieldMargin"      // [widget] [theme] default: "10"
-	InputFieldPlaceholder = "inputFieldPlaceholder" // [widget] [theme] default: "Type..."
-	InputFieldSoundType   = "inputFieldSoundType"   // [widget] [theme] default: "~write"
-	InputFieldSoundErase  = "inputFieldSoundErase"  // [widget] [theme] default: "~erase"
-
-	DraggableAssetId       = "draggableAssetId"       // [widget] [theme]
-	DraggableAssetColor    = "draggableAssetColor"    // [widget] [theme] default: "255 255 255 255"
-	DraggableAssetScale    = "draggableAssetScale"    // [widget] [theme] default: "1"
-	DraggableCancelSoundId = "draggableCancelSoundId" // [widget] [theme] default: "~error"
-)

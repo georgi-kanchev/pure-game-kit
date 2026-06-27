@@ -43,21 +43,25 @@ func AreaHUD(horizontal, vertical, width, height float32) Area {
 	return geometry.NewArea(x, y, width, height)
 }
 
-func Shape(imageId assets.ImageId, color uint, area, mask Area, theme assets.ThemeId, input bool) {
+func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, color uint, area, mask Area, input bool) {
 	if area == (Area{}) {
 		return
 	}
 	if input {
-		handleInput(area, scaleMask(mask), defaultRoundness)
+		handleInput(area, scaleMask(mask), roundness)
 	}
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
-	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, defaultRoundness
+	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, roundness
 	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask, obj.Text = 0, palette.White, color, scaleMask(mask), ""
-	obj.Effects.BorderSize, obj.Effects.BorderColor = defaultBorderSize, col.Darken(color, 0.25)
+	obj.Effects.BorderSize, obj.Effects.BorderColor = borderSize, borderColor
 	if imageId != 0 {
 		obj.Effects.Tint, obj.Effects.FillColor = color, 0
 	}
 	view.DrawObject(&obj)
+}
+
+func Image(area, mask Area, theme assets.ThemeId, input bool) {
+	Object(0, 0, 0, 0, palette.White, area, mask, input)
 }
 func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	handleText(text, area.Height/float32(txt.SplitCount(text, "\n"))*0.8, 0.5, 0.5, area, mask, theme, input, false)
@@ -96,7 +100,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
 		var col = palette.LightGray
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
-		Shape(0, color.RGBA(0, 0, 0, 127), hor, Area{}, theme, true)
+		Object(0, 0, 0, 0, color.RGBA(0, 0, 0, 127), hor, Area{}, true)
 		if IsHovered() {
 			mouse.SetCursor(cursor.Hand)
 			col = palette.White
@@ -105,7 +109,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 			instant = true // use after widget Shape to account for limiting
 			mouse.SetCursor(cursor.Resize1)
 		}
-		Shape(0, col, handle, Area{}, theme, true)
+		Object(0, 0, 0, 0, col, handle, Area{}, true)
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.X = mx // click on scroll body (not handle)
 		}
@@ -133,7 +137,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
 		var col = palette.LightGray
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
-		Shape(0, color.RGBA(0, 0, 0, 127), ver, Area{}, theme, true)
+		Object(0, 0, 0, 0, color.RGBA(0, 0, 0, 127), ver, Area{}, true)
 		if IsHovered() {
 			mouse.SetCursor(cursor.Hand)
 			col = palette.White
@@ -142,7 +146,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 			instant = true // use after widget Shape to account for limiting
 			mouse.SetCursor(cursor.Resize2)
 		}
-		Shape(0, col, handle, Area{}, theme, true)
+		Object(0, 0, 0, 0, col, handle, Area{}, true)
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.Y = my // click on scroll body (not handle)
 		}
@@ -183,7 +187,7 @@ func Button(area, mask Area, theme assets.ThemeId, input bool) {
 	if IsClicked() {
 		color = col.Darken(color, 0.15)
 	}
-	Shape(0, color, area, mask, theme, false)
+	Object(0, 0, 0, 0, color, area, mask, false)
 }
 func Inputbox(text *string, placeholder string, area, mask Area, theme assets.ThemeId, input bool) {
 	if area == (Area{}) {
@@ -214,7 +218,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 
 	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection {
 		var selectArea = geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax, obj.Height*0.85)
-		Shape(0, palette.Azure, selectArea, area.Intersect(mask), theme, false)
+		Object(0, 0, 0, 0, palette.Azure, selectArea, area.Intersect(mask), false)
 	}
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
@@ -329,7 +333,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
 	} else if inputCursorTimer < 0.5 {
-		Shape(0, palette.LightGray, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), mask, theme, false)
+		Object(0, 0, 0, 0, palette.LightGray, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), mask, false)
 	}
 
 	if len(inputStr) > 0 {
@@ -348,7 +352,7 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.ThemeId,
 	var x = number.Map(*value, 0, 1, left+area.Height/2, right-area.Height/2)
 	mask = scaleMask(mask)
 
-	Shape(0, palette.DarkGray, area, mask, theme, input)
+	Object(0, 0, 0, 0, palette.DarkGray, area, mask, input)
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
 		color = col.Brighten(baseColor, 0.15)
@@ -363,10 +367,10 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.ThemeId,
 		var minX, maxX = left + area.Height/2, right - area.Height/2
 		for t := float32(0.0); t <= 1.0+0.001; t += step {
 			var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
-			Shape(0, palette.DarkGray, stepArea, mask, theme, false)
+			Object(0, 0, 0, 0, palette.DarkGray, stepArea, mask, false)
 		}
 	}
-	Shape(0, color, geometry.NewArea(x, area.Y, area.Height, area.Height), mask, theme, false)
+	Object(0, 0, 0, 0, color, geometry.NewArea(x, area.Y, area.Height, area.Height), mask, false)
 
 	if dragging {
 		x, _ = view.MousePosition()

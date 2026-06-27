@@ -36,7 +36,7 @@ func GUI() {
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
-			gui.Shape(0, c, area, gui.Area{}, 0, false)
+			gui.Object(0, 0, 0, 0, c, area, gui.Area{}, false)
 		}
 
 		if mouse.ScrollY() != 0 {
@@ -45,7 +45,7 @@ func GUI() {
 
 		for i, c := range itemCols {
 			var area, mask = layout.Item(i, hor, ver)
-			gui.Shape(0, c, area, mask, 0, false)
+			gui.Object(0, 0, 0, 0, c, area, mask, false)
 
 			switch i {
 			case 0:
@@ -64,11 +64,11 @@ func GUI() {
 
 		if !gui.IsAnyTyping() && keyboard.IsKeyPressed(key.A) {
 			var area, cw, ch = layout.Box(5)
-			gui.Shape(0, palette.Azure, area, gui.Area{}, 0, false)
+			gui.Object(0, 0, 0, 0, palette.Azure, area, gui.Area{}, false)
 			gui.Scrolls(&hor2, &ver2, cw, ch, area, 0)
 			for i := range 4 {
 				var area, mask = layout.Item(20+i, hor2, ver2)
-				gui.Shape(0, palette.Beige, area, mask, 0, false)
+				gui.Object(0, 0, 0, 0, palette.Beige, area, mask, false)
 			}
 		}
 
