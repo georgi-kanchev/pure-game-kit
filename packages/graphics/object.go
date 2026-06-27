@@ -35,8 +35,9 @@ type Object struct {
 	Text       string
 	TextFontId assets.FontId
 
-	textBatches   []*internal.Batch
-	textCursorPos []float32
+	textBatches           []*internal.Batch
+	textCursorPos         []float32
+	textWidth, textHeight float32
 
 	// tilemap ========================================================
 
@@ -148,6 +149,9 @@ func (o *Object) TextCursorPositionAt(index int) float32 {
 		return number.NaN()
 	}
 	return o.textCursorPos[index]
+}
+func (o *Object) TextSize() (width, height float32) {
+	return o.textWidth, o.textHeight
 }
 
 // tilemap ========================================================

@@ -24,9 +24,9 @@ func IsJustDropped() bool {
 	return lastClickedWidget == widgetCounter && !IsClicked() && mouse.IsButtonJustReleased(button.Left)
 }
 func IsJustDroppedUpon() bool {
-	return drag != (geometry.Area{}) && IsHovered() && mouse.IsButtonJustReleased(button.Left)
+	return drag != (Area{}) && IsHovered() && mouse.IsButtonJustReleased(button.Left)
 }
-func Drag() geometry.Area {
+func Drag() Area {
 	if IsJustDragged() {
 		drag = widgetArea
 	}
@@ -46,13 +46,13 @@ var nowHovered, lastHovered, nowFocused, lastFocused int
 var lastClickedWidget, clickedWidget, justClickedWidget int
 var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
 var lastUpdateOnFrame, lastScrollFrame uint64
-var widgetArea, drag geometry.Area
+var widgetArea, drag Area
 var droppedLastFrame bool
 
 var lastTypingIn, typingIn, inputIndexCursor, inputIndexSelection int
 var inputCursorTimer, ax, bx, inputScroll float32
 
-func handleInput(area, mask geometry.Area, roundness float32) {
+func handleInput(area, mask Area, roundness float32) {
 	if skipInput {
 		return
 	}
@@ -80,10 +80,10 @@ func handleInput(area, mask geometry.Area, roundness float32) {
 		}
 
 		if droppedLastFrame {
-			drag = geometry.Area{}
+			drag = Area{}
 			droppedLastFrame = false
 		}
-		if mouse.IsButtonJustReleased(button.Left) && drag != (geometry.Area{}) {
+		if mouse.IsButtonJustReleased(button.Left) && drag != (Area{}) {
 			droppedLastFrame = true
 		}
 
@@ -98,7 +98,7 @@ func handleInput(area, mask geometry.Area, roundness float32) {
 	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)
 	var maskHor = mx >= mask.X-mask.Width/2 && mx <= mask.X+mask.Width/2
 	var maskVer = my >= mask.Y-mask.Height/2 && my <= mask.Y+mask.Height/2
-	var maskCheck = mask == (geometry.Area{}) || (mask != (geometry.Area{}) && maskHor && maskVer)
+	var maskCheck = mask == (Area{}) || (mask != (Area{}) && maskHor && maskVer)
 	if shape.ContainsPoint(mx, my) && maskCheck {
 		nowHovered = widgetCounter // top-most logic: later widgets naturally overwrite earlier widgets
 	}

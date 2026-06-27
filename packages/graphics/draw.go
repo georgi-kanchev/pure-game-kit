@@ -272,7 +272,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	}
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
-	var contentHeight float32
+	var contentWidth, contentHeight float32
 	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
 	var txt = o.Text
 	if eff.TextIsInput && txt == "" {
@@ -286,7 +286,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		var lineStart = i
 		var end, width, endHeight = o.measureLine(i, currentLineHeight)
 		lines = append(lines, line{lineStart, end, width})
-		contentHeight += endHeight * fontData.LineHeight
+		contentWidth, contentHeight = max(contentWidth, width), contentHeight+endHeight*fontData.LineHeight
 		currentLineHeight = endHeight
 		i = end
 		if i < len(txt) {
@@ -353,6 +353,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		}
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
 	}
+	o.textWidth, o.textHeight = contentWidth, contentHeight
 }
 func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.Area, eff *internal.Effects, mask internal.Area) {
 	var tex = internal.Images[imageId]

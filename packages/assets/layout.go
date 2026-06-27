@@ -14,7 +14,6 @@ type LayoutId uint32
 func LoadLayout(xmlPath string) LayoutId {
 	var layout = internal.Layout{}
 	storage.FromXML(file.LoadText(xmlPath), &layout)
-
 	if len(layout.Boxes) == 0 {
 		return 0
 	}
@@ -37,7 +36,7 @@ func LoadLayout(xmlPath string) LayoutId {
 		}
 	}
 
-	internal.Layouts[id] = &layout
+	internal.Layouts[id] = layout
 	return LayoutId(id)
 }
 
@@ -47,10 +46,10 @@ func (l LayoutId) Unload() {
 
 func (l LayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeight float32) {
 	var layout = internal.Layouts[uint32(l)]
-	if layout == nil {
+	if len(layout.Boxes) == 0 {
 		return geometry.Area{}, 0, 0
 	}
-	var rx, ry, rw, rh, cw, ch, rv = boxDynamic(layout, id, 0)
+	var rx, ry, rw, rh, cw, ch, rv = boxDynamic(&layout, id, 0)
 	if !rv {
 		return geometry.Area{}, 0, 0 // not visible
 	}
@@ -60,11 +59,11 @@ func (l LayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeight f
 }
 func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Area) {
 	var layout = internal.Layouts[uint32(l)]
-	if layout == nil || id < 0 || id >= len(layout.Items) {
+	if len(layout.Boxes) == 0 || id < 0 || id >= len(layout.Items) {
 		return geometry.Area{}, geometry.Area{}
 	}
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	var rx, ry, rw, rh, rv = itemDynamic(layout, id, scrollX, scrollY, sc)
+	var rx, ry, rw, rh, rv = itemDynamic(&layout, id, scrollX, scrollY, sc)
 	if !rv {
 		return geometry.Area{}, geometry.Area{} // not visible
 	}
@@ -77,7 +76,7 @@ func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Ar
 
 func (l LayoutId) SetVisibleItem(id int, visible bool) {
 	var layout = internal.Layouts[uint32(l)]
-	if layout == nil || id < 0 || id >= len(layout.Items) {
+	if len(layout.Boxes) == 0 || id < 0 || id >= len(layout.Items) {
 		return
 	}
 	var item = &layout.Items[id]
@@ -86,6 +85,7 @@ func (l LayoutId) SetVisibleItem(id int, visible bool) {
 	} else {
 		item.Visible = 0
 	}
+	internal.Layouts[uint32(l)] = layout
 }
 
 // private ========================================================

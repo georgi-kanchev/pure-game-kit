@@ -32,10 +32,11 @@ func GUI() {
 	var hor2, ver2 float32
 	var input = "hello, world! test"
 	var input2 = "tttttt"
+	var s float32 = 0.5
 	for window.KeepOpen() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
-			gui.Shape(c, 0, area, geometry.Area{})
+			gui.Shape(0, c, area, gui.Area{}, 0, false)
 		}
 
 		if mouse.ScrollY() != 0 {
@@ -44,38 +45,42 @@ func GUI() {
 
 		for i, c := range itemCols {
 			var area, mask = layout.Item(i, hor, ver)
-			gui.Shape(c, 0, area, mask)
+			gui.Shape(0, c, area, mask, 0, false)
 
 			switch i {
 			case 0:
-				gui.Label("Victory", area, mask)
+				gui.Label("Victory", area, mask, 0, false)
 			case 1:
-				gui.Label("(4 rounds)", area, mask)
+				gui.Label("(4 rounds)", area, mask, 0, false)
 			case 5:
-				gui.Label("UNIT", area, mask)
+				gui.Label("UNIT\ntest\nhi", area, mask, 0, false)
 			case 6:
-				gui.Inputbox(&input2, "mhm...", area, mask)
+				gui.Inputbox(&input2, "mhm...", area, mask, 0, true)
 			}
-
 		}
 
 		var unitsArea, ucw, uch = layout.Box(3)
-		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea)
+		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea, 0)
 
 		if !gui.IsAnyTyping() && keyboard.IsKeyPressed(key.A) {
 			var area, cw, ch = layout.Box(5)
-			gui.Shape(palette.Azure, 0, area, geometry.Area{})
-			gui.Scrolls(&hor2, &ver2, cw, ch, area)
+			gui.Shape(0, palette.Azure, area, gui.Area{}, 0, false)
+			gui.Scrolls(&hor2, &ver2, cw, ch, area, 0)
 			for i := range 4 {
 				var area, mask = layout.Item(20+i, hor2, ver2)
-				gui.Shape(palette.Beige, 0, area, mask)
+				gui.Shape(0, palette.Beige, area, mask, 0, false)
 			}
 		}
 
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.Y -= 50
 
-		gui.Inputbox(&input, "enter name...", area, geometry.Area{})
+		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
+
+		gui.Button(geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
+		gui.Label("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, false)
+
+		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
 
 		view.DrawDebugInfo(true)
 	}

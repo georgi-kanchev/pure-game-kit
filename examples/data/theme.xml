@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <theme>
-  <label ver="0" imageId="1" disabled="1" state="0.5", color="255 0 0 255" borderColor="0 255 0 255" borderSize="-5" fontId="" textColor="0 0 0 255" textAlignX="1"/>
+  <label version="0" fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="1 0.5" weight="0" color="#ffffff"
+      outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30" />
+  <button version="0" fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="1 0.5" weight="0" color="#ffffff"
+      outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30" />
 </theme>
 
 const (

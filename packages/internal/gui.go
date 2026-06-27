@@ -53,5 +53,6 @@ type Theme struct {
 	XMLName xml.Name `xml:"theme"`
 }
 
-var Layouts map[uint32]*Layout = make(map[uint32]*Layout)
-var NextLayoutId uint32
+var Layouts map[uint32]Layout = make(map[uint32]Layout)
+var Themes map[uint32]Theme = make(map[uint32]Theme)
+var NextLayoutId, NextThemeId uint32
