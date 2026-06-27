@@ -60,21 +60,10 @@ func Shape(imageId assets.ImageId, color uint, area, mask Area, theme assets.The
 	view.DrawObject(&obj)
 }
 func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
-	Text(text, area.Height/float32(txt.SplitCount(text, "\n"))*0.8, area, mask, theme, input)
+	handleText(text, area.Height/float32(txt.SplitCount(text, "\n"))*0.8, 0.5, 0.5, area, mask, theme, input, false)
 }
 func Text(text string, lineHeight float32, area, mask Area, theme assets.ThemeId, input bool) {
-	if area == (Area{}) || text == "" {
-		return
-	}
-	if input {
-		handleInput(area, scaleMask(mask), 0)
-	}
-	obj.Effects = graphics.Effects(internal.DefaultEffects)
-	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
-	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0.5, 0.5, false
-	obj.ImageId, obj.Effects.Tint, obj.Mask = 0, palette.White, scaleMask(mask)
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, text, lineHeight, palette.White
-	view.DrawObject(&obj)
+	handleText(text, lineHeight, 0, 0, area, mask, theme, input, true)
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.ThemeId) {
@@ -418,4 +407,19 @@ func inputTryShiftSelect() {
 	if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
 		inputIndexSelection = inputIndexCursor
 	}
+}
+
+func handleText(text string, lineHeight, ax, ay float32, area, mask Area, theme assets.ThemeId, input, wordWrap bool) {
+	if area == (Area{}) || text == "" {
+		return
+	}
+	if input {
+		handleInput(area, scaleMask(mask), 0)
+	}
+	obj.Effects = graphics.Effects(internal.DefaultEffects)
+	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
+	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = ax, ay, wordWrap
+	obj.ImageId, obj.Effects.Tint, obj.Mask = 0, palette.White, scaleMask(mask)
+	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, text, lineHeight, palette.White
+	view.DrawObject(&obj)
 }
