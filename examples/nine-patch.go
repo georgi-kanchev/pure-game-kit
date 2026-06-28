@@ -13,13 +13,14 @@ import (
 func NinePatch() {
 	window.Create("example - nine patch", false, true)
 	var view = graphics.NewView(10)
-	var img = assets.LoadImage("examples/data/9patch.png")
-	var ninePatch = assets.LoadImage9Patch(img, 15, 15, 15, 15)
+	var img = assets.LoadImage("examples/data/Preview.png")
+	var crop = assets.LoadImageCrop(img, 523, 208, 116, 39)
+	var ninePatch = assets.LoadImage9Patch(crop, 10, 10, 10, 10)
 
 	// ninePatch = img
 
 	for window.KeepOpen() {
-		var sine = number.Sine(time.Running())
+		var sine = number.Sine(time.Running() / 2)
 		view.DrawImage(0, 0, sine*100, sine*100, 0, ninePatch, palette.White, geometry.Area{})
 	}
 }
