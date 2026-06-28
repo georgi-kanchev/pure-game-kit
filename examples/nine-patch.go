@@ -14,7 +14,7 @@ func NinePatch() {
 	window.Create("example - nine patch", false, true)
 	var view = graphics.NewView(10)
 	var img = assets.LoadImage("examples/data/9patch.png")
-	var ninePatch = assets.LoadImageCrop9Patch(img, 15, 15, 15, 15)
+	var ninePatch = assets.LoadImage9Patch(img, 15, 15, 15, 15)
 
 	// ninePatch = img
 

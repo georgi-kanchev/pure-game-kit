@@ -28,26 +28,27 @@ func LoadImage(imagePath string) ImageId {
 	return ImageId(id)
 }
 
-func LoadImageCrop(original ImageId, x, y, width, height float32) ImageId {
-	if original == 0 {
+func LoadImageCrop(imageOrCropId ImageId, x, y, width, height float32) ImageId {
+	if imageOrCropId == 0 {
 		return 0
 	}
 	internal.NextImageCropId--
-	var img = internal.Images[int32(original)]
+	var img = internal.Images[int32(imageOrCropId)]
 	var id = internal.NextImageCropId
-	internal.Images[int32(id)] = internal.ImageData{Texture: img.Texture, CropX: x, CropY: y, CropWidth: width, CropHeight: height}
+	internal.Images[int32(id)] = internal.ImageData{
+		Texture: img.Texture, CropX: img.CropX + x, CropY: img.CropY + y, CropWidth: width, CropHeight: height}
 	return ImageId(id)
 }
-func LoadImageCrop9Patch(original ImageId, top, left, right, bottom float32) ImageId {
-	if original == 0 {
+func LoadImage9Patch(imageOrCropId ImageId, top, left, right, bottom float32) ImageId {
+	if imageOrCropId == 0 {
 		return 0
 	}
 	internal.NextImageCropId--
-	var img = internal.Images[int32(original)]
+	var img = internal.Images[int32(imageOrCropId)]
 	var id = internal.NextImageCropId
-	var w, h = float32(img.Texture.Width), float32(img.Texture.Height)
 	internal.Images[int32(id)] = internal.ImageData{
-		Texture: img.Texture, Top: top, Left: left, Right: right, Bottom: bottom, CropWidth: w, CropHeight: h}
+		Texture: img.Texture, CropX: img.CropX, CropY: img.CropY, CropWidth: img.CropWidth, CropHeight: img.CropHeight,
+		Top: top, Left: left, Right: right, Bottom: bottom}
 	return ImageId(id)
 }
 
