@@ -387,14 +387,28 @@ func (v *View) queueNinePatch(x, y, w, h, a, r float32, imageId int32, eff *inte
 	var tw, th, top, left, right, bottom = img.CropWidth, img.CropHeight, img.Top, img.Left, img.Right, img.Bottom
 	var sx = [4]float32{img.CropX, img.CropX + left, img.CropX + tw - right, img.CropX + tw}
 	var sy = [4]float32{img.CropY, img.CropY + top, img.CropY + th - bottom, img.CropY + th}
+	if w < 0 { // flip negative width
+		w, sx[0], sx[1], sx[2], sx[3] = -w, sx[3], sx[2], sx[1], sx[0]
+	}
+	if h < 0 { // flip negative height
+		h, sy[0], sy[1], sy[2], sy[3] = -h, sy[3], sy[2], sy[1], sy[0]
+	}
+	if w <= left+right && left+right > 0 { // scale down edges when there isn't enough space to fit them at natural size
+		var s = w / (left + right)
+		left, right = left*s, right*s
+	}
+	if h <= top+bottom && top+bottom > 0 {
+		var s = h / (top + bottom)
+		top, bottom = top*s, bottom*s
+	}
 	var dx = [4]float32{x - w/2, x - w/2 + left, x + w/2 - right, x + w/2}
 	var dy = [4]float32{y - h/2, y - h/2 + top, y + h/2 - bottom, y + h/2}
 
 	for j := range 3 {
 		for i := range 3 {
-			var w, h, u, v = dx[i+1] - dx[i], dy[j+1] - dy[j], sx[i+1] - sx[i], sy[j+1] - sy[j]
-			if w > 0 && h > 0 && u > 0 && v > 0 {
-				var src, dst = rl.NewRectangle(sx[i], sy[j], u, v), rl.NewRectangle(dx[i], dy[j], w, h)
+			var qw, qh, su, sv = dx[i+1] - dx[i], dy[j+1] - dy[j], sx[i+1] - sx[i], sy[j+1] - sy[j]
+			if qw > 0 && qh > 0 && su != 0 && sv != 0 {
+				var src, dst = rl.NewRectangle(sx[i], sy[j], su, sv), rl.NewRectangle(dx[i], dy[j], qw, qh)
 				internal.Queue(img.Texture, rl.Texture2D{}, src, dst, a, r, mask, eff, internal.KindSprite, 0, 0, 0)
 			}
 		}

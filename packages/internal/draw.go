@@ -102,7 +102,14 @@ var ViewX, ViewY, ViewZoom, ViewAngle float32
 //=================================================================
 
 func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind, tileSz uint8, cols, rows uint16) {
+	var flipU, flipV = dst.Width < 0, dst.Height < 0
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
+	if flipU {
+		dst.X -= dst.Width
+	}
+	if flipV {
+		dst.Y -= dst.Height
+	}
 	var borderSz = eff.BorderSize * ViewZoom
 
 	if ViewAngle != 0 || ViewZoom != 1 || ViewX != 0 || ViewY != 0 {
@@ -125,6 +132,12 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
 	var u1, v1, u2, v2 = src.X * invTexW, src.Y * invTexH, (src.X + src.Width) * invTexW, (src.Y + src.Height) * invTexH
+	if flipU {
+		u1, u2 = u2, u1
+	}
+	if flipV {
+		v1, v2 = v2, v1
+	}
 	var ww, wh = float32(WindowWidth) / 2, float32(WindowHeight) / 2
 	var dx, dy = [4]float32{ww, ww, dst.Width + ww, dst.Width + ww}, [4]float32{wh, dst.Height + wh, dst.Height + wh, wh}
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
