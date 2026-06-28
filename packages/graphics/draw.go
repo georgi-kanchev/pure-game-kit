@@ -143,7 +143,16 @@ func (v *View) DrawObject(object *Object) {
 		}
 		return
 	}
-	v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
+	if o.ImageId != 0 {
+		var tex = internal.Images[int32(o.ImageId)]
+		if tex.Top != 0 || tex.Left != 0 || tex.Right != 0 || tex.Bottom != 0 {
+			v.queueNinePatch(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), eff, mask)
+		} else {
+			v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
+		}
+	} else {
+		v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
+	}
 
 	if o.Text != "" || o.Effects.TextIsInput { // empty input text needs a cursor position
 		v.queueText(o, mask)
@@ -372,6 +381,24 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.
 	var dst = rl.NewRectangle(x-w/2, y-h/2, w, h)
 	internal.Queue(tex.Texture, rl.Texture2D{}, src, dst, a, r, mask, eff, kind, 0, 0, 0)
 	eff.FillColor = prevFill
+}
+func (v *View) queueNinePatch(x, y, w, h, a, r float32, imageId int32, eff *internal.Effects, mask internal.Area) {
+	var img = internal.Images[imageId]
+	var tw, th, top, left, right, bottom = img.CropWidth, img.CropHeight, img.Top, img.Left, img.Right, img.Bottom
+	var sx = [4]float32{img.CropX, img.CropX + left, img.CropX + tw - right, img.CropX + tw}
+	var sy = [4]float32{img.CropY, img.CropY + top, img.CropY + th - bottom, img.CropY + th}
+	var dx = [4]float32{x - w/2, x - w/2 + left, x + w/2 - right, x + w/2}
+	var dy = [4]float32{y - h/2, y - h/2 + top, y + h/2 - bottom, y + h/2}
+
+	for j := range 3 {
+		for i := range 3 {
+			var w, h, u, v = dx[i+1] - dx[i], dy[j+1] - dy[j], sx[i+1] - sx[i], sy[j+1] - sy[j]
+			if w > 0 && h > 0 && u > 0 && v > 0 {
+				var src, dst = rl.NewRectangle(sx[i], sy[j], u, v), rl.NewRectangle(dx[i], dy[j], w, h)
+				internal.Queue(img.Texture, rl.Texture2D{}, src, dst, a, r, mask, eff, internal.KindSprite, 0, 0, 0)
+			}
+		}
+	}
 }
 
 func (v *View) windowArea() geometry.Area {

@@ -45,7 +45,9 @@ func LoadImageCrop9Patch(original ImageId, top, left, right, bottom float32) Ima
 	internal.NextImageCropId--
 	var img = internal.Images[int32(original)]
 	var id = internal.NextImageCropId
-	internal.Images[int32(id)] = internal.ImageData{Texture: img.Texture, Top: top, Left: left, Right: right, Bottom: bottom}
+	var w, h = float32(img.Texture.Width), float32(img.Texture.Height)
+	internal.Images[int32(id)] = internal.ImageData{
+		Texture: img.Texture, Top: top, Left: left, Right: right, Bottom: bottom, CropWidth: w, CropHeight: h}
 	return ImageId(id)
 }
 
