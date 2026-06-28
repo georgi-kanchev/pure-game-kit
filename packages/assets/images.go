@@ -22,10 +22,9 @@ func LoadImage(imagePath string) ImageId {
 		return 0
 	}
 	internal.NextImageId++
-	var id = internal.NextImageId
 	var w, h = float32(texture.Width), float32(texture.Height)
-	internal.Images[int32(id)] = internal.ImageData{Texture: texture, CropWidth: w, CropHeight: h}
-	return ImageId(id)
+	internal.Images[int32(internal.NextImageId)] = internal.ImageData{Texture: texture, CropWidth: w, CropHeight: h}
+	return ImageId(internal.NextImageId)
 }
 
 func LoadImageCrop(imageOrCropId ImageId, x, y, width, height float32) ImageId {
@@ -34,10 +33,9 @@ func LoadImageCrop(imageOrCropId ImageId, x, y, width, height float32) ImageId {
 	}
 	internal.NextImageCropId--
 	var img = internal.Images[int32(imageOrCropId)]
-	var id = internal.NextImageCropId
-	internal.Images[int32(id)] = internal.ImageData{
+	internal.Images[int32(internal.NextImageCropId)] = internal.ImageData{
 		Texture: img.Texture, CropX: img.CropX + x, CropY: img.CropY + y, CropWidth: width, CropHeight: height}
-	return ImageId(id)
+	return ImageId(internal.NextImageCropId)
 }
 func LoadImage9Patch(imageOrCropId ImageId, top, left, right, bottom float32) ImageId {
 	if imageOrCropId == 0 {
@@ -45,11 +43,10 @@ func LoadImage9Patch(imageOrCropId ImageId, top, left, right, bottom float32) Im
 	}
 	internal.NextImageCropId--
 	var img = internal.Images[int32(imageOrCropId)]
-	var id = internal.NextImageCropId
-	internal.Images[int32(id)] = internal.ImageData{
+	internal.Images[int32(internal.NextImageCropId)] = internal.ImageData{
 		Texture: img.Texture, CropX: img.CropX, CropY: img.CropY, CropWidth: img.CropWidth, CropHeight: img.CropHeight,
 		Top: top, Left: left, Right: right, Bottom: bottom}
-	return ImageId(id)
+	return ImageId(internal.NextImageCropId)
 }
 
 func (i ImageId) Unload() {

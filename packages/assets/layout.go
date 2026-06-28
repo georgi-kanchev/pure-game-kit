@@ -19,8 +19,6 @@ func LoadLayout(xmlPath string) LayoutId {
 	}
 
 	internal.NextLayoutId++
-	var id = internal.NextLayoutId
-
 	for i := range layout.Items { // pre-calculate item range indexes for each box
 		var b = int(layout.Items[i].BoxId)
 		if !layout.Boxes[b].ItemRangeCalculated {
@@ -35,9 +33,8 @@ func LoadLayout(xmlPath string) LayoutId {
 			layout.Boxes[b].ItemEnd = i + 1
 		}
 	}
-
-	internal.Layouts[id] = layout
-	return LayoutId(id)
+	internal.Layouts[internal.NextLayoutId] = layout
+	return LayoutId(internal.NextLayoutId)
 }
 
 func (l LayoutId) Unload() {

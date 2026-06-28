@@ -31,10 +31,8 @@ func LoadFont(pngPath string, jsonPath string) FontId {
 	internal.NextImageId++
 	var id = internal.NextImageId
 	internal.Images[int32(id)] = internal.ImageData{Texture: tex, CropWidth: float32(tex.Width), CropHeight: float32(tex.Height)}
-
 	ImageId(id).SetSmoothness(true) // bilinear filtering required for MSDF
-	var font = internal.LoadFont(fontData, int32(id))
-	return FontId(font)
+	return FontId(internal.LoadFont(fontData, int32(id)))
 }
 
 func (f FontId) Unload() {
@@ -51,12 +49,8 @@ func (f FontId) SymbolArea(symbol rune, lineHeight float32) geometry.Area {
 		font = internal.Fonts[0]
 	}
 	var g = font.Chars[symbol]
-	// X,Y are baseline-relative glyph-offset, NOT the centered-Area convention.
-	// This is a special case because font Y axis points upward (Top > Bottom)
-	// and callers expect left/top offsets from the text baseline.
 	var x, y = g.PlaneBounds.Left * lineHeight, g.PlaneBounds.Top * lineHeight
 	var w, h = (g.PlaneBounds.Right - g.PlaneBounds.Left) * lineHeight, (g.PlaneBounds.Top - g.PlaneBounds.Bottom) * lineHeight
-
 	if symbol == ' ' {
 		w, h = lineHeight/3, lineHeight
 	}

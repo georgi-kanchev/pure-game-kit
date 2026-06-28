@@ -16,8 +16,6 @@ func LoadTheme(xmlPath string) ThemeId {
 	}
 
 	internal.NextThemeId++
-	var id = internal.NextThemeId
-
-	internal.Themes[id] = theme
-	return ThemeId(id)
+	internal.Themes[internal.NextThemeId] = theme
+	return ThemeId(internal.NextThemeId)
 }

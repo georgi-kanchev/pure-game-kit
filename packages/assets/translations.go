@@ -11,7 +11,6 @@ type LanguageId uint32
 func LoadTranslations(yamlPath string) LanguageId {
 	var lang = internal.Lang{Tags: make(map[string]string)}
 	storage.FromYAML(file.LoadText(yamlPath), &lang.Tags)
-
 	if len(lang.Tags) == 0 {
 		return 0
 	}
