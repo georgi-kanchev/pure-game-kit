@@ -85,6 +85,8 @@ func GUI() {
 
 		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
 
+		gui.Image(geometry.NewArea(-200, -200, 100, 100), gui.Area{}, 0, false)
+
 		view.DrawDebugInfo(true)
 	}
 }

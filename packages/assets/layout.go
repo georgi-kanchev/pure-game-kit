@@ -9,10 +9,10 @@ import (
 	"pure-game-kit/packages/utility/text"
 )
 
-type LayoutId uint32
+type LayoutId uint16
 
 func LoadLayout(xmlPath string) LayoutId {
-	var layout = internal.Layout{}
+	var layout = internal.GuiLayout{}
 	storage.FromXML(file.LoadText(xmlPath), &layout)
 	if len(layout.Boxes) == 0 {
 		return 0
@@ -38,11 +38,11 @@ func LoadLayout(xmlPath string) LayoutId {
 }
 
 func (l LayoutId) Unload() {
-	delete(internal.Layouts, uint32(l))
+	delete(internal.Layouts, uint16(l))
 }
 
 func (l LayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeight float32) {
-	var layout = internal.Layouts[uint32(l)]
+	var layout = internal.Layouts[uint16(l)]
 	if len(layout.Boxes) == 0 {
 		return geometry.Area{}, 0, 0
 	}
@@ -55,7 +55,7 @@ func (l LayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeight f
 	return area, cw, ch
 }
 func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Area) {
-	var layout = internal.Layouts[uint32(l)]
+	var layout = internal.Layouts[uint16(l)]
 	if len(layout.Boxes) == 0 || id < 0 || id >= len(layout.Items) {
 		return geometry.Area{}, geometry.Area{}
 	}
@@ -72,7 +72,7 @@ func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Ar
 }
 
 func (l LayoutId) SetVisibleItem(id int, visible bool) {
-	var layout = internal.Layouts[uint32(l)]
+	var layout = internal.Layouts[uint16(l)]
 	if len(layout.Boxes) == 0 || id < 0 || id >= len(layout.Items) {
 		return
 	}
@@ -82,14 +82,14 @@ func (l LayoutId) SetVisibleItem(id int, visible bool) {
 	} else {
 		item.Visible = 0
 	}
-	internal.Layouts[uint32(l)] = layout
+	internal.Layouts[uint16(l)] = layout
 }
 
 // private ========================================================
 
-var activeVars *internal.Vars
+var activeVars *internal.GuiLayoutVars
 
-func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h, cw, ch float32, vis bool) {
+func boxDynamic(layout *internal.GuiLayout, boxId int, depth int) (x, y, w, h, cw, ch float32, vis bool) {
 	if depth > 8 {
 		return
 	}
@@ -98,11 +98,11 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h, cw, 
 	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
 	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
 
-	box.Vars = internal.Vars{}
-	box.Vars.Mx = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 0))
-	box.Vars.My = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 1))
-	box.Vars.Mw = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 2))
-	box.Vars.Mh = text.ToNumber[float32](text.SplitIndex(box.Rectangle, " ", 3))
+	box.Vars = internal.GuiLayoutVars{}
+	box.Vars.Mx = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 0))
+	box.Vars.My = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 1))
+	box.Vars.Mw = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 2))
+	box.Vars.Mh = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 3))
 	box.Vars.Mlx, box.Vars.Mly = box.Vars.Mx, box.Vars.My+box.Vars.Mh/2
 	box.Vars.Mrx, box.Vars.Mry = box.Vars.Mx+box.Vars.Mw, box.Vars.Mly
 	box.Vars.Mux, box.Vars.Muy = box.Vars.Mx+box.Vars.Mw/2, box.Vars.My
@@ -120,28 +120,28 @@ func boxDynamic(layout *internal.Layout, boxId int, depth int) (x, y, w, h, cw, 
 
 	activeVars = &box.Vars
 	if text.SplitCount(box.Targets, " ") == 4 {
-		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 0), depth+1)
+		setTargetVars(layout, &box.Vars, text.SplitAtIndex(box.Targets, " ", 0), depth+1)
 		activeVars = &box.Vars
-		var rx = text.Calculate(text.SplitIndex(box.Math, " ", 0), variable)
-		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 1), depth+1)
+		var rx = text.Calculate(text.SplitAtIndex(box.Math, " ", 0), variable)
+		setTargetVars(layout, &box.Vars, text.SplitAtIndex(box.Targets, " ", 1), depth+1)
 		activeVars = &box.Vars
-		var ry = text.Calculate(text.SplitIndex(box.Math, " ", 1), variable)
-		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 2), depth+1)
+		var ry = text.Calculate(text.SplitAtIndex(box.Math, " ", 1), variable)
+		setTargetVars(layout, &box.Vars, text.SplitAtIndex(box.Targets, " ", 2), depth+1)
 		activeVars = &box.Vars
-		var rw = text.Calculate(text.SplitIndex(box.Math, " ", 2), variable)
-		setTargetVars(layout, &box.Vars, text.SplitIndex(box.Targets, " ", 3), depth+1)
+		var rw = text.Calculate(text.SplitAtIndex(box.Math, " ", 2), variable)
+		setTargetVars(layout, &box.Vars, text.SplitAtIndex(box.Targets, " ", 3), depth+1)
 		activeVars = &box.Vars
-		var rh = text.Calculate(text.SplitIndex(box.Math, " ", 3), variable)
+		var rh = text.Calculate(text.SplitAtIndex(box.Math, " ", 3), variable)
 		return rx, ry, rw, rh, box.ContentWidth, box.ContentHeight, box.Visible == 1
 	}
 
-	var rx = text.Calculate(text.SplitIndex(box.Math, " ", 0), variable)
-	var ry = text.Calculate(text.SplitIndex(box.Math, " ", 1), variable)
-	var rw = text.Calculate(text.SplitIndex(box.Math, " ", 2), variable)
-	var rh = text.Calculate(text.SplitIndex(box.Math, " ", 3), variable)
+	var rx = text.Calculate(text.SplitAtIndex(box.Math, " ", 0), variable)
+	var ry = text.Calculate(text.SplitAtIndex(box.Math, " ", 1), variable)
+	var rw = text.Calculate(text.SplitAtIndex(box.Math, " ", 2), variable)
+	var rh = text.Calculate(text.SplitAtIndex(box.Math, " ", 3), variable)
 	return rx, ry, rw, rh, box.ContentWidth, box.ContentHeight, box.Visible == 1
 }
-func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY, sc float32) (x, y, w, h float32, vis bool) {
+func itemDynamic(layout *internal.GuiLayout, itemId int, scrollX, scrollY, sc float32) (x, y, w, h float32, vis bool) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
 	if box.Visible == 0 {
@@ -149,32 +149,32 @@ func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY, sc float
 	}
 	var bx, by, bw, bh, _, _, _ = boxDynamic(layout, int(item.BoxId), 0)
 
-	item.Vars = internal.Vars{}
+	item.Vars = internal.GuiLayoutVars{}
 	item.Vars.Ow, item.Vars.Oh, item.Vars.Ov = bw, bh, 1
 
 	var osx, osy float32
 	if text.SplitCount(box.ItemSpacing, " ") >= 2 {
-		osx = text.ToNumber[float32](text.SplitIndex(box.ItemSpacing, " ", 0))
-		osy = text.ToNumber[float32](text.SplitIndex(box.ItemSpacing, " ", 1))
+		osx = text.ToNumber[float32](text.SplitAtIndex(box.ItemSpacing, " ", 0))
+		osy = text.ToNumber[float32](text.SplitAtIndex(box.ItemSpacing, " ", 1))
 	}
 	var og, mb = box.ItemGap, box.ItemNewRow
 	item.Vars.Osx, item.Vars.Osy, item.Vars.Og, item.Vars.Mnr = osx, osy, og, mb
 
 	activeVars = &item.Vars
 	if text.SplitCount(box.ItemSize, " ") >= 2 {
-		item.Vars.Mw = text.Calculate(text.SplitIndex(box.ItemSize, " ", 0), variable)
-		item.Vars.Mh = text.Calculate(text.SplitIndex(box.ItemSize, " ", 1), variable)
+		item.Vars.Mw = text.Calculate(text.SplitAtIndex(box.ItemSize, " ", 0), variable)
+		item.Vars.Mh = text.Calculate(text.SplitAtIndex(box.ItemSize, " ", 1), variable)
 	} else if text.SplitCount(item.Size, " ") >= 2 {
-		item.Vars.Mw = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 0))
-		item.Vars.Mh = text.ToNumber[float32](text.SplitIndex(item.Size, " ", 1))
+		item.Vars.Mw = text.ToNumber[float32](text.SplitAtIndex(item.Size, " ", 0))
+		item.Vars.Mh = text.ToNumber[float32](text.SplitAtIndex(item.Size, " ", 1))
 	} else {
 		item.Vars.Mw, item.Vars.Mh = 40, 20
 	}
 	var defW, defH = item.Vars.Mw, item.Vars.Mh
 	var alignX, alignY float32
 	if text.SplitCount(box.ItemAlign, " ") >= 2 {
-		alignX = text.ToNumber[float32](text.SplitIndex(box.ItemAlign, " ", 0))
-		alignY = text.ToNumber[float32](text.SplitIndex(box.ItemAlign, " ", 1))
+		alignX = text.ToNumber[float32](text.SplitAtIndex(box.ItemAlign, " ", 0))
+		alignY = text.ToNumber[float32](text.SplitAtIndex(box.ItemAlign, " ", 1))
 	}
 
 	var curX, curY, maxX, maxY = bx + osx, by + osy, bx, by
@@ -198,8 +198,8 @@ func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY, sc float
 		item.Vars.Mx, item.Vars.My, item.Vars.Mw, item.Vars.Mh = curX, curY, defW, defH
 		var itW, itH = defW, defH
 		if text.SplitCount(it.Expression, " ") == 4 {
-			itW = text.Calculate(text.SplitIndex(it.Expression, " ", 2), variable)
-			itH = text.Calculate(text.SplitIndex(it.Expression, " ", 3), variable)
+			itW = text.Calculate(text.SplitAtIndex(it.Expression, " ", 2), variable)
+			itH = text.Calculate(text.SplitAtIndex(it.Expression, " ", 3), variable)
 		}
 
 		if i == itemId {
@@ -224,14 +224,14 @@ func itemDynamic(layout *internal.Layout, itemId int, scrollX, scrollY, sc float
 
 	box.ContentWidth, box.ContentHeight = (maxX-bx)*sc-1, (maxY-by)*sc-1
 
-	var rx = text.Calculate(text.SplitIndex(item.Expression, " ", 0), variable)
-	var ry = text.Calculate(text.SplitIndex(item.Expression, " ", 1), variable)
-	var rw = text.Calculate(text.SplitIndex(item.Expression, " ", 2), variable)
-	var rh = text.Calculate(text.SplitIndex(item.Expression, " ", 3), variable)
+	var rx = text.Calculate(text.SplitAtIndex(item.Expression, " ", 0), variable)
+	var ry = text.Calculate(text.SplitAtIndex(item.Expression, " ", 1), variable)
+	var rw = text.Calculate(text.SplitAtIndex(item.Expression, " ", 2), variable)
+	var rh = text.Calculate(text.SplitAtIndex(item.Expression, " ", 3), variable)
 	return rx, ry, rw, rh, item.Visible == 1
 }
 
-func setTargetVars(layout *internal.Layout, vars *internal.Vars, tar string, depth int) {
+func setTargetVars(layout *internal.GuiLayout, vars *internal.GuiLayoutVars, tar string, depth int) {
 	if tar != "" {
 		var targetId = text.ToNumber[int](tar)
 		if targetId >= 0 && targetId < len(layout.Boxes) {

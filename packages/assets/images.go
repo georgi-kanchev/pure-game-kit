@@ -8,7 +8,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type ImageId int32
+type ImageId int32 // positive = full images, 0 = default, negative = image crops/nine patches
 
 func LoadImage(imagePath string) ImageId {
 	if !file.Exists(imagePath) {

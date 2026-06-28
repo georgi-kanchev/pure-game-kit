@@ -9,7 +9,7 @@ import (
 type ThemeId uint32
 
 func LoadTheme(xmlPath string) ThemeId {
-	var theme = internal.Theme{}
+	var theme = internal.GuiTheme{}
 	storage.FromXML(file.LoadText(xmlPath), &theme)
 	if theme.XMLName.Local == "" {
 		return 0
@@ -18,4 +18,8 @@ func LoadTheme(xmlPath string) ThemeId {
 	internal.NextThemeId++
 	internal.Themes[internal.NextThemeId] = theme
 	return ThemeId(internal.NextThemeId)
+}
+
+func (t ThemeId) Unload() {
+	delete(internal.Themes, uint16(t))
 }

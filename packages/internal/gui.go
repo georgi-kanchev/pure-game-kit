@@ -2,7 +2,7 @@ package internal
 
 import "encoding/xml"
 
-type Vars struct {
+type GuiLayoutVars struct {
 	Mx, My, Mw, Mh     float32
 	Mlx, Mly, Mrx, Mry float32
 	Mux, Muy, Mdx, Mdy float32
@@ -15,8 +15,7 @@ type Vars struct {
 	Ow, Oh, Ov         float32
 	Osx, Osy, Og, Mnr  float32
 }
-
-type Layout struct {
+type GuiLayout struct {
 	XMLName xml.Name `xml:"layout"`
 	Boxes   []struct {
 		Id                          uint32  `xml:"id,attr"`
@@ -32,7 +31,7 @@ type Layout struct {
 		ItemGap                     float32 `xml:"itemGap,attr"`
 		ItemNewRow                  float32 `xml:"itemNewRow,attr"`
 		ItemAlign                   string  `xml:"itemAlign,attr"`
-		Vars                        Vars
+		Vars                        GuiLayoutVars
 		ItemStart, ItemEnd          int // cache on load
 		ItemRangeCalculated         bool
 		ContentWidth, ContentHeight float32
@@ -45,95 +44,95 @@ type Layout struct {
 		Size       string `xml:"size,attr"`
 		Expression string `xml:"math,attr"`
 		NewRowMath string `xml:"newRowMath,attr"`
-		Vars       Vars
+		Vars       GuiLayoutVars
 	} `xml:"items>item"`
 }
 
-type Image struct {
+type GuiImage struct {
 	ImageId     int     `xml:"imageId,attr"`
 	Roundness   float32 `xml:"roundness,attr"`
 	Color       string  `xml:"color,attr"`
 	BorderSize  float32 `xml:"borderSize,attr"`
 	BorderColor string  `xml:"borderColor,attr"`
 }
-type Text struct {
-	FontId        int     `xml:"fontId,attr"`
-	LineHeight    float32 `xml:"lineHeight,attr"`
-	Gap           string  `xml:"gap,attr"`
-	Margin        string  `xml:"margin,attr"`
-	Align         string  `xml:"align,attr"`
-	Weight        int8    `xml:"weight,attr"`
-	FillColor     string  `xml:"fillColor,attr"`
-	OutlineWeight int8    `xml:"outlineWeight,attr"`
-	OutlineColor  string  `xml:"outlineColor,attr"`
-	ShadowWeight  int8    `xml:"shadowWeight,attr"`
-	ShadowColor   string  `xml:"shadowColor,attr"`
-	ShadowBlur    int8    `xml:"shadowBlur,attr"`
-	ShadowOffset  string  `xml:"shadowOffset,attr"`
+type GuiText struct {
+	FontId       int     `xml:"fontId,attr"`
+	LineHeight   float32 `xml:"lineHeight,attr"`
+	Gap          string  `xml:"gap,attr"`
+	Margin       string  `xml:"margin,attr"`
+	Align        string  `xml:"align,attr"`
+	Weight       int8    `xml:"weight,attr"`
+	Color        string  `xml:"color,attr"`
+	OutlineSize  int8    `xml:"outlineSize,attr"`
+	OutlineColor string  `xml:"outlineColor,attr"`
+	ShadowWeight int8    `xml:"shadowWeight,attr"`
+	ShadowColor  string  `xml:"shadowColor,attr"`
+	ShadowBlur   uint8   `xml:"shadowBlur,attr"`
+	ShadowOffset string  `xml:"shadowOffset,attr"`
 }
-type Theme struct {
+type GuiTheme struct {
 	XMLName xml.Name `xml:"theme"`
-	Image   Image    `xml:"image"`
-	Text    Text     `xml:"text"`
-	Label   Text     `xml:"label"`
+	Image   GuiImage `xml:"image"`
+	Text    GuiText  `xml:"text"`
+	Label   GuiText  `xml:"label"`
 	Button  struct {
 		Body struct {
-			Image
-			Disabled Image `xml:"disabled"`
-			Focused  Image `xml:"focused"`
-			Clicked  Image `xml:"clicked"`
+			GuiImage
+			Disabled GuiImage `xml:"disabled"`
+			Focused  GuiImage `xml:"focused"`
+			Clicked  GuiImage `xml:"clicked"`
 		} `xml:"body"`
 		Value struct {
-			Text
-			Disabled Text `xml:"disabled"`
-			Focused  Text `xml:"focused"`
-			Clicked  Text `xml:"clicked"`
+			GuiText
+			Disabled GuiText `xml:"disabled"`
+			Focused  GuiText `xml:"focused"`
+			Clicked  GuiText `xml:"clicked"`
 		} `xml:"value"`
 	} `xml:"button"`
 	Scroll struct {
-		Body   Image `xml:"body"`
+		Body   GuiImage `xml:"body"`
 		Handle struct {
-			Image
-			Focused Image `xml:"focused"`
-			Clicked Image `xml:"clicked"`
+			GuiImage
+			Focused GuiImage `xml:"focused"`
+			Clicked GuiImage `xml:"clicked"`
 		} `xml:"handle"`
 	} `xml:"scroll"`
 	Slider struct {
 		Body struct {
-			Image
-			Disabled Image `xml:"disabled"`
-			Focused  Image `xml:"focused"`
-			Clicked  Image `xml:"clicked"`
+			GuiImage
+			Disabled GuiImage `xml:"disabled"`
+			Focused  GuiImage `xml:"focused"`
+			Clicked  GuiImage `xml:"clicked"`
 		} `xml:"body"`
 		Handle struct {
-			Image
-			Disabled Image `xml:"disabled"`
-			Focused  Image `xml:"focused"`
-			Clicked  Image `xml:"clicked"`
+			GuiImage
+			Disabled GuiImage `xml:"disabled"`
+			Focused  GuiImage `xml:"focused"`
+			Clicked  GuiImage `xml:"clicked"`
 		} `xml:"handle"`
-		Step Image `xml:"step"`
+		Step GuiImage `xml:"step"`
 	} `xml:"slider"`
 	InputBox struct {
 		Body struct {
-			Image
-			Disabled Image `xml:"disabled"`
-			Typing   Image `xml:"typing"`
+			GuiImage
+			Disabled GuiImage `xml:"disabled"`
+			Typing   GuiImage `xml:"typing"`
 		} `xml:"body"`
 		Value struct {
-			Text
-			ShadowOffset string `xml:"shadowOffset,attr"`
-			Disabled     Text   `xml:"disabled"`
-			Typing       Text   `xml:"typing"`
+			GuiText
+			ShadowOffset string  `xml:"shadowOffset,attr"`
+			Disabled     GuiText `xml:"disabled"`
+			Typing       GuiText `xml:"typing"`
 		} `xml:"value"`
-		Placeholder Text  `xml:"placeholder"`
-		Selection   Image `xml:"selection"`
+		Placeholder GuiText  `xml:"placeholder"`
+		Selection   GuiImage `xml:"selection"`
 		Cursor      struct {
-			Image
+			GuiImage
 			Width int `xml:"width,attr"`
 		} `xml:"cursor"`
 	} `xml:"inputbox"`
 }
 
-var Layouts map[uint32]Layout = make(map[uint32]Layout)
-var Themes map[uint32]Theme = make(map[uint32]Theme)
-var NextLayoutId, NextThemeId uint32
+var Layouts = make(map[uint16]GuiLayout)
+var Themes = make(map[uint16]GuiTheme)
+var NextLayoutId, NextThemeId uint16

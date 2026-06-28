@@ -192,7 +192,7 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 	for i := range tiled.Height {
 		var row string
 		if csv {
-			row = text.SplitIndex(tileData, "\n", i)
+			row = text.SplitAtIndex(tileData, "\n", i)
 			if text.EndsWith(row, ",") {
 				row = text.Part(row, 0, text.Length(row)-1)
 			}
@@ -201,7 +201,7 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 		for j := range tiled.Width {
 			var index = number.Indexes2DToIndex1D(i, j, tiled.Width, tiled.Height)
 			if csv {
-				tiles[index] = text.ToNumber[uint32](text.SplitIndex(row, ",", j))
+				tiles[index] = text.ToNumber[uint32](text.SplitAtIndex(row, ",", j))
 			}
 
 			if tiles[index] == 0 {
@@ -281,8 +281,8 @@ func loadLayerObjects(layer *layerObjects) (shapes [][6]float32, pts []float32) 
 			}
 			var splitCount = text.SplitCount(ptsString, " ")
 			for k := 0; k < splitCount; k++ {
-				var v = text.SplitIndex(ptsString, " ", k)
-				var px, py = text.ToNumber[float32](text.SplitIndex(v, ",", 0)), text.ToNumber[float32](text.SplitIndex(v, ",", 1))
+				var v = text.SplitAtIndex(ptsString, " ", k)
+				var px, py = text.ToNumber[float32](text.SplitAtIndex(v, ",", 0)), text.ToNumber[float32](text.SplitAtIndex(v, ",", 1))
 				pts = append(pts, o.X+px*cos-py*sin, o.Y+px*sin+py*cos)
 			}
 		} else if o.Gid != 0 {

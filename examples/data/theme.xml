@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <theme>
 	<image imageId="0" roundness="0" color="#ffffff" borderSize="0" borderColor="#000000" />
-	<text fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="0 0" weight="0" fillColor="#ffffff"
-    outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
-	<label fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" fillColor="#ffffff"
-    outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+	<text fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="0 0" weight="0" color="#ffffff"
+    outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+	<label fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" color="#ffffff"
+    outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
 	<button>
 		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
 			<disabled color="#555555"/>
 			<focused color="#ff8c8c"/>
 			<clicked color="#a04444"/>
 		</body>
-		<value fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" fillColor="#ffffff"
-    	outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
-			<disabled fillColor="#555555"/>
-			<focused fillColor="#ff8c8c"/>
-			<clicked fillColor="#a04444"/>
+		<value fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" color="#ffffff"
+    	outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
+			<disabled color="#555555"/>
+			<focused color="#ff8c8c"/>
+			<clicked color="#a04444"/>
 		</value>
 	</button>
 	<scroll>
@@ -43,13 +43,13 @@
 			<disabled color="#555555"/>
 			<typing borderColor="#ff8c8c"/>
 		</body>
-		<value fontId="0" gap="0 0" margin="10 10" weight="0" fillColor="#ffffff"
-    	outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
-			<disabled fillColor="#555555"/>
-			<typing fillColor="#ff8c8c"/>
+		<value fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff"
+    	outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
+			<disabled color="#555555"/>
+			<typing color="#ff8c8c"/>
 		</value>
-		<placeholder fontId="0" gap="0 0" margin="10 10" weight="0" fillColor="#ffffff"
-    	outlineWeight="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+		<placeholder fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff"
+    	outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
 		<selection roundness="0.5" color="#00aeff" borderSize="-10" borderColor="#8c8c8c"/>
 		<cursor width="10" roundness="0.5" color="#ffffff"/>
 	</inputbox>

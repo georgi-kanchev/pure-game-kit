@@ -102,7 +102,7 @@ func ChopEnd(text, part string) string {
 }
 
 // Returns part of a string split by a divider without any allocations.
-func SplitIndex(text, divider string, tokenIndex int) string {
+func SplitAtIndex(text, divider string, tokenIndex int) string {
 	if divider == "" {
 		if tokenIndex < len(text) {
 			return text[tokenIndex : tokenIndex+1]

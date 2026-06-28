@@ -61,13 +61,15 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 }
 
 func Image(area, mask Area, theme assets.ThemeId, input bool) {
-	Object(0, 0, 0, 0, palette.White, area, mask, input)
+	var th = getTheme(theme)
+	var borderColor, tint = color.Hex(th.Image.BorderColor), color.Hex(th.Image.Color)
+	Object(assets.ImageId(th.Image.ImageId), th.Image.Roundness, th.Image.BorderSize, borderColor, tint, area, mask, input)
 }
 func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
-	handleText(text, area.Height/float32(txt.SplitCount(text, "\n"))*0.8, 0.5, 0.5, area, mask, theme, input, false)
+	handleText(text, area, mask, theme, input, false)
 }
 func Text(text string, lineHeight float32, area, mask Area, theme assets.ThemeId, input bool) {
-	handleText(text, lineHeight, 0, 0, area, mask, theme, input, true)
+	handleText(text, area, mask, theme, input, true)
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.ThemeId) {
@@ -295,7 +297,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 
 	if kb.IsKeyJustPressed(key.LeftArrow) || kb.IsKeyHeld(key.LeftArrow, 0.5) {
 		inputCursorTimer = 0
-		if a == b {
+		if a == b || kb.IsKeyPressed(key.LeftShift) || kb.IsKeyPressed(key.RightShift) {
 			inputIndexCursor = number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
 		} else {
 			inputIndexCursor = a
@@ -303,7 +305,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		inputTryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5) {
 		inputCursorTimer = 0
-		if a == b {
+		if a == b || kb.IsKeyPressed(key.LeftShift) || kb.IsKeyPressed(key.RightShift) {
 			inputIndexCursor = number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
 		} else {
 			inputIndexCursor = b
@@ -333,7 +335,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
 	} else if inputCursorTimer < 0.5 {
-		Object(0, 0, 0, 0, palette.LightGray, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.8), mask, false)
+		Object(0, 0, 0, 0, palette.LightGray, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.85), mask, false)
 	}
 
 	if len(inputStr) > 0 {
@@ -386,9 +388,6 @@ var view, obj = graphics.View{}, graphics.Object{}
 
 const defaultRoundness, defaultBorderSize float32 = 0, -5
 
-func scaleMask(mask Area) Area {
-	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)
-}
 func inputDeleteRuneRange(text *string, start, end int) {
 	if text == nil || *text == "" {
 		return
@@ -413,17 +412,48 @@ func inputTryShiftSelect() {
 	}
 }
 
-func handleText(text string, lineHeight, ax, ay float32, area, mask Area, theme assets.ThemeId, input, wordWrap bool) {
+func handleText(text string, area, mask Area, theme assets.ThemeId, input, isText bool) {
 	if area == (Area{}) || text == "" {
 		return
+	}
+	var th = getTheme(theme)
+	var t = th.Label
+	var lineHeight = t.LineHeight
+	if isText {
+		t = th.Text
+		lineHeight = t.LineHeight
+	} else {
+		lineHeight = area.Height / float32(txt.SplitCount(text, "\n")) * 0.8
 	}
 	if input {
 		handleInput(area, scaleMask(mask), 0)
 	}
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
-	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = ax, ay, wordWrap
 	obj.ImageId, obj.Effects.Tint, obj.Mask = 0, palette.White, scaleMask(mask)
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, text, lineHeight, palette.White
+	obj.TextFontId, obj.Text, obj.Effects.TextWordWrap = assets.FontId(t.FontId), text, isText
+	obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Effects.TextWeight = lineHeight, col.Hex(t.Color), t.Weight
+	obj.Effects.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(t.Align, " ", 0))
+	obj.Effects.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(t.Align, " ", 1))
+	obj.Effects.TextSymbolGap = txt.ToNumber[float32](txt.SplitAtIndex(t.Gap, " ", 0))
+	obj.Effects.TextLineGap = txt.ToNumber[float32](txt.SplitAtIndex(t.Gap, " ", 1))
+	obj.Effects.TextMarginX = txt.ToNumber[float32](txt.SplitAtIndex(t.Margin, " ", 0))
+	obj.Effects.TextMarginY = txt.ToNumber[float32](txt.SplitAtIndex(t.Margin, " ", 1))
+	obj.Effects.OutlineSize, obj.Effects.OutlineColor = float32(t.OutlineSize), col.Hex(t.OutlineColor)
+	obj.Effects.TextShadowWeight, obj.Effects.TextShadowColor = t.ShadowWeight, col.Hex(t.ShadowColor)
+	obj.Effects.TextShadowOffsetX = txt.ToNumber[int8](txt.SplitAtIndex(t.ShadowOffset, " ", 0))
+	obj.Effects.TextShadowOffsetY = txt.ToNumber[int8](txt.SplitAtIndex(t.ShadowOffset, " ", 1))
+	obj.Effects.TextShadowBlur = t.ShadowBlur
 	view.DrawObject(&obj)
+}
+
+func scaleMask(mask Area) Area {
+	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)
+}
+func getTheme(theme assets.ThemeId) internal.GuiTheme {
+	var th, has = internal.Themes[uint16(theme)]
+	if !has {
+		th = internal.Themes[0]
+	}
+	return th
 }

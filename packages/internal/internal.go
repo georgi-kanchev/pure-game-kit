@@ -46,6 +46,15 @@ func Init() {
 	var fontData = &FontJSON{}
 	storage.FromJSON(font, fontData)
 	LoadFont(fontData, 0)
+
+	var theme = GuiTheme{
+		Image: GuiImage{Color: "#ffffff", BorderColor: "#ffffff"},
+		Label: GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Color: "#ffffff", OutlineColor: "#ffffff",
+			ShadowColor: "#000000", ShadowBlur: 20, ShadowOffset: "30 30"},
+		Text: GuiText{LineHeight: 50, Margin: "20 20", Align: "0 0", Gap: "0 0", Color: "#ffffff", OutlineColor: "#ffffff",
+			ShadowColor: "#000000", ShadowBlur: 20, ShadowOffset: "30 30"},
+	}
+	Themes[0] = theme
 }
 func UpdateWindowData() {
 	WindowWidth, WindowHeight = float32(rl.GetScreenWidth()), float32(rl.GetScreenHeight())
