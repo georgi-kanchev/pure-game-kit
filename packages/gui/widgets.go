@@ -52,7 +52,7 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 	}
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, roundness
-	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask, obj.Text = 0, palette.White, color, scaleMask(mask), ""
+	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask, obj.Text = imageId, palette.White, color, scaleMask(mask), ""
 	obj.Effects.BorderSize, obj.Effects.BorderColor = borderSize, borderColor
 	if imageId != 0 {
 		obj.Effects.Tint, obj.Effects.FillColor = color, 0
@@ -68,7 +68,7 @@ func Image(area, mask Area, theme assets.ThemeId, input bool) {
 func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	handleText(text, area, mask, theme, input, false)
 }
-func Text(text string, lineHeight float32, area, mask Area, theme assets.ThemeId, input bool) {
+func Text(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	handleText(text, area, mask, theme, input, true)
 }
 
@@ -170,26 +170,44 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)
 	}
 }
-func Button(area, mask Area, theme assets.ThemeId, input bool) {
+func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	if area == (Area{}) {
 		return
 	}
-	const roundness = 0.2
-	var baseColor = palette.Gray
-	var color = baseColor
+	var th = getTheme(theme)
+	var img = th.Image
+	var body, value = th.Button.Body, th.Button.Value
+	var roundness = themeField(img.Roundness, body.Roundness, body.Roundness, 0)
+	var imgId, color = themeField(img.ImageId, body.ImageId, body.ImageId, 0), themeField(img.Color, body.Color, body.Color, "")
+	var borSz = themeField(img.BorderSize, body.BorderSize, body.BorderSize, 0)
+	var borCol = themeField(img.BorderColor, body.BorderColor, body.BorderColor, "")
+	var foc, cl, dis = body.Focused, body.Clicked, body.Disabled
 	mask = scaleMask(mask)
+
+	_ = value
 
 	if input {
 		handleInput(area, mask, roundness)
+	} else {
+		imgId, color = themeField(img.ImageId, body.ImageId, dis.ImageId, 0), themeField(img.Color, body.Color, dis.Color, "")
+		borSz = themeField(dis.BorderSize, body.BorderSize, dis.BorderSize, 0)
+		borCol = themeField(img.BorderColor, body.BorderColor, dis.BorderColor, "")
 	}
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
-		color = col.Brighten(baseColor, 0.15)
+		imgId, color = themeField(img.ImageId, body.ImageId, foc.ImageId, 0), themeField(img.Color, body.Color, foc.Color, "")
+		borSz = themeField(img.BorderSize, body.BorderSize, foc.BorderSize, 0)
+		borCol = themeField(img.BorderColor, body.BorderColor, foc.BorderColor, "")
 	}
 	if IsClicked() {
-		color = col.Darken(color, 0.15)
+		imgId, color = themeField(img.ImageId, body.ImageId, cl.ImageId, 0), themeField(img.Color, body.Color, cl.Color, "")
+		borSz = themeField(cl.BorderSize, body.BorderSize, cl.BorderSize, 0)
+		borCol = themeField(img.BorderColor, body.BorderColor, cl.BorderColor, "")
 	}
-	Object(0, 0, 0, 0, color, area, mask, false)
+	Object(assets.ImageId(imgId), roundness, borSz, col.Hex(borCol), col.Hex(color), area, mask, false)
+	if text != "" {
+		Label(text, area, mask, theme, false)
+	}
 }
 func Inputbox(text *string, placeholder string, area, mask Area, theme assets.ThemeId, input bool) {
 	if area == (Area{}) {
@@ -299,7 +317,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		inputCursorTimer = 0
 		if a == b || kb.IsKeyPressed(key.LeftShift) || kb.IsKeyPressed(key.RightShift) {
 			inputIndexCursor = number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
-		} else {
+		} else { // instant jump to start when selected
 			inputIndexCursor = a
 		}
 		inputTryShiftSelect()
@@ -307,7 +325,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		inputCursorTimer = 0
 		if a == b || kb.IsKeyPressed(key.LeftShift) || kb.IsKeyPressed(key.RightShift) {
 			inputIndexCursor = number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
-		} else {
+		} else { // instant jump to end  when selected
 			inputIndexCursor = b
 		}
 		inputTryShiftSelect()
@@ -456,4 +474,14 @@ func getTheme(theme assets.ThemeId) internal.GuiTheme {
 		th = internal.Themes[0]
 	}
 	return th
+}
+func themeField[T comparable](grandparent, parent, optional, defaultValue T) T {
+	if optional == defaultValue {
+		if parent == defaultValue {
+			optional = grandparent
+		} else {
+			optional = parent
+		}
+	}
+	return optional
 }

@@ -56,7 +56,7 @@ func GUI() {
 			case 1:
 				gui.Label("(4 rounds)", area, mask, 0, false)
 			case 5:
-				gui.Text("UNIT\ntest\nhi", 50, area, mask, 0, false)
+				gui.Text("UNIT\ntest\nhi", area, mask, 0, false)
 			case 6:
 				gui.Inputbox(&input2, "mhm...", area, mask, 0, true)
 			}
@@ -80,8 +80,7 @@ func GUI() {
 
 		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
 
-		gui.Button(geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
-		gui.Label("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, false)
+		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
 
 		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
 

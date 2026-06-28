@@ -52,8 +52,11 @@ func Init() {
 		Label: GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Color: "#ffffff", OutlineColor: "#ffffff",
 			ShadowColor: "#000000", ShadowBlur: 20, ShadowOffset: "30 30"},
 		Text: GuiText{LineHeight: 50, Margin: "20 20", Align: "0 0", Gap: "0 0", Color: "#ffffff", OutlineColor: "#ffffff",
-			ShadowColor: "#000000", ShadowBlur: 20, ShadowOffset: "30 30"},
-	}
+			ShadowColor: "#000000", ShadowBlur: 20, ShadowOffset: "30 30"}}
+	theme.Button.Body.GuiImage = GuiImage{Roundness: 0.5, Color: "#808080", BorderSize: -8, BorderColor: "#949494"}
+	theme.Button.Body.Focused = GuiImage{Color: "#949494", BorderColor: "#a8a8a8"}
+	theme.Button.Body.Clicked = GuiImage{Color: "#6c6c6c", BorderColor: "#808080"}
+	theme.Button.Body.Disabled = GuiImage{Color: "#323232", BorderColor: "#464646"}
 	Themes[0] = theme
 }
 func UpdateWindowData() {
