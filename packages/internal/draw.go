@@ -102,7 +102,7 @@ var ViewX, ViewY, ViewZoom, ViewAngle float32
 //=================================================================
 
 func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind, tileSz uint8, cols, rows uint16) {
-	var flipU, flipV = dst.Width < 0, dst.Height < 0
+	var flipU, flipV = dst.Width < 0 && kind != KindText, dst.Height < 0 && kind != KindText
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 	if flipU {
 		dst.X -= dst.Width
