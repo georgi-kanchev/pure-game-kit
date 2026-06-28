@@ -17,7 +17,7 @@ import (
 )
 
 func (v *View) DrawColor(color uint) {
-	obj.X, obj.Y, obj.Roundness, obj.Angle, obj.Effects.Tint, obj.Effects.FillColor = v.X, v.Y, 0, v.Angle, color, 0
+	obj.X, obj.Y, obj.Roundness, obj.Angle, obj.Effects.Tint, obj.Effects.FillColor = v.X, v.Y, 0, v.Angle, palette.White, color
 	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, 0
 	obj.Width, obj.Height = v.Size()
 	v.DrawObject(obj)

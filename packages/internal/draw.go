@@ -12,6 +12,12 @@ import (
 )
 
 type Area struct{ X, Y, Width, Height float32 }
+type ImageData struct {
+	Texture rl.Texture2D
+
+	CropX, CropY, CropWidth, CropHeight,
+	Top, Left, Right, Bottom float32 // edge offsets for 9patch
+}
 type Batch struct {
 	mesh     *rl.Mesh
 	material rl.Material

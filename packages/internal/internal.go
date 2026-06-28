@@ -11,12 +11,6 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-type ImageData struct {
-	Texture rl.Texture2D
-
-	CropX, CropY, CropWidth, CropHeight float32
-}
-
 var GameBusyMicroSec, EngineBusyMicroSec int64
 
 //=================================================================
