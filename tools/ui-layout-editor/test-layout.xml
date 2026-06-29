@@ -17,7 +17,7 @@
         rectangle="113.83 302.98 455.33 17.02" math="tx tdy tw mh" target="0 3 0 "
         itemSize="40 20" itemSpacing="0 0" itemGap="0" itemNewRow="0" itemAlign="0.5 0.5" />
     <box id="5" name="Box 6" namePosition="bl" color="#909098" visible="1"
-        rectangle="241.5 142 200 100" math="sux-25 sly-50 50 100" target="   "
+        rectangle="241.5 142 200 100" math="sux-25+220 sly-50 50 100" target="   "
         itemSize="40 20" itemSpacing="0 0" itemGap="0" itemNewRow="0" itemAlign="0 0" />
   </boxes>
   <items>

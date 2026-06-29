@@ -19,8 +19,8 @@
 		</value>
 	</button>
 	<scroll>
-		<body roundness="0.5" color="#0000007a"/>
-		<handle roundness="0.5" color="#ffffff">
+		<body size="12" roundness="0.5" color="#0000007a"/>
+		<handle speed="40" roundness="0.5" color="#ffffff">
 			<focused color="#ff8c8c"/>
 			<clicked color="#a04444"/>
 		</handle>
