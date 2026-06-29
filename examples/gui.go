@@ -81,7 +81,7 @@ func GUI() {
 			gui.Scrolls(&hor2, &ver2, cw, ch, area, 0)
 			for i := range 4 {
 				var area, mask = layout.Item(20+i, hor2, ver2)
-				gui.Object(0, 0, 0, 0, palette.Beige, area, mask, false)
+				gui.Object(0, 0, 0, 0, palette.Beige, area, mask, true)
 			}
 		}
 
