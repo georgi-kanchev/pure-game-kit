@@ -90,9 +90,13 @@ type GuiTheme struct {
 		} `xml:"value"`
 	} `xml:"button"`
 	Scroll struct {
-		Body   GuiImage `xml:"body"`
+		Body struct {
+			GuiImage
+			Size float32 `xml:"size,attr"`
+		} `xml:"body"`
 		Handle struct {
 			GuiImage
+			Speed   float32  `xml:"speed,attr"`
 			Focused GuiImage `xml:"focused"`
 			Clicked GuiImage `xml:"clicked"`
 		} `xml:"handle"`

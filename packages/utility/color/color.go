@@ -5,25 +5,26 @@ package color
 import (
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/random"
-	"pure-game-kit/packages/utility/text"
-	"strconv"
 )
 
 func Channels(color uint) (r, g, b, a uint8) { return colorToRGBA(color) }
 func RGB(r, g, b uint8) uint                 { return colorFromRGBA(r, g, b, 255) }
 func RGBA(r, g, b, a uint8) uint             { return colorFromRGBA(r, g, b, a) }
 func Hex(hex string) uint {
-	var r, g, b, a uint64
-	hex = text.Remove(hex, "#")
-	if text.Length(hex) >= 6 {
-		r, _ = strconv.ParseUint(hex[0:2], 16, 8)
-		g, _ = strconv.ParseUint(hex[2:4], 16, 8)
-		b, _ = strconv.ParseUint(hex[4:6], 16, 8)
-		a = 255
-	} else if text.Length(hex) == 8 {
-		a, _ = strconv.ParseUint(hex[6:8], 16, 8)
+	if len(hex) > 0 && hex[0] == '#' {
+		hex = hex[1:]
 	}
-	return RGBA(uint8(r), uint8(g), uint8(b), uint8(a))
+	var r, g, b, a uint8 = 0, 0, 0, 255
+	var length = len(hex)
+	if length >= 6 {
+		r = parseHexPair(hex[0], hex[1])
+		g = parseHexPair(hex[2], hex[3])
+		b = parseHexPair(hex[4], hex[5])
+		if length >= 8 {
+			a = parseHexPair(hex[6], hex[7])
+		}
+	}
+	return RGBA(r, g, b, a)
 }
 
 func RandomBright() uint {
@@ -110,4 +111,19 @@ func colorToRGBA(value uint) (r, g, b, a uint8) {
 	b = uint8(value >> 8)
 	a = uint8(value)
 	return
+}
+
+func parseHexPair(c1, c2 byte) uint8 {
+	return (parseHexChar(c1) << 4) | parseHexChar(c2)
+}
+func parseHexChar(c byte) uint8 {
+	switch {
+	case c >= '0' && c <= '9':
+		return c - '0'
+	case c >= 'a' && c <= 'f':
+		return c - 'a' + 10
+	case c >= 'A' && c <= 'F':
+		return c - 'A' + 10
+	}
+	return 0
 }

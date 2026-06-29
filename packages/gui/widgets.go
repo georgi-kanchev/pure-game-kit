@@ -73,54 +73,70 @@ func Text(text string, area, mask Area, theme assets.ThemeId, input bool) {
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.ThemeId) {
-	var scrollSpeed = 40 / Scale
-	var size, contentW, contentH = 12 * Scale, contentWidth, contentHeight
+	var th, base = getTheme(theme), getTheme(0)
+	var tBody, tHnd, bBody, bHnd = th.Scroll.Body, th.Scroll.Handle, base.Scroll.Body, base.Scroll.Handle
+	var scrollSpeed = themeField(0, th.Scroll.Handle.Speed, 40) / Scale
+	var size, contentW, contentH = themeField(0, th.Scroll.Body.Size, 12) * Scale, contentWidth, contentHeight
+	var bodyRound, handleRound = themeField(0, tBody.Roundness, bBody.Roundness), themeField(0, tHnd.Roundness, bHnd.Roundness)
+	var bodyCol = themeField("", tBody.Color, bBody.Color)
 	var mx, my = view.MousePosition()
 	var mdx, mdy = mouse.CursorDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
 	var hovered, hasHor, hasVer = area.ContainsPoint(mx, my), contentW > area.Width, contentH > area.Height
-	var scrollId = widgetCounter
+
 	if internal.Frame != lastScrollFrame {
 		lastScrollFrame, lastScrollHoveredWidget = internal.Frame, scrollHoveredWidget
 		scrollHoveredWidget = 0
 	}
 	if hovered {
-		scrollHoveredWidget = scrollId
+		scrollHoveredWidget = widgetCounter
 	}
-	if lastScrollHoveredWidget == scrollId && mouse.IsButtonJustPressed(button.Middle) {
-		scrollDraggedWidget = scrollId
+	if lastScrollHoveredWidget == widgetCounter && mouse.IsButtonJustPressed(button.Middle) {
+		scrollDraggedWidget = widgetCounter
 	}
 	if mouse.IsButtonJustReleased(button.Middle) || !mouse.IsButtonPressed(button.Middle) {
 		scrollDraggedWidget = 0
 	}
 
-	var dragging = scrollDraggedWidget == scrollId && mouse.IsButtonPressed(button.Middle)
-	var scrolling = lastScrollHoveredWidget == scrollId
+	var dragging = scrollDraggedWidget == widgetCounter && mouse.IsButtonPressed(button.Middle)
+	var scrolling = lastScrollHoveredWidget == widgetCounter
 	if horizontal != nil && hasHor {
-		var hor = geometry.NewArea(area.X, area.Y+area.Height/2-size/2, area.Width, size)
-		var handle = geometry.NewArea(0, hor.Y, (area.Width/contentW)*area.Width, size)
+		var horArea = area
+		if vertical != nil && hasVer { // make space for vertical slider
+			horArea.Width, horArea.X = horArea.Width-size, horArea.X-size/2
+		}
+		var hor = geometry.NewArea(horArea.X, horArea.Y+horArea.Height/2-size/2, horArea.Width, size)
+		var handle = geometry.NewArea(0, hor.Y, (horArea.Width/contentW)*horArea.Width, size)
 		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
-		var col = palette.LightGray
+		var col = themeField("", tHnd.Color, bHnd.Color)
+		var roundness = themeField(0, tBody.Roundness, bBody.Roundness, 1)
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
-		Object(0, 0, 0, 0, color.RGBA(0, 0, 0, 127), hor, Area{}, true)
-		if IsHovered() {
+		Object(0, bodyRound, roundness, 0, color.Hex(bodyCol), hor, Area{}, true)
+		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
-			col = palette.White
+			col = themeField("", tHnd.Color, tHnd.Focused.Color, bHnd.Focused.Color, bHnd.Color)
 		}
 		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
 			mouse.SetCursor(cursor.Resize1)
+			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
-		Object(0, 0, 0, 0, col, handle, Area{}, true)
+
+		handleInput(handle, Area{}, handleRound)
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.X = mx // click on scroll body (not handle)
+		}
+		if IsFocused() {
+			mouse.SetCursor(cursor.Hand)
+			col = themeField("", tHnd.Focused.Color, tHnd.Color, bHnd.Focused.Color, bHnd.Color)
 		}
 		if IsClicked() || instant {
 			handle.X += mdx / Scale // dragging handle or scroll body after instant click
 			mouse.SetCursor(cursor.Resize1)
+			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
 		if dragging { // middle mouse button dragging on parent box
-			handle.X -= mdx / Scale * (hor.Width - handle.Width) / (contentW - area.Width)
+			handle.X -= mdx / Scale * (hor.Width - handle.Width) / (contentW - horArea.Width)
 			mouse.SetCursor(cursor.Resize1)
 		}
 		if scrolling {
@@ -132,29 +148,37 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		handle.X = number.Limit(handle.X, left+handle.Width/2, right-handle.Width/2)
 		*horizontal = number.Map(handle.X, left+handle.Width/2, right-handle.Width/2, 0, 1)
+		Object(0, handleRound, 0, 0, color.Hex(col), handle, Area{}, false)
 	}
 	if vertical != nil && hasVer {
 		var ver = geometry.NewArea(area.X+area.Width/2-size/2, area.Y, size, area.Height)
 		var handle = geometry.NewArea(ver.X, 0, size, (area.Height/contentH)*area.Height)
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
-		var col = palette.LightGray
+		var col = themeField("", tHnd.Color, bHnd.Color)
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
-		Object(0, 0, 0, 0, color.RGBA(0, 0, 0, 127), ver, Area{}, true)
-		if IsHovered() {
+		Object(0, bodyRound, 0, 0, color.Hex(bodyCol), ver, Area{}, true)
+		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
-			col = palette.White
+			col = themeField("", tHnd.Focused.Color, tHnd.Color, bHnd.Focused.Color, bHnd.Color)
 		}
 		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
 			mouse.SetCursor(cursor.Resize2)
+			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
-		Object(0, 0, 0, 0, col, handle, Area{}, true)
+
+		handleInput(handle, Area{}, handleRound)
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.Y = my // click on scroll body (not handle)
+		}
+		if IsFocused() {
+			mouse.SetCursor(cursor.Hand)
+			col = themeField("", tHnd.Focused.Color, tHnd.Color, bHnd.Focused.Color, bHnd.Color)
 		}
 		if IsClicked() || instant {
 			handle.Y += mdy / Scale // dragging handle or scroll body after instant click
 			mouse.SetCursor(cursor.Resize2)
+			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
 		if dragging { // middle mouse button dragging on parent box
 			handle.Y -= mdy / Scale * (ver.Height - handle.Height) / (contentH - area.Height)
@@ -168,41 +192,42 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
 		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)
+		Object(0, handleRound, 0, 0, color.Hex(col), handle, Area{}, false)
 	}
 }
 func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	if area == (Area{}) {
 		return
 	}
-	var th = getTheme(theme)
-	var img = th.Image
-	var body, value = th.Button.Body, th.Button.Value
-	var roundness = themeField(img.Roundness, body.Roundness, body.Roundness, 0)
-	var imgId, color = themeField(img.ImageId, body.ImageId, body.ImageId, 0), themeField(img.Color, body.Color, body.Color, "")
-	var borSz = themeField(img.BorderSize, body.BorderSize, body.BorderSize, 0)
-	var borCol = themeField(img.BorderColor, body.BorderColor, body.BorderColor, "")
-	var foc, cl, dis = body.Focused, body.Clicked, body.Disabled
+	var th, base = getTheme(theme), getTheme(0)
+	var tBody, tVal, bBody, bVal = th.Button.Body, th.Button.Value, base.Button.Body, base.Button.Value
+	var roundness = themeField(0, tBody.Roundness, bBody.Roundness)
+	var imgId, color = themeField(0, tBody.ImageId, bBody.ImageId), themeField("", tBody.Color, bBody.Color)
+	var borSz, borCol = themeField(0, tBody.BorderSize, bBody.BorderSize), themeField("", tBody.BorderColor, bBody.BorderColor)
 	mask = scaleMask(mask)
 
-	_ = value
+	_, _ = tVal, bVal
 
 	if input {
 		handleInput(area, mask, roundness)
 	} else {
-		imgId, color = themeField(img.ImageId, body.ImageId, dis.ImageId, 0), themeField(img.Color, body.Color, dis.Color, "")
-		borSz = themeField(dis.BorderSize, body.BorderSize, dis.BorderSize, 0)
-		borCol = themeField(img.BorderColor, body.BorderColor, dis.BorderColor, "")
+		imgId = themeField(0, tBody.Disabled.ImageId, tBody.ImageId, bBody.Disabled.ImageId, bBody.ImageId)
+		color = themeField("", tBody.Disabled.Color, tBody.Color, bBody.Disabled.Color, bBody.Color)
+		borSz = themeField(0, tBody.Disabled.BorderSize, tBody.BorderSize, bBody.Disabled.BorderSize, bBody.BorderSize, 0)
+		borCol = themeField("", tBody.Disabled.BorderColor, tBody.BorderColor, bBody.Disabled.BorderColor, bBody.BorderColor)
 	}
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
-		imgId, color = themeField(img.ImageId, body.ImageId, foc.ImageId, 0), themeField(img.Color, body.Color, foc.Color, "")
-		borSz = themeField(img.BorderSize, body.BorderSize, foc.BorderSize, 0)
-		borCol = themeField(img.BorderColor, body.BorderColor, foc.BorderColor, "")
+		imgId = themeField(0, tBody.Focused.ImageId, tBody.ImageId, bBody.Focused.ImageId, bBody.ImageId)
+		color = themeField("", tBody.Focused.Color, tBody.Color, bBody.Focused.Color, bBody.Color)
+		borSz = themeField(0, tBody.Focused.BorderSize, tBody.BorderSize, bBody.Focused.BorderSize, bBody.BorderSize, 0)
+		borCol = themeField("", tBody.Focused.BorderColor, tBody.BorderColor, bBody.Focused.BorderColor, bBody.BorderColor)
 	}
 	if IsClicked() {
-		imgId, color = themeField(img.ImageId, body.ImageId, cl.ImageId, 0), themeField(img.Color, body.Color, cl.Color, "")
-		borSz = themeField(cl.BorderSize, body.BorderSize, cl.BorderSize, 0)
-		borCol = themeField(img.BorderColor, body.BorderColor, cl.BorderColor, "")
+		imgId = themeField(0, tBody.Clicked.ImageId, tBody.ImageId, bBody.Clicked.ImageId, bBody.ImageId)
+		color = themeField("", tBody.Clicked.Color, tBody.Color, bBody.Clicked.Color, bBody.Color)
+		borSz = themeField(0, tBody.Clicked.BorderSize, tBody.BorderSize, bBody.Clicked.BorderSize, bBody.BorderSize, 0)
+		borCol = themeField("", tBody.Clicked.BorderColor, tBody.BorderColor, bBody.Clicked.BorderColor, bBody.BorderColor)
 	}
 	Object(assets.ImageId(imgId), roundness, borSz, col.Hex(borCol), col.Hex(color), area, mask, false)
 	if text != "" {
@@ -300,15 +325,15 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 
 	var inputStr = keyboard.Input()
 	if a != b && (len(inputStr) > 0 || keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyJustPressed(key.Delete)) {
-		inputDeleteRuneRange(text, a, b) // delete selection
+		inputboxDeleteRuneRange(text, a, b) // delete selection
 		inputIndexCursor, inputIndexSelection, inputCursorTimer = a, a, 0
 	} else {
 		if keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyHeld(key.Backspace, 0.5) {
-			inputDeleteRuneRange(text, inputIndexCursor, inputIndexCursor-1)
+			inputboxDeleteRuneRange(text, inputIndexCursor, inputIndexCursor-1)
 			inputIndexCursor = number.Limit(inputIndexCursor-1, 0, txt.Length(*text))
 			inputIndexSelection, inputCursorTimer = inputIndexCursor, 0
 		} else if keyboard.IsKeyJustPressed(key.Delete) || keyboard.IsKeyHeld(key.Delete, 0.5) {
-			inputDeleteRuneRange(text, inputIndexCursor, inputIndexCursor+1)
+			inputboxDeleteRuneRange(text, inputIndexCursor, inputIndexCursor+1)
 			inputCursorTimer = 0
 		}
 	}
@@ -320,7 +345,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		} else { // instant jump to start when selected
 			inputIndexCursor = a
 		}
-		inputTryShiftSelect()
+		inputboxTryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.RightArrow) || kb.IsKeyHeld(key.RightArrow, 0.5) {
 		inputCursorTimer = 0
 		if a == b || kb.IsKeyPressed(key.LeftShift) || kb.IsKeyPressed(key.RightShift) {
@@ -328,13 +353,13 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		} else { // instant jump to end  when selected
 			inputIndexCursor = b
 		}
-		inputTryShiftSelect()
+		inputboxTryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.UpArrow) || kb.IsKeyJustPressed(key.Home) {
 		inputIndexCursor, inputCursorTimer = 0, 0
-		inputTryShiftSelect()
+		inputboxTryShiftSelect()
 	} else if kb.IsKeyJustPressed(key.DownArrow) || kb.IsKeyJustPressed(key.End) {
 		inputIndexCursor, inputCursorTimer = txt.Length(*text), 0
-		inputTryShiftSelect()
+		inputboxTryShiftSelect()
 	} else if kb.IsComboJustPressed(key.LeftControl, key.A) || kb.IsComboJustPressed(key.RightControl, key.A) {
 		inputIndexCursor, inputIndexSelection = txt.Length(*text), 0
 	}
@@ -353,7 +378,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
 	} else if inputCursorTimer < 0.5 {
-		Object(0, 0, 0, 0, palette.LightGray, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.85), mask, false)
+		Object(0, 1, 0, 0, palette.LightGray, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.85), mask, false)
 	}
 
 	if len(inputStr) > 0 {
@@ -369,10 +394,12 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.ThemeId,
 	var baseColor = palette.Gray
 	var color, dragging = baseColor, false
 	var left, right = area.X - area.Width/2, area.X + area.Width/2
-	var x = number.Map(*value, 0, 1, left+area.Height/2, right-area.Height/2)
+	var th, x = getTheme(theme), number.Map(*value, 0, 1, left+area.Height/2, right-area.Height/2)
+	var bodyImg = themeField(0, th.Image.ImageId, th.Slider.Body.ImageId, 0)
+	var handleImg = themeField(0, th.Image.ImageId, th.Slider.Handle.ImageId, 0)
 	mask = scaleMask(mask)
 
-	Object(0, 0, 0, 0, palette.DarkGray, area, mask, input)
+	Object(assets.ImageId(bodyImg), 1, 0, 0, palette.DarkGray, area, mask, input)
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
 		color = col.Brighten(baseColor, 0.15)
@@ -387,10 +414,10 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.ThemeId,
 		var minX, maxX = left + area.Height/2, right - area.Height/2
 		for t := float32(0.0); t <= 1.0+0.001; t += step {
 			var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
-			Object(0, 0, 0, 0, palette.DarkGray, stepArea, mask, false)
+			Object(0, 1, 0, 0, palette.DarkGray, stepArea, mask, false)
 		}
 	}
-	Object(0, 0, 0, 0, color, geometry.NewArea(x, area.Y, area.Height, area.Height), mask, false)
+	Object(assets.ImageId(handleImg), 1, 0, 0, color, geometry.NewArea(x, area.Y, area.Height, area.Height), mask, false)
 
 	if dragging {
 		x, _ = view.MousePosition()
@@ -406,7 +433,7 @@ var view, obj = graphics.View{}, graphics.Object{}
 
 const defaultRoundness, defaultBorderSize float32 = 0, -5
 
-func inputDeleteRuneRange(text *string, start, end int) {
+func inputboxDeleteRuneRange(text *string, start, end int) {
 	if text == nil || *text == "" {
 		return
 	}
@@ -424,7 +451,7 @@ func inputDeleteRuneRange(text *string, start, end int) {
 	runes = append(runes[:start], runes[end:]...) // delete the range in-place
 	*text = string(runes)                         // update the underlying string
 }
-func inputTryShiftSelect() {
+func inputboxTryShiftSelect() {
 	if !kb.IsKeyPressed(key.LeftShift) && !kb.IsKeyPressed(key.RightShift) {
 		inputIndexSelection = inputIndexCursor
 	}
@@ -446,6 +473,7 @@ func handleText(text string, area, mask Area, theme assets.ThemeId, input, isTex
 	if input {
 		handleInput(area, scaleMask(mask), 0)
 	}
+
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
 	obj.ImageId, obj.Effects.Tint, obj.Mask = 0, palette.White, scaleMask(mask)
@@ -475,12 +503,12 @@ func getTheme(theme assets.ThemeId) internal.GuiTheme {
 	}
 	return th
 }
-func themeField[T comparable](grandparent, parent, optional, defaultValue T) T {
+func themeField[T comparable](defaultValue, optional T, fallbacks ...T) T {
 	if optional == defaultValue {
-		if parent == defaultValue {
-			optional = grandparent
-		} else {
-			optional = parent
+		for _, f := range fallbacks {
+			if f != defaultValue {
+				return f
+			}
 		}
 	}
 	return optional

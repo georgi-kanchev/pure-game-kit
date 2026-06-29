@@ -24,8 +24,7 @@ var WindowTargetFPS byte
 
 func Init() {
 	for i := range 3600 {
-		var rad = float64(i) * math.Pi / 1800.0 // convert index to radians (i / 10.0 * Pi / 180.0)
-		sineTable[i] = float32(math.Sin(rad))
+		sineTable[i] = float32(math.Sin(float64(i) * math.Pi / 1800.0)) // convert index to radians (i / 10.0 * Pi / 180.0)
 	}
 
 	if Shader.ID == 0 {
@@ -57,6 +56,17 @@ func Init() {
 	theme.Button.Body.Focused = GuiImage{Color: "#949494", BorderColor: "#a8a8a8"}
 	theme.Button.Body.Clicked = GuiImage{Color: "#6c6c6c", BorderColor: "#808080"}
 	theme.Button.Body.Disabled = GuiImage{Color: "#323232", BorderColor: "#464646"}
+	theme.Scroll.Body.Size, theme.Scroll.Body.GuiImage = 10, GuiImage{Color: "#00000080"}
+	theme.Scroll.Handle.Speed, theme.Scroll.Handle.GuiImage = 40, GuiImage{Roundness: 1, Color: "#bfbfbf"}
+	theme.Scroll.Handle.Focused, theme.Scroll.Handle.Clicked = GuiImage{Color: "#ffffff"}, GuiImage{Color: "#7f7f7f"}
+	theme.Slider.Body.GuiImage = GuiImage{Roundness: 1, Color: "#808080", BorderSize: -8, BorderColor: "#949494"}
+	theme.Slider.Body.Focused = GuiImage{Color: "#949494", BorderColor: "#a8a8a8"}
+	theme.Slider.Body.Clicked = GuiImage{Color: "#6c6c6c", BorderColor: "#808080"}
+	theme.Slider.Body.Disabled = GuiImage{Color: "#323232", BorderColor: "#464646"}
+	theme.Slider.Handle.GuiImage = GuiImage{Roundness: 1, Color: "#808080", BorderSize: -8, BorderColor: "#949494"}
+	theme.Slider.Handle.Focused = GuiImage{Color: "#949494", BorderColor: "#a8a8a8"}
+	theme.Slider.Handle.Clicked = GuiImage{Color: "#6c6c6c", BorderColor: "#808080"}
+	theme.Slider.Handle.Disabled = GuiImage{Color: "#323232", BorderColor: "#464646"}
 	Themes[0] = theme
 }
 func UpdateWindowData() {

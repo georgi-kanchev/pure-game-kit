@@ -7,7 +7,6 @@ import (
 	"pure-game-kit/packages/gui"
 	"pure-game-kit/packages/input/keyboard"
 	"pure-game-kit/packages/input/keyboard/key"
-	"pure-game-kit/packages/input/mouse"
 	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
@@ -29,7 +28,7 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
-	gui.Scale = 1.2
+	gui.Scale = 1
 
 	var hor, ver float32
 	var hor2, ver2 float32
@@ -40,10 +39,6 @@ func GUI() {
 		for i, c := range boxCols {
 			var area, _, _ = layout.Box(i)
 			gui.Object(0, 0, 0, 0, c, area, gui.Area{}, false)
-		}
-
-		if mouse.ScrollY() != 0 {
-			print()
 		}
 
 		for i, c := range itemCols {
@@ -62,6 +57,21 @@ func GUI() {
 			}
 		}
 
+		var area = gui.AreaHUD(0.5, 1, 700, 100)
+		area.Y -= 50
+
+		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
+
+		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
+		if gui.IsJustClicked() {
+			window.Close()
+			return
+		}
+
+		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
+
+		gui.Image(geometry.NewArea(-200, -200, 100, 100), gui.Area{}, 0, true)
+
 		var unitsArea, ucw, uch = layout.Box(3)
 		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea, 0)
 
@@ -75,17 +85,6 @@ func GUI() {
 			}
 		}
 
-		var area = gui.AreaHUD(0.5, 1, 700, 100)
-		area.Y -= 50
-
-		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
-
-		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
-
-		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
-
-		gui.Image(geometry.NewArea(-200, -200, 100, 100), gui.Area{}, 0, false)
-
-		view.DrawDebugInfo(true)
+		view.DrawDebugInfo(false)
 	}
 }

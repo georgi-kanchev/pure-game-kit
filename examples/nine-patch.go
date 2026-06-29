@@ -21,6 +21,6 @@ func NinePatch() {
 
 	for window.KeepOpen() {
 		var sine = number.Sine(time.Running() / 2)
-		view.DrawImage(0, 0, sine*100, sine*100, 0, ninePatch, palette.White, geometry.Area{})
+		view.DrawImage(0, 0, sine*100, sine*100, 45, ninePatch, palette.White, geometry.Area{})
 	}
 }
