@@ -77,7 +77,7 @@ func GUI() {
 
 		if !gui.IsAnyTyping() && keyboard.IsKeyPressed(key.A) {
 			var area, cw, ch = layout.Box(5)
-			gui.Object(0, 0, 0, 0, palette.Azure, area, gui.Area{}, false)
+			gui.Object(0, 0, 0, 0, palette.Azure, area, gui.Area{}, true)
 			gui.Scrolls(&hor2, &ver2, cw, ch, area, 0)
 			for i := range 4 {
 				var area, mask = layout.Item(20+i, hor2, ver2)

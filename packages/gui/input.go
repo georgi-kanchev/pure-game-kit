@@ -45,7 +45,6 @@ var widgetCounter int // resets every frame, each widget increases it, used for 
 var nowHovered, lastHovered, nowFocused, lastFocused int
 var lastClickedWidget, clickedWidget, justClickedWidget int
 var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
-var scrollHandleDragWidget int // widgetCounter of the handle/body that initiated a left-click drag
 var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag Area
 var droppedLastFrame bool

@@ -100,9 +100,6 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 
 	var dragging = scrollDraggedWidget == widgetCounter && mouse.IsButtonPressed(button.Middle)
 	var scrolling = lastScrollHoveredWidget == widgetCounter
-	if mouse.IsButtonJustReleased(button.Left) || !mouse.IsButtonPressed(button.Left) {
-		scrollHandleDragWidget = 0
-	}
 	if horizontal != nil && hasHor {
 		var horArea = area
 		if vertical != nil && hasVer { // make space for vertical slider
@@ -115,13 +112,12 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var roundness = themeField(0, tBody.Roundness, bBody.Roundness, 1)
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
 		Object(0, bodyRound, roundness, 0, color.Hex(bodyCol), hor, Area{}, true)
-		if scrolling && IsFocused() {
+		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
 			col = themeField("", tHnd.Color, tHnd.Focused.Color, bHnd.Focused.Color, bHnd.Color)
 		}
-		if scrolling && IsClicked() {
+		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
-			scrollHandleDragWidget = widgetCounter + 1
 			mouse.SetCursor(cursor.Resize1)
 			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
@@ -130,15 +126,12 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.X = mx // click on scroll body (not handle)
 		}
-		if scrolling && IsFocused() {
+		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
 			col = themeField("", tHnd.Focused.Color, tHnd.Color, bHnd.Focused.Color, bHnd.Color)
 		}
-		if scrolling && IsClicked() {
-			scrollHandleDragWidget = widgetCounter // activate handle drag for this axis
-		}
-		if scrollHandleDragWidget == widgetCounter {
-			handle.X += mdx / Scale // dragging handle or scroll body
+		if IsClicked() || instant {
+			handle.X += mdx / Scale // dragging handle or scroll body after instant click
 			mouse.SetCursor(cursor.Resize1)
 			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
@@ -164,13 +157,12 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var col = themeField("", tHnd.Color, bHnd.Color)
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
 		Object(0, bodyRound, 0, 0, color.Hex(bodyCol), ver, Area{}, true)
-		if scrolling && IsFocused() {
+		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
 			col = themeField("", tHnd.Focused.Color, tHnd.Color, bHnd.Focused.Color, bHnd.Color)
 		}
-		if scrolling && IsClicked() {
+		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
-			scrollHandleDragWidget = widgetCounter + 1
 			mouse.SetCursor(cursor.Resize2)
 			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
@@ -179,15 +171,12 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.Y = my // click on scroll body (not handle)
 		}
-		if scrolling && IsFocused() {
+		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
 			col = themeField("", tHnd.Focused.Color, tHnd.Color, bHnd.Focused.Color, bHnd.Color)
 		}
-		if scrolling && IsClicked() {
-			scrollHandleDragWidget = widgetCounter // activate handle drag for this axis
-		}
-		if scrollHandleDragWidget == widgetCounter {
-			handle.Y += mdy / Scale // dragging handle or scroll body
+		if IsClicked() || instant {
+			handle.Y += mdy / Scale // dragging handle or scroll body after instant click
 			mouse.SetCursor(cursor.Resize2)
 			col = themeField("", tHnd.Clicked.Color, tHnd.Color, bHnd.Clicked.Color, bHnd.Color)
 		}
