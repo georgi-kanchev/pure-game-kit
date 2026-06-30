@@ -49,26 +49,26 @@ type GuiLayout struct {
 }
 
 type GuiImage struct {
-	ImageId     int     `xml:"imageId,attr"`
-	Roundness   float32 `xml:"roundness,attr"`
-	Color       string  `xml:"color,attr"`
-	BorderSize  float32 `xml:"borderSize,attr"`
-	BorderColor string  `xml:"borderColor,attr"`
+	ImgId  int     `xml:"imageId,attr"`
+	Rnds   float32 `xml:"roundness,attr"`
+	Col    string  `xml:"color,attr"`
+	BorSz  float32 `xml:"borderSize,attr"`
+	BorCol string  `xml:"borderColor,attr"`
 }
 type GuiText struct {
-	FontId       int     `xml:"fontId,attr"`
-	LineHeight   float32 `xml:"lineHeight,attr"`
-	Gap          string  `xml:"gap,attr"`
-	Margin       string  `xml:"margin,attr"`
-	Align        string  `xml:"align,attr"`
-	Weight       int8    `xml:"weight,attr"`
-	Color        string  `xml:"color,attr"`
-	OutlineSize  int8    `xml:"outlineSize,attr"`
-	OutlineColor string  `xml:"outlineColor,attr"`
-	ShadowWeight int8    `xml:"shadowWeight,attr"`
-	ShadowColor  string  `xml:"shadowColor,attr"`
-	ShadowBlur   uint8   `xml:"shadowBlur,attr"`
-	ShadowOffset string  `xml:"shadowOffset,attr"`
+	FontId     int     `xml:"fontId,attr"`
+	LineHeight float32 `xml:"lineHeight,attr"`
+	Gap        string  `xml:"gap,attr"`
+	Margin     string  `xml:"margin,attr"`
+	Align      string  `xml:"align,attr"`
+	Weight     int8    `xml:"weight,attr"`
+	Color      string  `xml:"color,attr"`
+	OutlineSz  float32 `xml:"outlineSize,attr"`
+	OutlineCol string  `xml:"outlineColor,attr"`
+	ShWeight   int8    `xml:"shadowWeight,attr"`
+	ShColor    string  `xml:"shadowColor,attr"`
+	ShBlur     uint8   `xml:"shadowBlur,attr"`
+	ShOffset   string  `xml:"shadowOffset,attr"`
 }
 type GuiTheme struct {
 	XMLName xml.Name `xml:"theme"`
@@ -108,7 +108,7 @@ type GuiTheme struct {
 			Focused  GuiImage `xml:"focused"`
 			Clicked  GuiImage `xml:"clicked"`
 		} `xml:"body"`
-		Handle struct {
+		Hnd struct {
 			GuiImage
 			Disabled GuiImage `xml:"disabled"`
 			Focused  GuiImage `xml:"focused"`
