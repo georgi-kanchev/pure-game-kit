@@ -61,9 +61,10 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 }
 
 func Image(area, mask Area, theme assets.ThemeId, input bool) {
-	var th = getTheme(theme)
-	var borderColor, tint = color.Hex(th.Image.BorCol), color.Hex(th.Image.Col)
-	Object(assets.ImageId(th.Image.ImgId), th.Image.Rnds, th.Image.BorSz, borderColor, tint, area, mask, input)
+	var t, b = getTheme(theme).Image, getTheme(0).Image
+	var imgId, rnds = assets.ImageId(thField(0, t.ImgId, b.ImgId)), thField(0, t.Rnds, b.Rnds)
+	var borSz, borCol = thField(0, t.BorSz, b.BorSz), col.Hex(thField("", t.BorCol, b.BorCol))
+	Object(imgId, rnds, borSz, borCol, col.Hex(thField("", t.Col, b.Col)), area, mask, input)
 }
 func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	var t, b = getTheme(theme), getTheme(0)
@@ -75,8 +76,8 @@ func Text(text string, area, mask Area, theme assets.ThemeId, input bool) {
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.ThemeId) {
-	var th, base = getTheme(theme), getTheme(0)
-	var tBody, tHnd, bBody, bHnd = th.Scroll.Body, th.Scroll.Handle, base.Scroll.Body, base.Scroll.Handle
+	var t, b = getTheme(theme), getTheme(0)
+	var tBody, tHnd, bBody, bHnd = t.Scroll.Body, t.Scroll.Handle, b.Scroll.Body, b.Scroll.Handle
 	var scrollSpeed = thField(0, tHnd.Speed, bHnd.Speed) / Scale
 	var size, contentW, contentH = thField(0, tBody.Size, bBody.Size) * Scale, contentWidth, contentHeight
 	var bodyRound, handleRound = thField(0, tBody.Rnds, bBody.Rnds), thField(0, tHnd.Rnds, bHnd.Rnds)
@@ -505,18 +506,18 @@ func handleText(text string, area, mask Area, interact, optional, base internal.
 	if area == (Area{}) || text == "" {
 		return
 	}
-	var lineHeight = thField(0, interact.LineHeight, optional.LineHeight, base.LineHeight)
+	var lineHeight = thField(0, interact.LineH, optional.LineH, base.LineH)
 	var fontId = thField(0, interact.FontId, optional.FontId, base.FontId)
-	var color = thField("", interact.Color, optional.Color, base.Color)
+	var color = thField("", interact.Col, optional.Col, base.Col)
 	var weight = thField(0, interact.Weight, optional.Weight, base.Weight)
 	var align = thField("", interact.Align, optional.Align, base.Align)
 	var gap = thField("", interact.Gap, optional.Gap, base.Gap)
 	var margin = thField("", interact.Margin, optional.Margin, base.Margin)
-	var outSz = thField(0, interact.OutlineSz, optional.OutlineSz, base.OutlineSz)
-	var outCol = thField("", interact.OutlineCol, optional.OutlineCol, base.OutlineCol)
+	var outSz = thField(0, interact.OutSz, optional.OutSz, base.OutSz)
+	var outCol = thField("", interact.OutCol, optional.OutCol, base.OutCol)
 	var sWeight = thField(0, interact.ShWeight, optional.ShWeight, base.ShWeight)
-	var sCol = thField("", interact.ShColor, optional.ShColor, base.ShColor)
-	var sOff = thField("", interact.ShOffset, optional.ShOffset, base.ShOffset)
+	var sCol = thField("", interact.ShCol, optional.ShCol, base.ShCol)
+	var sOff = thField("", interact.ShOff, optional.ShOff, base.ShOff)
 	var sBlur = thField(0, interact.ShBlur, optional.ShBlur, base.ShBlur)
 
 	if !isText {

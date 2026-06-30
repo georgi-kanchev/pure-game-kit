@@ -56,19 +56,19 @@ type GuiImage struct {
 	BorCol string  `xml:"borderColor,attr"`
 }
 type GuiText struct {
-	FontId     int     `xml:"fontId,attr"`
-	LineHeight float32 `xml:"lineHeight,attr"`
-	Gap        string  `xml:"gap,attr"`
-	Margin     string  `xml:"margin,attr"`
-	Align      string  `xml:"align,attr"`
-	Weight     int8    `xml:"weight,attr"`
-	Color      string  `xml:"color,attr"`
-	OutlineSz  float32 `xml:"outlineSize,attr"`
-	OutlineCol string  `xml:"outlineColor,attr"`
-	ShWeight   int8    `xml:"shadowWeight,attr"`
-	ShColor    string  `xml:"shadowColor,attr"`
-	ShBlur     uint8   `xml:"shadowBlur,attr"`
-	ShOffset   string  `xml:"shadowOffset,attr"`
+	FontId   int     `xml:"fontId,attr"`
+	LineH    float32 `xml:"lineHeight,attr"`
+	Gap      string  `xml:"gap,attr"`
+	Margin   string  `xml:"margin,attr"`
+	Align    string  `xml:"align,attr"`
+	Weight   int8    `xml:"weight,attr"`
+	Col      string  `xml:"color,attr"`
+	OutSz    float32 `xml:"outlineSize,attr"`
+	OutCol   string  `xml:"outlineColor,attr"`
+	ShWeight int8    `xml:"shadowWeight,attr"`
+	ShCol    string  `xml:"shadowColor,attr"`
+	ShBlur   uint8   `xml:"shadowBlur,attr"`
+	ShOff    string  `xml:"shadowOffset,attr"`
 }
 type GuiTheme struct {
 	XMLName xml.Name `xml:"theme"`

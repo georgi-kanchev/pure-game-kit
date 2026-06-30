@@ -46,27 +46,24 @@ func Init() {
 	storage.FromJSON(font, fontData)
 	LoadFont(fontData, 0)
 
-	var theme = GuiTheme{
-		Image: GuiImage{Col: "#ffffff", BorCol: "#ffffff"},
-		Label: GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Color: "#ffffff", OutlineCol: "#ffffff",
-			ShColor: "#000000", ShBlur: 20, ShOffset: "30 30"},
-		Text: GuiText{LineHeight: 50, Margin: "20 20", Align: "0 0", Gap: "0 0", Color: "#ffffff", OutlineCol: "#ffffff",
-			ShColor: "#000000", ShBlur: 20, ShOffset: "30 30"}}
+	var theme GuiTheme
+	theme.Image = GuiImage{Col: "#ffffff", BorSz: -5, BorCol: "#000000"}
+	theme.Label = GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#ffffff",
+		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
+	theme.Text = GuiText{LineH: 50, Margin: "20 20", Align: "0 0", Gap: "0 0", Col: "#ffffff", OutCol: "#ffffff",
+		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
 	theme.Button.Body.GuiImage = GuiImage{Rnds: 0.5, Col: "#949494", BorSz: -8, BorCol: "#808080"}
 	theme.Button.Body.Focused = GuiImage{Col: "#a8a8a8", BorCol: "#949494"}
 	theme.Button.Body.Clicked = GuiImage{Col: "#808080", BorCol: "#6c6c6c"}
 	theme.Button.Body.Disabled = GuiImage{Col: "#464646", BorCol: "#323232"}
-	theme.Button.Value.GuiText = GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Color: "#ffffff", OutlineCol: "#ffffff",
-		ShColor: "#000000", ShBlur: 20, ShOffset: "30 30"}
-	theme.Button.Value.Focused = GuiText{}
-	theme.Button.Value.Clicked = GuiText{}
-	theme.Button.Value.Disabled = GuiText{}
+	theme.Button.Value.GuiText = GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#ffffff",
+		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
+	theme.Button.Value.Focused, theme.Button.Value.Clicked, theme.Button.Value.Disabled = GuiText{}, GuiText{}, GuiText{}
 	theme.Scroll.Body.Size, theme.Scroll.Body.GuiImage = 10, GuiImage{Col: "#00000080"}
 	theme.Scroll.Handle.Speed, theme.Scroll.Handle.GuiImage = 40, GuiImage{Rnds: 1, Col: "#bfbfbf"}
 	theme.Scroll.Handle.Focused, theme.Scroll.Handle.Clicked = GuiImage{Col: "#ffffff"}, GuiImage{Col: "#7f7f7f"}
 	theme.Slider.Body.GuiImage = GuiImage{Rnds: 1, Col: "#949494", BorSz: -8, BorCol: "#808080"}
-	theme.Slider.Body.Focused = GuiImage{}
-	theme.Slider.Body.Clicked = GuiImage{}
+	theme.Slider.Body.Focused, theme.Slider.Body.Clicked = GuiImage{}, GuiImage{}
 	theme.Slider.Body.Disabled = GuiImage{Col: "#323232", BorCol: "#464646"}
 	theme.Slider.Hnd.GuiImage = GuiImage{Rnds: 1, Col: "#ebebeb", BorSz: -8, BorCol: "#d7d7d7"}
 	theme.Slider.Hnd.Focused = GuiImage{Col: "#ffffff", BorCol: "#ebebeb"}
