@@ -70,10 +70,10 @@ func Init() {
 	theme.Inputbox.Body.GuiImage = GuiImage{Rnds: 0.3, Col: "#6c6c6c", BorSz: -8, BorCol: "#464646"}
 	theme.Inputbox.Body.Typing, theme.Inputbox.Body.Focused = GuiImage{BorCol: "#949494"}, GuiImage{BorCol: "#6c6c6c"}
 	theme.Inputbox.Body.Disabled = GuiImage{Col: "#6c6c6c", BorCol: "#464646"}
-	theme.Inputbox.Value.GuiText = GuiText{Margin: "30 20", Align: "0 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#000000",
+	theme.Inputbox.Value.GuiText = GuiText{Margin: "30 25", Align: "0 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#000000",
 		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
 	theme.Inputbox.Value.Disabled = GuiText{Col: "#7f7f7f"}
-	theme.Inputbox.Placeholder = GuiText{Margin: "30 20", Align: "0 0.5", Gap: "0 0", Col: "#282828", OutCol: "#000000",
+	theme.Inputbox.Placeholder = GuiText{Margin: "30 25", Align: "0 0.5", Gap: "0 0", Col: "#464646", OutCol: "#000000",
 		ShCol: "#00000000", ShBlur: 20, ShOff: "30 30"}
 	theme.Inputbox.Selection = GuiImage{Rnds: 0.3, Col: "#007fff", BorSz: -4, BorCol: "#28a7ff"}
 	theme.Inputbox.Cursor.GuiImage = GuiImage{Rnds: 1, Col: "#c3c3c3"}
