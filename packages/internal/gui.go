@@ -120,12 +120,14 @@ type GuiTheme struct {
 		Body struct {
 			GuiImage
 			Disabled GuiImage `xml:"disabled"`
+			Focused  GuiImage `xml:"focused"`
 			Typing   GuiImage `xml:"typing"`
 		} `xml:"body"`
 		Value struct {
 			GuiText
 			ShadowOffset string  `xml:"shadowOffset,attr"`
 			Disabled     GuiText `xml:"disabled"`
+			Focused      GuiText `xml:"focused"`
 			Typing       GuiText `xml:"typing"`
 		} `xml:"value"`
 		Placeholder GuiText  `xml:"placeholder"`

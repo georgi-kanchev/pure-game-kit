@@ -41,11 +41,13 @@
 	<inputbox>
 		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
 			<disabled color="#555555"/>
+			<focused color="#ff8c8c"/>
 			<typing borderColor="#ff8c8c"/>
 		</body>
 		<value fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff"
     	outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
 			<disabled color="#555555"/>
+			<focused color="#ff8c8c"/>
 			<typing color="#ff8c8c"/>
 		</value>
 		<placeholder fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff"

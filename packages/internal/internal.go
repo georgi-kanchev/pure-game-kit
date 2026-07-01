@@ -68,7 +68,7 @@ func Init() {
 	theme.Slider.Hnd.Clicked = GuiImage{Col: "#d7d7d7", BorCol: "#c3c3c3"}
 	theme.Slider.Hnd.Disabled = GuiImage{Col: "#828282", BorCol: "#6e6e6e"}
 	theme.Inputbox.Body.GuiImage = GuiImage{Rnds: 0.3, Col: "#6c6c6c", BorSz: -8, BorCol: "#464646"}
-	theme.Inputbox.Body.Typing = GuiImage{BorCol: "#949494"}
+	theme.Inputbox.Body.Typing, theme.Inputbox.Body.Focused = GuiImage{BorCol: "#949494"}, GuiImage{BorCol: "#6c6c6c"}
 	theme.Inputbox.Body.Disabled = GuiImage{Col: "#6c6c6c", BorCol: "#464646"}
 	theme.Inputbox.Value.GuiText = GuiText{Margin: "30 20", Align: "0 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#000000",
 		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}

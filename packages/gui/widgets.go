@@ -266,14 +266,20 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 
 	if IsFocused() {
 		mouse.SetCursor(cursor.Input)
+		bodyImg = thField(0, tBody.Focused.ImgId, tBody.ImgId, bBody.Focused.ImgId)
+		bodyBorSz = thField(0, tBody.Focused.BorSz, bBody.BorSz, bBody.Focused.BorSz)
+		bodyBorCol = thField("", tBody.Focused.BorCol, bBody.BorCol, bBody.Focused.BorCol)
+		bodyCol = thField("", tBody.Focused.Col, tBody.Col, bBody.Focused.Col)
+		margin = thField("", tVal.Focused.Margin, tVal.Margin, bVal.Focused.Margin)
+		inter = thField(internal.GuiText{}, tVal.Focused, tVal.GuiText, bVal.Focused)
 	}
 	if typingIn == widgetCounter {
 		bodyImg = thField(0, tBody.Typing.ImgId, tBody.ImgId, bBody.Typing.ImgId)
 		bodyBorSz = thField(0, tBody.Typing.BorSz, bBody.BorSz, bBody.Typing.BorSz)
 		bodyBorCol = thField("", tBody.Typing.BorCol, bBody.BorCol, bBody.Typing.BorCol)
 		bodyCol = thField("", tBody.Typing.Col, tBody.Col, bBody.Typing.Col)
-		inter = thField(internal.GuiText{}, tVal.Typing, tVal.GuiText, bVal.Typing)
 		margin = thField("", tVal.Typing.Margin, tVal.Margin, bVal.Typing.Margin)
+		inter = thField(internal.GuiText{}, tVal.Typing, tVal.GuiText, bVal.Typing)
 	}
 
 	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.Hex(bodyBorCol), col.Hex(bodyCol), area, scaleMask(mask), false)
