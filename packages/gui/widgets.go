@@ -68,11 +68,11 @@ func Image(area, mask Area, theme assets.ThemeId, input bool) {
 }
 func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	var t, b = getTheme(theme), getTheme(0)
-	handleText(text, area, mask, internal.GuiText{}, t.Label, b.Label, input, false)
+	handleText(text, area, mask, internal.GuiText{}, t.Label, b.Label, input, false, false)
 }
 func Text(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	var t, b = getTheme(theme), getTheme(0)
-	handleText(text, area, mask, internal.GuiText{}, t.Text, b.Text, input, true)
+	handleText(text, area, mask, internal.GuiText{}, t.Text, b.Text, input, true, false)
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.ThemeId) {
@@ -238,59 +238,67 @@ func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	}
 	Object(assets.ImageId(imgId), roundness, borSz, col.Hex(borCol), col.Hex(color), area, mask, false)
 	if text != "" {
-		handleText(text, area, mask, interact, tVal.GuiText, bVal.GuiText, false, false)
+		handleText(text, area, mask, interact, tVal.GuiText, bVal.GuiText, false, false, false)
 	}
 }
 func Inputbox(text *string, placeholder string, area, mask Area, theme assets.ThemeId, input bool) {
 	if area == (Area{}) {
 		return
 	}
-	const defaultRoundness, defaultBorderSize float32 = 0, -5
-	var marginX float32 = 20 * Scale
-	var color = palette.DarkGray
-	var borderColor = col.Darken(color, 0.25)
+	var t, base, selectionCursorHeight = getTheme(theme), getTheme(0), float32(0.85)
+	var tBody, bBody, tVal, bVal = t.Inputbox.Body, base.Inputbox.Body, t.Inputbox.Value, base.Inputbox.Value
+	var tSel, bSel, tCur, bCur = t.Inputbox.Selection, base.Inputbox.Selection, t.Inputbox.Cursor, base.Inputbox.Cursor
+	var tPlh, bPlh = t.Inputbox.Placeholder, base.Inputbox.Placeholder
+	var bodyRnds, bodyImg = thField(0, tBody.Rnds, bBody.Rnds), thField(0, tBody.ImgId, bBody.ImgId)
+	var bodyBorSz, bodyBorCol = thField(0, tBody.BorSz, bBody.BorSz), thField("", tBody.BorCol, bBody.BorCol)
+	var bodyCol, margin, inter = thField("", tBody.Col, bBody.Col), thField("", tVal.Margin, bVal.Margin), internal.GuiText{}
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
 	if input {
-		handleInput(area, scaleMask(mask), defaultRoundness)
+		handleInput(area, scaleMask(mask), bodyRnds)
+	} else {
+		bodyImg = thField(0, tBody.Disabled.ImgId, tBody.ImgId, bBody.Disabled.ImgId)
+		bodyBorSz = thField(0, tBody.Disabled.BorSz, bBody.BorSz, bBody.Disabled.BorSz)
+		bodyBorCol = thField("", tBody.Disabled.BorCol, bBody.BorCol, bBody.Disabled.BorCol)
+		bodyCol = thField("", tBody.Disabled.Col, tBody.Col, bBody.Disabled.Col)
+		inter = thField(internal.GuiText{}, tVal.Disabled, tVal.GuiText, bVal.Disabled)
+		margin = thField("", tVal.Disabled.Margin, tVal.Margin, bVal.Disabled.Margin)
 	}
 
 	if IsFocused() {
 		mouse.SetCursor(cursor.Input)
 	}
 	if typingIn == widgetCounter {
-		borderColor = palette.Gray
+		bodyImg = thField(0, tBody.Typing.ImgId, tBody.ImgId, bBody.Typing.ImgId)
+		bodyBorSz = thField(0, tBody.Typing.BorSz, bBody.BorSz, bBody.Typing.BorSz)
+		bodyBorCol = thField("", tBody.Typing.BorCol, bBody.BorCol, bBody.Typing.BorCol)
+		bodyCol = thField("", tBody.Typing.Col, tBody.Col, bBody.Typing.Col)
+		inter = thField(internal.GuiText{}, tVal.Typing, tVal.GuiText, bVal.Typing)
+		margin = thField("", tVal.Typing.Margin, tVal.Margin, bVal.Typing.Margin)
 	}
 
-	obj.Effects = graphics.Effects(internal.DefaultEffects)
-	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = area.Width, area.Height, 0, defaultRoundness
-	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, color
-	obj.X, obj.Y, obj.Mask, obj.Text = area.X, area.Y, scaleMask(mask), ""
-	obj.Effects.BorderSize, obj.Effects.BorderColor = defaultBorderSize, borderColor
-	view.DrawObject(&obj)
+	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.Hex(bodyBorCol), col.Hex(bodyCol), area, scaleMask(mask), false)
+	var marginX = txt.ToNumber[float32](txt.SplitAtIndex(margin, " ", 0))
 	area.Width -= marginX
 
 	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection {
-		var selectArea = geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax, obj.Height*0.85)
-		Object(0, 0, 0, 0, palette.Azure, selectArea, area.Intersect(mask), false)
+		var selRnds, selImg = thField(0, tSel.Rnds, bSel.Rnds), assets.ImageId(thField(0, tSel.ImgId, bSel.ImgId))
+		var selBorSz, selBorCol = thField(0, tSel.BorSz, bSel.BorSz), col.Hex(thField("", tSel.BorCol, bSel.BorCol))
+		var selCol = col.Hex(thField("", tSel.Col, bSel.Col))
+		var selArea = geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax, obj.Height*selectionCursorHeight)
+		Object(selImg, selRnds, selBorSz, selBorCol, selCol, selArea, area.Intersect(mask), false)
 	}
 
-	obj.Effects = graphics.Effects(internal.DefaultEffects)
-	obj.Effects.TextAlignX, obj.Effects.TextAlignY, obj.Effects.TextWordWrap = 0, 0.5, false
-	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 99999, area.Height, 0, 0
-	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = 0, palette.White, 0
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = 0, *text, area.Height*0.8, palette.White
-	obj.Effects.TextIsInput, obj.Effects.TextMarginX = true, marginX
-	var x = area.X + obj.Width/2 - area.Width/2 - marginX/2
+	const valueWidth = 99999
+	var x = area.X + valueWidth/2 - area.Width/2 - marginX/2
 	if typingIn == widgetCounter {
 		x += inputScroll
 	}
-	obj.X, obj.Y, obj.Mask = x, area.Y, scaleMask(area.Intersect(mask))
-	if obj.Text == "" {
-		obj.Text = placeholder
-		obj.Effects.TextColor = col.RGBA(40, 40, 40, 255)
-		obj.Effects.TextShadowColor = 0
+	var valueArea = geometry.NewArea(x, area.Y, valueWidth, area.Height)
+	if *text == "" {
+		handleText(placeholder, valueArea, area.Intersect(mask), internal.GuiText{}, tPlh, bPlh, false, false, false)
+	} else {
+		handleText(*text, valueArea, area.Intersect(mask), inter, tVal.GuiText, bVal.GuiText, false, false, true)
 	}
-	view.DrawObject(&obj)
 
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)
 	if typingIn == widgetCounter {
@@ -298,8 +306,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	}
 
 	if IsClicked() {
-		var i, closestIndex int
-		var x, closestDist float32 = 0, 99999
+		var i, closestIndex, x, closestDist = 0, 0, float32(0), float32(valueWidth)
 		var mx, _ = view.MousePosition()
 		for {
 			x = obj.TextCursorPositionAt(i)
@@ -328,7 +335,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		inputScroll = 0
 	}
 	if typingIn != widgetCounter {
-		return
+		return //=================================================================
 	}
 
 	var inputStr = keyboard.Input()
@@ -386,7 +393,11 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
 	} else if inputCursorTimer < 0.5 {
-		Object(0, 1, 0, 0, palette.LightGray, geometry.NewArea(cursorX, obj.Y, Scale*8, obj.Height*0.85), mask, false)
+		var curRnds, curImg = thField(0, tCur.Rnds, bCur.Rnds), assets.ImageId(thField(0, tCur.ImgId, bCur.ImgId))
+		var curBorSz, curBorCol = thField(0, tCur.BorSz, bCur.BorSz), col.Hex(thField("", tCur.BorCol, bCur.BorCol))
+		var curCol, curWidth = col.Hex(thField("", tCur.Col, bCur.Col)), thField(0, tCur.Width, bCur.Width)
+		var curArea = geometry.NewArea(cursorX, obj.Y, Scale*curWidth, obj.Height*selectionCursorHeight)
+		Object(curImg, curRnds, curBorSz, curBorCol, curCol, curArea, mask, false)
 	}
 
 	if len(inputStr) > 0 {
@@ -502,26 +513,21 @@ func inputboxTryShiftSelect() {
 	}
 }
 
-func handleText(text string, area, mask Area, interact, optional, base internal.GuiText, input, isText bool) {
+func handleText(text string, area, mask Area, inter, opt, base internal.GuiText, input, isText, isInputbox bool) {
 	if area == (Area{}) || text == "" {
 		return
 	}
-	var lineHeight = thField(0, interact.LineH, optional.LineH, base.LineH)
-	var fontId = thField(0, interact.FontId, optional.FontId, base.FontId)
-	var color = thField("", interact.Col, optional.Col, base.Col)
-	var weight = thField(0, interact.Weight, optional.Weight, base.Weight)
-	var align = thField("", interact.Align, optional.Align, base.Align)
-	var gap = thField("", interact.Gap, optional.Gap, base.Gap)
-	var margin = thField("", interact.Margin, optional.Margin, base.Margin)
-	var outSz = thField(0, interact.OutSz, optional.OutSz, base.OutSz)
-	var outCol = thField("", interact.OutCol, optional.OutCol, base.OutCol)
-	var sWeight = thField(0, interact.ShWeight, optional.ShWeight, base.ShWeight)
-	var sCol = thField("", interact.ShCol, optional.ShCol, base.ShCol)
-	var sOff = thField("", interact.ShOff, optional.ShOff, base.ShOff)
-	var sBlur = thField(0, interact.ShBlur, optional.ShBlur, base.ShBlur)
+	var lineH = thField(0, inter.LineH, opt.LineH, base.LineH)
+	var fontId, color = thField(0, inter.FontId, opt.FontId, base.FontId), thField("", inter.Col, opt.Col, base.Col)
+	var wgt, align = thField(0, inter.Wgt, opt.Wgt, base.Wgt), thField("", inter.Align, opt.Align, base.Align)
+	var gap, mar = thField("", inter.Gap, opt.Gap, base.Gap), thField("", inter.Margin, opt.Margin, base.Margin)
+	var outSz, outCol = thField(0, inter.OutSz, opt.OutSz, base.OutSz), thField("", inter.OutCol, opt.OutCol, base.OutCol)
+	var sWgt, sBlur = thField(0, inter.ShWgt, opt.ShWgt, base.ShWgt), thField(0, inter.ShBlur, opt.ShBlur, base.ShBlur)
+	var sCol, sOff = thField("", inter.ShCol, opt.ShCol, base.ShCol), thField("", inter.ShOff, opt.ShOff, base.ShOff)
+	var marY = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 1))
 
 	if !isText {
-		lineHeight = area.Height / float32(txt.SplitCount(text, "\n")) * 0.8
+		lineH = area.Height / float32(txt.SplitCount(text, "\n")) * ((area.Height - marY) / area.Height)
 	}
 	if input {
 		handleInput(area, scaleMask(mask), 0)
@@ -529,17 +535,16 @@ func handleText(text string, area, mask Area, interact, optional, base internal.
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
-	obj.ImageId, obj.Effects.Tint, obj.Mask = 0, palette.White, scaleMask(mask)
+	obj.Effects.TextIsInput, obj.ImageId, obj.Effects.Tint, obj.Mask = isInputbox, 0, palette.White, scaleMask(mask)
 	obj.TextFontId, obj.Text, obj.Effects.TextWordWrap = assets.FontId(fontId), text, isText
-	obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Effects.TextWeight = lineHeight, col.Hex(color), weight
+	obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Effects.TextWeight = lineH, col.Hex(color), wgt
 	obj.Effects.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 0))
 	obj.Effects.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 1))
 	obj.Effects.TextSymbolGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 0))
 	obj.Effects.TextLineGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 1))
-	obj.Effects.TextMarginX = txt.ToNumber[float32](txt.SplitAtIndex(margin, " ", 0))
-	obj.Effects.TextMarginY = txt.ToNumber[float32](txt.SplitAtIndex(margin, " ", 1))
+	obj.Effects.TextMarginX, obj.Effects.TextMarginY = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 0)), marY
 	obj.Effects.OutlineSize, obj.Effects.OutlineColor, obj.Effects.TextShadowBlur = outSz, col.Hex(outCol), sBlur
-	obj.Effects.TextShadowWeight, obj.Effects.TextShadowColor = sWeight, col.Hex(sCol)
+	obj.Effects.TextShadowWeight, obj.Effects.TextShadowColor = sWgt, col.Hex(sCol)
 	obj.Effects.TextShadowOffsetX = txt.ToNumber[int8](txt.SplitAtIndex(sOff, " ", 0))
 	obj.Effects.TextShadowOffsetY = txt.ToNumber[int8](txt.SplitAtIndex(sOff, " ", 1))
 	view.DrawObject(&obj)

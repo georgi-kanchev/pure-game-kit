@@ -56,19 +56,19 @@ type GuiImage struct {
 	BorCol string  `xml:"borderColor,attr"`
 }
 type GuiText struct {
-	FontId   int     `xml:"fontId,attr"`
-	LineH    float32 `xml:"lineHeight,attr"`
-	Gap      string  `xml:"gap,attr"`
-	Margin   string  `xml:"margin,attr"`
-	Align    string  `xml:"align,attr"`
-	Weight   int8    `xml:"weight,attr"`
-	Col      string  `xml:"color,attr"`
-	OutSz    float32 `xml:"outlineSize,attr"`
-	OutCol   string  `xml:"outlineColor,attr"`
-	ShWeight int8    `xml:"shadowWeight,attr"`
-	ShCol    string  `xml:"shadowColor,attr"`
-	ShBlur   uint8   `xml:"shadowBlur,attr"`
-	ShOff    string  `xml:"shadowOffset,attr"`
+	FontId int     `xml:"fontId,attr"`
+	LineH  float32 `xml:"lineHeight,attr"`
+	Gap    string  `xml:"gap,attr"`
+	Margin string  `xml:"margin,attr"`
+	Align  string  `xml:"align,attr"`
+	Wgt    int8    `xml:"weight,attr"`
+	Col    string  `xml:"color,attr"`
+	OutSz  float32 `xml:"outlineSize,attr"`
+	OutCol string  `xml:"outlineColor,attr"`
+	ShWgt  int8    `xml:"shadowWeight,attr"`
+	ShCol  string  `xml:"shadowColor,attr"`
+	ShBlur uint8   `xml:"shadowBlur,attr"`
+	ShOff  string  `xml:"shadowOffset,attr"`
 }
 type GuiTheme struct {
 	XMLName xml.Name `xml:"theme"`
@@ -116,7 +116,7 @@ type GuiTheme struct {
 		} `xml:"handle"`
 		Step GuiImage `xml:"step"`
 	} `xml:"slider"`
-	InputBox struct {
+	Inputbox struct {
 		Body struct {
 			GuiImage
 			Disabled GuiImage `xml:"disabled"`
@@ -132,7 +132,7 @@ type GuiTheme struct {
 		Selection   GuiImage `xml:"selection"`
 		Cursor      struct {
 			GuiImage
-			Width int `xml:"width,attr"`
+			Width float32 `xml:"width,attr"`
 		} `xml:"cursor"`
 	} `xml:"inputbox"`
 }

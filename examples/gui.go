@@ -61,11 +61,8 @@ func GUI() {
 		area.Y -= 50
 
 		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
-
 		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
-
 		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
-
 		gui.Image(geometry.NewArea(-200, -200, 100, 100), gui.Area{}, 0, true)
 
 		var unitsArea, ucw, uch = layout.Box(3)

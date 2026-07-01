@@ -48,27 +48,36 @@ func Init() {
 
 	var theme GuiTheme
 	theme.Image = GuiImage{Col: "#ffffff", BorSz: -5, BorCol: "#000000"}
-	theme.Label = GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#ffffff",
+	theme.Label = GuiText{Margin: "10 10", Align: "0.5 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#000000",
 		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
-	theme.Text = GuiText{LineH: 50, Margin: "20 20", Align: "0 0", Gap: "0 0", Col: "#ffffff", OutCol: "#ffffff",
+	theme.Text = GuiText{LineH: 50, Margin: "20 20", Align: "0 0", Gap: "0 0", Col: "#ffffff", OutCol: "#000000",
 		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
 	theme.Button.Body.GuiImage = GuiImage{Rnds: 0.5, Col: "#949494", BorSz: -8, BorCol: "#808080"}
 	theme.Button.Body.Focused = GuiImage{Col: "#a8a8a8", BorCol: "#949494"}
 	theme.Button.Body.Clicked = GuiImage{Col: "#808080", BorCol: "#6c6c6c"}
 	theme.Button.Body.Disabled = GuiImage{Col: "#464646", BorCol: "#323232"}
-	theme.Button.Value.GuiText = GuiText{Margin: "20 20", Align: "0.5 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#ffffff",
+	theme.Button.Value.GuiText = GuiText{Margin: "10 10", Align: "0.5 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#000000",
 		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
-	theme.Button.Value.Focused, theme.Button.Value.Clicked, theme.Button.Value.Disabled = GuiText{}, GuiText{}, GuiText{}
 	theme.Scroll.Body.Size, theme.Scroll.Body.GuiImage = 10, GuiImage{Col: "#00000080"}
 	theme.Scroll.Handle.Speed, theme.Scroll.Handle.GuiImage = 40, GuiImage{Rnds: 1, Col: "#bfbfbf"}
 	theme.Scroll.Handle.Focused, theme.Scroll.Handle.Clicked = GuiImage{Col: "#ffffff"}, GuiImage{Col: "#7f7f7f"}
 	theme.Slider.Body.GuiImage = GuiImage{Rnds: 1, Col: "#949494", BorSz: -8, BorCol: "#808080"}
-	theme.Slider.Body.Focused, theme.Slider.Body.Clicked = GuiImage{}, GuiImage{}
 	theme.Slider.Body.Disabled = GuiImage{Col: "#323232", BorCol: "#464646"}
 	theme.Slider.Hnd.GuiImage = GuiImage{Rnds: 1, Col: "#ebebeb", BorSz: -8, BorCol: "#d7d7d7"}
 	theme.Slider.Hnd.Focused = GuiImage{Col: "#ffffff", BorCol: "#ebebeb"}
 	theme.Slider.Hnd.Clicked = GuiImage{Col: "#d7d7d7", BorCol: "#c3c3c3"}
 	theme.Slider.Hnd.Disabled = GuiImage{Col: "#828282", BorCol: "#6e6e6e"}
+	theme.Inputbox.Body.GuiImage = GuiImage{Rnds: 0.3, Col: "#6c6c6c", BorSz: -8, BorCol: "#464646"}
+	theme.Inputbox.Body.Typing = GuiImage{BorCol: "#949494"}
+	theme.Inputbox.Body.Disabled = GuiImage{Col: "#6c6c6c", BorCol: "#464646"}
+	theme.Inputbox.Value.GuiText = GuiText{Margin: "30 20", Align: "0 0.5", Gap: "0 0", Col: "#ffffff", OutCol: "#000000",
+		ShCol: "#000000", ShBlur: 20, ShOff: "30 30"}
+	theme.Inputbox.Value.Disabled = GuiText{Col: "#7f7f7f"}
+	theme.Inputbox.Placeholder = GuiText{Margin: "30 20", Align: "0 0.5", Gap: "0 0", Col: "#282828", OutCol: "#000000",
+		ShCol: "#00000000", ShBlur: 20, ShOff: "30 30"}
+	theme.Inputbox.Selection = GuiImage{Rnds: 0.3, Col: "#007fff", BorSz: -4, BorCol: "#28a7ff"}
+	theme.Inputbox.Cursor.GuiImage = GuiImage{Rnds: 1, Col: "#c3c3c3"}
+	theme.Inputbox.Cursor.Width = 8
 	Themes[0] = theme
 }
 func UpdateWindowData() {
