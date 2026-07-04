@@ -283,7 +283,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
 	var shadeCol, shadeOutCol, contentWidth, contentHeight float32
-	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
+	var w, h = o.Width, o.Height
 	var txt = o.Text
 	if eff.TextIsInput && txt == "" {
 		txt = " " // empty input string should have a cursor position

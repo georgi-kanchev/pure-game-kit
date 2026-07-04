@@ -548,7 +548,6 @@ func handleText(text string, area, mask Area, inter, opt, base internal.GuiText,
 	obj.Effects.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 1))
 	obj.Effects.TextSymbolGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 0))
 	obj.Effects.TextLineGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 1))
-	obj.Effects.TextMarginX, obj.Effects.TextMarginY = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 0)), marY
 	obj.Effects.OutlineSize, obj.Effects.OutlineColor, obj.Effects.TextShadowBlur = outSz, col.Hex(outCol), sBlur
 	obj.Effects.TextShadowWeight, obj.Effects.TextShadowColor = sWgt, col.Hex(sCol)
 	obj.Effects.TextShadowOffsetX = txt.ToNumber[int8](txt.SplitAtIndex(sOff, " ", 0))

@@ -57,8 +57,7 @@ type Effects struct {
 	//=================================================================
 
 	TextAlignX, TextAlignY float32 // Ranged 0..1
-	TextLineHeight, TextSymbolGap, TextLineGap,
-	TextMarginX, TextMarginY float32
+	TextLineHeight, TextSymbolGap, TextLineGap float32
 	TextWordWrap bool
 
 	TextIsInput bool // No new lines; no effects; caches the cursor positions from the last draw.
@@ -82,7 +81,7 @@ var DefaultMatrix rl.Matrix
 var DefaultEffects = Effects{
 	BorderColor: palette.White, Tint: palette.White,
 	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 30, TextShadowOffsetY: 30,
-	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 20, TextMarginX: 20}
+	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 20}
 
 var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; positive = full images
 var NextImageId int16

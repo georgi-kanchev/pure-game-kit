@@ -286,7 +286,7 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 				wPrev, wTotal = wGlyph, max(wX+symbol.X+symbol.Width, wTotal)
 				wX += wGlyph.Advance*wHeight + gapX
 			}
-			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width-o.Effects.TextMarginX {
+			if x+glyph.Advance*lineHeight+gapX+max(wTotal, wX) > o.Width {
 				return fromIndex + i, totalWidth, lineHeight
 			}
 		}
