@@ -268,6 +268,7 @@ var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': p
 	'🟨': palette.Yellow, '🟩': palette.Green, '🟦': palette.Blue, '🟪': palette.Purple, '🟫': palette.Brown}
 var outlineColors = map[rune]uint{'⚪': palette.White, '⚫': palette.Black, '🔴': palette.Red, '🟠': palette.Orange,
 	'🟡': palette.Yellow, '🟢': palette.Green, '🔵': palette.Blue, '🟣': palette.Purple, '🟤': palette.Brown}
+var shades = map[rune]float32{'🌑': -0.8, '🌒': -0.6, '🌓': -0.4, '🌔': -0.2, '🌘': 0.2, '🌗': 0.4, '🌖': 0.6, '🌕': 0.8}
 var weights = map[rune]int8{'⏬': -100, '🔽': -50, '🔁': 0, '🔼': 50, '⏫': 100}
 var sizes = map[rune]float32{'🔇': 0.5, '🔈': 0.75, '🔉': 1.0, '🔊': 1.25, '📢': 1.5}
 
@@ -281,7 +282,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	}
 	var atlasTex = internal.Images[fontData.AtlasId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
-	var contentWidth, contentHeight float32
+	var shadeCol, shadeOutCol, contentWidth, contentHeight float32
 	var w, h = o.Width - eff.TextMarginX, o.Height - eff.TextMarginY
 	var txt = o.Text
 	if eff.TextIsInput && txt == "" {
@@ -310,7 +311,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		var prevGlyph internal.Glyph
 
 		for _, r := range txt[ln.start:ln.end] {
-			if !o.Effects.TextIsInput && o.embedEffect(r, eff) {
+			if !o.Effects.TextIsInput && o.embedEffect(r, eff, &shadeCol, &shadeOutCol) {
 				continue // tag symbol applies to effects and gets skipped
 			}
 
@@ -333,8 +334,8 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 					continue
 				}
 				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
-				var x, y = dst.X + dst.Width/2, dst.Y + dst.Height/2
-				var area = geometry.NewArea(src.X+src.Width/2, src.Y+src.Height/2, src.Width, src.Height)
+				var x, y = dst.X + dst.Width/2, dst.Y - dst.Height/2
+				var area = geometry.NewArea(src.X+src.Width/2, src.Y+src.Height/2, src.Width, -src.Height)
 				eff.FillColor, eff.OutlineColor = 0, 0
 				v.queueQuad(x, y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, area, eff, mask)
 				eff.FillColor, eff.OutlineColor = prevFill, prevOut
@@ -343,11 +344,13 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 					internal.Queue(atlasTex, rl.Texture2D{}, src, dst, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 				if eff.TextUnderline {
-					var src2, dst2 = getGlyphSrcDst(o, internal.Underline, fontData.Chars[internal.Underline], x, y, cos, sin, dst.Width)
+					var underscore = fontData.Chars[internal.Underline]
+					var src2, dst2 = getGlyphSrcDst(o, internal.Underline, underscore, x, y, cos, sin, dst.Width)
 					internal.Queue(atlasTex, rl.Texture2D{}, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 				if eff.TextCrossout {
-					var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, fontData.Chars[internal.Crossout], x, y, cos, sin, dst.Width)
+					var dash = fontData.Chars[internal.Crossout]
+					var src2, dst2 = getGlyphSrcDst(o, internal.Crossout, dash, x, y, cos, sin, dst.Width)
 					internal.Queue(atlasTex, rl.Texture2D{}, src2, dst2, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
 				}
 			}

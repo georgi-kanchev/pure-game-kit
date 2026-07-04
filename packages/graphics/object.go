@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/assets"
 	geometry "pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
+	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
 	txt "pure-game-kit/packages/utility/text"
@@ -32,6 +33,8 @@ type Object struct {
 	//	Size:          🔇🔈🔉🔊📢
 	//	Color:         ⬜⬛🟥🟧🟨🟩🟦🟪🟫
 	//	Outline Color: ⚪⚫🔴🟠🟡🟢🔵🟣🟤
+	//	Darken:        🌔🌓🌒🌑 // 20%, 40%, 60%, 80% - use before any color to darken it
+	//	Brighten:      🌘🌗🌖🌕 // 20%, 40%, 60%, 80% - use before any color to brighten it
 	Text       string
 	TextFontId assets.FontId
 
@@ -291,7 +294,7 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 	}
 	return len(o.Text), totalWidth, lineHeight
 }
-func (o *Object) embedEffect(r rune, effect *internal.Effects) (success bool) {
+func (o *Object) embedEffect(r rune, effect *internal.Effects, shadeCol, shadeOutCol *float32) (success bool) {
 	if r == '✅' {
 		effect.TextUnderline = !effect.TextUnderline
 		return true
@@ -305,10 +308,25 @@ func (o *Object) embedEffect(r rune, effect *internal.Effects) (success bool) {
 	var outlineColor = outlineColors[r]
 	var weight, hasWeights = weights[r]
 	var size = sizes[r]
+	var sh, hasShade = shades[r]
 	if color != 0 {
+		if *shadeCol < 0 {
+			color = col.Darken(color, number.Absolute(*shadeCol))
+		} else {
+			color = col.Brighten(color, *shadeCol)
+		}
+		*shadeCol = 0    // reset shade
+		*shadeOutCol = 0 // reset shade
 		effect.TextColor = color
 		return true
 	} else if outlineColor != 0 {
+		if *shadeOutCol < 0 {
+			outlineColor = col.Darken(outlineColor, number.Absolute(*shadeOutCol))
+		} else {
+			outlineColor = col.Brighten(outlineColor, *shadeOutCol)
+		}
+		*shadeCol = 0    // reset shade
+		*shadeOutCol = 0 // reset shade
 		effect.OutlineColor = outlineColor
 		return true
 	} else if hasWeights {
@@ -317,6 +335,9 @@ func (o *Object) embedEffect(r rune, effect *internal.Effects) (success bool) {
 	} else if size != 0 {
 		effect.TextLineHeight = o.Effects.TextLineHeight * size
 		return true
+	} else if hasShade {
+		*shadeCol = sh
+		*shadeOutCol = sh
 	}
 	return false
 }
