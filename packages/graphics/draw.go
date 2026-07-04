@@ -306,12 +306,14 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	}
 	var y = o.Y - h/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(h-contentHeight)
 
+	var baseLineHeight = eff.TextLineHeight
+
 	for _, ln := range lines {
 		var x = (o.X - w/2) + eff.TextAlignX*(w-ln.width)
 		var prevGlyph internal.Glyph
 
 		for _, r := range txt[ln.start:ln.end] {
-			if !o.Effects.TextIsInput && o.embedEffect(r, eff, &shadeCol, &shadeOutCol) {
+			if !o.Effects.TextIsInput && o.embedEffect(r, eff, &shadeCol, &shadeOutCol, baseLineHeight) {
 				continue // tag symbol applies to effects and gets skipped
 			}
 

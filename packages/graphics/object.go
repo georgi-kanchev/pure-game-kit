@@ -294,7 +294,7 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 	}
 	return len(o.Text), totalWidth, lineHeight
 }
-func (o *Object) embedEffect(r rune, effect *internal.Effects, shadeCol, shadeOutCol *float32) (success bool) {
+func (o *Object) embedEffect(r rune, effect *internal.Effects, shadeCol, shadeOutCol *float32, baseLineHeight float32) (success bool) {
 	if r == '✅' {
 		effect.TextUnderline = !effect.TextUnderline
 		return true
@@ -333,7 +333,7 @@ func (o *Object) embedEffect(r rune, effect *internal.Effects, shadeCol, shadeOu
 		effect.TextWeight = weight
 		return true
 	} else if size != 0 {
-		effect.TextLineHeight = o.Effects.TextLineHeight * size
+		effect.TextLineHeight = baseLineHeight * size
 		return true
 	} else if hasShade {
 		*shadeCol = sh
