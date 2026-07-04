@@ -283,8 +283,6 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	}
 
 	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.Hex(bodyBorCol), col.Hex(bodyCol), area, scaleMask(mask), false)
-	var marginX = txt.ToNumber[float32](txt.SplitAtIndex(margin, " ", 0))
-	area.Width -= marginX
 
 	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection {
 		var selRnds, selImg = thField(0, tSel.Rnds, bSel.Rnds), assets.ImageId(thField(0, tSel.ImgId, bSel.ImgId))
@@ -295,7 +293,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	}
 
 	const valueWidth = 99999
-	var x = area.X + valueWidth/2 - area.Width/2 - marginX/2
+	var x = area.X + valueWidth/2 - area.Width/2
 	if typingIn == widgetCounter {
 		x += inputScroll
 	}
@@ -303,6 +301,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	if *text == "" {
 		handleText(placeholder, valueArea, area.Intersect(mask), internal.GuiText{}, tPlh, bPlh, false, false, false)
 	} else {
+		inter.Margin = margin
 		handleText(*text, valueArea, area.Intersect(mask), inter, tVal.GuiText, bVal.GuiText, false, false, true)
 	}
 
@@ -530,10 +529,13 @@ func handleText(text string, area, mask Area, inter, opt, base internal.GuiText,
 	var outSz, outCol = thField(0, inter.OutSz, opt.OutSz, base.OutSz), thField("", inter.OutCol, opt.OutCol, base.OutCol)
 	var sWgt, sBlur = thField(0, inter.ShWgt, opt.ShWgt, base.ShWgt), thField(0, inter.ShBlur, opt.ShBlur, base.ShBlur)
 	var sCol, sOff = thField("", inter.ShCol, opt.ShCol, base.ShCol), thField("", inter.ShOff, opt.ShOff, base.ShOff)
+	var marX = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 0))
 	var marY = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 1))
+	area.Width -= marX
+	area.Height -= marY
 
 	if !isText {
-		lineH = area.Height / float32(txt.SplitCount(text, "\n")) * ((area.Height - marY) / area.Height)
+		lineH = area.Height / float32(txt.SplitCount(text, "\n"))
 	}
 	if input {
 		handleInput(area, scaleMask(mask), 0)
