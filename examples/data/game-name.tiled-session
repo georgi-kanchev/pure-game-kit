@@ -47,14 +47,14 @@
         },
         "/home/gojur/code/combathrone/data/map.tmx": {
             "scale": 1,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 373,
-                "y": 46.5
+                "x": 396,
+                "y": 170.5
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx#tileset": {
-            "scaleInDock": 1,
+            "scaleInDock": 0.75,
             "scaleInEditor": 1
         },
         "atlas.tsx": {

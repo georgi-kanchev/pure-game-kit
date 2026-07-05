@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="darkreader-lock">
+    <title>animation-editor</title>
+
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/button.css">
+    <link rel="stylesheet" href="styles/topbar.css">
+    <link rel="stylesheet" href="styles/view.css">
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button id="save">💾 Save</button>
+                <button id="load">📥 Load</button>
+                <button id="openImage">🖼 Open Image</button>
+            </div>
+            <div class="top-bar-right">
+                <label class="grid-label">Grid</label>
+                <input type="number" id="gridSize" class="grid-input" value="16" min="1" step="1">
+            </div>
+        </header>
+
+        <main class="editor-view">
+            <canvas id="view"></canvas>
+        </main>
+    </div>
+
+    <script src="scripts/global.js"></script>
+    <script src="scripts/camera.js"></script>
+    <script src="scripts/draw.js"></script>
+    <script src="scripts/io.js"></script>
+    <script src="scripts/interact.js"></script>
+
+</body>
+</html>

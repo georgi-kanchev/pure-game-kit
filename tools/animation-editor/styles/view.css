@@ -1,0 +1,27 @@
+.main-layout {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+}
+
+.editor-view {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #050505;
+}
+
+canvas {
+    user-select: none;
+    -webkit-user-drag: none;
+    touch-action: none;
+}
+
+#view {
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    background-color: #000;
+}

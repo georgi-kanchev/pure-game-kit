@@ -1,0 +1,54 @@
+.top-bar {
+    background: #222;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+
+    cursor: default;
+}
+
+.top-bar-left, .top-bar-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 40px;
+}
+
+.top-bar-right {
+    justify-content: flex-end;
+}
+
+.top-bar-center {
+    display: flex;
+    justify-content: center;
+}
+
+.grid-label {
+    font-size: 11px;
+    color: #888;
+    margin-right: 2px;
+}
+
+.grid-input {
+    width: 50px;
+    height: 22px;
+    background: #1a1a1a;
+    color: var(--text-main);
+    border: 1px solid #3d3d3d;
+    border-radius: 3px;
+    font-size: 11px;
+    text-align: center;
+    outline: none;
+}
+
+.grid-input:focus {
+    border-color: #555;
+}
