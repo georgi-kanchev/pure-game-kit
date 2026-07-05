@@ -75,8 +75,10 @@ function highlightSelection() {
 }
 
 function selectAnimation(idx) {
+    stopPreview();
     selectedAnimIdx = idx;
     highlightSelection();
+    document.getElementById('previewPanel').style.display = idx !== -1 ? '' : 'none';
     drawView();
 }
 
@@ -87,10 +89,119 @@ document.getElementById('addAnimBtn').addEventListener('click', () => {
         hue: nextHue(),
         frameIndices: [],
     });
-    selectedAnimIdx = animations.length - 1;
     rebuildAnimList();
-    drawView();
+    selectAnimation(animations.length - 1);
 });
 
 // Initialize
 rebuildAnimList();
+
+// Preview playback
+let previewTimer = null;
+let previewFrameIdx = 0;
+
+function clearPreview() {
+    const pc = document.getElementById('previewCanvas');
+    pc.width = 0;
+    pc.height = 0;
+    pc.style.width = '0';
+    pc.style.height = '0';
+}
+
+function stopPreview(full) {
+    if (previewTimer) clearInterval(previewTimer);
+    previewTimer = null;
+    document.getElementById('previewFrame').disabled = false;
+    if (full) {
+        clearPreview();
+    }
+}
+
+function showPreviewFrame(f) {
+    if (!image || !f) return;
+    const pc = document.getElementById('previewCanvas');
+    pc.width = f.w;
+    pc.height = f.h;
+    const maxW = pc.parentElement.clientWidth - 12;
+    const scale = maxW / f.w;
+    pc.style.width = maxW + 'px';
+    pc.style.height = (f.h * scale) + 'px';
+    const pctx = pc.getContext('2d');
+    pctx.imageSmoothingEnabled = false;
+    pctx.drawImage(image, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
+}
+
+function updatePreviewFrame() {
+    const anim = animations[selectedAnimIdx];
+    if (!anim || !anim.frameIndices.length) return stopPreview(false);
+    if (previewFrameIdx >= anim.frameIndices.length) {
+        if (document.getElementById('previewLoop').checked) {
+            previewFrameIdx = 0;
+        } else {
+            return stopPreview(false);
+        }
+    }
+    const fi = anim.frameIndices[previewFrameIdx];
+    const f = frames[fi];
+    if (f) {
+        selection = { x: f.x, y: f.y, w: f.w, h: f.h };
+        showPreviewFrame(f);
+    }
+    document.getElementById('previewFrame').value = fi;
+    drawView();
+    previewFrameIdx++;
+}
+
+// Stop preview when selecting a different animation
+const origSelectAnimation = selectAnimation;
+selectAnimation = function(idx) {
+    stopPreview(true);
+    origSelectAnimation(idx);
+    if (idx !== -1) {
+        startPlayback();
+    }
+};
+
+function startPlayback() {
+    const anim = animations[selectedAnimIdx];
+    if (!anim || !anim.frameIndices.length) return;
+    stopPreview(true);
+    const firstFi = anim.frameIndices[0];
+    const firstF = frames[firstFi];
+    if (firstF) {
+        showPreviewFrame(firstF);
+        document.getElementById('previewFrame').value = firstFi;
+    }
+    previewFrameIdx = 1;
+    if (firstF) selection = { x: firstF.x, y: firstF.y, w: firstF.w, h: firstF.h };
+    document.getElementById('previewFrame').disabled = true;
+    drawView();
+    const speed = parseInt(document.getElementById('previewSpeed').value) || 8;
+    previewTimer = setInterval(updatePreviewFrame, 1000 / speed);
+}
+
+document.getElementById('previewPlay').addEventListener('click', startPlayback);
+
+document.getElementById('previewPause').addEventListener('click', () => {
+    stopPreview(false);
+});
+
+// Update playback speed in real time
+document.getElementById('previewSpeed').addEventListener('input', () => {
+    if (!previewTimer) return;
+    if (previewTimer) clearInterval(previewTimer);
+    const speed = parseInt(document.getElementById('previewSpeed').value) || 8;
+    previewTimer = setInterval(updatePreviewFrame, 1000 / speed);
+});
+
+// Frame field: type a frame index to preview it
+document.getElementById('previewFrame').addEventListener('input', () => {
+    const fi = parseInt(document.getElementById('previewFrame').value);
+    if (isNaN(fi) || fi < 0) return;
+    const f = frames[fi];
+    if (f) {
+        showPreviewFrame(f);
+        selection = { x: f.x, y: f.y, w: f.w, h: f.h };
+        drawView();
+    }
+});

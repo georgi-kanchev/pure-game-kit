@@ -20,7 +20,10 @@
             <div class="top-bar-left">
                 <button id="save">💾 Save</button>
                 <button id="load">📥 Load</button>
-                <button id="openImage">🖼 Open Image</button>
+                <button id="openImage">🌄 Open Image</button>
+            </div>
+            <div class="top-bar-center">
+                <span class="top-hints">LMB Drag to select · Enter create frame · Enter+Number insert at N · RMB delete · MMB pan · Scroll zoom</span>
             </div>
             <div class="top-bar-right">
                 <label class="grid-label">Grid</label>
@@ -35,6 +38,18 @@
                         <button id="addAnimBtn">➕ Add Animation</button>
                     </div>
                     <div class="animation-list" id="animationList"></div>
+                    <div class="preview-panel" id="previewPanel" style="display:none">
+                        <div class="preview-controls">
+                            <button id="previewPlay" title="Play">▶</button>
+                            <button id="previewPause" title="Pause">⏸</button>
+                            <span class="preview-label">Frame</span>
+                            <input class="preview-frame" id="previewFrame" value="0" size="3">
+                            <span class="preview-label">FPS</span>
+                            <input type="number" id="previewSpeed" value="8" min="1" max="60" step="1">
+                            <label class="preview-loop"><input type="checkbox" id="previewLoop" checked> ↻</label>
+                        </div>
+                        <canvas class="preview-canvas" id="previewCanvas"></canvas>
+                    </div>
                 </div>
             </aside>
 

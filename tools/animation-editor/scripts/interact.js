@@ -39,16 +39,20 @@ canvas.addEventListener('mousedown', (e) => {
             world.y >= selection.y && world.y <= selection.y + selection.h) {
             selection = null;
             if (selectedAnimIdx !== -1) {
+                stopPreview(true);
                 selectedAnimIdx = -1;
                 highlightSelection();
+                document.getElementById('previewPanel').style.display = 'none';
             }
             drawView();
             return;
         }
         // deselect animation when clicking canvas
         if (selectedAnimIdx !== -1) {
+            stopPreview(true);
             selectedAnimIdx = -1;
             highlightSelection();
+            document.getElementById('previewPanel').style.display = 'none';
         }
         isSelecting = true;
         selStart = { x: snapToGrid(world.x), y: snapToGrid(world.y) };

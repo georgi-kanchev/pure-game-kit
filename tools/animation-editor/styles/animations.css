@@ -72,3 +72,90 @@
     box-shadow: inset 0 0 0 1px var(--item-color, var(--accent-color));
 }
 
+.preview-panel {
+    flex-shrink: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.preview-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.preview-controls button {
+    width: 24px;
+    height: 20px;
+    padding: 0;
+    font-size: 10px;
+    line-height: 1;
+}
+
+.preview-label {
+    font-size: 10px;
+    color: #555;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.preview-canvas {
+    width: 100%;
+    display: block;
+    image-rendering: pixelated;
+    border-radius: 2px;
+}
+
+.preview-frame {
+    width: 32px;
+    height: 18px;
+    background: #111;
+    color: #ccc;
+    border: 1px solid #333;
+    border-radius: 3px;
+    font-size: 12px;
+    text-align: center;
+    outline: none;
+    padding: 0 2px;
+}
+
+.preview-panel input[type="number"] {
+    width: 36px;
+    height: 18px;
+    background: #111;
+    color: var(--text-main);
+    border: 1px solid #333;
+    border-radius: 3px;
+    font-size: 11px;
+    text-align: center;
+    outline: none;
+    padding: 0 2px;
+}
+
+.preview-panel input[type="number"]::-webkit-inner-spin-button,
+.preview-panel input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.preview-panel input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.preview-panel input[type="checkbox"] {
+    margin: 0 3px 0 0;
+    accent-color: var(--accent-color);
+}
+
+.preview-loop {
+    font-size: 11px;
+    color: #888;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
