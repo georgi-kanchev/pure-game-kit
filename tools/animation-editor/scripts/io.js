@@ -83,16 +83,25 @@ function importXml(text) {
 
     // load frames — generate hues
     const frameEls = [...doc.querySelectorAll('frames > frame')];
+    // sort by id to guarantee correct order (querySelectorAll may not preserve
+    // document order in XML documents across all browsers)
+    frameEls.sort((a, b) => {
+        const idA = parseInt(a.getAttribute('id')) || 0;
+        const idB = parseInt(b.getAttribute('id')) || 0;
+        return idA - idB;
+    });
     frames.length = 0;
     let fhue = Math.random() * 360;
+    const seen = new Set();
     frameEls.forEach(el => {
-        frames.push({
-            x: parseFloat(el.getAttribute('x')) || 0,
-            y: parseFloat(el.getAttribute('y')) || 0,
-            w: parseFloat(el.getAttribute('w')) || 0,
-            h: parseFloat(el.getAttribute('h')) || 0,
-            hue: fhue,
-        });
+        const x = parseFloat(el.getAttribute('x')) || 0;
+        const y = parseFloat(el.getAttribute('y')) || 0;
+        const w = parseFloat(el.getAttribute('w')) || 0;
+        const h = parseFloat(el.getAttribute('h')) || 0;
+        const key = `${x},${y},${w},${h}`;
+        if (seen.has(key)) return; // skip exact duplicate frames
+        seen.add(key);
+        frames.push({ x, y, w, h, hue: fhue });
         fhue = (fhue + 20 + Math.random() * 25) % 360;
     });
     lastHue = fhue;
