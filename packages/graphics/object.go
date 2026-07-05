@@ -18,7 +18,7 @@ type Object struct {
 	Mask    geometry.Area // In window space.
 	Effects Effects
 
-	// image ==========================================================
+	// sprite =========================================================
 
 	ImageId   assets.ImageId
 	ImageCrop geometry.Area // Zero value = original asset image (or asset crop)
@@ -78,7 +78,7 @@ func NewShapeLine(x1, y1, x2, y2, thickness float32) Object {
 	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness), Effects: eff}
 }
 
-func NewImage(x, y, scale float32, imageId assets.ImageId) Object {
+func NewSprite(x, y, scale float32, imageId assets.ImageId) Object {
 	var _, _, w, h = imageId.CropArea()
 	var eff = Effects(internal.DefaultEffects)
 	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId, Effects: eff}
@@ -105,19 +105,22 @@ func (o *Object) ViewFit(view *View) {
 	var x, y = view.PointFromScreen(internal.WindowWidth/2, internal.WindowHeight/2)
 	var cw, ch = view.Size()
 	var scale = min(cw/o.Width, ch/o.Height)
-	o.X, o.Y, o.Angle = x-(0.5)*o.Width*scale, y-(0.5)*o.Height*scale, 0
+	o.Width, o.Height = o.Width*scale, o.Height*scale
+	o.X, o.Y, o.Angle = x, y, 0
 }
 func (o *Object) ViewFill(view *View) {
 	var x, y = view.PointFromScreen(internal.WindowWidth/2, internal.WindowHeight/2)
 	var cw, ch = view.Size()
 	var scale = max(cw/o.Width, ch/o.Height)
-	o.X, o.Y, o.Angle = x-(0.5)*o.Width*scale, y-(0.5)*o.Height*scale, 0
+	o.Width, o.Height = o.Width*scale, o.Height*scale
+	o.X, o.Y, o.Angle = x, y, 0
 }
 func (o *Object) ViewStretch(view *View) {
 	var x, y = view.PointFromScreen(internal.WindowWidth/2, internal.WindowHeight/2)
 	var cw, ch = view.Size()
 	var scaleX, scaleY = cw / o.Width, ch / o.Height
-	o.X, o.Y, o.Angle = x-(0.5)*o.Width*scaleX, y-(0.5)*o.Height*scaleY, 0
+	o.Width, o.Height = o.Width*scaleX, o.Height*scaleY
+	o.X, o.Y, o.Angle = x, y, 0
 }
 
 //=================================================================

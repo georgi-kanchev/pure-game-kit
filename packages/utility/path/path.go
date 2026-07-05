@@ -29,7 +29,10 @@ func LastPart(path string) string {
 	return filepath.Base(path)
 }
 func Folder(path string) string {
-	return internal.Path(filepath.Dir(path))
+	if IsFile(path) {
+		return internal.Path(filepath.Dir(path))
+	}
+	return internal.Path(path)
 }
 func Extension(path string) string {
 	return internal.Path(filepath.Ext(path))

@@ -3,14 +3,14 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "map.tmx",
+    "activeFile": "/home/gojur/code/combathrone/data/map.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
-            "scaleInDock": 0.75,
+            "scaleInDock": 4,
             "scaleInEditor": 8
         },
         "/home/gojur/Desktop/atlas.tsx": {
@@ -45,6 +45,18 @@
                 "y": 1788
             }
         },
+        "/home/gojur/code/combathrone/data/map.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 373,
+                "y": 46.5
+            }
+        },
+        "/home/gojur/code/combathrone/data/map.tmx#tileset": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "atlas.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 2,
@@ -73,11 +85,11 @@
             "expandedObjectLayers": [
                 5
             ],
-            "scale": 3,
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 249.66666666666669,
-                "y": 183.5
+                "x": 308.5,
+                "y": 231.75
             }
         },
         "map.tmx#atlas": {
@@ -119,21 +131,21 @@
         }
     },
     "frame.defaultDuration": 300,
-    "last.imagePath": "/home/gojur/code/retro-shell-box",
-    "map.fixedSize": false,
+    "last.imagePath": "/home/gojur/code/combathrone/data",
+    "map.fixedSize": true,
     "map.height": 1,
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": "3",
-    "map.tileHeight": 12,
-    "map.tileWidth": 12,
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
     "map.width": 1,
     "openFiles": [
-        "map.tmx",
-        "atlas.tsx"
+        "/home/gojur/code/combathrone/data/map.tmx"
     ],
     "project": "game-name.tiled-project",
     "property.type": "list",
     "recentFiles": [
+        "/home/gojur/code/combathrone/data/map.tmx",
         "atlas.tsx",
         "map.tmx",
         "/home/gojur/Desktop/atlas.tsx",
@@ -144,15 +156,14 @@
         "map2.tmx",
         "images.tsx",
         "objects.tsx",
-        "desert.tmx",
-        "terrain.tmx"
+        "desert.tmx"
     ],
     "tileset.embedInMap": true,
     "tileset.lastUsedFormat": "tsx",
-    "tileset.margin": 1,
-    "tileset.spacing": 1,
+    "tileset.margin": 0,
+    "tileset.spacing": 0,
     "tileset.tileSize": {
-        "height": 12,
-        "width": 12
+        "height": 16,
+        "width": 16
     }
 }
