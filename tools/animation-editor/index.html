@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="styles/base.css">
     <link rel="stylesheet" href="styles/button.css">
     <link rel="stylesheet" href="styles/topbar.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="styles/animations.css">
     <link rel="stylesheet" href="styles/view.css">
 </head>
 <body>
@@ -26,14 +28,29 @@
             </div>
         </header>
 
-        <main class="editor-view">
-            <canvas id="view"></canvas>
-        </main>
+        <div class="main-layout">
+            <aside class="sidebar" id="sidebar">
+                <div class="animations-panel">
+                    <div class="anim-actions">
+                        <button id="addAnimBtn">➕ Add Animation</button>
+                    </div>
+                    <div class="animation-list" id="animationList"></div>
+                </div>
+            </aside>
+
+            <div class="resizer" id="dragbar"></div>
+
+            <main class="editor-view">
+                <canvas id="view"></canvas>
+            </main>
+        </div>
     </div>
 
     <script src="scripts/global.js"></script>
     <script src="scripts/camera.js"></script>
     <script src="scripts/draw.js"></script>
+    <script src="scripts/sidebar.js"></script>
+    <script src="scripts/animations.js"></script>
     <script src="scripts/io.js"></script>
     <script src="scripts/interact.js"></script>
 

@@ -7,6 +7,8 @@ let selection = null; // { x, y, w, h } in world coords, grid-aligned
 let checkerCanvas = null; // pre-rendered checkerboard at image dimensions
 let frames = [];
 let lastHue = null;
+let animations = [];
+let selectedAnimIdx = -1;
 let enterDigits = ''; // digits typed while Enter is held
 
 document.addEventListener('contextmenu', e => e.preventDefault());

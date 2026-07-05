@@ -23,17 +23,32 @@ canvas.addEventListener('mousedown', (e) => {
             world.y >= f.y && world.y <= f.y + f.h);
         if (idx !== -1) {
             frames.splice(idx, 1);
+            // remove reference from all animations
+            animations.forEach(a => {
+                a.frameIndices = a.frameIndices
+                    .map(i => i > idx ? i - 1 : i)
+                    .filter(i => i !== idx);
+            });
+            rebuildAnimList();
             drawView();
         }
     } else if (e.button === 0 && image) {
         const world = screenToWorld(e.clientX, e.clientY);
-        // click on existing selection → clear it
         if (selection && 
             world.x >= selection.x && world.x <= selection.x + selection.w &&
             world.y >= selection.y && world.y <= selection.y + selection.h) {
             selection = null;
+            if (selectedAnimIdx !== -1) {
+                selectedAnimIdx = -1;
+                highlightSelection();
+            }
             drawView();
             return;
+        }
+        // deselect animation when clicking canvas
+        if (selectedAnimIdx !== -1) {
+            selectedAnimIdx = -1;
+            highlightSelection();
         }
         isSelecting = true;
         selStart = { x: snapToGrid(world.x), y: snapToGrid(world.y) };
@@ -85,8 +100,8 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => {
     if (e.key === 'Enter' && isEnterHeld) {
         isEnterHeld = false;
-        const idx = parseInt(enterDigits) || frames.length + 1;
-        const insertAt = Math.min(idx - 1, frames.length);
+        const idx = enterDigits !== '' ? parseInt(enterDigits) : frames.length;
+        const insertAt = Math.min(idx, frames.length);
         if (lastHue === null) {
             lastHue = Math.random() * 360;
         } else {
@@ -99,8 +114,13 @@ window.addEventListener('keyup', (e) => {
             h: selection.h,
             hue: lastHue,
         });
+        // shift indices in all animations for frames after insertion point
+        animations.forEach(a => {
+            a.frameIndices = a.frameIndices.map(i => i >= insertAt ? i + 1 : i);
+        });
         selection = null;
         enterDigits = '';
+        rebuildAnimList();
         drawView();
     }
 });

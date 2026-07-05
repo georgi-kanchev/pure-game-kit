@@ -1,0 +1,74 @@
+.anim-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 4px 6px;
+    background: color-mix(in srgb, var(--item-color, transparent) 10%, #1e1e1e);
+    border-bottom: 1px solid #111;
+    cursor: pointer;
+}
+
+.anim-item:last-child {
+    border-bottom: none;
+}
+
+.anim-item .anim-name-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    color: #cecece;
+    font-size: 13px;
+    padding: 2px 3px;
+    outline: none;
+}
+
+.anim-item .anim-name-input:focus {
+    background: #1a1a1a;
+}
+
+.anim-item .anim-frames-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    color: #777;
+    font-size: 11px;
+    padding: 2px 3px;
+    outline: none;
+}
+
+.anim-item .anim-frames-input:focus {
+    background: #1a1a1a;
+    color: #999;
+}
+
+.anim-item .anim-del-btn {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font-size: 11px;
+    line-height: 1;
+    background: none;
+    border: none;
+    color: #444;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.anim-item .anim-del-btn:hover {
+    color: #f55;
+}
+
+.anim-item:hover {
+    background: color-mix(in srgb, var(--item-color, transparent) 13%, #252525);
+}
+
+.anim-item.selected {
+    box-shadow: inset 0 0 0 1px var(--item-color, var(--accent-color));
+}
+
+.anim-item.selected:hover {
+    box-shadow: inset 0 0 0 1px var(--item-color, var(--accent-color));
+}
+

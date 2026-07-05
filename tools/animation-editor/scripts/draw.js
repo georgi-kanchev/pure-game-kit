@@ -34,16 +34,18 @@ function drawView() {
         ctx.drawImage(image, 0, 0);
 
         // frames
+        const animFrameSet = new Set((animations[selectedAnimIdx]?.frameIndices) || []);
         frames.forEach((f, i) => {
-            ctx.fillStyle = `hsla(${f.hue}, 55%, 50%, 0.2)`;
-            ctx.fillRect(f.x, f.y, f.w, f.h);
-            ctx.strokeStyle = `hsla(${f.hue}, 55%, 50%, 0.8)`;
-            ctx.lineWidth = 1.5 / camera.zoom;
-            ctx.strokeRect(f.x, f.y, f.w, f.h);
+            if (animFrameSet.has(i)) return; // drawn by animation overlay below
+
+            const flw = 2 / camera.zoom;
+            ctx.strokeStyle = `hsla(${f.hue}, 55%, 50%, 0.5)`;
+            ctx.lineWidth = flw;
+            ctx.strokeRect(f.x + flw / 2, f.y + flw / 2, f.w - flw, f.h - flw);
 
             const fontSize = Math.min(f.h * 0.3, f.w * 0.25, 18 / camera.zoom);
             const pad = 4 / camera.zoom;
-            const label = String(i + 1);
+            const label = String(i);
             ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
             ctx.textAlign = 'left';
             ctx.textBaseline = 'top';
@@ -56,13 +58,39 @@ function drawView() {
             ctx.textBaseline = 'alphabetic';
         });
 
+        // animation overlays — draw selected animation's frames in its color
+        if (animations[selectedAnimIdx]) {
+            const anim = animations[selectedAnimIdx];
+            anim.frameIndices.forEach(i => {
+                const f = frames[i];
+                if (!f) return;
+                const alw = 3 / camera.zoom;
+                ctx.strokeStyle = `hsla(${anim.hue}, 55%, 50%, 0.9)`;
+                ctx.lineWidth = alw;
+                ctx.strokeRect(f.x + alw / 2, f.y + alw / 2, f.w - alw, f.h - alw);
+
+                const fontSize = Math.min(f.h * 0.3, f.w * 0.25, 18 / camera.zoom);
+                const pad = 4 / camera.zoom;
+                const label = String(i);
+                ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3 / camera.zoom;
+                ctx.strokeText(label, f.x + pad, f.y + pad);
+                ctx.fillStyle = '#fff';
+                ctx.fillText(label, f.x + pad, f.y + pad);
+
+                ctx.textBaseline = 'alphabetic';
+            });
+        }
+
         // selection overlay
         if (selection) {
-            ctx.fillStyle = 'rgba(255, 157, 92, 0.15)';
-            ctx.fillRect(selection.x, selection.y, selection.w, selection.h);
-            ctx.strokeStyle = 'rgba(255, 157, 92, 0.8)';
-            ctx.lineWidth = 1 / camera.zoom;
-            ctx.strokeRect(selection.x, selection.y, selection.w, selection.h);
+            const lw = 2 / camera.zoom;
+            ctx.strokeStyle = 'rgba(255, 157, 92, 0.9)';
+            ctx.lineWidth = lw;
+            ctx.strokeRect(selection.x + lw / 2, selection.y + lw / 2, selection.w - lw, selection.h - lw);
 
             // pending frame index while Enter is held
             if (enterDigits) {
