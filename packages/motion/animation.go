@@ -1,24 +1,33 @@
 // Provides a solution for smooth number transitions in the form of the universally known Tweens
 // (an animation term, short for "inbetween"), that make use of custom curves or pre-made easings,
-// describing the movement. Also provides a solution for animation sequences - a collection of any data,
+// describing the movement. Also provides a solution for animation sequences - a collection of any data (frames),
 // iterated over time.
 package motion
 
 import (
+	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
 )
 
 type Animation[T any] struct {
-	Items               []T
-	ItemsPerSecond      float32
+	Frames              []T
+	FPS                 float32
 	IsLooping, IsPaused bool
 
 	Time float32
 }
 
-func NewAnimation[T any](itemsPerSecond float32, loop bool, items ...T) Animation[T] {
-	return Animation[T]{Items: items, ItemsPerSecond: itemsPerSecond, IsLooping: loop}
+func NewAnimation[T any](fps float32, loop bool, frames ...T) Animation[T] {
+	return Animation[T]{Frames: frames, FPS: fps, IsLooping: loop}
+}
+func NewAnimationFromAsset(assetId assets.AnimationsId, name string, fps float32, loop bool) Animation[assets.ImageId] {
+	var frameCount = assetId.FrameCount(name)
+	var anim = Animation[assets.ImageId]{Frames: make([]assets.ImageId, frameCount), FPS: fps, IsLooping: loop}
+	for i := range frameCount {
+		anim.Frames[i] = assetId.Frame(name, i)
+	}
+	return anim
 }
 
 //=================================================================
@@ -39,23 +48,23 @@ func (a *Animation[T]) Update() {
 }
 
 func (a *Animation[T]) SetDuration(seconds float32) {
-	a.ItemsPerSecond = float32(len(a.Items)) / seconds
+	a.FPS = float32(len(a.Frames)) / seconds
 }
 func (a *Animation[T]) SetIndex(index int) {
-	index = number.Limit(index, 0, len(a.Items)-1)
-	a.Time = number.Map(float32(index), 0, float32(len(a.Items)), 0, a.Duration())
+	index = number.Limit(index, 0, len(a.Frames)-1)
+	a.Time = number.Map(float32(index), 0, float32(len(a.Frames)), 0, a.Duration())
 }
 
 //=================================================================
 
-func (a *Animation[T]) Item() T {
-	return a.Items[a.Index()]
+func (a *Animation[T]) Frame() T {
+	return a.Frames[a.Index()]
 }
 func (a *Animation[T]) Index() int {
-	return int(number.Map(a.Time, 0, a.Duration(), 0, float32(len(a.Items))))
+	return int(number.Map(a.Time, 0, a.Duration(), 0, float32(len(a.Frames))))
 }
 func (a *Animation[T]) Duration() float32 {
-	return float32(len(a.Items)) / a.ItemsPerSecond
+	return float32(len(a.Frames)) / a.FPS
 }
 
 func (a *Animation[T]) IsFinished() bool {

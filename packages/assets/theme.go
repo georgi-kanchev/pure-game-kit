@@ -6,7 +6,7 @@ import (
 	"pure-game-kit/packages/utility/storage"
 )
 
-type ThemeId uint32
+type ThemeId uint16
 
 func LoadTheme(xmlPath string) ThemeId {
 	var theme = internal.GuiTheme{}
