@@ -16,6 +16,8 @@ type Animation[T any] struct {
 	IsLooping, IsPaused bool
 
 	Time float32
+
+	lastUpdateFrame uint64
 }
 
 func NewAnimation[T any](fps float32, loop bool, frames ...T) Animation[T] {
@@ -32,7 +34,49 @@ func NewAnimationFromAsset(assetId assets.AnimationsId, name string, fps float32
 
 //=================================================================
 
-func (a *Animation[T]) Update() {
+func (a *Animation[T]) SetDuration(seconds float32) {
+	a.tryUpdate()
+	a.FPS = float32(len(a.Frames)) / seconds
+}
+func (a *Animation[T]) SetIndex(index int) {
+	a.tryUpdate()
+	index = number.Limit(index, 0, len(a.Frames)-1)
+	a.Time = number.Map(float32(index), 0, float32(len(a.Frames)), 0, a.Duration())
+}
+
+//=================================================================
+
+func (a *Animation[T]) Frame() T {
+	a.tryUpdate()
+	return a.Frames[a.Index()]
+}
+func (a *Animation[T]) Index() int {
+	a.tryUpdate()
+	return int(number.Map(a.Time, 0, a.Duration(), 0, float32(len(a.Frames))))
+}
+func (a *Animation[T]) Duration() float32 {
+	a.tryUpdate()
+	return float32(len(a.Frames)) / a.FPS
+}
+
+func (a *Animation[T]) IsFinished() bool {
+	a.tryUpdate()
+	return a.Time == a.Duration()
+}
+func (a *Animation[T]) IsPlaying() bool {
+	a.tryUpdate()
+	return !a.IsFinished() && !a.IsPaused
+}
+
+// private ========================================================
+
+func (a *Animation[T]) tryUpdate() {
+	if a.lastUpdateFrame == internal.Frame {
+		return
+	}
+
+	a.lastUpdateFrame = internal.Frame
+
 	if !a.IsPaused {
 		a.Time += internal.FrameDelta
 	}
@@ -45,31 +89,4 @@ func (a *Animation[T]) Update() {
 			a.Time = duration
 		}
 	}
-}
-
-func (a *Animation[T]) SetDuration(seconds float32) {
-	a.FPS = float32(len(a.Frames)) / seconds
-}
-func (a *Animation[T]) SetIndex(index int) {
-	index = number.Limit(index, 0, len(a.Frames)-1)
-	a.Time = number.Map(float32(index), 0, float32(len(a.Frames)), 0, a.Duration())
-}
-
-//=================================================================
-
-func (a *Animation[T]) Frame() T {
-	return a.Frames[a.Index()]
-}
-func (a *Animation[T]) Index() int {
-	return int(number.Map(a.Time, 0, a.Duration(), 0, float32(len(a.Frames))))
-}
-func (a *Animation[T]) Duration() float32 {
-	return float32(len(a.Frames)) / a.FPS
-}
-
-func (a *Animation[T]) IsFinished() bool {
-	return a.Time == a.Duration()
-}
-func (a *Animation[T]) IsPlaying() bool {
-	return !a.IsFinished() && !a.IsPaused
 }
