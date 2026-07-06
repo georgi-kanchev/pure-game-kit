@@ -47,14 +47,14 @@ function buildXml() {
 
     lines.push('  <frames>');
     frames.forEach((f, i) => {
-        lines.push(`    <frame id="${i}" x="${f.x}" y="${f.y}" w="${f.w}" h="${f.h}"/>`);
+        lines.push(`    <frame x="${f.x}" y="${f.y}" w="${f.w}" h="${f.h}"/>`);
     });
     lines.push('  </frames>');
 
     lines.push('  <animations>');
     animations.forEach((a, i) => {
         const indices = a.frameIndices.join(' ');
-        lines.push(`    <animation id="${i}" name=${xmlAttr(a.name)} frames="${indices}"/>`);
+        lines.push(`    <animation name=${xmlAttr(a.name)} frames="${indices}"/>`);
     });
     lines.push('  </animations>');
 
@@ -83,13 +83,6 @@ function importXml(text) {
 
     // load frames — generate hues
     const frameEls = [...doc.querySelectorAll('frames > frame')];
-    // sort by id to guarantee correct order (querySelectorAll may not preserve
-    // document order in XML documents across all browsers)
-    frameEls.sort((a, b) => {
-        const idA = parseInt(a.getAttribute('id')) || 0;
-        const idB = parseInt(b.getAttribute('id')) || 0;
-        return idA - idB;
-    });
     frames.length = 0;
     let fhue = Math.random() * 360;
     const seen = new Set();
