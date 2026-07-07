@@ -5,6 +5,7 @@ import (
 	"pure-game-kit/packages/utility/file"
 	"pure-game-kit/packages/utility/storage"
 	"pure-game-kit/packages/utility/text"
+	"unsafe"
 )
 
 type AnimationsId uint16
@@ -51,6 +52,17 @@ func (t AnimationsId) Frame(animationName string, index int) ImageId {
 		return 0
 	}
 	return ImageId(anim[index])
+}
+func (t AnimationsId) Frames(animationName string) []ImageId {
+	var anims, has = internal.Animations[uint16(t)]
+	if !has {
+		return nil
+	}
+	var anim, has2 = anims.Map[animationName]
+	if !has2 {
+		return nil
+	} // no copy/no allocation cast of []int32 -> []ImageId, pointing at the same data
+	return unsafe.Slice((*ImageId)(unsafe.SliceData(anim)), len(anim))
 }
 
 func (t AnimationsId) Unload() {
