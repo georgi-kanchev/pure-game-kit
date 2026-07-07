@@ -10,7 +10,7 @@ import (
 func Channels(color uint) (r, g, b, a uint8) { return colorToRGBA(color) }
 func RGB(r, g, b uint8) uint                 { return colorFromRGBA(r, g, b, 255) }
 func RGBA(r, g, b, a uint8) uint             { return colorFromRGBA(r, g, b, a) }
-func Hex(hex string) uint {
+func TagHex(hex string) uint {
 	if len(hex) > 0 && hex[0] == '#' {
 		hex = hex[1:]
 	}
@@ -23,6 +23,28 @@ func Hex(hex string) uint {
 		if length >= 8 {
 			a = parseHexPair(hex[6], hex[7])
 		}
+	}
+	return RGBA(r, g, b, a)
+}
+func TagRGBA(str string) uint {
+	if len(str) >= 5 && str[0:5] == "#rgba" {
+		str = str[5:] // strip "#rgba" prefix if present
+	} else if len(str) >= 4 && str[0:4] == "#rgb" {
+		str = str[4:] // strip "#rgb" prefix if present
+	}
+
+	var r, g, b, a uint8 = 0, 0, 0, 255
+	var i = 0
+	if i < len(str) && str[i] == '(' {
+		i++ // skip opening parenthesis if present
+	}
+
+	r, i = parseNextChannel(str, i)
+	g, i = parseNextChannel(str, i)
+	b, i = parseNextChannel(str, i)
+
+	if i < len(str) && str[i] != ')' { // check if there's an alpha channel left before closing parenthesis
+		a, i = parseAlphaChannel(str, i)
 	}
 	return RGBA(r, g, b, a)
 }
@@ -126,4 +148,60 @@ func parseHexChar(c byte) uint8 {
 		return c - 'A' + 10
 	}
 	return 0
+}
+func parseNextChannel(str string, i int) (uint8, int) {
+	for i < len(str) && (str[i] == ' ' || str[i] == ',') {
+		i++ // skip spaces or separators
+	}
+
+	var val uint = 0
+	for i < len(str) && str[i] >= '0' && str[i] <= '9' {
+		val = val*10 + uint(str[i]-'0')
+		i++
+	}
+	if val > 255 {
+		val = 255
+	}
+	return uint8(val), i
+}
+func parseAlphaChannel(str string, i int) (uint8, int) {
+	for i < len(str) && (str[i] == ' ' || str[i] == ',') {
+		i++ // skip spaces or separators
+	}
+
+	if i < len(str) && str[i] == '1' { // handle standard "0" or "1" quickly if there is no decimal
+		if i+1 < len(str) && str[i+1] == '.' { // check if it's exactly 1 or 1.0
+			// pass to decimal logic below
+		} else {
+			return 255, i + 1
+		}
+	} else if i < len(str) && str[i] == '0' && (i+1 >= len(str) || str[i+1] != '.') {
+		return 0, i + 1
+	}
+
+	var hasDot = false // parse float manually (e.g., "0.79" or ".79")
+	var alphaVal, divisor uint = 0, 1
+
+	for i < len(str) && str[i] != ')' && str[i] != ' ' && str[i] != ',' {
+		if str[i] == '.' {
+			hasDot, i = true, i+1
+			continue
+		}
+		if str[i] >= '0' && str[i] <= '9' {
+			alphaVal = alphaVal*10 + uint(str[i]-'0')
+			if hasDot {
+				divisor *= 10
+			}
+		}
+		i++
+	}
+	if divisor == 1 && alphaVal == 1 {
+		return 255, i
+	}
+
+	var finalA = (alphaVal * 255) / divisor // map float 0.0-1.0 to 0-255 scale safely
+	if finalA > 255 {
+		finalA = 255
+	}
+	return uint8(finalA), i
 }

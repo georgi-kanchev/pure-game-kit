@@ -63,8 +63,8 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 func Image(area, mask Area, theme assets.ThemeId, input bool) {
 	var t, b = getTheme(theme).Image, getTheme(0).Image
 	var imgId, rnds = assets.ImageId(thField(0, t.ImgId, b.ImgId)), thField(0, t.Rnds, b.Rnds)
-	var borSz, borCol = thField(0, t.BorSz, b.BorSz), col.Hex(thField("", t.BorCol, b.BorCol))
-	Object(imgId, rnds, borSz, borCol, col.Hex(thField("", t.Col, b.Col)), area, mask, input)
+	var borSz, borCol = thField(0, t.BorSz, b.BorSz), col.TagHex(thField("", t.BorCol, b.BorCol))
+	Object(imgId, rnds, borSz, borCol, col.TagHex(thField("", t.Col, b.Col)), area, mask, input)
 }
 func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	var t, b = getTheme(theme), getTheme(0)
@@ -114,7 +114,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var col = thField("", tHnd.Col, bHnd.Col)
 		var roundness = thField(0, tBody.Rnds, bBody.Rnds)
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
-		Object(0, bodyRound, roundness, 0, color.Hex(bodyCol), hor, Area{}, true)
+		Object(0, bodyRound, roundness, 0, color.TagHex(bodyCol), hor, Area{}, true)
 		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
 			col = thField("", tHnd.Col, tHnd.Focused.Col, bHnd.Focused.Col)
@@ -151,7 +151,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		handle.X = number.Limit(handle.X, left+handle.Width/2, right-handle.Width/2)
 		*horizontal = number.Map(handle.X, left+handle.Width/2, right-handle.Width/2, 0, 1)
-		Object(0, handleRound, 0, 0, color.Hex(col), handle, Area{}, false)
+		Object(0, handleRound, 0, 0, color.TagHex(col), handle, Area{}, false)
 	}
 	if vertical != nil && hasVer {
 		var ver = geometry.NewArea(area.X+area.Width/2-size/2, area.Y, size, area.Height)
@@ -159,7 +159,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
 		var col = thField("", tHnd.Col, bHnd.Col)
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
-		Object(0, bodyRound, 0, 0, color.Hex(bodyCol), ver, Area{}, true)
+		Object(0, bodyRound, 0, 0, color.TagHex(bodyCol), ver, Area{}, true)
 		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
 			col = thField("", tHnd.Focused.Col, tHnd.Col, bHnd.Focused.Col)
@@ -195,7 +195,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		handle.Y = number.Limit(handle.Y, top+handle.Height/2, bot-handle.Height/2)
 		*vertical = number.Map(handle.Y, top+handle.Height/2, bot-handle.Height/2, 0, 1)
-		Object(0, handleRound, 0, 0, color.Hex(col), handle, Area{}, false)
+		Object(0, handleRound, 0, 0, color.TagHex(col), handle, Area{}, false)
 	}
 }
 func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
@@ -236,7 +236,7 @@ func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
 		borCol = thField("", tBody.Clicked.BorCol, tBody.BorCol, bBody.Clicked.BorCol, bBody.BorCol)
 		interact = thField(internal.GuiText{}, tVal.Clicked, bVal.Clicked)
 	}
-	Object(assets.ImageId(imgId), roundness, borSz, col.Hex(borCol), col.Hex(color), area, mask, false)
+	Object(assets.ImageId(imgId), roundness, borSz, col.TagHex(borCol), col.TagHex(color), area, mask, false)
 	if text != "" {
 		handleText(text, area, mask, interact, tVal.GuiText, bVal.GuiText, false, false, false)
 	}
@@ -282,12 +282,12 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		inter = thField(internal.GuiText{}, tVal.Typing, tVal.GuiText, bVal.Typing)
 	}
 
-	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.Hex(bodyBorCol), col.Hex(bodyCol), area, scaleMask(mask), false)
+	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, scaleMask(mask), false)
 
 	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection {
 		var selRnds, selImg = thField(0, tSel.Rnds, bSel.Rnds), assets.ImageId(thField(0, tSel.ImgId, bSel.ImgId))
-		var selBorSz, selBorCol = thField(0, tSel.BorSz, bSel.BorSz), col.Hex(thField("", tSel.BorCol, bSel.BorCol))
-		var selCol = col.Hex(thField("", tSel.Col, bSel.Col))
+		var selBorSz, selBorCol = thField(0, tSel.BorSz, bSel.BorSz), col.TagHex(thField("", tSel.BorCol, bSel.BorCol))
+		var selCol = col.TagHex(thField("", tSel.Col, bSel.Col))
 		var selArea = geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax, obj.Height*selectionCursorHeight)
 		Object(selImg, selRnds, selBorSz, selBorCol, selCol, selArea, area.Intersect(mask), false)
 	}
@@ -399,8 +399,8 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		inputCursorTimer = 0
 	} else if inputCursorTimer < 0.5 {
 		var curRnds, curImg = thField(0, tCur.Rnds, bCur.Rnds), assets.ImageId(thField(0, tCur.ImgId, bCur.ImgId))
-		var curBorSz, curBorCol = thField(0, tCur.BorSz, bCur.BorSz), col.Hex(thField("", tCur.BorCol, bCur.BorCol))
-		var curCol, curWidth = col.Hex(thField("", tCur.Col, bCur.Col)), thField(0, tCur.Width, bCur.Width)
+		var curBorSz, curBorCol = thField(0, tCur.BorSz, bCur.BorSz), col.TagHex(thField("", tCur.BorCol, bCur.BorCol))
+		var curCol, curWidth = col.TagHex(thField("", tCur.Col, bCur.Col)), thField(0, tCur.Width, bCur.Width)
 		var curArea = geometry.NewArea(cursorX, obj.Y, Scale*curWidth, obj.Height*selectionCursorHeight)
 		Object(curImg, curRnds, curBorSz, curBorCol, curCol, curArea, mask, false)
 	}
@@ -471,16 +471,16 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.ThemeId,
 
 	if step > 0 {
 		var stepSize = number.Map(step, 0, 1, area.Height/20, area.Height/2)
-		var minX, maxX, stepCol = left + area.Height/2, right - area.Height/2, col.Hex(thField("", tStep.Col, bStep.Col))
+		var minX, maxX, stepCol = left + area.Height/2, right - area.Height/2, col.TagHex(thField("", tStep.Col, bStep.Col))
 		var stepImg, stepRnd = thField(0, tStep.ImgId, bStep.ImgId), thField(0, tStep.Rnds, bStep.Rnds)
-		var stepBorSz, stepBorCol = thField(0, tStep.BorSz, bStep.BorSz), col.Hex(thField("", tStep.BorCol, bStep.BorCol))
+		var stepBorSz, stepBorCol = thField(0, tStep.BorSz, bStep.BorSz), col.TagHex(thField("", tStep.BorCol, bStep.BorCol))
 		for t := float32(0.0); t <= 1.0+0.001; t += step {
 			var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
 			Object(assets.ImageId(stepImg), stepRnd, stepBorSz, stepBorCol, stepCol, stepArea, mask, false)
 		}
 	}
-	Object(assets.ImageId(bodyImg), bodyRnd, bodyBorSz, col.Hex(bodyBorCol), col.Hex(bodyCol), area, mask, false)
-	Object(assets.ImageId(hndImg), hndRnd, hndBorSz, col.Hex(hndBorCol), col.Hex(hndCol), hndArea, mask, false)
+	Object(assets.ImageId(bodyImg), bodyRnd, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, mask, false)
+	Object(assets.ImageId(hndImg), hndRnd, hndBorSz, col.TagHex(hndBorCol), col.TagHex(hndCol), hndArea, mask, false)
 
 	if dragging {
 		x, _ = view.MousePosition()
@@ -545,13 +545,13 @@ func handleText(text string, area, mask Area, inter, opt, base internal.GuiText,
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
 	obj.Effects.TextIsInput, obj.ImageId, obj.Effects.Tint, obj.Mask = isInputbox, 0, palette.White, scaleMask(mask)
 	obj.TextFontId, obj.Text, obj.Effects.TextWordWrap = assets.FontId(fontId), text, isText
-	obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Effects.TextWeight = lineH, col.Hex(color), wgt
+	obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Effects.TextWeight = lineH, col.TagHex(color), wgt
 	obj.Effects.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 0))
 	obj.Effects.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 1))
 	obj.Effects.TextSymbolGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 0))
 	obj.Effects.TextLineGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 1))
-	obj.Effects.OutlineSize, obj.Effects.OutlineColor, obj.Effects.TextShadowBlur = outSz, col.Hex(outCol), sBlur
-	obj.Effects.TextShadowWeight, obj.Effects.TextShadowColor = sWgt, col.Hex(sCol)
+	obj.Effects.OutlineSize, obj.Effects.OutlineColor, obj.Effects.TextShadowBlur = outSz, col.TagHex(outCol), sBlur
+	obj.Effects.TextShadowWeight, obj.Effects.TextShadowColor = sWgt, col.TagHex(sCol)
 	obj.Effects.TextShadowOffsetX = txt.ToNumber[int8](txt.SplitAtIndex(sOff, " ", 0))
 	obj.Effects.TextShadowOffsetY = txt.ToNumber[int8](txt.SplitAtIndex(sOff, " ", 1))
 	view.DrawObject(&obj)
