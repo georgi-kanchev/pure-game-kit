@@ -265,7 +265,7 @@ void main() {
         if (color.a < 0.004)
             discard;
 
-        color = compute_color_adjust(color, colorAdjust1);
+        if (fragData5.w < 0.5) color = compute_color_adjust(color, colorAdjust1);
         finalColor = color;
         return;
     }
@@ -288,7 +288,7 @@ void main() {
     if (color.a < 0.004)
         discard; // helps DepthZ
     
-    if (objKind != KIND_SHAPE)
+    if (objKind != KIND_SHAPE && fragData5.w < 0.5)
         color = compute_color_adjust(color, colorAdjust1);
     
     finalColor = color;
