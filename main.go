@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	example.GUI()
+	example.Tiled()
 }
