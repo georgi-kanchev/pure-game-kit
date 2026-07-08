@@ -1,13 +1,10 @@
 package example
 
 import (
-	"fmt"
 	"pure-game-kit/packages/assets"
-	"pure-game-kit/packages/execution/condition"
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
 	"pure-game-kit/packages/utility/color/palette"
-	"pure-game-kit/packages/utility/time"
 	"pure-game-kit/packages/window"
 )
 
@@ -32,11 +29,6 @@ func Tiled() {
 	for window.KeepOpen() {
 		view.MouseDragAndZoomSmoothly()
 
-		if condition.TrueEvery(0.2, 11) {
-			fmt.Printf("internal.FPS: %v\n", time.FPS())
-		}
-
-		// this brings the FPS down from 3k to 1k (4 objects)
 		for _, l := range layers {
 			view.DrawObject(&l)
 		}

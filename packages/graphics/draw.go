@@ -1,6 +1,7 @@
 package graphics
 
 import (
+	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/execution/condition"
 	geometry "pure-game-kit/packages/geometry"
@@ -138,8 +139,8 @@ func (v *View) DrawObject(object *Object) {
 			var tex = internal.Images[layer.ImageId]
 			var src = rl.NewRectangle(tex.CropX, tex.CropY, tex.CropWidth, tex.CropHeight)
 			var dst = rl.NewRectangle(o.X-o.Width/2, o.Y-o.Height/2, o.Width, o.Height)
-			var cols, rows = uint16(layer.Image.Width), uint16(layer.Image.Height)
-			internal.Queue(tex.Texture, layer.Texture, src, dst, o.Angle, 0, mask, eff, 3, uint8(layer.TileSize), cols, rows)
+			var cols, rows, sz = uint16(layer.Image.Width), uint16(layer.Image.Height), uint8(layer.TileSize)
+			internal.Queue(tex.Texture, layer.Texture, src, dst, o.Angle, 0, mask, eff, 3, sz, cols, rows)
 		}
 		return
 	}
@@ -170,6 +171,8 @@ func (v *View) DrawObject(object *Object) {
 }
 func (v *View) DrawDebugInfo(detailed bool) {
 	if condition.TrueEvery(0.2, 0xdeadc0de) {
+		fmt.Printf("internal.FPS: %v\n", internal.FPS)
+
 		v.debugBuffer = v.debugBuffer[:0]
 		v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.FPS))
 		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
