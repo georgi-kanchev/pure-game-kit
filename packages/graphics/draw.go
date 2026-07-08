@@ -169,13 +169,11 @@ func (v *View) DrawObject(object *Object) {
 	o.ImageId = prevImageId
 }
 func (v *View) DrawDebugInfo(detailed bool) {
-	rl.DrawFPS(5, 1)
-	if !detailed {
-		return
-	}
-
 	if condition.TrueEvery(0.2, 0xdeadc0de) {
 		v.debugBuffer = v.debugBuffer[:0]
+		v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.FPS))
+		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
+
 		if detailed {
 			var targetFPS = internal.WindowTargetFPS
 			if internal.WindowVsync {
@@ -245,11 +243,14 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	}
 
 	const size float32 = 30
-	var tlx, tly = v.PointFromScreen(5, 15)
+	var tlx, tly = v.PointFromScreen(5, 5)
 	var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*15)/v.Zoom)
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
 	v.DrawText(str, tlx, tly, size, 0, palette.White, geometry.Area{})
-	v.DrawText(debug.MemoryUsage(), x, y, size, 0, palette.White, geometry.Area{})
+
+	if detailed {
+		v.DrawText(debug.MemoryUsage(), x, y, size, 0, palette.White, geometry.Area{})
+	}
 	// rl.DrawText(str, 10, 15, 32, rl.White)
 	// rl.DrawText(debug.MemoryUsage(), 10, 400, 32, rl.White)
 
