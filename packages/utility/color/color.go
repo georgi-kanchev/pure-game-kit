@@ -27,10 +27,10 @@ func TagHex(hex string) uint {
 	return RGBA(r, g, b, a)
 }
 func TagRGBA(str string) uint {
-	if len(str) >= 5 && str[0:5] == "#rgba" {
-		str = str[5:] // strip "#rgba" prefix if present
-	} else if len(str) >= 4 && str[0:4] == "#rgb" {
-		str = str[4:] // strip "#rgb" prefix if present
+	if len(str) >= 4 && str[0:4] == "rgba" {
+		str = str[4:] // strip "rgba" prefix if present
+	} else if len(str) >= 3 && str[0:3] == "rgb" {
+		str = str[3:] // strip "rgb" prefix if present
 	}
 
 	var r, g, b, a uint8 = 0, 0, 0, 255

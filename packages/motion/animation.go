@@ -52,7 +52,8 @@ func (a *Animation[T]) Frame() T {
 }
 func (a *Animation[T]) Index() int {
 	a.tryUpdate()
-	return int(number.Map(a.Time, 0, a.Duration(), 0, float32(len(a.Frames))))
+	var index = int(number.Map(a.Time, 0, a.Duration(), 0, float32(len(a.Frames))))
+	return number.Limit(index, 0, len(a.Frames)-1)
 }
 func (a *Animation[T]) Duration() float32 {
 	a.tryUpdate()

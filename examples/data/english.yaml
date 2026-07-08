@@ -1,11 +1,3 @@
-# Tags for embeded effects:
-# Underline     ✅ // toggle
-# Crossout      ❎ // toggle
-# Weight        ⏬🔽🔁🔼⏫
-# Size          🔇🔈🔉🔊📢
-# Color         ⬜⬛🟥🟧🟨🟩🟦🟪🟫
-# Outline Color ⚪⚫🔴🟠🟡🟢🔵🟣🟤
-
 menu_play: "Play"
 menu_settings: "Settings"
 menu_quit: "Quit"
