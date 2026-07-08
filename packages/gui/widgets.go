@@ -560,12 +560,12 @@ func handleText(text string, area, mask Area, inter, opt, base internal.GuiText,
 func scaleMask(mask Area) Area {
 	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)
 }
-func getTheme(theme assets.ThemeId) *internal.GuiTheme {
+func getTheme(theme assets.ThemeId) internal.GuiTheme {
 	var th, has = internal.Themes[uint16(theme)]
 	if !has {
 		th = internal.Themes[0]
 	}
-	return &th
+	return th
 }
 func thField[T comparable](defaultValue, optional T, fallbacks ...T) T {
 	if optional == defaultValue {

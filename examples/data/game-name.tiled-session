@@ -11,7 +11,7 @@
     "fileStates": {
         "": {
             "scaleInDock": 4,
-            "scaleInEditor": 8
+            "scaleInEditor": 2
         },
         "/home/gojur/Desktop/atlas.tsx": {
             "scaleInDock": 0.03125,
@@ -46,11 +46,11 @@
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx": {
-            "scale": 3,
+            "scale": 11,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 293.66666666666663,
-                "y": 240.5
+                "x": 111.81818181818183,
+                "y": 275.40909090909093
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx#tileset": {

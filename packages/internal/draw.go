@@ -56,9 +56,9 @@ type Effects struct {
 
 	//=================================================================
 
-	TextAlignX, TextAlignY float32 // Ranged 0..1
+	TextAlignX, TextAlignY                     float32 // Ranged 0..1
 	TextLineHeight, TextSymbolGap, TextLineGap float32
-	TextWordWrap bool
+	TextWordWrap                               bool
 
 	TextIsInput bool // No new lines; no effects; caches the cursor positions from the last draw.
 
@@ -96,6 +96,8 @@ var DrawCalls int               // used for debug info, no functional purpose - 
 
 var ViewArea Area // zero value = entire window
 var ViewX, ViewY, ViewZoom, ViewAngle float32
+
+var uniforms [1]float32 // reused to avoid per-frame []float32 allocation
 
 //=================================================================
 
@@ -238,9 +240,6 @@ func CloseBatch() {
 		ActiveBatch = nil
 	}
 }
-
-var uniforms [1]float32 // reused to avoid per-frame []float32 allocation
-
 func Draw() {
 	CloseBatch()
 

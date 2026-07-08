@@ -28,6 +28,8 @@ func GUI() {
 		itemCols[i] = color.RandomDark()
 	}
 
+	window.SetTargetFPS(0)
+
 	gui.Scale = 1
 
 	var hor, ver float32
