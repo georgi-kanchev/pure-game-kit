@@ -97,7 +97,7 @@ var DrawCalls int               // used for debug info, no functional purpose - 
 var ViewArea Area // zero value = entire window
 var ViewX, ViewY, ViewZoom, ViewAngle float32
 
-var uniforms [1]float32 // reused to avoid per-frame []float32 allocation
+var uniforms [33]float32 // reused to avoid per-frame []float32 allocation
 
 //=================================================================
 

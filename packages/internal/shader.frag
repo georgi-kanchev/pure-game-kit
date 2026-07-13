@@ -39,10 +39,10 @@ uniform float u[33];
 #define BORDER_SIZE     u[22]
 #define SHADOW_WEIGHT   u[23]
 #define NO_COLOR_ADJUST u[24]
-#define PACKED_X        u[25]
-#define PACKED_Y        u[26]
-#define PACKED_Z        u[27]
-#define PACKED_W        u[28]
+#define SHADOW_X        u[25]
+#define SHADOW_Y        u[26]
+#define SHADOW_BLUR     u[27]
+#define CROP_V          u[28]
 #define BORDER_R        u[29]
 #define BORDER_G        u[30]
 #define BORDER_B        u[31]
@@ -226,9 +226,8 @@ vec4 do_msdf_text() {
     float weight = OUTLINE_SIZE;
     float outlineWeight = BORDER_SIZE;
     float shadowWeight = SHADOW_WEIGHT;
-    float shadowX = PACKED_X;
-    float shadowY = PACKED_Y;
-    float shadowBlur = PACKED_Z;
+    vec2 shadow = vec2(SHADOW_X, SHADOW_Y);
+    float shadowBlur = SHADOW_BLUR;
     
     float pxRange = 8.0;
     vec2 unitRange = vec2(pxRange) / vec2(textureSize(texture0, 0));
@@ -236,7 +235,7 @@ vec4 do_msdf_text() {
     float screenPxRange = max(0.5 * dot(unitRange, screenTexSize), 1.0);
     
     float baseSample = median(texture(texture0, uv).rgb);
-    float shadowSample = median(texture(texture0, uv + vec2(shadowX, shadowY) / vec2(textureSize(texture0, 0))).rgb);
+    float shadowSample = median(texture(texture0, uv + vec2(shadow.x, shadow.y) / vec2(textureSize(texture0, 0))).rgb);
     
     float basePxDist = screenPxRange * (baseSample - 0.5);
     float shadowPxDist = screenPxRange * (shadowSample - 0.5);
@@ -266,11 +265,11 @@ vec4 do_msdf_text() {
 void main() {
     int objKind = int(OBJ_KIND);
     bool hasCrop = objKind == KIND_SHAPE || objKind == KIND_SPRITE;
-    float tileColumns = hasCrop ? 0.0 : PACKED_X;
-    float tileRows    = hasCrop ? 0.0 : PACKED_Y;
-    float tileSize    = hasCrop ? 0.0 : PACKED_Z;
-    vec2  cropBoundsU = hasCrop ? vec2(PACKED_X, PACKED_Y) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
-    vec2  cropBoundsV = hasCrop ? vec2(PACKED_Z, PACKED_W) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
+    float tileColumns = hasCrop ? 0.0 : SHADOW_X;
+    float tileRows    = hasCrop ? 0.0 : SHADOW_Y;
+    float tileSize    = hasCrop ? 0.0 : SHADOW_BLUR;
+    vec2  cropBoundsU = hasCrop ? vec2(SHADOW_X, SHADOW_Y) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
+    vec2  cropBoundsV = hasCrop ? vec2(SHADOW_BLUR, CROP_V) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
     
     // ========================================================================
 
