@@ -44,17 +44,20 @@ float median(vec3 rgb) {
     return max(min(rgb.r, rgb.g), min(max(rgb.r, rgb.g), rgb.b));
 }
 
-vec2 compute_pixelated_uv(vec2 uv, vec2 texSize, float pixelSize) {
-    pixelSize /= 1.5;
+vec2 do_pixelated_uv(vec2 uv) {
+    float pixelSize = fragData2.y / 1.5;
+    vec2 texSize = fragData0.xy;
     vec2 numBlocks = texSize / max(pixelSize, 0.001);
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
     return pixelSize <= 1.0 ? uv : pixelated;
 }
-vec4 compute_blur(vec2 uv, vec2 texSize, vec2 blur) {
+vec4 do_blur(vec2 uv) {
+    vec2 blur = fragData2.zw * 16.0;
     if (blur.x == 0.0 && blur.y == 0.0)
         return texture(texture0, uv);
     
     blur /= 8.0; // adjust
+    vec2 texSize = fragData0.xy;
     vec2 res = 1.0 / texSize;
     vec2 offset = (blur + 0.5) * res;
     vec4 sum = texture(texture0, uv + vec2(-offset.x, -offset.y));
@@ -63,10 +66,12 @@ vec4 compute_blur(vec2 uv, vec2 texSize, vec2 blur) {
     sum += texture(texture0, uv + vec2(offset.x, offset.y));
     return sum * 0.25;
 }
-vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize, float outlineSize) {
+vec4 do_outline(vec4 color, vec2 uv) {
+    float outlineSize = fragData5.x;
     if (color.a > 0 || outlineSize == 0.0)
         return color;
     
+    vec2 texSize = fragData0.xy;
     vec2 texel = 1.0 / texSize;
     vec4 outlineColor = fragData3;
 
@@ -82,15 +87,15 @@ vec4 compute_outline(vec4 color, vec2 uv, vec2 texSize, float outlineSize) {
 
     return color;
 }
-vec4 compute_silhouette(vec4 color) {
+vec4 do_silhouette(vec4 color) {
     color.rgb = mix(color.rgb, fragData4.rgb, fragData4.a);
     return color;
 }
-vec4 compute_color_adjust(vec4 color, vec4 colorAdjust) {
-    float gam = colorAdjust.x;
-    float sat = colorAdjust.y;
-    float con = colorAdjust.z;
-    float bri = colorAdjust.w;
+vec4 do_color_adjust(vec4 color) {
+    float gam = fragData1.x;
+    float sat = fragData1.y;
+    float con = fragData1.z;
+    float bri = fragData1.w;
     
     float gamma = exp2((0.5 - gam) * 5.0);
     float saturation = 10.0 * pow(sat, log2(10.0));
@@ -104,11 +109,12 @@ vec4 compute_color_adjust(vec4 color, vec4 colorAdjust) {
     color.rgb *= brightness;
     return color;
 }
-vec2 compute_tile(vec2 texSize, float tileColumns, float tileRows, float tileW, float tileH) {
+vec2 do_tile(float tileColumns, float tileRows, float tileW, float tileH) {
     vec2 uv = fragTexCoord;
     if (tileColumns == 0.0)
         return uv;
     
+    vec2 texSize = fragData0.xy;
     ivec2 mapSize = ivec2(int(tileColumns), int(tileRows));
     ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
@@ -144,7 +150,10 @@ vec2 compute_tile(vec2 texSize, float tileColumns, float tileRows, float tileW, 
     vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
     return (coord + localUV) / atlasSizeInTiles;
 }
-vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borderColor, vec2 cropBoundsU, vec2 cropBoundsV) {
+vec4 do_sdf_shape(vec4 color, vec2 cropBoundsU, vec2 cropBoundsV) {
+    float roundness = fragData2.x;
+    float borderSize = fragData5.y;
+    vec4 borderColor = fragData7;
     if (abs(roundness) < 0.001 && abs(borderSize) < 0.001)
         return color;
     
@@ -188,7 +197,7 @@ vec4 compute_sdf_shape(vec4 color, float roundness, float borderSize, vec4 borde
     float sShape = 1.0 - smoothstep(-af, af, dShape);
     return color * sShape;
 }
-vec4 compute_msdf_text() {
+vec4 do_msdf_text() {
     vec2 uv = fragTexCoord;
     vec4 outlineColor = fragData3;
     vec4 shadowColor = fragData4;
@@ -233,20 +242,8 @@ vec4 compute_msdf_text() {
 }
 
 void main() {
-    vec2 texSize = fragData0.xy;
-    float depthZ = fragData0.z;
     int objKind = int(fragData0.w);
-
-    vec4 colorAdjust1 = fragData1;
-    vec4 data2 = fragData2;
-    float roundness = data2.x;
-    float pixelSize = data2.y;
-    vec2 blur = data2.zw * 16.0;
     
-    float outlineSize = fragData5.x;
-    float borderSize = fragData5.y;
-    vec4  borderColor = fragData7;
-
     bool hasCrop = objKind == KIND_SHAPE || objKind == KIND_SPRITE;
     float tileColumns = hasCrop ? 0.0 : fragData6.x;
     float tileRows    = hasCrop ? 0.0 : fragData6.y;
@@ -258,38 +255,33 @@ void main() {
 
     vec4 color;
     
-    gl_FragDepth = depthZ;
-    
-    if (objKind == KIND_TEXT) { // Text: MSDF path (skip compute_tile: text reuses tile slots for shadow data)
-        color = compute_msdf_text();
+    if (objKind == KIND_TEXT) { // Text: MSDF path (skip do_tile: text reuses tile slots for shadow data)
+        color = do_msdf_text();
         if (color.a < 0.004)
             discard;
 
-        if (fragData5.w < 0.5) color = compute_color_adjust(color, colorAdjust1);
+        if (fragData5.w < 0.5) color = do_color_adjust(color);
         finalColor = color;
         return;
     }
 
-    vec2 uv = compute_tile(texSize, tileColumns, tileRows, tileSize, tileSize);
+    vec2 uv = do_tile(tileColumns, tileRows, tileSize, tileSize);
     if (objKind == KIND_SHAPE) { // Shape: use vertex color as fill, skip pixelate/blur
         color = fragColor;
     } else { // Sprite / Tilemap
-        uv = compute_pixelated_uv(uv, texSize, pixelSize);
-        color = compute_blur(uv, texSize, blur);
-        color = compute_outline(color, uv, texSize, outlineSize);
+        uv = do_pixelated_uv(uv);
+        color = do_blur(uv);
+        color = do_outline(color, uv);
         color *= fragColor;
     }
     
     if (objKind != KIND_SHAPE)
-        color = compute_silhouette(color);
+        color = do_silhouette(color);
     
-    color = compute_sdf_shape(color, roundness, borderSize, borderColor, cropBoundsU, cropBoundsV);
-    
-    if (color.a < 0.004)
-        discard; // helps DepthZ
+    color = do_sdf_shape(color, cropBoundsU, cropBoundsV);
     
     if (objKind != KIND_SHAPE && fragData5.w < 0.5)
-        color = compute_color_adjust(color, colorAdjust1);
+        color = do_color_adjust(color);
     
     finalColor = color;
 }

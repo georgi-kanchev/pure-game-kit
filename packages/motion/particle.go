@@ -1,6 +1,9 @@
 package motion
 
-import "pure-game-kit/packages/utility/color/palette"
+import (
+	"pure-game-kit/packages/assets"
+	"pure-game-kit/packages/utility/color/palette"
+)
 
 type Particle struct {
 	X, Y,
@@ -8,7 +11,7 @@ type Particle struct {
 	VelocityX, VelocityY float32
 	Color          uint
 	Id, FrameIndex int
-	AssetId        string
+	AssetId        assets.ImageId
 	CustomData     map[string]any
 }
 
