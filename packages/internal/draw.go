@@ -86,9 +86,11 @@ var NextImageId int16
 var NextImageCropId int16
 
 var ActiveBatch *Batch          // the batch currently being written to
+var ReadyBatches []*Batch       // batches ready to be drawn
+var BatchPool []*Batch          // empty batches ready to be reused
 var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
-var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of drawn immediately
-var DrawCalls int               // used for debug info, no functional purpose - the amount of batch draws per frame
+var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
+var DrawCalls int               // used for debug info, no functional purpose - the amount of ReadyBatches per frame
 var QuadQueues int              // used for debug info, no functional purpose - the amount of quads Queued per frame
 
 var ViewArea Area // zero value = entire window
@@ -268,41 +270,54 @@ func CloseBatch() {
 			ActiveBatch.isRecord = true
 			CurrentBatchRecord = append(CurrentBatchRecord, ActiveBatch)
 		} else {
-			DrawBatch(ActiveBatch)
+			ReadyBatches = append(ReadyBatches, ActiveBatch)
 		}
 		ActiveBatch = nil
 	}
 }
+func Draw() {
+	CloseBatch()
 
-func DrawBatch(b *Batch) {
-	uniformBuf = b.uniforms
-	uniformBuf[0] = Runtime
-	rl.SetShaderValueV(Shader, ShaderLoc, uniformBuf[:], rl.ShaderUniformFloat, 33)
+	DrawCalls = len(ReadyBatches)
+	for _, b := range ReadyBatches {
+		uniformBuf = b.uniforms
+		uniformBuf[0] = Runtime
+		rl.SetShaderValueV(Shader, ShaderLoc, uniformBuf[:], rl.ShaderUniformFloat, 33)
 
-	if !b.meshUploaded {
-		rl.UploadMesh(b.mesh, true)
-		b.meshUploaded = true
+		if !b.meshUploaded {
+			rl.UploadMesh(b.mesh, true)
+			b.meshUploaded = true
+		}
+		if !b.isRecord || (b.isRecord && b.IsMeshDirty) {
+			b.IsMeshDirty = false
+			rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
+			rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
+			b.mesh.TriangleCount = b.indexCount / 3
+		}
+		if b.tileDataTex.ID != 0 {
+			rl.DrawRenderBatchActive()         // flush raylib's internal batch to mess texture slots
+			rl.ActiveTextureSlot(1)            // switch to slot 1
+			rl.EnableTexture(b.tileDataTex.ID) // bind data texture there
+			rl.SetShaderValueTexture(Shader, ShaderTileDataLoc, b.tileDataTex)
+		}
+		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
 	}
-	if !b.isRecord || (b.isRecord && b.IsMeshDirty) {
-		b.IsMeshDirty = false
-		rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
-		rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
-		b.mesh.TriangleCount = b.indexCount / 3
+
+	if ActiveBatch != nil {
+		BatchPool = append(BatchPool, ActiveBatch)
+		ActiveBatch = nil
 	}
-	if b.tileDataTex.ID != 0 {
-		rl.DrawRenderBatchActive()         // flush raylib's internal batch to mess texture slots
-		rl.ActiveTextureSlot(1)            // switch to slot 1
-		rl.EnableTexture(b.tileDataTex.ID) // bind data texture there
-		rl.SetShaderValueTexture(Shader, ShaderTileDataLoc, b.tileDataTex)
+	for _, rb := range ReadyBatches {
+		if !rb.isRecord { // text batches live on the Object, never return to pool
+			BatchPool = append(BatchPool, rb)
+		}
 	}
-	rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
+	ReadyBatches = ReadyBatches[:0]
 }
 
 // private =================================================================
-
-var singleBatch *Batch // the one reusable batch for non-recording draws
 
 var uniformBuf [33]float32                            // reused per-frame to avoid heap escape in Draw()
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers to avoid per-call heap escapes
@@ -348,7 +363,7 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, tileTex rl.Te
 					ActiveBatch.isRecord = true
 					CurrentBatchRecord = append(CurrentBatchRecord, ActiveBatch)
 				} else {
-					DrawBatch(ActiveBatch)
+					ReadyBatches = append(ReadyBatches, ActiveBatch)
 				}
 			}
 			ActiveBatch = nil
@@ -359,11 +374,11 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, tileTex rl.Te
 		if IsRecording {
 			ActiveBatch = newBatch()
 			ActiveBatch.isRecord = true
+		} else if len(BatchPool) > 0 {
+			ActiveBatch = BatchPool[len(BatchPool)-1]
+			BatchPool = BatchPool[:len(BatchPool)-1]
 		} else {
-			if singleBatch == nil {
-				singleBatch = newBatch()
-			}
-			ActiveBatch = singleBatch
+			ActiveBatch = newBatch()
 		}
 
 		ActiveBatch.vertCount = 0
