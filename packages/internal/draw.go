@@ -26,16 +26,12 @@ type Batch struct {
 
 	vertCount, indexCount int32
 
-	verts, texCoords, normals, cols, tangents, tex2s, indexes []byte
+	verts, texCoords, cols, indexes []byte
 
 	tileDataTex rl.Texture2D // tile layer texture (set only for KindTilemap batches)
+	uniforms    [33]float32  // per-batch shader uniforms (u[0]=time set in Draw)
 }
-type Vertex struct {
-	X, Y, U, V     float32
-	NX, NY, NZ     float32 // Normals
-	TX, TY, TZ, TW float32 // Tangents
-	U2, V2         float32 // Texcoords2
-}
+type Vertex struct{ X, Y, U, V float32 }
 type Effects struct {
 	Gamma, Saturation, Contrast, Brightness int8 // Ranged -128..127, 0 = no change
 
@@ -73,6 +69,8 @@ type Effects struct {
 	TextColor, TextShadowColor uint
 }
 
+const KindShape, KindSprite, KindText, KindTilemap uint8 = 0, 1, 2, 3
+
 var Shader rl.Shader
 var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
 var ShaderTileDataLoc int32
@@ -96,8 +94,6 @@ var DrawCalls int               // used for debug info, no functional purpose - 
 
 var ViewArea Area // zero value = entire window
 var ViewX, ViewY, ViewZoom, ViewAngle float32
-
-var uniforms [33]float32 // reused to avoid per-frame []float32 allocation
 
 //=================================================================
 
@@ -159,36 +155,73 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	var ps, oc = number.Limit(eff.PixelSize, 0, 16), col.Tint(eff.OutlineColor, eff.Tint)
 	var r, g, b, a = col.Channels(palette.White)
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
-	var u, v = packU2(uint16(src.Width), uint16(src.Height)), packV2(col.Tint(eff.BorderColor, eff.Tint))
-	var nx = packNormalX(eff.Gamma, eff.Saturation, eff.Contrast, eff.Brightness)
-	var ny, nz = packNormalY(round, ps, bx, by), packNormalZ(eff.DepthZ, borderSz, kind)
-	var tx, ty, tz, tw float32
 	var os = uint8(number.Limit(eff.OutlineSize, 0, 255))
+	var neutralCA = eff.Gamma == 0 && eff.Saturation == 0 && eff.Contrast == 0 && eff.Brightness == 0
+
+	// Fill per-call uniforms
+	var u [33]float32
+	u[1] = float32(src.Width)  // TEXSIZE_X
+	u[2] = float32(src.Height) // TEXSIZE_Y
+	u[4] = float32(kind)       // OBJKIND
+	u[5] = normInt8(eff.Gamma)
+	u[6] = normInt8(eff.Saturation)
+	u[7] = normInt8(eff.Contrast)
+	u[8] = normInt8(eff.Brightness)
+	u[9] = round               // ROUNDNESS
+	u[10] = float32(ps)        // PIXELSIZE
+	u[11] = float32(bx) / 31.0 // BLUR_X
+	u[12] = float32(by) / 31.0 // BLUR_Y
+	// Outline color
+	or, og, ob, oa := colorToFloats(oc)
+	u[13], u[14], u[15], u[16] = or, og, ob, oa
+	// Border color
+	br, bg, bb, ba := colorToFloats(col.Tint(eff.BorderColor, eff.Tint))
+	u[29], u[30], u[31], u[32] = br, bg, bb, ba
+	if neutralCA {
+		u[24] = 1.0
+	}
+
 	switch kind {
 	case KindText:
-		var w, sc = eff.TextWeight, col.Tint(eff.TextShadowColor, eff.Tint)
-		var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
-		tx, ty, tz, tw = packTangentXText(oc), packTangentYText(sc), packTangentZText(w, os, ss), packTangentWText(sx, sy, sb)
+		w, sc := eff.TextWeight, col.Tint(eff.TextShadowColor, eff.Tint)
+		ss, sb, sx, sy := eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
+		// SIL slots = shadow color
+		sr, sg, sbCol, sa := colorToFloats(sc)
+		u[17], u[18], u[19], u[20] = sr, sg, sbCol, sa
+		u[21] = float32(w) / 127.0  // OUTLINE_SIZE → text weight
+		u[22] = float32(os) / 255.0 // BORDER_SIZE → text outline weight
+		u[23] = float32(ss) / 127.0 // SHADOW_WEIGHT
+		u[25] = -float32(sx) / 32.0 // PACKED_X → shadow X
+		u[26] = -float32(sy) / 32.0 // PACKED_Y → shadow Y
+		u[27] = float32(sb)         // PACKED_Z → shadow blur
 		r, g, b, a = col.Channels(col.Tint(eff.TextColor, eff.Tint))
 	case KindSprite, KindShape:
-		tx, ty = packTangentXSprite(oc), packTangentYSprite(os, col.Tint(eff.FillColor, eff.Tint))
-		tz, tw = packTangentZSprite(cropMinU, cropMaxU), packTangentWSprite(cropMinV, cropMaxV)
+		// SIL slots = fill color
+		fr, fg, fb, fa := colorToFloats(col.Tint(eff.FillColor, eff.Tint))
+		u[17], u[18], u[19], u[20] = fr, fg, fb, fa
+		u[21] = float32(os)          // OUTLINE_SIZE
+		u[22] = borderSz             // BORDER_SIZE
+		u[25] = packCrop12(cropMinU) // PACKED_X
+		u[26] = packCrop12(cropMaxU) // PACKED_Y
+		u[27] = packCrop12(cropMinV) // PACKED_Z
+		u[28] = packCrop12(cropMaxV) // PACKED_W
 		if kind == KindShape {
 			r, g, b, a = col.Channels(col.Tint(eff.FillColor, eff.Tint))
 		} else {
 			r, g, b, a = col.Channels(eff.Tint)
 		}
 	case KindTilemap:
-		tx, ty = packTangentXTilemap(oc), packTangentYTilemap(col.Tint(eff.FillColor, eff.Tint))
-		tz, tw = packTangentZTilemap(cols, rows), packTangentWTilemap(uint16(os), tileSz)
+		// SIL slots = fill color
+		fr, fg, fb, fa := colorToFloats(col.Tint(eff.FillColor, eff.Tint))
+		u[17], u[18], u[19], u[20] = fr, fg, fb, fa
+		u[21] = float32(os)     // OUTLINE_SIZE
+		u[22] = borderSz        // BORDER_SIZE
+		u[25] = float32(cols)   // PACKED_X → tile columns
+		u[26] = float32(rows)   // PACKED_Y → tile rows
+		u[27] = float32(tileSz) // PACKED_Z → tile size
 	default:
-		tx, ty = packColor24(oc), packColor24(col.Tint(eff.FillColor, eff.Tint))
-	}
-
-	for i := range len(polygonBuf) {
-		polygonBuf[i].U2, polygonBuf[i].V2 = u, v
-		polygonBuf[i].NX, polygonBuf[i].NY, polygonBuf[i].NZ = nx, ny, nz
-		polygonBuf[i].TX, polygonBuf[i].TY, polygonBuf[i].TZ, polygonBuf[i].TW = tx, ty, tz, tw
+		fr, fg, fb, fa := colorToFloats(col.Tint(eff.FillColor, eff.Tint))
+		u[17], u[18], u[19], u[20] = fr, fg, fb, fa
 	}
 
 	var finalColor = color.RGBA{R: r, G: g, B: b, A: a}
@@ -203,7 +236,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 		}
 		vCount = clipPolygonAABB(polygonBuf[:4], clipResultBuf[:], clipTempBuf[:], clipMask)
 		if vCount >= 3 {
-			queueVertices(clipResultBuf[:vCount], tex, finalColor, tiles)
+			queueVertices(clipResultBuf[:vCount], tex, finalColor, tiles, u)
 		}
 		return
 	}
@@ -223,7 +256,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 			polygonBuf[i].U, polygonBuf[i].V = uvs[i*2], uvs[i*2+1]
 		}
 	}
-	queueVertices(polygonBuf[:4], tex, finalColor, tiles)
+	queueVertices(polygonBuf[:4], tex, finalColor, tiles, u)
 }
 
 func ResetBatches() {
@@ -243,11 +276,12 @@ func CloseBatch() {
 func Draw() {
 	CloseBatch()
 
-	uniforms[0] = Runtime
-	rl.SetShaderValue(Shader, ShaderLoc, uniforms[:], rl.ShaderUniformFloat)
-
 	DrawCalls = len(ReadyBatches)
 	for _, b := range ReadyBatches {
+		uniformBuf = b.uniforms
+		uniformBuf[0] = Runtime
+		rl.SetShaderValueV(Shader, ShaderLoc, uniformBuf[:], rl.ShaderUniformFloat, 33)
+
 		if !b.meshUploaded {
 			rl.UploadMesh(b.mesh, true)
 			b.meshUploaded = true
@@ -256,10 +290,7 @@ func Draw() {
 			b.IsMeshDirty = false
 			rl.UpdateMeshBuffer(*b.mesh, 0, b.verts[:b.vertCount*12], 0)
 			rl.UpdateMeshBuffer(*b.mesh, 1, b.texCoords[:b.vertCount*8], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 2, b.normals[:b.vertCount*12], 0)
 			rl.UpdateMeshBuffer(*b.mesh, 3, b.cols[:b.vertCount*4], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 4, b.tangents[:b.vertCount*16], 0)
-			rl.UpdateMeshBuffer(*b.mesh, 5, b.tex2s[:b.vertCount*8], 0)
 			rl.UpdateMeshBuffer(*b.mesh, 6, b.indexes[:b.indexCount*2], 0)
 			b.mesh.TriangleCount = b.indexCount / 3
 		}
@@ -286,7 +317,8 @@ func Draw() {
 
 // private =================================================================
 
-var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers; avoids per-call heap escapes
+var uniformBuf [33]float32                            // reused per-frame to avoid heap escape in Draw()
+var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers to avoid per-call heap escapes
 
 //go:embed shader.frag
 var shaderFrag string
@@ -302,18 +334,12 @@ func newBatch() *Batch {
 
 	b.verts = make([]byte, b.mesh.VertexCount*3*4)
 	b.texCoords = make([]byte, b.mesh.VertexCount*2*4)
-	b.normals = make([]byte, b.mesh.VertexCount*3*4)
 	b.cols = make([]byte, b.mesh.VertexCount*4)
-	b.tangents = make([]byte, b.mesh.VertexCount*4*4)
-	b.tex2s = make([]byte, b.mesh.VertexCount*2*4)
 	b.indexes = make([]byte, b.mesh.TriangleCount*3*2)
 
 	b.mesh.Vertices = (*float32)(unsafe.Pointer(&b.verts[0]))
 	b.mesh.Texcoords = (*float32)(unsafe.Pointer(&b.texCoords[0]))
-	b.mesh.Normals = (*float32)(unsafe.Pointer(&b.normals[0]))
 	b.mesh.Colors = (*uint8)(unsafe.Pointer(&b.cols[0]))
-	b.mesh.Tangents = (*float32)(unsafe.Pointer(&b.tangents[0]))
-	b.mesh.Texcoords2 = (*float32)(unsafe.Pointer(&b.tex2s[0]))
 	b.mesh.Indices = (*uint16)(unsafe.Pointer(&b.indexes[0]))
 
 	b.material = DefaultMaterial
@@ -322,59 +348,55 @@ func newBatch() *Batch {
 	b.material.Shader = Shader
 	return b
 }
-func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, tileTex rl.Texture2D) {
+func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, tileTex rl.Texture2D, uniforms [33]float32) {
 	if ActiveBatch != nil {
 		var texChanged = ActiveBatch.material.Maps.Texture.ID != tex.ID
 		var tileTexChanged = ActiveBatch.tileDataTex.ID != tileTex.ID
+		var uniChanged = ActiveBatch.uniforms != uniforms
 		var outOfSpace = ActiveBatch.vertCount+int32(len(verts)) > ActiveBatch.mesh.VertexCount
 
-		if texChanged || tileTexChanged || outOfSpace { // do we need to break the batch?
+		if texChanged || tileTexChanged || uniChanged || outOfSpace {
 			if ActiveBatch.vertCount > 0 {
 				if IsRecording {
 					ActiveBatch.isRecord = true
 					CurrentBatchRecord = append(CurrentBatchRecord, ActiveBatch)
 				} else {
-					ReadyBatches = append(ReadyBatches, ActiveBatch) // push to draw later
+					ReadyBatches = append(ReadyBatches, ActiveBatch)
 				}
 			}
-			ActiveBatch = nil // clear active to force a new one
+			ActiveBatch = nil
 		}
 	}
 
 	if ActiveBatch == nil {
 		if IsRecording {
-			ActiveBatch = newBatch() // text batches are never pooled
+			ActiveBatch = newBatch()
 			ActiveBatch.isRecord = true
-		} else if len(BatchPool) > 0 { // grab a fresh batch if we don't have an active one
+		} else if len(BatchPool) > 0 {
 			ActiveBatch = BatchPool[len(BatchPool)-1]
 			BatchPool = BatchPool[:len(BatchPool)-1]
 		} else {
-			ActiveBatch = newBatch() // pool is empty, allocate a new one (will only happen as the game ramps up)
+			ActiveBatch = newBatch()
 		}
 
-		ActiveBatch.vertCount = 0 // reset counters and set material
+		ActiveBatch.vertCount = 0
 		ActiveBatch.indexCount = 0
 		ActiveBatch.material.Maps.Texture = tex
 		ActiveBatch.material.Shader = Shader
 		ActiveBatch.tileDataTex = tileTex
+		ActiveBatch.uniforms = uniforms
 	}
 
 	var b = ActiveBatch
 	var count = int32(len(verts))
 	var v_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.verts[b.vertCount*12])), count*3)
 	var t_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.texCoords[b.vertCount*8])), count*2)
-	var n_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.normals[b.vertCount*12])), count*3)
 	var c_slice = b.cols[b.vertCount*4 : (b.vertCount*4)+(count*4)]
-	var tan_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.tangents[b.vertCount*16])), count*4)
-	var t2_slice = unsafe.Slice((*float32)(unsafe.Pointer(&b.tex2s[b.vertCount*8])), count*2)
 
 	for i, v := range verts {
 		v_slice[i*3+0], v_slice[i*3+1], v_slice[i*3+2] = v.X, v.Y, 0
 		t_slice[i*2+0], t_slice[i*2+1] = v.U, v.V
-		n_slice[i*3+0], n_slice[i*3+1], n_slice[i*3+2] = v.NX, v.NY, v.NZ
 		c_slice[i*4+0], c_slice[i*4+1], c_slice[i*4+2], c_slice[i*4+3] = col.R, col.G, col.B, col.A
-		tan_slice[i*4+0], tan_slice[i*4+1], tan_slice[i*4+2], tan_slice[i*4+3] = v.TX, v.TY, v.TZ, v.TW
-		t2_slice[i*2+0], t2_slice[i*2+1] = v.U2, v.V2
 	}
 
 	var trisCount = count - 2
@@ -471,4 +493,15 @@ func areaIntersection(a, b Area) Area {
 		return Area{}
 	}
 	return Area{X: (il + ir) / 2, Y: (it + ib) / 2, Width: ir - il, Height: ib - it}
+}
+func colorToFloats(c uint) (rf, gf, bf, af float32) {
+	var r, g = float32(uint8(c>>24)) / 255.0, float32(uint8(c>>16)) / 255.0
+	var b, a = float32(uint8(c>>8)) / 255.0, float32(uint8(c)) / 255.0
+	return r, g, b, a
+}
+func normInt8(v int8) float32 {
+	return float32(int16(v)+128) / 255.0
+}
+func packCrop12(v float32) float32 {
+	return float32(uint16(number.Limit(v+0.5, 0, 1)*4095.0) & 0xFFF)
 }
