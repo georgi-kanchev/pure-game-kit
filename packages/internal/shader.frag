@@ -10,9 +10,9 @@ uniform sampler2D texture0;
 uniform sampler2D tileData;
 uniform float u[33];
 
-#define KIND_SHAPE 0
-#define KIND_SPRITE 1
-#define KIND_TEXT 2
+#define KIND_SHAPE   0
+#define KIND_SPRITE  1
+#define KIND_TEXT    2
 #define KIND_TILEMAP 3
 
 #define TIME            u[0]
@@ -40,8 +40,11 @@ uniform float u[33];
 #define SHADOW_WEIGHT   u[23]
 #define NO_COLOR_ADJUST u[24]
 #define SHADOW_X        u[25]
+#define TILE_COLUMNS    u[25]
 #define SHADOW_Y        u[26]
+#define TILE_ROWS       u[26]
 #define SHADOW_BLUR     u[27]
+#define TILE_SIZE       u[27]
 #define CROP_V          u[28]
 #define BORDER_R        u[29]
 #define BORDER_G        u[30]
@@ -67,15 +70,18 @@ float median(vec3 rgb) {
 }
 
 vec2 do_pixelated_uv(vec2 uv) {
+    if (PIXEL_SIZE <= 1.0)
+        return uv;
+
     float pixelSize = PIXEL_SIZE / 1.5;
     vec2 texSize = vec2(TEX_W, TEX_H);
     vec2 numBlocks = texSize / max(pixelSize, 0.001);
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
-    return pixelSize <= 1.0 ? uv : pixelated;
+    return pixelated;
 }
 vec4 do_blur(vec2 uv) {
     vec2 blur = vec2(BLUR_X, BLUR_Y) * 16.0;
-    if (blur.x == 0.0 && blur.y == 0.0)
+    if (blur.x <= 0.01 && blur.y <= 0.01)
         return texture(texture0, uv);
     
     blur /= 8.0; // adjust
@@ -90,7 +96,7 @@ vec4 do_blur(vec2 uv) {
 }
 vec4 do_outline(vec4 color, vec2 uv) {
     float outlineSize = OUTLINE_SIZE;
-    if (color.a > 0 || outlineSize == 0.0)
+    if (color.a > 0 || outlineSize <= 0.01)
         return color;
     
     vec2 texSize = vec2(TEX_W, TEX_H);
@@ -114,16 +120,11 @@ vec4 do_silhouette(vec4 color) {
     return color;
 }
 vec4 do_color_adjust(vec4 color) {
-    float gam = GAM;
-    float sat = SAT;
-    float con = CON;
-    float bri = BRI;
+    float gamma = exp2((0.5 - GAM) * 5.0);
+    float saturation = 10.0 * pow(SAT, log2(10.0));
+    float contrast = 3.0  * pow(CON, log2(3.0));
+    float brightness = 4.0  * BRI * BRI;
     
-    float gamma = exp2((0.5 - gam) * 5.0);
-    float saturation = 10.0 * pow(sat, log2(10.0));
-    float contrast = 3.0  * pow(con, log2(3.0));
-    float brightness = 4.0  * bri * bri;
-
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
     float lum_pre_sat = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     color.rgb = mix(vec3(lum_pre_sat), color.rgb, saturation);
@@ -131,13 +132,13 @@ vec4 do_color_adjust(vec4 color) {
     color.rgb *= brightness;
     return color;
 }
-vec2 do_tile(float tileColumns, float tileRows, float tileW, float tileH) {
+vec2 do_tile() {
     vec2 uv = fragTexCoord;
-    if (tileColumns == 0.0)
+    if (TILE_COLUMNS == 0.0)
         return uv;
     
     vec2 texSize = vec2(TEX_W, TEX_H);
-    ivec2 mapSize = ivec2(int(tileColumns), int(tileRows));
+    ivec2 mapSize = ivec2(int(TILE_COLUMNS), int(TILE_ROWS));
     ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
@@ -159,7 +160,7 @@ vec2 do_tile(float tileColumns, float tileRows, float tileW, float tileH) {
     uint currentFrame = uint(mod(floor(TIME * multiplier) + float(animOffset), float(frameRange)));
     uint atlasIndex = atlasBase + currentFrame;
 
-    float atlasCols = floor(texSize.x / tileW);
+    float atlasCols = floor(texSize.x / TILE_SIZE);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
     vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
     localUV -= 0.5;
@@ -169,14 +170,18 @@ vec2 do_tile(float tileColumns, float tileRows, float tileW, float tileH) {
     localUV = rot == 3u ? vec2(-localUV.y, localUV.x) : localUV;
     localUV += 0.5;
     
-    vec2 atlasSizeInTiles = vec2(texSize.x / tileW, texSize.y / tileH);
+    vec2 atlasSizeInTiles = vec2(texSize.x / TILE_SIZE, texSize.y / TILE_SIZE);
     return (coord + localUV) / atlasSizeInTiles;
 }
-vec4 do_sdf_shape(vec4 color, vec2 cropBoundsU, vec2 cropBoundsV) {
+vec4 do_sdf_shape(vec4 color) {
+    int objKind = int(OBJ_KIND);
+    bool hasCrop = objKind == KIND_SHAPE || objKind == KIND_SPRITE;
+    vec2 cropBoundsU = hasCrop ? vec2(SHADOW_X, SHADOW_Y) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
+    vec2 cropBoundsV = hasCrop ? vec2(SHADOW_BLUR, CROP_V) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
     float roundness = ROUNDNESS;
     float borderSize = BORDER_SIZE;
     vec4 borderColor = vec4(BORDER_R, BORDER_G, BORDER_B, BORDER_A);
-    if (abs(roundness) < 0.001 && abs(borderSize) < 0.001)
+    if (abs(roundness) < 0.01 && abs(borderSize) < 0.01)
         return color;
     
     vec2 cropRange = max(vec2(cropBoundsU.y - cropBoundsU.x, cropBoundsV.y - cropBoundsV.x), 0.001);
@@ -263,45 +268,38 @@ vec4 do_msdf_text() {
 }
 
 void main() {
-    int objKind = int(OBJ_KIND);
-    bool hasCrop = objKind == KIND_SHAPE || objKind == KIND_SPRITE;
-    float tileColumns = hasCrop ? 0.0 : SHADOW_X;
-    float tileRows    = hasCrop ? 0.0 : SHADOW_Y;
-    float tileSize    = hasCrop ? 0.0 : SHADOW_BLUR;
-    vec2  cropBoundsU = hasCrop ? vec2(SHADOW_X, SHADOW_Y) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
-    vec2  cropBoundsV = hasCrop ? vec2(SHADOW_BLUR, CROP_V) / 4095.0 - 0.5 : vec2(-0.5, 0.5);
-    
-    // ========================================================================
-
     vec4 color;
+    int objKind = int(OBJ_KIND);
     
-    if (objKind == KIND_TEXT) { // Text: MSDF path (skip do_tile: text reuses tile slots for shadow data)
+    if (objKind == KIND_TEXT) {
         color = do_msdf_text();
         if (color.a < 0.004)
             discard;
 
-        if (NO_COLOR_ADJUST < 0.5) color = do_color_adjust(color);
+        color = NO_COLOR_ADJUST < 0.5 ? do_color_adjust(color) : color;
         finalColor = color;
         return;
     }
 
-    vec2 uv = do_tile(tileColumns, tileRows, tileSize, tileSize);
-    if (objKind == KIND_SHAPE) { // Shape: use vertex color as fill, skip pixelate/blur
+    if (objKind == KIND_SHAPE) {
         color = fragColor;
-    } else { // Sprite / Tilemap
-        uv = do_pixelated_uv(uv);
+        color = do_sdf_shape(color);
+    } else if (objKind == KIND_SPRITE) {
+        vec2 uv = do_pixelated_uv(fragTexCoord);
         color = do_blur(uv);
         color = do_outline(color, uv);
-        color *= fragColor;
-    }
-    
-    if (objKind != KIND_SHAPE)
         color = do_silhouette(color);
-    
-    color = do_sdf_shape(color, cropBoundsU, cropBoundsV);
-    
-    if (objKind != KIND_SHAPE && NO_COLOR_ADJUST < 0.5)
-        color = do_color_adjust(color);
+        color *= fragColor;
+        color = do_sdf_shape(color);
+        color = NO_COLOR_ADJUST < 0.5 ? do_color_adjust(color) : color;
+    } else if (objKind == KIND_TILEMAP) {
+        vec2 uv = do_tile();
+        color = do_blur(uv);
+        color = do_outline(color, uv);
+        color = do_silhouette(color);
+        color *= fragColor;
+        color = NO_COLOR_ADJUST < 0.5 ? do_color_adjust(color) : color;
+    }
     
     finalColor = color;
 }

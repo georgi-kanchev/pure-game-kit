@@ -2,7 +2,6 @@ package window
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/text"
 	"time"
 
@@ -39,8 +38,7 @@ func KeepOpen() bool {
 	internal.GameBusyMicroSec = time.Since(gameLogicStart).Microseconds()
 	var engineFrameStart = time.Now()
 	if !isInit {
-		debug.Print("[window.KeepOpen]: Window not yet created. Call `window.Create()`.")
-		return false
+		Create("game", true, true)
 	}
 	if terminate {
 		return false
@@ -50,11 +48,11 @@ func KeepOpen() bool {
 	rl.DisableDepthTest()
 	rl.EndDrawing()
 
+	//=================================================================
+
 	rl.BeginDrawing()
 	rl.EnableDepthTest()
 	rl.ClearScreenBuffers()
-
-	//=================================================================
 
 	internal.QuadQueues = 0
 	internal.FrameDelta = rl.GetFrameTime()
