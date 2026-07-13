@@ -90,7 +90,8 @@ var ReadyBatches []*Batch       // batches ready to be drawn
 var BatchPool []*Batch          // empty batches ready to be reused
 var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
 var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
-var DrawCalls int               // used for debug info, no functional purpose - shows the amount of ReadyBatches
+var DrawCalls int               // used for debug info, no functional purpose - the amount of ReadyBatches per frame
+var QuadQueues int              // used for debug info, no functional purpose - the amount of quads Queued per frame
 
 var ViewArea Area // zero value = entire window
 var ViewX, ViewY, ViewZoom, ViewAngle float32
@@ -187,6 +188,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 		ss, sb, sx, sy := eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
 		// SIL slots = shadow color
 		sr, sg, sbCol, sa := colorToFloats(sc)
+		u[1], u[2] = 0, 0 // not used, don't break the batch
 		u[17], u[18], u[19], u[20] = sr, sg, sbCol, sa
 		u[21] = float32(w) / 127.0  // OUTLINE_SIZE → text weight
 		u[22] = float32(os) / 255.0 // BORDER_SIZE → text outline weight
@@ -409,6 +411,7 @@ func queueVertices(verts []Vertex, tex rl.Texture2D, col rl.Color, tileTex rl.Te
 		indSlice[i*3+2] = base + uint16(i+2)
 	}
 
+	QuadQueues++
 	b.vertCount += count
 	b.indexCount += trisCount * 3
 }

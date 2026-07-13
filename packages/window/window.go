@@ -56,6 +56,7 @@ func KeepOpen() bool {
 
 	//=================================================================
 
+	internal.QuadQueues = 0
 	internal.FrameDelta = rl.GetFrameTime()
 	internal.UpdateCommands()
 	internal.UpdateWindowData()

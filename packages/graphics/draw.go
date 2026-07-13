@@ -1,7 +1,6 @@
 package graphics
 
 import (
-	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/execution/condition"
 	geometry "pure-game-kit/packages/geometry"
@@ -171,8 +170,6 @@ func (v *View) DrawObject(object *Object) {
 }
 func (v *View) DrawDebugInfo(detailed bool) {
 	if condition.TrueEvery(0.2, 0xdeadc0de) {
-		fmt.Printf("internal.FPS: %v\n", internal.FPS)
-
 		v.debugBuffer = v.debugBuffer[:0]
 		v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.FPS))
 		v.debugBuffer = append(v.debugBuffer, " FPS\n"...)
@@ -217,7 +214,9 @@ func (v *View) DrawDebugInfo(detailed bool) {
 			v.debugBuffer = append(v.debugBuffer, "\n"...)
 
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.DrawCalls))
-			v.debugBuffer = append(v.debugBuffer, " draw calls\n"...)
+			v.debugBuffer = append(v.debugBuffer, " draw calls | "...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.QuadQueues))
+			v.debugBuffer = append(v.debugBuffer, " quads\n"...)
 
 			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.Runtime/3600), 10)
 			v.debugBuffer = append(v.debugBuffer, "h "...)
