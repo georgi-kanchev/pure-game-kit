@@ -109,7 +109,9 @@ func (v *View) DrawObject(object *Object) {
 	}
 
 	if o.Effects.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
-		internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
+		for _, b := range o.textBatches {
+			internal.DrawBatch(b)
+		}
 		return
 	}
 
@@ -159,7 +161,9 @@ func (v *View) DrawObject(object *Object) {
 		if o.Effects.TextBatch {
 			internal.CloseBatch()
 			o.textBatches = internal.CurrentBatchRecord
-			internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentBatchRecord...)
+			for _, b := range internal.CurrentBatchRecord {
+				internal.DrawBatch(b)
+			}
 			internal.IsRecording = false
 			for _, b := range internal.CurrentBatchRecord {
 				b.IsMeshDirty = true
