@@ -227,7 +227,7 @@ func (v *View) DrawDebugInfo(detailed bool) {
 
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageId+1))
 			v.debugBuffer = append(v.debugBuffer, " images | "...)
-			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageCropId))
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(-internal.NextImageCropId))
 			v.debugBuffer = append(v.debugBuffer, " crops\n"...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Fonts)))
 			v.debugBuffer = append(v.debugBuffer, " fonts | "...)
