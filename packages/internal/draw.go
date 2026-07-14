@@ -190,6 +190,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 			r, g, b, a = col.Channels(eff.Tint)
 		}
 	case KindTilemap:
+		r, g, b, a = col.Channels(eff.Tint)
 		u[17], u[18], u[19], u[20] = colorToFloats(col.Tint(eff.FillColor, eff.Tint))
 		u[21], u[22], u[25], u[26], u[27] = float32(os), borderSz, float32(cols), float32(rows), float32(tileSz)
 	default:

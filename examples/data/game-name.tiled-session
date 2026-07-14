@@ -10,7 +10,7 @@
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
-            "scaleInDock": 4,
+            "scaleInDock": 2,
             "scaleInEditor": 2
         },
         "/home/gojur/Desktop/atlas.tsx": {
@@ -46,15 +46,15 @@
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx": {
-            "scale": 11,
-            "selectedLayer": 0,
+            "scale": 1.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 111.81818181818183,
-                "y": 275.40909090909093
+                "x": 246.33333333333337,
+                "y": 205.66666666666663
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx#tileset": {
-            "scaleInDock": 0.75,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "atlas.tsx": {
