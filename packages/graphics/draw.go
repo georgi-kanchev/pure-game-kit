@@ -190,6 +190,10 @@ func (v *View) DrawDebugInfo(detailed bool) {
 			} else {
 				v.debugBuffer = append(v.debugBuffer, " | vsync off\n"...)
 			}
+			v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.PixelScale), 'f', 2, 32)
+			v.debugBuffer = append(v.debugBuffer, " pixel scale | "...)
+			v.debugBuffer = append(v.debugBuffer, []byte(filters[internal.Filter])...)
+			v.debugBuffer = append(v.debugBuffer, " filter\n"...)
 
 			var frameTargetMicroSec = 1000000.0 / float64(targetFPS)
 			v.debugBuffer = strconv.AppendFloat(v.debugBuffer, float64(internal.EngineBusyMicroSec)/1000, 'f', 3, 32)
@@ -265,6 +269,7 @@ type line struct {
 	width      float32
 }
 
+var filters []string = []string{"point", "bilinear", "trilinear", "anisotropic4x", "anisotropic8x", "anisotropic16x"}
 var lines []line
 var obj = &Object{} // used for primitive drawing
 var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': palette.Red, '🟧': palette.Orange,

@@ -16,6 +16,8 @@ var GameBusyMicroSec, EngineBusyMicroSec int64
 //=================================================================
 
 var WindowWidth, WindowHeight float32
+var PixelScale float32 = 1
+var Filter uint8
 var WindowHovered, WindowFocused, WindowJustResized bool
 var WindowVsync, WindowAntialias bool
 var WindowTargetFPS byte
@@ -82,6 +84,7 @@ func Init() {
 }
 func UpdateWindowData() {
 	WindowWidth, WindowHeight = float32(rl.GetScreenWidth()), float32(rl.GetScreenHeight())
+	PixelScale = max(PixelScale, 1)
 	WindowHovered, WindowFocused, WindowJustResized = rl.IsCursorOnScreen(), rl.IsWindowFocused(), rl.IsWindowResized()
 }
 

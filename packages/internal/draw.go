@@ -72,33 +72,32 @@ type Effects struct {
 const KindShape, KindSprite, KindText, KindTilemap uint8 = 0, 1, 2, 3
 
 var Shader rl.Shader
-var ShaderLoc int32 // uniform location, all properties are packed in one uniform for speed
-var ShaderTileDataLoc int32
+var ShaderLoc, ShaderTileDataLoc int32 // uniform location, all properties are packed in one uniform for speed
 var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
 var DefaultEffects = Effects{
 	BorderColor: palette.White, Tint: palette.White,
 	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 30, TextShadowOffsetY: 30,
-	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 20}
+	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 20,
+}
 
 var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; positive = full images
-var NextImageId int16
-var NextImageCropId int16
+var NextImageId, NextImageCropId int16
 
 var ActiveBatch *Batch          // the batch currently being written to
 var ReadyBatches []*Batch       // batches ready to be drawn
 var BatchPool []*Batch          // empty batches ready to be reused
 var CurrentBatchRecord []*Batch // batches being recorded, see IsRecording
 var IsRecording bool            // when true, batches are accumulated into CurrentBatchRecord instead of ReadyBatches
-var DrawCalls int               // used for debug info, no functional purpose - the amount of ReadyBatches per frame
-var QuadQueues int              // used for debug info, no functional purpose - the amount of quads Queued per frame
+var DrawCalls, QuadQueues int   // used for debug info, no functional purpose
 
 var ViewArea Area // zero value = entire window
 var ViewX, ViewY, ViewZoom, ViewAngle float32
 
 //=================================================================
 
-func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind, tileSz uint8, cols, rows uint16) {
+func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind,
+	tileSz uint8, cols, rows uint16) {
 	var flipU, flipV = dst.Width < 0 && kind != KindText, dst.Height < 0 && kind != KindText
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
 	if flipU {
@@ -123,8 +122,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	}
 
 	if ViewArea != (Area{}) {
-		dst.X += ViewArea.X - float32(WindowWidth)/2
-		dst.Y += ViewArea.Y - float32(WindowHeight)/2
+		dst.X, dst.Y = dst.X+(ViewArea.X-float32(WindowWidth)/2), dst.Y+(ViewArea.Y-float32(WindowHeight)/2)
 	}
 
 	var invTexW, invTexH = 1.0 / float32(tex.Width), 1.0 / float32(tex.Height)
@@ -157,73 +155,45 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	var r, g, b, a = col.Channels(palette.White)
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
 	var os = uint8(number.Limit(eff.OutlineSize, 0, 255))
-	var neutralCA = eff.Gamma == 0 && eff.Saturation == 0 && eff.Contrast == 0 && eff.Brightness == 0
+	var neutralColAdj = eff.Gamma == 0 && eff.Saturation == 0 && eff.Contrast == 0 && eff.Brightness == 0
 
-	// Fill per-call uniforms
 	var u [33]float32
-	u[1] = float32(src.Width)  // TEXSIZE_X
-	u[2] = float32(src.Height) // TEXSIZE_Y
-	u[4] = float32(kind)       // OBJKIND
-	u[5] = normInt8(eff.Gamma)
-	u[6] = normInt8(eff.Saturation)
-	u[7] = normInt8(eff.Contrast)
-	u[8] = normInt8(eff.Brightness)
-	u[9] = round               // ROUNDNESS
-	u[10] = float32(ps)        // PIXELSIZE
-	u[11] = float32(bx) / 31.0 // BLUR_X
-	u[12] = float32(by) / 31.0 // BLUR_Y
-	// Outline color
-	or, og, ob, oa := colorToFloats(oc)
-	u[13], u[14], u[15], u[16] = or, og, ob, oa
-	// Border color
-	br, bg, bb, ba := colorToFloats(col.Tint(eff.BorderColor, eff.Tint))
-	u[29], u[30], u[31], u[32] = br, bg, bb, ba
-	if neutralCA {
+	u[1], u[2], u[4] = float32(src.Width), float32(src.Height), float32(kind)
+	u[5], u[6] = float32(int16(eff.Gamma)+128)/255.0, float32(int16(eff.Saturation)+128)/255.0
+	u[7], u[8] = float32(int16(eff.Contrast)+128)/255.0, float32(int16(eff.Brightness)+128)/255.0
+	u[9], u[10], u[11], u[12] = round, float32(ps), float32(bx)/31.0, float32(by)/31.0
+	u[13], u[14], u[15], u[16] = colorToFloats(oc)
+	u[29], u[30], u[31], u[32] = colorToFloats(col.Tint(eff.BorderColor, eff.Tint))
+	if neutralColAdj {
 		u[24] = 1.0
 	}
 
 	switch kind {
 	case KindText:
-		w, sc := eff.TextWeight, col.Tint(eff.TextShadowColor, eff.Tint)
-		ss, sb, sx, sy := eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
-		// SIL slots = shadow color
-		sr, sg, sbCol, sa := colorToFloats(sc)
-		u[1], u[2] = 0, 0 // not used, don't break the batch
-		u[17], u[18], u[19], u[20] = sr, sg, sbCol, sa
-		u[21] = float32(w) / 127.0  // OUTLINE_SIZE → text weight
-		u[22] = float32(os) / 255.0 // BORDER_SIZE → text outline weight
-		u[23] = float32(ss) / 127.0 // SHADOW_WEIGHT
-		u[25] = -float32(sx) / 32.0 // PACKED_X → shadow X
-		u[26] = -float32(sy) / 32.0 // PACKED_Y → shadow Y
-		u[27] = float32(sb)         // PACKED_Z → shadow blur
+		var w, sc = eff.TextWeight, col.Tint(eff.TextShadowColor, eff.Tint)
+		var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
+		var sr, sg, sbCol, sa = colorToFloats(sc)
+		u[1], u[2], u[17], u[18], u[19], u[20] = 0, 0, sr, sg, sbCol, sa
+		u[21], u[22], u[23], u[25] = float32(w)/127.0, float32(os)/255.0, float32(ss)/127.0, -float32(sx)/32.0
+		u[26], u[27] = -float32(sy)/32.0, float32(sb)
 		r, g, b, a = col.Channels(col.Tint(eff.TextColor, eff.Tint))
 	case KindSprite, KindShape:
-		// SIL slots = fill color
-		fr, fg, fb, fa := colorToFloats(col.Tint(eff.FillColor, eff.Tint))
-		u[17], u[18], u[19], u[20] = fr, fg, fb, fa
-		u[21] = float32(os)          // OUTLINE_SIZE
-		u[22] = borderSz             // BORDER_SIZE
-		u[25] = packCrop12(cropMinU) // PACKED_X
-		u[26] = packCrop12(cropMaxU) // PACKED_Y
-		u[27] = packCrop12(cropMinV) // PACKED_Z
-		u[28] = packCrop12(cropMaxV) // PACKED_W
+		u[17], u[18], u[19], u[20] = colorToFloats(col.Tint(eff.FillColor, eff.Tint))
+		u[21], u[22] = float32(os), borderSz
+		u[25] = float32(uint16(number.Limit(cropMinU+0.5, 0, 1)*4095.0) & 0xFFF)
+		u[26] = float32(uint16(number.Limit(cropMaxU+0.5, 0, 1)*4095.0) & 0xFFF)
+		u[27] = float32(uint16(number.Limit(cropMinV+0.5, 0, 1)*4095.0) & 0xFFF)
+		u[28] = float32(uint16(number.Limit(cropMaxV+0.5, 0, 1)*4095.0) & 0xFFF)
 		if kind == KindShape {
 			r, g, b, a = col.Channels(col.Tint(eff.FillColor, eff.Tint))
 		} else {
 			r, g, b, a = col.Channels(eff.Tint)
 		}
 	case KindTilemap:
-		// SIL slots = fill color
-		fr, fg, fb, fa := colorToFloats(col.Tint(eff.FillColor, eff.Tint))
-		u[17], u[18], u[19], u[20] = fr, fg, fb, fa
-		u[21] = float32(os)     // OUTLINE_SIZE
-		u[22] = borderSz        // BORDER_SIZE
-		u[25] = float32(cols)   // PACKED_X → tile columns
-		u[26] = float32(rows)   // PACKED_Y → tile rows
-		u[27] = float32(tileSz) // PACKED_Z → tile size
+		u[17], u[18], u[19], u[20] = colorToFloats(col.Tint(eff.FillColor, eff.Tint))
+		u[21], u[22], u[25], u[26], u[27] = float32(os), borderSz, float32(cols), float32(rows), float32(tileSz)
 	default:
-		fr, fg, fb, fa := colorToFloats(col.Tint(eff.FillColor, eff.Tint))
-		u[17], u[18], u[19], u[20] = fr, fg, fb, fa
+		u[17], u[18], u[19], u[20] = colorToFloats(col.Tint(eff.FillColor, eff.Tint))
 	}
 
 	var finalColor = color.RGBA{R: r, G: g, B: b, A: a}
@@ -278,6 +248,30 @@ func CloseBatch() {
 func Draw() {
 	CloseBatch()
 
+	var drawMatrix = DefaultMatrix
+	if PixelScale > 1 {
+		var rw, rh = max(int32(WindowWidth/PixelScale), 1), max(int32(WindowHeight/PixelScale), 1)
+		if renderTex.ID == 0 || renderTex.Texture.Width != rw || renderTex.Texture.Height != rh {
+			if renderTex.ID != 0 {
+				rl.UnloadRenderTexture(renderTex)
+			}
+			renderTex = rl.LoadRenderTexture(rw, rh)
+		}
+		if Filter != prevFilter {
+			rl.SetTextureFilter(renderTex.Texture, rl.TextureFilterMode(Filter))
+			prevFilter = Filter
+		}
+
+		rl.BeginTextureMode(renderTex)
+		rl.ClearScreenBuffers()
+
+		if PixelScale != prevPixelScale {
+			prevPixelScale = PixelScale
+			scaleMatrix = rl.MatrixScale(1.0/PixelScale, 1.0/PixelScale, 1.0)
+		}
+		drawMatrix = scaleMatrix
+	}
+
 	DrawCalls = len(ReadyBatches)
 	for _, b := range ReadyBatches {
 		uniformBuf = b.uniforms
@@ -302,7 +296,24 @@ func Draw() {
 			rl.EnableTexture(b.tileDataTex.ID) // bind data texture there
 			rl.SetShaderValueTexture(Shader, ShaderTileDataLoc, b.tileDataTex)
 		}
-		rl.DrawMesh(*b.mesh, b.material, DefaultMatrix)
+		rl.DrawMesh(*b.mesh, b.material, drawMatrix)
+	}
+
+	if PixelScale > 1 {
+		rl.EndTextureMode()
+		rl.SetTexture(renderTex.Texture.ID)
+		rl.Begin(rl.Quads)
+		rl.Color4ub(255, 255, 255, 255)
+		rl.TexCoord2f(0, 0)
+		rl.Vertex2f(0, 0)
+		rl.TexCoord2f(0, -1)
+		rl.Vertex2f(0, WindowHeight)
+		rl.TexCoord2f(1, -1)
+		rl.Vertex2f(WindowWidth, WindowHeight)
+		rl.TexCoord2f(1, 0)
+		rl.Vertex2f(WindowWidth, 0)
+		rl.End()
+		rl.SetTexture(0)
 	}
 
 	if ActiveBatch != nil {
@@ -321,6 +332,11 @@ func Draw() {
 
 var uniformBuf [33]float32                            // reused per-frame to avoid heap escape in Draw()
 var polygonBuf, clipResultBuf, clipTempBuf [12]Vertex // reused working buffers to avoid per-call heap escapes
+
+var renderTex rl.RenderTexture2D // used when PixelScale > 1 to render at lower resolution
+var scaleMatrix rl.Matrix        // pre-computed (1/PixelScale) matrix, recomputed when PixelScale changes
+var prevPixelScale float32       // tracks when scaleMatrix needs recomputation
+var prevFilter uint8 = 255       // tracks when remder textire needs filter change
 
 //go:embed shader.frag
 var shaderFrag string
@@ -501,10 +517,4 @@ func colorToFloats(c uint) (rf, gf, bf, af float32) {
 	var r, g = float32(uint8(c>>24)) / 255.0, float32(uint8(c>>16)) / 255.0
 	var b, a = float32(uint8(c>>8)) / 255.0, float32(uint8(c)) / 255.0
 	return r, g, b, a
-}
-func normInt8(v int8) float32 {
-	return float32(int16(v)+128) / 255.0
-}
-func packCrop12(v float32) float32 {
-	return float32(uint16(number.Limit(v+0.5, 0, 1)*4095.0) & 0xFFF)
 }

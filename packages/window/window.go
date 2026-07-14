@@ -9,8 +9,11 @@ import (
 )
 
 type Mode uint8
+type Filter uint8
 
 const ModeFloating, ModeMaximized, ModeFullscreen, ModeFullscreenBorderless Mode = 0, 1, 2, 3
+const FilterPoint, FilterBilinear, FilterTrilinear,
+	FilterAnisotropic4x, FilterAnisotropic8x, FilterAnisotropic16x Filter = 0, 1, 2, 3, 4, 5
 
 func Create(title string, vsync, antialias bool) {
 	var flags uint32 = rl.FlagWindowResizable
@@ -74,7 +77,7 @@ func Close() {
 
 //=================================================================
 
-func ApplyMode(mode Mode) {
+func SetMode(mode Mode) {
 	var curr = CurrentMode()
 	if curr == mode {
 		return
@@ -119,6 +122,18 @@ func ApplyMode(mode Mode) {
 		rl.SetWindowPosition(int(pos.X+ww/4), int(pos.Y+wh/4))
 	}
 }
+func SetIcon(imagePath string) {
+	var img = rl.LoadImage(imagePath)
+	rl.SetWindowIcon(*img)
+}
+func SetTargetFPS(fps uint8) {
+	internal.WindowTargetFPS = fps
+	rl.SetTargetFPS(int32(fps))
+}
+func SetQuality(pixelScale float32, filter Filter) {
+	internal.PixelScale, internal.Filter = max(pixelScale, 1), uint8(filter)
+}
+
 func MoveToMonitor(monitor int) {
 	var wasMax = rl.IsWindowMaximized()
 	if wasMax {
@@ -130,14 +145,6 @@ func MoveToMonitor(monitor int) {
 	if wasMax {
 		rl.MaximizeWindow()
 	}
-}
-func SetIcon(imagePath string) {
-	var img = rl.LoadImage(imagePath)
-	rl.SetWindowIcon(*img)
-}
-func SetTargetFPS(fps uint8) {
-	internal.WindowTargetFPS = fps
-	rl.SetTargetFPS(int32(fps))
 }
 func TakeScreenshot(pngPath string) {
 	rl.TakeScreenshot(pngPath)
@@ -192,6 +199,9 @@ func IsFocused() bool {
 }
 func IsJustResized() bool {
 	return internal.WindowJustResized
+}
+func Quality() (pixelScale float32, filter Filter) {
+	return internal.PixelScale, Filter(internal.Filter)
 }
 
 // private ========================================================

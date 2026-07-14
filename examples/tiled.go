@@ -9,7 +9,7 @@ import (
 )
 
 func Tiled() {
-	window.Create("example - tiled", false, true)
+	window.Create("example - tiled", false, false)
 	var view = graphics.NewView(3)
 	var layerIds = assets.LoadTileLayersFromTiled("examples/data/map.tmx")
 

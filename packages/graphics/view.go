@@ -89,7 +89,8 @@ func (v *View) IsAreaVisible(x, y, width, height float32) bool {
 	return maxX >= 0 && minX <= internal.WindowWidth && maxY >= 0 && minY <= internal.WindowHeight
 }
 func (v *View) IsHovered() bool {
-	return internal.MouseX > 0 && internal.MouseY > 0 && internal.MouseX < internal.WindowWidth && internal.MouseY < internal.WindowHeight
+	return internal.MouseX > 0 && internal.MouseX < internal.WindowWidth &&
+		internal.MouseY > 0 && internal.MouseY < internal.WindowHeight
 }
 func (v *View) MousePosition() (x, y float32) {
 	return v.PointFromScreen(internal.MouseX, internal.MouseY)
