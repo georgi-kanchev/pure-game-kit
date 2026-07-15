@@ -1,3 +1,6 @@
+// Strictly tied to the window, drawing on it through a view and converting between the two coordinate systems.
+// The view's drawing consists of two categories: primitives and objects. While using the assets for drawing,
+// the graphical objects are still very lightweight and exist independently of them.
 package graphics
 
 import (
@@ -10,13 +13,12 @@ import (
 
 type View struct {
 	X, Y, Zoom, Angle float32
+	WindowArea        geometry.Area // The drawing area in window space. Zero value = entire window.
 
-	WindowArea geometry.Area // The drawing area in window space. Zero value = entire window.
+	// =================================================================
 
-	//=================================================================
-
-	velocityX, velocityY, dragVelX, dragVelY float32
-
+	velocityX, velocityY,
+	dragVelX, dragVelY float32
 	debugBuffer []byte
 }
 
@@ -77,7 +79,33 @@ func (v *View) MouseDragAndZoomSmoothly() {
 	}
 }
 
-//=================================================================
+func (v *View) FitSize(width, height float32) {
+	var windowArea = v.windowArea()
+	if windowArea.Width <= 0 || windowArea.Height <= 0 {
+		return
+	}
+
+	var w, h = width, height
+	var minX, maxX, minY, maxY float32 = 0, 0, 0, 0
+	var corners = [4][2]float32{{-w / 2, -h / 2}, {w / 2, -h / 2}, {-w / 2, h / 2}, {w / 2, h / 2}}
+	var sin, cos = internal.SinCos(-v.Angle)
+
+	for i, p := range corners {
+		var dx, dy = p[0], p[1]
+		var localX, localY = dx*cos - dy*sin, dx*sin + dy*cos
+
+		if i == 0 {
+			minX, maxX, minY, maxY = localX, localX, localY, localY
+		} else {
+			minX, maxX, minY, maxY = min(minX, localX), max(maxX, localX), min(minY, localY), max(maxY, localY)
+		}
+	}
+
+	var localWidth, localHeight = max(maxX-minX, 1), max(maxY-minY, 1) // no division by zero for tiny/empty bounds
+	v.Zoom = min(windowArea.Width/localWidth, windowArea.Height/localHeight)
+}
+
+// =================================================================
 
 func (v *View) IsAreaVisible(x, y, width, height float32) bool {
 	var sx1, sy1 = v.PointToScreen(x, y)
