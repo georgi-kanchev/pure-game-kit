@@ -100,7 +100,7 @@ func (s *ShapeGrid) AtCell(x, y int, result *[]Shape) {
 	}
 }
 func (s *ShapeGrid) Neighbors(shape Shape, result *[]Shape) {
-	if s.chunkSize <= 0 {
+	if s.chunkSize <= 0 || result == nil {
 		return
 	}
 
