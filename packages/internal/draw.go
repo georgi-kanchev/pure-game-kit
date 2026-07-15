@@ -33,7 +33,7 @@ type Batch struct {
 }
 type Vertex struct{ X, Y, U, V float32 }
 type Effects struct {
-	Gamma, Saturation, Contrast, Brightness int8 // Ranged -128..127, 0 = no change
+	Gamma, Saturation, Contrast, Brightness float32
 
 	OutlineSize, BorderSize float32
 
@@ -42,12 +42,11 @@ type Effects struct {
 	FillColor    uint
 	OutlineColor uint // Not used by Shapes.
 
-	PixelSize    uint8 // Ranged 0..15; Not used by Shapes & Texts.
-	BlurX, BlurY uint8 // Ranged 0..31; Not used by Shapes & Texts.
+	PixelSize    float32 // Not used by Shapes & Texts.
+	BlurX, BlurY float32 // Not used by Shapes & Texts.
 
-	// Ranged 0..1.
-	//
-	// Requires semi-transparent pixels to be drawn last to avoid artifacts. Fully opaque/transparent pixels work in any sorting.
+	// Requires semi-transparent pixels to be drawn last to avoid artifacts.
+	// Fully opaque/transparent pixels work in any sorting.
 	DepthZ float32
 
 	//=================================================================
@@ -64,8 +63,8 @@ type Effects struct {
 
 	TextUnderline, TextCrossout bool
 	TextWeight, TextShadowWeight,
-	TextShadowOffsetX, TextShadowOffsetY int8
-	TextShadowBlur             uint8
+	TextShadowOffsetX, TextShadowOffsetY float32
+	TextShadowBlur             float32
 	TextColor, TextShadowColor uint
 }
 
@@ -77,8 +76,8 @@ var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
 var DefaultEffects = Effects{
 	BorderColor: palette.White, Tint: palette.White,
-	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 30, TextShadowOffsetY: 30,
-	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 20,
+	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 1, TextShadowOffsetY: 1,
+	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 0.15,
 }
 
 var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; positive = full images
@@ -150,18 +149,16 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 		uvs[1], uvs[7], uvs[3], uvs[5] = uvs[1]-padV, uvs[7]-padV, uvs[3]+padV, uvs[5]+padV
 	}
 
-	var bx, by = uint8(number.Limit(eff.BlurX, 0, 31)), uint8(number.Limit(eff.BlurY, 0, 31))
-	var ps, oc = number.Limit(eff.PixelSize, 0, 16), col.Tint(eff.OutlineColor, eff.Tint)
+	var oc = col.Tint(eff.OutlineColor, eff.Tint)
 	var r, g, b, a = col.Channels(palette.White)
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
-	var os = uint8(number.Limit(eff.OutlineSize, 0, 255))
 	var neutralColAdj = eff.Gamma == 0 && eff.Saturation == 0 && eff.Contrast == 0 && eff.Brightness == 0
 
 	var u [33]float32
 	u[1], u[2], u[4] = float32(src.Width), float32(src.Height), float32(kind)
-	u[5], u[6] = float32(int16(eff.Gamma)+128)/255.0, float32(int16(eff.Saturation)+128)/255.0
-	u[7], u[8] = float32(int16(eff.Contrast)+128)/255.0, float32(int16(eff.Brightness)+128)/255.0
-	u[9], u[10], u[11], u[12] = round, float32(ps), float32(bx)/31.0, float32(by)/31.0
+	u[5], u[6] = eff.Gamma, eff.Saturation
+	u[7], u[8] = eff.Contrast, eff.Brightness
+	u[9], u[10], u[11], u[12] = round, eff.PixelSize, eff.BlurX, eff.BlurY
 	u[13], u[14], u[15], u[16] = colorToFloats(oc)
 	u[29], u[30], u[31], u[32] = colorToFloats(col.Tint(eff.BorderColor, eff.Tint))
 	if neutralColAdj {
@@ -170,16 +167,15 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 
 	switch kind {
 	case KindText:
-		var w, sc = eff.TextWeight, col.Tint(eff.TextShadowColor, eff.Tint)
-		var ss, sb, sx, sy = eff.TextShadowWeight, eff.TextShadowBlur, eff.TextShadowOffsetX, eff.TextShadowOffsetY
+		var sc = col.Tint(eff.TextShadowColor, eff.Tint)
 		var sr, sg, sbCol, sa = colorToFloats(sc)
 		u[1], u[2], u[17], u[18], u[19], u[20] = 0, 0, sr, sg, sbCol, sa
-		u[21], u[22], u[23], u[25] = float32(w)/127.0, float32(os)/255.0, float32(ss)/127.0, -float32(sx)/32.0
-		u[26], u[27] = -float32(sy)/32.0, float32(sb)
+		u[21], u[22], u[23], u[25] = eff.TextWeight, eff.OutlineSize, eff.TextShadowWeight, -eff.TextShadowOffsetX
+		u[26], u[27] = -eff.TextShadowOffsetY, eff.TextShadowBlur
 		r, g, b, a = col.Channels(col.Tint(eff.TextColor, eff.Tint))
 	case KindSprite, KindShape:
 		u[17], u[18], u[19], u[20] = colorToFloats(col.Tint(eff.FillColor, eff.Tint))
-		u[21], u[22] = float32(os), borderSz
+		u[21], u[22] = eff.OutlineSize, borderSz
 		u[25] = float32(uint16(number.Limit(cropMinU+0.5, 0, 1)*4095.0) & 0xFFF)
 		u[26] = float32(uint16(number.Limit(cropMaxU+0.5, 0, 1)*4095.0) & 0xFFF)
 		u[27] = float32(uint16(number.Limit(cropMinV+0.5, 0, 1)*4095.0) & 0xFFF)
@@ -192,7 +188,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	case KindTilemap:
 		r, g, b, a = col.Channels(eff.Tint)
 		u[17], u[18], u[19], u[20] = colorToFloats(col.Tint(eff.FillColor, eff.Tint))
-		u[21], u[22], u[25], u[26], u[27] = float32(os), borderSz, float32(cols), float32(rows), float32(tileSz)
+		u[21], u[22], u[25], u[26], u[27] = eff.OutlineSize, borderSz, float32(cols), float32(rows), float32(tileSz)
 	default:
 		u[17], u[18], u[19], u[20] = colorToFloats(col.Tint(eff.FillColor, eff.Tint))
 	}

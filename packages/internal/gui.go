@@ -61,13 +61,13 @@ type GuiText struct {
 	Gap    string  `xml:"gap,attr"`
 	Margin string  `xml:"margin,attr"`
 	Align  string  `xml:"align,attr"`
-	Wgt    int8    `xml:"weight,attr"`
+	Wgt    float32 `xml:"weight,attr"`
 	Col    string  `xml:"color,attr"`
 	OutSz  float32 `xml:"outlineSize,attr"`
 	OutCol string  `xml:"outlineColor,attr"`
-	ShWgt  int8    `xml:"shadowWeight,attr"`
+	ShWgt  float32 `xml:"shadowWeight,attr"`
 	ShCol  string  `xml:"shadowColor,attr"`
-	ShBlur uint8   `xml:"shadowBlur,attr"`
+	ShBlur float32 `xml:"shadowBlur,attr"`
 	ShOff  string  `xml:"shadowOffset,attr"`
 }
 type GuiTheme struct {

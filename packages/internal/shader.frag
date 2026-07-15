@@ -53,9 +53,6 @@ uniform float u[33];
 
 // ========================================================================
 
-float map(float value, float min1, float max1, float min2, float max2) {
-    return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
-}
 float shape_sdf(vec2 pLocal, vec2 halfExtents, float r, float roundness) {
     vec2 q = abs(pLocal) - halfExtents + r;
     float dShape = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
@@ -80,11 +77,10 @@ vec2 do_pixelated_uv(vec2 uv) {
     return pixelated;
 }
 vec4 do_blur(vec2 uv) {
-    vec2 blur = vec2(BLUR_X, BLUR_Y) * 16.0;
+    vec2 blur = vec2(BLUR_X, BLUR_Y);
     if (blur.x <= 0.01 && blur.y <= 0.01)
         return texture(texture0, uv);
     
-    blur /= 8.0; // adjust
     vec2 texSize = vec2(TEX_W, TEX_H);
     vec2 res = 1.0 / texSize;
     vec2 offset = (blur + 0.5) * res;
@@ -120,10 +116,10 @@ vec4 do_silhouette(vec4 color) {
     return color;
 }
 vec4 do_color_adjust(vec4 color) {
-    float gamma = exp2((0.5 - GAM) * 5.0);
-    float saturation = 10.0 * pow(SAT, log2(10.0));
-    float contrast = 3.0  * pow(CON, log2(3.0));
-    float brightness = 4.0  * BRI * BRI;
+    float gamma = exp2(-GAM * 2.5);
+    float saturation = SAT >= 0.0 ? 1.0 + SAT * 9.0 : 1.0 + SAT;
+    float contrast = CON >= 0.0 ? 1.0 + CON * 2.0 : 1.0 + CON;
+    float brightness = BRI >= 0.0 ? 1.0 + BRI * 3.0 : 1.0 + BRI;
     
     color.rgb = pow(max(color.rgb, vec3(0.0)), vec3(gamma));
     float lum_pre_sat = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
@@ -249,12 +245,12 @@ vec4 do_msdf_text() {
     float textPxDist = basePxDist + thickness;
     float sdfAlpha = fragColor.a * smoothstep(-0.5, 0.5, textPxDist);
     
-    float outlinePxDist = textPxDist + map(outlineWeight, 0.0, 1.0, 0, screenPxRange*0.4);
+    float outlinePxDist = textPxDist + outlineWeight * screenPxRange * 0.4;
     float outlineAlpha = outlineColor.a * smoothstep(-0.5, 0.5, outlinePxDist);
     outlineAlpha = max(0.0, outlineAlpha - sdfAlpha);
     
     float shadowThickness = shadowWeight * screenPxRange * 0.25;
-    float shadowSmooth = 0.5 + shadowBlur/128 * screenPxRange * 0.25;
+    float shadowSmooth = 0.5 + shadowBlur * screenPxRange * 0.25;
     float shadowAlpha = shadowColor.a * smoothstep(-shadowSmooth, shadowSmooth, shadowPxDist + shadowThickness);
     
     vec3 rgb = mix(shadowColor.rgb, outlineColor.rgb, outlineAlpha);

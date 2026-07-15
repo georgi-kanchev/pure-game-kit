@@ -277,7 +277,7 @@ var colors = map[rune]uint{'⬜': palette.White, '⬛': palette.Black, '🟥': p
 var outlineColors = map[rune]uint{'⚪': palette.White, '⚫': palette.Black, '🔴': palette.Red, '🟠': palette.Orange,
 	'🟡': palette.Yellow, '🟢': palette.Green, '🔵': palette.Blue, '🟣': palette.Purple, '🟤': palette.Brown}
 var shades = map[rune]float32{'🌑': -0.8, '🌒': -0.6, '🌓': -0.4, '🌔': -0.2, '🌘': 0.2, '🌗': 0.4, '🌖': 0.6, '🌕': 0.8}
-var weights = map[rune]int8{'⏬': -100, '🔽': -50, '🔁': 0, '🔼': 50, '⏫': 100}
+var weights = map[rune]float32{'⏬': -0.8, '🔽': -0.4, '🔁': 0, '🔼': 0.4, '⏫': 0.8}
 var sizes = map[rune]float32{'🔇': 0.5, '🔈': 0.75, '🔉': 1.0, '🔊': 1.25, '📢': 1.5}
 
 func (v *View) queueText(o *Object, mask internal.Area) {
