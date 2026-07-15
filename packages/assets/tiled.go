@@ -328,7 +328,9 @@ func getLayersOrder(layers []*layerAny) []int {
 		if is.OneOf(layer.XMLName.Local, "layer", "objectgroup") {
 			result = append(result, layer.Id)
 		}
-		result = append(result, getLayersOrder(layer.SubLayers)...)
+		if is.OneOf(layer.XMLName.Local, "layer", "objectgroup", "group") {
+			result = append(result, getLayersOrder(layer.SubLayers)...)
+		}
 	}
 	return result
 }
