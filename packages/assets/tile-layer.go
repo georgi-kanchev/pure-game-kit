@@ -3,7 +3,7 @@ package assets
 import (
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/collection"
-	"pure-game-kit/packages/utility/color"
+	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/number"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -66,7 +66,8 @@ func (l TileLayerId) SetTileArea(column, row, width, height int, tile Tile) {
 	var packed = newTilePacked(tile)
 	var r, g = uint8((packed >> 24) & 0xFF), uint8((packed >> 16) & 0xFF)
 	var b, a = uint8((packed >> 8) & 0xFF), uint8((packed >> 0) & 0xFF)
-	var colr, rect = rl.NewColor(r, g, b, a), rl.NewRectangle(float32(column), float32(row), float32(width), float32(height))
+	var colr = rl.NewColor(r, g, b, a)
+	var rect = rl.NewRectangle(float32(column), float32(row), float32(width), float32(height))
 	var columns, rows = layer.Columns, layer.Rows
 	var _, cellHasPts = layer.ShapesPerTile[tile.Id]
 
@@ -88,7 +89,7 @@ func (l TileLayerId) SetTileArea(column, row, width, height int, tile Tile) {
 	}
 
 	rl.ImageDrawRectangle(layer.Image, int32(column), int32(row), int32(width), int32(height), colr)
-	rl.UpdateTextureRec(layer.Texture, rect, collection.SameItems(width*height, colr))
+	rl.UpdateTextureRec(layer.Texture, rect, *collection.NewListOfItem(width*height, colr).ToSlice())
 }
 func (l TileLayerId) SetAtlasId(atlasId ImageId) {
 	var layer = internal.TileLayers[uint8(l)]
@@ -107,7 +108,7 @@ func (l TileLayerId) TileAtCell(column, row int) Tile {
 	}
 
 	var c = rl.GetImageColor(*layer.Image, int32(column), int32(row))
-	color.RGBA(c.R, c.G, c.B, c.A)
+	col.RGBA(c.R, c.G, c.B, c.A)
 	var packed = uint32(c.R)<<24 | uint32(c.G)<<16 | uint32(c.B)<<8 | uint32(c.A)
 	return newTileUnpacked(packed)
 }

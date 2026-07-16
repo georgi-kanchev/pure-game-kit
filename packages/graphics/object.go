@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/assets"
 	geometry "pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/collection"
 	col "pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/number"
@@ -162,84 +163,88 @@ func (o *Object) TextSize() (width, height float32) {
 
 // tilemap ========================================================
 
-func (o *Object) TilemapShapes() []geometry.Shape {
+func (o *Object) TilemapShapes(result *[]geometry.Shape) {
 	var layer = internal.TileLayers[uint8(o.TileLayerId)]
 	if layer == nil {
-		return nil
+		return
 	}
 
+	var list = collection.NewListFromSlice(result)
+	list.Clear()
 	if layer.Image == nil || layer.Texture.Width == 0 { // is object layer
-		var result = make([]geometry.Shape, len(layer.Objects))
-		for i, s := range layer.Objects {
+		for _, s := range layer.Objects {
 			var x, y = o.PointToGlobal(s[0], s[1])
-			result[i] = geometry.Shape{X: x, Y: y, Width: s[2], Height: s[3], Angle: o.Angle + s[4], Roundness: s[5]}
+			list.Add(geometry.NewRoundedRectangle(x, y, s[2], s[3], o.Angle+s[4], s[5]))
 		}
-		return result
+		return
 	}
 
 	var w, h = o.TileLayerId.Size()
-	var result []geometry.Shape
 	for cellIndex1D := range layer.CellsWithPoints {
 		var row, column = number.Index1DToIndexes2D(cellIndex1D, w, h)
-		result = append(result, o.TilemapShapesAtCell(column, row)...)
+		o.TilemapShapesAtCell(column, row, result)
 	}
-	return result
 }
-func (o *Object) TilemapShapesAtCell(column, row int) []geometry.Shape {
+func (o *Object) TilemapShapesAtCell(column, row int, result *[]geometry.Shape) {
 	var tile = o.TileLayerId.TileAtCell(column, row)
 	if tile.Id == 0 {
-		return nil
+		return
 	}
 	var tw, th = o.TileLayerId.TileSize()
-	var shapes = o.TilemapShapesFromTile(tile.Id)
-	for i := range shapes {
-		var relX, relY = shapes[i].X - tw/2, shapes[i].Y - th/2
+	var temp []geometry.Shape // temporary local slice so we don't clear the result
+	o.TilemapShapesFromTile(tile.Id, &temp)
+	var list = collection.NewListFromSlice(result)
+
+	for _, s := range temp {
+		var relX, relY = s.X - tw/2, s.Y - th/2
 		switch tile.Rotations90 {
 		case 1:
-			relX, relY, shapes[i].Angle = -relY, relX, shapes[i].Angle+90
+			relX, relY, s.Angle = -relY, relX, s.Angle+90
 		case 2:
-			relX, relY, shapes[i].Angle = -relX, -relY, shapes[i].Angle+180
+			relX, relY, s.Angle = -relX, -relY, s.Angle+180
 		case 3:
-			relX, relY, shapes[i].Angle = relY, -relX, shapes[i].Angle+270
+			relX, relY, s.Angle = relY, -relX, s.Angle+270
 		}
 		if tile.Flip {
-			relX, shapes[i].Angle = -relX, -shapes[i].Angle
+			relX, s.Angle = -relX, -s.Angle
 		}
-		shapes[i].X, shapes[i].Y = relX+tw/2, relY+th/2
-		shapes[i].X, shapes[i].Y = o.PointToGlobal(shapes[i].X+float32(column)*tw, shapes[i].Y+float32(row)*th)
+
+		s.X, s.Y = relX+tw/2, relY+th/2
+		s.X, s.Y = o.PointToGlobal(s.X+float32(column)*tw, s.Y+float32(row)*th)
+		list.Add(s)
 	}
-	return shapes
 }
-func (o *Object) TilemapShapesFromTile(tileId uint16) []geometry.Shape {
+func (o *Object) TilemapShapesFromTile(tileId uint16, result *[]geometry.Shape) {
 	var layer = internal.TileLayers[uint8(o.TileLayerId)]
 	if layer == nil {
-		return nil
+		return
 	}
 	var shapes, has = layer.ShapesPerTile[tileId]
 	if !has {
-		return nil
+		return
 	}
-	var result = make([]geometry.Shape, len(shapes))
-	for i, s := range shapes {
-		result[i] = geometry.Shape{X: s[0], Y: s[1], Width: s[2], Height: s[3], Angle: o.Angle + s[4], Roundness: s[5]}
+	var list = collection.NewListFromSlice(result)
+	list.Clear()
+	for _, s := range shapes {
+		list.Add(geometry.NewRoundedRectangle(s[0], s[1], s[2], s[3], o.Angle+s[4], s[5]))
 	}
-	return result
 }
-func (o *Object) TilemapPaths() []float32 {
+func (o *Object) TilemapPaths(result *[]float32) {
 	var layer = internal.TileLayers[uint8(o.TileLayerId)]
 	if layer == nil || len(layer.Paths) == 0 {
-		return nil
+		return
 	}
-	var result = make([]float32, len(layer.Paths))
-	for i := 0; i < len(layer.Paths); i += 2 {
+
+	var list = collection.NewListFromSlice(result)
+	list.Clear()
+	for i := 0; i < len(layer.Paths)-1; i += 2 {
 		var px, py = layer.Paths[i], layer.Paths[i+1]
 		if number.IsNaN(px) || number.IsNaN(py) {
-			result[i], result[i+1] = px, py
+			list.Add(px, py)
 			continue
 		}
-		result[i], result[i+1] = o.PointToGlobal(px, py)
+		list.Add(o.PointToGlobal(px, py))
 	}
-	return result
 }
 
 // private ========================================================

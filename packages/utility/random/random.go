@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand/v2"
+	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/number"
 	"reflect"
 )
@@ -88,10 +89,12 @@ func HasChance(percent float32, seeds ...float32) bool {
 	return Range(float32(0), 100, seeds...) <= number.Minimum(100, percent)
 }
 
-func Shuffle[T any](items []T, seeds ...float32) []T {
-	for i := len(items) - 1; i > 0; i-- {
+func Shuffle[T comparable](items []T, seeds ...float32) []T {
+	var list = collection.NewListFromSlice(&items)
+
+	for i := list.Length() - 1; i > 0; i-- {
 		var j = Range(0, i, seeds...)
-		items[i], items[j] = items[j], items[i]
+		list.Swap(i, j)
 	}
 	return items
 }

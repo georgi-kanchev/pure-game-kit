@@ -6,11 +6,11 @@ package time
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/flag"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/text"
 	"pure-game-kit/packages/utility/time/unit"
+	"strings"
 	"time"
 )
 
@@ -45,8 +45,10 @@ func FromWeeks(weeks float32) float32               { return weeks * 604800 }
 
 // private ========================================================
 
+var builder strings.Builder
+
 func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm bool) string {
-	var parts []string
+	builder.Reset()
 	var counter = 0
 	var conditionalSep = func() string {
 		if counter > 0 {
@@ -58,10 +60,9 @@ func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm
 	if flag.IsOn(units, unit.Day) {
 		var val = int(ts.Hours() / 24)
 		var str = text.PadRight(number.Format(val), 2, "0")
-		parts = append(parts, str)
+		builder.WriteString(str)
 		counter++
 	}
-
 	if flag.IsOn(units, unit.Hour) {
 		var sep = conditionalSep()
 		var val int
@@ -71,24 +72,21 @@ func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm
 		} else {
 			val = int((ts % (24 * time.Hour)) / time.Hour)
 		}
-		parts = append(parts, sep+text.PadLeft(text.New(val), 2, "0"))
+		builder.WriteString(sep + text.PadLeft(text.New(val), 2, "0"))
 		counter++
 	}
-
 	if flag.IsOn(units, unit.Minute) {
 		var sep = conditionalSep()
 		var val = int((ts % time.Hour) / time.Minute)
-		parts = append(parts, sep+text.PadLeft(text.New(val), 2, "0"))
+		builder.WriteString(sep + text.PadLeft(text.New(val), 2, "0"))
 		counter++
 	}
-
 	if flag.IsOn(units, unit.Second) {
 		var sep = conditionalSep()
 		var val = int((ts % time.Minute) / time.Second)
-		parts = append(parts, sep+text.PadLeft(text.New(val), 2, "0"))
+		builder.WriteString(sep + text.PadLeft(text.New(val), 2, "0"))
 		counter++
 	}
-
 	if flag.IsOn(units, unit.Millisecond) {
 		var val = int((ts % time.Second) / time.Millisecond)
 		var dot = ""
@@ -99,18 +97,16 @@ func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm
 		if dot == "" && counter > 0 {
 			sep = divider
 		}
-		parts = append(parts, sep+dot+text.New(val))
+		builder.WriteString(sep + dot + text.New(val))
 		counter++
 	}
-
 	if is12Hour && amPm {
 		var sep = " "
 		var amPm = "AM"
 		if int(ts.Hours())%24 >= 12 {
 			amPm = "PM"
 		}
-		parts = append(parts, sep+amPm)
+		builder.WriteString(sep + amPm)
 	}
-
-	return collection.ToText(parts, "")
+	return builder.String()
 }

@@ -3,12 +3,12 @@ package is
 
 import (
 	"fmt"
-	"pure-game-kit/packages/utility/collection"
+	"slices"
 )
 
-func AnyOf[T comparable](value T, values ...T) bool  { return collection.Contains(values, value) }
-func OneOf[T comparable](value T, values ...T) bool  { return collection.Contains(values, value) }
-func NoneOf[T comparable](value T, values ...T) bool { return !collection.Contains(values, value) }
+func AnyOf[T comparable](value T, values ...T) bool  { return slices.Contains(values, value) }
+func OneOf[T comparable](value T, values ...T) bool  { return slices.Contains(values, value) }
+func NoneOf[T comparable](value T, values ...T) bool { return !slices.Contains(values, value) }
 func AllOf[T comparable](value T, values ...T) bool {
 	for _, v := range values {
 		if value != v {

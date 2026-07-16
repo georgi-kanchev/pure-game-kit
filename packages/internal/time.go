@@ -22,7 +22,7 @@ func UpdateTimeData() {
 	var secondsSinceMidnight = float32(now.Sub(midnight).Seconds())
 
 	Clock = secondsSinceMidnight
-	FrameDelta = rl.GetFrameTime()
+	FrameDelta = min(rl.GetFrameTime(), 0.1)
 	FPS = rl.GetFPS()
 	Runtime += FrameDelta
 	Frame++

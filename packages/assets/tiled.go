@@ -148,7 +148,8 @@ func loadTiled(tmxFilePath string) (*atlas, *tiled) {
 	var layersInOrder *layersInOrder
 	storage.FromXML(mapContent, &layersInOrder)
 	var order = getLayersOrder(layersInOrder.Layers)
-	collection.Reverse(order)
+	var orderList = collection.NewListFromSlice(&order)
+	orderList.Reverse()
 	tiled.LayerIdsInOrder = order
 
 	atlas.TilesLookUp = map[uint32]*tile{}
@@ -323,7 +324,8 @@ func tilesFromBytes(data []byte) []uint32 {
 }
 func getLayersOrder(layers []*layerAny) []int {
 	var result = []int{}
-	collection.Reverse(layers)
+	var list = collection.NewListFromSlice(&layers)
+	list.Reverse()
 	for _, layer := range layers {
 		if is.OneOf(layer.XMLName.Local, "layer", "objectgroup") {
 			result = append(result, layer.Id)

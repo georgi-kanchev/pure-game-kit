@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "/home/gojur/code/combathrone/data/map.tmx",
+    "activeFile": "",
     "expandedProjectPaths": [
         "."
     ],
@@ -46,16 +46,16 @@
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx": {
-            "scale": 1.5,
-            "selectedLayer": 2,
+            "scale": 4,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 246.33333333333337,
-                "y": 205.66666666666663
+                "x": 532.625,
+                "y": 247.875
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx#tileset": {
             "scaleInDock": 2,
-            "scaleInEditor": 1
+            "scaleInEditor": 8
         },
         "atlas.tsx": {
             "dynamicWrapping": false,
