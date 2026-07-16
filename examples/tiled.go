@@ -21,8 +21,8 @@ func Tiled() {
 	}
 
 	var shapes, cellShapes = collection.NewList[geometry.Shape](), collection.NewList[geometry.Shape]()
-	layers[1].TilemapShapes(shapes.ToSlice())
-	layers[3].TilemapShapes(cellShapes.ToSlice())
+	layers[1].TilemapShapes(shapes.AsSlice())
+	layers[3].TilemapShapes(cellShapes.AsSlice())
 
 	layers[0].TileLayerId.SetTile(0, 0, assets.NewTile(55))
 
@@ -34,10 +34,10 @@ func Tiled() {
 		for _, l := range layers {
 			view.DrawObject(&l)
 		}
-		for _, s := range *shapes.ToSlice() {
+		for _, s := range *shapes.AsSlice() {
 			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.Red, geometry.Area{})
 		}
-		for _, s := range *cellShapes.ToSlice() {
+		for _, s := range *cellShapes.AsSlice() {
 			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed, geometry.Area{})
 		}
 

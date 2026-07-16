@@ -204,7 +204,7 @@ func (l List[T]) Join(lists ...List[T]) {
 }
 
 func (l List[T]) Length() int           { return len(*l.slice) }
-func (l List[T]) ToSlice() *[]T         { return (*[]T)(l.slice) }
+func (l List[T]) AsSlice() *[]T         { return (*[]T)(l.slice) }
 func (l List[T]) First() T              { return (*l.slice)[0] }
 func (l List[T]) Last() T               { return (*l.slice)[len(*l.slice)-1] }
 func (l List[T]) Get(index int) T       { return (*l.slice)[index] }

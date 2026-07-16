@@ -89,7 +89,7 @@ func (l TileLayerId) SetTileArea(column, row, width, height int, tile Tile) {
 	}
 
 	rl.ImageDrawRectangle(layer.Image, int32(column), int32(row), int32(width), int32(height), colr)
-	rl.UpdateTextureRec(layer.Texture, rect, *collection.NewListOfItem(width*height, colr).ToSlice())
+	rl.UpdateTextureRec(layer.Texture, rect, *collection.NewListOfItem(width*height, colr).AsSlice())
 }
 func (l TileLayerId) SetAtlasId(atlasId ImageId) {
 	var layer = internal.TileLayers[uint8(l)]
