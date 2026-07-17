@@ -11,83 +11,68 @@ import (
 	"strings"
 )
 
-// List wraps a standard slice to allow high-performance, allocation-free in-place mutations
-// without cluttering the code with pointer syntax.
-type List[T comparable] struct{ slice *[]T }
-
-func NewList[T comparable](items ...T) List[T] {
-	if len(items) == 0 {
-		return List[T]{slice: &[]T{}}
-	}
-	var result = List[T]{slice: &[]T{}}
-	result.Add(items...)
-	return result
+func Clear[T any](collection []T) []T {
+	return collection[:0]
 }
-func NewListOfItem[T comparable](amount int, item T) List[T] {
-	if amount <= 0 {
-		return List[T]{slice: &[]T{}}
-	}
-	var result = List[T]{slice: &[]T{}}
-	for range amount {
-		result.Add(item)
-	}
-	return result
+func Add[T any](collection []T, items ...T) []T {
+	return append(collection, items...)
 }
-func NewListFromSlice[T comparable](slice *[]T) List[T] {
-	return List[T]{slice: slice}
+func Insert[T any](collection []T, index int, items ...T) []T {
+	return slices.Insert(collection, index, items...)
 }
-
-func (l List[T]) Clear()                       { *l.slice = (*l.slice)[:0] }
-func (l List[T]) Add(items ...T)               { *l.slice = append(*l.slice, items...) }
-func (l List[T]) Insert(index int, items ...T) { *l.slice = slices.Insert(*l.slice, index, items...) }
-func (l List[T]) Reverse()                     { slices.Reverse(*l.slice) }
-func (l List[T]) Set(index int, value T)       { (*l.slice)[index] = value }
-func (l List[T]) Delete(index int)             { *l.slice = slices.Delete(*l.slice, index, index+1) }
-func (l List[T]) Swap(indexA, indexB int) {
-	(*l.slice)[indexA], (*l.slice)[indexB] = (*l.slice)[indexB], (*l.slice)[indexA]
+func Reverse[T any](collection []T) {
+	slices.Reverse(collection)
 }
-func (l List[T]) Remove(items ...T) {
+func Delete[T any](collection []T, index int) []T {
+	return slices.Delete(collection, index, index+1)
+}
+func Swap[T any](collection []T, indexA, indexB int) {
+	collection[indexA], collection[indexB] = collection[indexB], collection[indexA]
+}
+func Remove[T comparable](collection []T, items ...T) []T {
 	for _, item := range items {
-		for i, v := range *l.slice {
+		for i, v := range collection {
 			if v == item {
-				*l.slice = slices.Delete(*l.slice, i, i+1)
+				collection = slices.Delete(collection, i, i+1)
 				break
 			}
 		}
 	}
+	return collection
 }
-func (l List[T]) RemoveAt(indexes ...int) {
+func RemoveAt[T any](collection []T, indexes ...int) []T {
 	// sort indexes descending so deleting early indices doesn't shift later ones we still need to delete
 	slices.SortFunc(indexes, func(a, b int) int { return b - a })
 	for _, index := range indexes {
-		if index >= 0 && index < len(*l.slice) {
-			*l.slice = slices.Delete(*l.slice, index, index+1)
+		if index >= 0 && index < len(collection) {
+			collection = slices.Delete(collection, index, index+1)
 		}
 	}
+	return collection
 }
-func (l List[T]) RemoveUnordered(index int) {
-	lastIdx := len(*l.slice) - 1 // fast but changes order
-	(*l.slice)[index] = (*l.slice)[lastIdx]
-	*l.slice = (*l.slice)[:lastIdx]
+func RemoveUnordered[T any](collection []T, index int) []T {
+	lastIdx := len(collection) - 1 // fast but changes order
+	collection[index] = collection[lastIdx]
+	return collection[:lastIdx]
 }
-func (l List[T]) Shift(offset int) {
-	var n = len(*l.slice)
+func Shift[T any](collection []T, offset int) {
+	var n = len(collection)
 	if n == 0 || offset == 0 {
 		return
 	}
 	offset = ((offset % n) + n) % n // normalize offset
 
 	var tmp = make([]T, n)
-	copy(tmp[offset:], (*l.slice)[:n-offset])
-	copy(tmp[:offset], (*l.slice)[n-offset:])
-	copy(*l.slice, tmp)
+	copy(tmp[offset:], collection[:n-offset])
+	copy(tmp[:offset], collection[n-offset:])
+	copy(collection, tmp)
 }
-func (l List[T]) ShiftIndexes(offset int, wrap bool, indexes ...int) {
-	if len(*l.slice) == 0 || offset == 0 || len(indexes) == 0 {
+func ShiftIndexes[T any](collection []T, offset int, wrap bool, indexes ...int) {
+	if len(collection) == 0 || offset == 0 || len(indexes) == 0 {
 		return
 	}
 
-	var n = len(*l.slice)
+	var n = len(collection)
 	var indexSet = make(map[int]bool, len(indexes))
 	for _, idx := range indexes {
 		if idx >= 0 && idx < n {
@@ -122,10 +107,10 @@ func (l List[T]) ShiftIndexes(offset int, wrap bool, indexes ...int) {
 		}
 
 		if occupied[target] {
-			tmp[i] = (*l.slice)[i]
+			tmp[i] = collection[i]
 			occupied[i] = true
 		} else {
-			tmp[target] = (*l.slice)[i]
+			tmp[target] = collection[i]
 			occupied[target] = true
 		}
 	}
@@ -138,24 +123,24 @@ func (l List[T]) ShiftIndexes(offset int, wrap bool, indexes ...int) {
 		for occupied[pos] {
 			pos++
 		}
-		tmp[pos] = (*l.slice)[i]
+		tmp[pos] = collection[i]
 		occupied[pos] = true
 	}
 
-	copy(*l.slice, tmp)
+	copy(collection, tmp)
 }
-func (l List[T]) ShiftItems(offset int, wrap bool, items ...T) {
+func ShiftItems[T comparable](collection []T, offset int, wrap bool, items ...T) {
 	var indexes = make([]int, 0, len(items))
 	for _, item := range items {
-		if idx := l.IndexOf(item); idx != -1 {
+		if idx := IndexOf(collection, item); idx != -1 {
 			indexes = append(indexes, idx)
 		}
 	}
-	l.ShiftIndexes(offset, wrap, indexes...)
+	ShiftIndexes(collection, offset, wrap, indexes...)
 }
-func (l List[T]) ShiftToFront(items ...T) {
-	if len(items) == 0 || len(*l.slice) == 0 {
-		return
+func ShiftToFront[T comparable](collection []T, items ...T) []T {
+	if len(items) == 0 || len(collection) == 0 {
+		return collection
 	}
 
 	var itemSet = make(map[T]struct{}, len(items)) // build a set for fast O(1) lookup
@@ -164,69 +149,88 @@ func (l List[T]) ShiftToFront(items ...T) {
 	}
 
 	var writeIdx = 0 // filter out the moving items in-place to preserve remaining order
-	for i := 0; i < len(*l.slice); i++ {
-		if _, found := itemSet[(*l.slice)[i]]; !found {
-			(*l.slice)[writeIdx] = (*l.slice)[i]
+	for i := 0; i < len(collection); i++ {
+		if _, found := itemSet[collection[i]]; !found {
+			collection[writeIdx] = collection[i]
 			writeIdx++
 		}
 	}
-	*l.slice = (*l.slice)[:writeIdx]
+	collection = collection[:writeIdx]
 
-	var origLen, itemsLen = len(*l.slice), len(items)
-	*l.slice = slices.Grow(*l.slice, itemsLen) // ensure we have enough capacity
-	*l.slice = (*l.slice)[:origLen+itemsLen]
-	copy((*l.slice)[itemsLen:], (*l.slice)[:origLen]) // shift original items to the right
-	copy(*l.slice, items)                             // copy shift items to the front
+	var origLen, itemsLen = len(collection), len(items)
+	collection = slices.Grow(collection, itemsLen) // ensure we have enough capacity
+	collection = collection[:origLen+itemsLen]
+	copy(collection[itemsLen:], collection[:origLen]) // shift original items to the right
+	copy(collection, items)                           // copy shift items to the front
+	return collection
 }
-func (l List[T]) ShiftToEnd(items ...T) {
+func ShiftToEnd[T comparable](collection []T, items ...T) []T {
 	if len(items) == 0 {
-		return
+		return collection
 	}
 
 	for i := len(items) - 1; i >= 0; i-- {
 		var block = items[i]
-		if idx := l.IndexOf(block); idx != -1 { // find and remove the item if it exists
-			*l.slice = slices.Delete(*l.slice, idx, idx+1)
+		if idx := IndexOf(collection, block); idx != -1 { // find and remove the item if it exists
+			collection = slices.Delete(collection, idx, idx+1)
 		}
-		*l.slice = append(*l.slice, block) // add to the end
+		collection = append(collection, block) // add to the end
 	}
+	return collection
 }
-func (l List[T]) Join(lists ...List[T]) {
+func Join[T any](collection []T, collections ...[]T) []T {
 	var additionalLen = 0
-	for _, arr := range lists {
-		additionalLen += len(*arr.slice)
+	for _, arr := range collections {
+		additionalLen += len(arr)
 	}
 
-	*l.slice = slices.Grow(*l.slice, additionalLen)
-	for _, arr := range lists {
-		*l.slice = append(*l.slice, *arr.slice...)
+	collection = slices.Grow(collection, additionalLen)
+	for _, arr := range collections {
+		collection = append(collection, arr...)
 	}
+	return collection
+}
+func SameItems[T any](amount int, item T) []T {
+	var result = make([]T, amount)
+	for i := range amount {
+		result[i] = item
+	}
+	return result
 }
 
-func (l List[T]) Length() int           { return len(*l.slice) }
-func (l List[T]) AsSlice() *[]T         { return (*[]T)(l.slice) }
-func (l List[T]) First() T              { return (*l.slice)[0] }
-func (l List[T]) Last() T               { return (*l.slice)[len(*l.slice)-1] }
-func (l List[T]) Get(index int) T       { return (*l.slice)[index] }
-func (l List[T]) IsEmpty() bool         { return len(*l.slice) == 0 }
-func (l List[T]) Contains(value T) bool { return slices.Contains(*l.slice, value) }
-
-func (l List[T]) Clone() { l.Copy() }
-func (l List[T]) Copy() List[T] {
-	var cloned = slices.Clone(*l.slice)
-	return NewListFromSlice(&cloned)
+func Length[T any](collection []T) int {
+	return len(collection)
 }
-func (l List[T]) IndexOf(value T) int {
-	for i, v := range *l.slice {
+func First[T any](collection []T) T {
+	return collection[0]
+}
+func Last[T any](collection []T) T {
+	return collection[len(collection)-1]
+}
+func IsEmpty[T any](collection []T) bool {
+	return len(collection) == 0
+}
+func Contains[T comparable](collection []T, value T) bool {
+	return slices.Contains(collection, value)
+}
+
+func Clone[T any](collection []T) []T {
+	return Copy(collection)
+}
+func Copy[T any](collection []T) []T {
+	return slices.Clone(collection)
+}
+func IndexOf[T comparable](collection []T, value T) int {
+	for i, v := range collection {
 		if v == value {
 			return i
 		}
 	}
 	return -1
 }
-func (l List[T]) HasDuplicates() bool {
-	var seen = make(map[T]struct{}, len(*l.slice))
-	for _, item := range *l.slice {
+func HasDuplicates[T comparable](collection []T) bool {
+	var seen = make(map[T]struct{}, len(collection))
+	for _, item := range collection {
 		if _, exists := seen[item]; exists {
 			return true
 		}
@@ -234,9 +238,9 @@ func (l List[T]) HasDuplicates() bool {
 	}
 	return false
 }
-func (l List[T]) String(divider string) string {
+func ToText[T any](collection []T, divider string) string {
 	builder.Reset()
-	for i, elem := range *l.slice {
+	for i, elem := range collection {
 		if i > 0 {
 			builder.WriteString(divider)
 		}
@@ -314,7 +318,7 @@ func MatrixFlatten[T any](matrix [][]T) []T {
 	}
 	return result
 }
-func MatrixString[T any](matrix [][]T, dividerRow, dividerColumn string) string {
+func MatrixToText[T any](matrix [][]T, dividerRow, dividerColumn string) string {
 	builder.Reset()
 	for i, row := range matrix {
 		for j, elem := range row {

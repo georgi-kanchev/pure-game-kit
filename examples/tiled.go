@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
-	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/window"
 )
@@ -20,9 +19,8 @@ func Tiled() {
 		layers = append(layers, layer)
 	}
 
-	var shapes, cellShapes = collection.NewList[geometry.Shape](), collection.NewList[geometry.Shape]()
-	layers[1].TilemapShapes(shapes.AsSlice())
-	layers[3].TilemapShapes(cellShapes.AsSlice())
+	var shapes = layers[1].TilemapShapes()
+	var cellShapes = layers[3].TilemapShapes()
 
 	layers[0].TileLayerId.SetTile(0, 0, assets.NewTile(55))
 
@@ -34,10 +32,10 @@ func Tiled() {
 		for _, l := range layers {
 			view.DrawObject(&l)
 		}
-		for _, s := range *shapes.AsSlice() {
+		for _, s := range shapes {
 			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.Red, geometry.Area{})
 		}
-		for _, s := range *cellShapes.AsSlice() {
+		for _, s := range cellShapes {
 			view.DrawShape(s.X, s.Y, s.Width, s.Height, s.Angle, s.Roundness, palette.DarkRed, geometry.Area{})
 		}
 
