@@ -3,15 +3,15 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "/home/gojur/code/combathrone/data/map.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "": {
-            "scaleInDock": 2,
-            "scaleInEditor": 4
+            "scaleInDock": 1,
+            "scaleInEditor": 8
         },
         "/home/gojur/Desktop/atlas.tsx": {
             "scaleInDock": 0.03125,
@@ -46,15 +46,24 @@
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx": {
-            "scale": 4,
+            "expandedGroupLayers": [
+                40,
+                38,
+                8,
+                37,
+                21,
+                48,
+                11
+            ],
+            "scale": 1.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 532.625,
-                "y": 247.875
+                "x": 238.33333333333337,
+                "y": 231.66666666666663
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx#tileset": {
-            "scaleInDock": 2,
+            "scaleInDock": 0.5,
             "scaleInEditor": 8
         },
         "atlas.tsx": {

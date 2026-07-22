@@ -126,8 +126,10 @@ func (v *View) DrawObject(object *Object) {
 
 	var mask = internal.Area(o.Mask)
 	if o.Mask != (geometry.Area{}) {
-		mask.X += float32(internal.WindowWidth) / 2
-		mask.Y += float32(internal.WindowHeight) / 2
+		mask.X = (o.Mask.X-internal.ViewX)*internal.ViewZoom + internal.ViewArea.X
+		mask.Y = (o.Mask.Y-internal.ViewY)*internal.ViewZoom + internal.ViewArea.Y
+		mask.Width *= internal.ViewZoom
+		mask.Height *= internal.ViewZoom
 	}
 
 	var eff = (*internal.Effects)(&o.Effects)

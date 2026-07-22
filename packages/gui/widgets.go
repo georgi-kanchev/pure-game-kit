@@ -557,9 +557,7 @@ func handleText(text string, area, mask Area, inter, opt, base internal.GuiText,
 	view.DrawObject(&obj)
 }
 
-func scaleMask(mask Area) Area {
-	return geometry.NewArea(mask.X*Scale, mask.Y*Scale, mask.Width*Scale, mask.Height*Scale)
-}
+func scaleMask(mask Area) Area { return mask }
 func getTheme(theme assets.ThemeId) internal.GuiTheme {
 	var th, has = internal.Themes[uint16(theme)]
 	if !has {

@@ -16,7 +16,7 @@ type Effects internal.Effects
 type Object struct {
 	geometry.Shape
 
-	Mask    geometry.Area // In window space.
+	Mask    geometry.Area // In view space.
 	Effects Effects
 
 	// sprite =========================================================
