@@ -43,7 +43,7 @@ async function exportXml() {
 }
 
 function buildXml() {
-    const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<data>'];
+    const lines = ['<?xml version="1.0" encoding="UTF-8"?>', `<data grid="${gridSize}">`];
 
     lines.push('  <frames>');
     frames.forEach((f, i) => {
@@ -80,6 +80,17 @@ document.getElementById('load').addEventListener('click', () => {
 function importXml(text) {
     const doc = new DOMParser().parseFromString(text, 'application/xml');
     if (doc.querySelector('parsererror')) return;
+
+    // load grid size
+    const dataEl = doc.querySelector('data');
+    if (dataEl) {
+        const g = parseInt(dataEl.getAttribute('grid'));
+        if (!isNaN(g) && g > 0) {
+            gridSize = g;
+            document.getElementById('gridSize').value = g;
+            if (image) buildChecker(image.width, image.height);
+        }
+    }
 
     // load frames — generate hues
     const frameEls = [...doc.querySelectorAll('frames > frame')];

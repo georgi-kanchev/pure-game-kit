@@ -88,6 +88,11 @@ window.addEventListener('mouseup', () => {
 let isEnterHeld = false;
 
 window.addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === 'Escape') && e.target.matches('input, textarea')) {
+        e.target.blur();
+        return;
+    }
+    if (e.target.matches('input, textarea, select')) return;
     if (e.key === 'Enter' && selection && image) {
         if (!isEnterHeld) {
             isEnterHeld = true;
@@ -102,6 +107,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 window.addEventListener('keyup', (e) => {
+    if (e.target.matches('input, textarea, select')) return;
     if (e.key === 'Enter' && isEnterHeld) {
         isEnterHeld = false;
         const idx = enterDigits !== '' ? parseInt(enterDigits) : frames.length;

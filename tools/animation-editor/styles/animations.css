@@ -72,14 +72,31 @@
     box-shadow: inset 0 0 0 1px var(--item-color, var(--accent-color));
 }
 
+.preview-resizer {
+    height: 4px;
+    min-height: 4px;
+    cursor: row-resize;
+    background-color: #111;
+    transition: background-color 0.2s;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.preview-resizer:hover,
+.preview-resizer:active {
+    background-color: #ff9d5c;
+}
+
 .preview-panel {
     flex-shrink: 0;
+    background: #111;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     padding: 4px 6px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    overflow: hidden;
 }
 
 .preview-controls {

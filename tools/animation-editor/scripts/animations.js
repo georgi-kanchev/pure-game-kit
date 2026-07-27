@@ -74,11 +74,22 @@ function highlightSelection() {
     });
 }
 
+const PREVIEW_MIN_H = 80;
+const PREVIEW_DEFAULT_H = 220;
+
 function selectAnimation(idx) {
     stopPreview();
     selectedAnimIdx = idx;
     highlightSelection();
-    document.getElementById('previewPanel').style.display = idx !== -1 ? '' : 'none';
+    const visible = idx !== -1;
+    document.getElementById('previewPanel').style.display = visible ? '' : 'none';
+    document.getElementById('previewResizer').style.display = visible ? '' : 'none';
+    if (visible) {
+        const panel = document.getElementById('previewPanel');
+        if (!panel.style.height) {
+            panel.style.height = PREVIEW_DEFAULT_H + 'px';
+        }
+    }
     drawView();
 }
 
@@ -120,15 +131,24 @@ function stopPreview(full) {
 function showPreviewFrame(f) {
     if (!image || !f) return;
     const pc = document.getElementById('previewCanvas');
-    pc.width = f.w;
-    pc.height = f.h;
-    const maxW = pc.parentElement.clientWidth - 12;
-    const scale = maxW / f.w;
-    pc.style.width = maxW + 'px';
-    pc.style.height = (f.h * scale) + 'px';
+    const pad = 1;
+    pc.width = f.w + pad * 2;
+    pc.height = f.h + pad * 2;
+    const panel = document.getElementById('previewPanel');
+    const maxW = panel.clientWidth - 12;
+    const maxH = panel.clientHeight - 40;
+    let scale = maxW / pc.width;
+    if (maxH > 0 && pc.height * scale > maxH) {
+        scale = maxH / pc.height;
+    }
+    pc.style.width = (pc.width * scale) + 'px';
+    pc.style.height = (pc.height * scale) + 'px';
     const pctx = pc.getContext('2d');
     pctx.imageSmoothingEnabled = false;
-    pctx.drawImage(image, f.x, f.y, f.w, f.h, 0, 0, f.w, f.h);
+    pctx.drawImage(image, f.x, f.y, f.w, f.h, pad, pad, f.w, f.h);
+    pctx.strokeStyle = '#3a3a3a';
+    pctx.lineWidth = 1;
+    pctx.strokeRect(0.5, 0.5, pc.width - 1, pc.height - 1);
 }
 
 function updatePreviewFrame() {
@@ -204,4 +224,31 @@ document.getElementById('previewFrame').addEventListener('input', () => {
         selection = { x: f.x, y: f.y, w: f.w, h: f.h };
         drawView();
     }
+});
+
+// Preview panel vertical resizer
+document.getElementById('previewResizer').addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const panel = document.getElementById('previewPanel');
+    const parent = panel.parentElement;
+    const startY = e.clientY;
+    const startH = panel.offsetHeight;
+
+    function onMove(ev) {
+        const parentRect = parent.getBoundingClientRect();
+        const maxH = parentRect.height - PREVIEW_MIN_H;
+        let newH = startH + (startY - ev.clientY);
+        newH = Math.max(PREVIEW_MIN_H, Math.min(maxH, newH));
+        panel.style.height = newH + 'px';
+    }
+
+    function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.style.cursor = 'default';
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    document.body.style.cursor = 'row-resize';
 });
