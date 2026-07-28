@@ -17,7 +17,7 @@ import (
 )
 
 // Expects a Tiled map file with a single embedded tileset atlas.
-func LoadTileLayersFromTiled(tmxPath string) []TileLayerId {
+func LoadTileLayersFromTiled(tmxPath string) (layers []TileLayerId, tileset ImageId) {
 	var tileAtlas, tiled = loadTiled(tmxPath)
 	var result, dir = make(map[int]TileLayerId), path.Folder(tmxPath)
 	var imageId ImageId
@@ -35,7 +35,7 @@ func LoadTileLayersFromTiled(tmxPath string) []TileLayerId {
 	for _, id := range tiled.LayerIdsInOrder {
 		layerIds = append(layerIds, result[id])
 	}
-	return layerIds
+	return layerIds, imageId
 }
 
 // private ========================================================
