@@ -250,7 +250,7 @@ func (v *View) DrawDebugInfo(detailed bool) {
 		}
 	}
 
-	const size float32 = 25
+	var size float32 = internal.WindowHeight / 40
 	var tlx, tly = v.PointFromScreen(5, 5)
 	var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*15)/v.Zoom)
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
@@ -259,8 +259,6 @@ func (v *View) DrawDebugInfo(detailed bool) {
 	if detailed {
 		v.DrawText(debug.MemoryUsage(), x, y, size, 0, palette.White, geometry.Area{})
 	}
-	// rl.DrawText(str, 10, 15, 32, rl.White)
-	// rl.DrawText(debug.MemoryUsage(), 10, 400, 32, rl.White)
 }
 
 // private ========================================================

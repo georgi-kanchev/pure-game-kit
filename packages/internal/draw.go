@@ -105,7 +105,6 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	if flipV {
 		dst.Y -= dst.Height
 	}
-	var borderSz = eff.BorderSize * ViewZoom
 
 	if ViewAngle != 0 || ViewZoom != 1 || ViewX != 0 || ViewY != 0 {
 		var cx, cy = dst.X + dst.Width/2, dst.Y + dst.Height/2
@@ -140,6 +139,9 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 		eff = &DefaultEffects
 	}
 
+	var r, g, b, a = col.Channels(palette.White)
+	var u [33]float32
+	var borderSz = eff.BorderSize * ViewZoom
 	var padU, padV float32
 	if kind != KindText && borderSz > 0 { // no border padding for text symbols
 		padU, padV = borderSz*(u2-u1)/dst.Width, borderSz*(v2-v1)/dst.Height
@@ -150,11 +152,8 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	}
 
 	var oc = col.Tint(eff.OutlineColor, eff.Tint)
-	var r, g, b, a = col.Channels(palette.White)
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
 	var neutralColAdj = eff.Gamma == 0 && eff.Saturation == 0 && eff.Contrast == 0 && eff.Brightness == 0
-
-	var u [33]float32
 	u[1], u[2], u[4] = float32(src.Width), float32(src.Height), float32(kind)
 	u[5], u[6] = eff.Gamma, eff.Saturation
 	u[7], u[8] = eff.Contrast, eff.Brightness
@@ -228,9 +227,6 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	queueVertices(polygonBuf[:4], tex, finalColor, tiles, u)
 }
 
-func ResetBatches() {
-
-}
 func CloseBatch() {
 	if ActiveBatch != nil && ActiveBatch.vertCount > 0 {
 		if IsRecording {
