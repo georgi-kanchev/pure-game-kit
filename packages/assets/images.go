@@ -1,6 +1,7 @@
 package assets
 
 import (
+	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/file"
@@ -73,7 +74,7 @@ func (i ImageId) SetSmoothness(smooth bool) {
 		rl.SetTextureFilter(img.Texture, rl.FilterPoint)
 	}
 }
-func (i ImageId) CropArea() (x, y, width, height float32) {
+func (i ImageId) CropArea() geometry.Area {
 	var img = internal.Images[int32(i)]
-	return img.CropX, img.CropY, img.CropWidth, img.CropHeight
+	return geometry.NewArea(img.CropX+img.CropWidth/2, img.CropY+img.CropHeight/2, img.CropWidth, img.CropHeight)
 }

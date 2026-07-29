@@ -80,9 +80,10 @@ func NewShapeLine(x1, y1, x2, y2, thickness float32) Object {
 }
 
 func NewSprite(x, y, scale float32, imageId assets.ImageId) Object {
-	var _, _, w, h = imageId.CropArea()
+	var crop = imageId.CropArea()
 	var eff = Effects(internal.DefaultEffects)
-	return Object{Shape: geometry.NewRectangle(x, y, float32(w)*scale, float32(h)*scale, 0), ImageId: imageId, Effects: eff}
+	var shape = geometry.NewRectangle(x, y, float32(crop.Width)*scale, float32(crop.Height)*scale, 0)
+	return Object{Shape: shape, ImageId: imageId, Effects: eff}
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
