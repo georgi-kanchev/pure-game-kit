@@ -50,32 +50,32 @@ type Object struct {
 
 func NewShapePoint(x, y float32) Object {
 	var eff = Effects(internal.DefaultEffects)
-	eff.BorderSize, eff.FillColor = 5, palette.LightGray
+	eff.BorderSize, eff.FillColor = -5, palette.LightGray
 	return Object{Shape: geometry.NewPoint(x, y), Effects: eff}
 }
 func NewShapeCircle(x, y, radius float32) Object {
 	var eff = Effects(internal.DefaultEffects)
-	eff.BorderSize, eff.FillColor = 5, palette.LightGray
+	eff.BorderSize, eff.FillColor = -5, palette.LightGray
 	return Object{Shape: geometry.NewCircle(x, y, radius), Effects: eff}
 }
 func NewShapeRectangle(x, y, width, height, angle float32) Object {
 	var eff = Effects(internal.DefaultEffects)
-	eff.BorderSize, eff.FillColor = 5, palette.LightGray
+	eff.BorderSize, eff.FillColor = -5, palette.LightGray
 	return Object{Shape: geometry.NewRectangle(x, y, width, height, angle), Effects: eff}
 }
 func NewShapeRoundedRectangle(x, y, width, height, angle, roundness float32) Object {
 	var eff = Effects(internal.DefaultEffects)
-	eff.BorderSize, eff.FillColor = 5, palette.LightGray
+	eff.BorderSize, eff.FillColor = -5, palette.LightGray
 	return Object{Shape: geometry.NewRoundedRectangle(x, y, width, height, angle, roundness), Effects: eff}
 }
 func NewShapeCapsule(x1, y1, x2, y2, radius float32) Object {
 	var eff = Effects(internal.DefaultEffects)
-	eff.BorderSize, eff.FillColor = 5, palette.LightGray
+	eff.BorderSize, eff.FillColor = -5, palette.LightGray
 	return Object{Shape: geometry.NewCapsule(x1, y1, x2, y2, radius), Effects: eff}
 }
 func NewShapeLine(x1, y1, x2, y2, thickness float32) Object {
 	var eff = Effects(internal.DefaultEffects)
-	eff.BorderSize, eff.FillColor = 5, palette.LightGray
+	eff.BorderSize, eff.FillColor = -5, palette.LightGray
 	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness), Effects: eff}
 }
 

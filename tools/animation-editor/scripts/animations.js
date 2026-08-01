@@ -12,7 +12,26 @@ function nextHue() {
 function createAnimItem(anim, idx) {
     const item = document.createElement('div');
     item.className = 'anim-item';
+    item.dataset.index = idx;
     item.style.setProperty('--item-color', `hsl(${anim.hue}, 55%, 50%)`);
+
+    const handle = document.createElement('span');
+    handle.className = 'drag-handle';
+    handle.draggable = true;
+    for (let i = 0; i < 6; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        handle.appendChild(dot);
+    }
+    handle.addEventListener('dragstart', (e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', idx);
+        item.classList.add('dragging');
+    });
+    handle.addEventListener('dragend', () => {
+        item.classList.remove('dragging');
+        animationList.querySelectorAll('.anim-item').forEach(el => el.classList.remove('drag-over'));
+    });
 
     const nameInput = document.createElement('input');
     nameInput.className = 'anim-name-input';
@@ -52,6 +71,7 @@ function createAnimItem(anim, idx) {
         drawView();
     });
 
+    item.appendChild(handle);
     item.appendChild(nameInput);
     item.appendChild(framesInput);
     item.appendChild(delBtn);
@@ -73,6 +93,46 @@ function highlightSelection() {
         el.classList.toggle('selected', i === selectedAnimIdx);
     });
 }
+
+// Drag-and-drop reorder
+animationList.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const target = e.target.closest('.anim-item');
+    if (!target || target.classList.contains('dragging')) return;
+    animationList.querySelectorAll('.anim-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    target.classList.add('drag-over');
+});
+
+animationList.addEventListener('dragleave', (e) => {
+    const target = e.target.closest('.anim-item');
+    if (target && !target.contains(e.relatedTarget)) {
+        target.classList.remove('drag-over');
+    }
+});
+
+animationList.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const target = e.target.closest('.anim-item');
+    if (!target) return;
+    target.classList.remove('drag-over');
+    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+    const toIdx = parseInt(target.dataset.index);
+    if (isNaN(fromIdx) || isNaN(toIdx) || fromIdx === toIdx) return;
+
+    const [moved] = animations.splice(fromIdx, 1);
+    animations.splice(toIdx, 0, moved);
+
+    if (selectedAnimIdx === fromIdx) {
+        selectedAnimIdx = toIdx;
+    } else if (fromIdx < toIdx && selectedAnimIdx > fromIdx && selectedAnimIdx <= toIdx) {
+        selectedAnimIdx--;
+    } else if (fromIdx > toIdx && selectedAnimIdx >= toIdx && selectedAnimIdx < fromIdx) {
+        selectedAnimIdx++;
+    }
+
+    rebuildAnimList();
+    drawView();
+});
 
 const PREVIEW_MIN_H = 80;
 const PREVIEW_DEFAULT_H = 220;

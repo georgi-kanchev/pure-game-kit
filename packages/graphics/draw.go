@@ -250,7 +250,7 @@ func (v *View) DrawDebugInfo(detailed bool) {
 		}
 	}
 
-	var size float32 = internal.WindowHeight / 40
+	var size float32 = internal.WindowHeight / 60
 	var tlx, tly = v.PointFromScreen(5, 5)
 	var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*15)/v.Zoom)
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))

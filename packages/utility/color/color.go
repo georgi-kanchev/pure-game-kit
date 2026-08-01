@@ -26,25 +26,25 @@ func TagHex(hex string) uint {
 	}
 	return RGBA(r, g, b, a)
 }
-func TagRGBA(str string) uint {
-	if len(str) >= 4 && str[0:4] == "rgba" {
-		str = str[4:] // strip "rgba" prefix if present
-	} else if len(str) >= 3 && str[0:3] == "rgb" {
-		str = str[3:] // strip "rgb" prefix if present
+func TagRGBA(rgba string) uint {
+	if len(rgba) >= 4 && rgba[0:4] == "rgba" {
+		rgba = rgba[4:] // strip "rgba" prefix if present
+	} else if len(rgba) >= 3 && rgba[0:3] == "rgb" {
+		rgba = rgba[3:] // strip "rgb" prefix if present
 	}
 
 	var r, g, b, a uint8 = 0, 0, 0, 255
 	var i = 0
-	if i < len(str) && str[i] == '(' {
+	if i < len(rgba) && rgba[i] == '(' {
 		i++ // skip opening parenthesis if present
 	}
 
-	r, i = parseNextChannel(str, i)
-	g, i = parseNextChannel(str, i)
-	b, i = parseNextChannel(str, i)
+	r, i = parseNextChannel(rgba, i)
+	g, i = parseNextChannel(rgba, i)
+	b, i = parseNextChannel(rgba, i)
 
-	if i < len(str) && str[i] != ')' { // check if there's an alpha channel left before closing parenthesis
-		a, i = parseAlphaChannel(str, i)
+	if i < len(rgba) && rgba[i] != ')' { // check if there's an alpha channel left before closing parenthesis
+		a, i = parseAlphaChannel(rgba, i)
 	}
 	return RGBA(r, g, b, a)
 }
