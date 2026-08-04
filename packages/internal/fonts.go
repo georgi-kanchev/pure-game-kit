@@ -5,7 +5,7 @@ import (
 )
 
 type Font struct {
-	AtlasId int32 // see assets.ImageId
+	ImageId int32 // see assets.ImageId
 	Chars   map[rune]Glyph
 
 	Ascender, Descender, LineHeight, EmSize, Size float32
@@ -58,7 +58,7 @@ const Crossout, Underline = '\uE000', '\uE001'
 
 func LoadFont(fontData *FontJSON, imageId int32) uint8 {
 	var id = len(Fonts)
-	var font = Font{AtlasId: imageId, Chars: make(map[rune]Glyph),
+	var font = Font{ImageId: imageId, Chars: make(map[rune]Glyph),
 		Ascender: fontData.Metrics.Ascender, Descender: fontData.Metrics.Descender,
 		LineHeight: fontData.Metrics.LineHeight, EmSize: fontData.Metrics.EmSize, Size: fontData.Atlas.Size,
 	}

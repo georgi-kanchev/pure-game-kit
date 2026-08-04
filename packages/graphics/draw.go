@@ -233,6 +233,8 @@ func (v *View) DrawDebugInfo(detailed bool) {
 
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageId+1))
 			v.debugBuffer = append(v.debugBuffer, " images | "...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Atlases)))
+			v.debugBuffer = append(v.debugBuffer, " atlases | "...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(-internal.NextImageCropId))
 			v.debugBuffer = append(v.debugBuffer, " crops\n"...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Fonts)))
@@ -245,14 +247,16 @@ func (v *View) DrawDebugInfo(detailed bool) {
 			v.debugBuffer = append(v.debugBuffer, " music\n"...)
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.TileLayers)))
 			v.debugBuffer = append(v.debugBuffer, " tile layers\n"...)
-			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.Layouts)))
-			v.debugBuffer = append(v.debugBuffer, " GUI layouts\n"...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.GUILayouts)))
+			v.debugBuffer = append(v.debugBuffer, " GUI layouts | "...)
+			v.debugBuffer = appendThousands(v.debugBuffer, uint64(len(internal.GUIThemes)))
+			v.debugBuffer = append(v.debugBuffer, " GUI themes\n"...)
 		}
 	}
 
 	var size float32 = internal.WindowHeight / 60
 	var tlx, tly = v.PointFromScreen(5, 5)
-	var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*15)/v.Zoom)
+	var x, y = point.MoveAtAngle(tlx, tly, v.Angle+90, (size*16)/v.Zoom)
 	var str = unsafe.String(unsafe.SliceData(v.debugBuffer), len(v.debugBuffer))
 	v.DrawText(str, tlx, tly, size, 0, palette.White, geometry.Area{})
 
@@ -287,7 +291,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	if !has { // fallback
 		fontData = internal.Fonts[0]
 	}
-	var atlasTex = internal.Images[fontData.AtlasId].Texture
+	var atlasTex = internal.Images[fontData.ImageId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
 	var shadeCol, shadeOutCol, contentWidth, contentHeight float32
 	var w, h = o.Width, o.Height

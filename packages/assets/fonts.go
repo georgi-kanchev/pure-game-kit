@@ -40,7 +40,7 @@ func (f FontId) Unload() {
 	if !has {
 		return
 	}
-	ImageId(font.AtlasId).Unload()
+	ImageId(font.ImageId).Unload()
 	delete(internal.Fonts, uint8(f))
 }
 func (f FontId) SymbolArea(symbol rune, lineHeight float32) geometry.Area {

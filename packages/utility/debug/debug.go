@@ -186,8 +186,7 @@ func MemoryUsage() string {
 	memBuf = memBuf[:0]
 
 	memBuf = appendByteSize(memBuf, int(m.Sys))
-	memBuf = append(memBuf, " obtained from OS\n\n"...)
-
+	memBuf = append(memBuf, " obtained from OS\n"...)
 	memBuf = appendByteSize(memBuf, int(m.HeapSys))
 	memBuf = append(memBuf, " heap obtained from OS\n"...)
 	memBuf = appendByteSize(memBuf, int(m.TotalAlloc))

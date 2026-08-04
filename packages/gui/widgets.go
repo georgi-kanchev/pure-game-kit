@@ -60,22 +60,22 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 	view.DrawObject(&obj)
 }
 
-func Image(area, mask Area, theme assets.ThemeId, input bool) {
+func Image(area, mask Area, theme assets.GUIThemeId, input bool) {
 	var t, b = getTheme(theme).Image, getTheme(0).Image
 	var imgId, rnds = assets.ImageId(thField(0, t.ImgId, b.ImgId)), thField(0, t.Rnds, b.Rnds)
 	var borSz, borCol = thField(0, t.BorSz, b.BorSz), col.TagHex(thField("", t.BorCol, b.BorCol))
 	Object(imgId, rnds, borSz, borCol, col.TagHex(thField("", t.Col, b.Col)), area, mask, input)
 }
-func Label(text string, area, mask Area, theme assets.ThemeId, input bool) {
+func Label(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
 	var t, b = getTheme(theme), getTheme(0)
-	handleText(text, area, mask, internal.GuiText{}, t.Label, b.Label, input, false, false)
+	handleText(text, area, mask, internal.GUIText{}, t.Label, b.Label, input, false, false)
 }
-func Text(text string, area, mask Area, theme assets.ThemeId, input bool) {
+func Text(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
 	var t, b = getTheme(theme), getTheme(0)
-	handleText(text, area, mask, internal.GuiText{}, t.Text, b.Text, input, true, false)
+	handleText(text, area, mask, internal.GUIText{}, t.Text, b.Text, input, true, false)
 }
 
-func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.ThemeId) {
+func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.GUIThemeId) {
 	var t, b = getTheme(theme), getTheme(0)
 	var tBody, tHnd, bBody, bHnd = t.Scroll.Body, t.Scroll.Handle, b.Scroll.Body, b.Scroll.Handle
 	var scrollSpeed = thField(0, tHnd.Speed, bHnd.Speed) / Scale
@@ -198,7 +198,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		Object(0, handleRound, 0, 0, color.TagHex(col), handle, Area{}, false)
 	}
 }
-func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
+func Button(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
 	if area == (Area{}) {
 		return
 	}
@@ -207,7 +207,7 @@ func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
 	var roundness = thField(0, tBody.Rnds, bBody.Rnds)
 	var imgId, color = thField(0, tBody.ImgId, bBody.ImgId), thField("", tBody.Col, bBody.Col)
 	var borSz, borCol = thField(0, tBody.BorSz, bBody.BorSz), thField("", tBody.BorCol, bBody.BorCol)
-	var interact internal.GuiText
+	var interact internal.GUIText
 	mask = scaleMask(mask)
 
 	_, _ = tVal, bVal
@@ -219,7 +219,7 @@ func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
 		color = thField("", tBody.Disabled.Col, tBody.Col, bBody.Disabled.Col, bBody.Col)
 		borSz = thField(0, tBody.Disabled.BorSz, tBody.BorSz, bBody.Disabled.BorSz, bBody.BorSz, 0)
 		borCol = thField("", tBody.Disabled.BorCol, tBody.BorCol, bBody.Disabled.BorCol, bBody.BorCol)
-		interact = thField(internal.GuiText{}, tVal.Disabled, bVal.Disabled)
+		interact = thField(internal.GUIText{}, tVal.Disabled, bVal.Disabled)
 	}
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
@@ -227,21 +227,21 @@ func Button(text string, area, mask Area, theme assets.ThemeId, input bool) {
 		color = thField("", tBody.Focused.Col, tBody.Col, bBody.Focused.Col, bBody.Col)
 		borSz = thField(0, tBody.Focused.BorSz, tBody.BorSz, bBody.Focused.BorSz, bBody.BorSz, 0)
 		borCol = thField("", tBody.Focused.BorCol, tBody.BorCol, bBody.Focused.BorCol, bBody.BorCol)
-		interact = thField(internal.GuiText{}, tVal.Focused, bVal.Focused)
+		interact = thField(internal.GUIText{}, tVal.Focused, bVal.Focused)
 	}
 	if IsClicked() {
 		imgId = thField(0, tBody.Clicked.ImgId, tBody.ImgId, bBody.Clicked.ImgId, bBody.ImgId)
 		color = thField("", tBody.Clicked.Col, tBody.Col, bBody.Clicked.Col, bBody.Col)
 		borSz = thField(0, tBody.Clicked.BorSz, tBody.BorSz, bBody.Clicked.BorSz, bBody.BorSz, 0)
 		borCol = thField("", tBody.Clicked.BorCol, tBody.BorCol, bBody.Clicked.BorCol, bBody.BorCol)
-		interact = thField(internal.GuiText{}, tVal.Clicked, bVal.Clicked)
+		interact = thField(internal.GUIText{}, tVal.Clicked, bVal.Clicked)
 	}
 	Object(assets.ImageId(imgId), roundness, borSz, col.TagHex(borCol), col.TagHex(color), area, mask, false)
 	if text != "" {
-		handleText(text, area, mask, interact, tVal.GuiText, bVal.GuiText, false, false, false)
+		handleText(text, area, mask, interact, tVal.GUIText, bVal.GUIText, false, false, false)
 	}
 }
-func Inputbox(text *string, placeholder string, area, mask Area, theme assets.ThemeId, input bool) {
+func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GUIThemeId, input bool) {
 	if area == (Area{}) {
 		return
 	}
@@ -251,7 +251,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	var tPlh, bPlh = t.Inputbox.Placeholder, base.Inputbox.Placeholder
 	var bodyRnds, bodyImg = thField(0, tBody.Rnds, bBody.Rnds), thField(0, tBody.ImgId, bBody.ImgId)
 	var bodyBorSz, bodyBorCol = thField(0, tBody.BorSz, bBody.BorSz), thField("", tBody.BorCol, bBody.BorCol)
-	var bodyCol, margin, inter = thField("", tBody.Col, bBody.Col), thField("", tVal.Margin, bVal.Margin), internal.GuiText{}
+	var bodyCol, margin, inter = thField("", tBody.Col, bBody.Col), thField("", tVal.Margin, bVal.Margin), internal.GUIText{}
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
 	if input {
 		handleInput(area, scaleMask(mask), bodyRnds)
@@ -260,7 +260,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		bodyBorSz = thField(0, tBody.Disabled.BorSz, bBody.BorSz, bBody.Disabled.BorSz)
 		bodyBorCol = thField("", tBody.Disabled.BorCol, bBody.BorCol, bBody.Disabled.BorCol)
 		bodyCol = thField("", tBody.Disabled.Col, tBody.Col, bBody.Disabled.Col)
-		inter = thField(internal.GuiText{}, tVal.Disabled, tVal.GuiText, bVal.Disabled)
+		inter = thField(internal.GUIText{}, tVal.Disabled, tVal.GUIText, bVal.Disabled)
 		margin = thField("", tVal.Disabled.Margin, tVal.Margin, bVal.Disabled.Margin)
 	}
 
@@ -271,7 +271,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		bodyBorCol = thField("", tBody.Focused.BorCol, bBody.BorCol, bBody.Focused.BorCol)
 		bodyCol = thField("", tBody.Focused.Col, tBody.Col, bBody.Focused.Col)
 		margin = thField("", tVal.Focused.Margin, tVal.Margin, bVal.Focused.Margin)
-		inter = thField(internal.GuiText{}, tVal.Focused, tVal.GuiText, bVal.Focused)
+		inter = thField(internal.GUIText{}, tVal.Focused, tVal.GUIText, bVal.Focused)
 	}
 	if typingIn == widgetCounter {
 		bodyImg = thField(0, tBody.Typing.ImgId, tBody.ImgId, bBody.Typing.ImgId)
@@ -279,7 +279,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 		bodyBorCol = thField("", tBody.Typing.BorCol, bBody.BorCol, bBody.Typing.BorCol)
 		bodyCol = thField("", tBody.Typing.Col, tBody.Col, bBody.Typing.Col)
 		margin = thField("", tVal.Typing.Margin, tVal.Margin, bVal.Typing.Margin)
-		inter = thField(internal.GuiText{}, tVal.Typing, tVal.GuiText, bVal.Typing)
+		inter = thField(internal.GUIText{}, tVal.Typing, tVal.GUIText, bVal.Typing)
 	}
 
 	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, scaleMask(mask), false)
@@ -299,10 +299,10 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 	}
 	var valueArea = geometry.NewArea(x, area.Y, valueWidth, area.Height)
 	if *text == "" {
-		handleText(placeholder, valueArea, area.Intersect(mask), internal.GuiText{}, tPlh, bPlh, false, false, false)
+		handleText(placeholder, valueArea, area.Intersect(mask), internal.GUIText{}, tPlh, bPlh, false, false, false)
 	} else {
 		inter.Margin = margin
-		handleText(*text, valueArea, area.Intersect(mask), inter, tVal.GuiText, bVal.GuiText, false, false, true)
+		handleText(*text, valueArea, area.Intersect(mask), inter, tVal.GUIText, bVal.GUIText, false, false, true)
 	}
 
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)
@@ -414,7 +414,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.Th
 }
 
 // Negative step hides the indicators.
-func Slider(value *float32, step float32, area, mask Area, theme assets.ThemeId, input bool) {
+func Slider(value *float32, step float32, area, mask Area, theme assets.GUIThemeId, input bool) {
 	var left, right = area.X - area.Width/2, area.X + area.Width/2
 	var x = number.Map(*value, 0, 1, left+area.Height/2, right-area.Height/2)
 	var hndArea = geometry.NewArea(x, area.Y, area.Height, area.Height)
@@ -518,7 +518,7 @@ func inputboxTryShiftSelect() {
 	}
 }
 
-func handleText(text string, area, mask Area, inter, opt, base internal.GuiText, input, isText, isInputbox bool) {
+func handleText(text string, area, mask Area, inter, opt, base internal.GUIText, input, isText, isInputbox bool) {
 	if area == (Area{}) || text == "" {
 		return
 	}
@@ -558,10 +558,10 @@ func handleText(text string, area, mask Area, inter, opt, base internal.GuiText,
 }
 
 func scaleMask(mask Area) Area { return mask }
-func getTheme(theme assets.ThemeId) internal.GuiTheme {
-	var th, has = internal.Themes[uint16(theme)]
+func getTheme(theme assets.GUIThemeId) internal.GUITheme {
+	var th, has = internal.GUIThemes[uint16(theme)]
 	if !has {
-		th = internal.Themes[0]
+		th = internal.GUIThemes[0]
 	}
 	return th
 }

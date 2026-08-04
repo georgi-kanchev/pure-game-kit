@@ -22,7 +22,7 @@ type Tile struct {
 	Rotations90 byte // 90 degree turns, ranged 0..3 (possible values: 0, 90, 180, 270)
 	Flip        bool
 
-	FrameCount  byte // Ranged 0..15 (sequential tile count in the atlas)
+	FrameCount  byte // Ranged 0..15 (sequential tile count in the tileset)
 	FrameOffset byte // Ranged 0..15
 	FrameSpeed  byte // Ranged 0..31
 }
@@ -91,12 +91,12 @@ func (l TileLayerId) SetTileArea(column, row, width, height int, tile Tile) {
 	rl.ImageDrawRectangle(layer.Image, int32(column), int32(row), int32(width), int32(height), colr)
 	rl.UpdateTextureRec(layer.Texture, rect, collection.SameItems(width*height, colr))
 }
-func (l TileLayerId) SetAtlasId(atlasId ImageId) {
+func (l TileLayerId) SetTilesetId(tilesetId ImageId) {
 	var layer = internal.TileLayers[uint8(l)]
 	if layer == nil {
 		return
 	}
-	layer.ImageId = int32(atlasId)
+	layer.ImageId = int32(tilesetId)
 }
 
 //=================================================================
@@ -126,7 +126,7 @@ func (l TileLayerId) TileSize() (width, height float32) {
 	}
 	return float32(layer.TileSize), float32(layer.TileSize)
 }
-func (l TileLayerId) AtlasSize() (columns, rows int) {
+func (l TileLayerId) TilesetSize() (columns, rows int) {
 	var layer = internal.TileLayers[uint8(l)]
 	if layer == nil {
 		return 0, 0
@@ -135,10 +135,10 @@ func (l TileLayerId) AtlasSize() (columns, rows int) {
 	return int(tex.CropWidth) / layer.TileSize, int(tex.CropHeight) / layer.TileSize
 }
 func (l TileLayerId) TileCount() int {
-	var w, h = l.AtlasSize()
+	var w, h = l.TilesetSize()
 	return w * h
 }
-func (l TileLayerId) AtlasId() ImageId {
+func (l TileLayerId) TilesetId() ImageId {
 	var layer = internal.TileLayers[uint8(l)]
 	if layer == nil {
 		return 0

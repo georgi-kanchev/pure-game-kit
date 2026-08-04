@@ -2,7 +2,7 @@ package internal
 
 import "encoding/xml"
 
-type GuiLayoutVars struct {
+type GUILayoutVars struct {
 	Mx, My, Mw, Mh     float32
 	Mlx, Mly, Mrx, Mry float32
 	Mux, Muy, Mdx, Mdy float32
@@ -15,7 +15,7 @@ type GuiLayoutVars struct {
 	Ow, Oh, Ov         float32
 	Osx, Osy, Og, Mnr  float32
 }
-type GuiLayout struct {
+type GUILayout struct {
 	XMLName xml.Name `xml:"layout"`
 	Boxes   []struct {
 		Id                          uint32  `xml:"id,attr"`
@@ -31,7 +31,7 @@ type GuiLayout struct {
 		ItemGap                     float32 `xml:"itemGap,attr"`
 		ItemNewRow                  float32 `xml:"itemNewRow,attr"`
 		ItemAlign                   string  `xml:"itemAlign,attr"`
-		Vars                        GuiLayoutVars
+		Vars                        GUILayoutVars
 		ItemStart, ItemEnd          int // cache on load
 		ItemRangeCalculated         bool
 		ContentWidth, ContentHeight float32
@@ -44,18 +44,18 @@ type GuiLayout struct {
 		Size       string `xml:"size,attr"`
 		Expression string `xml:"math,attr"`
 		NewRowMath string `xml:"newRowMath,attr"`
-		Vars       GuiLayoutVars
+		Vars       GUILayoutVars
 	} `xml:"items>item"`
 }
 
-type GuiImage struct {
+type GUIImage struct {
 	ImgId  int     `xml:"imageId,attr"`
 	Rnds   float32 `xml:"roundness,attr"`
 	Col    string  `xml:"color,attr"`
 	BorSz  float32 `xml:"borderSize,attr"`
 	BorCol string  `xml:"borderColor,attr"`
 }
-type GuiText struct {
+type GUIText struct {
 	FontId int     `xml:"fontId,attr"`
 	LineH  float32 `xml:"lineHeight,attr"`
 	Gap    string  `xml:"gap,attr"`
@@ -70,75 +70,75 @@ type GuiText struct {
 	ShBlur float32 `xml:"shadowBlur,attr"`
 	ShOff  string  `xml:"shadowOffset,attr"`
 }
-type GuiTheme struct {
+type GUITheme struct {
 	XMLName xml.Name `xml:"theme"`
-	Image   GuiImage `xml:"image"`
-	Text    GuiText  `xml:"text"`
-	Label   GuiText  `xml:"label"`
+	Image   GUIImage `xml:"image"`
+	Text    GUIText  `xml:"text"`
+	Label   GUIText  `xml:"label"`
 	Button  struct {
 		Body struct {
-			GuiImage
-			Disabled GuiImage `xml:"disabled"`
-			Focused  GuiImage `xml:"focused"`
-			Clicked  GuiImage `xml:"clicked"`
+			GUIImage
+			Disabled GUIImage `xml:"disabled"`
+			Focused  GUIImage `xml:"focused"`
+			Clicked  GUIImage `xml:"clicked"`
 		} `xml:"body"`
 		Value struct {
-			GuiText
-			Disabled GuiText `xml:"disabled"`
-			Focused  GuiText `xml:"focused"`
-			Clicked  GuiText `xml:"clicked"`
+			GUIText
+			Disabled GUIText `xml:"disabled"`
+			Focused  GUIText `xml:"focused"`
+			Clicked  GUIText `xml:"clicked"`
 		} `xml:"value"`
 	} `xml:"button"`
 	Scroll struct {
 		Body struct {
-			GuiImage
+			GUIImage
 			Size float32 `xml:"size,attr"`
 		} `xml:"body"`
 		Handle struct {
-			GuiImage
+			GUIImage
 			Speed   float32  `xml:"speed,attr"`
-			Focused GuiImage `xml:"focused"`
-			Clicked GuiImage `xml:"clicked"`
+			Focused GUIImage `xml:"focused"`
+			Clicked GUIImage `xml:"clicked"`
 		} `xml:"handle"`
 	} `xml:"scroll"`
 	Slider struct {
 		Body struct {
-			GuiImage
-			Disabled GuiImage `xml:"disabled"`
-			Focused  GuiImage `xml:"focused"`
-			Clicked  GuiImage `xml:"clicked"`
+			GUIImage
+			Disabled GUIImage `xml:"disabled"`
+			Focused  GUIImage `xml:"focused"`
+			Clicked  GUIImage `xml:"clicked"`
 		} `xml:"body"`
 		Hnd struct {
-			GuiImage
-			Disabled GuiImage `xml:"disabled"`
-			Focused  GuiImage `xml:"focused"`
-			Clicked  GuiImage `xml:"clicked"`
+			GUIImage
+			Disabled GUIImage `xml:"disabled"`
+			Focused  GUIImage `xml:"focused"`
+			Clicked  GUIImage `xml:"clicked"`
 		} `xml:"handle"`
-		Step GuiImage `xml:"step"`
+		Step GUIImage `xml:"step"`
 	} `xml:"slider"`
 	Inputbox struct {
 		Body struct {
-			GuiImage
-			Disabled GuiImage `xml:"disabled"`
-			Focused  GuiImage `xml:"focused"`
-			Typing   GuiImage `xml:"typing"`
+			GUIImage
+			Disabled GUIImage `xml:"disabled"`
+			Focused  GUIImage `xml:"focused"`
+			Typing   GUIImage `xml:"typing"`
 		} `xml:"body"`
 		Value struct {
-			GuiText
+			GUIText
 			ShadowOffset string  `xml:"shadowOffset,attr"`
-			Disabled     GuiText `xml:"disabled"`
-			Focused      GuiText `xml:"focused"`
-			Typing       GuiText `xml:"typing"`
+			Disabled     GUIText `xml:"disabled"`
+			Focused      GUIText `xml:"focused"`
+			Typing       GUIText `xml:"typing"`
 		} `xml:"value"`
-		Placeholder GuiText  `xml:"placeholder"`
-		Selection   GuiImage `xml:"selection"`
+		Placeholder GUIText  `xml:"placeholder"`
+		Selection   GUIImage `xml:"selection"`
 		Cursor      struct {
-			GuiImage
+			GUIImage
 			Width float32 `xml:"width,attr"`
 		} `xml:"cursor"`
 	} `xml:"inputbox"`
 }
 
-var Layouts = make(map[uint16]GuiLayout)
-var Themes = make(map[uint16]GuiTheme)
-var NextLayoutId, NextThemeId uint16
+var GUILayouts = make(map[uint16]GUILayout)
+var GUIThemes = make(map[uint16]GUITheme)
+var NextGUILayoutId, NextGUIThemeId uint16

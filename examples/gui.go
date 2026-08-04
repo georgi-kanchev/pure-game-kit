@@ -14,8 +14,8 @@ import (
 
 func GUI() {
 	window.Create("example - gui", false, true)
-	var layout = assets.LoadLayout("tools/ui-layout-editor/test-layout.xml")
-	var theme = assets.LoadTheme("examples/data/theme.xml")
+	var layout = assets.LoadGUILayout("tools/ui-layout-editor/test-layout.xml")
+	var theme = assets.LoadGUITheme("examples/data/theme.xml")
 	var view = graphics.NewView(1)
 
 	_ = theme

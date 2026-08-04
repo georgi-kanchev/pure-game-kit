@@ -9,16 +9,16 @@ import (
 	"pure-game-kit/packages/utility/text"
 )
 
-type LayoutId uint16
+type GUILayoutId uint16
 
-func LoadLayout(xmlPath string) LayoutId {
-	var layout = internal.GuiLayout{}
+func LoadGUILayout(xmlPath string) GUILayoutId {
+	var layout = internal.GUILayout{}
 	storage.FromXML(file.LoadText(xmlPath), &layout)
 	if len(layout.Boxes) == 0 {
 		return 0
 	}
 
-	internal.NextLayoutId++
+	internal.NextGUILayoutId++
 	for i := range layout.Items { // pre-calculate item range indexes for each box
 		var b = int(layout.Items[i].BoxId)
 		if !layout.Boxes[b].ItemRangeCalculated {
@@ -33,16 +33,16 @@ func LoadLayout(xmlPath string) LayoutId {
 			layout.Boxes[b].ItemEnd = i + 1
 		}
 	}
-	internal.Layouts[internal.NextLayoutId] = layout
-	return LayoutId(internal.NextLayoutId)
+	internal.GUILayouts[internal.NextGUILayoutId] = layout
+	return GUILayoutId(internal.NextGUILayoutId)
 }
 
-func (l LayoutId) Unload() {
-	delete(internal.Layouts, uint16(l))
+func (l GUILayoutId) Unload() {
+	delete(internal.GUILayouts, uint16(l))
 }
 
-func (l LayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeight float32) {
-	var layout = internal.Layouts[uint16(l)]
+func (l GUILayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeight float32) {
+	var layout = internal.GUILayouts[uint16(l)]
 	if len(layout.Boxes) == 0 {
 		return geometry.Area{}, 0, 0
 	}
@@ -54,8 +54,8 @@ func (l LayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeight f
 	area = geometry.NewArea((rx+rw/2)*sc, (ry+rh/2)*sc, rw*sc, rh*sc)
 	return area, cw, ch
 }
-func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Area) {
-	var layout = internal.Layouts[uint16(l)]
+func (l GUILayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Area) {
+	var layout = internal.GUILayouts[uint16(l)]
 	if len(layout.Boxes) == 0 || id < 0 || id >= len(layout.Items) {
 		return geometry.Area{}, geometry.Area{}
 	}
@@ -71,8 +71,8 @@ func (l LayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry.Ar
 	return area, mask
 }
 
-func (l LayoutId) SetVisibleItem(id int, visible bool) {
-	var layout = internal.Layouts[uint16(l)]
+func (l GUILayoutId) SetVisibleItem(id int, visible bool) {
+	var layout = internal.GUILayouts[uint16(l)]
 	if len(layout.Boxes) == 0 || id < 0 || id >= len(layout.Items) {
 		return
 	}
@@ -82,14 +82,14 @@ func (l LayoutId) SetVisibleItem(id int, visible bool) {
 	} else {
 		item.Visible = 0
 	}
-	internal.Layouts[uint16(l)] = layout
+	internal.GUILayouts[uint16(l)] = layout
 }
 
 // private ========================================================
 
-var activeVars *internal.GuiLayoutVars
+var activeVars *internal.GUILayoutVars
 
-func boxDynamic(layout *internal.GuiLayout, boxId int, depth int) (x, y, w, h, cw, ch float32, vis bool) {
+func boxDynamic(layout *internal.GUILayout, boxId int, depth int) (x, y, w, h, cw, ch float32, vis bool) {
 	if depth > 8 {
 		return
 	}
@@ -98,7 +98,7 @@ func boxDynamic(layout *internal.GuiLayout, boxId int, depth int) (x, y, w, h, c
 	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
 	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
 
-	box.Vars = internal.GuiLayoutVars{}
+	box.Vars = internal.GUILayoutVars{}
 	box.Vars.Mx = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 0))
 	box.Vars.My = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 1))
 	box.Vars.Mw = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 2))
@@ -141,7 +141,7 @@ func boxDynamic(layout *internal.GuiLayout, boxId int, depth int) (x, y, w, h, c
 	var rh = text.Calculate(text.SplitAtIndex(box.Math, " ", 3), variable)
 	return rx, ry, rw, rh, box.ContentWidth, box.ContentHeight, box.Visible == 1
 }
-func itemDynamic(layout *internal.GuiLayout, itemId int, scrollX, scrollY, sc float32) (x, y, w, h float32, vis bool) {
+func itemDynamic(layout *internal.GUILayout, itemId int, scrollX, scrollY, sc float32) (x, y, w, h float32, vis bool) {
 	var item = &layout.Items[itemId]
 	var box = &layout.Boxes[item.BoxId]
 	if box.Visible == 0 {
@@ -149,7 +149,7 @@ func itemDynamic(layout *internal.GuiLayout, itemId int, scrollX, scrollY, sc fl
 	}
 	var bx, by, bw, bh, _, _, _ = boxDynamic(layout, int(item.BoxId), 0)
 
-	item.Vars = internal.GuiLayoutVars{}
+	item.Vars = internal.GUILayoutVars{}
 	item.Vars.Ow, item.Vars.Oh, item.Vars.Ov = bw, bh, 1
 
 	var osx, osy float32
@@ -231,7 +231,7 @@ func itemDynamic(layout *internal.GuiLayout, itemId int, scrollX, scrollY, sc fl
 	return rx, ry, rw, rh, item.Visible == 1
 }
 
-func setTargetVars(layout *internal.GuiLayout, vars *internal.GuiLayoutVars, tar string, depth int) {
+func setTargetVars(layout *internal.GUILayout, vars *internal.GUILayoutVars, tar string, depth int) {
 	if tar != "" {
 		var targetId = text.ToNumber[int](tar)
 		if targetId >= 0 && targetId < len(layout.Boxes) {

@@ -23,11 +23,11 @@ type Animation[T any] struct {
 func NewAnimation[T any](fps float32, loop bool, frames ...T) Animation[T] {
 	return Animation[T]{Frames: frames, FPS: fps, IsLooping: loop}
 }
-func NewAnimationFromAsset(assetId assets.AnimationsId, name string, fps float32, loop bool) Animation[assets.ImageId] {
-	var frameCount = assetId.FrameCount(name)
+func NewAnimationFromAsset(atlasId assets.AtlasId, name string, fps float32, loop bool) Animation[assets.ImageId] {
+	var frameCount = atlasId.CropCount(name)
 	var anim = Animation[assets.ImageId]{Frames: make([]assets.ImageId, frameCount), FPS: fps, IsLooping: loop}
 	for i := range frameCount {
-		anim.Frames[i] = assetId.Frame(name, i)
+		anim.Frames[i] = atlasId.Crop(name, i)
 	}
 	return anim
 }
