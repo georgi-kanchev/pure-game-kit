@@ -41,13 +41,20 @@
                     <div class="preview-resizer" id="previewResizer" style="display:none"></div>
                     <div class="preview-panel" id="previewPanel" style="display:none">
                         <div class="preview-controls">
-                            <button id="previewPlay" title="Play">▶</button>
-                            <button id="previewPause" title="Pause">⏸</button>
-                            <span class="preview-label">FPS</span>
-                            <input type="number" id="previewSpeed" value="8" min="1" max="60" step="1">
+                            <span class="preview-left-group">
+                                <button id="previewToggle" title="Play/Pause">▶</button>
+                                <span class="preview-crop-label" id="previewCropLabel"></span>
+                            </span>
+                            <span class="preview-speed-group">
+                                <span class="preview-label">⏱</span>
+                                <input type="range" id="previewSpeed" value="8" min="0" max="20" step="0.2" class="preview-speed-slider">
+                                <span class="preview-speed-val" id="previewSpeedVal">8 FPS</span>
+                            </span>
                             <label class="preview-loop"><input type="checkbox" id="previewLoop" checked> ↻</label>
                         </div>
-                        <canvas class="preview-canvas" id="previewCanvas"></canvas>
+                        <div class="preview-canvas-wrap">
+                            <canvas class="preview-canvas" id="previewCanvas"></canvas>
+                        </div>
                     </div>
                 </div>
             </aside>

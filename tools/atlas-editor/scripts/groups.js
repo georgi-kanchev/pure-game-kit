@@ -177,17 +177,19 @@ function clearPreview() {
     pc.height = 0;
     pc.style.width = '0';
     pc.style.height = '0';
+    document.getElementById('previewCropLabel').textContent = '';
 }
 
 function stopPreview(full) {
     if (previewTimer) clearInterval(previewTimer);
     previewTimer = null;
+    document.getElementById('previewToggle').textContent = '▶';
     if (full) {
         clearPreview();
     }
 }
 
-function showPreviewCrop(f, ci) {
+function showPreviewCrop(f, ci, group) {
     if (!image || !f) return;
     const pc = document.getElementById('previewCanvas');
     const pad = 1;
@@ -204,25 +206,24 @@ function showPreviewCrop(f, ci) {
     pc.style.height = (pc.height * scale) + 'px';
     const pctx = pc.getContext('2d');
     pctx.imageSmoothingEnabled = false;
+
+    // local checkerboard anchored to preview origin, offset by pad for outline
+    pctx.fillStyle = '#222222';
+    pctx.fillRect(pad, pad, f.w, f.h);
+    pctx.fillStyle = '#2a2a2a';
+    for (let gy = pad; gy < pad + f.h; gy += gridSize) {
+        const rowEven = Math.floor((gy - pad) / gridSize) % 2 === 0;
+        for (let gx = rowEven ? pad : pad + gridSize; gx < pad + f.w; gx += gridSize * 2) {
+            pctx.fillRect(gx, gy, gridSize, gridSize);
+        }
+    }
+
     pctx.drawImage(image, f.x, f.y, f.w, f.h, pad, pad, f.w, f.h);
-    pctx.strokeStyle = '#3a3a3a';
+    pctx.strokeStyle = group ? `hsla(${group.hue}, 55%, 50%, 0.8)` : '#3a3a3a';
     pctx.lineWidth = 1;
     pctx.strokeRect(0.5, 0.5, pc.width - 1, pc.height - 1);
 
-    // draw crop index overlay
-    if (ci !== undefined) {
-        const fontSize = Math.min(12, f.h * 0.15, f.w * 0.15);
-        const label = String(ci);
-        pctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
-        pctx.textAlign = 'left';
-        pctx.textBaseline = 'top';
-        pctx.strokeStyle = '#000';
-        pctx.lineWidth = 2;
-        pctx.strokeText(label, pad + 1, pad + 1);
-        pctx.fillStyle = '#fff';
-        pctx.fillText(label, pad + 1, pad + 1);
-        pctx.textBaseline = 'alphabetic';
-    }
+    document.getElementById('previewCropLabel').textContent = ci !== undefined ? String(ci) : '';
 }
 
 function updatePreviewCrop() {
@@ -239,7 +240,7 @@ function updatePreviewCrop() {
     const f = crops[ci];
     if (f) {
         selection = { x: f.x, y: f.y, w: f.w, h: f.h };
-        showPreviewCrop(f, ci);
+        showPreviewCrop(f, ci, group);
     }
     drawView();
     previewCropIdx++;
@@ -262,27 +263,37 @@ function startPlayback() {
     const firstCi = group.cropIndices[0];
     const firstC = crops[firstCi];
     if (firstC) {
-        showPreviewCrop(firstC, firstCi);
+        showPreviewCrop(firstC, firstCi, group);
     }
     previewCropIdx = 1;
     if (firstC) selection = { x: firstC.x, y: firstC.y, w: firstC.w, h: firstC.h };
     drawView();
-    const speed = parseInt(document.getElementById('previewSpeed').value) || 8;
-    previewTimer = setInterval(updatePreviewCrop, 1000 / speed);
+    let speed = parseFloat(document.getElementById('previewSpeed').value);
+    if (isNaN(speed)) speed = 8;
+    if (speed > 0) {
+        previewTimer = setInterval(updatePreviewCrop, 1000 / speed);
+    }
+    document.getElementById('previewToggle').textContent = '⏸';
 }
 
-document.getElementById('previewPlay').addEventListener('click', startPlayback);
-
-document.getElementById('previewPause').addEventListener('click', () => {
-    stopPreview(false);
+document.getElementById('previewToggle').addEventListener('click', () => {
+    if (previewTimer) {
+        stopPreview(false);
+    } else {
+        startPlayback();
+    }
 });
 
 // Update playback speed in real time
 document.getElementById('previewSpeed').addEventListener('input', () => {
+    document.getElementById('previewSpeedVal').textContent = document.getElementById('previewSpeed').value + ' FPS';
     if (!previewTimer) return;
     if (previewTimer) clearInterval(previewTimer);
-    const speed = parseInt(document.getElementById('previewSpeed').value) || 8;
-    previewTimer = setInterval(updatePreviewCrop, 1000 / speed);
+    let speed = parseFloat(document.getElementById('previewSpeed').value);
+    if (isNaN(speed)) speed = 8;
+    if (speed > 0) {
+        previewTimer = setInterval(updatePreviewCrop, 1000 / speed);
+    }
 });
 
 // Preview panel vertical resizer

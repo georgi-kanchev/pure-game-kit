@@ -17,16 +17,21 @@ func LoadAtlas(imageId ImageId, xmlPath string) AtlasId {
 		return 0
 	}
 
-	data.Map = make(map[string][]int32, len(data.Groups))
+	data.CropsList = make([]int32, len(data.Crops))
+	data.GroupsMap = make(map[string][]int32, len(data.Groups))
+
+	for i, c := range data.Crops {
+		data.CropsList[i] = int32(LoadImageCrop(imageId, float32(c.X), float32(c.Y), float32(c.W), float32(c.H)))
+	}
 
 	for a := range data.Groups {
 		var frameCount = text.SplitCount(data.Groups[a].CropIndexes, " ")
-		data.Map[data.Groups[a].Name] = make([]int32, frameCount)
+		data.GroupsMap[data.Groups[a].Name] = make([]int32, frameCount)
 		for i := range frameCount {
 			var frameIndex = text.ToNumber[int](text.SplitAtIndex(data.Groups[a].CropIndexes, " ", i))
 			var fr = data.Crops[frameIndex]
 			var cropId = LoadImageCrop(imageId, float32(fr.X), float32(fr.Y), float32(fr.W), float32(fr.H))
-			data.Map[data.Groups[a].Name][i] = int32(cropId)
+			data.GroupsMap[data.Groups[a].Name][i] = int32(cropId)
 		}
 	}
 
@@ -35,34 +40,20 @@ func LoadAtlas(imageId ImageId, xmlPath string) AtlasId {
 	return AtlasId(internal.NextAtlasId)
 }
 
-func (t AtlasId) CropCount(groupName string) int {
-	var atlases, has = internal.Atlases[uint16(t)]
+func (t AtlasId) AllCrops() []ImageId {
+	var atlas, has = internal.Atlases[uint16(t)]
 	if !has {
-		return 0
-	}
-	return len(atlases.Map[groupName])
-}
-func (t AtlasId) Crop(groupName string, index int) ImageId {
-	var atlases, has = internal.Atlases[uint16(t)]
-	if !has {
-		return 0
-	}
-	var atlas, has2 = atlases.Map[groupName]
-	if !has2 || index < 0 || index >= len(atlas) {
-		return 0
-	}
-	return ImageId(atlas[index])
-}
-func (t AtlasId) Crops(groupName string) []ImageId {
-	var atlases, has = internal.Atlases[uint16(t)]
-	if !has {
-		return nil
-	}
-	var atlas, has2 = atlases.Map[groupName]
-	if !has2 {
 		return nil
 	} // no copy/no allocation cast of []int32 -> []ImageId, pointing at the same data
-	return unsafe.Slice((*ImageId)(unsafe.SliceData(atlas)), len(atlas))
+	return unsafe.Slice((*ImageId)(unsafe.SliceData(atlas.CropsList)), len(atlas.CropsList))
+}
+func (t AtlasId) Crops(groupName string) []ImageId {
+	var atlas1, has1 = internal.Atlases[uint16(t)]
+	var atlas2, has2 = atlas1.GroupsMap[groupName]
+	if !has1 || !has2 {
+		return nil
+	} // no copy/no allocation cast of []int32 -> []ImageId, pointing at the same data
+	return unsafe.Slice((*ImageId)(unsafe.SliceData(atlas2)), len(atlas2))
 }
 
 func (t AtlasId) Unload() {

@@ -15,8 +15,8 @@ func Animations() {
 	var view = graphics.NewView(10)
 	var units = assets.LoadImage("examples/data/units.png")
 	var atlas = assets.LoadAtlas(units, "examples/data/animations.xml")
-	var idle = motion.NewAnimationFromAsset(atlas, "man-idle", 6, true)
-	var walk = motion.NewAnimationFromAsset(atlas, "man-walk", 8, true)
+	var idle = motion.NewAnimation(6, true, atlas.Crops("man-idle")...)
+	var walk = motion.NewAnimation(8, true, atlas.Crops("man-walk")...)
 
 	for window.KeepOpen() {
 		var frame = idle.Frame()

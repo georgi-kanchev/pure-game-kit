@@ -5,8 +5,8 @@
 package motion
 
 import (
-	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/internal"
+	"pure-game-kit/packages/utility/collection"
 	"pure-game-kit/packages/utility/number"
 )
 
@@ -21,15 +21,7 @@ type Animation[T any] struct {
 }
 
 func NewAnimation[T any](fps float32, loop bool, frames ...T) Animation[T] {
-	return Animation[T]{Frames: frames, FPS: fps, IsLooping: loop}
-}
-func NewAnimationFromAsset(atlasId assets.AtlasId, name string, fps float32, loop bool) Animation[assets.ImageId] {
-	var frameCount = atlasId.CropCount(name)
-	var anim = Animation[assets.ImageId]{Frames: make([]assets.ImageId, frameCount), FPS: fps, IsLooping: loop}
-	for i := range frameCount {
-		anim.Frames[i] = atlasId.Crop(name, i)
-	}
-	return anim
+	return Animation[T]{Frames: collection.Copy(frames), FPS: fps, IsLooping: loop}
 }
 
 //=================================================================

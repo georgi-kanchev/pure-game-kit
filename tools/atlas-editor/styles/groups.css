@@ -132,9 +132,16 @@
     flex-direction: column;
     gap: 4px;
     overflow: hidden;
+    position: relative;
 }
 
 .preview-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.preview-speed-group {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -148,8 +155,14 @@
     line-height: 1;
 }
 
+.preview-left-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
 .preview-label {
-    font-size: 10px;
+    font-size: 14px;
     color: #555;
     text-transform: uppercase;
     user-select: none;
@@ -162,26 +175,35 @@
     border-radius: 2px;
 }
 
-.preview-panel input[type="number"] {
-    width: 36px;
-    height: 18px;
-    background: #111;
-    color: var(--text-main);
-    border: 1px solid #333;
-    border-radius: 3px;
-    font-size: 11px;
-    text-align: center;
-    outline: none;
-    padding: 0 2px;
+.preview-canvas-wrap {
+    position: relative;
+    line-height: 0;
 }
 
-.preview-panel input[type="number"]::-webkit-inner-spin-button,
-.preview-panel input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
+.preview-crop-label {
+    font-size: 13px;
+    font-weight: bold;
+    font-family: 'Segoe UI', sans-serif;
+    color: #ccc;
+    min-width: 18px;
+    text-align: center;
+    user-select: none;
+    line-height: 1;
 }
-.preview-panel input[type="number"] {
-    -moz-appearance: textfield;
+
+.preview-speed-slider {
+    width: 80px;
+    height: 18px;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+
+.preview-speed-val {
+    font-size: 11px;
+    color: #999;
+    min-width: 44px;
+    text-align: left;
+    user-select: none;
 }
 
 .preview-panel input[type="checkbox"] {
@@ -190,7 +212,7 @@
 }
 
 .preview-loop {
-    font-size: 11px;
+    font-size: 16px;
     color: #888;
     display: inline-flex;
     align-items: center;

@@ -15,7 +15,8 @@ type AtlasData struct {
 		CropIndexes string `xml:"cropIndexes,attr"` // space-separated list of integers
 	} `xml:"groups>group"`
 
-	Map map[string][]int32
+	CropsList []int32            // int32 is assets.ImageId
+	GroupsMap map[string][]int32 // int32 is assets.ImageId
 }
 
 var Atlases = make(map[uint16]AtlasData)
