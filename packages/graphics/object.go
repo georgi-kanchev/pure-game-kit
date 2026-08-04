@@ -91,12 +91,12 @@ func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) 
 	eff.FillColor = palette.DarkGray
 	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: eff}
 }
-func NewTilemap(scale float32, layerId assets.TileLayerId) Object {
+func NewTilemap(layerId assets.TileLayerId) Object {
 	var tilemap = Object{TileLayerId: layerId, Effects: Effects(internal.DefaultEffects)}
 	var layer = internal.TileLayers[uint8(layerId)]
 	if layer != nil {
-		tilemap.Width = float32(layer.Columns) * float32(layer.TileSize) * scale
-		tilemap.Height = float32(layer.Rows) * float32(layer.TileSize) * scale
+		tilemap.Width = float32(layer.Columns) * float32(layer.TileSize)
+		tilemap.Height = float32(layer.Rows) * float32(layer.TileSize)
 	}
 	return tilemap
 }

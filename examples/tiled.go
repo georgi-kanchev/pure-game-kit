@@ -15,7 +15,7 @@ func Tiled() {
 
 	var layers []graphics.Object
 	for _, id := range layerIds {
-		var layer = graphics.NewTilemap(1, id)
+		var layer = graphics.NewTilemap(id)
 		layers = append(layers, layer)
 	}
 
