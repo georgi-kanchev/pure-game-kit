@@ -29,9 +29,7 @@ func LoadAtlas(imageId ImageId, xmlPath string) AtlasId {
 		data.GroupsMap[data.Groups[a].Name] = make([]int32, frameCount)
 		for i := range frameCount {
 			var frameIndex = text.ToNumber[int](text.SplitAtIndex(data.Groups[a].CropIndexes, " ", i))
-			var fr = data.Crops[frameIndex]
-			var cropId = LoadImageCrop(imageId, float32(fr.X), float32(fr.Y), float32(fr.W), float32(fr.H))
-			data.GroupsMap[data.Groups[a].Name][i] = int32(cropId)
+			data.GroupsMap[data.Groups[a].Name][i] = data.CropsList[frameIndex]
 		}
 	}
 
