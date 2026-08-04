@@ -21,7 +21,7 @@ async function exportXml() {
     if (window.showSaveFilePicker) {
         try {
             const handle = await window.showSaveFilePicker({
-                suggestedName: 'animations.xml',
+                suggestedName: 'groups.xml',
                 types: [{ description: 'XML', accept: { 'application/xml': ['.xml'] } }],
             });
             savedFileHandle = handle;
@@ -37,7 +37,7 @@ async function exportXml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'animations.xml';
+    a.download = 'groups.xml';
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -45,18 +45,18 @@ async function exportXml() {
 function buildXml() {
     const lines = ['<?xml version="1.0" encoding="UTF-8"?>', `<data grid="${gridSize}">`];
 
-    lines.push('  <frames>');
-    frames.forEach((f, i) => {
-        lines.push(`    <frame x="${f.x}" y="${f.y}" w="${f.w}" h="${f.h}"/>`);
+    lines.push('  <crops>');
+    crops.forEach((f, i) => {
+        lines.push(`    <crop x="${f.x}" y="${f.y}" w="${f.w}" h="${f.h}"/>`);
     });
-    lines.push('  </frames>');
+    lines.push('  </crops>');
 
-    lines.push('  <animations>');
-    animations.forEach((a, i) => {
-        const indices = a.frameIndices.join(' ');
-        lines.push(`    <animation name=${xmlAttr(a.name)} frames="${indices}"/>`);
+    lines.push('  <groups>');
+    groups.forEach((a, i) => {
+        const indices = a.cropIndices.join(' ');
+        lines.push(`    <group name=${xmlAttr(a.name)} cropIndexes="${indices}"/>`);
     });
-    lines.push('  </animations>');
+    lines.push('  </groups>');
 
     lines.push('</data>');
     return lines.join('\n');
@@ -92,42 +92,42 @@ function importXml(text) {
         }
     }
 
-    // load frames — generate hues
-    const frameEls = [...doc.querySelectorAll('frames > frame')];
-    frames.length = 0;
-    let fhue = Math.random() * 360;
+    // load crops — generate hues
+    const cropEls = [...doc.querySelectorAll('crops > crop')];
+    crops.length = 0;
+    let chue = Math.random() * 360;
     const seen = new Set();
-    frameEls.forEach(el => {
+    cropEls.forEach(el => {
         const x = parseFloat(el.getAttribute('x')) || 0;
         const y = parseFloat(el.getAttribute('y')) || 0;
         const w = parseFloat(el.getAttribute('w')) || 0;
         const h = parseFloat(el.getAttribute('h')) || 0;
         const key = `${x},${y},${w},${h}`;
-        if (seen.has(key)) return; // skip exact duplicate frames
+        if (seen.has(key)) return; // skip exact duplicate crops
         seen.add(key);
-        frames.push({ x, y, w, h, hue: fhue });
-        fhue = (fhue + 20 + Math.random() * 25) % 360;
+        crops.push({ x, y, w, h, hue: chue });
+        chue = (chue + 20 + Math.random() * 25) % 360;
     });
-    lastHue = fhue;
+    lastHue = chue;
 
-    // load animations — generate hues
-    const animEls = [...doc.querySelectorAll('animations > animation')];
-    animations.length = 0;
-    selectedAnimIdx = -1;
+    // load groups — generate hues
+    const groupEls = [...doc.querySelectorAll('groups > group')];
+    groups.length = 0;
+    selectedGroupIdx = -1;
     let ahue = Math.random() * 360;
-    animEls.forEach(el => {
-        const indices = (el.getAttribute('frames') || '').trim().split(/\s+/).filter(Boolean).map(Number);
-        animations.push({
+    groupEls.forEach(el => {
+        const indices = (el.getAttribute('cropIndexes') || '').trim().split(/\s+/).filter(Boolean).map(Number);
+        groups.push({
             name: el.getAttribute('name') || '',
             hue: ahue,
-            frameIndices: indices.filter(n => !isNaN(n)),
+            cropIndices: indices.filter(n => !isNaN(n)),
         });
         ahue = (ahue + 20 + Math.random() * 25) % 360;
     });
-    if (animations.length) selectedAnimIdx = 0;
+    if (groups.length) selectedGroupIdx = 0;
 
-    rebuildAnimList();
-    selectAnimation(selectedAnimIdx);
+    rebuildGroupList();
+    selectGroup(selectedGroupIdx);
     drawView();
 }
 

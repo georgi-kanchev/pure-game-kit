@@ -1,4 +1,4 @@
-.anim-item {
+.group-item {
     display: flex;
     align-items: center;
     gap: 3px;
@@ -8,11 +8,11 @@
     cursor: pointer;
 }
 
-.anim-item:last-child {
+.group-item:last-child {
     border-bottom: none;
 }
 
-.anim-item .anim-name-input {
+.group-item .group-name-input {
     flex: 1;
     min-width: 0;
     background: transparent;
@@ -23,11 +23,11 @@
     outline: none;
 }
 
-.anim-item .anim-name-input:focus {
+.group-item .group-name-input:focus {
     background: #1a1a1a;
 }
 
-.anim-item .anim-frames-input {
+.group-item .group-crops-input {
     flex: 1;
     min-width: 0;
     background: transparent;
@@ -38,12 +38,12 @@
     outline: none;
 }
 
-.anim-item .anim-frames-input:focus {
+.group-item .group-crops-input:focus {
     background: #1a1a1a;
     color: #999;
 }
 
-.anim-item .drag-handle {
+.group-item .drag-handle {
     display: grid;
     grid-template-columns: repeat(2, 4px);
     grid-template-rows: repeat(3, 4px);
@@ -55,55 +55,55 @@
     user-select: none;
 }
 
-.anim-item .drag-handle:active {
+.group-item .drag-handle:active {
     cursor: grabbing;
 }
 
-.anim-item:hover .drag-handle {
+.group-item:hover .drag-handle {
     opacity: 0.65;
 }
 
-.anim-item .drag-handle .dot {
+.group-item .drag-handle .dot {
     width: 4px;
     height: 4px;
     border-radius: 50%;
     background: #888;
 }
 
-.anim-item.dragging {
+.group-item.dragging {
     opacity: 0.35;
 }
 
-.anim-item.drag-over {
+.group-item.drag-over {
     box-shadow: inset 0 -2px 0 var(--item-color, var(--accent-color));
 }
 
-.anim-item .anim-del-btn {
-    width: 18px;
-    height: 18px;
+.group-item .group-del-btn {
+    width: 24px;
+    height: 24px;
     padding: 0;
-    font-size: 11px;
+    font-size: 16px;
     line-height: 1;
     background: none;
     border: none;
-    color: #444;
+    color: #555;
     cursor: pointer;
     flex-shrink: 0;
 }
 
-.anim-item .anim-del-btn:hover {
+.group-item .group-del-btn:hover {
     color: #f55;
 }
 
-.anim-item:hover {
+.group-item:hover {
     background: color-mix(in srgb, var(--item-color, transparent) 13%, #252525);
 }
 
-.anim-item.selected {
+.group-item.selected {
     box-shadow: inset 0 0 0 1px var(--item-color, var(--accent-color));
 }
 
-.anim-item.selected:hover {
+.group-item.selected:hover {
     box-shadow: inset 0 0 0 1px var(--item-color, var(--accent-color));
 }
 
@@ -160,19 +160,6 @@
     display: block;
     image-rendering: pixelated;
     border-radius: 2px;
-}
-
-.preview-frame {
-    width: 32px;
-    height: 18px;
-    background: #111;
-    color: #ccc;
-    border: 1px solid #333;
-    border-radius: 3px;
-    font-size: 12px;
-    text-align: center;
-    outline: none;
-    padding: 0 2px;
 }
 
 .preview-panel input[type="number"] {

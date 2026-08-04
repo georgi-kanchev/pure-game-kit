@@ -33,10 +33,10 @@ function drawView() {
         ctx.drawImage(checkerCanvas, 0, 0);
         ctx.drawImage(image, 0, 0);
 
-        // frames
-        const animFrameSet = new Set((animations[selectedAnimIdx]?.frameIndices) || []);
-        frames.forEach((f, i) => {
-            if (animFrameSet.has(i)) return; // drawn by animation overlay below
+        // crops
+        const groupCropSet = new Set((groups[selectedGroupIdx]?.cropIndices) || []);
+        crops.forEach((f, i) => {
+            if (groupCropSet.has(i)) return; // drawn by group overlay below
 
             const flw = 2 / camera.zoom;
             ctx.strokeStyle = `hsla(${f.hue}, 55%, 50%, 0.5)`;
@@ -58,14 +58,14 @@ function drawView() {
             ctx.textBaseline = 'alphabetic';
         });
 
-        // animation overlays — draw selected animation's frames in its color
-        if (animations[selectedAnimIdx]) {
-            const anim = animations[selectedAnimIdx];
-            anim.frameIndices.forEach(i => {
-                const f = frames[i];
+        // group overlays — draw selected group's crops in its color
+        if (groups[selectedGroupIdx]) {
+            const group = groups[selectedGroupIdx];
+            group.cropIndices.forEach(i => {
+                const f = crops[i];
                 if (!f) return;
                 const alw = 3 / camera.zoom;
-                ctx.strokeStyle = `hsla(${anim.hue}, 55%, 50%, 0.9)`;
+                ctx.strokeStyle = `hsla(${group.hue}, 55%, 50%, 0.9)`;
                 ctx.lineWidth = alw;
                 ctx.strokeRect(f.x + alw / 2, f.y + alw / 2, f.w - alw, f.h - alw);
 
@@ -92,7 +92,7 @@ function drawView() {
             ctx.lineWidth = lw;
             ctx.strokeRect(selection.x + lw / 2, selection.y + lw / 2, selection.w - lw, selection.h - lw);
 
-            // pending frame index while Enter is held
+            // pending crop index while Enter is held
             if (enterDigits) {
                 const fontSize = Math.min(selection.h * 0.3, selection.w * 0.3, 18 / camera.zoom);
                 ctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;

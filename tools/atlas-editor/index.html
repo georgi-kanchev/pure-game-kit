@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="darkreader-lock">
-    <title>animation-editor</title>
+    <title>group-editor</title>
 
     <link rel="stylesheet" href="styles/base.css">
     <link rel="stylesheet" href="styles/button.css">
     <link rel="stylesheet" href="styles/topbar.css">
     <link rel="stylesheet" href="styles/sidebar.css">
-    <link rel="stylesheet" href="styles/animations.css">
+    <link rel="stylesheet" href="styles/groups.css">
     <link rel="stylesheet" href="styles/view.css">
 </head>
 <body>
@@ -23,7 +23,7 @@
                 <button id="openImage">🌄 Open Image</button>
             </div>
             <div class="top-bar-center">
-                <span class="top-hints">LMB Drag to select · Enter create frame · Enter+Number insert at N · RMB delete · MMB pan · Scroll zoom</span>
+                <span class="top-hints">LMB Drag to select · Enter create crop · Enter+Number insert at N · RMB delete · MMB pan · Scroll zoom</span>
             </div>
             <div class="top-bar-right">
                 <label class="grid-label">Grid</label>
@@ -33,18 +33,16 @@
 
         <div class="main-layout">
             <aside class="sidebar" id="sidebar">
-                <div class="animations-panel">
-                    <div class="anim-actions">
-                        <button id="addAnimBtn">➕ Add Animation</button>
+                <div class="groups-panel">
+                    <div class="group-actions">
+                        <button id="addGroupBtn">➕ Add Group</button>
                     </div>
-                    <div class="animation-list" id="animationList"></div>
+                    <div class="group-list" id="groupList"></div>
                     <div class="preview-resizer" id="previewResizer" style="display:none"></div>
                     <div class="preview-panel" id="previewPanel" style="display:none">
                         <div class="preview-controls">
                             <button id="previewPlay" title="Play">▶</button>
                             <button id="previewPause" title="Pause">⏸</button>
-                            <span class="preview-label">Frame</span>
-                            <input class="preview-frame" id="previewFrame" value="0" size="3">
                             <span class="preview-label">FPS</span>
                             <input type="number" id="previewSpeed" value="8" min="1" max="60" step="1">
                             <label class="preview-loop"><input type="checkbox" id="previewLoop" checked> ↻</label>
@@ -66,7 +64,7 @@
     <script src="scripts/camera.js"></script>
     <script src="scripts/draw.js"></script>
     <script src="scripts/sidebar.js"></script>
-    <script src="scripts/animations.js"></script>
+    <script src="scripts/groups.js"></script>
     <script src="scripts/io.js"></script>
     <script src="scripts/interact.js"></script>
 

@@ -1,4 +1,4 @@
-const animationList = document.getElementById('animationList');
+const groupList = document.getElementById('groupList');
 
 function nextHue() {
     if (lastHue === null) {
@@ -9,11 +9,11 @@ function nextHue() {
     return lastHue;
 }
 
-function createAnimItem(anim, idx) {
+function createGroupItem(group, idx) {
     const item = document.createElement('div');
-    item.className = 'anim-item';
+    item.className = 'group-item';
     item.dataset.index = idx;
-    item.style.setProperty('--item-color', `hsl(${anim.hue}, 55%, 50%)`);
+    item.style.setProperty('--item-color', `hsl(${group.hue}, 55%, 50%)`);
 
     const handle = document.createElement('span');
     handle.className = 'drag-handle';
@@ -30,116 +30,116 @@ function createAnimItem(anim, idx) {
     });
     handle.addEventListener('dragend', () => {
         item.classList.remove('dragging');
-        animationList.querySelectorAll('.anim-item').forEach(el => el.classList.remove('drag-over'));
+        groupList.querySelectorAll('.group-item').forEach(el => el.classList.remove('drag-over'));
     });
 
     const nameInput = document.createElement('input');
-    nameInput.className = 'anim-name-input';
-    nameInput.value = anim.name;
+    nameInput.className = 'group-name-input';
+    nameInput.value = group.name;
     nameInput.addEventListener('input', () => {
-        animations[idx].name = nameInput.value;
+        groups[idx].name = nameInput.value;
     });
     nameInput.addEventListener('click', (e) => {
         e.stopPropagation();
-        selectAnimation(idx);
+        selectGroup(idx);
     });
 
-    const framesInput = document.createElement('input');
-    framesInput.className = 'anim-frames-input';
-    framesInput.value = anim.frameIndices.join(' ');
-    framesInput.placeholder = '0 1 2…';
-    framesInput.addEventListener('input', () => {
-        const parts = framesInput.value.trim().split(/\s+/).filter(Boolean);
-        animations[idx].frameIndices = parts
+    const cropsInput = document.createElement('input');
+    cropsInput.className = 'group-crops-input';
+    cropsInput.value = group.cropIndices.join(' ');
+    cropsInput.placeholder = '0 1 2…';
+    cropsInput.addEventListener('input', () => {
+        const parts = cropsInput.value.trim().split(/\s+/).filter(Boolean);
+        groups[idx].cropIndices = parts
             .map(p => parseInt(p))
             .filter(n => !isNaN(n) && n >= 0);
         drawView();
     });
-    framesInput.addEventListener('click', (e) => {
+    cropsInput.addEventListener('click', (e) => {
         e.stopPropagation();
-        selectAnimation(idx);
+        selectGroup(idx);
     });
 
     const delBtn = document.createElement('button');
-    delBtn.className = 'anim-del-btn';
+    delBtn.className = 'group-del-btn';
     delBtn.textContent = '×';
     delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        animations.splice(idx, 1);
-        if (selectedAnimIdx >= animations.length) selectedAnimIdx = animations.length - 1;
-        rebuildAnimList();
+        groups.splice(idx, 1);
+        if (selectedGroupIdx >= groups.length) selectedGroupIdx = groups.length - 1;
+        rebuildGroupList();
         drawView();
     });
 
     item.appendChild(handle);
     item.appendChild(nameInput);
-    item.appendChild(framesInput);
+    item.appendChild(cropsInput);
     item.appendChild(delBtn);
 
-    item.addEventListener('click', () => selectAnimation(idx));
+    item.addEventListener('click', () => selectGroup(idx));
     return item;
 }
 
-function rebuildAnimList() {
-    animationList.innerHTML = '';
-    animations.forEach((anim, i) => {
-        animationList.appendChild(createAnimItem(anim, i));
+function rebuildGroupList() {
+    groupList.innerHTML = '';
+    groups.forEach((group, i) => {
+        groupList.appendChild(createGroupItem(group, i));
     });
     highlightSelection();
 }
 
 function highlightSelection() {
-    animationList.querySelectorAll('.anim-item').forEach((el, i) => {
-        el.classList.toggle('selected', i === selectedAnimIdx);
+    groupList.querySelectorAll('.group-item').forEach((el, i) => {
+        el.classList.toggle('selected', i === selectedGroupIdx);
     });
 }
 
 // Drag-and-drop reorder
-animationList.addEventListener('dragover', (e) => {
+groupList.addEventListener('dragover', (e) => {
     e.preventDefault();
-    const target = e.target.closest('.anim-item');
+    const target = e.target.closest('.group-item');
     if (!target || target.classList.contains('dragging')) return;
-    animationList.querySelectorAll('.anim-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    groupList.querySelectorAll('.group-item.drag-over').forEach(el => el.classList.remove('drag-over'));
     target.classList.add('drag-over');
 });
 
-animationList.addEventListener('dragleave', (e) => {
-    const target = e.target.closest('.anim-item');
+groupList.addEventListener('dragleave', (e) => {
+    const target = e.target.closest('.group-item');
     if (target && !target.contains(e.relatedTarget)) {
         target.classList.remove('drag-over');
     }
 });
 
-animationList.addEventListener('drop', (e) => {
+groupList.addEventListener('drop', (e) => {
     e.preventDefault();
-    const target = e.target.closest('.anim-item');
+    const target = e.target.closest('.group-item');
     if (!target) return;
     target.classList.remove('drag-over');
     const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
     const toIdx = parseInt(target.dataset.index);
     if (isNaN(fromIdx) || isNaN(toIdx) || fromIdx === toIdx) return;
 
-    const [moved] = animations.splice(fromIdx, 1);
-    animations.splice(toIdx, 0, moved);
+    const [moved] = groups.splice(fromIdx, 1);
+    groups.splice(toIdx, 0, moved);
 
-    if (selectedAnimIdx === fromIdx) {
-        selectedAnimIdx = toIdx;
-    } else if (fromIdx < toIdx && selectedAnimIdx > fromIdx && selectedAnimIdx <= toIdx) {
-        selectedAnimIdx--;
-    } else if (fromIdx > toIdx && selectedAnimIdx >= toIdx && selectedAnimIdx < fromIdx) {
-        selectedAnimIdx++;
+    if (selectedGroupIdx === fromIdx) {
+        selectedGroupIdx = toIdx;
+    } else if (fromIdx < toIdx && selectedGroupIdx > fromIdx && selectedGroupIdx <= toIdx) {
+        selectedGroupIdx--;
+    } else if (fromIdx > toIdx && selectedGroupIdx >= toIdx && selectedGroupIdx < fromIdx) {
+        selectedGroupIdx++;
     }
 
-    rebuildAnimList();
+    rebuildGroupList();
     drawView();
 });
 
 const PREVIEW_MIN_H = 80;
 const PREVIEW_DEFAULT_H = 220;
 
-function selectAnimation(idx) {
+function selectGroup(idx) {
     stopPreview();
-    selectedAnimIdx = idx;
+    selectedGroupIdx = idx;
     highlightSelection();
     const visible = idx !== -1;
     document.getElementById('previewPanel').style.display = visible ? '' : 'none';
@@ -153,23 +153,23 @@ function selectAnimation(idx) {
     drawView();
 }
 
-// Add animation button
-document.getElementById('addAnimBtn').addEventListener('click', () => {
-    animations.push({
-        name: `Animation ${animations.length + 1}`,
+// Add group button
+document.getElementById('addGroupBtn').addEventListener('click', () => {
+    groups.push({
+        name: `Group ${groups.length + 1}`,
         hue: nextHue(),
-        frameIndices: [],
+        cropIndices: [],
     });
-    rebuildAnimList();
-    selectAnimation(animations.length - 1);
+    rebuildGroupList();
+    selectGroup(groups.length - 1);
 });
 
 // Initialize
-rebuildAnimList();
+rebuildGroupList();
 
 // Preview playback
 let previewTimer = null;
-let previewFrameIdx = 0;
+let previewCropIdx = 0;
 
 function clearPreview() {
     const pc = document.getElementById('previewCanvas');
@@ -182,13 +182,12 @@ function clearPreview() {
 function stopPreview(full) {
     if (previewTimer) clearInterval(previewTimer);
     previewTimer = null;
-    document.getElementById('previewFrame').disabled = false;
     if (full) {
         clearPreview();
     }
 }
 
-function showPreviewFrame(f) {
+function showPreviewCrop(f, ci) {
     if (!image || !f) return;
     const pc = document.getElementById('previewCanvas');
     const pad = 1;
@@ -209,55 +208,67 @@ function showPreviewFrame(f) {
     pctx.strokeStyle = '#3a3a3a';
     pctx.lineWidth = 1;
     pctx.strokeRect(0.5, 0.5, pc.width - 1, pc.height - 1);
+
+    // draw crop index overlay
+    if (ci !== undefined) {
+        const fontSize = Math.min(12, f.h * 0.15, f.w * 0.15);
+        const label = String(ci);
+        pctx.font = `bold ${fontSize}px 'Segoe UI', sans-serif`;
+        pctx.textAlign = 'left';
+        pctx.textBaseline = 'top';
+        pctx.strokeStyle = '#000';
+        pctx.lineWidth = 2;
+        pctx.strokeText(label, pad + 1, pad + 1);
+        pctx.fillStyle = '#fff';
+        pctx.fillText(label, pad + 1, pad + 1);
+        pctx.textBaseline = 'alphabetic';
+    }
 }
 
-function updatePreviewFrame() {
-    const anim = animations[selectedAnimIdx];
-    if (!anim || !anim.frameIndices.length) return stopPreview(false);
-    if (previewFrameIdx >= anim.frameIndices.length) {
+function updatePreviewCrop() {
+    const group = groups[selectedGroupIdx];
+    if (!group || !group.cropIndices.length) return stopPreview(false);
+    if (previewCropIdx >= group.cropIndices.length) {
         if (document.getElementById('previewLoop').checked) {
-            previewFrameIdx = 0;
+            previewCropIdx = 0;
         } else {
             return stopPreview(false);
         }
     }
-    const fi = anim.frameIndices[previewFrameIdx];
-    const f = frames[fi];
+    const ci = group.cropIndices[previewCropIdx];
+    const f = crops[ci];
     if (f) {
         selection = { x: f.x, y: f.y, w: f.w, h: f.h };
-        showPreviewFrame(f);
+        showPreviewCrop(f, ci);
     }
-    document.getElementById('previewFrame').value = fi;
     drawView();
-    previewFrameIdx++;
+    previewCropIdx++;
 }
 
-// Stop preview when selecting a different animation
-const origSelectAnimation = selectAnimation;
-selectAnimation = function(idx) {
+// Stop preview when selecting a different group
+const origSelectGroup = selectGroup;
+selectGroup = function(idx) {
     stopPreview(true);
-    origSelectAnimation(idx);
+    origSelectGroup(idx);
     if (idx !== -1) {
         startPlayback();
     }
 };
 
 function startPlayback() {
-    const anim = animations[selectedAnimIdx];
-    if (!anim || !anim.frameIndices.length) return;
+    const group = groups[selectedGroupIdx];
+    if (!group || !group.cropIndices.length) return;
     stopPreview(true);
-    const firstFi = anim.frameIndices[0];
-    const firstF = frames[firstFi];
-    if (firstF) {
-        showPreviewFrame(firstF);
-        document.getElementById('previewFrame').value = firstFi;
+    const firstCi = group.cropIndices[0];
+    const firstC = crops[firstCi];
+    if (firstC) {
+        showPreviewCrop(firstC, firstCi);
     }
-    previewFrameIdx = 1;
-    if (firstF) selection = { x: firstF.x, y: firstF.y, w: firstF.w, h: firstF.h };
-    document.getElementById('previewFrame').disabled = true;
+    previewCropIdx = 1;
+    if (firstC) selection = { x: firstC.x, y: firstC.y, w: firstC.w, h: firstC.h };
     drawView();
     const speed = parseInt(document.getElementById('previewSpeed').value) || 8;
-    previewTimer = setInterval(updatePreviewFrame, 1000 / speed);
+    previewTimer = setInterval(updatePreviewCrop, 1000 / speed);
 }
 
 document.getElementById('previewPlay').addEventListener('click', startPlayback);
@@ -271,19 +282,7 @@ document.getElementById('previewSpeed').addEventListener('input', () => {
     if (!previewTimer) return;
     if (previewTimer) clearInterval(previewTimer);
     const speed = parseInt(document.getElementById('previewSpeed').value) || 8;
-    previewTimer = setInterval(updatePreviewFrame, 1000 / speed);
-});
-
-// Frame field: type a frame index to preview it
-document.getElementById('previewFrame').addEventListener('input', () => {
-    const fi = parseInt(document.getElementById('previewFrame').value);
-    if (isNaN(fi) || fi < 0) return;
-    const f = frames[fi];
-    if (f) {
-        showPreviewFrame(f);
-        selection = { x: f.x, y: f.y, w: f.w, h: f.h };
-        drawView();
-    }
+    previewTimer = setInterval(updatePreviewCrop, 1000 / speed);
 });
 
 // Preview panel vertical resizer

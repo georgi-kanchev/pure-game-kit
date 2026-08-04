@@ -11,7 +11,7 @@ dragbar.addEventListener('mousedown', (e) => {
 function resize(e) {
     let newWidth = e.clientX;
     newWidth = Math.max(newWidth, 200);
-    newWidth = Math.min(500, newWidth);
+    newWidth = Math.min(700, newWidth);
     sidebar.style.width = newWidth + 'px';
 }
 

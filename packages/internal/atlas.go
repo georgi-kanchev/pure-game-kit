@@ -9,11 +9,11 @@ type AtlasData struct {
 		Y int `xml:"y,attr"`
 		W int `xml:"w,attr"`
 		H int `xml:"h,attr"`
-	} `xml:"frames>frame"`
+	} `xml:"crops>crop"`
 	Groups []struct {
-		Name   string `xml:"name,attr"`
-		Frames string `xml:"frames,attr"` // space-separated list of integers
-	} `xml:"animations>animation"`
+		Name        string `xml:"name,attr"`
+		CropIndexes string `xml:"cropIndexes,attr"` // space-separated list of integers
+	} `xml:"groups>group"`
 
 	Map map[string][]int32
 }

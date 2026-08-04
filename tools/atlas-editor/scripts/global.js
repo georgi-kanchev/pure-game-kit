@@ -5,10 +5,10 @@ let image = null;
 let gridSize = 16;
 let selection = null; // { x, y, w, h } in world coords, grid-aligned
 let checkerCanvas = null; // pre-rendered checkerboard at image dimensions
-let frames = [];
+let crops = [];
 let lastHue = null;
-let animations = [];
-let selectedAnimIdx = -1;
+let groups = [];
+let selectedGroupIdx = -1;
 let enterDigits = ''; // digits typed while Enter is held
 
 document.addEventListener('contextmenu', e => e.preventDefault());

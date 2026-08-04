@@ -18,18 +18,18 @@ canvas.addEventListener('mousedown', (e) => {
         isPanning = true;
     } else if (e.button === 2) {
         const world = screenToWorld(e.clientX, e.clientY);
-        const idx = frames.findLastIndex(f =>
+        const idx = crops.findLastIndex(f =>
             world.x >= f.x && world.x <= f.x + f.w &&
             world.y >= f.y && world.y <= f.y + f.h);
         if (idx !== -1) {
-            frames.splice(idx, 1);
-            // remove reference from all animations
-            animations.forEach(a => {
-                a.frameIndices = a.frameIndices
+            crops.splice(idx, 1);
+            // remove reference from all groups
+            groups.forEach(a => {
+                a.cropIndices = a.cropIndices
                     .map(i => i > idx ? i - 1 : i)
                     .filter(i => i !== idx);
             });
-            rebuildAnimList();
+            rebuildGroupList();
             drawView();
         }
     } else if (e.button === 0 && image) {
@@ -38,19 +38,19 @@ canvas.addEventListener('mousedown', (e) => {
             world.x >= selection.x && world.x <= selection.x + selection.w &&
             world.y >= selection.y && world.y <= selection.y + selection.h) {
             selection = null;
-            if (selectedAnimIdx !== -1) {
+            if (selectedGroupIdx !== -1) {
                 stopPreview(true);
-                selectedAnimIdx = -1;
+                selectedGroupIdx = -1;
                 highlightSelection();
                 document.getElementById('previewPanel').style.display = 'none';
             }
             drawView();
             return;
         }
-        // deselect animation when clicking canvas
-        if (selectedAnimIdx !== -1) {
+        // deselect group when clicking canvas
+        if (selectedGroupIdx !== -1) {
             stopPreview(true);
-            selectedAnimIdx = -1;
+            selectedGroupIdx = -1;
             highlightSelection();
             document.getElementById('previewPanel').style.display = 'none';
         }
@@ -110,27 +110,27 @@ window.addEventListener('keyup', (e) => {
     if (e.target.matches('input, textarea, select')) return;
     if (e.key === 'Enter' && isEnterHeld) {
         isEnterHeld = false;
-        const idx = enterDigits !== '' ? parseInt(enterDigits) : frames.length;
-        const insertAt = Math.min(idx, frames.length);
+        const idx = enterDigits !== '' ? parseInt(enterDigits) : crops.length;
+        const insertAt = Math.min(idx, crops.length);
         if (lastHue === null) {
             lastHue = Math.random() * 360;
         } else {
             lastHue = (lastHue + 20 + Math.random() * 25) % 360;
         }
-        frames.splice(Math.max(0, insertAt), 0, {
+        crops.splice(Math.max(0, insertAt), 0, {
             x: selection.x,
             y: selection.y,
             w: selection.w,
             h: selection.h,
             hue: lastHue,
         });
-        // shift indices in all animations for frames after insertion point
-        animations.forEach(a => {
-            a.frameIndices = a.frameIndices.map(i => i >= insertAt ? i + 1 : i);
+        // shift indices in all groups for crops after insertion point
+        groups.forEach(a => {
+            a.cropIndices = a.cropIndices.map(i => i >= insertAt ? i + 1 : i);
         });
         selection = null;
         enterDigits = '';
-        rebuildAnimList();
+        rebuildGroupList();
         drawView();
     }
 });
