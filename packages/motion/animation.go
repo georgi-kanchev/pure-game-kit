@@ -11,17 +11,17 @@ import (
 )
 
 type Animation[T any] struct {
-	Frames              []T
-	FPS                 float32
-	IsLooping, IsPaused bool
+	Frames    []T
+	FPS       float32
+	IsLooping bool
 
-	Time float32
+	Time, TimeScale float32
 
 	lastUpdateFrame uint64
 }
 
 func NewAnimation[T any](fps float32, loop bool, frames ...T) Animation[T] {
-	return Animation[T]{Frames: collection.Copy(frames), FPS: fps, IsLooping: loop}
+	return Animation[T]{Frames: collection.Copy(frames), FPS: fps, IsLooping: loop, TimeScale: 1}
 }
 
 //=================================================================
@@ -58,7 +58,7 @@ func (a *Animation[T]) IsFinished() bool {
 }
 func (a *Animation[T]) IsPlaying() bool {
 	a.tryUpdate()
-	return !a.IsFinished() && !a.IsPaused
+	return !a.IsFinished() && a.TimeScale != 0
 }
 
 // private ========================================================
@@ -69,10 +69,7 @@ func (a *Animation[T]) tryUpdate() {
 	}
 
 	a.lastUpdateFrame = internal.Frame
-
-	if !a.IsPaused {
-		a.Time += internal.FrameDelta
-	}
+	a.Time += internal.FrameDelta * a.TimeScale
 
 	var duration = a.Duration()
 	if a.Time >= duration {

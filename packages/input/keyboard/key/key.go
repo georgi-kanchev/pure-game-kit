@@ -12,7 +12,7 @@ const (
 	A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y,
 	Z = 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90
 
-	LeftBracket, BackSlash, RightBracket, Grave = 91, 92, 93, 96
+	LeftBracket, BackSlash, RightBracket, Backtick = 91, 92, 93, 96
 
 	Escape, Enter, Tab, Backspace, Insert, Delete, RightArrow, LeftArrow, DownArrow, UpArrow, PageUp, PageDown, Home,
 	End, CapsLock, ScrollLock, NumLock, PrintScreen,
@@ -50,7 +50,7 @@ var nameToKey = map[string]int{
 	"A": A, "B": B, "C": C, "D": D, "E": E, "F": F, "G": G, "H": H, "I": I, "J": J, "K": K, "L": L, "M": M,
 	"N": N, "O": O, "P": P, "Q": Q, "R": R, "S": S, "T": T, "U": U, "V": V, "W": W, "X": X, "Y": Y, "Z": Z,
 
-	"LeftBracket": LeftBracket, "BackSlash": BackSlash, "RightBracket": RightBracket, "Grave": Grave,
+	"LeftBracket": LeftBracket, "BackSlash": BackSlash, "RightBracket": RightBracket, "Backtick": Backtick,
 
 	"Escape": Escape, "Enter": Enter, "Tab": Tab, "Backspace": Backspace, "Insert": Insert,
 	"Delete": Delete, "RightArrow": RightArrow, "LeftArrow": LeftArrow, "DownArrow": DownArrow,
@@ -81,7 +81,7 @@ var keyToName = map[int]string{
 	A: "A", B: "B", C: "C", D: "D", E: "E", F: "F", G: "G", H: "H", I: "I", J: "J", K: "K", L: "L", M: "M",
 	N: "N", O: "O", P: "P", Q: "Q", R: "R", S: "S", T: "T", U: "U", V: "V", W: "W", X: "X", Y: "Y", Z: "Z",
 
-	LeftBracket: "LeftBracket", BackSlash: "BackSlash", RightBracket: "RightBracket", Grave: "Grave",
+	LeftBracket: "LeftBracket", BackSlash: "BackSlash", RightBracket: "RightBracket", Backtick: "Backtick",
 
 	Escape: "Escape", Enter: "Enter", Tab: "Tab", Backspace: "Backspace", Insert: "Insert",
 	Delete: "Delete", RightArrow: "RightArrow", LeftArrow: "LeftArrow", DownArrow: "DownArrow",
