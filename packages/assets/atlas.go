@@ -17,11 +17,20 @@ func LoadAtlas(imageId ImageId, xmlPath string) AtlasId {
 		return 0
 	}
 
-	data.CropsList = make([]int32, len(data.Crops))
-	data.GroupsMap = make(map[string][]int32, len(data.Groups))
+	data.Crops = text.Replace(data.Crops, " ", "")
+	data.Crops = text.Replace(data.Crops, "\n", "")
 
-	for i, c := range data.Crops {
-		data.CropsList[i] = int32(LoadImageCrop(imageId, float32(c.X), float32(c.Y), float32(c.W), float32(c.H)))
+	var length = text.SplitCount(data.Crops, "|")
+	data.CropsList = make([]int32, length)
+	data.GroupsMap = make(map[string][]int32, length)
+
+	for i := range length {
+		var crop = text.SplitAtIndex(data.Crops, "|", i)
+		var x = text.ToNumber[float32](text.SplitAtIndex(crop, ",", 0))
+		var y = text.ToNumber[float32](text.SplitAtIndex(crop, ",", 1))
+		var w = text.ToNumber[float32](text.SplitAtIndex(crop, ",", 2))
+		var h = text.ToNumber[float32](text.SplitAtIndex(crop, ",", 3))
+		data.CropsList[i] = int32(LoadImageCrop(imageId, x, y, w, h))
 	}
 
 	for a := range data.Groups {

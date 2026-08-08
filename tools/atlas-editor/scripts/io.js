@@ -45,10 +45,13 @@ async function exportXml() {
 function buildXml() {
     const lines = ['<?xml version="1.0" encoding="UTF-8"?>', `<data grid="${gridSize}">`];
 
+    const tuples = crops.map(f => `${f.x},${f.y},${f.w},${f.h}`);
+    const chunked = [];
+    for (let i = 0; i < tuples.length; i += 8) {
+        chunked.push(tuples.slice(i, i + 8).join('|'));
+    }
     lines.push('  <crops>');
-    crops.forEach((f, i) => {
-        lines.push(`    <crop x="${f.x}" y="${f.y}" w="${f.w}" h="${f.h}"/>`);
-    });
+    chunked.forEach(chunk => lines.push(`    ${chunk}`));
     lines.push('  </crops>');
 
     lines.push('  <groups>');
@@ -93,21 +96,25 @@ function importXml(text) {
     }
 
     // load crops — generate hues
-    const cropEls = [...doc.querySelectorAll('crops > crop')];
+    const cropsEl = doc.querySelector('crops');
     crops.length = 0;
     let chue = Math.random() * 360;
     const seen = new Set();
-    cropEls.forEach(el => {
-        const x = parseFloat(el.getAttribute('x')) || 0;
-        const y = parseFloat(el.getAttribute('y')) || 0;
-        const w = parseFloat(el.getAttribute('w')) || 0;
-        const h = parseFloat(el.getAttribute('h')) || 0;
-        const key = `${x},${y},${w},${h}`;
-        if (seen.has(key)) return; // skip exact duplicate crops
-        seen.add(key);
-        crops.push({ x, y, w, h, hue: chue });
-        chue = (chue + 20 + Math.random() * 25) % 360;
-    });
+    if (cropsEl) {
+        const tuples = cropsEl.textContent.trim().split('|').map(t => t.trim()).filter(Boolean);
+        tuples.forEach(tuple => {
+            const [xs, ys, ws, hs] = tuple.split(',');
+            const x = parseFloat(xs) || 0;
+            const y = parseFloat(ys) || 0;
+            const w = parseFloat(ws) || 0;
+            const h = parseFloat(hs) || 0;
+            const key = `${x},${y},${w},${h}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+            crops.push({ x, y, w, h, hue: chue });
+            chue = (chue + 20 + Math.random() * 25) % 360;
+        });
+    }
     lastHue = chue;
 
     // load groups — generate hues
