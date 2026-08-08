@@ -52,13 +52,13 @@ func (a *Animation[T]) Duration() float32 {
 	return float32(len(a.Frames)) / a.FPS
 }
 
-func (a *Animation[T]) IsFinished() bool {
+func (a *Animation[T]) IsJustFinished() bool {
 	a.tryUpdate()
 	return a.Time == a.Duration()
 }
 func (a *Animation[T]) IsPlaying() bool {
 	a.tryUpdate()
-	return !a.IsFinished() && a.TimeScale != 0
+	return !a.IsJustFinished() && a.TimeScale != 0
 }
 
 // private ========================================================
