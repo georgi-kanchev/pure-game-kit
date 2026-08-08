@@ -21,7 +21,7 @@ async function exportXml() {
     if (window.showSaveFilePicker) {
         try {
             const handle = await window.showSaveFilePicker({
-                suggestedName: 'groups.xml',
+                suggestedName: 'atlas.xml',
                 types: [{ description: 'XML', accept: { 'application/xml': ['.xml'] } }],
             });
             savedFileHandle = handle;
@@ -37,7 +37,7 @@ async function exportXml() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'groups.xml';
+    a.download = 'atlas.xml';
     a.click();
     URL.revokeObjectURL(url);
 }

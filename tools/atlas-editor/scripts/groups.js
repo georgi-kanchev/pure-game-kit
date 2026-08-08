@@ -43,6 +43,9 @@ function createGroupItem(group, idx) {
         e.stopPropagation();
         selectGroup(idx);
     });
+    nameInput.addEventListener('blur', () => {
+        rebuildGroupList();
+    });
 
     const cropsInput = document.createElement('input');
     cropsInput.className = 'group-crops-input';
@@ -80,11 +83,117 @@ function createGroupItem(group, idx) {
     return item;
 }
 
-function rebuildGroupList() {
-    groupList.innerHTML = '';
-    groups.forEach((group, i) => {
-        groupList.appendChild(createGroupItem(group, i));
+function createPrefixSection(prefix, items, collapsed) {
+    const container = document.createElement('div');
+    container.className = 'prefix-section';
+
+    const header = document.createElement('div');
+    header.className = 'prefix-header';
+
+    const dragHandle = document.createElement('span');
+    dragHandle.className = 'prefix-drag-handle';
+    dragHandle.draggable = true;
+    for (let i = 0; i < 6; i++) {
+        const dot = document.createElement('span');
+        dot.className = 'dot';
+        dragHandle.appendChild(dot);
+    }
+    dragHandle.addEventListener('dragstart', (e) => {
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/prefix-indices', JSON.stringify(items.map(it => it.index)));
+        container.classList.add('dragging');
     });
+    dragHandle.addEventListener('dragend', () => {
+        container.classList.remove('dragging');
+        groupList.querySelectorAll('.prefix-section.drag-over, .group-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+    });
+
+    const toggle = document.createElement('span');
+    toggle.className = 'prefix-toggle';
+
+    const label = document.createElement('span');
+    label.className = 'prefix-label';
+    label.textContent = prefix;
+
+    const count = document.createElement('span');
+    count.className = 'prefix-count';
+    count.textContent = items.length;
+
+    header.appendChild(dragHandle);
+    header.appendChild(toggle);
+    header.appendChild(label);
+    header.appendChild(count);
+
+    const body = document.createElement('div');
+    body.className = 'prefix-body';
+    items.forEach(({ group, index }) => {
+        body.appendChild(createGroupItem(group, index));
+    });
+
+    header.addEventListener('click', (e) => {
+        if (e.target === dragHandle) return;
+        const isCollapsed = container.classList.toggle('collapsed');
+        toggle.textContent = isCollapsed ? '▶' : '▼';
+    });
+
+    if (collapsed) {
+        container.classList.add('collapsed');
+        toggle.textContent = '▶';
+    } else {
+        toggle.textContent = '▼';
+    }
+
+    container.appendChild(header);
+    container.appendChild(body);
+    return container;
+}
+
+function getPrefix(name) {
+    const match = name.match(/^([a-zA-Z0-9]+)[^a-zA-Z0-9]/);
+    return match ? match[1] : null;
+}
+
+function rebuildGroupList() {
+    // Remember which prefix sections are currently expanded
+    const expanded = new Set();
+    groupList.querySelectorAll('.prefix-section:not(.collapsed) .prefix-label').forEach(el => expanded.add(el.textContent));
+
+    groupList.innerHTML = '';
+
+    // Compute which prefixes have 2+ groups
+    const prefixCounts = new Map();
+    groups.forEach(g => {
+        const p = getPrefix(g.name);
+        if (p) prefixCounts.set(p, (prefixCounts.get(p) || 0) + 1);
+    });
+    const multiPrefixes = new Set();
+    for (const [p, count] of prefixCounts) {
+        if (count >= 2) multiPrefixes.add(p);
+    }
+
+    // Render in original order, collecting multi-prefix groups into sections
+    const rendered = new Set();
+    for (let i = 0; i < groups.length; i++) {
+        if (rendered.has(i)) continue;
+
+        const prefix = getPrefix(groups[i].name);
+
+        if (prefix && multiPrefixes.has(prefix)) {
+            const items = [];
+            for (let j = i; j < groups.length; j++) {
+                if (getPrefix(groups[j].name) === prefix) {
+                    items.push({ group: groups[j], index: j });
+                    rendered.add(j);
+                }
+            }
+            const collapsed = !expanded.has(prefix);
+            groupList.appendChild(createPrefixSection(prefix, items, collapsed));
+        } else {
+            groupList.appendChild(createGroupItem(groups[i], i));
+            rendered.add(i);
+        }
+    }
+
     highlightSelection();
 }
 
@@ -97,14 +206,23 @@ function highlightSelection() {
 // Drag-and-drop reorder
 groupList.addEventListener('dragover', (e) => {
     e.preventDefault();
-    const target = e.target.closest('.group-item');
-    if (!target || target.classList.contains('dragging')) return;
-    groupList.querySelectorAll('.group-item.drag-over').forEach(el => el.classList.remove('drag-over'));
-    target.classList.add('drag-over');
+    const isPrefixDrag = e.dataTransfer.types.includes('text/prefix-indices');
+
+    if (isPrefixDrag) {
+        const target = e.target.closest('.prefix-section, .group-item');
+        if (!target || target.classList.contains('dragging') || target.closest('.prefix-section.dragging')) return;
+        groupList.querySelectorAll('.prefix-section.drag-over, .group-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+        target.classList.add('drag-over');
+    } else {
+        const target = e.target.closest('.group-item');
+        if (!target || target.classList.contains('dragging')) return;
+        groupList.querySelectorAll('.group-item.drag-over').forEach(el => el.classList.remove('drag-over'));
+        target.classList.add('drag-over');
+    }
 });
 
 groupList.addEventListener('dragleave', (e) => {
-    const target = e.target.closest('.group-item');
+    const target = e.target.closest('.prefix-section.drag-over, .group-item.drag-over');
     if (target && !target.contains(e.relatedTarget)) {
         target.classList.remove('drag-over');
     }
@@ -112,26 +230,67 @@ groupList.addEventListener('dragleave', (e) => {
 
 groupList.addEventListener('drop', (e) => {
     e.preventDefault();
-    const target = e.target.closest('.group-item');
-    if (!target) return;
-    target.classList.remove('drag-over');
-    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-    const toIdx = parseInt(target.dataset.index);
-    if (isNaN(fromIdx) || isNaN(toIdx) || fromIdx === toIdx) return;
+    const prefixData = e.dataTransfer.getData('text/prefix-indices');
 
-    const [moved] = groups.splice(fromIdx, 1);
-    groups.splice(toIdx, 0, moved);
+    if (prefixData) {
+        // ── prefix section drop ──
+        const sourceIndices = JSON.parse(prefixData).sort((a, b) => a - b);
+        const target = e.target.closest('.prefix-section, .group-item');
+        if (!target || target.closest('.prefix-section.dragging')) return;
+        target.classList.remove('drag-over');
 
-    if (selectedGroupIdx === fromIdx) {
-        selectedGroupIdx = toIdx;
-    } else if (fromIdx < toIdx && selectedGroupIdx > fromIdx && selectedGroupIdx <= toIdx) {
-        selectedGroupIdx--;
-    } else if (fromIdx > toIdx && selectedGroupIdx >= toIdx && selectedGroupIdx < fromIdx) {
-        selectedGroupIdx++;
+        // Determine insertion point (after the target element's last group)
+        let insertAt;
+        if (target.classList.contains('prefix-section')) {
+            const lastIdx = Math.max(...Array.from(target.querySelectorAll('.group-item'), el => parseInt(el.dataset.index)));
+            insertAt = lastIdx + 1;
+        } else {
+            insertAt = parseInt(target.dataset.index) + 1;
+        }
+
+        // Don't move if already in correct position
+        if (sourceIndices[sourceIndices.length - 1] === insertAt - 1) return;
+
+        // Collect source groups
+        const moved = sourceIndices.map(i => groups[i]);
+
+        // Remove source groups (descending order to preserve indices)
+        for (let i = sourceIndices.length - 1; i >= 0; i--) {
+            groups.splice(sourceIndices[i], 1);
+        }
+
+        // Adjust insertAt after removals
+        const removedBefore = sourceIndices.filter(i => i < insertAt).length;
+        insertAt -= removedBefore;
+
+        // Insert at target position
+        groups.splice(insertAt, 0, ...moved);
+
+        rebuildGroupList();
+        drawView();
+    } else {
+        // ── single group drop ──
+        const target = e.target.closest('.group-item');
+        if (!target) return;
+        target.classList.remove('drag-over');
+        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+        const toIdx = parseInt(target.dataset.index);
+        if (isNaN(fromIdx) || isNaN(toIdx) || fromIdx === toIdx) return;
+
+        const [moved] = groups.splice(fromIdx, 1);
+        groups.splice(toIdx, 0, moved);
+
+        if (selectedGroupIdx === fromIdx) {
+            selectedGroupIdx = toIdx;
+        } else if (fromIdx < toIdx && selectedGroupIdx > fromIdx && selectedGroupIdx <= toIdx) {
+            selectedGroupIdx--;
+        } else if (fromIdx > toIdx && selectedGroupIdx >= toIdx && selectedGroupIdx < fromIdx) {
+            selectedGroupIdx++;
+        }
+
+        rebuildGroupList();
+        drawView();
     }
-
-    rebuildGroupList();
-    drawView();
 });
 
 const PREVIEW_MIN_H = 80;
@@ -162,6 +321,23 @@ document.getElementById('addGroupBtn').addEventListener('click', () => {
     });
     rebuildGroupList();
     selectGroup(groups.length - 1);
+});
+
+// Fold / Unfold all prefix sections
+document.getElementById('foldAllBtn').addEventListener('click', () => {
+    groupList.querySelectorAll('.prefix-section').forEach(s => {
+        s.classList.add('collapsed');
+        const t = s.querySelector('.prefix-toggle');
+        if (t) t.textContent = '▶';
+    });
+});
+
+document.getElementById('unfoldAllBtn').addEventListener('click', () => {
+    groupList.querySelectorAll('.prefix-section').forEach(s => {
+        s.classList.remove('collapsed');
+        const t = s.querySelector('.prefix-toggle');
+        if (t) t.textContent = '▼';
+    });
 });
 
 // Initialize

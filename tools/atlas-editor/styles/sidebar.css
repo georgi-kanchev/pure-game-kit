@@ -35,6 +35,10 @@
     gap: 3px;
 }
 
+.group-actions-spacer {
+    flex: 1;
+}
+
 .group-actions button {
     height: 28px;
     line-height: 1;
