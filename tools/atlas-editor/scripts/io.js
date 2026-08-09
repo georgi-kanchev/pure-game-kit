@@ -48,7 +48,8 @@ function buildXml() {
     const tuples = crops.map(f => `${f.x},${f.y},${f.w},${f.h}`);
     const chunked = [];
     for (let i = 0; i < tuples.length; i += 8) {
-        chunked.push(tuples.slice(i, i + 8).join('|'));
+        const chunk = tuples.slice(i, i + 8).join('|');
+        chunked.push(i + 8 < tuples.length ? chunk + '|' : chunk);
     }
     lines.push('  <crops>');
     chunked.forEach(chunk => lines.push(`    ${chunk}`));
@@ -101,7 +102,7 @@ function importXml(text) {
     let chue = Math.random() * 360;
     const seen = new Set();
     if (cropsEl) {
-        const tuples = cropsEl.textContent.trim().split('|').map(t => t.trim()).filter(Boolean);
+        const tuples = cropsEl.textContent.trim().split(/[\s|]+/).filter(Boolean);
         tuples.forEach(tuple => {
             const [xs, ys, ws, hs] = tuple.split(',');
             const x = parseFloat(xs) || 0;
