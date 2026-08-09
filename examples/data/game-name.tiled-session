@@ -47,19 +47,19 @@
         },
         "/home/gojur/code/combathrone/data/map.tmx": {
             "expandedGroupLayers": [
-                37,
-                8,
+                48,
                 38,
                 21,
-                48,
+                40,
                 11,
-                40
+                37,
+                8
             ],
-            "scale": 1.5,
+            "scale": 3,
             "selectedLayer": 20,
             "viewCenter": {
-                "x": 249,
-                "y": 177
+                "x": 118.16666666666664,
+                "y": 171.5
             }
         },
         "/home/gojur/code/combathrone/data/map.tmx#tileset": {

@@ -284,28 +284,29 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 
 	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, scaleMask(mask), false)
 
-	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection {
+	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection { //#0 typing border
 		var selRnds, selImg = thField(0, tSel.Rnds, bSel.Rnds), assets.ImageId(thField(0, tSel.ImgId, bSel.ImgId))
 		var selBorSz, selBorCol = thField(0, tSel.BorSz, bSel.BorSz), col.TagHex(thField("", tSel.BorCol, bSel.BorCol))
 		var selCol = col.TagHex(thField("", tSel.Col, bSel.Col))
 		var selArea = geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax, obj.Height*selectionCursorHeight)
 		Object(selImg, selRnds, selBorSz, selBorCol, selCol, selArea, area.Intersect(mask), false)
-	}
+	} //#
 
-	const valueWidth = 99999
+	const valueWidth = 99999 //#1 scroll + text render
 	var x = area.X + valueWidth/2 - area.Width/2
 	if typingIn == widgetCounter {
 		x += inputScroll
-	}
-	var valueArea = geometry.NewArea(x, area.Y, valueWidth, area.Height)
+	} //#
+
+	var valueArea = geometry.NewArea(x, area.Y, valueWidth, area.Height) //#2 text render
 	if *text == "" {
 		handleText(placeholder, valueArea, area.Intersect(mask), internal.GUIText{}, tPlh, bPlh, false, false, false)
 	} else {
 		inter.Margin = margin
 		handleText(*text, valueArea, area.Intersect(mask), inter, tVal.GUIText, bVal.GUIText, false, false, true)
-	}
+	} //#
 
-	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection)
+	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection) //#3 cursor
 	if typingIn == widgetCounter {
 		ax, bx = obj.TextCursorPositionAt(a), obj.TextCursorPositionAt(b)
 	}
@@ -328,22 +329,21 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 		if mouse.IsButtonJustPressed(button.Left) {
 			inputIndexSelection = closestIndex
 		}
-	}
+	} //#
 
-	if IsFocused() && mouseInput {
+	if IsFocused() && mouseInput { //#4
 		inputCursorTimer, typingIn = 0, widgetCounter
 	} else if (!IsFocused() && typingIn == widgetCounter && mouseInput) || !window.IsFocused() {
 		typingIn, inputIndexSelection = 0, inputIndexCursor
-
 	}
 	if typingIn != lastTypingIn { // no longer typing or switching inputbox while typing
 		inputScroll = 0
 	}
 	if typingIn != widgetCounter {
 		return //=================================================================
-	}
+	} //#
 
-	var inputStr = keyboard.Input()
+	var inputStr = keyboard.Input() //#5 keyboard input capture & shortcuts
 	if a != b && (len(inputStr) > 0 || keyboard.IsKeyJustPressed(key.Backspace) || keyboard.IsKeyJustPressed(key.Delete)) {
 		inputboxDeleteRuneRange(text, a, b) // delete selection
 		inputIndexCursor, inputIndexSelection, inputCursorTimer = a, a, 0
@@ -382,13 +382,13 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 		inputboxTryShiftSelect()
 	} else if kb.IsComboJustPressed(key.LeftControl, key.A) || kb.IsComboJustPressed(key.RightControl, key.A) {
 		inputIndexCursor, inputIndexSelection = txt.Length(*text), 0
-	}
+	} //#
 
 	if *text == "" { // cannot select placeholder text
 		inputIndexCursor, inputIndexSelection = 0, 0
 	}
 
-	var cursorX = obj.TextCursorPositionAt(inputIndexCursor)
+	var cursorX = obj.TextCursorPositionAt(inputIndexCursor) //#6 cursor
 	if cursorX > area.X+area.Width/2 {
 		inputScroll -= cursorX - (area.X + area.Width/2)
 	} else if cursorX < area.X-area.Width/2 {
@@ -403,14 +403,14 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 		var curCol, curWidth = col.TagHex(thField("", tCur.Col, bCur.Col)), thField(0, tCur.Width, bCur.Width)
 		var curArea = geometry.NewArea(cursorX, obj.Y, Scale*curWidth, obj.Height*selectionCursorHeight)
 		Object(curImg, curRnds, curBorSz, curBorCol, curCol, curArea, mask, false)
-	}
+	} //#
 
-	if len(inputStr) > 0 {
+	if len(inputStr) > 0 { //#7 typing
 		var inputStr = string(inputStr)
 		*text = txt.Insert(*text, inputStr, inputIndexCursor)
 		inputIndexCursor = number.Limit(inputIndexCursor+1, 0, txt.Length(*text))
 		inputCursorTimer, inputIndexSelection = 0, inputIndexCursor
-	}
+	} //#
 }
 
 // Negative step hides the indicators.
