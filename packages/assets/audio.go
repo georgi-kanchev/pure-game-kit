@@ -13,6 +13,7 @@ type AudioId int16
 func LoadSound(filePath string, maxOverlapCount uint8) AudioId {
 	if !rl.IsAudioDeviceReady() {
 		rl.InitAudioDevice()
+		rl.SetAudioStreamBufferSizeDefault(4096)
 	}
 
 	if !file.Exists(filePath) {
@@ -41,6 +42,7 @@ func LoadSound(filePath string, maxOverlapCount uint8) AudioId {
 func LoadMusic(filePath string) AudioId {
 	if !rl.IsAudioDeviceReady() {
 		rl.InitAudioDevice()
+		rl.SetAudioStreamBufferSizeDefault(4096)
 	}
 
 	if !file.Exists(filePath) {

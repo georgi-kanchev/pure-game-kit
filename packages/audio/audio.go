@@ -13,10 +13,10 @@ type Audio struct {
 	AssetId                         assets.AudioId
 	Volume, Pitch, LeftRightBalance float32
 
-	playTime, pauseTime   float32
-	finishTime            float32
-	finishedReported      bool
-	isPaused              bool
+	playTime, pauseTime float32
+	finishTime          float32
+	finishedReported    bool
+	isPaused            bool
 }
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
@@ -41,6 +41,7 @@ func (a *Audio) Play() {
 		rl.PlaySound(sound)
 	} else if hasMusic {
 		a.ApplyProperties()
+		rl.StopMusicStream(music)
 		rl.PlayMusicStream(music)
 	}
 }
