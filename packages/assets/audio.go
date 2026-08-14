@@ -27,7 +27,7 @@ func LoadSound(filePath string, maxOverlapCount uint8) AudioId {
 		return 0
 	}
 
-	var id = len(internal.Sounds)
+	var id = len(internal.Sounds) + 1
 	var result = make([]rl.Sound, 0, maxOverlapCount)
 	result = append(result, sound)
 	if maxOverlapCount != 0 {
@@ -57,9 +57,9 @@ func LoadMusic(filePath string) AudioId {
 	}
 
 	music.Looping = false
-	var id = len(internal.Music)
-	internal.Music[int16(id)] = music
-	return AudioId(id)
+	var id = len(internal.Music) + 1
+	internal.Music[int16(-id)] = music
+	return AudioId(-id)
 }
 
 func (a AudioId) Duration() float32 {
