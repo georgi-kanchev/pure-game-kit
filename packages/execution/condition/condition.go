@@ -4,12 +4,12 @@ package condition
 
 import "pure-game-kit/packages/internal"
 
-func JustTurnedTrue(condition bool, key any) bool {
+func JustTurnedTrue(condition bool, key int) bool {
 	var prev = trueOnce[key]
 	trueOnce[key] = condition
 	return !prev && condition
 }
-func TrueEvery(seconds float32, key any) bool {
+func TrueEvery(seconds float32, key int) bool {
 	var start, has = trueEvery[key]
 	if !has || internal.Runtime > start+seconds {
 		trueEvery[key] = internal.Runtime
@@ -20,5 +20,5 @@ func TrueEvery(seconds float32, key any) bool {
 
 // private ========================================================
 
-var trueOnce = make(map[any]bool)
-var trueEvery = make(map[any]float32)
+var trueOnce = make(map[int]bool, 128)
+var trueEvery = make(map[int]float32, 128)
