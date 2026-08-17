@@ -1,5 +1,9 @@
 const groupList = document.getElementById('groupList');
 
+// Set while Tab navigation rebuilds the list, so the name input's blur
+// handler doesn't trigger a redundant rebuild (which would drop focus).
+let tabNavigating = false;
+
 function nextHue() {
     if (lastHue === null) {
         lastHue = Math.random() * 360;
@@ -44,6 +48,7 @@ function createGroupItem(group, idx) {
         selectGroup(idx);
     });
     nameInput.addEventListener('blur', () => {
+        if (tabNavigating) return;
         rebuildGroupList();
     });
 
@@ -291,6 +296,49 @@ groupList.addEventListener('drop', (e) => {
         rebuildGroupList();
         drawView();
     }
+});
+
+// Tab navigation: cycle through name → crops → next name → crops, etc.
+function visibleGroupStops() {
+    const stops = [];
+    groupList.querySelectorAll('.group-item').forEach(item => {
+        if (item.closest('.prefix-section.collapsed')) return;
+        const idx = parseInt(item.dataset.index, 10);
+        const name = item.querySelector('.group-name-input');
+        const crops = item.querySelector('.group-crops-input');
+        if (name) stops.push({ idx, field: 'name', el: name });
+        if (crops) stops.push({ idx, field: 'crops', el: crops });
+    });
+    return stops;
+}
+
+groupList.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab') return;
+    const isName = e.target.classList.contains('group-name-input');
+    const isCrops = e.target.classList.contains('group-crops-input');
+    if (!isName && !isCrops) return;
+
+    const item = e.target.closest('.group-item');
+    if (!item) return;
+    const idx = parseInt(item.dataset.index, 10);
+    const field = isName ? 'name' : 'crops';
+
+    // Leaving a name input may change its prefix grouping, so refresh the
+    // list before moving focus. The flag suppresses the blur rebuild.
+    if (isName) {
+        tabNavigating = true;
+        rebuildGroupList();
+        tabNavigating = false;
+    }
+
+    const stops = visibleGroupStops();
+    const pos = stops.findIndex(s => s.idx === idx && s.field === field);
+    if (pos === -1) return;
+    const target = stops[e.shiftKey ? pos - 1 : pos + 1];
+    if (!target) return; // end of the list in this direction; allow default Tab
+
+    e.preventDefault();
+    target.el.focus();
 });
 
 const PREVIEW_MIN_H = 80;
