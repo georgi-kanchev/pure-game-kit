@@ -86,6 +86,9 @@ func ToNumber[T number.Number](text string) T {
 		return zero
 	}
 }
+func FromSymbol(symbol rune) string {
+	return strconv.QuoteRune(symbol)
+}
 
 func Calculate(mathExpression string, variables func(string) float32) float32 {
 	mathExpression = Remove(mathExpression, " ")
