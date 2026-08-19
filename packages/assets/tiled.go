@@ -237,7 +237,8 @@ func loadLayerTiles(imageId ImageId, tileSize int, tiled *tiled, layer *layerTil
 
 				frameSpeed = uint32(number.Limit(int(s), 0, 31))
 				frameCount = uint32(number.Limit(len(tile.Animation.Frames)-1, 0, 15))
-				animOffset = uint32((j ^ i) % 16)
+				// animOffset = uint32((j ^ i) % 16)
+				animOffset = 0
 			}
 
 			if raw > 1000 {
