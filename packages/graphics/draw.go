@@ -29,31 +29,15 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 
 	var minX, minY, w, h = v.Bounds()
 	var maxX, maxY = minX + w, minY + h
-
 	var left, right = number.RoundDown(minX/spacingX) * spacingX, number.RoundUp(maxX/spacingX) * spacingX
 	var top, bottom = number.RoundDown(minY/spacingY) * spacingY, number.RoundUp(maxY/spacingY) * spacingY
 
 	for x := left; x <= right; x += spacingX { // vertical
-		var t = thickness
-		if number.DivisionRemainder(x, spacingX*10) == 0 {
-			t *= 3
-		}
-		v.DrawShape(x, (top+bottom)/2, bottom-top, t, 90, 1, color, geometry.Area{})
+		v.DrawShape(x, (top+bottom)/2, bottom-top, thickness, 90, 1, color, geometry.Area{})
 	}
 
 	for y := top; y <= bottom; y += spacingY { // horizontal
-		var t = thickness
-		if number.DivisionRemainder(y, spacingY*10) == 0 {
-			t *= 3
-		}
-		v.DrawShape((left+right)/2, y, right-left, t, 0, 1, color, geometry.Area{})
-	}
-
-	if top <= 0 && bottom >= 0 {
-		v.DrawShape((left+right)/2, 0, right-left, thickness*6, 0, 1, color, geometry.Area{})
-	}
-	if left <= 0 && right >= 0 {
-		v.DrawShape(0, (top+bottom)/2, bottom-top, thickness*6, 90, 1, color, geometry.Area{})
+		v.DrawShape((left+right)/2, y, right-left, thickness, 0, 1, color, geometry.Area{})
 	}
 }
 func (v *View) DrawPath(points []float32, thickness float32, color uint, mask geometry.Area) {
