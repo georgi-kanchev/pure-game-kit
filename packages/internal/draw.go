@@ -51,6 +51,10 @@ type Effects struct {
 
 	//=================================================================
 
+	TileTimeScale float32
+
+	//=================================================================
+
 	TextAlignX, TextAlignY                     float32 // Ranged 0..1
 	TextLineHeight, TextSymbolGap, TextLineGap float32
 	TextWordWrap                               bool
@@ -77,7 +81,7 @@ var DefaultMatrix rl.Matrix
 var DefaultEffects = Effects{
 	BorderColor: palette.White, Tint: palette.White,
 	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 1, TextShadowOffsetY: 1,
-	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 0.15,
+	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 0.15, TileTimeScale: 1,
 }
 
 var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; positive = full images
@@ -154,6 +158,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	var oc = col.Tint(eff.OutlineColor, eff.Tint)
 	var cropMinU, cropMaxU, cropMinV, cropMaxV = u1 - 0.5, u2 - 0.5, v1 - 0.5, v2 - 0.5
 	var neutralColAdj = eff.Gamma == 0 && eff.Saturation == 0 && eff.Contrast == 0 && eff.Brightness == 0
+	u[0] = Runtime * eff.TileTimeScale
 	u[1], u[2], u[4] = float32(src.Width), float32(src.Height), float32(kind)
 	u[5], u[6] = eff.Gamma, eff.Saturation
 	u[7], u[8] = eff.Contrast, eff.Brightness
@@ -268,7 +273,6 @@ func Draw() {
 	DrawCalls = len(ReadyBatches)
 	for _, b := range ReadyBatches {
 		uniformBuf = b.uniforms
-		uniformBuf[0] = Runtime
 		rl.SetShaderValueV(Shader, ShaderLoc, uniformBuf[:], rl.ShaderUniformFloat, 33)
 
 		if !b.meshUploaded {
