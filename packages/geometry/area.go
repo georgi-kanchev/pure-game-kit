@@ -27,3 +27,6 @@ func (a Area) Intersect(target Area) Area {
 	var newWidth, newHeight = maxX - minX, maxY - minY
 	return NewArea(minX+newWidth/2, minY+newHeight/2, newWidth, newHeight)
 }
+func (a Area) ToShape() Shape {
+	return NewRectangle(a.X, a.Y, a.Width, a.Height, 0)
+}
