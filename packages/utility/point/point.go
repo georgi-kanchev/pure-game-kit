@@ -51,6 +51,22 @@ func MoveToPoint(x, y, targetX, targetY float32, step float32) (float32, float32
 	}
 	return x, y
 }
+func MoveToPointSmooth(x, y, targetX, targetY, factor float32) (float32, float32) {
+	if factor >= 1.0 {
+		return targetX, targetY
+	}
+	if factor <= 0.0 || (x == targetX && y == targetY) {
+		return x, y
+	}
+
+	x += (targetX - x) * factor
+	y += (targetY - y) * factor
+
+	if number.Absolute(targetX-x) < 0.01 && number.Absolute(targetY-y) < 0.01 {
+		return targetX, targetY
+	}
+	return x, y
+}
 func MoveByPercent(x, y, targetX, targetY float32, percent float32) (float32, float32) {
 	x = number.Map(percent, 0, 100, x, targetX)
 	y = number.Map(percent, 0, 100, y, targetY)
