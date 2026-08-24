@@ -6,7 +6,7 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-var Clock, FrameDelta, Runtime float32
+var Clock, FrameDelta, Runtime float32 = 0, 0, 3590
 var Frame uint64
 var FPS int32
 

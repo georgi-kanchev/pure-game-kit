@@ -6,24 +6,7 @@ package time
 
 import (
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/flag"
-	"pure-game-kit/packages/utility/number"
-	"pure-game-kit/packages/utility/text"
-	"pure-game-kit/packages/utility/time/unit"
-	"strings"
-	"time"
 )
-
-func AsClock24(seconds float32, divider string, units int) string {
-	var ts = time.Duration(seconds * float32(time.Second))
-	return formatTimeParts(ts, divider, units, false, false)
-}
-func AsClock12(seconds float32, divider string, units int, amPm bool) string {
-	var ts = time.Duration(seconds * float32(time.Second))
-	return formatTimeParts(ts, divider, units, true, amPm)
-}
-
-//=================================================================
 
 func Running() float32 { return internal.Runtime }
 func Clock() float32   { return internal.Clock }
@@ -34,79 +17,39 @@ func FPS() int         { return int(internal.FPS) }
 func ToMilliseconds(seconds float32) float32 { return seconds * 1000 }
 func ToMinutes(secodns float32) float32      { return secodns / 60 }
 func ToHours(seconds float32) float32        { return seconds / 3600 }
-func ToDays(seconds float32) float32         { return seconds / 86400 }
-func ToWeeks(seconds float32) float32        { return seconds / 604800 }
 
 func FromMilliseconds(milliseconds float32) float32 { return milliseconds / 1000 }
 func FromMinutes(minutes float32) float32           { return minutes * 60 }
 func FromHours(hours float32) float32               { return hours * 3600 }
-func FromDays(days float32) float32                 { return days * 86400 }
-func FromWeeks(weeks float32) float32               { return weeks * 604800 }
 
-// private ========================================================
-
-var builder strings.Builder
-
-func formatTimeParts(ts time.Duration, divider string, units int, is12Hour, amPm bool) string {
-	builder.Reset()
-	var counter = 0
-	var conditionalSep = func() string {
-		if counter > 0 {
-			return divider
-		}
-		return ""
+func AsTimer(seconds float32) (hr, min, sec, ms int) {
+	var totalMs = int64(seconds * 1_000)
+	hr = int(totalMs / 3_600_000)
+	min = int((totalMs % 3_600_000) / 60_000)
+	sec = int((totalMs % 60_000) / 1_000)
+	ms = int(totalMs % 1_000)
+	return hr, min, sec, ms
+}
+func AsClock24(seconds float32) (hr, min, sec int) {
+	const dayInSeconds = 86400
+	var totalSec = int(seconds) % dayInSeconds // wrap seconds in a 24-hour period (handles negative values as well)
+	if totalSec < 0 {
+		totalSec += dayInSeconds
 	}
 
-	if flag.IsOn(units, unit.Day) {
-		var val = int(ts.Hours() / 24)
-		var str = text.PadRight(number.Format(val), 2, "0")
-		builder.WriteString(str)
-		counter++
+	hr = totalSec / 3600
+	min = (totalSec % 3600) / 60
+	sec = totalSec % 60
+	return hr, min, sec
+}
+func AsClock12(seconds float32) (hr, min, sec int, pm bool) {
+	var hr24 int
+	hr24, min, sec = AsClock24(seconds)
+
+	pm = hr24 >= 12
+	hr = hr24 % 12
+	if hr == 0 {
+		hr = 12 // 00:00 is 12 AM, 12:00 is 12 PM
 	}
-	if flag.IsOn(units, unit.Hour) {
-		var sep = conditionalSep()
-		var val int
-		if is12Hour {
-			var h = int((ts % (24 * time.Hour)) / time.Hour)
-			val = int(number.Wrap(float32(h), 0, 12))
-		} else {
-			val = int((ts % (24 * time.Hour)) / time.Hour)
-		}
-		builder.WriteString(sep + text.PadLeft(text.New(val), 2, "0"))
-		counter++
-	}
-	if flag.IsOn(units, unit.Minute) {
-		var sep = conditionalSep()
-		var val = int((ts % time.Hour) / time.Minute)
-		builder.WriteString(sep + text.PadLeft(text.New(val), 2, "0"))
-		counter++
-	}
-	if flag.IsOn(units, unit.Second) {
-		var sep = conditionalSep()
-		var val = int((ts % time.Minute) / time.Second)
-		builder.WriteString(sep + text.PadLeft(text.New(val), 2, "0"))
-		counter++
-	}
-	if flag.IsOn(units, unit.Millisecond) {
-		var val = int((ts % time.Second) / time.Millisecond)
-		var dot = ""
-		if flag.IsOn(units, unit.Second) {
-			dot = "."
-		}
-		var sep = ""
-		if dot == "" && counter > 0 {
-			sep = divider
-		}
-		builder.WriteString(sep + dot + text.New(val))
-		counter++
-	}
-	if is12Hour && amPm {
-		var sep = " "
-		var amPm = "AM"
-		if int(ts.Hours())%24 >= 12 {
-			amPm = "PM"
-		}
-		builder.WriteString(sep + amPm)
-	}
-	return builder.String()
+	return hr, min, sec, pm
 }

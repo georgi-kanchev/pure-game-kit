@@ -10,6 +10,7 @@ import (
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/point"
+	"pure-game-kit/packages/utility/time"
 	"strconv"
 	"unsafe"
 
@@ -208,11 +209,12 @@ func (v *View) DrawDebugInfo(detailed bool) {
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.QuadQueues))
 			v.debugBuffer = append(v.debugBuffer, " quads\n"...)
 
-			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.Runtime/3600), 10)
+			var h, m, s, _ = time.AsTimer(internal.Runtime)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(h), 10)
 			v.debugBuffer = append(v.debugBuffer, "h "...)
-			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.Runtime/60), 10)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(m), 10)
 			v.debugBuffer = append(v.debugBuffer, "m "...)
-			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(internal.Runtime)%60, 10)
+			v.debugBuffer = strconv.AppendInt(v.debugBuffer, int64(s), 10)
 			v.debugBuffer = append(v.debugBuffer, "s runtime\n\n"...)
 
 			v.debugBuffer = appendThousands(v.debugBuffer, uint64(internal.NextImageId+1))
