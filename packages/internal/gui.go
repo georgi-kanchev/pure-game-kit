@@ -49,26 +49,26 @@ type GUILayout struct {
 }
 
 type GUIImage struct {
-	ImgId  int     `xml:"imageId,attr"`
-	Rnds   float32 `xml:"roundness,attr"`
-	Col    string  `xml:"color,attr"`
-	BorSz  float32 `xml:"borderSize,attr"`
-	BorCol string  `xml:"borderColor,attr"`
+	ImgId  *int     `xml:"imageId,attr"`
+	Rnds   *float32 `xml:"roundness,attr"`
+	Col    *string  `xml:"color,attr"`
+	BorSz  *float32 `xml:"borderSize,attr"`
+	BorCol *string  `xml:"borderColor,attr"`
 }
 type GUIText struct {
-	FontId int     `xml:"fontId,attr"`
-	LineH  float32 `xml:"lineHeight,attr"`
-	Gap    string  `xml:"gap,attr"`
-	Margin string  `xml:"margin,attr"`
-	Align  string  `xml:"align,attr"`
-	Wgt    float32 `xml:"weight,attr"`
-	Col    string  `xml:"color,attr"`
-	OutSz  float32 `xml:"outlineSize,attr"`
-	OutCol string  `xml:"outlineColor,attr"`
-	ShWgt  float32 `xml:"shadowWeight,attr"`
-	ShCol  string  `xml:"shadowColor,attr"`
-	ShBlur float32 `xml:"shadowBlur,attr"`
-	ShOff  string  `xml:"shadowOffset,attr"`
+	FontId *int     `xml:"fontId,attr"`
+	LineH  *float32 `xml:"lineHeight,attr"`
+	Gap    *string  `xml:"gap,attr"`
+	Margin *string  `xml:"margin,attr"`
+	Align  *string  `xml:"align,attr"`
+	Wgt    *float32 `xml:"weight,attr"`
+	Col    *string  `xml:"color,attr"`
+	OutSz  *float32 `xml:"outlineSize,attr"`
+	OutCol *string  `xml:"outlineColor,attr"`
+	ShWgt  *float32 `xml:"shadowWeight,attr"`
+	ShCol  *string  `xml:"shadowColor,attr"`
+	ShBlur *float32 `xml:"shadowBlur,attr"`
+	ShOff  *string  `xml:"shadowOffset,attr"`
 }
 type GUITheme struct {
 	XMLName xml.Name `xml:"theme"`
@@ -92,11 +92,11 @@ type GUITheme struct {
 	Scroll struct {
 		Body struct {
 			GUIImage
-			Size float32 `xml:"size,attr"`
+			Size *float32 `xml:"size,attr"`
 		} `xml:"body"`
 		Handle struct {
 			GUIImage
-			Speed   float32  `xml:"speed,attr"`
+			Speed   *float32 `xml:"speed,attr"`
 			Focused GUIImage `xml:"focused"`
 			Clicked GUIImage `xml:"clicked"`
 		} `xml:"handle"`
@@ -125,16 +125,15 @@ type GUITheme struct {
 		} `xml:"body"`
 		Value struct {
 			GUIText
-			ShadowOffset string  `xml:"shadowOffset,attr"`
-			Disabled     GUIText `xml:"disabled"`
-			Focused      GUIText `xml:"focused"`
-			Typing       GUIText `xml:"typing"`
+			Disabled GUIText `xml:"disabled"`
+			Focused  GUIText `xml:"focused"`
+			Typing   GUIText `xml:"typing"`
 		} `xml:"value"`
 		Placeholder GUIText  `xml:"placeholder"`
 		Selection   GUIImage `xml:"selection"`
 		Cursor      struct {
 			GUIImage
-			Width float32 `xml:"width,attr"`
+			Width *float32 `xml:"width,attr"`
 		} `xml:"cursor"`
 	} `xml:"inputbox"`
 }

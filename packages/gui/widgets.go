@@ -43,11 +43,11 @@ func AreaHUD(horizontal, vertical, width, height float32) Area {
 	return geometry.NewArea(x, y, width, height)
 }
 
-func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, color uint, area, mask Area, input bool) {
+func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, color uint, area, mask Area, enabled bool) {
 	if area == (Area{}) {
 		return
 	}
-	if input {
+	if enabled {
 		handleInput(area, scaleMask(mask), roundness)
 	}
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
@@ -60,28 +60,26 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 	view.DrawObject(&obj)
 }
 
-func Image(area, mask Area, theme assets.GUIThemeId, input bool) {
-	var t, b = getTheme(theme).Image, getTheme(0).Image
-	var imgId, rnds = assets.ImageId(thField(0, t.ImgId, b.ImgId)), thField(0, t.Rnds, b.Rnds)
-	var borSz, borCol = thField(0, t.BorSz, b.BorSz), col.TagHex(thField("", t.BorCol, b.BorCol))
-	Object(imgId, rnds, borSz, borCol, col.TagHex(thField("", t.Col, b.Col)), area, mask, input)
+func Image(area, mask Area, theme assets.GUIThemeId, enabled bool) {
+	var t = getTheme(theme).Image
+	var imgId, rnds = assets.ImageId(thNum(t.ImgId)), thNum(t.Rnds)
+	var borSz, borCol = thNum(t.BorSz), col.TagHex(thStr(t.BorCol))
+	Object(imgId, rnds, borSz, borCol, col.TagHex(thStr(t.Col)), area, mask, enabled)
 }
-func Label(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
-	var t, b = getTheme(theme), getTheme(0)
-	handleText(text, area, mask, internal.GUIText{}, t.Label, b.Label, input, false, false)
+func Label(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
+	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Label, enabled, false, false)
 }
-func Text(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
-	var t, b = getTheme(theme), getTheme(0)
-	handleText(text, area, mask, internal.GUIText{}, t.Text, b.Text, input, true, false)
+func Text(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
+	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Text, enabled, true, false)
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.GUIThemeId) {
-	var t, b = getTheme(theme), getTheme(0)
-	var tBody, tHnd, bBody, bHnd = t.Scroll.Body, t.Scroll.Handle, b.Scroll.Body, b.Scroll.Handle
-	var scrollSpeed = thField(0, tHnd.Speed, bHnd.Speed) / Scale
-	var size, contentW, contentH = thField(0, tBody.Size, bBody.Size) * Scale, contentWidth, contentHeight
-	var bodyRound, handleRound = thField(0, tBody.Rnds, bBody.Rnds), thField(0, tHnd.Rnds, bHnd.Rnds)
-	var bodyCol = thField("", tBody.Col, bBody.Col)
+	var t = getTheme(theme)
+	var body, hnd = t.Scroll.Body, t.Scroll.Handle
+	var scrollSpeed = thNum(hnd.Speed) / Scale
+	var size, contentW, contentH = thNum(body.Size) * Scale, contentWidth, contentHeight
+	var bodyRound, handleRound = thNum(body.Rnds), thNum(hnd.Rnds)
+	var bodyCol = thStr(body.Col)
 	var mx, my = view.MousePosition()
 	var mdx, mdy = mouse.CursorDelta()
 	var shift = keyboard.IsKeyPressed(key.LeftShift) || keyboard.IsKeyPressed(key.RightShift)
@@ -111,18 +109,18 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var hor = geometry.NewArea(horArea.X, horArea.Y+horArea.Height/2-size/2, horArea.Width, size)
 		var handle = geometry.NewArea(0, hor.Y, (horArea.Width/contentW)*horArea.Width, size)
 		var left, right, instant = hor.X - hor.Width/2, hor.X + hor.Width/2, false
-		var col = thField("", tHnd.Col, bHnd.Col)
-		var roundness = thField(0, tBody.Rnds, bBody.Rnds)
+		var col = thStr(hnd.Col)
+		var roundness = thNum(body.Rnds)
 		handle.X = number.Map(*horizontal, 0, 1, left+handle.Width/2, right-handle.Width/2)
 		Object(0, bodyRound, roundness, 0, color.TagHex(bodyCol), hor, Area{}, true)
 		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
-			col = thField("", tHnd.Col, tHnd.Focused.Col, bHnd.Focused.Col)
+			col = thStr(hnd.Col, hnd.Focused.Col)
 		}
 		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
 			mouse.SetCursor(cursor.Resize1)
-			col = thField("", tHnd.Clicked.Col, tHnd.Col, bHnd.Clicked.Col)
+			col = thStr(hnd.Clicked.Col, hnd.Col)
 		}
 
 		handleInput(handle, Area{}, handleRound)
@@ -131,12 +129,12 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
-			col = thField("", tHnd.Focused.Col, tHnd.Col, bHnd.Focused.Col)
+			col = thStr(hnd.Focused.Col, hnd.Col)
 		}
 		if IsClicked() || instant {
 			handle.X += mdx / Scale // dragging handle or scroll body after instant click
 			mouse.SetCursor(cursor.Resize1)
-			col = thField("", tHnd.Clicked.Col, tHnd.Col, bHnd.Clicked.Col)
+			col = thStr(hnd.Clicked.Col, hnd.Col)
 		}
 		if dragging { // middle mouse button dragging on parent box
 			handle.X -= mdx / Scale * (hor.Width - handle.Width) / (contentW - horArea.Width)
@@ -157,17 +155,17 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		var ver = geometry.NewArea(area.X+area.Width/2-size/2, area.Y, size, area.Height)
 		var handle = geometry.NewArea(ver.X, 0, size, (area.Height/contentH)*area.Height)
 		var top, bot, instant = ver.Y - ver.Height/2, ver.Y + ver.Height/2, false
-		var col = thField("", tHnd.Col, bHnd.Col)
+		var col = thStr(hnd.Col)
 		handle.Y = number.Map(*vertical, 0, 1, top+handle.Height/2, bot-handle.Height/2)
 		Object(0, bodyRound, 0, 0, color.TagHex(bodyCol), ver, Area{}, true)
 		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
-			col = thField("", tHnd.Focused.Col, tHnd.Col, bHnd.Focused.Col)
+			col = thStr(hnd.Focused.Col, hnd.Col)
 		}
 		if IsClicked() {
 			instant = true // use after widget Shape to account for limiting
 			mouse.SetCursor(cursor.Resize2)
-			col = thField("", tHnd.Clicked.Col, tHnd.Col, bHnd.Clicked.Col)
+			col = thStr(hnd.Clicked.Col, hnd.Col)
 		}
 
 		handleInput(handle, Area{}, handleRound)
@@ -176,12 +174,12 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		}
 		if IsFocused() {
 			mouse.SetCursor(cursor.Hand)
-			col = thField("", tHnd.Focused.Col, tHnd.Col, bHnd.Focused.Col)
+			col = thStr(hnd.Focused.Col, hnd.Col)
 		}
 		if IsClicked() || instant {
 			handle.Y += mdy / Scale // dragging handle or scroll body after instant click
 			mouse.SetCursor(cursor.Resize2)
-			col = thField("", tHnd.Clicked.Col, tHnd.Col, bHnd.Clicked.Col)
+			col = thStr(hnd.Clicked.Col, hnd.Col)
 		}
 		if dragging { // middle mouse button dragging on parent box
 			handle.Y -= mdy / Scale * (ver.Height - handle.Height) / (contentH - area.Height)
@@ -198,94 +196,94 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		Object(0, handleRound, 0, 0, color.TagHex(col), handle, Area{}, false)
 	}
 }
-func Button(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
+func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
 	if area == (Area{}) {
 		return
 	}
-	var t, b = getTheme(theme), getTheme(0)
-	var tBody, tVal, bBody, bVal = t.Button.Body, t.Button.Value, b.Button.Body, b.Button.Value
-	var roundness = thField(0.00001, tBody.Rnds, bBody.Rnds)
-	var imgId, color = thField(0, tBody.ImgId, bBody.ImgId), thField("", tBody.Col, bBody.Col)
-	var borSz, borCol = thField(0.00001, tBody.BorSz, bBody.BorSz), thField("", tBody.BorCol, bBody.BorCol)
+	var t = getTheme(theme)
+	var body, val = t.Button.Body, t.Button.Value
+	var roundness = thNum(body.Rnds)
+	var imgId, color = thNum(body.ImgId), thStr(body.Col)
+	var borSz, borCol = thNum(body.BorSz), thStr(body.BorCol)
 	var interact internal.GUIText
 	mask = scaleMask(mask)
 
-	if input {
+	if enabled {
 		handleInput(area, mask, roundness)
 	} else {
-		imgId = thField(0, tBody.Disabled.ImgId, tBody.ImgId, bBody.Disabled.ImgId, bBody.ImgId)
-		color = thField("", tBody.Disabled.Col, tBody.Col, bBody.Disabled.Col, bBody.Col)
-		borSz = thField(0, tBody.Disabled.BorSz, tBody.BorSz, bBody.Disabled.BorSz, bBody.BorSz, 0)
-		borCol = thField("", tBody.Disabled.BorCol, tBody.BorCol, bBody.Disabled.BorCol, bBody.BorCol)
-		interact = thField(internal.GUIText{}, tVal.Disabled, bVal.Disabled)
+		imgId = thNum(body.Disabled.ImgId, body.ImgId)
+		color = thStr(body.Disabled.Col, body.Col)
+		borSz = thNum(body.Disabled.BorSz, body.BorSz)
+		borCol = thStr(body.Disabled.BorCol, body.BorCol)
+		interact = val.Disabled
 	}
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
-		imgId = thField(0, tBody.Focused.ImgId, tBody.ImgId, bBody.Focused.ImgId, bBody.ImgId)
-		color = thField("", tBody.Focused.Col, tBody.Col, bBody.Focused.Col, bBody.Col)
-		borSz = thField(0.00001, tBody.Focused.BorSz, tBody.BorSz, bBody.Focused.BorSz, bBody.BorSz, 0)
-		borCol = thField("", tBody.Focused.BorCol, tBody.BorCol, bBody.Focused.BorCol, bBody.BorCol)
-		interact = thField(internal.GUIText{}, tVal.Focused, bVal.Focused)
+		imgId = thNum(body.Focused.ImgId, body.ImgId)
+		color = thStr(body.Focused.Col, body.Col)
+		borSz = thNum(body.Focused.BorSz, body.BorSz)
+		borCol = thStr(body.Focused.BorCol, body.BorCol)
+		interact = val.Focused
 	}
 	if IsClicked() {
-		imgId = thField(0, tBody.Clicked.ImgId, tBody.ImgId, bBody.Clicked.ImgId, bBody.ImgId)
-		color = thField("", tBody.Clicked.Col, tBody.Col, bBody.Clicked.Col, bBody.Col)
-		borSz = thField(0.00001, tBody.Clicked.BorSz, tBody.BorSz, bBody.Clicked.BorSz, bBody.BorSz, 0)
-		borCol = thField("", tBody.Clicked.BorCol, tBody.BorCol, bBody.Clicked.BorCol, bBody.BorCol)
-		interact = thField(internal.GUIText{}, tVal.Clicked, bVal.Clicked)
+		imgId = thNum(body.Clicked.ImgId, body.ImgId)
+		color = thStr(body.Clicked.Col, body.Col)
+		borSz = thNum(body.Clicked.BorSz, body.BorSz)
+		borCol = thStr(body.Clicked.BorCol, body.BorCol)
+		interact = val.Clicked
 	}
 	Object(assets.ImageId(imgId), roundness, borSz, col.TagHex(borCol), col.TagHex(color), area, mask, false)
 	if text != "" {
-		handleText(text, area, mask, interact, tVal.GUIText, bVal.GUIText, false, false, false)
+		handleText(text, area, mask, interact, val.GUIText, false, false, false)
 	}
 }
-func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GUIThemeId, input bool) {
+func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
 	if area == (Area{}) {
 		return
 	}
-	var t, base, selectionCursorHeight = getTheme(theme), getTheme(0), float32(0.85)
-	var tBody, bBody, tVal, bVal = t.Inputbox.Body, base.Inputbox.Body, t.Inputbox.Value, base.Inputbox.Value
-	var tSel, bSel, tCur, bCur = t.Inputbox.Selection, base.Inputbox.Selection, t.Inputbox.Cursor, base.Inputbox.Cursor
-	var tPlh, bPlh = t.Inputbox.Placeholder, base.Inputbox.Placeholder
-	var bodyRnds, bodyImg = thField(0, tBody.Rnds, bBody.Rnds), thField(0, tBody.ImgId, bBody.ImgId)
-	var bodyBorSz, bodyBorCol = thField(0, tBody.BorSz, bBody.BorSz), thField("", tBody.BorCol, bBody.BorCol)
-	var bodyCol, margin, inter = thField("", tBody.Col, bBody.Col), thField("", tVal.Margin, bVal.Margin), internal.GUIText{}
+	var t, selectionCursorHeight = getTheme(theme), float32(0.85)
+	var body, val = t.Inputbox.Body, t.Inputbox.Value
+	var sel, cur = t.Inputbox.Selection, t.Inputbox.Cursor
+	var plh = t.Inputbox.Placeholder
+	var bodyRnds, bodyImg = thNum(body.Rnds), thNum(body.ImgId)
+	var bodyBorSz, bodyBorCol = thNum(body.BorSz), thStr(body.BorCol)
+	var bodyCol, margin, inter = thStr(body.Col), thStr(val.Margin), internal.GUIText{}
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
-	if input {
+	if enabled {
 		handleInput(area, scaleMask(mask), bodyRnds)
 	} else {
-		bodyImg = thField(0, tBody.Disabled.ImgId, tBody.ImgId, bBody.Disabled.ImgId)
-		bodyBorSz = thField(0, tBody.Disabled.BorSz, bBody.BorSz, bBody.Disabled.BorSz)
-		bodyBorCol = thField("", tBody.Disabled.BorCol, bBody.BorCol, bBody.Disabled.BorCol)
-		bodyCol = thField("", tBody.Disabled.Col, tBody.Col, bBody.Disabled.Col)
-		inter = thField(internal.GUIText{}, tVal.Disabled, tVal.GUIText, bVal.Disabled)
-		margin = thField("", tVal.Disabled.Margin, tVal.Margin, bVal.Disabled.Margin)
+		bodyImg = thNum(body.Disabled.ImgId, body.ImgId)
+		bodyBorSz = thNum(body.Disabled.BorSz)
+		bodyBorCol = thStr(body.Disabled.BorCol)
+		bodyCol = thStr(body.Disabled.Col, body.Col)
+		margin = thStr(val.Disabled.Margin, val.Margin)
+		inter = val.Disabled
 	}
 
 	if IsFocused() {
 		mouse.SetCursor(cursor.Input)
-		bodyImg = thField(0, tBody.Focused.ImgId, tBody.ImgId, bBody.Focused.ImgId)
-		bodyBorSz = thField(0, tBody.Focused.BorSz, bBody.BorSz, bBody.Focused.BorSz)
-		bodyBorCol = thField("", tBody.Focused.BorCol, bBody.BorCol, bBody.Focused.BorCol)
-		bodyCol = thField("", tBody.Focused.Col, tBody.Col, bBody.Focused.Col)
-		margin = thField("", tVal.Focused.Margin, tVal.Margin, bVal.Focused.Margin)
-		inter = thField(internal.GUIText{}, tVal.Focused, tVal.GUIText, bVal.Focused)
+		bodyImg = thNum(body.Focused.ImgId, body.ImgId)
+		bodyBorSz = thNum(body.Focused.BorSz)
+		bodyBorCol = thStr(body.Focused.BorCol)
+		bodyCol = thStr(body.Focused.Col, body.Col)
+		margin = thStr(val.Focused.Margin, val.Margin)
+		inter = val.Focused
 	}
 	if typingIn == widgetCounter {
-		bodyImg = thField(0, tBody.Typing.ImgId, tBody.ImgId, bBody.Typing.ImgId)
-		bodyBorSz = thField(0, tBody.Typing.BorSz, bBody.BorSz, bBody.Typing.BorSz)
-		bodyBorCol = thField("", tBody.Typing.BorCol, bBody.BorCol, bBody.Typing.BorCol)
-		bodyCol = thField("", tBody.Typing.Col, tBody.Col, bBody.Typing.Col)
-		margin = thField("", tVal.Typing.Margin, tVal.Margin, bVal.Typing.Margin)
-		inter = thField(internal.GUIText{}, tVal.Typing, tVal.GUIText, bVal.Typing)
+		bodyImg = thNum(body.Typing.ImgId, body.ImgId)
+		bodyBorSz = thNum(body.Typing.BorSz)
+		bodyBorCol = thStr(body.Typing.BorCol)
+		bodyCol = thStr(body.Typing.Col, body.Col)
+		margin = thStr(val.Typing.Margin, val.Margin)
+		inter = val.Typing
 	}
 
 	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, scaleMask(mask), false)
 
 	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection { //#0 typing border
-		var selRnds, selImg = thField(0, tSel.Rnds, bSel.Rnds), assets.ImageId(thField(0, tSel.ImgId, bSel.ImgId))
-		var selBorSz, selBorCol = thField(0, tSel.BorSz, bSel.BorSz), col.TagHex(thField("", tSel.BorCol, bSel.BorCol))
-		var selCol = col.TagHex(thField("", tSel.Col, bSel.Col))
+		var selRnds, selImg = thNum(sel.Rnds), assets.ImageId(thNum(sel.ImgId))
+		var selBorSz, selBorCol = thNum(sel.BorSz), col.TagHex(thStr(sel.BorCol))
+		var selCol = col.TagHex(thStr(sel.Col))
 		var selArea = geometry.NewArea(ax+(bx-ax)/2, obj.Y, bx-ax, obj.Height*selectionCursorHeight)
 		Object(selImg, selRnds, selBorSz, selBorCol, selCol, selArea, area.Intersect(mask), false)
 	} //#
@@ -298,10 +296,10 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 
 	var valueArea = geometry.NewArea(x, area.Y, valueWidth, area.Height) //#2 text render
 	if *text == "" {
-		handleText(placeholder, valueArea, area.Intersect(mask), internal.GUIText{}, tPlh, bPlh, false, false, false)
+		handleText(placeholder, valueArea, area.Intersect(mask), internal.GUIText{}, plh, false, false, false)
 	} else {
-		inter.Margin = margin
-		handleText(*text, valueArea, area.Intersect(mask), inter, tVal.GUIText, bVal.GUIText, false, false, true)
+		inter.Margin = &margin
+		handleText(*text, valueArea, area.Intersect(mask), inter, val.GUIText, false, false, true)
 	} //#
 
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection) //#3 cursor
@@ -396,9 +394,9 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 	if inputCursorTimer > 1 {
 		inputCursorTimer = 0
 	} else if inputCursorTimer < 0.5 {
-		var curRnds, curImg = thField(0, tCur.Rnds, bCur.Rnds), assets.ImageId(thField(0, tCur.ImgId, bCur.ImgId))
-		var curBorSz, curBorCol = thField(0, tCur.BorSz, bCur.BorSz), col.TagHex(thField("", tCur.BorCol, bCur.BorCol))
-		var curCol, curWidth = col.TagHex(thField("", tCur.Col, bCur.Col)), thField(0, tCur.Width, bCur.Width)
+		var curRnds, curImg = thNum(cur.Rnds), assets.ImageId(thNum(cur.ImgId))
+		var curBorSz, curBorCol = thNum(cur.BorSz), col.TagHex(thStr(cur.BorCol))
+		var curCol, curWidth = col.TagHex(thStr(cur.Col)), thNum(cur.Width)
 		var curArea = geometry.NewArea(cursorX, obj.Y, Scale*curWidth, obj.Height*selectionCursorHeight)
 		Object(curImg, curRnds, curBorSz, curBorCol, curCol, curArea, mask, false)
 	} //#
@@ -412,66 +410,66 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 }
 
 // Negative step hides the indicators.
-func Slider(value *float32, step float32, area, mask Area, theme assets.GUIThemeId, input bool) {
+func Slider(value *float32, step float32, area, mask Area, theme assets.GUIThemeId, enabled bool) {
 	var left, right = area.X - area.Width/2, area.X + area.Width/2
 	var x = number.Map(*value, 0, 1, left+area.Height/2, right-area.Height/2)
 	var hndArea = geometry.NewArea(x, area.Y, area.Height, area.Height)
-	var t, b, dragging = getTheme(theme), getTheme(0), false
-	var tBody, tHnd, bBody, bHnd = t.Slider.Body, t.Slider.Hnd, b.Slider.Body, b.Slider.Hnd
-	var tStep, bStep = t.Slider.Step, b.Slider.Step
-	var bodyCol, hndCol = thField("", tBody.Col, bBody.Col), thField("", tHnd.Col, bHnd.Col)
-	var bodyImg, hndImg = thField(0, tBody.ImgId, bBody.ImgId), thField(0, tHnd.ImgId, bHnd.ImgId)
-	var bodyRnd, hndRnd = thField(0, tBody.Rnds, bBody.Rnds), thField(0, tHnd.Rnds, bHnd.Rnds)
-	var bodyBorSz, hndBorSz = thField(0, tBody.BorSz, bBody.BorSz), thField(0, tHnd.BorSz, bHnd.BorSz)
-	var bodyBorCol, hndBorCol = thField("", tBody.BorCol, bBody.BorCol), thField("", tHnd.BorCol, bHnd.BorCol)
+	var t, dragging = getTheme(theme), false
+	var body, hnd = t.Slider.Body, t.Slider.Hnd
+	var tStep = t.Slider.Step
+	var bodyCol, hndCol = thStr(body.Col), thStr(hnd.Col)
+	var bodyImg, hndImg = thNum(body.ImgId), thNum(hnd.ImgId)
+	var bodyRnd, hndRnd = thNum(body.Rnds), thNum(hnd.Rnds)
+	var bodyBorSz, hndBorSz = thNum(body.BorSz), thNum(hnd.BorSz)
+	var bodyBorCol, hndBorCol = thStr(body.BorCol), thStr(hnd.BorCol)
 	mask = scaleMask(mask)
 
 	handleInput(area, mask, bodyRnd)
 
 	if IsFocused() {
 		mouse.SetCursor(cursor.Hand)
-		hndCol = thField("", tHnd.Focused.Col, tHnd.Col, bHnd.Focused.Col)
-		hndImg = thField(0, tHnd.Focused.ImgId, tHnd.ImgId, bHnd.Focused.ImgId)
-		hndRnd = thField(0, tHnd.Focused.Rnds, tHnd.Rnds, bHnd.Focused.Rnds)
-		hndBorSz = thField(0, tHnd.Focused.BorSz, tHnd.BorSz, tHnd.Focused.BorSz)
-		hndBorCol = thField("", tHnd.Focused.BorCol, tHnd.BorCol, tHnd.Focused.BorCol)
-		bodyCol = thField("", tBody.Focused.Col, tBody.Col, bBody.Focused.Col)
-		bodyImg = thField(0, tBody.Focused.ImgId, tBody.ImgId, bBody.Focused.ImgId)
-		bodyRnd = thField(0, tBody.Focused.Rnds, tBody.Rnds, bBody.Focused.Rnds)
-		bodyBorSz = thField(0, tBody.Focused.BorSz, tBody.BorSz, bBody.Focused.BorSz)
-		bodyBorCol = thField("", tBody.Focused.BorCol, tBody.BorCol, bBody.Focused.BorCol)
+		hndCol = thStr(hnd.Focused.Col, hnd.Col)
+		hndImg = thNum(hnd.Focused.ImgId, hnd.ImgId)
+		hndRnd = thNum(hnd.Focused.Rnds, hnd.Rnds)
+		hndBorSz = thNum(hnd.Focused.BorSz, hnd.BorSz)
+		hndBorCol = thStr(hnd.Focused.BorCol, hnd.BorCol)
+		bodyCol = thStr(body.Focused.Col, body.Col)
+		bodyImg = thNum(body.Focused.ImgId, body.ImgId)
+		bodyRnd = thNum(body.Focused.Rnds, body.Rnds)
+		bodyBorSz = thNum(body.Focused.BorSz, body.BorSz)
+		bodyBorCol = thStr(body.Focused.BorCol, body.BorCol)
 	}
 	if IsClicked() {
 		mouse.SetCursor(cursor.Resize1)
-		dragging, hndCol = true, thField("", tHnd.Clicked.Col, tHnd.Col, bHnd.Clicked.Col)
-		hndImg = thField(0, tHnd.Clicked.ImgId, tHnd.ImgId, bHnd.Clicked.ImgId)
-		hndRnd = thField(0, tHnd.Clicked.Rnds, tHnd.Rnds, bHnd.Clicked.Rnds)
-		hndBorSz = thField(0, tHnd.Clicked.BorSz, tHnd.BorSz, tHnd.Clicked.BorSz)
-		hndBorCol = thField("", tHnd.Clicked.BorCol, tHnd.BorCol, tHnd.Clicked.BorCol)
-		bodyCol = thField("", tBody.Clicked.Col, tBody.Col, bBody.Clicked.Col)
-		bodyImg = thField(0, tBody.Clicked.ImgId, tBody.ImgId, bBody.Clicked.ImgId)
-		bodyRnd = thField(0, tBody.Clicked.Rnds, tBody.Rnds, bBody.Clicked.Rnds)
-		bodyBorSz = thField(0, tBody.Clicked.BorSz, tBody.BorSz, bBody.Clicked.BorSz)
-		bodyBorCol = thField("", tBody.Clicked.BorCol, tBody.BorCol, bBody.Clicked.BorCol)
+		dragging, hndCol = true, thStr(hnd.Clicked.Col, hnd.Col)
+		hndImg = thNum(hnd.Clicked.ImgId, hnd.ImgId)
+		hndRnd = thNum(hnd.Clicked.Rnds, hnd.Rnds)
+		hndBorSz = thNum(hnd.Clicked.BorSz, hnd.BorSz)
+		hndBorCol = thStr(hnd.Clicked.BorCol, hnd.BorCol)
+		bodyCol = thStr(body.Clicked.Col, body.Col)
+		bodyImg = thNum(body.Clicked.ImgId, body.ImgId)
+		bodyRnd = thNum(body.Clicked.Rnds, body.Rnds)
+		bodyBorSz = thNum(body.Clicked.BorSz, body.BorSz)
+		bodyBorCol = thStr(body.Clicked.BorCol, body.BorCol)
 	}
-	if !input {
-		hndCol = thField("", tHnd.Disabled.Col, tHnd.Col, bHnd.Disabled.Col)
-		hndImg = thField(0, tHnd.Disabled.ImgId, tHnd.ImgId, bHnd.Disabled.ImgId)
-		hndRnd = thField(0, tHnd.Disabled.Rnds, tHnd.Rnds, bHnd.Disabled.Rnds)
-		hndBorSz = thField(0, tHnd.Disabled.BorSz, tHnd.BorSz, tHnd.Disabled.BorSz)
-		hndBorCol = thField("", tHnd.Disabled.BorCol, tHnd.BorCol, tHnd.Disabled.BorCol)
-		bodyCol = thField("", tBody.Disabled.Col, tBody.Col, bBody.Disabled.Col)
-		bodyImg = thField(0, tBody.Disabled.ImgId, tBody.ImgId, bBody.Disabled.ImgId)
-		bodyRnd = thField(0, tBody.Disabled.Rnds, tBody.Rnds, bBody.Disabled.Rnds)
-		bodyBorSz = thField(0, tBody.Disabled.BorSz, tBody.BorSz, bBody.Disabled.BorSz)
-		bodyBorCol = thField("", tBody.Disabled.BorCol, tBody.BorCol, bBody.Disabled.BorCol)
+	if !enabled {
+		hndCol = thStr(hnd.Disabled.Col, hnd.Col)
+		hndImg = thNum(hnd.Disabled.ImgId, hnd.ImgId)
+		hndRnd = thNum(hnd.Disabled.Rnds, hnd.Rnds)
+		hndBorSz = thNum(hnd.Disabled.BorSz, hnd.BorSz)
+		hndBorCol = thStr(hnd.Disabled.BorCol, hnd.BorCol)
+		bodyCol = thStr(body.Disabled.Col, body.Col)
+		bodyImg = thNum(body.Disabled.ImgId, body.ImgId)
+		bodyRnd = thNum(body.Disabled.Rnds, body.Rnds)
+		bodyBorSz = thNum(body.Disabled.BorSz, body.BorSz)
+		bodyBorCol = thStr(body.Disabled.BorCol, body.BorCol)
 	}
 
 	if step > 0 {
 		var stepSize = number.Map(step, 0, 1, area.Height/20, area.Height/2)
-		var minX, maxX, stepCol = left + area.Height/2, right - area.Height/2, col.TagHex(thField("", tStep.Col, bStep.Col))
-		var stepImg, stepRnd = thField(0, tStep.ImgId, bStep.ImgId), thField(0, tStep.Rnds, bStep.Rnds)
-		var stepBorSz, stepBorCol = thField(0, tStep.BorSz, bStep.BorSz), col.TagHex(thField("", tStep.BorCol, bStep.BorCol))
+		var minX, maxX, stepCol = left + area.Height/2, right - area.Height/2, col.TagHex(thStr(tStep.Col))
+		var stepImg, stepRnd = thNum(tStep.ImgId), thNum(tStep.Rnds)
+		var stepBorSz, stepBorCol = thNum(tStep.BorSz), col.TagHex(thStr(tStep.BorCol))
 		for t := float32(0.0); t <= 1.0+0.001; t += step {
 			var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
 			Object(assets.ImageId(stepImg), stepRnd, stepBorSz, stepBorCol, stepCol, stepArea, mask, false)
@@ -516,33 +514,30 @@ func inputboxTryShiftSelect() {
 	}
 }
 
-func handleText(text string, area, mask Area, inter, opt, base internal.GUIText, input, isText, isInputbox bool) {
+func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabled, wordWrap, isInputbox bool) {
 	if area == (Area{}) || text == "" {
 		return
 	}
-	var lineH = thField(0, inter.LineH, opt.LineH, base.LineH)
-	var fontId, color = thField(0, inter.FontId, opt.FontId, base.FontId), thField("", inter.Col, opt.Col, base.Col)
-	var wgt, align = thField(0, inter.Wgt, opt.Wgt, base.Wgt), thField("", inter.Align, opt.Align, base.Align)
-	var gap, mar = thField("", inter.Gap, opt.Gap, base.Gap), thField("", inter.Margin, opt.Margin, base.Margin)
-	var outSz, outCol = thField(0, inter.OutSz, opt.OutSz, base.OutSz), thField("", inter.OutCol, opt.OutCol, base.OutCol)
-	var sWgt, sBlur = thField(0, inter.ShWgt, opt.ShWgt, base.ShWgt), thField(0, inter.ShBlur, opt.ShBlur, base.ShBlur)
-	var sCol, sOff = thField("", inter.ShCol, opt.ShCol, base.ShCol), thField("", inter.ShOff, opt.ShOff, base.ShOff)
+	var lineH = thNum(inter.LineH, opt.LineH)
+	var fontId, color = thNum(inter.FontId, opt.FontId), thStr(inter.Col, opt.Col)
+	var wgt, align = thNum(inter.Wgt, opt.Wgt), thStr(inter.Align, opt.Align)
+	var gap, mar = thStr(inter.Gap, opt.Gap), thStr(inter.Margin, opt.Margin)
+	var outSz, outCol = thNum(inter.OutSz, opt.OutSz), thStr(inter.OutCol, opt.OutCol)
+	var sWgt, sBlur = thNum(inter.ShWgt, opt.ShWgt), thNum(inter.ShBlur, opt.ShBlur)
+	var sCol, sOff = thStr(inter.ShCol, opt.ShCol), thStr(inter.ShOff, opt.ShOff)
 	var marX = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 0))
 	var marY = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 1))
 	area.Width -= marX
 	area.Height -= marY
 
-	if !isText {
-		// lineH = area.Height * 0.5 / float32(txt.SplitCount(text, "\n"))
-	}
-	if input {
+	if enabled {
 		handleInput(area, scaleMask(mask), 0)
 	}
 
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
 	obj.Effects.TextIsInput, obj.ImageId, obj.Effects.Tint, obj.Mask = isInputbox, 0, palette.White, scaleMask(mask)
-	obj.TextFontId, obj.Text, obj.Effects.TextWordWrap = assets.FontId(fontId), text, isText
+	obj.TextFontId, obj.Text, obj.Effects.TextWordWrap = assets.FontId(fontId), text, wordWrap
 	obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Effects.TextWeight = lineH, col.TagHex(color), wgt
 	obj.Effects.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 0))
 	obj.Effects.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 1))
@@ -563,13 +558,30 @@ func getTheme(theme assets.GUIThemeId) internal.GUITheme {
 	}
 	return th
 }
-func thField[T comparable](defaultValue, optional T, fallbacks ...T) T {
-	if optional == defaultValue {
+
+func thNum[T number.Number](optional *T, fallbacks ...*T) T {
+	if optional == nil {
 		for _, f := range fallbacks {
-			if f != defaultValue {
-				return f
+			if f != nil {
+				return *f
 			}
 		}
 	}
-	return optional
+	if optional == nil {
+		return 0
+	}
+	return *optional
+}
+func thStr(optional *string, fallbacks ...*string) string {
+	if optional == nil {
+		for _, f := range fallbacks {
+			if f != nil {
+				return *f
+			}
+		}
+	}
+	if optional == nil {
+		return ""
+	}
+	return *optional
 }
