@@ -40,7 +40,9 @@ func Drag() Area {
 // private ========================================================
 
 var skipInput bool    // used for internal calls to the widget input functions only for drawing (no input)
-var widgetCounter int // resets every frame, each widget increases it, used for id, checked against the below ids
+var widgetCounter int // resets every frame; every interactive widget MUST consume its id by calling handleInput
+// exactly once per frame, even when disabled, so that IsFocused/IsClicked/... queries made right after a
+// widget always refer to that widget. enabled only gates interaction (style, cursor, clicks), never id consumption.
 
 var nowHovered, lastHovered, nowFocused, lastFocused int
 var lastClickedWidget, clickedWidget, justClickedWidget int

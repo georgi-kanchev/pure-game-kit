@@ -52,7 +52,8 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 	}
 	obj.Effects = graphics.Effects(internal.DefaultEffects)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, roundness
-	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask, obj.Text = imageId, palette.White, color, scaleMask(mask), ""
+	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = imageId, palette.White, color
+	obj.Mask, obj.Text = scaleMask(mask), ""
 	obj.Effects.BorderSize, obj.Effects.BorderColor = borderSize, borderColor
 	if imageId != 0 {
 		obj.Effects.Tint, obj.Effects.FillColor = color, 0
@@ -208,16 +209,15 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool)
 	var interact internal.GUIText
 	mask = scaleMask(mask)
 
-	if enabled {
-		handleInput(area, mask, roundness)
-	} else {
+	handleInput(area, mask, roundness) // disabled buttons still consume their id
+	if !enabled {
 		imgId = thNum(body.Disabled.ImgId, body.ImgId)
 		color = thStr(body.Disabled.Col, body.Col)
 		borSz = thNum(body.Disabled.BorSz, body.BorSz)
 		borCol = thStr(body.Disabled.BorCol, body.BorCol)
 		interact = val.Disabled
 	}
-	if IsFocused() {
+	if enabled && IsFocused() {
 		mouse.SetCursor(cursor.Hand)
 		imgId = thNum(body.Focused.ImgId, body.ImgId)
 		color = thStr(body.Focused.Col, body.Col)
@@ -225,7 +225,7 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool)
 		borCol = thStr(body.Focused.BorCol, body.BorCol)
 		interact = val.Focused
 	}
-	if IsClicked() {
+	if enabled && IsClicked() {
 		imgId = thNum(body.Clicked.ImgId, body.ImgId)
 		color = thStr(body.Clicked.Col, body.Col)
 		borSz = thNum(body.Clicked.BorSz, body.BorSz)
@@ -249,18 +249,21 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 	var bodyBorSz, bodyBorCol = thNum(body.BorSz), thStr(body.BorCol)
 	var bodyCol, margin, inter = thStr(body.Col), thStr(val.Margin), internal.GUIText{}
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
-	if enabled {
-		handleInput(area, scaleMask(mask), bodyRnds)
-	} else {
+
+	handleInput(area, scaleMask(mask), bodyRnds) // disabled inputboxes still consume their id
+	if !enabled {
 		bodyImg = thNum(body.Disabled.ImgId, body.ImgId)
 		bodyBorSz = thNum(body.Disabled.BorSz)
 		bodyBorCol = thStr(body.Disabled.BorCol)
 		bodyCol = thStr(body.Disabled.Col, body.Col)
 		margin = thStr(val.Disabled.Margin, val.Margin)
 		inter = val.Disabled
+		if typingIn == widgetCounter {
+			typingIn = 0 // drop stale typing state when the box gets disabled
+		}
 	}
 
-	if IsFocused() {
+	if enabled && IsFocused() {
 		mouse.SetCursor(cursor.Input)
 		bodyImg = thNum(body.Focused.ImgId, body.ImgId)
 		bodyBorSz = thNum(body.Focused.BorSz)
@@ -269,7 +272,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 		margin = thStr(val.Focused.Margin, val.Margin)
 		inter = val.Focused
 	}
-	if typingIn == widgetCounter {
+	if enabled && typingIn == widgetCounter {
 		bodyImg = thNum(body.Typing.ImgId, body.ImgId)
 		bodyBorSz = thNum(body.Typing.BorSz)
 		bodyBorCol = thStr(body.Typing.BorCol)
@@ -307,7 +310,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 		ax, bx = obj.TextCursorPositionAt(a), obj.TextCursorPositionAt(b)
 	}
 
-	if IsClicked() {
+	if enabled && IsClicked() {
 		var i, closestIndex, x, closestDist = 0, 0, float32(0), float32(valueWidth)
 		var mx, _ = view.MousePosition()
 		for {
@@ -327,7 +330,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 		}
 	} //#
 
-	if IsFocused() && mouseInput { //#4
+	if enabled && IsFocused() && mouseInput { //#4
 		inputCursorTimer, typingIn = 0, widgetCounter
 	} else if (!IsFocused() && typingIn == widgetCounter && mouseInput) || !window.IsFocused() {
 		typingIn, inputIndexSelection = 0, inputIndexCursor
@@ -424,9 +427,21 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 	var bodyBorCol, hndBorCol = thStr(body.BorCol), thStr(hnd.BorCol)
 	mask = scaleMask(mask)
 
-	handleInput(area, mask, bodyRnd)
+	handleInput(area, mask, bodyRnd) // disabled sliders still consume their id
+	if !enabled {
+		hndCol = thStr(hnd.Disabled.Col, hnd.Col)
+		hndImg = thNum(hnd.Disabled.ImgId, hnd.ImgId)
+		hndRnd = thNum(hnd.Disabled.Rnds, hnd.Rnds)
+		hndBorSz = thNum(hnd.Disabled.BorSz, hnd.BorSz)
+		hndBorCol = thStr(hnd.Disabled.BorCol, hnd.BorCol)
+		bodyCol = thStr(body.Disabled.Col, body.Col)
+		bodyImg = thNum(body.Disabled.ImgId, body.ImgId)
+		bodyRnd = thNum(body.Disabled.Rnds, body.Rnds)
+		bodyBorSz = thNum(body.Disabled.BorSz, body.BorSz)
+		bodyBorCol = thStr(body.Disabled.BorCol, body.BorCol)
+	}
 
-	if IsFocused() {
+	if enabled && IsFocused() {
 		mouse.SetCursor(cursor.Hand)
 		hndCol = thStr(hnd.Focused.Col, hnd.Col)
 		hndImg = thNum(hnd.Focused.ImgId, hnd.ImgId)
@@ -439,7 +454,7 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 		bodyBorSz = thNum(body.Focused.BorSz, body.BorSz)
 		bodyBorCol = thStr(body.Focused.BorCol, body.BorCol)
 	}
-	if IsClicked() {
+	if enabled && IsClicked() {
 		mouse.SetCursor(cursor.Resize1)
 		dragging, hndCol = true, thStr(hnd.Clicked.Col, hnd.Col)
 		hndImg = thNum(hnd.Clicked.ImgId, hnd.ImgId)
@@ -451,18 +466,6 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 		bodyRnd = thNum(body.Clicked.Rnds, body.Rnds)
 		bodyBorSz = thNum(body.Clicked.BorSz, body.BorSz)
 		bodyBorCol = thStr(body.Clicked.BorCol, body.BorCol)
-	}
-	if !enabled {
-		hndCol = thStr(hnd.Disabled.Col, hnd.Col)
-		hndImg = thNum(hnd.Disabled.ImgId, hnd.ImgId)
-		hndRnd = thNum(hnd.Disabled.Rnds, hnd.Rnds)
-		hndBorSz = thNum(hnd.Disabled.BorSz, hnd.BorSz)
-		hndBorCol = thStr(hnd.Disabled.BorCol, hnd.BorCol)
-		bodyCol = thStr(body.Disabled.Col, body.Col)
-		bodyImg = thNum(body.Disabled.ImgId, body.ImgId)
-		bodyRnd = thNum(body.Disabled.Rnds, body.Rnds)
-		bodyBorSz = thNum(body.Disabled.BorSz, body.BorSz)
-		bodyBorCol = thStr(body.Disabled.BorCol, body.BorCol)
 	}
 
 	if step > 0 {
