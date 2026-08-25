@@ -11,11 +11,15 @@ func Channels(color uint) (r, g, b, a uint8) { return colorToRGBA(color) }
 func RGB(r, g, b uint8) uint                 { return colorFromRGBA(r, g, b, 255) }
 func RGBA(r, g, b, a uint8) uint             { return colorFromRGBA(r, g, b, a) }
 func TagHex(hex string) uint {
-	if len(hex) > 0 && hex[0] == '#' {
+	if hex == "" {
+		return 0
+	}
+
+	var length = len(hex)
+	if length > 0 && hex[0] == '#' {
 		hex = hex[1:]
 	}
 	var r, g, b, a uint8 = 0, 0, 0, 255
-	var length = len(hex)
 	if length >= 6 {
 		r = parseHexPair(hex[0], hex[1])
 		g = parseHexPair(hex[2], hex[3])
@@ -27,6 +31,10 @@ func TagHex(hex string) uint {
 	return RGBA(r, g, b, a)
 }
 func TagRGBA(rgba string) uint {
+	if rgba == "" {
+		return 0
+	}
+
 	if len(rgba) >= 4 && rgba[0:4] == "rgba" {
 		rgba = rgba[4:] // strip "rgba" prefix if present
 	} else if len(rgba) >= 3 && rgba[0:3] == "rgb" {

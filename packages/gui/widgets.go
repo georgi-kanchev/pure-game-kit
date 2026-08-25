@@ -520,8 +520,8 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	}
 	var lineH = thNum(inter.LineH, opt.LineH)
 	var fontId, color = thNum(inter.FontId, opt.FontId), thStr(inter.Col, opt.Col)
-	var wgt, align = thNum(inter.Wgt, opt.Wgt), thStr(inter.Align, opt.Align)
-	var gap, mar = thStr(inter.Gap, opt.Gap), thStr(inter.Margin, opt.Margin)
+	var wgt, align = thNum(inter.Wgt, opt.Wgt), thStr(inter.Align, opt.Align, new("0.5 0.5"))
+	var gap, mar = thStr(inter.Gap, opt.Gap, new("0 0")), thStr(inter.Margin, opt.Margin, new("0 0"))
 	var outSz, outCol = thNum(inter.OutSz, opt.OutSz), thStr(inter.OutCol, opt.OutCol)
 	var sWgt, sBlur = thNum(inter.ShWgt, opt.ShWgt), thNum(inter.ShBlur, opt.ShBlur)
 	var sCol, sOff = thStr(inter.ShCol, opt.ShCol), thStr(inter.ShOff, opt.ShOff)
