@@ -29,6 +29,7 @@ func Create(title string, vsync, antialias bool) {
 	rl.SetConfigFlags(flags)
 	rl.SetTraceLogLevel(rl.LogNone)
 	rl.InitWindow(1600, 900, title)
+	// rl.InitWindow(2560, 1080, title) // ultra-wide test
 	rl.SetExitKey(rl.KeyNull)
 	rl.MaximizeWindow()
 	MoveToMonitor(0)

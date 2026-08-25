@@ -204,13 +204,11 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
 	}
 	var t, b = getTheme(theme), getTheme(0)
 	var tBody, tVal, bBody, bVal = t.Button.Body, t.Button.Value, b.Button.Body, b.Button.Value
-	var roundness = thField(0, tBody.Rnds, bBody.Rnds)
+	var roundness = thField(0.00001, tBody.Rnds, bBody.Rnds)
 	var imgId, color = thField(0, tBody.ImgId, bBody.ImgId), thField("", tBody.Col, bBody.Col)
-	var borSz, borCol = thField(0, tBody.BorSz, bBody.BorSz), thField("", tBody.BorCol, bBody.BorCol)
+	var borSz, borCol = thField(0.00001, tBody.BorSz, bBody.BorSz), thField("", tBody.BorCol, bBody.BorCol)
 	var interact internal.GUIText
 	mask = scaleMask(mask)
-
-	_, _ = tVal, bVal
 
 	if input {
 		handleInput(area, mask, roundness)
@@ -225,14 +223,14 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, input bool) {
 		mouse.SetCursor(cursor.Hand)
 		imgId = thField(0, tBody.Focused.ImgId, tBody.ImgId, bBody.Focused.ImgId, bBody.ImgId)
 		color = thField("", tBody.Focused.Col, tBody.Col, bBody.Focused.Col, bBody.Col)
-		borSz = thField(0, tBody.Focused.BorSz, tBody.BorSz, bBody.Focused.BorSz, bBody.BorSz, 0)
+		borSz = thField(0.00001, tBody.Focused.BorSz, tBody.BorSz, bBody.Focused.BorSz, bBody.BorSz, 0)
 		borCol = thField("", tBody.Focused.BorCol, tBody.BorCol, bBody.Focused.BorCol, bBody.BorCol)
 		interact = thField(internal.GUIText{}, tVal.Focused, bVal.Focused)
 	}
 	if IsClicked() {
 		imgId = thField(0, tBody.Clicked.ImgId, tBody.ImgId, bBody.Clicked.ImgId, bBody.ImgId)
 		color = thField("", tBody.Clicked.Col, tBody.Col, bBody.Clicked.Col, bBody.Col)
-		borSz = thField(0, tBody.Clicked.BorSz, tBody.BorSz, bBody.Clicked.BorSz, bBody.BorSz, 0)
+		borSz = thField(0.00001, tBody.Clicked.BorSz, tBody.BorSz, bBody.Clicked.BorSz, bBody.BorSz, 0)
 		borCol = thField("", tBody.Clicked.BorCol, tBody.BorCol, bBody.Clicked.BorCol, bBody.BorCol)
 		interact = thField(internal.GUIText{}, tVal.Clicked, bVal.Clicked)
 	}
@@ -535,7 +533,7 @@ func handleText(text string, area, mask Area, inter, opt, base internal.GUIText,
 	area.Height -= marY
 
 	if !isText {
-		lineH = area.Height / float32(txt.SplitCount(text, "\n"))
+		// lineH = area.Height * 0.5 / float32(txt.SplitCount(text, "\n"))
 	}
 	if input {
 		handleInput(area, scaleMask(mask), 0)
