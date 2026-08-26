@@ -6,6 +6,7 @@ import (
 	geometry "pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/angle"
+	"pure-game-kit/packages/utility/color"
 	"pure-game-kit/packages/utility/color/palette"
 	"pure-game-kit/packages/utility/debug"
 	"pure-game-kit/packages/utility/number"
@@ -332,12 +333,12 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 					prevGlyph = glyph
 					continue
 				}
-				var prevFill, prevOut = eff.FillColor, eff.OutlineColor
+				var prevFill, prevOut, prevTint = eff.FillColor, eff.OutlineColor, eff.Tint
 				var x, y = dst.X + dst.Width/2, dst.Y - dst.Height/2
 				var area = geometry.NewArea(src.X+src.Width/2, src.Y+src.Height/2, src.Width, -src.Height)
-				eff.FillColor, eff.OutlineColor = 0, 0
+				eff.Tint, eff.FillColor, eff.OutlineColor = color.Tint(eff.TextColor, eff.Tint), 0, 0
 				v.queueQuad(x, y, dst.Width, dst.Height, o.Angle, 0, glyph.EmbededImageId, area, eff, mask)
-				eff.FillColor, eff.OutlineColor = prevFill, prevOut
+				eff.FillColor, eff.OutlineColor, eff.Tint = prevFill, prevOut, prevTint
 			} else {
 				if r != ' ' && r != '\n' {
 					internal.Queue(atlasTex, rl.Texture2D{}, src, dst, o.Angle, 0, mask, eff, internal.KindText, 0, 0, 0)
