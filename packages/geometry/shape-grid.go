@@ -196,8 +196,9 @@ func (s *ShapeGrid) RangeDistance(x, y, targetX, targetY int) float32 {
 // private ========================================================
 
 func (s *ShapeGrid) cellsUnderShape(shape Shape) (startX, startY, endX, endY int) {
-	var minX, minY, w, h = shape.Bounds()
-	var maxX, maxY = minX + w, minY + h
+	var bounds = shape.Bounds()
+	var minX, maxX = bounds.X - bounds.Width/2, bounds.X + bounds.Width/2
+	var minY, maxY = bounds.Y - bounds.Height/2, bounds.Y + bounds.Height/2
 	startX, startY = int(number.RoundDown(minX/s.chunkSize)), int(number.RoundDown(minY/s.chunkSize))
 	endX, endY = int(number.RoundDown(maxX/s.chunkSize)), int(number.RoundDown(maxY/s.chunkSize))
 	return startX, startY, endX, endY

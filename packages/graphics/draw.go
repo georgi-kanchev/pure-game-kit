@@ -29,15 +29,15 @@ func (v *View) DrawGrid(thickness, spacingX, spacingY float32, color uint) {
 		return // way too dense — skip
 	}
 
-	var minX, minY, w, h = v.Bounds()
-	var maxX, maxY = minX + w, minY + h
+	var bounds = v.Bounds()
+	var minX, maxX = bounds.X - bounds.Width/2, bounds.X + bounds.Width/2
+	var minY, maxY = bounds.Y - bounds.Height/2, bounds.Y + bounds.Height/2
 	var left, right = number.RoundDown(minX/spacingX) * spacingX, number.RoundUp(maxX/spacingX) * spacingX
 	var top, bottom = number.RoundDown(minY/spacingY) * spacingY, number.RoundUp(maxY/spacingY) * spacingY
 
 	for x := left; x <= right; x += spacingX { // vertical
 		v.DrawShape(x, (top+bottom)/2, bottom-top, thickness, 90, 1, color, geometry.Area{})
 	}
-
 	for y := top; y <= bottom; y += spacingY { // horizontal
 		v.DrawShape((left+right)/2, y, right-left, thickness, 0, 1, color, geometry.Area{})
 	}

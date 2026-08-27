@@ -10,11 +10,61 @@ import (
 	"reflect"
 	"strings"
 	"unicode"
+	"unsafe"
 
 	"strconv"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+type Dynamic struct{ buffer []byte }
+
+func (s *Dynamic) Get() string {
+	if len(s.buffer) == 0 {
+		return ""
+	}
+	return unsafe.String(unsafe.SliceData(s.buffer), len(s.buffer))
+}
+func (s *Dynamic) Set(elements ...any) string {
+	s.buffer = s.buffer[:0]
+
+	for _, e := range elements {
+		switch v := e.(type) {
+		case string:
+			s.buffer = append(s.buffer, v...)
+		case int:
+			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
+		case int8:
+			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
+		case int16:
+			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
+		case int32:
+			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
+		case int64:
+			s.buffer = strconv.AppendInt(s.buffer, v, 10)
+		case uint:
+			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
+		case uint8:
+			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
+		case uint16:
+			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
+		case uint32:
+			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
+		case uint64:
+			s.buffer = strconv.AppendUint(s.buffer, v, 10)
+		case float32:
+			s.buffer = strconv.AppendFloat(s.buffer, float64(v), 'f', -1, 32)
+		case float64:
+			s.buffer = strconv.AppendFloat(s.buffer, v, 'f', -1, 64)
+		case bool:
+			s.buffer = strconv.AppendBool(s.buffer, v)
+		default: // do nothing - unsupported types are safely ignored with zero allocations
+		}
+	}
+	return s.Get()
+}
+
+//=================================================================
 
 func New(elements ...any) string {
 	builder.Reset()

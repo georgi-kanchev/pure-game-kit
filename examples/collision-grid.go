@@ -77,8 +77,8 @@ func CollisionGrid() {
 			}
 		}
 
-		var bx, by, bw, bh = player.Bounds()
-		view.DrawShape(bx+bw/2, by+bh/2, bw, bh, 0, 0, color.RGBA(0, 0, 0, 128), geometry.Area{})
+		var area = player.Bounds()
+		view.DrawShape(area.X, area.Y, area.Width, area.Height, 0, 0, color.RGBA(0, 0, 0, 128), geometry.Area{})
 
 		view.DrawGrid(1, cellSize, cellSize, palette.Gray)
 

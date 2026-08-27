@@ -92,20 +92,17 @@ func (s Shape) Raycast(x, y, angle, length float32) (hitX, hitY float32) {
 	}
 	return number.NaN(), number.NaN()
 }
-func (s Shape) Bounds() (x, y, width, height float32) {
+func (s Shape) Bounds() Area {
 	var sinR, cosR = internal.SinCos(s.Angle)
 	sinR, cosR = number.Absolute(sinR), number.Absolute(cosR)
-	var hx, hy = s.Width * 0.5, s.Height * 0.5
+	var hx, hy = s.Width / 2, s.Height / 2
 	var r = s.roundness() * min(hx, hy)
 	var extentX, extentY = (hx-r)*cosR + (hy-r)*sinR + r, (hx-r)*sinR + (hy-r)*cosR + r
-	return s.X - extentX, s.Y - extentY, extentX * 2, extentY * 2
+	return Area{X: s.X, Y: s.Y, Width: extentX * 2, Height: extentY * 2}
 }
 func (s Shape) Overlaps(target Shape) bool {
-	// AABB broadphase
-	var sMinX, sMinY, sW, sH = s.Bounds()
-	var oMinX, oMinY, oW, oH = target.Bounds()
-	var sMaxX, sMaxY, oMaxX, oMaxY = sMinX + sW, sMinY + sH, oMinX + oW, oMinY + oH
-	if sMaxX < oMinX || oMaxX < sMinX || sMaxY < oMinY || oMaxY < sMinY {
+	var sb, tb = s.Bounds(), target.Bounds() // AABB broadphase
+	if number.Absolute(sb.X-tb.X) > sb.Width/2+tb.Width/2 || number.Absolute(sb.Y-tb.Y) > sb.Height/2+tb.Height/2 {
 		return false
 	}
 

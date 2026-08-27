@@ -14,6 +14,9 @@ import (
 func Clear[T any](collection []T) []T {
 	return collection[:0]
 }
+func ZeroOut[T any](collection []T) {
+	clear(collection)
+}
 func Add[T any](collection []T, items ...T) []T {
 	return append(collection, items...)
 }

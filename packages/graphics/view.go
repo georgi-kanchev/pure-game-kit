@@ -107,11 +107,13 @@ func (v *View) FitSize(width, height float32) {
 
 // =================================================================
 
-func (v *View) IsAreaVisible(x, y, width, height float32) bool {
-	var sx1, sy1 = v.PointToScreen(x, y)
-	var sx2, sy2 = v.PointToScreen(x+width, y)
-	var sx3, sy3 = v.PointToScreen(x, y+height)
-	var sx4, sy4 = v.PointToScreen(x+width, y+height)
+func (v *View) IsAreaVisible(area geometry.Area) bool {
+	var x1, x2 = area.X - area.Width/2, area.X + area.Width/2
+	var y1, y2 = area.Y - area.Height/2, area.Y + area.Height/2
+	var sx1, sy1 = v.PointToScreen(x1, y1)
+	var sx2, sy2 = v.PointToScreen(x2, y1)
+	var sx3, sy3 = v.PointToScreen(x1, y2)
+	var sx4, sy4 = v.PointToScreen(x2, y2)
 	var minX, maxX = min(min(sx1, sx2), min(sx3, sx4)), max(max(sx1, sx2), max(sx3, sx4))
 	var minY, maxY = min(min(sy1, sy2), min(sy3, sy4)), max(max(sy1, sy2), max(sy3, sy4))
 	return maxX >= 0 && minX <= internal.WindowWidth && maxY >= 0 && minY <= internal.WindowHeight
@@ -131,14 +133,15 @@ func (v *View) Size() (width, height float32) {
 	var windowArea = v.windowArea()
 	return windowArea.Width / v.Zoom, windowArea.Height / v.Zoom
 }
-func (v *View) Bounds() (x, y, width, height float32) {
+func (v *View) Bounds() geometry.Area {
 	var x1, y1 = v.PointFromEdge(0, 0)
 	var x2, y2 = v.PointFromEdge(1, 0)
 	var x3, y3 = v.PointFromEdge(1, 1)
 	var x4, y4 = v.PointFromEdge(0, 1)
 	var minX, minY = number.Minimum(x1, x2, x3, x4), number.Minimum(y1, y2, y3, y4)
 	var maxX, maxY = number.Maximum(x1, x2, x3, x4), number.Maximum(y1, y2, y3, y4)
-	return minX, minY, maxX - minX, maxY - minY
+	var w, h = maxX - minX, maxY - minY
+	return geometry.Area{X: minX + w/2, Y: minY + h/2, Width: w, Height: h}
 }
 
 func (v *View) PointFromScreen(screenX, screenY float32) (x, y float32) {
