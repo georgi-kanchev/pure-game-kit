@@ -14,6 +14,10 @@ func NewArea(x, y, width, height float32) Area { return Area{X: x, Y: y, Width: 
 func (a Area) ContainsPoint(x, y float32) bool {
 	return x > a.X-a.Width/2 && x < a.X+a.Width/2 && y > a.Y-a.Height/2 && y < a.Y+a.Height/2
 }
+func (a Area) ContainsArea(target Area) bool {
+	return target.X-target.Width/2 >= a.X-a.Width/2 && target.X+target.Width/2 <= a.X+a.Width/2 &&
+		target.Y-target.Height/2 >= a.Y-a.Height/2 && target.Y+target.Height/2 <= a.Y+a.Height/2
+}
 func (a Area) Overlaps(target Area) bool {
 	return number.Absolute(a.X-target.X) < (a.Width+target.Width)/2 &&
 		number.Absolute(a.Y-target.Y) < (a.Height+target.Height)/2

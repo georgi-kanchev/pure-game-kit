@@ -47,9 +47,9 @@ function buildXml() {
 
     const tuples = crops.map(f => `${f.x},${f.y},${f.w},${f.h}`);
     const chunked = [];
-    for (let i = 0; i < tuples.length; i += 8) {
-        const chunk = tuples.slice(i, i + 8).join('|');
-        chunked.push(i + 8 < tuples.length ? chunk + '|' : chunk);
+    for (let i = 0; i < tuples.length; i += 7) {
+        const chunk = tuples.slice(i, i + 7).join('|');
+        chunked.push(i + 7 < tuples.length ? chunk + '|' : chunk);
     }
     lines.push('  <crops>');
     chunked.forEach(chunk => lines.push(`    ${chunk}`));
