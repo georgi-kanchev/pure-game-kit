@@ -1,5 +1,5 @@
 .sidebar {
-    width: 360px;
+    width: 520px;
     overflow: hidden;
     background: var(--bg-panel);
     border-right: 1px solid var(--border-color);
@@ -32,6 +32,7 @@
 .group-actions {
     flex-shrink: 0;
     display: flex;
+    flex-wrap: wrap;
     gap: 3px;
 }
 

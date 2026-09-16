@@ -371,6 +371,44 @@ document.getElementById('addGroupBtn').addEventListener('click', () => {
     selectGroup(groups.length - 1);
 });
 
+// Add group sequence button
+document.getElementById('addGroupSequenceBtn').addEventListener('click', () => {
+    const input = prompt('Add Group Sequence\nEnter first frame and count, e.g. "153 6":');
+    if (input === null) return;
+
+    const parts = input.trim().split(/\s+/).filter(Boolean);
+    if (parts.length < 2) {
+        alert('Enter two numbers: first frame and count.');
+        return;
+    }
+
+    const first = parseInt(parts[0], 10);
+    const count = parseInt(parts[1], 10);
+    if (isNaN(first) || isNaN(count) || first < 0 || count <= 0) {
+        alert('Enter a valid first frame (0 or more) and a count (1 or more).');
+        return;
+    }
+
+    const last = first + count - 1;
+    const indices = [];
+    for (let i = first; i <= last; i++) {
+        if (crops[i]) indices.push(i);
+    }
+
+    if (!indices.length) {
+        alert(`No frames found in range ${first}–${last}.`);
+        return;
+    }
+
+    groups.push({
+        name: `Seq ${first}-${last}`,
+        hue: nextHue(),
+        cropIndices: indices,
+    });
+    rebuildGroupList();
+    selectGroup(groups.length - 1);
+});
+
 // Fold / Unfold all prefix sections
 document.getElementById('foldAllBtn').addEventListener('click', () => {
     groupList.querySelectorAll('.prefix-section').forEach(s => {
