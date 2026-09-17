@@ -373,38 +373,50 @@ document.getElementById('addGroupBtn').addEventListener('click', () => {
 
 // Add group sequence button
 document.getElementById('addGroupSequenceBtn').addEventListener('click', () => {
-    const input = prompt('Add Group Sequence\nEnter first frame and count, e.g. "153 6":');
+    const input = prompt('Add Group Sequence\nEnter first frame followed by one or more counts, e.g. "156 4 5 2 3":');
     if (input === null) return;
 
     const parts = input.trim().split(/\s+/).filter(Boolean);
     if (parts.length < 2) {
-        alert('Enter two numbers: first frame and count.');
+        alert('Enter a first frame and at least one count, e.g. "156 4 5 2 3".');
         return;
     }
 
     const first = parseInt(parts[0], 10);
-    const count = parseInt(parts[1], 10);
-    if (isNaN(first) || isNaN(count) || first < 0 || count <= 0) {
-        alert('Enter a valid first frame (0 or more) and a count (1 or more).');
+    const counts = parts.slice(1).map(p => parseInt(p, 10));
+    if (isNaN(first) || first < 0 || counts.some(c => isNaN(c) || c <= 0)) {
+        alert('Enter a valid first frame (0 or more) followed by counts (1 or more), e.g. "156 4 5 2 3".');
         return;
     }
 
-    const last = first + count - 1;
-    const indices = [];
-    for (let i = first; i <= last; i++) {
-        if (crops[i]) indices.push(i);
+    let cursor = first;
+    let added = 0;
+    for (const count of counts) {
+        const start = cursor;
+        const last = start + count - 1;
+        cursor += count;
+
+        const indices = [];
+        for (let i = start; i <= last; i++) {
+            if (crops[i]) indices.push(i);
+        }
+
+        if (!indices.length) continue;
+
+        groups.push({
+            name: `Seq ${start}-${last}`,
+            hue: nextHue(),
+            cropIndices: indices,
+        });
+        added++;
     }
 
-    if (!indices.length) {
-        alert(`No frames found in range ${first}–${last}.`);
+    if (!added) {
+        const end = first + counts.reduce((sum, c) => sum + c, 0) - 1;
+        alert(`No frames found in range ${first}–${end}.`);
         return;
     }
 
-    groups.push({
-        name: `Seq ${first}-${last}`,
-        hue: nextHue(),
-        cropIndices: indices,
-    });
     rebuildGroupList();
     selectGroup(groups.length - 1);
 });
