@@ -176,8 +176,11 @@
 }
 
 .preview-canvas-wrap {
-    position: relative;
-    line-height: 0;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .preview-crop-label {
