@@ -2,7 +2,7 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    padding: 4px 6px;
+    padding: 2px 6px;
     background: color-mix(in srgb, var(--item-color, transparent) 10%, #1e1e1e);
     border-bottom: 1px solid #111;
     cursor: pointer;
@@ -79,8 +79,8 @@
 }
 
 .group-item .group-del-btn {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     padding: 0;
     font-size: 16px;
     line-height: 1;
@@ -239,7 +239,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 8px;
+    padding: 3px 8px;
     background: #202020;
     cursor: pointer;
     user-select: none;
