@@ -19,8 +19,8 @@ import (
 )
 
 func (v *View) DrawColor(color uint) {
-	obj.X, obj.Y, obj.Roundness, obj.Angle, obj.Effects.Tint, obj.Effects.FillColor = v.X, v.Y, 0, v.Angle, palette.White, color
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, 0
+	obj.X, obj.Y, obj.Roundness, obj.Angle, obj.Details.Tint, obj.Details.FillColor = v.X, v.Y, 0, v.Angle, palette.White, color
+	obj.TextFontId, obj.Text, obj.Details.TextLineHeight, obj.Details.TextColor, obj.ImageId = 0, "", 0, 0, 0
 	obj.Width, obj.Height = v.Size()
 	v.DrawObject(obj)
 }
@@ -65,21 +65,21 @@ func (v *View) DrawPath(points []float32, thickness float32, color uint, mask ge
 }
 func (v *View) DrawShape(x, y, width, height, angle, roundness float32, color uint, mask geometry.Area) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, roundness
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = angle, 0, palette.White, color
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Mask = 0, "", 0, 0, mask
+	obj.Angle, obj.ImageId, obj.Details.Tint, obj.Details.FillColor = angle, 0, palette.White, color
+	obj.TextFontId, obj.Text, obj.Details.TextLineHeight, obj.Details.TextColor, obj.Mask = 0, "", 0, 0, mask
 	v.DrawObject(obj)
 }
 func (v *View) DrawImage(x, y, width, height, angle float32, imageId assets.ImageId, tint uint, mask geometry.Area) {
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = x, y, width, height, 0
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor, obj.Mask = angle, 0, tint, 0, mask
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.ImageId = 0, "", 0, 0, imageId
+	obj.Angle, obj.ImageId, obj.Details.Tint, obj.Details.FillColor, obj.Mask = angle, 0, tint, 0, mask
+	obj.TextFontId, obj.Text, obj.Details.TextLineHeight, obj.Details.TextColor, obj.ImageId = 0, "", 0, 0, imageId
 	v.DrawObject(obj)
 }
 func (v *View) DrawText(text string, x, y, lineHeight float32, fontId assets.FontId, color uint, mask geometry.Area) {
-	obj.Effects, obj.Mask = Effects(internal.DefaultEffects), mask
-	obj.Width, obj.Height, obj.Effects.FillColor, obj.Roundness = 9999, 9999, 0, 0
-	obj.Angle, obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = v.Angle, 0, palette.White, 0
-	obj.TextFontId, obj.Text, obj.Effects.TextLineHeight, obj.Effects.TextColor = fontId, text, lineHeight/v.Zoom, color
+	obj.Details, obj.Mask = Detail(internal.DefaultDetails), mask
+	obj.Width, obj.Height, obj.Details.FillColor, obj.Roundness = 9999, 9999, 0, 0
+	obj.Angle, obj.ImageId, obj.Details.Tint, obj.Details.FillColor = v.Angle, 0, palette.White, 0
+	obj.TextFontId, obj.Text, obj.Details.TextLineHeight, obj.Details.TextColor = fontId, text, lineHeight/v.Zoom, color
 
 	x, y = point.MoveAtAngle(x, y, obj.Angle, obj.Width/2)
 	obj.X, obj.Y = point.MoveAtAngle(x, y, obj.Angle+90, obj.Height/2)
@@ -94,14 +94,14 @@ func (v *View) DrawObject(object *Object) {
 		return
 	}
 
-	if o.Effects.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
+	if o.Details.TextBatch && o.textBatches != nil { // use cache only for batched textboxes
 		internal.ReadyBatches = append(internal.ReadyBatches, o.textBatches...)
 		return
 	}
 
 	// var prevImageId = o.ImageId
 	if o.Text != "" {
-		if o.Effects.TextBatch {
+		if o.Details.TextBatch {
 			internal.IsRecording = true
 			internal.CurrentBatchRecord = make([]*internal.Batch, 0)
 		}
@@ -118,7 +118,7 @@ func (v *View) DrawObject(object *Object) {
 		mask.Height *= internal.ViewZoom
 	}
 
-	var eff = (*internal.Effects)(&o.Effects)
+	var eff = (*internal.Details)(&o.Details)
 
 	if o.TileLayerId != 0 {
 		var layer = internal.TileLayers[uint8(o.TileLayerId)]
@@ -142,9 +142,9 @@ func (v *View) DrawObject(object *Object) {
 		v.queueQuad(o.X, o.Y, o.Width, o.Height, o.Angle, o.Roundness, int32(o.ImageId), o.ImageCrop, eff, mask)
 	}
 
-	if o.Text != "" || o.Effects.TextIsInput { // empty input text needs a cursor position
+	if o.Text != "" || o.Details.TextIsInput { // empty input text needs a cursor position
 		v.queueText(o, mask)
-		if o.Effects.TextBatch {
+		if o.Details.TextBatch {
 			internal.CloseBatch()
 			o.textBatches = internal.CurrentBatchRecord
 			internal.ReadyBatches = append(internal.ReadyBatches, internal.CurrentBatchRecord...)
@@ -271,7 +271,7 @@ var weights = map[rune]float32{'⏬': -0.8, '🔽': -0.4, '🔁': 0, '🔼': 0.4
 var sizes = map[rune]float32{'🔇': 0.5, '🔈': 0.75, '🔉': 1.0, '🔊': 1.25, '📢': 1.5}
 
 func (v *View) queueText(o *Object, mask internal.Area) {
-	var eff = (*internal.Effects)(&o.Effects)
+	var eff = (*internal.Details)(&o.Details)
 	var scale = eff.TextLineHeight / 255
 	var gapX, gapY = eff.TextSymbolGap * scale, eff.TextLineGap * scale
 	var fontData, has = internal.Fonts[uint8(o.TextFontId)]
@@ -311,8 +311,8 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		var prevGlyph internal.Glyph
 
 		for _, r := range txt[ln.start:ln.end] {
-			if !o.Effects.TextIsInput && o.embedEffect(r, eff, &shadeCol, &shadeOutCol, baseLineHeight) {
-				continue // tag symbol applies to effects and gets skipped
+			if !o.Details.TextIsInput && o.embedDetail(r, eff, &shadeCol, &shadeOutCol, baseLineHeight) {
+				continue // tag symbol applies to details and gets skipped
 			}
 
 			var glyph = fontData.Chars[r]
@@ -321,7 +321,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 
 			var src, dst = getGlyphSrcDst(o, r, glyph, x, y, cos, sin, 0)
 
-			if o.Effects.TextIsInput {
+			if o.Details.TextIsInput {
 				var midX, midY = (x - gapX/2) - o.X, (y + (fontData.Ascender+fontData.Descender)*eff.TextLineHeight/2) - o.Y
 				midX, midY = o.X+midX*cos-midY*sin, o.Y+midX*sin+midY*cos
 				o.textCursorPos = append(o.textCursorPos, midX)
@@ -358,7 +358,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			prevGlyph = glyph
 		}
 
-		if o.Effects.TextIsInput {
+		if o.Details.TextIsInput {
 			var endX, endY = (x - gapX/2) - o.X, (y + (fontData.Ascender+fontData.Descender)*eff.TextLineHeight/2) - o.Y
 			endX, endY = o.X+endX*cos-endY*sin, o.Y+endX*sin+endY*cos
 			o.textCursorPos = append(o.textCursorPos, endX)
@@ -367,7 +367,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	}
 	o.textWidth, o.textHeight = contentWidth, contentHeight
 }
-func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.Area, eff *internal.Effects, mask internal.Area) {
+func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.Area, eff *internal.Details, mask internal.Area) {
 	var tex = internal.Images[imageId]
 	var prevFill = eff.FillColor
 	var kind uint8
@@ -385,7 +385,7 @@ func (v *View) queueQuad(x, y, w, h, a, r float32, imageId int32, crop geometry.
 	internal.Queue(tex.Texture, rl.Texture2D{}, src, dst, a, r, mask, eff, kind, 0, 0, 0)
 	eff.FillColor = prevFill
 }
-func (v *View) queueNinePatch(x, y, w, h, a, r float32, imageId int32, eff *internal.Effects, mask internal.Area) {
+func (v *View) queueNinePatch(x, y, w, h, a, r float32, imageId int32, eff *internal.Details, mask internal.Area) {
 	var img = internal.Images[imageId]
 	var tw, th, top, left, right, bottom = img.CropWidth, img.CropHeight, img.Top, img.Left, img.Right, img.Bottom
 	var sx = [4]float32{img.CropX, img.CropX + left, img.CropX + tw - right, img.CropX + tw}
@@ -425,7 +425,7 @@ func (v *View) windowArea() geometry.Area {
 	return v.WindowArea
 }
 func getGlyphSrcDst(o *Object, r rune, glyph internal.Glyph, x, y, cos, sin, newWidth float32) (src, dst rl.Rectangle) {
-	var symbol = o.TextFontId.SymbolArea(r, o.Effects.TextLineHeight)
+	var symbol = o.TextFontId.SymbolArea(r, o.Details.TextLineHeight)
 	var offsetX, offsetY, dstW, dstH = symbol.X, symbol.Y, symbol.Width, symbol.Height
 	if newWidth != 0 {
 		dstW = newWidth

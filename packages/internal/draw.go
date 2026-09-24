@@ -32,7 +32,7 @@ type Batch struct {
 	uniforms    [33]float32  // per-batch shader uniforms (u[0]=time set in Draw)
 }
 type Vertex struct{ X, Y, U, V float32 }
-type Effects struct {
+type Details struct {
 	Gamma, Saturation, Contrast, Brightness float32
 
 	OutlineSize, BorderSize float32
@@ -59,7 +59,7 @@ type Effects struct {
 	TextLineHeight, TextSymbolGap, TextLineGap float32
 	TextWordWrap                               bool
 
-	TextIsInput bool // No new lines; no effects; caches the cursor positions from the last draw.
+	TextIsInput bool // No new lines; no details; caches the cursor positions from the last draw.
 
 	// Caches the text visuals across frames. Call object.TextUpdateBatch when visual changes are needed.
 	// Useful for a huge static texts that change rarely.
@@ -78,7 +78,7 @@ var Shader rl.Shader
 var ShaderLoc, ShaderTileDataLoc int32 // uniform location, all properties are packed in one uniform for speed
 var DefaultMaterial rl.Material
 var DefaultMatrix rl.Matrix
-var DefaultEffects = Effects{
+var DefaultDetails = Details{
 	BorderColor: palette.White, Tint: palette.White,
 	TextColor: palette.White, TextShadowColor: palette.Black, TextShadowOffsetX: 1, TextShadowOffsetY: 1,
 	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 0.15, TileTimeScale: 1,
@@ -99,7 +99,7 @@ var ViewX, ViewY, ViewZoom, ViewAngle float32
 
 //=================================================================
 
-func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Effects, kind,
+func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, mask Area, eff *Details, kind,
 	tileSz uint8, cols, rows uint16) {
 	var flipU, flipV = dst.Width < 0 && kind != KindText, dst.Height < 0 && kind != KindText
 	dst.Width, dst.Height = number.Absolute(dst.Width), number.Absolute(dst.Height)
@@ -140,7 +140,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 	var uvs = [8]float32{u1, v1, u1, v2, u2, v2, u2, v1}
 	var vCount int32
 	if eff == nil {
-		eff = &DefaultEffects
+		eff = &DefaultDetails
 	}
 
 	var r, g, b, a = col.Channels(palette.White)

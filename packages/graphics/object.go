@@ -11,13 +11,13 @@ import (
 	txt "pure-game-kit/packages/utility/text"
 )
 
-type Effects internal.Effects
+type Detail internal.Details
 
 type Object struct {
 	geometry.Shape
 
 	Mask    geometry.Area // In view space.
-	Effects Effects
+	Details Detail
 
 	// sprite =========================================================
 
@@ -26,7 +26,7 @@ type Object struct {
 
 	// text ===========================================================
 
-	// Tags for embeded effects:
+	// Tags for embeded details:
 	//
 	//	Underline:     ✅ // toggle
 	//	Crossout:      ❎ // toggle
@@ -49,50 +49,50 @@ type Object struct {
 }
 
 func NewShapePoint(x, y float32) Object {
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	eff.BorderSize, eff.FillColor = -5, palette.LightGray
-	return Object{Shape: geometry.NewPoint(x, y), Effects: eff}
+	return Object{Shape: geometry.NewPoint(x, y), Details: eff}
 }
 func NewShapeCircle(x, y, radius float32) Object {
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	eff.BorderSize, eff.FillColor = -5, palette.LightGray
-	return Object{Shape: geometry.NewCircle(x, y, radius), Effects: eff}
+	return Object{Shape: geometry.NewCircle(x, y, radius), Details: eff}
 }
 func NewShapeRectangle(x, y, width, height, angle float32) Object {
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	eff.BorderSize, eff.FillColor = -5, palette.LightGray
-	return Object{Shape: geometry.NewRectangle(x, y, width, height, angle), Effects: eff}
+	return Object{Shape: geometry.NewRectangle(x, y, width, height, angle), Details: eff}
 }
 func NewShapeRoundedRectangle(x, y, width, height, angle, roundness float32) Object {
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	eff.BorderSize, eff.FillColor = -5, palette.LightGray
-	return Object{Shape: geometry.NewRoundedRectangle(x, y, width, height, angle, roundness), Effects: eff}
+	return Object{Shape: geometry.NewRoundedRectangle(x, y, width, height, angle, roundness), Details: eff}
 }
 func NewShapeCapsule(x1, y1, x2, y2, radius float32) Object {
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	eff.BorderSize, eff.FillColor = -5, palette.LightGray
-	return Object{Shape: geometry.NewCapsule(x1, y1, x2, y2, radius), Effects: eff}
+	return Object{Shape: geometry.NewCapsule(x1, y1, x2, y2, radius), Details: eff}
 }
 func NewShapeLine(x1, y1, x2, y2, thickness float32) Object {
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	eff.BorderSize, eff.FillColor = -5, palette.LightGray
-	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness), Effects: eff}
+	return Object{Shape: geometry.NewLine(x1, y1, x2, y2, thickness), Details: eff}
 }
 
 func NewSprite(x, y, scale float32, imageId assets.ImageId) Object {
 	var crop = imageId.CropArea()
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	var shape = geometry.NewRectangle(x, y, float32(crop.Width)*scale, float32(crop.Height)*scale, 0)
-	return Object{Shape: shape, ImageId: imageId, Effects: eff}
+	return Object{Shape: shape, ImageId: imageId, Details: eff}
 }
 func NewTextbox(x, y, width, height float32, fontId assets.FontId, text ...any) Object {
 	var rect = geometry.NewRectangle(x, y, width, height, 0)
-	var eff = Effects(internal.DefaultEffects)
+	var eff = Detail(internal.DefaultDetails)
 	eff.FillColor = palette.DarkGray
-	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Effects: eff}
+	return Object{Shape: rect, TextFontId: fontId, Text: txt.New(text...), Details: eff}
 }
 func NewTilemap(layerId assets.TileLayerId) Object {
-	var tilemap = Object{TileLayerId: layerId, Effects: Effects(internal.DefaultEffects)}
+	var tilemap = Object{TileLayerId: layerId, Details: Detail(internal.DefaultDetails)}
 	var layer = internal.TileLayers[uint8(layerId)]
 	if layer != nil {
 		tilemap.Width = float32(layer.Columns) * float32(layer.TileSize)
@@ -153,7 +153,7 @@ func (o *Object) TextUpdateBatch() {
 	o.textBatches = nil
 }
 func (o *Object) TextCursorPositionAt(index int) float32 {
-	if !o.Effects.TextIsInput || index < 0 || index >= len(o.textCursorPos) {
+	if !o.Details.TextIsInput || index < 0 || index >= len(o.textCursorPos) {
 		return number.NaN()
 	}
 	return o.textCursorPos[index]
@@ -258,15 +258,15 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 		return fromIndex, 0, lineHeight
 	}
 
-	var originalLineHeight = o.Effects.TextLineHeight
+	var originalLineHeight = o.Details.TextLineHeight
 	var scale = originalLineHeight / 255
-	var gapX = o.Effects.TextSymbolGap * scale
+	var gapX = o.Details.TextSymbolGap * scale
 	var font = internal.Fonts[uint8(o.TextFontId)]
 	var x, totalWidth float32
 	var prevGlyph internal.Glyph
 
 	for i, r := range o.Text[fromIndex:] {
-		if !o.Effects.TextIsInput && r == '\n' {
+		if !o.Details.TextIsInput && r == '\n' {
 			return fromIndex + i, totalWidth, lineHeight
 		}
 
@@ -279,12 +279,12 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 		x += prevGlyph.Kernings[r] * lineHeight
 		var glyph = font.Chars[r]
 
-		if o.Effects.TextWordWrap && r == ' ' {
+		if o.Details.TextWordWrap && r == ' ' {
 			var wX, wTotal float32
 			var wPrev internal.Glyph
 			var wHeight = lineHeight
 			for _, wr := range o.Text[fromIndex+i+1:] {
-				if wr == ' ' || (!o.Effects.TextIsInput && wr == '\n') {
+				if wr == ' ' || (!o.Details.TextIsInput && wr == '\n') {
 					break
 				}
 				var wsz = sizes[wr]
@@ -306,13 +306,13 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 	}
 	return len(o.Text), totalWidth, lineHeight
 }
-func (o *Object) embedEffect(r rune, effect *internal.Effects, shadeCol, shadeOutCol *float32, baseLineHeight float32) (success bool) {
+func (o *Object) embedDetail(r rune, detail *internal.Details, shadeCol, shadeOutCol *float32, baseLineHeight float32) (success bool) {
 	if r == '✅' {
-		effect.TextUnderline = !effect.TextUnderline
+		detail.TextUnderline = !detail.TextUnderline
 		return true
 	}
 	if r == '❎' {
-		effect.TextCrossout = !effect.TextCrossout
+		detail.TextCrossout = !detail.TextCrossout
 		return true
 	}
 
@@ -329,7 +329,7 @@ func (o *Object) embedEffect(r rune, effect *internal.Effects, shadeCol, shadeOu
 		}
 		*shadeCol = 0    // reset shade
 		*shadeOutCol = 0 // reset shade
-		effect.TextColor = color
+		detail.TextColor = color
 		return true
 	} else if outlineColor != 0 {
 		if *shadeOutCol < 0 {
@@ -339,13 +339,13 @@ func (o *Object) embedEffect(r rune, effect *internal.Effects, shadeCol, shadeOu
 		}
 		*shadeCol = 0    // reset shade
 		*shadeOutCol = 0 // reset shade
-		effect.OutlineColor = outlineColor
+		detail.OutlineColor = outlineColor
 		return true
 	} else if hasWeights {
-		effect.TextWeight = weight
+		detail.TextWeight = weight
 		return true
 	} else if size != 0 {
-		effect.TextLineHeight = baseLineHeight * size
+		detail.TextLineHeight = baseLineHeight * size
 		return true
 	} else if hasShade {
 		*shadeCol = sh

@@ -50,13 +50,13 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 	if enabled {
 		handleInput(area, scaleMask(mask), roundness)
 	}
-	obj.Effects = graphics.Effects(internal.DefaultEffects)
+	obj.Details = graphics.Detail(internal.DefaultDetails)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, roundness
-	obj.ImageId, obj.Effects.Tint, obj.Effects.FillColor = imageId, palette.White, color
+	obj.ImageId, obj.Details.Tint, obj.Details.FillColor = imageId, palette.White, color
 	obj.Mask, obj.Text = scaleMask(mask), ""
-	obj.Effects.BorderSize, obj.Effects.BorderColor = borderSize, borderColor
+	obj.Details.BorderSize, obj.Details.BorderColor = borderSize, borderColor
 	if imageId != 0 {
-		obj.Effects.Tint, obj.Effects.FillColor = color, 0
+		obj.Details.Tint, obj.Details.FillColor = color, 0
 	}
 	view.DrawObject(&obj)
 }
@@ -537,19 +537,19 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 		handleInput(area, scaleMask(mask), 0)
 	}
 
-	obj.Effects = graphics.Effects(internal.DefaultEffects)
+	obj.Details = graphics.Detail(internal.DefaultDetails)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
-	obj.Effects.TextIsInput, obj.ImageId, obj.Effects.Tint, obj.Mask = isInputbox, 0, palette.White, scaleMask(mask)
-	obj.TextFontId, obj.Text, obj.Effects.TextWordWrap = assets.FontId(fontId), text, wordWrap
-	obj.Effects.TextLineHeight, obj.Effects.TextColor, obj.Effects.TextWeight = lineH, col.TagHex(color), wgt
-	obj.Effects.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 0))
-	obj.Effects.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 1))
-	obj.Effects.TextSymbolGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 0))
-	obj.Effects.TextLineGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 1))
-	obj.Effects.OutlineSize, obj.Effects.OutlineColor, obj.Effects.TextShadowBlur = outSz, col.TagHex(outCol), sBlur
-	obj.Effects.TextShadowWeight, obj.Effects.TextShadowColor = sWgt, col.TagHex(sCol)
-	obj.Effects.TextShadowOffsetX = txt.ToNumber[float32](txt.SplitAtIndex(sOff, " ", 0))
-	obj.Effects.TextShadowOffsetY = txt.ToNumber[float32](txt.SplitAtIndex(sOff, " ", 1))
+	obj.Details.TextIsInput, obj.ImageId, obj.Details.Tint, obj.Mask = isInputbox, 0, palette.White, scaleMask(mask)
+	obj.TextFontId, obj.Text, obj.Details.TextWordWrap = assets.FontId(fontId), text, wordWrap
+	obj.Details.TextLineHeight, obj.Details.TextColor, obj.Details.TextWeight = lineH, col.TagHex(color), wgt
+	obj.Details.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 0))
+	obj.Details.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 1))
+	obj.Details.TextSymbolGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 0))
+	obj.Details.TextLineGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 1))
+	obj.Details.OutlineSize, obj.Details.OutlineColor, obj.Details.TextShadowBlur = outSz, col.TagHex(outCol), sBlur
+	obj.Details.TextShadowWeight, obj.Details.TextShadowColor = sWgt, col.TagHex(sCol)
+	obj.Details.TextShadowOffsetX = txt.ToNumber[float32](txt.SplitAtIndex(sOff, " ", 0))
+	obj.Details.TextShadowOffsetY = txt.ToNumber[float32](txt.SplitAtIndex(sOff, " ", 1))
 	view.DrawObject(&obj)
 }
 
