@@ -27,40 +27,43 @@ func (s *Dynamic) Get() string {
 }
 func (s *Dynamic) Set(elements ...any) string {
 	s.buffer = s.buffer[:0]
-
 	for _, e := range elements {
-		switch v := e.(type) {
-		case string:
-			s.buffer = append(s.buffer, v...)
-		case int:
-			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
-		case int8:
-			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
-		case int16:
-			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
-		case int32:
-			s.buffer = strconv.AppendInt(s.buffer, int64(v), 10)
-		case int64:
-			s.buffer = strconv.AppendInt(s.buffer, v, 10)
-		case uint:
-			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
-		case uint8:
-			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
-		case uint16:
-			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
-		case uint32:
-			s.buffer = strconv.AppendUint(s.buffer, uint64(v), 10)
-		case uint64:
-			s.buffer = strconv.AppendUint(s.buffer, v, 10)
-		case float32:
-			s.buffer = strconv.AppendFloat(s.buffer, float64(v), 'f', -1, 32)
-		case float64:
-			s.buffer = strconv.AppendFloat(s.buffer, v, 'f', -1, 64)
-		case bool:
-			s.buffer = strconv.AppendBool(s.buffer, v)
-		default: // do nothing - unsupported types are safely ignored with zero allocations
-		}
+		s.buffer = appendElement(s.buffer, e)
 	}
+	return s.Get()
+}
+func (s *Dynamic) Append(elements ...any) string {
+	for _, e := range elements {
+		s.buffer = appendElement(s.buffer, e)
+	}
+	return s.Get()
+}
+
+// Note that this is quite slow - combine two Dynamics into a third one if speed is of essence.
+func (s *Dynamic) Prepend(elements ...any) string {
+	if len(elements) == 0 {
+		return s.Get()
+	}
+
+	var origLen = len(s.buffer)
+	for _, e := range elements {
+		s.buffer = appendElement(s.buffer, e)
+	}
+
+	var prepLen = len(s.buffer) - origLen
+	if prepLen == 0 {
+		return s.Get()
+	}
+
+	// rotate the byte slice in place so newly appended elements move to the front
+	// right-rotate s.buffer by prepLen bytes: [Original | New] -> [New | Original]
+	var len = len(s.buffer)
+	if len <= 1 || prepLen <= 0 || prepLen >= len {
+		return s.Get()
+	}
+	reverse(s.buffer[:len-prepLen])
+	reverse(s.buffer[len-prepLen:])
+	reverse(s.buffer)
 	return s.Get()
 }
 
@@ -321,4 +324,47 @@ func calcGetNumber(expr string, i *int) float32 {
 	var numStr = expr[start:*i]
 	(*i)--
 	return ToNumber[float32](numStr)
+}
+
+func appendElement(buffer []byte, element any) []byte {
+	switch v := element.(type) {
+	case string:
+		return append(buffer, v...)
+	case []byte:
+		return append(buffer, v...)
+	case int:
+		return strconv.AppendInt(buffer, int64(v), 10)
+	case int8:
+		return strconv.AppendInt(buffer, int64(v), 10)
+	case int16:
+		return strconv.AppendInt(buffer, int64(v), 10)
+	case int32:
+		return strconv.AppendInt(buffer, int64(v), 10)
+	case int64:
+		return strconv.AppendInt(buffer, v, 10)
+	case uint:
+		return strconv.AppendUint(buffer, uint64(v), 10)
+	case uint8:
+		return strconv.AppendUint(buffer, uint64(v), 10)
+	case uint16:
+		return strconv.AppendUint(buffer, uint64(v), 10)
+	case uint32:
+		return strconv.AppendUint(buffer, uint64(v), 10)
+	case uint64:
+		return strconv.AppendUint(buffer, v, 10)
+	case float32:
+		return strconv.AppendFloat(buffer, float64(v), 'f', -1, 32)
+	case float64:
+		return strconv.AppendFloat(buffer, v, 'f', -1, 64)
+	case bool:
+		return strconv.AppendBool(buffer, v)
+	default:
+		return buffer
+	}
+}
+
+func reverse(buffer []byte) {
+	for i, j := 0, len(buffer)-1; i < j; i, j = i+1, j-1 {
+		buffer[i], buffer[j] = buffer[j], buffer[i]
+	}
 }
