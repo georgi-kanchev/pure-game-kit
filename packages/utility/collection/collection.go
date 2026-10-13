@@ -53,10 +53,9 @@ func RemoveAt[T any](collection []T, indexes ...int) []T {
 	}
 	return collection
 }
-func RemoveUnordered[T any](collection []T, index int) []T {
-	lastIdx := len(collection) - 1 // fast but changes order
-	collection[index] = collection[lastIdx]
-	return collection[:lastIdx]
+func RemoveUnordered[T any](collection []T, index int) []T { // fast but changes order
+	collection[index] = collection[len(collection)-1]
+	return collection[:len(collection)-1]
 }
 func Shift[T any](collection []T, offset int) {
 	var n = len(collection)
