@@ -60,13 +60,13 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 	}
 	view.DrawObject(&obj)
 }
-
-func Image(area, mask Area, theme assets.GUIThemeId, enabled bool) {
-	var t = getTheme(theme).Image
-	var imgId, rnds = assets.ImageId(thNum(t.ImgId)), thNum(t.Rnds)
-	var borSz, borCol = thNum(t.BorSz), col.TagHex(thStr(t.BorCol))
-	Object(imgId, rnds, borSz, borCol, col.TagHex(thStr(t.Col)), area, mask, enabled)
+func Rectangle(color uint, area Area, enabled bool) {
+	Object(0, 0, 0, 0, color, area, geometry.Area{}, enabled)
 }
+func Image(imageId assets.ImageId, area Area, enabled bool) {
+	Object(imageId, 0, 0, 0, palette.White, area, geometry.Area{}, enabled)
+}
+
 func Label(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
 	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Label, enabled, false, false)
 }
