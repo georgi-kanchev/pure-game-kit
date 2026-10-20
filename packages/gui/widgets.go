@@ -554,7 +554,7 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 }
 
 func scaleMask(mask Area) Area { return mask }
-func getTheme(theme assets.GUIThemeId) internal.GUITheme {
+func getTheme(theme assets.GUIThemeId) *internal.GUITheme {
 	var th, has = internal.GUIThemes[uint16(theme)]
 	if !has {
 		th = internal.GUIThemes[0]

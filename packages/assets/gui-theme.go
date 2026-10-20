@@ -9,7 +9,7 @@ import (
 type GUIThemeId uint16
 
 func LoadGUITheme(xmlPath string) GUIThemeId {
-	var theme = internal.GUITheme{}
+	var theme = &internal.GUITheme{}
 	storage.FromXML(file.LoadText(xmlPath), &theme)
 	if theme.XMLName.Local == "" {
 		return 0

@@ -12,7 +12,7 @@ import (
 type GUILayoutId uint16
 
 func LoadGUILayout(xmlPath string) GUILayoutId {
-	var layout = internal.GUILayout{}
+	var layout = &internal.GUILayout{}
 	storage.FromXML(file.LoadText(xmlPath), &layout)
 	if len(layout.Boxes) == 0 {
 		return 0
@@ -46,7 +46,7 @@ func (l GUILayoutId) Box(id int) (area geometry.Area, contentWidth, contentHeigh
 	if len(layout.Boxes) == 0 {
 		return geometry.Area{}, 0, 0
 	}
-	var rx, ry, rw, rh, cw, ch, rv = boxDynamic(&layout, id, 0)
+	var rx, ry, rw, rh, cw, ch, rv = boxDynamic(layout, id, 0)
 	if !rv {
 		return geometry.Area{}, 0, 0 // not visible
 	}
@@ -60,7 +60,7 @@ func (l GUILayoutId) Item(id int, scrollX, scrollY float32) (area, mask geometry
 		return geometry.Area{}, geometry.Area{}
 	}
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	var rx, ry, rw, rh, rv = itemDynamic(&layout, id, scrollX, scrollY, sc)
+	var rx, ry, rw, rh, rv = itemDynamic(layout, id, scrollX, scrollY, sc)
 	if !rv {
 		return geometry.Area{}, geometry.Area{} // not visible
 	}

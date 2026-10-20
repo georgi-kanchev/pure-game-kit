@@ -138,6 +138,6 @@ type GUITheme struct {
 	} `xml:"inputbox"`
 }
 
-var GUILayouts = make(map[uint16]GUILayout)
-var GUIThemes = make(map[uint16]GUITheme)
+var GUILayouts = make(map[uint16]*GUILayout)
+var GUIThemes = make(map[uint16]*GUITheme)
 var NextGUILayoutId, NextGUIThemeId uint16
