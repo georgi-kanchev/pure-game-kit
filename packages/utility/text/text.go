@@ -108,6 +108,9 @@ func New(elements ...any) string {
 
 func ToNumber[T number.Number](text string) T {
 	var zero T
+	if text == "" {
+		return zero
+	}
 
 	switch any(zero).(type) {
 	case float32:

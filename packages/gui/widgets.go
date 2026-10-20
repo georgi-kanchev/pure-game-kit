@@ -527,7 +527,7 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	var gap, mar = thStr(inter.Gap, opt.Gap, new("0 0")), thStr(inter.Margin, opt.Margin, new("0 0"))
 	var outSz, outCol = thNum(inter.OutSz, opt.OutSz), thStr(inter.OutCol, opt.OutCol)
 	var sWgt, sBlur = thNum(inter.ShWgt, opt.ShWgt), thNum(inter.ShBlur, opt.ShBlur)
-	var sCol, sOff = thStr(inter.ShCol, opt.ShCol), thStr(inter.ShOff, opt.ShOff)
+	var sCol, sOff = thStr(inter.ShCol, opt.ShCol), thStr(inter.ShOff, opt.ShOff, new("0 0"))
 	var marX = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 0))
 	var marY = txt.ToNumber[float32](txt.SplitAtIndex(mar, " ", 1))
 	area.Width -= marX
