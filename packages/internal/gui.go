@@ -9,7 +9,7 @@ type GUILayoutVars struct {
 	Sx, Sy, Sw, Sh     float32
 	Slx, Sly, Srx, Sry float32
 	Sux, Suy, Sdx, Sdy float32
-	Tx, Ty, Tw, Th, Tv float32
+	Tx, Ty, Tw, Th     float32
 	Tlx, Tly, Trx, Try float32
 	Tux, Tuy, Tdx, Tdy float32
 	Ow, Oh, Ov         float32
@@ -22,7 +22,6 @@ type GUILayout struct {
 		Name                        string  `xml:"name,attr"`
 		NamePosition                string  `xml:"namePosition,attr"`
 		Color                       string  `xml:"color,attr"`
-		Visible                     string  `xml:"visible,attr"`
 		Rectangle                   string  `xml:"rectangle,attr"`
 		Math                        string  `xml:"math,attr"`
 		Targets                     string  `xml:"targets,attr"`
