@@ -68,10 +68,10 @@ function importXml(text) {
         };
     });
 
-    // resolve target references
+    // resolve target references (visibility first, then x/y/w/h)
     boxEls.forEach((el, i) => {
-        const parts = el.getAttribute('target')?.split(' ') ?? [];
-        ['x','y','w','h'].forEach((dim, j) => {
+        const parts = el.getAttribute('targets')?.split(' ') ?? [];
+        ['v','x','y','w','h'].forEach((dim, j) => {
             const t = parts[j]?.trim();
             if (t !== '' && t !== undefined) {
                 const idx = parseInt(t);
@@ -82,7 +82,7 @@ function importXml(text) {
 
     // assign items to their boxes
     itemEls.forEach(el => {
-        const box = newBoxes[parseInt(el.getAttribute('boxId'))];
+        const box = newBoxes[parseInt(el.getAttribute('boxIndex'))];
         if (!box) return;
         const expr = el.getAttribute('math')?.split(' ') ?? [];
         const hasBreak = !!el.getAttribute('newRowMath');
@@ -114,6 +114,7 @@ function importXml(text) {
         boxList.append(group);
     });
 
+    syncVisibilityTargets();
     syncAllItemIds();
     drawView();
 }
@@ -153,27 +154,25 @@ function buildXml() {
     const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<layout>'];
 
     lines.push('  <boxes>');
-    realBoxes.forEach((box, i) => {
+    realBoxes.forEach(box => {
         const f = box.formulas ?? {};
         const t = box.targets ?? {};
         const r = resolveBox(box);
         const tid = b => b ? realBoxes.indexOf(b) : '';
         lines.push(
-            `    <box id="${i}" name=${xmlAttr(box.name)} namePosition="${box.labelPos ?? 'bl'}" color="${box.color ?? ''}" visible="${box.visible ? 1 : 0}"`,
-            `        rectangle="${fmt(r.x)} ${fmt(r.y)} ${fmt(r.w)} ${fmt(r.h)}" math=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} target="${tid(t.x)} ${tid(t.y)} ${tid(t.w)} ${tid(t.h)}"`,
+            `    <box name=${xmlAttr(box.name)} namePosition="${box.labelPos ?? 'bl'}" visible="${box.targets?.v ? 'tv' : (box.visible ? 1 : 0)}" color="${box.color ?? ''}"`,
+            `        rectangle="${fmt(r.x)} ${fmt(r.y)} ${fmt(r.w)} ${fmt(r.h)}" math=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} targets="${tid(t.v)} ${tid(t.x)} ${tid(t.y)} ${tid(t.w)} ${tid(t.h)}"`,
             `        itemSize=${xmlAttr(`${fmtF(box.itemWidth ?? 40)} ${fmtF(box.itemHeight ?? 20)}`)} itemSpacing="${box.itemSpacingX ?? 0} ${box.itemSpacingY ?? 0}" itemGap="${box.itemGap ?? 0}" itemNewRow="${box.itemBreak ?? 0}" itemAlign="${box.itemAlignX ?? 0} ${box.itemAlignY ?? 0}" />`,
         );
     });
     lines.push('  </boxes>');
 
     lines.push('  <items>');
-    let itemId = 0;
-    realBoxes.forEach((box, boxId) => {
-        const br = resolveBox(box);
+    realBoxes.forEach((box, boxIndex) => {
         resolveItems(box).forEach(({ item, x, y, w, h }) => {
             const f = item.formulas ?? {};
             lines.push(
-                `    <item id="${itemId++}" boxId="${boxId}" name=${xmlAttr(item.name)} visible="${item.visible !== false ? 1 : 0}" size="${fmt(w)} ${fmt(h)}" math=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} newRowMath=${xmlAttr(fmtF(f.break))} />`,
+                `    <item name=${xmlAttr(item.name)} boxIndex="${boxIndex}" visible="${item.visible !== false ? 1 : 0}" size="${fmt(w)} ${fmt(h)}" math=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} newRowMath=${xmlAttr(fmtF(f.break))} />`,
             );
         });
     });

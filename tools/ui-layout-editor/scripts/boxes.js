@@ -131,6 +131,7 @@ function createItem(boxData) {
     });
 
     item.addEventListener('dragover', e => {
+        if (!draggedItem) return;
         e.preventDefault();
         if (group === draggedItem) return;
         boxList.querySelectorAll('.box-item').forEach(i => i.classList.remove('drag-over-top', 'drag-over-bottom'));

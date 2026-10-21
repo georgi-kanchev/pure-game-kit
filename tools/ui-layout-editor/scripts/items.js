@@ -16,6 +16,7 @@ const itemNewRowBtn = document.getElementById('itemNewRowBtn');
 const itemNewRowInp = document.getElementById('itemNewRowInp');
 
 let selectedItemState = null;
+let draggedItemRow = null;
 
 function syncAllItemIds() {
     let idx = 0;
@@ -39,6 +40,7 @@ function createItemRow(boxData, group, itemData) {
     row.innerHTML = `<button class="eye-btn">👁️</button><span class="item-index"></span><span class="item-name">${itemData.name}</span><button class="del-item-btn">✖️</button>`;
     row._item = itemData;
     row._box = boxData;
+    row.draggable = true;
 
     const eyeBtn = row.querySelector('.eye-btn');
     eyeBtn.classList.toggle('hidden-state', !itemData.visible);
@@ -71,7 +73,59 @@ function createItemRow(boxData, group, itemData) {
         }
     });
 
+    row.addEventListener('dragstart', e => {
+        if (e.target.tagName === 'BUTTON') { e.preventDefault(); return; }
+        draggedItemRow = row;
+        const ghost = document.createElement('div');
+        ghost.className = 'drag-ghost';
+        ghost.textContent = itemData.name;
+        document.body.appendChild(ghost);
+        e.dataTransfer.setDragImage(ghost, 0, 10);
+        setTimeout(() => {
+            row.classList.add('dragging');
+            document.body.removeChild(ghost);
+        }, 0);
+    });
+
+    row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        boxList.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
+        draggedItemRow = null;
+    });
+
+    row.addEventListener('dragover', e => {
+        if (!draggedItemRow) return;
+        e.preventDefault();
+        boxList.querySelectorAll('.item-row').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
+        if (row === draggedItemRow) return;
+        if (row._box !== draggedItemRow._box) return;
+        const rect = row.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        row.classList.add(e.clientY < mid ? 'drag-over-top' : 'drag-over-bottom');
+    });
+
+    row.addEventListener('drop', e => {
+        e.preventDefault();
+        if (!draggedItemRow || row === draggedItemRow || row._box !== draggedItemRow._box) return;
+        const rect = row.getBoundingClientRect();
+        const mid = rect.top + rect.height / 2;
+        if (e.clientY < mid) row.before(draggedItemRow);
+        else row.after(draggedItemRow);
+        syncItemsOrder(row._box);
+    });
+
     return row;
+}
+
+function syncItemsOrder(boxData) {
+    const group = [...boxList.querySelectorAll('.box-group')].find(g => g._box === boxData);
+    if (!group) return;
+    const rows = [...group._children.querySelectorAll('.item-row')];
+    if (!boxData.items) boxData.items = [];
+    boxData.items.length = 0;
+    rows.forEach(row => boxData.items.push(row._item));
+    syncAllItemIds();
+    drawView();
 }
 
 function selectItemRow(row) {
