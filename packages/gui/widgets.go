@@ -44,6 +44,8 @@ func AreaHUD(horizontal, vertical, width, height float32) Area {
 }
 
 func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, color uint, area, mask Area, enabled bool) {
+	view.Zoom = Scale // pretty much everything calls Object, so keep the view zoom updated at all times
+
 	if area == (Area{}) {
 		return
 	}

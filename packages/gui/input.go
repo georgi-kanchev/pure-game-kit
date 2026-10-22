@@ -90,7 +90,7 @@ func handleInput(area, mask Area, roundness float32) {
 		}
 
 		lastHovered = nowHovered
-		view.Zoom, nowHovered, widgetCounter = Scale, 0, 0
+		nowHovered, widgetCounter = 0, 0
 		mouse.SetCursor(cursor.Arrow)
 	}
 
