@@ -84,7 +84,7 @@ var DefaultDetails = Details{
 	TextLineHeight: 40, TextWordWrap: true, TextShadowBlur: 0.15, TileTimeScale: 1,
 }
 
-var Images = make(map[int32]ImageData) // negative = crops; 0 = Font+White1x1; positive = full images
+var Images = make(map[int32]ImageData, 128) // negative = crops; 0 = Font+White1x1; positive = full images
 var NextImageId, NextImageCropId int16
 
 var ActiveBatch *Batch          // the batch currently being written to

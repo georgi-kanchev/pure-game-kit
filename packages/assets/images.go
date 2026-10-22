@@ -23,6 +23,12 @@ func LoadImage(imagePath string) ImageId {
 		return 0
 	}
 	internal.NextImageId++
+
+	var _, alreadyExists = internal.Images[int32(internal.NextImageId)]
+	if alreadyExists { // see ImageId.DuplicateId()
+		ImageId(internal.NextImageId).Unload()
+	}
+
 	var w, h = float32(texture.Width), float32(texture.Height)
 	internal.Images[int32(internal.NextImageId)] = internal.ImageData{Texture: texture, CropWidth: w, CropHeight: h}
 	return ImageId(internal.NextImageId)
@@ -77,4 +83,17 @@ func (i ImageId) SetSmoothness(smooth bool) {
 func (i ImageId) CropArea() geometry.Area {
 	var img = internal.Images[int32(i)]
 	return geometry.NewArea(img.CropX+img.CropWidth/2, img.CropY+img.CropHeight/2, img.CropWidth, img.CropHeight)
+}
+
+// Ensures the ImageId is forced to a known value after loading/cropping, instead of depending on the load/crop order.
+// This is useful for serializing ImageIds such as for GUIs or animation frames etc.
+// Make sure the newId is way out of potential loading/cropping ranges to avoid collisions.
+func (i ImageId) DuplicateId(newId ImageId) ImageId {
+	var _, has = internal.Images[int32(newId)]
+	if has {
+		newId.Unload()
+	}
+
+	internal.Images[int32(newId)] = internal.Images[int32(i)]
+	return newId
 }
