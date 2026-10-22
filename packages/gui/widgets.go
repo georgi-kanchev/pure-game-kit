@@ -22,6 +22,7 @@ import (
 type Area = geometry.Area
 
 var Scale float32 = 1
+var ScaleNinePatches float32 = 1
 
 // horizontal/vertical 0..1 screen edge percent
 //
@@ -50,17 +51,30 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 		return
 	}
 	if enabled {
-		handleInput(area, scaleMask(mask), roundness)
+		handleInput(area, mask, roundness)
 	}
+
+	var img = internal.Images[int32(imageId)]
+	var isNinePatch = img.Top != 0 || img.Bottom != 0 || img.Left != 0 || img.Right != 0
+	if isNinePatch {
+		var sc = ScaleNinePatches / Scale
+		view.Zoom = ScaleNinePatches
+		area.X, area.Y, area.Width, area.Height = area.X/sc, area.Y/sc, area.Width/sc, area.Height/sc
+	}
+
 	obj.Details = graphics.Detail(internal.DefaultDetails)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, roundness
 	obj.ImageId, obj.Details.Tint, obj.Details.FillColor = imageId, palette.White, color
-	obj.Mask, obj.Text = scaleMask(mask), ""
+	obj.Mask, obj.Text = mask, ""
 	obj.Details.BorderSize, obj.Details.BorderColor = borderSize, borderColor
 	if imageId != 0 {
 		obj.Details.Tint, obj.Details.FillColor = color, 0
 	}
 	view.DrawObject(&obj)
+
+	if isNinePatch {
+		view.Zoom = Scale
+	}
 }
 func Rectangle(color uint, area Area, enabled bool) {
 	Object(0, 0, 0, 0, color, area, geometry.Area{}, enabled)
@@ -209,7 +223,6 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool)
 	var imgId, color = thNum(body.ImgId), thStr(body.Col)
 	var borSz, borCol = thNum(body.BorSz), thStr(body.BorCol)
 	var interact internal.GUIText
-	mask = scaleMask(mask)
 
 	handleInput(area, mask, roundness) // disabled buttons still consume their id
 	if !enabled {
@@ -252,7 +265,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 	var bodyCol, margin, inter = thStr(body.Col), thStr(val.Margin), internal.GUIText{}
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
 
-	handleInput(area, scaleMask(mask), bodyRnds) // disabled inputboxes still consume their id
+	handleInput(area, mask, bodyRnds) // disabled inputboxes still consume their id
 	if !enabled {
 		bodyImg = thNum(body.Disabled.ImgId, body.ImgId)
 		bodyBorSz = thNum(body.Disabled.BorSz)
@@ -283,7 +296,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 		inter = val.Typing
 	}
 
-	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, scaleMask(mask), false)
+	Object(assets.ImageId(bodyImg), bodyRnds, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, mask, false)
 
 	if typingIn == widgetCounter && inputIndexCursor != inputIndexSelection { //#0 typing border
 		var selRnds, selImg = thNum(sel.Rnds), assets.ImageId(thNum(sel.ImgId))
@@ -427,7 +440,6 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 	var bodyRnd, hndRnd = thNum(body.Rnds), thNum(hnd.Rnds)
 	var bodyBorSz, hndBorSz = thNum(body.BorSz), thNum(hnd.BorSz)
 	var bodyBorCol, hndBorCol = thStr(body.BorCol), thStr(hnd.BorCol)
-	mask = scaleMask(mask)
 
 	handleInput(area, mask, bodyRnd) // disabled sliders still consume their id
 	if !enabled {
@@ -536,12 +548,12 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	area.Height -= marY
 
 	if enabled {
-		handleInput(area, scaleMask(mask), 0)
+		handleInput(area, mask, 0)
 	}
 
 	obj.Details = graphics.Detail(internal.DefaultDetails)
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
-	obj.Details.TextIsInput, obj.ImageId, obj.Details.Tint, obj.Mask = isInputbox, 0, palette.White, scaleMask(mask)
+	obj.Details.TextIsInput, obj.ImageId, obj.Details.Tint, obj.Mask = isInputbox, 0, palette.White, mask
 	obj.TextFontId, obj.Text, obj.Details.TextWordWrap = assets.FontId(fontId), text, wordWrap
 	obj.Details.TextLineHeight, obj.Details.TextColor, obj.Details.TextWeight = lineH, col.TagHex(color), wgt
 	obj.Details.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 0))
@@ -555,7 +567,6 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	view.DrawObject(&obj)
 }
 
-func scaleMask(mask Area) Area { return mask }
 func getTheme(theme assets.GUIThemeId) *internal.GUITheme {
 	var th, has = internal.GUIThemes[uint16(theme)]
 	if !has {
