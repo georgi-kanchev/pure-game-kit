@@ -281,8 +281,7 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 	var atlasTex = internal.Images[fontData.ImageId].Texture
 	var sin, cos = internal.SinCos(o.Angle)
 	var shadeCol, shadeOutCol, contentWidth, contentHeight float32
-	var w, h = o.Width, o.Height
-	var txt = o.Text
+	var w, h, txt = o.Width, o.Height, o.Text
 	if eff.TextIsInput && txt == "" {
 		txt = " " // empty input string should have a cursor position
 	}
@@ -303,17 +302,32 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 		}
 	}
 	var y = o.Y - h/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(h-contentHeight)
+	var baseLineHeight, drawnHeight, pendingYAlign = eff.TextLineHeight, float32(0), false
 
-	var baseLineHeight = eff.TextLineHeight
-
-	for _, ln := range lines {
+	for i, ln := range lines {
+		if pendingYAlign {
+			y = o.Y - h/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(h-(contentHeight-drawnHeight))
+			pendingYAlign = false
+		}
 		var x = (o.X - w/2) + eff.TextAlignX*(w-ln.width)
-		var prevGlyph internal.Glyph
+		var prevGlyph, lineHasGlyphs = internal.Glyph{}, false
 
 		for _, r := range txt[ln.start:ln.end] {
+			var prevAlignX, prevAlignY = eff.TextAlignX, eff.TextAlignY
 			if !o.Details.TextIsInput && o.embedDetail(r, eff, &shadeCol, &shadeOutCol, baseLineHeight) {
+				if eff.TextAlignX != prevAlignX {
+					x = (o.X - w/2) + eff.TextAlignX*(w-ln.width)
+				}
+				if eff.TextAlignY != prevAlignY {
+					if lineHasGlyphs {
+						pendingYAlign = true
+					} else {
+						y = o.Y - h/2 - fontData.Ascender*eff.TextLineHeight + eff.TextAlignY*(h-(contentHeight-drawnHeight))
+					}
+				}
 				continue // tag symbol applies to details and gets skipped
 			}
+			lineHasGlyphs = true
 
 			var glyph = fontData.Chars[r]
 			var kerning, _ = prevGlyph.Kernings[r]
@@ -364,6 +378,10 @@ func (v *View) queueText(o *Object, mask internal.Area) {
 			o.textCursorPos = append(o.textCursorPos, endX)
 		}
 		y += eff.TextLineHeight*fontData.LineHeight + gapY
+		drawnHeight += eff.TextLineHeight * fontData.LineHeight
+		if i < len(lines)-1 {
+			drawnHeight += gapY
+		}
 	}
 	o.textWidth, o.textHeight = contentWidth, contentHeight
 }

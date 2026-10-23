@@ -55,7 +55,7 @@ func GUI() {
 			case 1:
 				gui.Text("(4 rounds)", area, mask, 0, false, false)
 			case 5:
-				gui.Text("UNIT\ntest\nhi", area, mask, 0, false, false)
+				gui.Text("⬅UNIT\n🔛test\n➡hi", area, mask, 0, false, false)
 			case 6:
 				gui.Inputbox(&input2, "mhm...", area, mask, 0, true)
 			}

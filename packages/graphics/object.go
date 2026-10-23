@@ -30,12 +30,14 @@ type Object struct {
 	//
 	//	Underline:     ✅ // toggle
 	//	Crossout:      ❎ // toggle
+	//	Word Wrap:	   🔡🔤
 	//	Weight:        ⏬🔽🔁🔼⏫
 	//	Size:          🔇🔈🔉🔊📢
 	//	Color:         ⬜⬛🟥🟧🟨🟩🟦🟪🟫
 	//	Outline Color: ⚪⚫🔴🟠🟡🟢🔵🟣🟤
 	//	Darken:        🌔🌓🌒🌑 // 20%, 40%, 60%, 80% - use before any color to darken it
 	//	Brighten:      🌘🌗🌖🌕 // 20%, 40%, 60%, 80% - use before any color to brighten it
+	//	Align:         ↖⬆↗ ⬅🔛➡ ↙⬇↘
 	Text       string
 	TextFontId assets.FontId
 
@@ -307,12 +309,45 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 	return len(o.Text), totalWidth, lineHeight
 }
 func (o *Object) embedDetail(r rune, detail *internal.Details, shadeCol, shadeOutCol *float32, baseLineHeight float32) (success bool) {
-	if r == '✅' {
+	switch r {
+	case '✅':
 		detail.TextUnderline = !detail.TextUnderline
 		return true
-	}
-	if r == '❎' {
+	case '❎':
 		detail.TextCrossout = !detail.TextCrossout
+		return true
+	case '🔡':
+		detail.TextWordWrap = true
+		return true
+	case '🔤':
+		detail.TextWordWrap = false
+		return true
+	case '↖':
+		detail.TextAlignX, detail.TextAlignY = 0, 0
+		return true
+	case '⬆':
+		detail.TextAlignX, detail.TextAlignY = 0.5, 0
+		return true
+	case '↗':
+		detail.TextAlignX, detail.TextAlignY = 1, 0
+		return true
+	case '⬅':
+		detail.TextAlignX, detail.TextAlignY = 0, 0.5
+		return true
+	case '🔛':
+		detail.TextAlignX, detail.TextAlignY = 0.5, 0.5
+		return true
+	case '➡':
+		detail.TextAlignX, detail.TextAlignY = 1, 0.5
+		return true
+	case '↙':
+		detail.TextAlignX, detail.TextAlignY = 0, 1
+		return true
+	case '⬇':
+		detail.TextAlignX, detail.TextAlignY = 0.5, 1
+		return true
+	case '↘':
+		detail.TextAlignX, detail.TextAlignY = 1, 1
 		return true
 	}
 
