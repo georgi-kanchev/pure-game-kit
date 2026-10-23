@@ -278,6 +278,15 @@ func (o *Object) measureLine(fromIndex int, lineHeight float32) (endIndex int, w
 			continue
 		}
 
+		if !o.Details.TextIsInput && r == '🔡' {
+			o.Details.TextWordWrap = true
+			continue
+		}
+		if !o.Details.TextIsInput && r == '🔤' {
+			o.Details.TextWordWrap = false
+			continue
+		}
+
 		x += prevGlyph.Kernings[r] * lineHeight
 		var glyph = font.Chars[r]
 

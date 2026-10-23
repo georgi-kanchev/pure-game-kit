@@ -55,7 +55,7 @@ func GUI() {
 			case 1:
 				gui.Text("(4 rounds)", area, mask, 0, false, false)
 			case 5:
-				gui.Text("⬅UNIT\n🔛test\n➡hi", area, mask, 0, false, false)
+				gui.Text("very 📢such🔉 a long long line still going\n🔡very such a long long line still going", area, mask, 0, false, false)
 			case 6:
 				gui.Inputbox(&input2, "mhm...", area, mask, 0, true)
 			}
@@ -71,7 +71,7 @@ func GUI() {
 		}
 
 		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
-		gui.Image(0, geometry.NewArea(-200, -200, 100, 100), true)
+		// gui.Image(0, geometry.NewArea(-200, -200, 100, 100), true)
 
 		var unitsArea, ucw, uch = layout.Box(3, 1)
 		gui.Scrolls(&hor, &ver, ucw, uch, unitsArea, 0)
