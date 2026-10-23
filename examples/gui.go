@@ -65,7 +65,11 @@ func GUI() {
 		area.Y -= 50
 
 		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
-		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
+		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, false)
+		if gui.IsJustClicked() {
+			print("hi\n")
+		}
+
 		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
 		gui.Image(0, geometry.NewArea(-200, -200, 100, 100), true)
 
@@ -89,7 +93,7 @@ func GUI() {
 			}
 		}
 
-		gui.Menu(geometry.NewArea(-1100, 0, 200, 200), gui.Area{}, 0, true, 60, menuItems...)
+		gui.Menu(geometry.NewArea(-1100, 0, 200, 200), gui.Area{}, 0, false, 60, menuItems...)
 		for i := range 5 {
 			if gui.IsMenuJustClicked(i) {
 				fmt.Printf("%v\n", menuItems[i])

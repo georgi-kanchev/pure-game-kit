@@ -51,7 +51,7 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 		return
 	}
 	if enabled {
-		handleInput(area, mask, roundness)
+		handleInput(area, mask, roundness, true)
 	}
 
 	var img = internal.Images[int32(imageId)]
@@ -137,7 +137,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 			col = thStr(hnd.Clicked.Col, hnd.Col)
 		}
 
-		handleInput(handle, Area{}, handleRound)
+		handleInput(handle, Area{}, handleRound, true)
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.X = mx // click on scroll body (not handle)
 		}
@@ -182,7 +182,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 			col = thStr(hnd.Clicked.Col, hnd.Col)
 		}
 
-		handleInput(handle, Area{}, handleRound)
+		handleInput(handle, Area{}, handleRound, true)
 		if instant && mouse.IsButtonJustPressed(button.Left) {
 			handle.Y = my // click on scroll body (not handle)
 		}
@@ -218,7 +218,7 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool)
 	var borSz, borCol = thNum(body.BorSz), thStr(body.BorCol)
 	var interact internal.GUIText
 
-	handleInput(area, mask, roundness) // disabled buttons still consume their id
+	handleInput(area, mask, roundness, enabled)
 	if !enabled {
 		imgId = thNum(body.Disabled.ImgId, body.ImgId)
 		color = thStr(body.Disabled.Col, body.Col)
@@ -256,7 +256,7 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 	var bodyCol, margin, inter = thStr(body.Col), thStr(val.Margin), internal.GUIText{}
 	var mouseInput = mouse.IsAnyButtonJustPressed() || mouse.ScrollX() != 0 || mouse.ScrollY() != 0
 
-	handleInput(area, mask, bodyRnds) // disabled inputboxes still consume their id
+	handleInput(area, mask, bodyRnds, enabled)
 	if !enabled {
 		bodyImg = thNum(body.Disabled.ImgId, body.ImgId)
 		bodyBorSz = thNum(body.Disabled.BorSz)
@@ -432,7 +432,7 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 	var bodyBorSz, hndBorSz = thNum(body.BorSz), thNum(hnd.BorSz)
 	var bodyBorCol, hndBorCol = thStr(body.BorCol), thStr(hnd.BorCol)
 
-	handleInput(area, mask, bodyRnd) // disabled sliders still consume their id
+	handleInput(area, mask, bodyRnd, enabled)
 	if !enabled {
 		hndCol = thStr(hnd.Disabled.Col, hnd.Col)
 		hndImg = thNum(hnd.Disabled.ImgId, hnd.ImgId)
@@ -499,29 +499,28 @@ func Menu(area, mask Area, theme assets.GUIThemeId, enabled bool, buttonHeight f
 		return
 	}
 
-	menuId = widgetCounter + 1 // first button's widget id
+	justClickedMenu = -1       // each menu scopes its own click queries
+	var id = widgetCounter + 1 // the first button id is used as the menu scroll key
 	var contentHeight = float32(len(buttons)) * buttonHeight
-	var scroll = menuScrolls[menuId]
+	var scroll = menuScrolls[id]
 	for i, txt := range buttons {
 		var y = area.Y - area.Height/2 + buttonHeight/2 + (float32(i) * buttonHeight)
 		y -= scroll * (contentHeight - area.Height)
 		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area, theme, enabled)
 		if IsJustClicked() {
-			justClickedMenuId, justClickedMenu = menuId, i
+			justClickedMenu = i
 		}
 	}
 
 	if contentHeight > area.Height+1 {
 		Scrolls(nil, &scroll, area.Width, contentHeight, area, theme)
 	}
-	menuScrolls[menuId] = scroll
+	menuScrolls[id] = scroll
 }
 
 // private ========================================================
 
 var view, obj = graphics.View{}, graphics.Object{}
-var menuScrolls = map[int]float32{}
-var menuId int
 
 func inputboxDeleteRuneRange(text *string, start, end int) {
 	if text == nil || *text == "" {
@@ -564,7 +563,7 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	area.Height -= marY
 
 	if enabled {
-		handleInput(area, mask, 0)
+		handleInput(area, mask, 0, true)
 	}
 
 	obj.Details = graphics.Detail(internal.DefaultDetails)

@@ -19,9 +19,7 @@ func IsJustUnfocused() bool { return lastFocused == widgetCounter && nowFocused 
 func IsClicked() bool     { return clickedWidget == widgetCounter }
 func IsJustClicked() bool { return justClickedWidget == widgetCounter }
 
-func IsMenuJustClicked(buttonIndex int) bool {
-	return justClickedMenuId == menuId && justClickedMenu == buttonIndex
-}
+func IsMenuJustClicked(buttonIndex int) bool { return justClickedMenu == buttonIndex }
 
 func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
 func IsJustDropped() bool {
@@ -46,19 +44,20 @@ func Drag() Area {
 var skipInput bool    // used for internal calls to the widget input functions only for drawing (no input)
 var widgetCounter int // resets every frame; every interactive widget MUST consume its id by calling handleInput
 // exactly once per frame, even when disabled, so that IsFocused/IsClicked/... queries made right after a
-// widget always refer to that widget. enabled only gates interaction (style, cursor, clicks), never id consumption.
+// widget always refer to that widget; enabled only gates interaction (style, cursor, clicks), never id consumption
 
 var nowHovered, lastHovered, nowFocused, lastFocused int
-var lastClickedWidget, clickedWidget, justClickedWidget, justClickedMenu, justClickedMenuId int
+var lastClickedWidget, clickedWidget, justClickedWidget, justClickedMenu int
 var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
 var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag Area
 var droppedLastFrame bool
+var menuScrolls = map[int]float32{}
 
 var lastTypingIn, typingIn, inputIndexCursor, inputIndexSelection int
 var inputCursorTimer, ax, bx, inputScroll float32
 
-func handleInput(area, mask Area, roundness float32) {
+func handleInput(area, mask Area, roundness float32, enabled bool) {
 	if skipInput {
 		return
 	}
@@ -73,7 +72,7 @@ func handleInput(area, mask Area, roundness float32) {
 			nowFocused = 0 // focus broken or shifting
 		}
 
-		lastClickedWidget, justClickedWidget, justClickedMenu, justClickedMenuId = clickedWidget, 0, -1, -1
+		lastClickedWidget, justClickedWidget, justClickedMenu = clickedWidget, 0, -1
 		if mouse.IsButtonJustPressed(button.Left) {
 			clickedWidget = nowFocused //  lock the active widget to whatever is currently hovered
 		} else if mouse.IsButtonJustReleased(button.Left) {
@@ -99,6 +98,21 @@ func handleInput(area, mask Area, roundness float32) {
 	}
 
 	widgetCounter, widgetArea = widgetCounter+1, area
+
+	if !enabled { // disabled widgets consume their id but never interact
+		if lastClickedWidget == widgetCounter {
+			lastClickedWidget = 0
+		}
+		if clickedWidget == widgetCounter {
+			clickedWidget = 0
+		}
+		if justClickedWidget == widgetCounter {
+			justClickedWidget = 0
+		}
+		if justClickedMenu == widgetCounter {
+			justClickedMenu = 0
+		}
+	}
 
 	var mx, my = view.MousePosition()
 	var shape = geometry.NewRoundedRectangle(area.X, area.Y, area.Width, area.Height, 0, roundness)
