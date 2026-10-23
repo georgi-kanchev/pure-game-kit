@@ -83,11 +83,8 @@ func Image(imageId assets.ImageId, area Area, enabled bool) {
 	Object(imageId, 0, 0, 0, palette.White, area, geometry.Area{}, enabled)
 }
 
-func Label(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
-	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Label, enabled, false, false)
-}
-func Text(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
-	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Text, enabled, true, false)
+func Text(text string, area, mask Area, theme assets.GUIThemeId, wordWrap, enabled bool) {
+	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Text, enabled, wordWrap, false)
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.GUIThemeId) {
@@ -568,7 +565,7 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 }
 
 func getTheme(theme assets.GUIThemeId) *internal.GUITheme {
-	var th, has = internal.GUIThemes[uint16(theme)]
+	var th, has = internal.GUIThemes[uint8(theme)]
 	if !has {
 		th = internal.GUIThemes[0]
 	}

@@ -42,21 +42,21 @@ func LoadGUILayout(xmlPath string) GUILayoutId {
 }
 
 func (l GUILayoutId) Unload() {
-	delete(internal.GUILayouts, uint16(l))
+	delete(internal.GUILayouts, uint8(l))
 }
 
-func (l GUILayoutId) Box(index int) (area geometry.Area, contentWidth, contentHeight float32) {
-	var layout = internal.GUILayouts[uint16(l)]
+func (l GUILayoutId) Box(index int, viewScale float32) (area geometry.Area, contentWidth, contentHeight float32) {
+	var layout = internal.GUILayouts[uint8(l)]
 	if len(layout.Boxes) == 0 {
 		return geometry.Area{}, 0, 0
 	}
 	var rx, ry, rw, rh, cw, ch = boxDynamic(layout, index, 0)
 	var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-	area = geometry.NewArea((rx+rw/2)*sc, (ry+rh/2)*sc, rw*sc, rh*sc)
+	area = geometry.NewArea((rx+rw/2)*sc*viewScale, (ry+rh/2)*sc*viewScale, rw*sc*viewScale, rh*sc*viewScale)
 	return area, cw, ch
 }
-func (l GUILayoutId) Item(index int, scrollX, scrollY float32) (area, mask geometry.Area) {
-	var layout = internal.GUILayouts[uint16(l)]
+func (l GUILayoutId) Item(index int, scrollX, scrollY, viewScale float32) (area, mask geometry.Area) {
+	var layout = internal.GUILayouts[uint8(l)]
 	if len(layout.Boxes) == 0 || index < 0 || index >= len(layout.Items) {
 		return geometry.Area{}, geometry.Area{}
 	}
@@ -66,14 +66,14 @@ func (l GUILayoutId) Item(index int, scrollX, scrollY float32) (area, mask geome
 		return geometry.Area{}, geometry.Area{} // not visible
 	}
 	var ownerId = layout.Items[index].BoxIndex
-	var o, _, _ = l.Box(int(ownerId))
-	area = geometry.NewArea((rx+rw/2)*sc, (ry+rh/2)*sc, rw*sc, rh*sc)
+	var o, _, _ = l.Box(int(ownerId), viewScale)
+	area = geometry.NewArea((rx+rw/2)*sc*viewScale, (ry+rh/2)*sc*viewScale, rw*sc*viewScale, rh*sc*viewScale)
 	mask = geometry.NewArea(o.X, o.Y, o.Width, o.Height)
 	return area, mask
 }
 
 func (l GUILayoutId) SetItemVisibility(index int, visible bool) {
-	var layout = internal.GUILayouts[uint16(l)]
+	var layout = internal.GUILayouts[uint8(l)]
 	if len(layout.Boxes) == 0 || index < 0 || index >= len(layout.Items) {
 		return
 	}
@@ -82,7 +82,7 @@ func (l GUILayoutId) SetItemVisibility(index int, visible bool) {
 	if visible {
 		item.Visible = 1
 	}
-	internal.GUILayouts[uint16(l)] = layout
+	internal.GUILayouts[uint8(l)] = layout
 }
 
 // private ========================================================

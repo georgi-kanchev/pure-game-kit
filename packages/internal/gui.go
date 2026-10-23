@@ -70,12 +70,22 @@ type GUIText struct {
 	ShBlur *float32 `xml:"shadowBlur,attr"`
 	ShOff  *string  `xml:"shadowOffset,attr"`
 }
+type GUIThemeVariants struct {
+	Variant0 *GUITheme `xml:"variant0"`
+	Variant1 *GUITheme `xml:"variant1"`
+	Variant2 *GUITheme `xml:"variant2"`
+	Variant3 *GUITheme `xml:"variant3"`
+	Variant4 *GUITheme `xml:"variant4"`
+	Variant5 *GUITheme `xml:"variant5"`
+	Variant6 *GUITheme `xml:"variant6"`
+	Variant7 *GUITheme `xml:"variant7"`
+	Variant8 *GUITheme `xml:"variant8"`
+	Variant9 *GUITheme `xml:"variant9"`
+}
 type GUITheme struct {
-	XMLName xml.Name `xml:"theme"`
-	Image   GUIImage `xml:"image"`
-	Text    GUIText  `xml:"text"`
-	Label   GUIText  `xml:"label"`
-	Button  struct {
+	VariantsCount int
+	Text          GUIText `xml:"text"`
+	Button        struct {
 		Body struct {
 			GUIImage
 			Disabled GUIImage `xml:"disabled"`
@@ -138,6 +148,6 @@ type GUITheme struct {
 	} `xml:"inputbox"`
 }
 
-var GUILayouts = make(map[uint16]*GUILayout)
-var GUIThemes = make(map[uint16]*GUITheme)
-var NextGUILayoutId, NextGUIThemeId uint16
+var GUILayouts = make(map[uint8]*GUILayout)
+var GUIThemes = make(map[uint8]*GUITheme)
+var NextGUILayoutId, NextGUIThemeId uint8

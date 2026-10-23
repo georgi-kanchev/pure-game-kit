@@ -1,58 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <theme>
-	<image imageId="0" roundness="0" color="#ffffff" borderSize="0" borderColor="#000000" />
-	<text fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="0 0" weight="0" color="#ffffff"
-    outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
-	<label fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" color="#ffffff"
-    outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
-	<button>
-		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
-			<disabled color="#555555"/>
-			<focused color="#ff8c8c"/>
-			<clicked color="#a04444"/>
-		</body>
-		<value fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" color="#ffffff"
-    	outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
-			<disabled color="#555555"/>
-			<focused color="#ff8c8c"/>
-			<clicked color="#a04444"/>
-		</value>
-	</button>
-	<scroll>
-		<body size="12" roundness="0.5" color="#0000007a"/>
-		<handle speed="40" roundness="0.5" color="#ffffff">
-			<focused color="#ff8c8c"/>
-			<clicked color="#a04444"/>
-		</handle>
-	</scroll>
-	<slider>
-		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
-			<disabled color="#555555"/>
-			<focused color="#ff8c8c"/>
-			<clicked color="#a04444"/>
-		</body>
-		<handle imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
-			<disabled color="#555555"/>
-			<focused color="#ff8c8c"/>
-			<clicked color="#a04444"/>
-		</handle>
-		<step imageId="0" roundness="0.5" color="#ffffff" borderSize="0" borderColor="#000000"/>
-	</slider>
-	<inputbox>
-		<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
-			<disabled color="#555555"/>
-			<focused color="#ff8c8c"/>
-			<typing borderColor="#ff8c8c"/>
-		</body>
-		<value fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff" lineHeight="40"
-    	outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
-			<disabled color="#555555"/>
-			<focused color="#ff8c8c"/>
-			<typing color="#ff8c8c"/>
-		</value>
-		<placeholder fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff"
-    	outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
-		<selection roundness="0.5" color="#00aeff" borderSize="-10" borderColor="#8c8c8c"/>
-		<cursor width="10" roundness="0.5" color="#ffffff"/>
-	</inputbox>
+	<variant0>
+		<text fontId="0" lineHeight="50" gap="0 0" margin="10 10" align="0 0" weight="0" color="#ffffff"
+		outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+		<button>
+			<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+				<disabled color="#555555"/>
+				<focused color="#ff8c8c"/>
+				<clicked color="#a04444"/>
+			</body>
+			<value fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" color="#ffffff"
+			outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
+				<disabled color="#555555"/>
+				<focused color="#ff8c8c"/>
+				<clicked color="#a04444"/>
+			</value>
+		</button>
+		<scroll>
+			<body size="12" roundness="0.5" color="#0000007a"/>
+			<handle speed="40" roundness="0.5" color="#ffffff">
+				<focused color="#ff8c8c"/>
+				<clicked color="#a04444"/>
+			</handle>
+		</scroll>
+		<slider>
+			<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+				<disabled color="#555555"/>
+				<focused color="#ff8c8c"/>
+				<clicked color="#a04444"/>
+			</body>
+			<handle imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+				<disabled color="#555555"/>
+				<focused color="#ff8c8c"/>
+				<clicked color="#a04444"/>
+			</handle>
+			<step imageId="0" roundness="0.5" color="#ffffff" borderSize="0" borderColor="#000000"/>
+		</slider>
+		<inputbox>
+			<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+				<disabled color="#555555"/>
+				<focused color="#ff8c8c"/>
+				<typing borderColor="#ff8c8c"/>
+			</body>
+			<value fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff" lineHeight="40"
+			outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
+				<disabled color="#555555"/>
+				<focused color="#ff8c8c"/>
+				<typing color="#ff8c8c"/>
+			</value>
+			<placeholder fontId="0" gap="0 0" margin="10 10" weight="0" color="#ffffff" outlineSize="0"
+			outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30"/>
+			<selection roundness="0.5" color="#00aeff" borderSize="-10" borderColor="#8c8c8c"/>
+			<cursor width="10" roundness="0.5" color="#ffffff"/>
+		</inputbox>
+	</variant0>
+	<variant1>
+		<button>
+			<body imageId="0" roundness="0.5" color="#ffffff" borderSize="-10" borderColor="#8c8c8c">
+				<disabled color="#79e473"/>
+				<focused color="#8cabff"/>
+				<clicked color="#8a44a0"/>
+			</body>
+			<value fontId="0" gap="0 0" margin="10 10" align="0.5 0.5" weight="0" color="#ffffff"
+			outlineSize="0" outlineColor="#000000" shadowWeight="0" shadowColor="#000000" shadowBlur="50" shadowOffset="30 30">
+				<disabled color="#555555"/>
+				<focused color="#ff8c8c"/>
+				<clicked color="#a04444"/>
+			</value>
+		</button>
+	</variant1>
 </theme>

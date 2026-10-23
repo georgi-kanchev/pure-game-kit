@@ -172,7 +172,7 @@ function buildXml() {
         resolveItems(box).forEach(({ item, x, y, w, h }) => {
             const f = item.formulas ?? {};
             lines.push(
-                `    <item name=${xmlAttr(item.name)} boxIndex="${boxIndex}" visible="${item.visible !== false ? 1 : 0}" size="${fmt(w)} ${fmt(h)}" math=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} newRowMath=${xmlAttr(fmtF(f.break))} />`,
+                `    <item name=${xmlAttr(item.name)} boxIndex="${boxIndex}" visible="${item.visible !== false ? 1 : 0}" size="${fmt(w)} ${fmt(h)}" math=${xmlAttr(`${fmtF(f.x)} ${fmtF(f.y)} ${fmtF(f.w)} ${fmtF(f.h)}`)} newRowMath=${xmlAttr(item.break ? fmtF(f.break ?? 'mnr') : '')} />`,
             );
         });
     });

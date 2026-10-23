@@ -49,9 +49,6 @@ func Init() {
 	LoadFont(fontData, 0)
 
 	var theme = &GUITheme{}
-	theme.Image = GUIImage{Col: s("#ffffff"), BorSz: f(-5), BorCol: s("#000000")}
-	theme.Label = GUIText{LineH: f(50), Margin: s("10 10"), Align: s("0.5 0.5"), Gap: s("0 0"), Col: s("#ffffff"),
-		OutCol: s("#000000"), ShCol: s("#000000"), ShBlur: f(0.15), ShOff: s("1 1")}
 	theme.Text = GUIText{LineH: f(50), Margin: s("20 20"), Align: s("0 0"), Gap: s("0 0"), Col: s("#ffffff"),
 		OutCol: s("#000000"), ShCol: s("#000000"), ShBlur: f(0.15), ShOff: s("1 1")}
 	theme.Button.Body.GUIImage = GUIImage{Rnds: f(0.5), Col: s("#949494"), BorSz: f(-8), BorCol: s("#808080")}
