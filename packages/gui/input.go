@@ -19,7 +19,9 @@ func IsJustUnfocused() bool { return lastFocused == widgetCounter && nowFocused 
 func IsClicked() bool     { return clickedWidget == widgetCounter }
 func IsJustClicked() bool { return justClickedWidget == widgetCounter }
 
-func IsMenuJustClicked(buttonIndex int) bool { return justClickedMenu == buttonIndex }
+func IsMenuJustClicked(buttonIndex int) bool {
+	return justClickedMenuId == menuId && justClickedMenu == buttonIndex
+}
 
 func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
 func IsJustDropped() bool {
@@ -47,7 +49,7 @@ var widgetCounter int // resets every frame; every interactive widget MUST consu
 // widget always refer to that widget. enabled only gates interaction (style, cursor, clicks), never id consumption.
 
 var nowHovered, lastHovered, nowFocused, lastFocused int
-var lastClickedWidget, clickedWidget, justClickedWidget, justClickedMenu int
+var lastClickedWidget, clickedWidget, justClickedWidget, justClickedMenu, justClickedMenuId int
 var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
 var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag Area
@@ -71,7 +73,7 @@ func handleInput(area, mask Area, roundness float32) {
 			nowFocused = 0 // focus broken or shifting
 		}
 
-		lastClickedWidget, justClickedWidget, justClickedMenu = clickedWidget, 0, -1
+		lastClickedWidget, justClickedWidget, justClickedMenu, justClickedMenuId = clickedWidget, 0, -1, -1
 		if mouse.IsButtonJustPressed(button.Left) {
 			clickedWidget = nowFocused //  lock the active widget to whatever is currently hovered
 		} else if mouse.IsButtonJustReleased(button.Left) {

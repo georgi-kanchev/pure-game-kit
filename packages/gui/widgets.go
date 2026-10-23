@@ -495,25 +495,33 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 }
 
 func Menu(area, mask Area, theme assets.GUIThemeId, enabled bool, buttonHeight float32, buttons ...string) {
+	if len(buttons) == 0 {
+		return
+	}
+
+	menuId = widgetCounter + 1 // first button's widget id
 	var contentHeight = float32(len(buttons)) * buttonHeight
+	var scroll = menuScrolls[menuId]
 	for i, txt := range buttons {
 		var y = area.Y - area.Height/2 + buttonHeight/2 + (float32(i) * buttonHeight)
-		y -= menuScroll * (contentHeight - area.Height)
+		y -= scroll * (contentHeight - area.Height)
 		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area, theme, enabled)
 		if IsJustClicked() {
-			justClickedMenu = i
+			justClickedMenuId, justClickedMenu = menuId, i
 		}
 	}
 
 	if contentHeight > area.Height+1 {
-		Scrolls(nil, &menuScroll, area.Width, contentHeight, area, theme)
+		Scrolls(nil, &scroll, area.Width, contentHeight, area, theme)
 	}
+	menuScrolls[menuId] = scroll
 }
 
 // private ========================================================
 
 var view, obj = graphics.View{}, graphics.Object{}
-var menuScroll float32
+var menuScrolls = map[int]float32{}
+var menuId int
 
 func inputboxDeleteRuneRange(text *string, start, end int) {
 	if text == nil || *text == "" {
