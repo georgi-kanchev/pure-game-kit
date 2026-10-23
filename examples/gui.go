@@ -1,6 +1,7 @@
 package example
 
 import (
+	"fmt"
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/graphics"
@@ -32,6 +33,7 @@ func GUI() {
 
 	gui.Scale = 1
 
+	var menuItems = []string{"item1", "item2", "item3", "item4", "item5"}
 	var hor, ver float32
 	var hor2, ver2 float32
 	var input = "hello, world! test"
@@ -62,8 +64,15 @@ func GUI() {
 		var area = gui.AreaHUD(0.5, 1, 700, 100)
 		area.Y -= 50
 
+		gui.Menu(geometry.NewArea(-300, 0, 200, 200), gui.Area{}, 0, true, 60, menuItems...)
+		for i := range 5 {
+			if gui.IsMenuJustClicked(i) {
+				fmt.Printf("menuItems[i]: %v\n", menuItems[i])
+			}
+		}
+
 		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
-		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, theme.Variant(1), true)
+		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, true)
 		gui.Slider(&s, 0, geometry.NewArea(0, 200, 200, 50), gui.Area{}, 0, true)
 		gui.Image(0, geometry.NewArea(-200, -200, 100, 100), true)
 

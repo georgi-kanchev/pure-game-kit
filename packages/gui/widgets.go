@@ -211,9 +211,6 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 	}
 }
 func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
-	if area == (Area{}) {
-		return
-	}
 	var t = getTheme(theme)
 	var body, val = t.Button.Body, t.Button.Value
 	var roundness = thNum(body.Rnds)
@@ -250,9 +247,6 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool)
 	}
 }
 func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
-	if area == (Area{}) {
-		return
-	}
 	var t, selectionCursorHeight = getTheme(theme), float32(0.85)
 	var body, val = t.Inputbox.Body, t.Inputbox.Value
 	var sel, cur = t.Inputbox.Selection, t.Inputbox.Cursor
@@ -500,9 +494,26 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 	*value = number.Snap(*value, number.Absolute(step))
 }
 
+func Menu(area, mask Area, theme assets.GUIThemeId, enabled bool, buttonHeight float32, buttons ...string) {
+	var contentHeight = float32(len(buttons)) * buttonHeight
+	for i, txt := range buttons {
+		var y = area.Y - area.Height/2 + buttonHeight/2 + (float32(i) * buttonHeight)
+		y -= menuScroll * (contentHeight - area.Height)
+		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area, theme, enabled)
+		if IsJustClicked() {
+			justClickedMenu = i
+		}
+	}
+
+	if contentHeight > area.Height+1 {
+		Scrolls(nil, &menuScroll, area.Width, contentHeight, area, theme)
+	}
+}
+
 // private ========================================================
 
 var view, obj = graphics.View{}, graphics.Object{}
+var menuScroll float32
 
 func inputboxDeleteRuneRange(text *string, start, end int) {
 	if text == nil || *text == "" {
