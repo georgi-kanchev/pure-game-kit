@@ -100,6 +100,12 @@ func handleInput(area, mask Area, roundness float32, enabled bool) {
 	widgetCounter, widgetArea = widgetCounter+1, area
 
 	if !enabled { // disabled widgets consume their id but never interact
+		if nowFocused == widgetCounter {
+			nowFocused = 0
+		}
+		if lastFocused == widgetCounter {
+			lastFocused = 0
+		}
 		if lastClickedWidget == widgetCounter {
 			lastClickedWidget = 0
 		}

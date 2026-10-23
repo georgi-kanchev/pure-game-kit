@@ -66,7 +66,7 @@ func GUI() {
 
 		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
 		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, false)
-		if gui.IsJustClicked() {
+		if gui.IsHovered() {
 			print("hi\n")
 		}
 
