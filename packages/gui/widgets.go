@@ -581,8 +581,7 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	obj.Details.TextShadowOffsetY = txt.ToNumber[float32](txt.SplitAtIndex(sOff, " ", 1))
 
 	if len(scale) == 0 {
-		var sc = internal.WindowScale()
-		obj.Details.TextLineHeight = thNum(inter.LineH, opt.LineH) * sc / Scale
+		obj.Details.TextLineHeight = thNum(inter.LineH, opt.LineH)
 	} else {
 		var lines = max(1, float32(txt.CountOccurrences(text, "\n")))
 		obj.Details.TextLineHeight = (area.Height) * scale[0] * lines

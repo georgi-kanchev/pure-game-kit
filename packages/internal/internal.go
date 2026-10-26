@@ -51,7 +51,7 @@ func Init() {
 	LoadFont(fontData, 0)
 
 	var theme = &GUITheme{}
-	theme.Text = GUIText{LineH: f(14), Margin: s("20 20"), Align: s("0 0"), Gap: s("0 0"), Col: s("#ffffff"),
+	theme.Text = GUIText{LineH: f(50), Margin: s("20 20"), Align: s("0 0"), Gap: s("0 0"), Col: s("#ffffff"),
 		OutCol: s("#000000"), ShCol: s("#000000"), ShBlur: f(0.15), ShOff: s("1 1")}
 	theme.Button.Body.GUIImage = GUIImage{Rnds: f(0.5), Col: s("#949494"), BorSz: f(-8), BorCol: s("#808080")}
 	theme.Button.Body.Focused = GUIImage{Col: s("#a8a8a8"), BorCol: s("#949494")}
@@ -95,10 +95,6 @@ func SinCos(degrees float32) (sin, cos float32) {
 	var idx = int(degrees * 10)                      // convert to index (0.1 degree precision)
 	idx = ((idx % 3600) + 3600) % 3600               // and wrap 0-3599
 	return sineTable[idx], sineTable[(idx+900)%3600] // sine is lookup, cosine is sine shifted by 90 degrees (900 indices)
-}
-
-func WindowScale() float32 {
-	return number.SquareRoot(WindowWidth*WindowHeight) / 512 * DPI
 }
 
 // private ========================================================
