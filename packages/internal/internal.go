@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"fmt"
 	"math"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/storage"
@@ -17,7 +16,7 @@ var GameBusyMicroSec, EngineBusyMicroSec int64
 //=================================================================
 
 var WindowWidth, WindowHeight float32
-var PixelScale float32 = 1
+var PixelScale, DPI float32 = 1, 1
 var Filter uint8
 var WindowHovered, WindowFocused, WindowJustResized bool
 var WindowVsync, WindowAntialias bool
@@ -37,6 +36,8 @@ func Init() {
 	}
 	DefaultMatrix = rl.MatrixIdentity()
 	DefaultMaterial = rl.LoadMaterialDefault()
+
+	DPI = rl.GetWindowScaleDPI().X
 
 	var img = rl.LoadImageFromMemory(".png", defaultFontAtlas, int32(len(defaultFontAtlas)))
 	var tex = rl.LoadTextureFromImage(img)
@@ -97,8 +98,7 @@ func SinCos(degrees float32) (sin, cos float32) {
 }
 
 func WindowScale() float32 {
-	fmt.Printf("rl.GetWindowScaleDPI(): %v\n", rl.GetWindowScaleDPI())
-	return number.SquareRoot(WindowWidth*WindowHeight) / 512
+	return number.SquareRoot(WindowWidth*WindowHeight) / 512 * DPI
 }
 
 // private ========================================================
