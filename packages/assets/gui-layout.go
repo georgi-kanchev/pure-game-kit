@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/file"
+	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/storage"
 	"pure-game-kit/packages/utility/text"
 )
@@ -50,8 +51,9 @@ func (l GUILayoutId) Box(index int, viewScale float32) (area geometry.Area, cont
 		return geometry.Area{}, 0, 0
 	}
 	var rx, ry, rw, rh, cw, ch = boxDynamic(layout, index, 0)
-	area = geometry.NewArea((rx+rw/2)*viewScale, (ry+rh/2)*viewScale, rw*viewScale, rh*viewScale)
-	return area, cw, ch
+	var scale = viewScale * layoutFitScale(layout)
+	area = geometry.NewArea((rx+rw/2)*scale, (ry+rh/2)*scale, rw*scale, rh*scale)
+	return area, cw * scale, ch * scale
 }
 func (l GUILayoutId) Item(index int, scrollX, scrollY, viewScale float32) (area, mask geometry.Area) {
 	var layout = internal.GUILayouts[uint8(l)]
@@ -64,7 +66,8 @@ func (l GUILayoutId) Item(index int, scrollX, scrollY, viewScale float32) (area,
 	}
 	var ownerId = layout.Items[index].BoxIndex
 	var o, _, _ = l.Box(int(ownerId), viewScale)
-	area = geometry.NewArea((rx+rw/2)*viewScale, (ry+rh/2)*viewScale, rw*viewScale, rh*viewScale)
+	var scale = viewScale * layoutFitScale(layout)
+	area = geometry.NewArea((rx+rw/2)*scale, (ry+rh/2)*scale, rw*scale, rh*scale)
 	mask = geometry.NewArea(o.X, o.Y, o.Width, o.Height)
 	return area, mask
 }
@@ -86,6 +89,21 @@ func (l GUILayoutId) SetItemVisibility(index int, visible bool) {
 
 var activeVars *internal.GUILayoutVars
 
+func layoutViewSize(layout *internal.GUILayout) (width, height float32) {
+	// mirrors the ui-layout-editor view size so formulas evaluate
+	// exactly as they do in the editor: round(512*sqrt(aspect)) x round(512/sqrt(aspect))
+	var s = number.SquareRoot[float32](16.0 / 9.0)
+	return number.Round(512 * s), number.Round(512 / s)
+}
+func layoutFitScale(layout *internal.GUILayout) float32 {
+	// uniformly fits the layout's virtual screen into the window,
+	// preserving the authored aspect ratio (letterboxed on mismatched aspects)
+	var vw, vh = layoutViewSize(layout)
+	if vw <= 0 || vh <= 0 {
+		return 1
+	}
+	return min(internal.WindowWidth/vw, internal.WindowHeight/vh)
+}
 func boxTargets(targets, target string) string {
 	if targets != "" {
 		return targets
@@ -98,7 +116,7 @@ func boxDynamic(layout *internal.GUILayout, boxIndex int, depth int) (x, y, w, h
 	}
 
 	var box = &layout.Boxes[boxIndex]
-	var ew, eh float32 = internal.WindowWidth, internal.WindowHeight
+	var ew, eh = layoutViewSize(layout)
 
 	box.Vars = internal.GUILayoutVars{}
 	box.Vars.Mx = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 0))
