@@ -76,8 +76,8 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 		view.Zoom = Scale
 	}
 }
-func Rectangle(color uint, area Area, enabled bool) {
-	Object(0, 0, 0, 0, color, area, geometry.Area{}, enabled)
+func Rectangle(color uint, area, mask Area, enabled bool) {
+	Object(0, 0, 0, 0, color, area, mask, enabled)
 }
 func Image(imageId assets.ImageId, area Area, enabled bool) {
 	Object(imageId, 0, 0, 0, palette.White, area, geometry.Area{}, enabled)
