@@ -51,11 +51,11 @@ func GUI() {
 
 			switch i {
 			case 0:
-				gui.Text("Victory", area, mask, 0, true, false)
+				gui.Text("🔛Victory", area, mask, 0, false, 1)
 			case 1:
-				gui.Text("(4 rounds)", area, mask, 0, true, false)
+				gui.Text("🔛(4 rounds)", area, mask, 0, false, 1)
 			case 5:
-				gui.Text("very 📢such🔉 a long long line still going\n🔡very such a long long line still going", area, mask, 0, false, false)
+				gui.Text("➡right⬅left", area, mask, 0, false)
 			case 6:
 				gui.Inputbox(&input2, "mhm...", area, mask, 0, true)
 			}
@@ -65,7 +65,7 @@ func GUI() {
 		area.Y -= 50
 
 		gui.Inputbox(&input, "enter name...", area, gui.Area{}, 0, true)
-		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, false)
+		gui.Button("button", geometry.NewArea(0, 0, 200, 50), gui.Area{}, 0, false, 1)
 		if gui.IsHovered() {
 			print("hi\n")
 		}

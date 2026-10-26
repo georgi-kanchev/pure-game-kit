@@ -83,8 +83,8 @@ func Image(imageId assets.ImageId, area Area, enabled bool) {
 	Object(imageId, 0, 0, 0, palette.White, area, geometry.Area{}, enabled)
 }
 
-func Text(text string, area, mask Area, theme assets.GUIThemeId, fitHeight, enabled bool) {
-	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Text, enabled, fitHeight, false)
+func Text(text string, area, mask Area, theme assets.GUIThemeId, enabled bool, scale ...float32) {
+	handleText(text, area, mask, internal.GUIText{}, getTheme(theme).Text, enabled, false, scale...)
 }
 
 func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32, area Area, theme assets.GUIThemeId) {
@@ -210,7 +210,7 @@ func Scrolls(horizontal, vertical *float32, contentWidth, contentHeight float32,
 		Object(0, handleRound, 0, 0, color.TagHex(col), handle, Area{}, false)
 	}
 }
-func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
+func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool, textScale ...float32) {
 	var t = getTheme(theme)
 	var body, val = t.Button.Body, t.Button.Value
 	var roundness = thNum(body.Rnds)
@@ -243,7 +243,7 @@ func Button(text string, area, mask Area, theme assets.GUIThemeId, enabled bool)
 	}
 	Object(assets.ImageId(imgId), roundness, borSz, col.TagHex(borCol), col.TagHex(color), area, mask, false)
 	if text != "" {
-		handleText(text, area, mask, interact, val.GUIText, false, true, false)
+		handleText(text, area, mask, interact, val.GUIText, false, false, textScale...)
 	}
 }
 func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GUIThemeId, enabled bool) {
@@ -305,10 +305,10 @@ func Inputbox(text *string, placeholder string, area, mask Area, theme assets.GU
 
 	var valueArea = geometry.NewArea(x, area.Y, valueWidth, area.Height) //#2 text render
 	if *text == "" {
-		handleText(placeholder, valueArea, area.Intersect(mask), internal.GUIText{}, plh, false, true, false)
+		handleText(placeholder, valueArea, area.Intersect(mask), internal.GUIText{}, plh, false, false, 1)
 	} else {
 		inter.Margin = &margin
-		handleText(*text, valueArea, area.Intersect(mask), inter, val.GUIText, false, true, true)
+		handleText(*text, valueArea, area.Intersect(mask), inter, val.GUIText, false, true, 1)
 	} //#
 
 	var a, b = min(inputIndexCursor, inputIndexSelection), max(inputIndexCursor, inputIndexSelection) //#3 cursor
@@ -506,7 +506,7 @@ func List(area, mask Area, theme assets.GUIThemeId, enabled bool, buttonHeight f
 	for i, txt := range buttons {
 		var y = area.Y - area.Height/2 + buttonHeight/2 + (float32(i) * buttonHeight)
 		y -= scroll * (contentHeight - area.Height)
-		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area.Intersect(mask), theme, enabled)
+		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area.Intersect(mask), theme, enabled, 1)
 		if IsJustClicked() {
 			justClickedMenu = i
 		}
@@ -546,18 +546,11 @@ func inputboxTryShiftSelect() {
 	}
 }
 
-func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabled, fitHeight, isInputbox bool) {
+func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabled, isInputbox bool, scale ...float32) {
 	if area == (Area{}) || text == "" {
 		return
 	}
 
-	var lineH float32
-	if fitHeight {
-		lineH = area.Height * 0.8 * max(1, float32(txt.CountOccurrences(text, "\n")))
-	} else {
-		var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
-		lineH = thNum(inter.LineH, opt.LineH) * sc / Scale
-	}
 	var fontId, color = thNum(inter.FontId, opt.FontId), thStr(inter.Col, opt.Col)
 	var wgt, align = thNum(inter.Wgt, opt.Wgt), thStr(inter.Align, opt.Align, new("0.5 0.5"))
 	var gap, mar = thStr(inter.Gap, opt.Gap, new("0 0")), thStr(inter.Margin, opt.Margin, new("0 0"))
@@ -577,7 +570,7 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	obj.X, obj.Y, obj.Width, obj.Height, obj.Roundness = area.X, area.Y, area.Width, area.Height, 0
 	obj.Details.TextIsInput, obj.ImageId, obj.Details.Tint, obj.Mask = isInputbox, 0, palette.White, mask
 	obj.TextFontId, obj.Text, obj.Details.TextWordWrap = assets.FontId(fontId), text, false
-	obj.Details.TextLineHeight, obj.Details.TextColor, obj.Details.TextWeight = lineH, col.TagHex(color), wgt
+	obj.Details.TextColor, obj.Details.TextWeight = col.TagHex(color), wgt
 	obj.Details.TextAlignX = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 0))
 	obj.Details.TextAlignY = txt.ToNumber[float32](txt.SplitAtIndex(align, " ", 1))
 	obj.Details.TextSymbolGap = txt.ToNumber[float32](txt.SplitAtIndex(gap, " ", 0))
@@ -586,6 +579,15 @@ func handleText(text string, area, mask Area, inter, opt internal.GUIText, enabl
 	obj.Details.TextShadowWeight, obj.Details.TextShadowColor = sWgt, col.TagHex(sCol)
 	obj.Details.TextShadowOffsetX = txt.ToNumber[float32](txt.SplitAtIndex(sOff, " ", 0))
 	obj.Details.TextShadowOffsetY = txt.ToNumber[float32](txt.SplitAtIndex(sOff, " ", 1))
+
+	if len(scale) == 0 {
+		var sc = number.SquareRoot(internal.WindowWidth*internal.WindowHeight) / 512
+		obj.Details.TextLineHeight = thNum(inter.LineH, opt.LineH) * sc / Scale
+	} else {
+		var lines = max(1, float32(txt.CountOccurrences(text, "\n")))
+		obj.Details.TextLineHeight = (area.Height) * scale[0] * lines
+	}
+
 	view.DrawObject(&obj)
 }
 
