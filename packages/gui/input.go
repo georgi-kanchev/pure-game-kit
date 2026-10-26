@@ -52,7 +52,7 @@ var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
 var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag Area
 var droppedLastFrame bool
-var menuScrolls = map[int]float32{}
+var listScrolls = map[int]float32{}
 
 var lastTypingIn, typingIn, inputIndexCursor, inputIndexSelection int
 var inputCursorTimer, ax, bx, inputScroll float32

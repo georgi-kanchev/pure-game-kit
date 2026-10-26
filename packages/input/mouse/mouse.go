@@ -1,6 +1,9 @@
 package mouse
 
-import i "pure-game-kit/packages/internal"
+import (
+	"pure-game-kit/packages/input/mouse/button"
+	i "pure-game-kit/packages/internal"
+)
 
 func SetCursor(cursor int) { i.Cursor = cursor }
 
@@ -11,9 +14,9 @@ func ScrollSmoothY() float32 { return i.SmoothScrollY }
 func ScrollX() float32       { return i.ScrollX }       // laptop touchpad has it
 func ScrollSmoothX() float32 { return i.SmoothScrollX } // laptop touchpad has it
 
-func IsButtonPressed(button int) bool      { return i.Btns[button] }
-func IsButtonJustPressed(button int) bool  { return i.Btns[button] && !i.BtnsPrev[button] }
-func IsButtonJustReleased(button int) bool { return !i.Btns[button] && i.BtnsPrev[button] }
+func IsButtonPressed(button button.Enum) bool      { return i.Btns[button] }
+func IsButtonJustPressed(button button.Enum) bool  { return i.Btns[button] && !i.BtnsPrev[button] }
+func IsButtonJustReleased(button button.Enum) bool { return !i.Btns[button] && i.BtnsPrev[button] }
 
 func IsAnyButtonPressed() bool      { return i.AnyBtn }
 func IsAnyButtonJustPressed() bool  { return i.AnyBtn && !i.AnyBtnPrev }

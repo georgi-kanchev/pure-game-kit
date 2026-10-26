@@ -1,7 +1,9 @@
 // Contains all mouse buttons as constants, as well as a way to convert them to & from their name.
 package button
 
-const Left, Right, Middle, Extra1, Extra2 = 0, 1, 2, 3, 4
+type Enum uint8
+
+const Left, Right, Middle, Extra1, Extra2 Enum = 0, 1, 2, 3, 4
 
 func ToName(button int) string {
 	var value, has = buttonNames[button]

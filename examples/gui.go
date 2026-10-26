@@ -51,9 +51,9 @@ func GUI() {
 
 			switch i {
 			case 0:
-				gui.Text("Victory", area, mask, 0, false, false)
+				gui.Text("Victory", area, mask, 0, true, false)
 			case 1:
-				gui.Text("(4 rounds)", area, mask, 0, false, false)
+				gui.Text("(4 rounds)", area, mask, 0, true, false)
 			case 5:
 				gui.Text("very 📢such🔉 a long long line still going\n🔡very such a long long line still going", area, mask, 0, false, false)
 			case 6:
@@ -86,14 +86,14 @@ func GUI() {
 			}
 		}
 
-		gui.Menu(geometry.NewArea(1100, 0, 200, 200), gui.Area{}, 0, true, 60, menuItems...)
+		gui.List(geometry.NewArea(1100, 0, 200, 200), gui.Area{}, 0, true, 60, menuItems...)
 		for i := range 5 {
 			if gui.IsMenuJustClicked(i) {
 				fmt.Printf("menuItems[i]: %v\n", menuItems[i])
 			}
 		}
 
-		gui.Menu(geometry.NewArea(-1100, 0, 200, 200), gui.Area{}, 0, false, 60, menuItems...)
+		gui.List(geometry.NewArea(-1100, 0, 200, 200), gui.Area{}, 0, false, 60, menuItems...)
 		for i := range 5 {
 			if gui.IsMenuJustClicked(i) {
 				fmt.Printf("%v\n", menuItems[i])
