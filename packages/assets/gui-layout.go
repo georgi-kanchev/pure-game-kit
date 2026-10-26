@@ -4,7 +4,6 @@ import (
 	"pure-game-kit/packages/geometry"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/file"
-	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/storage"
 	"pure-game-kit/packages/utility/text"
 )
@@ -51,7 +50,7 @@ func (l GUILayoutId) Box(index int, viewScale float32) (area geometry.Area, cont
 		return geometry.Area{}, 0, 0
 	}
 	var rx, ry, rw, rh, cw, ch = boxDynamic(layout, index, 0)
-	var sc = internal.WindowWidth / internal.WindowHeight
+	var sc = float32(1) // internal.WindowWidth / internal.WindowHeight
 	area = geometry.NewArea((rx+rw/2)*sc*viewScale, (ry+rh/2)*sc*viewScale, rw*sc*viewScale, rh*sc*viewScale)
 	return area, cw, ch
 }
@@ -60,14 +59,13 @@ func (l GUILayoutId) Item(index int, scrollX, scrollY, viewScale float32) (area,
 	if len(layout.Boxes) == 0 || index < 0 || index >= len(layout.Items) {
 		return geometry.Area{}, geometry.Area{}
 	}
-	var sc = internal.WindowWidth / internal.WindowHeight
-	var rx, ry, rw, rh, rv = itemDynamic(layout, index, scrollX, scrollY, sc, sc)
+	var rx, ry, rw, rh, rv = itemDynamic(layout, index, scrollX, scrollY)
 	if !rv {
 		return geometry.Area{}, geometry.Area{} // not visible
 	}
 	var ownerId = layout.Items[index].BoxIndex
 	var o, _, _ = l.Box(int(ownerId), viewScale)
-	area = geometry.NewArea((rx+rw/2)*sc*viewScale, (ry+rh/2)*sc*viewScale, rw*sc*viewScale, rh*sc*viewScale)
+	area = geometry.NewArea((rx+rw/2)*viewScale, (ry+rh/2)*viewScale, rw*viewScale, rh*viewScale)
 	mask = geometry.NewArea(o.X, o.Y, o.Width, o.Height)
 	return area, mask
 }
@@ -101,8 +99,7 @@ func boxDynamic(layout *internal.GUILayout, boxIndex int, depth int) (x, y, w, h
 	}
 
 	var box = &layout.Boxes[boxIndex]
-	var ew = 512 * number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
-	var eh = 512 / number.SquareRoot(internal.WindowWidth/internal.WindowHeight)
+	var ew, eh float32 = internal.WindowWidth, internal.WindowHeight
 
 	box.Vars = internal.GUILayoutVars{}
 	box.Vars.Mx = text.ToNumber[float32](text.SplitAtIndex(box.Rectangle, " ", 0))
@@ -153,7 +150,7 @@ func boxDynamic(layout *internal.GUILayout, boxIndex int, depth int) (x, y, w, h
 	var rh = text.Calculate(text.SplitAtIndex(box.Math, " ", 3), variable)
 	return rx, ry, rw, rh, box.ContentWidth, box.ContentHeight
 }
-func itemDynamic(layout *internal.GUILayout, itemId int, scrollX, scrollY, scX, scY float32) (x, y, w, h float32, vis bool) {
+func itemDynamic(layout *internal.GUILayout, itemId int, scrollX, scrollY float32) (x, y, w, h float32, vis bool) {
 	var item = &layout.Items[itemId]
 	var boxIndex = int(item.BoxIndex)
 	var box = &layout.Boxes[boxIndex]
@@ -232,7 +229,7 @@ func itemDynamic(layout *internal.GUILayout, itemId int, scrollX, scrollY, scX, 
 	item.Vars.Mw, item.Vars.Mh = defW, defH
 	item.Vars.Mx, item.Vars.My = item.Vars.Mx-(max(0, maxX-(bx+bw))*scrollX), item.Vars.My-(max(0, maxY-(by+bh))*scrollY)
 
-	box.ContentWidth, box.ContentHeight = (maxX-bx)*scX-1, (maxY-by)*scY-1
+	box.ContentWidth, box.ContentHeight = (maxX-bx)-1, (maxY-by)-1
 
 	var rx = text.Calculate(text.SplitAtIndex(item.Expression, " ", 0), variable)
 	var ry = text.Calculate(text.SplitAtIndex(item.Expression, " ", 1), variable)
