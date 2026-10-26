@@ -50,8 +50,7 @@ func (l GUILayoutId) Box(index int, viewScale float32) (area geometry.Area, cont
 		return geometry.Area{}, 0, 0
 	}
 	var rx, ry, rw, rh, cw, ch = boxDynamic(layout, index, 0)
-	var sc = float32(1) // internal.WindowWidth / internal.WindowHeight
-	area = geometry.NewArea((rx+rw/2)*sc*viewScale, (ry+rh/2)*sc*viewScale, rw*sc*viewScale, rh*sc*viewScale)
+	area = geometry.NewArea((rx+rw/2)*viewScale, (ry+rh/2)*viewScale, rw*viewScale, rh*viewScale)
 	return area, cw, ch
 }
 func (l GUILayoutId) Item(index int, scrollX, scrollY, viewScale float32) (area, mask geometry.Area) {
