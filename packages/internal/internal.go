@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"math"
 	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/storage"
@@ -93,6 +94,11 @@ func SinCos(degrees float32) (sin, cos float32) {
 	var idx = int(degrees * 10)                      // convert to index (0.1 degree precision)
 	idx = ((idx % 3600) + 3600) % 3600               // and wrap 0-3599
 	return sineTable[idx], sineTable[(idx+900)%3600] // sine is lookup, cosine is sine shifted by 90 degrees (900 indices)
+}
+
+func WindowScale() float32 {
+	fmt.Printf("rl.GetWindowScaleDPI(): %v\n", rl.GetWindowScaleDPI())
+	return number.SquareRoot(WindowWidth*WindowHeight) / 512
 }
 
 // private ========================================================
