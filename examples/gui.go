@@ -86,16 +86,16 @@ func GUI() {
 			}
 		}
 
-		gui.List(geometry.NewArea(1100, 0, 200, 200), gui.Area{}, 0, true, 60, menuItems...)
+		gui.List(geometry.NewArea(1100, 0, 200, 200), gui.Area{}, 0, true, 1, 60, menuItems...)
 		for i := range 5 {
-			if gui.IsMenuJustClicked(i) {
+			if gui.IsListJustClicked(i) {
 				fmt.Printf("menuItems[i]: %v\n", menuItems[i])
 			}
 		}
 
-		gui.List(geometry.NewArea(-1100, 0, 200, 200), gui.Area{}, 0, false, 60, menuItems...)
+		gui.List(geometry.NewArea(-1100, 0, 200, 200), gui.Area{}, 0, false, 1, 60, menuItems...)
 		for i := range 5 {
-			if gui.IsMenuJustClicked(i) {
+			if gui.IsListJustClicked(i) {
 				fmt.Printf("%v\n", menuItems[i])
 			}
 		}

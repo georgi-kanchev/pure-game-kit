@@ -246,7 +246,7 @@ func itemDynamic(layout *internal.GUILayout, itemId int, scrollX, scrollY float3
 	item.Vars.Mw, item.Vars.Mh = defW, defH
 	item.Vars.Mx, item.Vars.My = item.Vars.Mx-(max(0, maxX-(bx+bw))*scrollX), item.Vars.My-(max(0, maxY-(by+bh))*scrollY)
 
-	box.ContentWidth, box.ContentHeight = (maxX-bx)-1, (maxY-by)-1
+	box.ContentWidth, box.ContentHeight = (maxX-bx)-0.1, (maxY-by)-0.1 // no precission errors
 
 	var rx = text.Calculate(text.SplitAtIndex(item.Expression, " ", 0), variable)
 	var ry = text.Calculate(text.SplitAtIndex(item.Expression, " ", 1), variable)

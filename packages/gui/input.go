@@ -19,7 +19,7 @@ func IsJustUnfocused() bool { return lastFocused == widgetCounter && nowFocused 
 func IsClicked() bool     { return clickedWidget == widgetCounter }
 func IsJustClicked() bool { return justClickedWidget == widgetCounter }
 
-func IsMenuJustClicked(buttonIndex int) bool { return justClickedMenu == buttonIndex }
+func IsListJustClicked(buttonIndex int) bool { return justClickedMenu == buttonIndex }
 
 func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
 func IsJustDropped() bool {

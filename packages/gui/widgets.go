@@ -494,7 +494,7 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 	*value = number.Snap(*value, number.Absolute(step))
 }
 
-func List(area, mask Area, theme assets.GUIThemeId, enabled bool, buttonHeight float32, buttons ...string) {
+func List(area, mask Area, theme assets.GUIThemeId, enabled bool, textScale, buttonHeight float32, buttons ...string) {
 	if len(buttons) == 0 {
 		return
 	}
@@ -506,7 +506,7 @@ func List(area, mask Area, theme assets.GUIThemeId, enabled bool, buttonHeight f
 	for i, txt := range buttons {
 		var y = area.Y - area.Height/2 + buttonHeight/2 + (float32(i) * buttonHeight)
 		y -= scroll * (contentHeight - area.Height)
-		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area.Intersect(mask), theme, enabled, 1)
+		Button(txt, geometry.NewArea(area.X, y, area.Width-4, buttonHeight), area.Intersect(mask), theme, enabled, textScale)
 		if IsJustClicked() {
 			justClickedMenu = i
 		}
