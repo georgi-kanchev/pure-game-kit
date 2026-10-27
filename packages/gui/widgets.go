@@ -60,6 +60,7 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 		var sc = ScaleNinePatches / Scale
 		view.Zoom = ScaleNinePatches
 		area.X, area.Y, area.Width, area.Height = area.X/sc, area.Y/sc, area.Width/sc, area.Height/sc
+		mask.X, mask.Y, mask.Width, mask.Height = mask.X/sc, mask.Y/sc, mask.Width/sc, mask.Height/sc
 	}
 
 	obj.Details = graphics.Detail(internal.DefaultDetails)
@@ -506,7 +507,7 @@ func List(area, mask Area, theme assets.GUIThemeId, enabled bool, textScale, but
 	for i, txt := range buttons {
 		var y = area.Y - area.Height/2 + buttonHeight/2 + (float32(i) * buttonHeight)
 		y -= scroll * (contentHeight - area.Height)
-		Button(txt, geometry.NewArea(area.X, y, area.Width-4, buttonHeight), area.Intersect(mask), theme, enabled, textScale)
+		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area.Intersect(mask), theme, enabled, textScale)
 		if IsJustClicked() {
 			justClickedMenu = i
 		}
