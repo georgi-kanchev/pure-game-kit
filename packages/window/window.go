@@ -131,6 +131,10 @@ func SetQuality(pixelScale float32, filter f.Enum) {
 }
 
 func MoveToMonitor(monitor int) {
+	if rl.GetCurrentMonitor() == monitor {
+		return
+	}
+
 	var wasMax = rl.IsWindowMaximized()
 	if wasMax {
 		rl.RestoreWindow()
