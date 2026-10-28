@@ -254,6 +254,7 @@ func Draw() {
 				rl.UnloadRenderTexture(renderTex)
 			}
 			renderTex = rl.LoadRenderTexture(rw, rh)
+			prevFilter = 255 // invalidate filter
 		}
 		if Filter != prevFilter {
 			rl.SetTextureFilter(renderTex.Texture, rl.TextureFilterMode(Filter))
