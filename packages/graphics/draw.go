@@ -99,15 +99,11 @@ func (v *View) DrawObject(object *Object) {
 		return
 	}
 
-	// var prevImageId = o.ImageId
 	if o.Text != "" {
 		if o.Details.TextBatch {
 			internal.IsRecording = true
 			internal.CurrentBatchRecord = make([]*internal.Batch, 0)
 		}
-		// if prevImageId == 0 { // shapes can use any texture but any non-0 TextFontId will break the batch, so force it
-		// 	o.ImageId = assets.ImageId(o.TextFontId)
-		// }
 	}
 
 	var mask = internal.Area(o.Mask)
@@ -154,7 +150,6 @@ func (v *View) DrawObject(object *Object) {
 			}
 		}
 	}
-	// o.ImageId = prevImageId
 }
 func (v *View) DrawDebugInfo(detailed bool) {
 	if condition.TrueEvery(0.2, 0xdeadc0de) {

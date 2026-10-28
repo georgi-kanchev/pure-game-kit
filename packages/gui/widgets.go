@@ -479,9 +479,11 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 		var minX, maxX, stepCol = left + area.Height/2, right - area.Height/2, col.TagHex(thStr(tStep.Col))
 		var stepImg, stepRnd = thNum(tStep.ImgId), thNum(tStep.Rnds)
 		var stepBorSz, stepBorCol = thNum(tStep.BorSz), col.TagHex(thStr(tStep.BorCol))
-		for t := float32(0.0); t <= 1.0+0.001; t += step {
-			var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
-			Object(assets.ImageId(stepImg), stepRnd, stepBorSz, stepBorCol, stepCol, stepArea, mask, false)
+		if stepImg != 0 && stepCol != 0 {
+			for t := float32(0.0); t <= 1.0+0.001; t += step {
+				var stepArea = geometry.NewArea(number.Map(t, 0, 1, minX, maxX), area.Y, stepSize, stepSize)
+				Object(assets.ImageId(stepImg), stepRnd, stepBorSz, stepBorCol, stepCol, stepArea, mask, false)
+			}
 		}
 	}
 	Object(assets.ImageId(bodyImg), bodyRnd, bodyBorSz, col.TagHex(bodyBorCol), col.TagHex(bodyCol), area, mask, false)
@@ -500,8 +502,8 @@ func List(area, mask Area, theme assets.GUIThemeId, enabled bool, textScale, but
 		return
 	}
 
-	justClickedMenu = -1       // each menu scopes its own click queries
-	var id = widgetCounter + 1 // the first button id is used as the menu scroll key
+	justClickedList = -1       // each list scopes its own click queries
+	var id = widgetCounter + 1 // the first button id is used as the list scroll key
 	var contentHeight = float32(len(buttons)) * buttonHeight
 	var scroll = listScrolls[id]
 	for i, txt := range buttons {
@@ -509,7 +511,7 @@ func List(area, mask Area, theme assets.GUIThemeId, enabled bool, textScale, but
 		y -= scroll * (contentHeight - area.Height)
 		Button(txt, geometry.NewArea(area.X, y, area.Width, buttonHeight), area.Intersect(mask), theme, enabled, textScale)
 		if IsJustClicked() {
-			justClickedMenu = i
+			justClickedList = i
 		}
 	}
 

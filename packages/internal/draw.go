@@ -145,7 +145,7 @@ func Queue(tex, tiles rl.Texture2D, src, dst rl.Rectangle, ang, round float32, m
 
 	var r, g, b, a = col.Channels(palette.White)
 	var u [33]float32
-	var borderSz = eff.BorderSize * ViewZoom
+	var borderSz = eff.BorderSize * ViewZoom / PixelScale
 	var padU, padV float32
 	if kind != KindText && borderSz > 0 { // no border padding for text symbols
 		padU, padV = borderSz*(u2-u1)/dst.Width, borderSz*(v2-v1)/dst.Height
