@@ -1,9 +1,12 @@
 package internal
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+	rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 var Sounds = make(map[int16][]rl.Sound) // [0]soundData; [1].FrameCount = playIndex; [2...]soundAliases
 var Music = make(map[int16]rl.Music)
+var AudioVariations = make(map[int16][]int16) // works for both Sounds & Music
 
 func GetSound(id int16, prepareNext bool) rl.Sound {
 	var sounds = Sounds[id]

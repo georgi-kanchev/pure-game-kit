@@ -28,6 +28,7 @@ var ScaleNinePatches float32 = 1
 //
 // width/height 0..1 = screen edge percent, > 1 = absolute screen pixels
 func AreaHUD(horizontal, vertical, width, height float32) Area {
+	view.Zoom = Scale
 	if width >= 0 && width <= 1 {
 		var w, _ = view.Size()
 		width = w * width
@@ -37,7 +38,7 @@ func AreaHUD(horizontal, vertical, width, height float32) Area {
 		height = h * height
 	}
 
-	width, height, view.Zoom = width*Scale, height*Scale, Scale
+	width, height = width, height
 	var tlx, tly = view.PointFromEdge(0, 0)
 	var brx, bry = view.PointFromEdge(1, 1)
 	var x, y = number.Map(horizontal, 0, 1, tlx+width/2, brx-width/2), number.Map(vertical, 0, 1, tly+height/2, bry-height/2)

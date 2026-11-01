@@ -10,7 +10,7 @@ import (
 
 type AudioId int16
 
-func LoadSound(filePath string, maxOverlapCount uint8) AudioId {
+func LoadSound(maxOverlapCount uint8, filePath string) AudioId {
 	if !rl.IsAudioDeviceReady() {
 		rl.InitAudioDevice()
 		rl.SetAudioStreamBufferSizeDefault(4096)
@@ -60,6 +60,18 @@ func LoadMusic(filePath string) AudioId {
 	var id = len(internal.Music) + 1
 	internal.Music[int16(-id)] = music
 	return AudioId(-id)
+}
+func LoadVariations(audioIds ...AudioId) AudioId {
+	if len(audioIds) == 0 {
+		return 0
+	}
+	var id = len(internal.Sounds) + 1 // using Sound ids (positive), where []rl.Sound == nil is a reserved variation id
+	internal.Sounds[int16(id)] = nil
+	internal.AudioVariations[int16(id)] = make([]int16, len(audioIds))
+	for i := range audioIds {
+		internal.AudioVariations[int16(id)][i] = int16(audioIds[i])
+	}
+	return AudioId(id)
 }
 
 func (a AudioId) Duration() float32 {
