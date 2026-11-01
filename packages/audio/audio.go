@@ -4,6 +4,7 @@ import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/internal"
 	"pure-game-kit/packages/utility/number"
+	"pure-game-kit/packages/utility/random"
 	"slices"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -26,8 +27,62 @@ func New(assetId assets.AudioId) Audio {
 //=================================================================
 
 func (a *Audio) Play() {
-	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
-	var music, hasMusic = internal.Music[int16(a.AssetId)]
+	a.play(a.getAudioId())
+}
+func (a *Audio) Pause() {
+	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
+	if isVariation {
+		for _, v := range variations {
+			a.pause(v)
+		}
+	}
+}
+func (a *Audio) Stop() {
+	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
+	if isVariation {
+		for _, v := range variations {
+			a.stop(v)
+		}
+	}
+}
+
+func (a *Audio) ApplyProperties() {
+	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
+	if isVariation {
+		for _, v := range variations {
+			a.applyProperties(v)
+		}
+	}
+}
+
+func (a *Audio) IsPlaying() bool {
+	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
+	if isVariation {
+		for _, v := range variations {
+			if a.isPlaying(v) {
+				return true
+			}
+		}
+	}
+	return false
+}
+func (a *Audio) IsJustFinished() bool {
+	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
+	if isVariation {
+		for _, v := range variations {
+			if a.isJustFinished(v) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// private ========================================================
+
+func (a *Audio) play(assetId int16) {
+	var sounds, hasSound = internal.Sounds[assetId]
+	var music, hasMusic = internal.Music[assetId]
 
 	a.finishedReported = false
 	a.ApplyProperties()
@@ -48,12 +103,12 @@ func (a *Audio) Play() {
 
 	a.playTime = internal.Runtime
 	if hasSound {
-		rl.PlaySound(internal.GetSound(int16(a.AssetId), true))
+		rl.PlaySound(internal.GetSound(assetId, true))
 	} else if hasMusic {
 		rl.PlayMusicStream(music)
 	}
 }
-func (a *Audio) Pause() {
+func (a *Audio) pause(assetId int16) {
 	if a.isPaused {
 		return
 	}
@@ -61,8 +116,8 @@ func (a *Audio) Pause() {
 	a.isPaused = true
 	a.pauseTime = internal.Runtime
 
-	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
-	var music, hasMusic = internal.Music[int16(a.AssetId)]
+	var sounds, hasSound = internal.Sounds[assetId]
+	var music, hasMusic = internal.Music[assetId]
 	if hasSound {
 		for _, s := range sounds {
 			rl.PauseSound(s)
@@ -71,22 +126,22 @@ func (a *Audio) Pause() {
 		rl.PauseMusicStream(music)
 	}
 }
-func (a *Audio) Stop() {
+func (a *Audio) stop(assetId int16) {
 	a.isPaused = true
 	a.finishedReported = false
 
-	var _, hasSound = internal.Sounds[int16(a.AssetId)]
-	var music, hasMusic = internal.Music[int16(a.AssetId)]
+	var _, hasSound = internal.Sounds[assetId]
+	var music, hasMusic = internal.Music[assetId]
 	if hasSound {
-		rl.StopSound(internal.GetSound(int16(a.AssetId), false))
+		rl.StopSound(internal.GetSound(assetId, false))
 	} else if hasMusic {
 		rl.StopMusicStream(music)
 	}
 }
 
-func (a *Audio) ApplyProperties() {
-	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
-	var music, hasMusic = internal.Music[int16(a.AssetId)]
+func (a *Audio) applyProperties(assetId int16) {
+	var sounds, hasSound = internal.Sounds[assetId]
+	var music, hasMusic = internal.Music[assetId]
 	if hasSound {
 		for _, sound := range sounds {
 			if sound.Stream.Buffer != nil {
@@ -102,22 +157,22 @@ func (a *Audio) ApplyProperties() {
 	}
 }
 
-func (a *Audio) IsPlaying() bool {
-	var sounds, _ = internal.Sounds[int16(a.AssetId)]
-	var music, hasMusic = internal.Music[int16(a.AssetId)]
+func (a *Audio) isPlaying(assetId int16) bool {
+	var sounds, _ = internal.Sounds[assetId]
+	var music, hasMusic = internal.Music[assetId]
 
 	if hasMusic {
 		return rl.IsMusicStreamPlaying(music)
 	}
 	return slices.ContainsFunc(sounds, rl.IsSoundPlaying)
 }
-func (a *Audio) IsJustFinished() bool {
+func (a *Audio) isJustFinished(assetId int16) bool {
 	if a.isPaused {
 		return false
 	}
 
-	var sounds, hasSound = internal.Sounds[int16(a.AssetId)]
-	var music, hasMusic = internal.Music[int16(a.AssetId)]
+	var sounds, hasSound = internal.Sounds[assetId]
+	var music, hasMusic = internal.Music[assetId]
 	if !a.finishedReported {
 		var duration float32
 		if hasSound {
@@ -137,8 +192,6 @@ func (a *Audio) IsJustFinished() bool {
 	return false
 }
 
-// private ========================================================
-
 func currentTime(stream rl.AudioStream) float32 {
 	if stream.Buffer == nil {
 		return number.NaN()
@@ -147,4 +200,12 @@ func currentTime(stream rl.AudioStream) float32 {
 	var cur = stream.Buffer.FrameCursorPos
 	var rate = stream.SampleRate
 	return float32(processed)/float32(rate) + float32(cur)/float32(rate)
+}
+
+func (a *Audio) getAudioId() int16 {
+	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
+	if isVariation {
+		return random.Pick(variations...)
+	}
+	return int16(a.AssetId)
 }
