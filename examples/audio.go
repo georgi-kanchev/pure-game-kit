@@ -11,9 +11,9 @@ import (
 
 func Audio() {
 	window.Create("examples - audio", false, false)
-	var wood = assets.LoadSound(3, "examples/data/wood.mp3")
-	var hammer = assets.LoadSound(3, "examples/data/hammer.ogg")
-	var variation = assets.LoadVariations(wood, hammer)
+	var sound1 = assets.LoadSound(3, "examples/data/door.ogg")
+	var sound2 = assets.LoadSound(3, "examples/data/accept.mp3")
+	var variation = assets.LoadAudioVariations(sound1, sound2)
 	var audio = audio.New(variation)
 
 	for window.KeepOpen() {
@@ -33,7 +33,7 @@ func Audio() {
 		}
 
 		if keyboard.IsKeyJustPressed(key.Space) {
-			if audio.IsPlaying() {
+			if !audio.IsPaused() {
 				audio.Pause()
 				fmt.Printf("paused\n")
 			} else {

@@ -14,30 +14,27 @@ type Audio struct {
 	AssetId                         assets.AudioId
 	Volume, Pitch, LeftRightBalance float32
 
-	playTime, pauseTime, finishTime float32
-	finishedReported, isPaused      bool
-	realAssetId                     assets.AudioId // AssetId may be an AudioVariation, this is the raw assetId that is playing
+	isPaused, wasPlaying bool
+	realAssetId          assets.AudioId // AssetId may be an AudioVariation, this is the raw assetId that is playing
 }
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
 
 func New(assetId assets.AudioId) Audio {
-	return Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRightBalance: 0.5, playTime: number.NaN()}
+	return Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRightBalance: 0.5}
 }
 
 //=================================================================
 
 func (a *Audio) Play() {
-	a.pickRandomRealAssetId()
-	var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
-	var music, hasMusic = internal.Music[int16(a.realAssetId)]
-
-	a.finishedReported = false
-	a.ApplyProperties()
+	a.wasPlaying = true
 
 	if a.isPaused {
+		var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
+		var music, hasMusic = internal.Music[int16(a.realAssetId)]
+
+		a.ApplyProperties()
 		a.isPaused = false
-		a.playTime += internal.Runtime - a.pauseTime // shift by time spent paused
 
 		if hasSound {
 			for _, s := range sounds {
@@ -49,9 +46,18 @@ func (a *Audio) Play() {
 		return
 	}
 
-	a.playTime = internal.Runtime
+	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
+	var assetId = int16(a.AssetId)
+	if isVariation {
+		assetId = random.Pick(variations...)
+	}
+	a.realAssetId = assets.AudioId(assetId)
+
+	var _, hasSound = internal.Sounds[assetId]
+	var music, hasMusic = internal.Music[assetId]
+	a.ApplyProperties()
 	if hasSound {
-		rl.PlaySound(internal.GetSound(int16(a.realAssetId), true))
+		rl.PlaySound(internal.GetSound(assetId, true))
 	} else if hasMusic {
 		rl.PlayMusicStream(music)
 	}
@@ -60,9 +66,7 @@ func (a *Audio) Pause() {
 	if a.isPaused {
 		return
 	}
-
 	a.isPaused = true
-	a.pauseTime = internal.Runtime
 
 	var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
 	var music, hasMusic = internal.Music[int16(a.realAssetId)]
@@ -75,12 +79,18 @@ func (a *Audio) Pause() {
 	}
 }
 func (a *Audio) Stop() {
-	a.finishedReported = false
+	if a.realAssetId == 0 {
+		return
+	}
+	a.isPaused = false
+	a.wasPlaying = false
 
-	var _, hasSound = internal.Sounds[int16(a.realAssetId)]
+	var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
 	var music, hasMusic = internal.Music[int16(a.realAssetId)]
 	if hasSound {
-		rl.StopSound(internal.GetSound(int16(a.realAssetId), false))
+		for _, s := range sounds {
+			rl.StopSound(s)
+		}
 	} else if hasMusic {
 		rl.StopMusicStream(music)
 	}
@@ -97,6 +107,9 @@ func (a *Audio) ApplyProperties() {
 	a.applyProperties(int16(a.AssetId))
 }
 
+func (a *Audio) IsPaused() bool {
+	return a.isPaused
+}
 func (a *Audio) IsPlaying() bool {
 	if a.realAssetId == 0 {
 		return false
@@ -110,27 +123,13 @@ func (a *Audio) IsPlaying() bool {
 	return slices.ContainsFunc(sounds, rl.IsSoundPlaying)
 }
 func (a *Audio) IsJustFinished() bool {
-	if a.isPaused || a.realAssetId == 0 {
+	if a.isPaused || a.realAssetId == 0 || !a.wasPlaying || a.isPaused {
 		return false
 	}
 
-	var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
-	var music, hasMusic = internal.Music[int16(a.realAssetId)]
-	if !a.finishedReported {
-		var duration float32
-		if hasSound {
-			for _, s := range sounds {
-				duration = float32(s.FrameCount) / float32(s.Stream.SampleRate)
-			}
-		} else if hasMusic {
-			duration = rl.GetMusicTimeLength(music)
-		}
-
-		a.finishTime = a.playTime + duration/a.Pitch
-		if internal.Runtime >= a.finishTime {
-			a.finishedReported = true
-			return true
-		}
+	if !a.IsPlaying() {
+		a.wasPlaying = false
+		return true
 	}
 	return false
 }
@@ -147,28 +146,19 @@ func currentTime(stream rl.AudioStream) float32 {
 	return float32(processed)/float32(rate) + float32(cur)/float32(rate)
 }
 
-func (a *Audio) pickRandomRealAssetId() {
-	var variations, isVariation = internal.AudioVariations[int16(a.AssetId)]
-	var assetId = int16(a.AssetId)
-	if isVariation {
-		assetId = random.Pick(variations...)
-	}
-	a.realAssetId = assets.AudioId(assetId)
-}
-
 func (a *Audio) applyProperties(assetId int16) {
 	var sounds, hasSound = internal.Sounds[assetId]
 	var music, hasMusic = internal.Music[assetId]
 	if hasSound {
 		for _, sound := range sounds {
 			if sound.Stream.Buffer != nil {
-				sound.Stream.Buffer.Volume = a.Volume * VolumeSound * Volume
+				rl.SetSoundVolume(sound, a.Volume*VolumeSound*Volume)
 				rl.SetSoundPitch(sound, a.Pitch)
 				rl.SetSoundPan(sound, 1-a.LeftRightBalance)
 			}
 		}
 	} else if hasMusic {
-		music.Stream.Buffer.Volume = a.Volume * VolumeMusic * Volume
+		rl.SetMusicVolume(music, a.Volume*VolumeMusic*Volume)
 		rl.SetMusicPitch(music, a.Pitch)
 		rl.SetMusicPan(music, 1-a.LeftRightBalance)
 	}

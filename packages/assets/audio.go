@@ -61,7 +61,7 @@ func LoadMusic(filePath string) AudioId {
 	internal.Music[int16(-id)] = music
 	return AudioId(-id)
 }
-func LoadVariations(audioIds ...AudioId) AudioId {
+func LoadAudioVariations(audioIds ...AudioId) AudioId {
 	if len(audioIds) == 0 {
 		return 0
 	}
