@@ -15,7 +15,7 @@ type Audio struct {
 	Volume, Pitch, LeftRightBalance float32
 
 	isPaused, wasPlaying bool
-	realAssetId          assets.AudioId // AssetId may be an AudioVariation, this is the raw assetId that is playing
+	currentId            assets.AudioId // AssetId may be an AudioVariation, this is the raw assetId that is playing
 }
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
@@ -29,12 +29,12 @@ func New(assetId assets.AudioId) Audio {
 func (a *Audio) Play() {
 	a.wasPlaying = true
 
-	if a.isPaused {
-		var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
-		var music, hasMusic = internal.Music[int16(a.realAssetId)]
+	if a.currentId != 0 && a.isPaused {
+		var sounds, hasSound = internal.Sounds[int16(a.currentId)]
+		var music, hasMusic = internal.Music[int16(a.currentId)]
 
-		a.ApplyProperties()
 		a.isPaused = false
+		a.ApplyProperties()
 
 		if hasSound {
 			for _, s := range sounds {
@@ -51,7 +51,8 @@ func (a *Audio) Play() {
 	if isVariation {
 		assetId = random.Pick(variations...)
 	}
-	a.realAssetId = assets.AudioId(assetId)
+	a.isPaused = false
+	a.currentId = assets.AudioId(assetId)
 
 	var _, hasSound = internal.Sounds[assetId]
 	var music, hasMusic = internal.Music[assetId]
@@ -68,8 +69,8 @@ func (a *Audio) Pause() {
 	}
 	a.isPaused = true
 
-	var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
-	var music, hasMusic = internal.Music[int16(a.realAssetId)]
+	var sounds, hasSound = internal.Sounds[int16(a.currentId)]
+	var music, hasMusic = internal.Music[int16(a.currentId)]
 	if hasSound {
 		for _, s := range sounds {
 			rl.PauseSound(s)
@@ -79,19 +80,19 @@ func (a *Audio) Pause() {
 	}
 }
 func (a *Audio) Stop() {
-	if a.realAssetId == 0 {
+	if a.currentId == 0 {
 		return
 	}
 	a.isPaused = false
 	a.wasPlaying = false
 
-	var sounds, hasSound = internal.Sounds[int16(a.realAssetId)]
-	var music, hasMusic = internal.Music[int16(a.realAssetId)]
+	var sounds, hasSound = internal.Sounds[int16(a.currentId)]
+	var music, hasMusic = internal.Music[int16(a.currentId)]
 	if hasSound {
 		for _, s := range sounds {
 			rl.StopSound(s)
 		}
-	} else if hasMusic {
+	} else if hasMusic && rl.IsMusicStreamPlaying(music) { // <- prevents raylib stutter quirk in the beginning if Stop() -> Play()
 		rl.StopMusicStream(music)
 	}
 }
@@ -111,11 +112,11 @@ func (a *Audio) IsPaused() bool {
 	return a.isPaused
 }
 func (a *Audio) IsPlaying() bool {
-	if a.realAssetId == 0 {
+	if a.currentId == 0 {
 		return false
 	}
-	var sounds, _ = internal.Sounds[int16(a.realAssetId)]
-	var music, hasMusic = internal.Music[int16(a.realAssetId)]
+	var sounds, _ = internal.Sounds[int16(a.currentId)]
+	var music, hasMusic = internal.Music[int16(a.currentId)]
 
 	if hasMusic {
 		return rl.IsMusicStreamPlaying(music)
@@ -123,7 +124,7 @@ func (a *Audio) IsPlaying() bool {
 	return slices.ContainsFunc(sounds, rl.IsSoundPlaying)
 }
 func (a *Audio) IsJustFinished() bool {
-	if a.isPaused || a.realAssetId == 0 || !a.wasPlaying || a.isPaused {
+	if a.isPaused || a.currentId == 0 || !a.wasPlaying || a.isPaused {
 		return false
 	}
 
@@ -132,6 +133,11 @@ func (a *Audio) IsJustFinished() bool {
 		return true
 	}
 	return false
+}
+
+// Returns the currently playing (or paused) AudioId. Useful when Audio.AssetId is an AudioVariation.
+func (a *Audio) CurrentAssetId() assets.AudioId {
+	return a.currentId
 }
 
 // private ========================================================
