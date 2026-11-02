@@ -23,9 +23,9 @@ func Audio() {
 		}
 
 		if keyboard.IsKeyJustPressed(key.S) {
-			audio.Volume = 0.5
+			audio.Volume = 0.2
 			audio.ApplyProperties()
-			fmt.Printf("applied volume 50%%\n")
+			fmt.Printf("applied volume 20%%\n")
 		}
 
 		if audio.IsJustFinished() {
