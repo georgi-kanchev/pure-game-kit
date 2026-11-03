@@ -427,7 +427,7 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 	var hndArea = geometry.NewArea(x, area.Y, area.Height, area.Height)
 	var t, dragging = getTheme(theme), false
 	var body, hnd = t.Slider.Body, t.Slider.Hnd
-	var tStep = t.Slider.Step
+	var tStep, prevValue = t.Slider.Step, *value
 	var bodyCol, hndCol = thStr(body.Col), thStr(hnd.Col)
 	var bodyImg, hndImg = thNum(body.ImgId), thNum(hnd.ImgId)
 	var bodyRnd, hndRnd = thNum(body.Rnds), thNum(hnd.Rnds)
@@ -496,6 +496,11 @@ func Slider(value *float32, step float32, area, mask Area, theme assets.GUITheme
 	x = number.Limit(x, left+area.Height/2, right-area.Height/2)
 	*value = number.Map(x, left+area.Height/2, right-area.Height/2, 0, 1)
 	*value = number.Snap(*value, number.Absolute(step))
+
+	sliderJustChanged = false // different for every slider
+	if prevValue != *value {
+		sliderJustChanged = true
+	}
 }
 
 func List(area, mask Area, theme assets.GUIThemeId, enabled bool, textScale, buttonHeight float32, buttons ...string) {

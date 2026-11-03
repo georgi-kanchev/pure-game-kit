@@ -19,7 +19,7 @@ type Audio struct {
 	lastPlayFrame uint64 // 2-frame buffer for IsJustFinished()
 }
 
-var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
+var Volume, VolumeMusic, VolumeSounds float32 = 1, 1, 1
 
 func New(assetId assets.AudioId) Audio {
 	return Audio{AssetId: assetId, Volume: 1, Pitch: 1, LeftRightBalance: 0.5}
@@ -82,7 +82,7 @@ func (a *Audio) Pause() {
 	}
 }
 func (a *Audio) Stop() {
-	if a.currentId == 0 {
+	if a.currentId == 0 && !a.IsPlaying() {
 		return
 	}
 	a.isPaused = false
@@ -94,7 +94,7 @@ func (a *Audio) Stop() {
 		for _, s := range sounds {
 			rl.StopSound(s)
 		}
-	} else if hasMusic && rl.IsMusicStreamPlaying(music) { // <- prevents raylib stutter quirk in the beginning if Stop() -> Play()
+	} else if hasMusic {
 		rl.StopMusicStream(music)
 	}
 }
@@ -148,7 +148,7 @@ func (a *Audio) applyProperties(assetId int16) {
 	if hasSound {
 		for _, sound := range sounds {
 			if sound.Stream.Buffer != nil {
-				rl.SetSoundVolume(sound, a.Volume*VolumeSound*Volume)
+				rl.SetSoundVolume(sound, a.Volume*VolumeSounds*Volume)
 				rl.SetSoundPitch(sound, a.Pitch)
 				rl.SetSoundPan(sound, 1-a.LeftRightBalance)
 			}

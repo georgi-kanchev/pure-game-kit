@@ -21,6 +21,8 @@ func IsJustClicked() bool { return justClickedWidget == widgetCounter }
 
 func IsListJustClicked(buttonIndex int) bool { return justClickedList == buttonIndex }
 
+func IsSliderJustChanged() bool { return sliderJustChanged }
+
 func IsJustDragged() bool { return IsFocused() && mouse.IsButtonJustPressed(button.Left) }
 func IsJustDropped() bool {
 	return lastClickedWidget == widgetCounter && !IsClicked() && mouse.IsButtonJustReleased(button.Left)
@@ -51,7 +53,7 @@ var lastClickedWidget, clickedWidget, justClickedWidget, justClickedList int
 var scrollDraggedWidget, scrollHoveredWidget, lastScrollHoveredWidget int
 var lastUpdateOnFrame, lastScrollFrame uint64
 var widgetArea, drag Area
-var droppedLastFrame bool
+var droppedLastFrame, sliderJustChanged bool
 var listScrolls = map[int]float32{}
 
 var lastTypingIn, typingIn, inputIndexCursor, inputIndexSelection int
