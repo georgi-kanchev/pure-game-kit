@@ -3,7 +3,6 @@ package audio
 import (
 	"pure-game-kit/packages/assets"
 	"pure-game-kit/packages/internal"
-	"pure-game-kit/packages/utility/number"
 	"pure-game-kit/packages/utility/random"
 	"slices"
 
@@ -14,8 +13,10 @@ type Audio struct {
 	AssetId                         assets.AudioId
 	Volume, Pitch, LeftRightBalance float32
 
-	isPaused, wasPlaying bool
-	currentId            assets.AudioId // AssetId may be an AudioVariation, this is the raw assetId that is playing
+	isPaused  bool
+	currentId assets.AudioId // AssetId may be a Variation, this is the raw assetId that is currently playing (or being paused)
+
+	lastPlayFrame uint64 // 2-frame buffer for IsJustFinished()
 }
 
 var Volume, VolumeMusic, VolumeSound float32 = 1, 1, 1
@@ -27,7 +28,7 @@ func New(assetId assets.AudioId) Audio {
 //=================================================================
 
 func (a *Audio) Play() {
-	a.wasPlaying = true
+	a.lastPlayFrame = internal.Frame
 
 	if a.currentId != 0 && a.isPaused {
 		var sounds, hasSound = internal.Sounds[int16(a.currentId)]
@@ -64,10 +65,11 @@ func (a *Audio) Play() {
 	}
 }
 func (a *Audio) Pause() {
-	if a.isPaused {
+	if a.isPaused || !a.IsPlaying() {
 		return
 	}
 	a.isPaused = true
+	a.lastPlayFrame = internal.Frame
 
 	var sounds, hasSound = internal.Sounds[int16(a.currentId)]
 	var music, hasMusic = internal.Music[int16(a.currentId)]
@@ -84,7 +86,7 @@ func (a *Audio) Stop() {
 		return
 	}
 	a.isPaused = false
-	a.wasPlaying = false
+	a.lastPlayFrame = internal.Frame
 
 	var sounds, hasSound = internal.Sounds[int16(a.currentId)]
 	var music, hasMusic = internal.Music[int16(a.currentId)]
@@ -117,40 +119,28 @@ func (a *Audio) IsPlaying() bool {
 	}
 	var sounds, _ = internal.Sounds[int16(a.currentId)]
 	var music, hasMusic = internal.Music[int16(a.currentId)]
-
 	if hasMusic {
 		return rl.IsMusicStreamPlaying(music)
 	}
 	return slices.ContainsFunc(sounds, rl.IsSoundPlaying)
 }
 func (a *Audio) IsJustFinished() bool {
-	if a.isPaused || a.currentId == 0 || !a.wasPlaying || a.isPaused {
+	if a.isPaused || a.currentId == 0 {
 		return false
 	}
-
-	if !a.IsPlaying() {
-		a.wasPlaying = false
-		return true
+	if a.IsPlaying() {
+		a.lastPlayFrame = internal.Frame
+		return false
 	}
-	return false
+	return internal.Frame-1 == a.lastPlayFrame
 }
 
-// Returns the currently playing (or paused) AudioId. Useful when Audio.AssetId is an AudioVariation.
+// Returns the currently playing (or paused) AudioId. Useful when Audio.AssetId is a Variation.
 func (a *Audio) CurrentAssetId() assets.AudioId {
 	return a.currentId
 }
 
 // private ========================================================
-
-func currentTime(stream rl.AudioStream) float32 {
-	if stream.Buffer == nil {
-		return number.NaN()
-	}
-	var processed = stream.Buffer.FramesProcessed
-	var cur = stream.Buffer.FrameCursorPos
-	var rate = stream.SampleRate
-	return float32(processed)/float32(rate) + float32(cur)/float32(rate)
-}
 
 func (a *Audio) applyProperties(assetId int16) {
 	var sounds, hasSound = internal.Sounds[assetId]
