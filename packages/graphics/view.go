@@ -80,29 +80,16 @@ func (v *View) MouseDragAndZoomSmoothly() {
 }
 
 func (v *View) FitSize(width, height float32) {
-	var windowArea = v.windowArea()
-	if windowArea.Width <= 0 || windowArea.Height <= 0 {
-		return
+	var scaleX, scaleY = v.rotatedBoundsZoom(width, height)
+	if scaleX > 0 {
+		v.Zoom = min(scaleX, scaleY)
 	}
-
-	var w, h = width, height
-	var minX, maxX, minY, maxY float32 = 0, 0, 0, 0
-	var corners = [4][2]float32{{-w / 2, -h / 2}, {w / 2, -h / 2}, {-w / 2, h / 2}, {w / 2, h / 2}}
-	var sin, cos = internal.SinCos(-v.Angle)
-
-	for i, p := range corners {
-		var dx, dy = p[0], p[1]
-		var localX, localY = dx*cos - dy*sin, dx*sin + dy*cos
-
-		if i == 0 {
-			minX, maxX, minY, maxY = localX, localX, localY, localY
-		} else {
-			minX, maxX, minY, maxY = min(minX, localX), max(maxX, localX), min(minY, localY), max(maxY, localY)
-		}
+}
+func (v *View) FillSize(width, height float32) {
+	var scaleX, scaleY = v.rotatedBoundsZoom(width, height)
+	if scaleX > 0 {
+		v.Zoom = max(scaleX, scaleY)
 	}
-
-	var localWidth, localHeight = max(maxX-minX, 1), max(maxY-minY, 1) // no division by zero for tiny/empty bounds
-	v.Zoom = min(windowArea.Width/localWidth, windowArea.Height/localHeight)
 }
 
 // =================================================================
@@ -177,4 +164,32 @@ func (v *View) PointToView(otherView *View, myX, myY float32) (otherX, otherY fl
 func (v *View) PointFromEdge(horizontal, vertical float32) (x, y float32) {
 	var wa = v.windowArea()
 	return v.PointFromScreen(wa.X-wa.Width/2+wa.Width*horizontal, wa.Y-wa.Height/2+wa.Height*vertical)
+}
+
+// private ========================================================
+
+func (v *View) rotatedBoundsZoom(width, height float32) (float32, float32) {
+	var windowArea = v.windowArea()
+	if windowArea.Width <= 0 || windowArea.Height <= 0 {
+		return 0, 0
+	}
+
+	var w, h = width, height
+	var minX, maxX, minY, maxY float32 = 0, 0, 0, 0
+	var corners = [4][2]float32{{-w / 2, -h / 2}, {w / 2, -h / 2}, {-w / 2, h / 2}, {w / 2, h / 2}}
+	var sin, cos = internal.SinCos(-v.Angle)
+
+	for i, p := range corners {
+		var dx, dy = p[0], p[1]
+		var localX, localY = dx*cos - dy*sin, dx*sin + dy*cos
+
+		if i == 0 {
+			minX, maxX, minY, maxY = localX, localX, localY, localY
+		} else {
+			minX, maxX, minY, maxY = min(minX, localX), max(maxX, localX), min(minY, localY), max(maxY, localY)
+		}
+	}
+
+	var localWidth, localHeight = max(maxX-minX, 1), max(maxY-minY, 1) // no division by zero for tiny/empty bounds
+	return windowArea.Width / localWidth, windowArea.Height / localHeight
 }
