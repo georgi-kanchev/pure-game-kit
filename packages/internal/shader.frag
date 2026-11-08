@@ -76,21 +76,21 @@ vec2 do_pixelated_uv(vec2 uv) {
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
     return pixelated;
 }
-vec4 do_blur(vec2 uv) {
+vec4 do_blur(vec2 uv, vec2 uvMin, vec2 uvMax) {
     vec2 blur = vec2(BLUR_X, BLUR_Y);
     if (blur.x <= 0.01 && blur.y <= 0.01)
-        return texture(texture0, uv);
+        return texture(texture0, clamp(uv, uvMin, uvMax));
     
     vec2 texSize = vec2(TEX_W, TEX_H);
     vec2 res = 1.0 / texSize;
     vec2 offset = (blur + 0.5) * res;
-    vec4 sum = texture(texture0, uv + vec2(-offset.x, -offset.y));
-    sum += texture(texture0, uv + vec2(offset.x, -offset.y));
-    sum += texture(texture0, uv + vec2(-offset.x, offset.y));
-    sum += texture(texture0, uv + vec2(offset.x, offset.y));
+    vec4 sum = texture(texture0, clamp(uv + vec2(-offset.x, -offset.y), uvMin, uvMax));
+    sum += texture(texture0, clamp(uv + vec2(offset.x, -offset.y), uvMin, uvMax));
+    sum += texture(texture0, clamp(uv + vec2(-offset.x, offset.y), uvMin, uvMax));
+    sum += texture(texture0, clamp(uv + vec2(offset.x, offset.y), uvMin, uvMax));
     return sum * 0.25;
 }
-vec4 do_outline(vec4 color, vec2 uv) {
+vec4 do_outline(vec4 color, vec2 uv, vec2 uvMin, vec2 uvMax) {
     float outlineSize = OUTLINE_SIZE;
     if (color.a > 0 || outlineSize <= 0.01)
         return color;
@@ -99,14 +99,14 @@ vec4 do_outline(vec4 color, vec2 uv) {
     vec2 texel = 1.0 / texSize;
     vec4 outlineColor = vec4(OUTLINE_R, OUTLINE_G, OUTLINE_B, OUTLINE_A);
 
-    if (texture(texture0, uv + vec2(texel.x * outlineSize, 0.0)).a > 0.0 ||
-            texture(texture0, uv + vec2(-texel.x * outlineSize, 0.0)).a > 0.0 ||
-            texture(texture0, uv + vec2(0.0, texel.y * outlineSize)).a > 0.0 ||
-            texture(texture0, uv + vec2(0.0, -texel.y * outlineSize)).a > 0.0 ||
-            texture(texture0, uv + vec2(texel.x * outlineSize, texel.y * outlineSize)).a > 0.0 ||
-            texture(texture0, uv + vec2(-texel.x * outlineSize, texel.y * outlineSize)).a > 0.0 ||
-            texture(texture0, uv + vec2(-texel.x * outlineSize, -texel.y * outlineSize)).a > 0.0 ||
-            texture(texture0, uv + vec2(texel.x * outlineSize, -texel.y * outlineSize)).a > 0.0)
+    if (texture(texture0, clamp(uv + vec2(texel.x * outlineSize, 0.0), uvMin, uvMax)).a > 0.0 ||
+            texture(texture0, clamp(uv + vec2(-texel.x * outlineSize, 0.0), uvMin, uvMax)).a > 0.0 ||
+            texture(texture0, clamp(uv + vec2(0.0, texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
+            texture(texture0, clamp(uv + vec2(0.0, -texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
+            texture(texture0, clamp(uv + vec2(texel.x * outlineSize, texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
+            texture(texture0, clamp(uv + vec2(-texel.x * outlineSize, texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
+            texture(texture0, clamp(uv + vec2(-texel.x * outlineSize, -texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
+            texture(texture0, clamp(uv + vec2(texel.x * outlineSize, -texel.y * outlineSize), uvMin, uvMax)).a > 0.0)
         return outlineColor;
 
     return color;
@@ -128,14 +128,22 @@ vec4 do_color_adjust(vec4 color) {
     color.rgb *= brightness;
     return color;
 }
-vec2 do_tile() {
+vec2 do_tile(out vec2 uvMin, out vec2 uvMax) {
     vec2 uv = fragTexCoord;
-    if (TILE_COLUMNS == 0.0)
+    if (TILE_COLUMNS == 0.0) {
+        uvMin = vec2(0.0);
+        uvMax = vec2(1.0);
         return uv;
+    }
     
     vec2 texSize = vec2(TEX_W, TEX_H);
-    ivec2 mapSize = ivec2(int(TILE_COLUMNS), int(TILE_ROWS));
-    ivec2 tile = ivec2(int(uv.x * float(mapSize.x)), int(uv.y * float(mapSize.y)));
+    vec2 mapSizeF = vec2(TILE_COLUMNS, TILE_ROWS);
+    ivec2 mapSize = ivec2(mapSizeF);
+    
+    // Compute the map cell and the position inside it from the same value,
+    // clamped to the map, so border fragments never fall into a neighbor cell.
+    vec2 cellPos = clamp(uv * mapSizeF, vec2(0.0), mapSizeF - 0.0001);
+    ivec2 tile = ivec2(cellPos);
     tile = clamp(tile, ivec2(0), mapSize - 1);
     int linearTileID = tile.y * mapSize.x + tile.x;
     ivec2 dataUv = ivec2(linearTileID % mapSize.x, linearTileID / mapSize.x);
@@ -158,7 +166,7 @@ vec2 do_tile() {
 
     float atlasCols = floor(texSize.x / TILE_SIZE);
     vec2 coord = vec2(mod(float(atlasIndex), atlasCols), floor(float(atlasIndex) / atlasCols));
-    vec2 localUV = fract(uv * vec2(float(mapSize.x), float(mapSize.y)));
+    vec2 localUV = fract(cellPos);
     localUV -= 0.5;
     localUV.x = flip ? -localUV.x : localUV.x;
     localUV = rot == 1u ? vec2(localUV.y, -localUV.x) : localUV;
@@ -167,7 +175,21 @@ vec2 do_tile() {
     localUV += 0.5;
     
     vec2 atlasSizeInTiles = vec2(texSize.x / TILE_SIZE, texSize.y / TILE_SIZE);
-    return (coord + localUV) / atlasSizeInTiles;
+    vec2 tileUVSize = 1.0 / atlasSizeInTiles;
+    vec2 halfTexel = 0.5 / texSize;
+
+    // Keep the center sample at least half a texel away from every tile border,
+    // so filtering can never read texels from the neighboring atlas tiles.
+    vec2 inset = min(halfTexel / tileUVSize, vec2(0.5));
+    localUV = clamp(localUV, inset, vec2(1.0) - inset);
+
+    // Clamp range for blur/outline neighbor samples; they step several texels
+    // away from the center and would otherwise cross into other atlas tiles.
+    uvMin = coord / atlasSizeInTiles + halfTexel;
+    uvMax = uvMin + tileUVSize - 2.0 * halfTexel;
+    uvMax = max(uvMax, uvMin);
+
+    return coord / atlasSizeInTiles + localUV * tileUVSize;
 }
 vec4 do_sdf_shape(vec4 color) {
     int objKind = int(OBJ_KIND);
@@ -282,16 +304,17 @@ void main() {
         color = do_sdf_shape(color);
     } else if (objKind == KIND_SPRITE) {
         vec2 uv = do_pixelated_uv(fragTexCoord);
-        color = do_blur(uv);
-        color = do_outline(color, uv);
+        color = do_blur(uv, vec2(0.0), vec2(1.0));
+        color = do_outline(color, uv, vec2(0.0), vec2(1.0));
         color = do_silhouette(color);
         color *= fragColor;
         color = do_sdf_shape(color);
         color = NO_COLOR_ADJUST < 0.5 ? do_color_adjust(color) : color;
     } else if (objKind == KIND_TILEMAP) {
-        vec2 uv = do_tile();
-        color = do_blur(uv);
-        color = do_outline(color, uv);
+        vec2 uvMin, uvMax;
+        vec2 uv = do_tile(uvMin, uvMax);
+        color = do_blur(uv, uvMin, uvMax);
+        color = do_outline(color, uv, uvMin, uvMax);
         color = do_silhouette(color);
         color *= fragColor;
         color = NO_COLOR_ADJUST < 0.5 ? do_color_adjust(color) : color;
