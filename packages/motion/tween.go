@@ -6,106 +6,80 @@ import (
 )
 
 type Tween struct {
-	IsPaused                  bool
-	tweens                    []action
-	currIndex                 int
-	startTime, lastUpdateTime float32
+	TimeScale float32
+
+	actions    []action
+	index      int
+	time       float32
+	wasPlaying bool
+
+	lastUpdateFrame, justFinishedFrame uint64
 }
 
-func NewTween(startingItems ...float32) *Tween {
-	if len(startingItems) == 0 {
+func NewTween(startingValues ...float32) *Tween {
+	if len(startingValues) == 0 {
 		return &Tween{}
 	}
 
-	var newChain = &Tween{tweens: make([]action, 0)}
-	var itemsCopy = make([]float32, len(startingItems))
-	copy(itemsCopy, startingItems)
+	var newChain = &Tween{actions: make([]action, 0), index: 1, TimeScale: 1}
+	var itemsCopy = make([]float32, len(startingValues))
+	copy(itemsCopy, startingValues)
 
-	var newValue = action{
-		duration: 0,
-		from:     itemsCopy,
-		to:       itemsCopy,
-		current:  itemsCopy,
-	}
-	newChain.tweens = append(newChain.tweens, newValue)
-	newChain.Restart()
-
+	newChain.actions = append(newChain.actions, action{duration: 0, from: itemsCopy, to: itemsCopy, current: itemsCopy})
 	return newChain
 }
 
 //=================================================================
 
-func (t *Tween) Restart() {
-	t.currIndex = 0
-	t.startTime = internal.Runtime
-	t.IsPaused = false
-
-	for i := range t.tweens {
-		var action = &t.tweens[i]
-		if i == 0 {
-			copy(action.current, action.from)
-			continue
-		}
-
-		copy(action.current, t.tweens[i-1].to)
-	}
+func (t *Tween) ForceReset() {
+	t.tryUpdate()
+	t.actions = t.actions[:1] // leave only the starting values, clear everything else
+	t.time, t.index = 0, 1
+}
+func (t *Tween) ForceFinish() {
+	t.tryUpdate()
+	var last = t.last()
+	copy(t.actions[0].from, last.to)    // preserve last action values
+	copy(t.actions[0].to, last.to)      // by setting them as starting values
+	copy(t.actions[0].current, last.to) // as if from constructor
+	t.ForceReset()
 }
 
-//=================================================================
-
 func (t *Tween) GoTo(duration float32, easing func(progress float32) float32, targets ...float32) *Tween {
-	if len(t.tweens) == 0 {
+	if len(t.actions) == 0 {
 		return t
 	}
 
-	var lastTween = t.last()
-	var copyFrom = make([]float32, len(lastTween.to))
-	var copyTo = make([]float32, len(targets))
-	var copyCurr = make([]float32, len(lastTween.to))
+	var lastTween, copyTo = t.last(), make([]float32, len(targets))
+	var copyFrom, copyCurr = make([]float32, len(lastTween.to)), make([]float32, len(lastTween.to))
 	copy(copyFrom, lastTween.to)
 	copy(copyTo, targets)
 	copy(copyCurr, lastTween.to)
 
-	var newTween = action{
-		duration: duration,
-		from:     copyFrom,
-		to:       copyTo,
-		current:  copyCurr,
-		easing:   easing,
-	}
-	t.tweens = append(t.tweens, newTween)
-
+	t.actions = append(t.actions, action{duration: duration, from: copyFrom, to: copyTo, current: copyCurr, easing: easing})
+	t.tryUpdate()
 	return t
 }
 func (t *Tween) Wait(seconds float32) *Tween {
-	if len(t.tweens) > 0 {
-		var lastTween = t.last()
-		t.GoTo(seconds, nil, lastTween.to...)
+	if len(t.actions) > 0 {
+		t.GoTo(seconds, nil, t.last().to...)
 	}
+	t.tryUpdate()
 	return t
 }
 
 func (t *Tween) CurrentValues() []float32 {
-	var runtime = internal.Runtime
-	var elapsed = runtime - t.startTime
+	t.tryUpdate()
 
-	if t.IsFinished() {
+	if !t.IsPlaying() {
 		return t.last().current
 	}
 
-	var act = &t.tweens[t.currIndex]
-	var actionDone = elapsed > act.duration
+	var act = &t.actions[t.index]
+	var actionDone = t.time > act.duration
 
-	if len(t.tweens) == 0 || len(act.from) != len(act.to) || len(act.from) != len(act.current) {
-		return []float32{}
-	}
-	if t.IsPaused && runtime != t.lastUpdateTime {
-		t.startTime += runtime - t.lastUpdateTime
-	}
-	t.lastUpdateTime = runtime
-
-	if t.IsPaused {
-		return act.current
+	if len(t.actions) == 0 || len(act.from) != len(act.to) || len(act.from) != len(act.current) {
+		return nil
 	}
 
 	for i := range act.current {
@@ -113,7 +87,7 @@ func (t *Tween) CurrentValues() []float32 {
 			act.current[i] = act.to[i]
 			continue
 		}
-		var progress = elapsed / act.duration
+		var progress = t.time / act.duration
 		var ease float32 = progress
 
 		if act.easing != nil {
@@ -124,18 +98,19 @@ func (t *Tween) CurrentValues() []float32 {
 	}
 
 	if actionDone {
-		t.startTime = runtime
-		t.currIndex++
+		t.time = 0
+		t.index++
 	}
-
 	return act.current
 }
 
-func (t *Tween) IsFinished() bool {
-	return t.currIndex >= len(t.tweens)
-}
 func (t *Tween) IsPlaying() bool {
-	return !t.IsFinished() && !t.IsPaused
+	t.tryUpdate()
+	return t.index < len(t.actions)
+}
+func (t *Tween) IsJustFinished() bool {
+	t.tryUpdate()
+	return t.justFinishedFrame == internal.Frame
 }
 
 // =================================================================
@@ -147,4 +122,19 @@ type action struct {
 	easing            func(progress float32) float32
 }
 
-func (t *Tween) last() *action { return &t.tweens[len(t.tweens)-1] }
+func (t *Tween) last() *action { return &t.actions[len(t.actions)-1] }
+
+func (t *Tween) tryUpdate() {
+	if t.lastUpdateFrame == internal.Frame {
+		return
+	}
+	t.lastUpdateFrame = internal.Frame
+
+	if t.IsPlaying() {
+		t.time += internal.FrameDelta * t.TimeScale
+	} else if t.wasPlaying {
+		t.ForceFinish()
+		t.justFinishedFrame = internal.Frame
+	}
+	t.wasPlaying = t.IsPlaying()
+}
