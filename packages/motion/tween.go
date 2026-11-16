@@ -31,6 +31,14 @@ func NewTween(startingValues ...float32) *Tween {
 
 //=================================================================
 
+func (t *Tween) ForceStop() {
+	t.tryUpdate()
+	var last = t.last()
+	copy(t.actions[0].from, last.current)    // preserve last action values
+	copy(t.actions[0].to, last.current)      // by setting them as starting values
+	copy(t.actions[0].current, last.current) // as if from constructor
+	t.ForceReset()
+}
 func (t *Tween) ForceReset() {
 	t.tryUpdate()
 	t.actions = t.actions[:1] // leave only the starting values, clear everything else
