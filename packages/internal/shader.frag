@@ -76,21 +76,28 @@ vec2 do_pixelated_uv(vec2 uv) {
     vec2 pixelated = (floor(uv * numBlocks) + 0.5) / numBlocks;
     return pixelated;
 }
-vec4 do_blur(vec2 uv, vec2 uvMin, vec2 uvMax) {
+// Sprites wrap out-of-range UVs (texture repeat), tilemaps clamp to the
+// tile bounds to avoid bleeding from neighboring atlas tiles.
+vec2 sample_uv(vec2 uv, vec2 uvMin, vec2 uvMax, bool wrap) {
+    if (wrap)
+        return fract(uv);
+    return clamp(uv, uvMin, uvMax);
+}
+vec4 do_blur(vec2 uv, vec2 uvMin, vec2 uvMax, bool wrap) {
     vec2 blur = vec2(BLUR_X, BLUR_Y);
     if (blur.x <= 0.01 && blur.y <= 0.01)
-        return texture(texture0, clamp(uv, uvMin, uvMax));
+        return texture(texture0, sample_uv(uv, uvMin, uvMax, wrap));
     
     vec2 texSize = vec2(TEX_W, TEX_H);
     vec2 res = 1.0 / texSize;
     vec2 offset = (blur + 0.5) * res;
-    vec4 sum = texture(texture0, clamp(uv + vec2(-offset.x, -offset.y), uvMin, uvMax));
-    sum += texture(texture0, clamp(uv + vec2(offset.x, -offset.y), uvMin, uvMax));
-    sum += texture(texture0, clamp(uv + vec2(-offset.x, offset.y), uvMin, uvMax));
-    sum += texture(texture0, clamp(uv + vec2(offset.x, offset.y), uvMin, uvMax));
+    vec4 sum = texture(texture0, sample_uv(uv + vec2(-offset.x, -offset.y), uvMin, uvMax, wrap));
+    sum += texture(texture0, sample_uv(uv + vec2(offset.x, -offset.y), uvMin, uvMax, wrap));
+    sum += texture(texture0, sample_uv(uv + vec2(-offset.x, offset.y), uvMin, uvMax, wrap));
+    sum += texture(texture0, sample_uv(uv + vec2(offset.x, offset.y), uvMin, uvMax, wrap));
     return sum * 0.25;
 }
-vec4 do_outline(vec4 color, vec2 uv, vec2 uvMin, vec2 uvMax) {
+vec4 do_outline(vec4 color, vec2 uv, vec2 uvMin, vec2 uvMax, bool wrap) {
     float outlineSize = OUTLINE_SIZE;
     if (color.a > 0 || outlineSize <= 0.01)
         return color;
@@ -99,14 +106,14 @@ vec4 do_outline(vec4 color, vec2 uv, vec2 uvMin, vec2 uvMax) {
     vec2 texel = 1.0 / texSize;
     vec4 outlineColor = vec4(OUTLINE_R, OUTLINE_G, OUTLINE_B, OUTLINE_A);
 
-    if (texture(texture0, clamp(uv + vec2(texel.x * outlineSize, 0.0), uvMin, uvMax)).a > 0.0 ||
-            texture(texture0, clamp(uv + vec2(-texel.x * outlineSize, 0.0), uvMin, uvMax)).a > 0.0 ||
-            texture(texture0, clamp(uv + vec2(0.0, texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
-            texture(texture0, clamp(uv + vec2(0.0, -texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
-            texture(texture0, clamp(uv + vec2(texel.x * outlineSize, texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
-            texture(texture0, clamp(uv + vec2(-texel.x * outlineSize, texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
-            texture(texture0, clamp(uv + vec2(-texel.x * outlineSize, -texel.y * outlineSize), uvMin, uvMax)).a > 0.0 ||
-            texture(texture0, clamp(uv + vec2(texel.x * outlineSize, -texel.y * outlineSize), uvMin, uvMax)).a > 0.0)
+    if (texture(texture0, sample_uv(uv + vec2(texel.x * outlineSize, 0.0), uvMin, uvMax, wrap)).a > 0.0 ||
+            texture(texture0, sample_uv(uv + vec2(-texel.x * outlineSize, 0.0), uvMin, uvMax, wrap)).a > 0.0 ||
+            texture(texture0, sample_uv(uv + vec2(0.0, texel.y * outlineSize), uvMin, uvMax, wrap)).a > 0.0 ||
+            texture(texture0, sample_uv(uv + vec2(0.0, -texel.y * outlineSize), uvMin, uvMax, wrap)).a > 0.0 ||
+            texture(texture0, sample_uv(uv + vec2(texel.x * outlineSize, texel.y * outlineSize), uvMin, uvMax, wrap)).a > 0.0 ||
+            texture(texture0, sample_uv(uv + vec2(-texel.x * outlineSize, texel.y * outlineSize), uvMin, uvMax, wrap)).a > 0.0 ||
+            texture(texture0, sample_uv(uv + vec2(-texel.x * outlineSize, -texel.y * outlineSize), uvMin, uvMax, wrap)).a > 0.0 ||
+            texture(texture0, sample_uv(uv + vec2(texel.x * outlineSize, -texel.y * outlineSize), uvMin, uvMax, wrap)).a > 0.0)
         return outlineColor;
 
     return color;
@@ -304,8 +311,8 @@ void main() {
         color = do_sdf_shape(color);
     } else if (objKind == KIND_SPRITE) {
         vec2 uv = do_pixelated_uv(fragTexCoord);
-        color = do_blur(uv, vec2(0.0), vec2(1.0));
-        color = do_outline(color, uv, vec2(0.0), vec2(1.0));
+        color = do_blur(uv, vec2(0.0), vec2(1.0), true);
+        color = do_outline(color, uv, vec2(0.0), vec2(1.0), true);
         color = do_silhouette(color);
         color *= fragColor;
         color = do_sdf_shape(color);
@@ -313,8 +320,8 @@ void main() {
     } else if (objKind == KIND_TILEMAP) {
         vec2 uvMin, uvMax;
         vec2 uv = do_tile(uvMin, uvMax);
-        color = do_blur(uv, uvMin, uvMax);
-        color = do_outline(color, uv, uvMin, uvMax);
+        color = do_blur(uv, uvMin, uvMax, false);
+        color = do_outline(color, uv, uvMin, uvMax, false);
         color = do_silhouette(color);
         color *= fragColor;
         color = NO_COLOR_ADJUST < 0.5 ? do_color_adjust(color) : color;

@@ -18,6 +18,7 @@ func LoadImage(imagePath string) ImageId {
 	}
 
 	var texture = rl.LoadTexture(imagePath)
+	rl.SetTextureWrap(texture, rl.TextureWrapRepeat)
 	if texture.Width == 0 {
 		debug.LogError("Failed to load image file: \"", imagePath, "\"")
 		return 0
