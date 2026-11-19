@@ -54,6 +54,9 @@ func Object(imageId assets.ImageId, roundness, borderSize float32, borderColor, 
 	if enabled {
 		handleInput(area, mask, roundness, true)
 	}
+	if imageId == 0 {
+		return
+	}
 
 	var img = internal.Images[int32(imageId)]
 	var isNinePatch = img.Top != 0 || img.Bottom != 0 || img.Left != 0 || img.Right != 0
