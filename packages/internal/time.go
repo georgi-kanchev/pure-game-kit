@@ -10,11 +10,11 @@ var Clock, FrameDelta, Runtime float32
 var Frame uint64
 var FPS int32
 
+var FixedStepCount int
+var FixedTickDelta float32 = 1.0 / 60.0
+var FixedStepAccumulatedTime float32
+
 // private ========================================================
-
-const deltaMax, alpha float32 = 0.1, 0.1
-
-var prev time.Time = time.Now()
 
 func UpdateTimeData() {
 	var now = time.Now()
@@ -22,10 +22,17 @@ func UpdateTimeData() {
 	var secondsSinceMidnight = float32(now.Sub(midnight).Seconds())
 
 	Clock = secondsSinceMidnight
-	FrameDelta = min(rl.GetFrameTime(), 0.1)
+	FrameDelta = min(rl.GetFrameTime(), 0.25)
 	FPS = rl.GetFPS()
 	Runtime += FrameDelta
 	Frame++
 
-	prev = now
+	// custom fixed tick rate (see time package) ==================
+
+	FixedStepAccumulatedTime += FrameDelta
+	FixedStepCount = 0
+	for FixedStepAccumulatedTime >= FixedTickDelta {
+		FixedStepAccumulatedTime -= FixedTickDelta
+		FixedStepCount++
+	}
 }

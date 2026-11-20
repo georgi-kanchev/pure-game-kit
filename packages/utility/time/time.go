@@ -8,6 +8,19 @@ import (
 	"pure-game-kit/packages/internal"
 )
 
+func SetFixedTickRate(ticksPerSecond float32) {
+	internal.FixedTickDelta = 1 / max(ticksPerSecond, 0.1)
+	if internal.FixedStepAccumulatedTime >= internal.FixedTickDelta {
+		internal.FixedStepAccumulatedTime = 0
+	}
+}
+func FixedTickRate() (steps int, delta, progress float32) {
+	if internal.FixedTickDelta <= 0 {
+		return 0, 0, 0
+	}
+	return internal.FixedStepCount, internal.FixedTickDelta, max(min(internal.FixedStepAccumulatedTime/internal.FixedTickDelta, 1), 0)
+}
+
 func Running() float32 { return internal.Runtime }
 func Clock() float32   { return internal.Clock }
 func Delta() float32   { return internal.FrameDelta }
